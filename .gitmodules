@@ -1,0 +1,18 @@
+[submodule "src/proto/--branch"]
+	path = src/proto/--branch
+	url = git@github.com:gradido/gradido_protocol.git
+[submodule "src/proto/gradido_protocol"]
+	path = src/proto/gradido_protocol
+	url = git@github.com:gradido/gradido_protocol.git
+[submodule "dependencies/poco"]
+	path = dependencies/poco
+	url = https://github.com/pocoproject/poco.git
+[submodule "dependencies/tinf"]
+	path = dependencies/tinf
+	url = https://github.com/jibsen/tinf.git
+[submodule "dependencies/protobuf"]
+	path = dependencies/protobuf
+	url = https://github.com/protocolbuffers/protobuf.git
+[submodule "dependencies/rapidjson"]
+	path = dependencies/rapidjson
+	url = https://github.com/Tencent/rapidjson.git
