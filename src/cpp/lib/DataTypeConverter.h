@@ -8,9 +8,8 @@
 #include "Poco/Nullable.h"
 #include "Poco/Data/LOB.h"
 #include "Poco/Dynamic/Var.h"
-#include "../SingletonManager/LanguageManager.h"
 
-#include "proto/gradido/BasicTypes.pb.h"
+#include "gradido/BasicTypes.pb.h"
 
 #include "sodium.h"
 
@@ -55,8 +54,6 @@ namespace DataTypeConverter {
 
 	const char* numberParseStateToString(NumberParseState state);
 
-	//! \brief convert duration in string showing seconds, minutes, hours or days
-	std::string convertTimespanToLocalizedString(Poco::Timespan duration, LanguageCatalog* lang);
 
 	Poco::Timestamp convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp);
 	void convertToProtoTimestamp(const Poco::Timestamp pocoTimestamp, proto::gradido::Timestamp* protoTimestamp);

@@ -13,12 +13,7 @@
 #include "Error.h"
 #include "Warning.h"
 #include <stack>
-
-#include "../tasks/CPUTask.h"
-
-#include "Poco/Net/SecureSMTPClientSession.h"
-#include "Poco/Net/StringPartSource.h"
-#include "Poco/Logger.h"
+#include <vector>
 
 #include "rapidjson/document.h"
 
@@ -29,12 +24,11 @@ public:
 	~NotificationList();
 
 	// push error, error will be deleted in deconstructor
-	virtual void addError(Notification* error, bool log = true);
-	void addNotification(Notification* notification);
+	virtual void addError(Error* error, bool log = true);
 	virtual void addWarning(Warning* warning, bool log = true);
 
 	// return error on top of stack, please delete after using
-	Notification* getLastError();
+	Error* getLastError();
 	Warning* getLastWarning();
 
 	inline size_t errorCount() { return mErrorStack.size(); }
@@ -50,39 +44,17 @@ public:
 	int getWarnings(NotificationList* send);
 
 	void printErrors();
-	std::string getErrorsHtml();
-	std::string getErrorsHtmlNewFormat();
 	std::vector<std::string> getErrorsArray();
 	rapidjson::Value getErrorsArray(rapidjson::Document::AllocatorType& alloc);
 	std::vector<std::string> getWarningsArray();
-	rapidjson::Value getWarningsArray(rapidjson::Document::AllocatorType& alloc);
-	
+	rapidjson::Value getWarningsArray(rapidjson::Document::AllocatorType& alloc);	
 
-
-	void sendErrorsAsEmail(std::string rawHtml = "", bool copy = false);
-
-protected:
-	std::stack<Notification*> mErrorStack;
-	std::stack<Warning*> mWarningStack;
-	// poco logging
-	Poco::Logger& mLogging;
-};
-
-class SendErrorMessage : public UniLib::controller::CPUTask
-{
-public:
-	SendErrorMessage(Poco::Net::MailMessage* message, UniLib::controller::CPUSheduler* scheduler)
-		: UniLib::controller::CPUTask(scheduler), mMessage(message) {}
-
-	~SendErrorMessage();
-
-	virtual int run();
-	const char* getResourceType() const { return "SendErrorMessage"; };
-
+	// must be overload by parent classes
+	virtual void sendErrorsAsEmail(std::string rawHtml = "", bool copy = false) { printf("sendErrorsAsEmail not implemented\n"); }
 
 protected:
-	Poco::Net::MailMessage* mMessage;
-
+	std::stack<Error*> mErrorStack;
+	std::stack<Warning*> mWarningStack;	
 };
 
 #endif // DR_LUA_WEB_MODULE_ERROR_ERROR_LIST_H

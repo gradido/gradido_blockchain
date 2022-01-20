@@ -11,13 +11,13 @@
 #ifndef GRADIDO_LOGIN_SERVER_SINGLETON_MANAGER_MEMORY_MANAGER_H
 #define GRADIDO_LOGIN_SERVER_SINGLETON_MANAGER_MEMORY_MANAGER_H
 
-#include "Poco/Mutex.h"
 //#include "../lib/DRMemoryList.h"
 #include "../lib/MultithreadContainer.h"
 
 #include <list>
 #include <stack>
 #include <assert.h>
+#include <mutex>
 
 #define MEMORY_MANAGER_PAGE_SIZE 10
 
@@ -53,10 +53,10 @@ public:
 	bool isSame(const MemoryBin* b) const;
 
 protected:
-	MemoryBin(Poco::UInt32 size);
+	MemoryBin(uint32_t size);
 	~MemoryBin();
 
-	Poco::UInt16 mSize;
+	uint16_t mSize;
 	unsigned char* mData;
 
 };
@@ -64,7 +64,7 @@ protected:
 class MemoryPageStack : protected UniLib::lib::MultithreadContainer
 {
 public:
-	MemoryPageStack(Poco::UInt16 size);
+	MemoryPageStack(uint16_t size);
 	~MemoryPageStack();
 
 	MemoryBin* getFreeMemory();
@@ -72,7 +72,7 @@ public:
 
 protected:
 	std::stack<MemoryBin*> mMemoryBinStack;
-	Poco::UInt16 mSize;
+	uint16_t mSize;
 };
 
 class MemoryManager
@@ -82,12 +82,12 @@ public:
 
 	static MemoryManager* getInstance();
 
-	MemoryBin* getFreeMemory(Poco::UInt32 size);
+	MemoryBin* getFreeMemory(uint32_t size);
 	void releaseMemory(MemoryBin* memory);
 	
 protected:
 
-	Poco::Int8 getMemoryStackIndex(Poco::UInt16 size);
+	int8_t getMemoryStackIndex(uint16_t size);
 
 	MemoryManager();
 	MemoryPageStack* mMemoryPageStacks[6];

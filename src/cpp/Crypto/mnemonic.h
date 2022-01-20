@@ -12,6 +12,7 @@
  */
 
 #include "lib/DRHashList.h"
+#include "lib/NotificationList.h"
 #include <string>
 #include <shared_mutex>
 #include <map>
@@ -30,7 +31,7 @@ public:
 
 	int init(void(*fill_words_func)(unsigned char*), unsigned int original_size, unsigned int compressed_size);
 
-	const char* getWord(short index) const;
+	const char* getWord(short index, NotificationList* errorList) const;
 	short getWordIndex(const char* word) const;
 	inline bool isWordExist(const std::string& word) const {
 		std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);

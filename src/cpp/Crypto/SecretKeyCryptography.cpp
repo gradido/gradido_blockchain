@@ -1,7 +1,7 @@
 #include "SecretKeyCryptography.h"
 
 #include "sodium.h"
-#include "../ServerConfig.h"
+#include "CryptoConfig.h"
 #include <assert.h>
 #include "../lib/Profiler.h"
 
@@ -29,7 +29,7 @@ SecretKeyCryptography::ResultType SecretKeyCryptography::createKey(const std::st
 	assert(crypto_hash_sha512_BYTES >= crypto_pwhash_SALTBYTES);
 		
 	auto mm = MemoryManager::getInstance();
-	auto app_secret = ServerConfig::g_CryptoAppSecret;
+	auto app_secret = CryptoConfig::g_CryptoAppSecret;
 
 	assert(app_secret);
 	Profiler timeUsed;
@@ -79,8 +79,8 @@ SecretKeyCryptography::ResultType SecretKeyCryptography::createKey(const std::st
 #endif
 	// generate hash from key for compare
 	assert(sizeof(KeyHashed) >= crypto_shorthash_BYTES);
-	assert(ServerConfig::g_ServerCryptoKey);
-	crypto_shorthash((unsigned char*)&mEncryptionKeyHash, *mEncryptionKey, crypto_box_SEEDBYTES, *ServerConfig::g_ServerCryptoKey);
+	assert(CryptoConfig::g_ServerCryptoKey);
+	crypto_shorthash((unsigned char*)&mEncryptionKeyHash, *mEncryptionKey, crypto_box_SEEDBYTES, *CryptoConfig::g_ServerCryptoKey);
 
 	return AUTH_CREATE_ENCRYPTION_KEY_SUCCEED;
 }

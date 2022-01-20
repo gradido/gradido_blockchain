@@ -8,18 +8,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 IF(WIN32)
 	set(CMAKE_CXX_FLAGS         "/MP /EHsc")
+	include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+	conan_basic_setup()
 ENDIF()
 
 set(INSTALL_BINDIR "bin")
 set(INSTALL_PLUGINDIR "bin")
+#set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 include_directories(
 	"dependencies" 
 	"dependencies/tinf/src/" 
 	"dependencies/protobuf/src"
 	"dependencies/rapidjson/include"
-	"build"
-	"build/proto"
 	"src/cpp"
 )
 
@@ -40,22 +43,20 @@ add_subdirectory(dependencies/protobuf/cmake)
 
 ############################## parse protobuf files ###################################
 
-FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/proto GRADIDO_PROTO_MODEL_PATH)
+FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/proto/gradido_protocol GRADIDO_PROTO_MODEL_PATH)
 FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build/proto PROTOBINDING_PATH)
 file(MAKE_DIRECTORY ${PROTOBINDING_PATH})
 file(MAKE_DIRECTORY ${PROTOBINDING_PATH}/gradido)
-
 FILE(GLOB DATAMODEL_GRADIDO_PROTOS "${GRADIDO_PROTO_MODEL_PATH}/gradido/*.proto")
-
+include_directories(${PROTOBINDING_PATH})
 IF(WIN32)
-	set(PROTOC_BIN_PATH "build/dependencies/protobuf/cmake/bin")
+	set(PROTOC_BIN_PATH "${CMAKE_BINARY_DIR}/bin")
 	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${PROTOC_BIN_PATH}/Debug" )
 	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${PROTOC_BIN_PATH}/Release" )
 ELSE()
-	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "build/dependencies/protobuf/cmake/bin" )
+	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" )
 ENDIF()
-FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/protobuf/src GOOGLE_PROTOBUF_INCLUDES)
-MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in build/dependencies/protobuf/bin/${CMAKE_BUILD_TYPE}")
+MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${PROTOC_BIN_PATH}/${CMAKE_BUILD_TYPE}")
 FOREACH(proto ${DATAMODEL_GRADIDO_PROTOS})
    FILE(TO_NATIVE_PATH ${proto} proto_native)
    get_filename_component(proto_parsed ${proto} NAME_WLE)
@@ -85,15 +86,17 @@ ENDFOREACH(proto)
 FILE(GLOB TINF "dependencies/tinf/src/*.c" "dependencies/tinf/src/*.h")
 FILE(GLOB SINGLETON_MANAGER "src/cpp/SingletonManager/*.h" "src/cpp/SingletonManager/*.cpp")
 FILE(GLOB LIB_SRC "src/cpp/lib/*.h" "src/cpp/lib/*.cpp")
+FILE(GLOB HTTP "src/cpp/http/*.h" "src/cpp/http/*.cpp")
 FILE(GLOB MODEL "src/cpp/model/*.h" "src/cpp/model/*.cpp")
 FILE(GLOB MODEL_GRADIDO "src/cpp/model/gradido/*.h" "src/cpp/model/gradido/*.cpp")
+FILE(GLOB MODEL_PROTOBUF_WRAPPER "src/cpp/model/protobufWrapper/*.h" "src/cpp/model/protobufWrapper/*.cpp")
 FILE(GLOB CRYPTO "src/cpp/Crypto/*.h" "src/cpp/Crypto/*.cpp")
 FILE(GLOB MAIN "src/cpp/*.cpp" "src/cpp/*.c"  "src/cpp/*.h")
 FILE(GLOB PROTO_GRADIDO "build/proto/gradido/*.cc" "build/proto/gradido/*.h")
 
 SET(LOCAL_SRCS 
-	${TINF} ${MAIN} 
-	${CRYPTO} ${MODEL} ${MODEL_GRADIDO}
+	${TINF} ${MAIN} ${HTTP}
+	${CRYPTO} ${MODEL} ${MODEL_GRADIDO} ${MODEL_PROTOBUF_WRAPPER}
 	${SINGLETON_MANAGER} ${LIB_SRC} 
 	${PROTO_GRADIDO} 
 )
@@ -105,14 +108,19 @@ if(MSVC)
 	source_group("proto\\gradido" FILES ${PROTO_GRADIDO})
 	source_group("tinf" FILES ${TINF})
 	source_group("Crypto" FILES ${CRYPTO})
+	source_group("http" FILES ${HTTP})
 	source_group("model\\gradido" FILES ${MODEL_GRADIDO})
+	source_group("model\\protobufWrapper" FILES ${MODEL_PROTOBUF_WRAPPER})
 	source_group("model" FILES ${MODEL})
 	source_group("SingletonManager" FILES ${SINGLETON_MANAGER})
 	source_group("lib" FILES ${LIB_SRC})
 endif()
 
-
-add_library(GradidoBlockchain OBJECT  ${LOCAL_SRCS})
+if(WIN32)
+	add_library(GradidoBlockchain STATIC ${LOCAL_SRCS})
+else()
+	add_library(GradidoBlockchain DYNAMIC ${LOCAL_SRCS})
+endif()
 
 ############################## config and add poco ###################################
 #SET(SOME_EXPAT_OPTION OFF CACHE BOOL "Use some expat option")
@@ -126,8 +134,7 @@ IF(UNIX)
 	set(POCO_LIBS PocoFoundation PocoUtil PocoNet PocoNetSSL PocoData)
 ENDIF()
 
-
-############################## build login server ###################################
+############################## build blockchain lib ###################################
 
 if(WIN32)
 	target_link_libraries(GradidoBlockchain libprotobuf ${CONAN_LIBS})

@@ -2,8 +2,6 @@
 #include "KeyPairEd25519.h"
 #include <assert.h>
 
-#include "../SingletonManager/ErrorManager.h"
-
 #include "../lib/DataTypeConverter.h"
 
 
@@ -37,11 +35,11 @@ KeyPairEd25519::~KeyPairEd25519()
 	}
 }
 
-KeyPairEd25519* KeyPairEd25519::create(const Poco::AutoPtr<Passphrase> passphrase)
+KeyPairEd25519* KeyPairEd25519::create(const std::shared_ptr<Passphrase> passphrase, NotificationList* errorList)
 {
 	//auto er = ErrorManager::getInstance();
 	auto mm = MemoryManager::getInstance();
-	assert(!passphrase.isNull());
+	assert(passphrase);
 	// libsodium doc: https://libsodium.gitbook.io/doc/advanced/hmac-sha2
 	// https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 	
@@ -50,7 +48,7 @@ KeyPairEd25519* KeyPairEd25519::create(const Poco::AutoPtr<Passphrase> passphras
 	if (!word_indices || (!word_indices[0] && !word_indices[1] && !word_indices[2] && !word_indices[3])) {
 		return nullptr;
 	}
-	std::string clear_passphrase = passphrase->createClearPassphrase();
+	std::string clear_passphrase = passphrase->createClearPassphrase(errorList);
 	
 
 	unsigned char hash[crypto_hash_sha512_BYTES];
@@ -109,13 +107,11 @@ KeyPairEd25519* KeyPairEd25519::create(const Poco::AutoPtr<Passphrase> passphras
 	// using 
 }
 MemoryBin* KeyPairEd25519::sign(const unsigned char* message, size_t messageSize) const
-//MemoryBin* KeyPairEd25519::sign(const MemoryBin* message) const
 {
 	
 	if (!message || !messageSize) return nullptr;
 	if (!mSodiumSecret) return nullptr;
 	auto mm = MemoryManager::getInstance();
-	auto em = ErrorManager::getInstance();
 
 	const static char functionName[] = "KeyPairEd25519::sign";
 
@@ -123,29 +119,13 @@ MemoryBin* KeyPairEd25519::sign(const unsigned char* message, size_t messageSize
 	unsigned long long actualSignLength = 0;
 
 	if (crypto_sign_detached(*signBinBuffer, &actualSignLength, message, messageSize, *mSodiumSecret)) {
-		em->addError(new Error(functionName, "sign failed"));
-		auto messageHex = DataTypeConverter::binToHex(message, messageSize);
-		em->addError(new ParamError(functionName, "message as hex", messageHex));
-		mm->releaseMemory(signBinBuffer);
 		return nullptr;
 	}
 
 	if (crypto_sign_verify_detached(*signBinBuffer, message, messageSize, mSodiumPublic) != 0) {
 		// Incorrect signature! 
-		//printf("c[KeyBuffer::%s] sign verify failed\n", __FUNCTION__);
-		em->addError(new Error(functionName, "sign verify failed"));
-		auto messageHex = DataTypeConverter::binToHex(message, messageSize);
-		em->addError(new ParamError(functionName, "message as hex", messageHex));
-		mm->releaseMemory(signBinBuffer);
 		return nullptr;
 	}
-
-	// debug
-	/*const size_t hex_sig_size = crypto_sign_BYTES * 2 + 1;
-	char sig_hex[hex_sig_size];
-	sodium_bin2hex(sig_hex, hex_sig_size, *signBinBuffer, crypto_sign_BYTES);
-	printf("[User::sign] signature hex: %s\n", sig_hex);
-	*/
 
 	return signBinBuffer;
 
@@ -162,9 +142,9 @@ bool KeyPairEd25519::verify(const std::string& message, const std::string& signa
 
 
 
-MemoryBin* KeyPairEd25519::getCryptedPrivKey(const Poco::AutoPtr<SecretKeyCryptography> password) const
+MemoryBin* KeyPairEd25519::getCryptedPrivKey(const std::shared_ptr<SecretKeyCryptography> password) const
 {
-	if (password.isNull()) return nullptr;
+	if (!password) return nullptr;
 	if (!mSodiumSecret) return nullptr;
 
 	MemoryBin* encryptedKey = nullptr;

@@ -264,38 +264,6 @@ namespace DataTypeConverter
 		return hexString;
 	}
 
-	std::string convertTimespanToLocalizedString(Poco::Timespan duration, LanguageCatalog* lang)
-	{
-		assert(lang);
-		int value = 0;
-		std::string result;
-		std::string unit_name;
-		if (duration.days() > 0) {
-			value = duration.days();
-			unit_name = "Day";
-		}
-		else if (duration.hours() > 0) {
-			value = duration.hours();
-			unit_name = "Hour";
-		}
-		else if (duration.minutes() > 0) {
-			value = duration.minutes();
-			unit_name = "Minute";
-		}
-		else {
-			value = duration.seconds();
-			unit_name = "Second";
-		}
-		result = std::to_string(value);
-		result += " ";
-		std::string unit_plural = unit_name;
-		unit_plural += "s";
-		result += lang->ngettext(unit_name.data(), unit_plural.data(), value);
-
-		return result;
-	}
-
-
 	Poco::Timestamp convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp)
 	{
 		// microseconds

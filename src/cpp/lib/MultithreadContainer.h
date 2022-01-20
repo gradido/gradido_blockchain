@@ -35,7 +35,7 @@
 #define __DR_UNIVERSUM_LIB_LIB_MULTITHREAD_CONTAINER_H__
 
 //#include "UniversumLib.h"
-#include "Poco/Mutex.h"
+#include <mutex>
 
 namespace UniLib {
 	namespace lib {
@@ -51,7 +51,7 @@ namespace UniLib {
 
 			inline const std::string& getLastSucceededLock() { return mLastSucceededLock; }
 		protected:
-			mutable Poco::Mutex mWorkMutex;
+			mutable std::recursive_mutex mWorkMutex;
 		private:
 			std::string mLastSucceededLock;
 		};

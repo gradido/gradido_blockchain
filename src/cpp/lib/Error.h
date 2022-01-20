@@ -61,7 +61,7 @@ protected:
 class INotificationCollection
 {
 public: 
-	virtual void addError(Notification*, bool log = true) = 0;
+	virtual void addError(Error*, bool log = true) = 0;
 };
 
 #endif // DR_LUA_WEB_MODULE_ERROR_ERROR_H

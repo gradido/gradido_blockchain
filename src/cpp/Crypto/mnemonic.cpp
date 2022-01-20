@@ -7,10 +7,7 @@
 #include <mutex> 
 #include "../dependencies/tinf/src/tinf.h"
 
-#include "DRRandom.h"
-
-#include "../SingletonManager/ErrorManager.h"
-#include "../ServerConfig.h"
+#include "CryptoConfig.h"
 
 #include "Poco/RegularExpression.h"
 
@@ -54,9 +51,6 @@ int Mnemonic::init(void(*fill_words_func)(unsigned char*), unsigned int original
 	}
 	else {
 		free(buffer);
-
-		DRRandom::seed(compressed_size);
-
 
 		//printf("c[Mnemonic::%s] uncompressing success\n", __FUNCTION__);
 		// fill words in array and hashList
@@ -191,7 +185,7 @@ bool Mnemonic::isWordExist(const std::string& word) const
 }
 */
 
-const char* Mnemonic::getWord(short index) const {
+const char* Mnemonic::getWord(short index, NotificationList* errorList) const {
 	//std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);
 	
 	if (index < 2048 && index >= 0) {
@@ -202,14 +196,13 @@ const char* Mnemonic::getWord(short index) const {
 		}
 
 		if (!g_checkValidWord.match(word, 0, Poco::RegularExpression::RE_NOTEMPTY)) {
-			auto em = ErrorManager::getInstance();
 			const char* function_name = "Mnemonic::getWord";
-			em->addError(new ParamError(function_name, "invalid word", word));
-			em->addError(new Error(function_name, "try to reload mnemonic word list, but this error is maybe evidence for a serious memory problem!!!"));
+			errorList->addError(new ParamError(function_name, "invalid word", word));
+			errorList->addError(new Error(function_name, "try to reload mnemonic word list, but this error is maybe evidence for a serious memory problem!!!"));
 
-			if (!ServerConfig::loadMnemonicWordLists()) {
-				em->addError(new Error(function_name, "error reloading mnemonic word lists"));
-				em->sendErrorsAsEmail();
+			if (!CryptoConfig::loadMnemonicWordLists()) {
+				errorList->addError(new Error(function_name, "error reloading mnemonic word lists"));
+				errorList->sendErrorsAsEmail();
 				return nullptr;
 			}
 
@@ -218,11 +211,11 @@ const char* Mnemonic::getWord(short index) const {
 				word = mWords[index];
 			}
 			if (!g_checkValidWord.match(word, 0, Poco::RegularExpression::RE_NOTEMPTY)) {
-				em->addError(new Error(function_name, "word invalid after reload mnemonic word lists"));
-				em->sendErrorsAsEmail();
+				errorList->addError(new Error(function_name, "word invalid after reload mnemonic word lists"));
+				errorList->sendErrorsAsEmail();
 				return nullptr;
 			}
-			em->sendErrorsAsEmail();
+			errorList->sendErrorsAsEmail();
 
 		}
 

@@ -1,0 +1,79 @@
+#include "HttpRequest.h"
+
+#include "Poco/Net/HTTPSClientSession.h"
+#include "Poco/Net/HTTPRequest.h"
+#include "Poco/Net/HTTPResponse.h"
+#include "ServerConfig.h"
+
+
+using namespace rapidjson;
+
+HttpRequest::HttpRequest(const std::string& url)
+	: mRequestUri(url)
+{
+}
+HttpRequest::HttpRequest(const std::string& host, int port, const char* path/* = nullptr*/, const char* query/* = nullptr*/)
+{
+	mRequestUri.setHost(host);
+	mRequestUri.setPort(port);
+	if (path) {
+		mRequestUri.setPath(path);
+	}
+	if (query) {
+		mRequestUri.setQuery(query);
+	}
+}
+
+Poco::SharedPtr<Poco::Net::HTTPClientSession> HttpRequest::createClientSession(NotificationList* errorReciver/* = nullptr*/)
+{
+	if (!errorReciver) {
+		errorReciver = this;
+	}
+	if (mRequestUri.getHost().empty() || !mRequestUri.getPort()) {
+		errorReciver->addError(new Error("HttpRequest::createClientSession", "server host or server port not given"));
+		return nullptr;
+	}
+	try {
+
+		Poco::SharedPtr<Poco::Net::HTTPClientSession> clientSession;
+		if (mRequestUri.getPort() == 443) {
+			clientSession = new Poco::Net::HTTPSClientSession(mRequestUri.getHost(), mRequestUri.getPort(), ServerConfig::g_SSL_CLient_Context);
+		}
+		else {
+			clientSession = new Poco::Net::HTTPClientSession(mRequestUri.getHost(), mRequestUri.getPort());
+		}
+		return clientSession;
+	}
+	catch (Poco::Exception& ex) {
+		errorReciver->addError(new ParamError("HttpRequest::createClientSession", "exception by creating client session", ex.displayText()));
+		return nullptr;
+	}
+}
+
+std::string HttpRequest::GET(const char* pathAndQuery/* = nullptr*/, const char* version/* = nullptr*/)
+{
+	auto clientSession = createClientSession();
+	if (clientSession.isNull()) {
+		return "client session zero";
+	}
+	if (!pathAndQuery) {
+		pathAndQuery = mRequestUri.getPathAndQuery().data();
+	}
+	std::string _version = "HTTP/1.0";
+	if (version) _version = version;
+	Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, pathAndQuery, _version);
+
+	request.setChunkedTransferEncoding(true);
+	std::ostream& request_stream = clientSession->sendRequest(request);
+
+	Poco::Net::HTTPResponse response;
+	std::istream& response_stream = clientSession->receiveResponse(response);
+
+	std::string responseString;
+	for (std::string line; std::getline(response_stream, line); ) {
+		responseString += line + "\n";
+	}
+
+	return responseString;
+}
+

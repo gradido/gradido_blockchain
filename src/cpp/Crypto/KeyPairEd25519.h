@@ -30,7 +30,7 @@ public:
 
 	//! \param passphrase must contain word indices
 	//! \return create KeyPairEd25519, caller muss call delete at return after finish
-	static KeyPairEd25519* create(const Poco::AutoPtr<Passphrase> passphrase);
+	static KeyPairEd25519* create(const std::shared_ptr<Passphrase> passphrase, NotificationList* errorList);
 
 	//! \return caller take ownership of return value
 	MemoryBin* sign(const MemoryBin* message) const { return sign(message->data(), message->size()); }
@@ -69,7 +69,7 @@ public:
 	inline bool hasPrivateKey() const { return mSodiumSecret != nullptr; }
 
 	//! \brief only way to get a private key.. encrypted
-	MemoryBin* getCryptedPrivKey(const Poco::AutoPtr<SecretKeyCryptography> password) const;
+	MemoryBin* getCryptedPrivKey(const std::shared_ptr<SecretKeyCryptography> password) const;
 
 protected:	
 	

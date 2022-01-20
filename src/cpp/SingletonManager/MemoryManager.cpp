@@ -1,10 +1,11 @@
 #include "MemoryManager.h"
 #include "sodium.h"
 #include <memory.h>
+#include <exception>
 
 #define _DEFAULT_PAGE_SIZE 10
 
-MemoryBin::MemoryBin(Poco::UInt32 size)
+MemoryBin::MemoryBin(uint32_t size)
 	: mSize(size), mData(nullptr)
 {
 	mData = (unsigned char*)malloc(size);
@@ -22,7 +23,7 @@ std::string MemoryBin::convertToHex()
 {
 	auto mm = MemoryManager::getInstance();
 	
-	Poco::UInt32 hexSize = mSize * 2 + 1;
+	uint32_t hexSize = mSize * 2 + 1;
 	auto hexMem = mm->getFreeMemory(hexSize);
 	//char* hexString = (char*)malloc(hexSize);
 	memset(*hexMem, 0, hexSize);
@@ -68,7 +69,7 @@ bool MemoryBin::isSame(const MemoryBin* b) const
 
 // *************************************************************
 
-MemoryPageStack::MemoryPageStack(Poco::UInt16 size)
+MemoryPageStack::MemoryPageStack(uint16_t size)
 	: mSize(size)
 {
 	mMemoryBinStack.push(new MemoryBin(size));
@@ -89,7 +90,7 @@ MemoryPageStack::~MemoryPageStack()
 
 MemoryBin* MemoryPageStack::getFreeMemory()
 {
-	Poco::ScopedLock<Poco::Mutex> _lock(mWorkMutex);
+	std::scoped_lock<std::recursive_mutex> _lock(mWorkMutex);
 	
 	if (!mSize) {
 		return nullptr;
@@ -105,10 +106,10 @@ MemoryBin* MemoryPageStack::getFreeMemory()
 void MemoryPageStack::releaseMemory(MemoryBin* memory)
 {
 	if (!memory) return;
-	Poco::ScopedLock<Poco::Mutex> _lock(mWorkMutex);
+	std::scoped_lock<std::recursive_mutex> _lock(mWorkMutex);
 	
 	if (memory->size() != mSize) {
-		throw new Poco::Exception("MemoryPageStack::releaseMemory wron memory page stack");
+		throw std::runtime_error("MemoryPageStack::releaseMemory wron memory page stack");
 	}
 	mMemoryBinStack.push(memory);
 	
@@ -140,7 +141,7 @@ MemoryManager::~MemoryManager()
 	}
 }
 
-Poco::Int8 MemoryManager::getMemoryStackIndex(Poco::UInt16 size)
+int8_t MemoryManager::getMemoryStackIndex(uint16_t size)
 {
 	switch (size) {
 	case 32: return 0;
@@ -157,10 +158,10 @@ Poco::Int8 MemoryManager::getMemoryStackIndex(Poco::UInt16 size)
 
 
 
-MemoryBin* MemoryManager::getFreeMemory(Poco::UInt32 size)
+MemoryBin* MemoryManager::getFreeMemory(uint32_t size)
 {
-	if (size != (Poco::UInt32)((Poco::UInt16)size)) {
-		throw Poco::Exception("MemoryManager::getFreeMemory size is to large, only 16 Bit allowed");
+	if (size != (uint32_t)((uint16_t)size)) {
+		throw std::runtime_error("MemoryManager::getFreeMemory size is to large, only 16 Bit allowed");
 	}
 	auto index = getMemoryStackIndex(size);
 	if (index < 0) {
