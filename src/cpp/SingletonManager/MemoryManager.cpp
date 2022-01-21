@@ -109,10 +109,9 @@ void MemoryPageStack::releaseMemory(MemoryBin* memory)
 	std::scoped_lock<std::recursive_mutex> _lock(mWorkMutex);
 	
 	if (memory->size() != mSize) {
-		throw std::runtime_error("MemoryPageStack::releaseMemory wron memory page stack");
+		throw std::runtime_error("MemoryPageStack::releaseMemory wrong memory page stack");
 	}
 	mMemoryBinStack.push(memory);
-	
 }
 
 // ***********************************************************************************
@@ -141,7 +140,7 @@ MemoryManager::~MemoryManager()
 	}
 }
 
-int8_t MemoryManager::getMemoryStackIndex(uint16_t size)
+int8_t MemoryManager::getMemoryStackIndex(uint16_t size) noexcept
 {
 	switch (size) {
 	case 32: return 0;
@@ -173,7 +172,7 @@ MemoryBin* MemoryManager::getFreeMemory(uint32_t size)
 	return nullptr;
 }
 
-void MemoryManager::releaseMemory(MemoryBin* memory)
+void MemoryManager::releaseMemory(MemoryBin* memory) noexcept
 {
 	if (!memory) return;
 	auto index = getMemoryStackIndex(memory->size());
@@ -181,6 +180,11 @@ void MemoryManager::releaseMemory(MemoryBin* memory)
 		delete memory;
 	}
 	else {
-		mMemoryPageStacks[index]->releaseMemory(memory);
+		try {
+			mMemoryPageStacks[index]->releaseMemory(memory);
+		}
+		catch (...) {
+			delete memory;
+		}
 	}
 }

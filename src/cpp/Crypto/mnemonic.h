@@ -11,14 +11,14 @@
  * 
  */
 
+#include "GradidoBlockchainException.h"
+
 #include "lib/DRHashList.h"
-#include "lib/NotificationList.h"
 #include <string>
 #include <shared_mutex>
 #include <map>
 #include <list>
 #include <vector>
-
 
 #define PHRASE_WORD_COUNT 24
 
@@ -31,7 +31,7 @@ public:
 
 	int init(void(*fill_words_func)(unsigned char*), unsigned int original_size, unsigned int compressed_size);
 
-	const char* getWord(short index, NotificationList* errorList) const;
+	const char* getWord(short index) const;
 	short getWordIndex(const char* word) const;
 	inline bool isWordExist(const std::string& word) const {
 		std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);
@@ -64,5 +64,21 @@ protected:
 	mutable std::shared_mutex mWorkingMutex;
 
 };
+
+class MnemonicException : public GradidoBlockchainException
+{
+public:
+	explicit MnemonicException(const char* what, const char* word = nullptr);
+	std::string getFullString() const noexcept;
+
+	void setMnemonic(const Mnemonic* mnemonic);
+	inline int getMnemonicIndex() { return mMnemonicIndex; }
+
+protected:
+	std::string mWord;
+	int mMnemonicIndex;
+};
+
+
 
 #endif //DR_MNEMONIC_H

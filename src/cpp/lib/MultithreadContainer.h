@@ -34,7 +34,7 @@
 #ifndef __DR_UNIVERSUM_LIB_LIB_MULTITHREAD_CONTAINER_H__
 #define __DR_UNIVERSUM_LIB_LIB_MULTITHREAD_CONTAINER_H__
 
-//#include "UniversumLib.h"
+#include "GradidoBlockchainException.h"
 #include <mutex>
 
 namespace UniLib {
@@ -54,6 +54,17 @@ namespace UniLib {
 			mutable std::recursive_mutex mWorkMutex;
 		private:
 			std::string mLastSucceededLock;
+		};
+
+		class MultithreadContainerLockTimeoutException : public GradidoBlockchainException
+		{
+		public:
+			explicit MultithreadContainerLockTimeoutException(const char* lastSucceedLock, const char* stackDetails);
+			std::string getFullString() const;
+
+		protected:
+			std::string mLastSucceedLock;
+			std::string mStackDetails;
 		};
 	}
 }

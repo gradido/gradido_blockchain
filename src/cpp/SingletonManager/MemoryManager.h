@@ -49,6 +49,7 @@ public:
 	//!        -1 if bin is to small
 	//!        -2 if hex is invalid
 	int convertFromHex(const std::string& hex);
+	inline void copyFrom(MemoryBin* origin) { assert(mSize == origin->size()); memcpy(mData, *origin, mSize); }
 
 	bool isSame(const MemoryBin* b) const;
 
@@ -83,11 +84,11 @@ public:
 	static MemoryManager* getInstance();
 
 	MemoryBin* getFreeMemory(uint32_t size);
-	void releaseMemory(MemoryBin* memory);
+	void releaseMemory(MemoryBin* memory) noexcept;
 	
 protected:
 
-	int8_t getMemoryStackIndex(uint16_t size);
+	int8_t getMemoryStackIndex(uint16_t size) noexcept;
 
 	MemoryManager();
 	MemoryPageStack* mMemoryPageStacks[6];

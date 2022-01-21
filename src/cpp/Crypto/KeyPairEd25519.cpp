@@ -35,7 +35,7 @@ KeyPairEd25519::~KeyPairEd25519()
 	}
 }
 
-KeyPairEd25519* KeyPairEd25519::create(const std::shared_ptr<Passphrase> passphrase, NotificationList* errorList)
+KeyPairEd25519* KeyPairEd25519::create(const std::shared_ptr<Passphrase> passphrase)
 {
 	//auto er = ErrorManager::getInstance();
 	auto mm = MemoryManager::getInstance();
@@ -48,7 +48,7 @@ KeyPairEd25519* KeyPairEd25519::create(const std::shared_ptr<Passphrase> passphr
 	if (!word_indices || (!word_indices[0] && !word_indices[1] && !word_indices[2] && !word_indices[3])) {
 		return nullptr;
 	}
-	std::string clear_passphrase = passphrase->createClearPassphrase(errorList);
+	std::string clear_passphrase = passphrase->createClearPassphrase();
 	
 
 	unsigned char hash[crypto_hash_sha512_BYTES];

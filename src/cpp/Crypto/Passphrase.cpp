@@ -9,6 +9,8 @@
 
 #include "../lib/DataTypeConverter.h"
 
+#include <sstream>
+
 #define STR_BUFFER_SIZE 25
 
 static std::vector<Poco::Tuple<int, std::string>> g_specialChars = {
@@ -99,7 +101,7 @@ std::string Passphrase::filter(const std::string& passphrase)
 	return filteredPassphrase;
 }
 
-std::shared_ptr<Passphrase> Passphrase::transform(const Mnemonic* targetWordSource, NotificationList* errorList)
+std::shared_ptr<Passphrase> Passphrase::transform(const Mnemonic* targetWordSource)
 {
 
 	if (!targetWordSource || !mWordSource) {
@@ -107,7 +109,7 @@ std::shared_ptr<Passphrase> Passphrase::transform(const Mnemonic* targetWordSour
 	}
 
 	if (createWordIndices()) {
-		return create(mWordIndices, targetWordSource, errorList);
+		return create(mWordIndices, targetWordSource);
 	}
 	return nullptr;
 }
@@ -117,23 +119,23 @@ std::shared_ptr<Passphrase> Passphrase::create(const std::string& passphrase, co
 	return std::shared_ptr<Passphrase>(new Passphrase(passphrase, wordSource));
 }
 
-std::shared_ptr<Passphrase> Passphrase::create(const MemoryBin* wordIndices, const Mnemonic* wordSource, NotificationList* errorList)
+std::shared_ptr<Passphrase> Passphrase::create(const MemoryBin* wordIndices, const Mnemonic* wordSource)
 {
 	if (PHRASE_WORD_COUNT * sizeof(uint16_t) >= wordIndices->size()) {
 		return nullptr;
 	}
 
 	const uint16_t* word_indices_p = (const uint16_t*)wordIndices->data();
-	return create(word_indices_p, wordSource, errorList);
+	return create(word_indices_p, wordSource);
 }
 
-std::string Passphrase::createClearPassphrase(NotificationList* errorList) const
+std::string Passphrase::createClearPassphrase() const
 {
 	auto word_indices = getWordIndices();
 	std::string clear_passphrase;
 	auto word_source = &CryptoConfig::g_Mnemonic_WordLists[CryptoConfig::MNEMONIC_BIP0039_SORTED_ORDER];
 	for (int i = 0; i < PHRASE_WORD_COUNT; i++) {
-		auto word = word_source->getWord(word_indices[i], errorList);
+		auto word = word_source->getWord(word_indices[i]);
 		if (word) {
 			clear_passphrase += word;
 			clear_passphrase += " ";
@@ -142,11 +144,11 @@ std::string Passphrase::createClearPassphrase(NotificationList* errorList) const
 	return clear_passphrase;
 }
 
-std::shared_ptr<Passphrase> Passphrase::create(const uint16_t wordIndices[PHRASE_WORD_COUNT], const Mnemonic* wordSource, NotificationList* errorList)
+std::shared_ptr<Passphrase> Passphrase::create(const uint16_t wordIndices[PHRASE_WORD_COUNT], const Mnemonic* wordSource)
 {
 	std::string clearPassphrase;
 	for (int i = 0; i < PHRASE_WORD_COUNT; i++) {
-		auto word = wordSource->getWord(wordIndices[i], errorList);
+		auto word = wordSource->getWord(wordIndices[i]);
 		if (word) {
 			clearPassphrase += word;
 			clearPassphrase += " ";
@@ -158,7 +160,7 @@ std::shared_ptr<Passphrase> Passphrase::create(const uint16_t wordIndices[PHRASE
 	return std::shared_ptr<Passphrase>(new Passphrase(clearPassphrase, wordSource));
 }
 
-std::shared_ptr<Passphrase> Passphrase::generate(const Mnemonic* wordSource, NotificationList* errorList)
+std::shared_ptr<Passphrase> Passphrase::generate(const Mnemonic* wordSource)
 {
 	auto mm = MemoryManager::getInstance();
 	auto word_indices = mm->getFreeMemory(PHRASE_WORD_COUNT * sizeof(Poco::UInt16));
@@ -167,24 +169,20 @@ std::shared_ptr<Passphrase> Passphrase::generate(const Mnemonic* wordSource, Not
 	for (int i = 0; i < PHRASE_WORD_COUNT; i++) {
 		word_indices_p[i] = randombytes_random() % 2048;
 	}
-	auto result_passphrase = create(word_indices_p, wordSource, errorList);
+	auto result_passphrase = create(word_indices_p, wordSource);
 	mm->releaseMemory(word_indices);
 
 	return result_passphrase;
 }
 
-bool Passphrase::createWordIndices(NotificationList* errors/* = nullptr*/)
+bool Passphrase::createWordIndices()
 {
 	auto mm = MemoryManager::getInstance();
 	const char* functionName = "Passphrase::createWordIndices";
 
 	if (!mWordSource) {
-		if (errors) {
-			errors->addError(new Error(functionName, "word source is empty"));
-		}
-		return false;
+		throw PassphraseEmptyWordSourceException();
 	}
-
 
 	//DHASH key = DRMakeStringHash(passphrase);
 	size_t pass_phrase_size = mPassphraseString.size();
@@ -205,11 +203,9 @@ bool Passphrase::createWordIndices(NotificationList* errors/* = nullptr*/)
 				//word_indices_old[word_cursor] = word_source->getWordIndex(acBuffer);
 			}
 			else {
-				if (errors) {
-					errors->addError(new ParamError(functionName, "word didn't exist", acBuffer));
-					errors->sendErrorsAsEmail();
-				}
-				return false;
+				MnemonicException exception("word don't exist", acBuffer);
+				exception.setMnemonic(mWordSource);
+				throw exception;
 			}
 			word_cursor++;
 			memset(acBuffer, 0, STR_BUFFER_SIZE);
@@ -258,7 +254,7 @@ bool Passphrase::checkIfValid()
 	}
 	return true;
 }
-const Mnemonic* Passphrase::detectMnemonic(const std::string& passphrase, NotificationList* errorList, const KeyPairEd25519* keyPair /* = nullptr*/)
+const Mnemonic* Passphrase::detectMnemonic(const std::string& passphrase, const KeyPairEd25519* keyPair /* = nullptr*/)
 {
 	std::istringstream iss(passphrase);
 	std::vector<std::string> results(std::istream_iterator<std::string>{iss},
@@ -289,7 +285,7 @@ const Mnemonic* Passphrase::detectMnemonic(const std::string& passphrase, Notifi
 			if (keyPair) {
 				std::shared_ptr<Passphrase> test_passphrase(new Passphrase(passphrase, &m));
 				test_passphrase->createWordIndices();
-				auto key_pair = KeyPairEd25519::create(test_passphrase, errorList);
+				auto key_pair = KeyPairEd25519::create(test_passphrase);
 				if (key_pair) {
 
 					if (*key_pair != *keyPair) {

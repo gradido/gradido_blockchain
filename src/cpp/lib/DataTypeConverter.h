@@ -44,7 +44,7 @@ namespace DataTypeConverter {
 
 	std::string binToHex(const unsigned char* data, size_t size);
 	std::string binToHex(const Poco::Nullable<Poco::Data::BLOB>& nullableBin);
-	inline std::string binToHex(const MemoryBin* data) { return binToHex(data->data(), data->size());}
+	inline std::string binToHex(const MemoryBin* data) noexcept { return binToHex(data->data(), data->size());}
 	inline std::string binToHex(const std::vector<unsigned char>& data) { return binToHex(data.data(), data.size()); }
 	inline std::string binToHex(const std::string& str) { return binToHex((const unsigned char*)str.data(), str.size()); }
 

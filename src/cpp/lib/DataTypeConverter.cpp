@@ -218,8 +218,8 @@ namespace DataTypeConverter
 		mm->releaseMemory(base64);
 		return base64String;
 	}
-
-	std::string binToHex(const unsigned char* data, size_t size)
+	 
+	std::string binToHex(const unsigned char* data, size_t size) 
 	{
 		auto mm = MemoryManager::getInstance();
 		size_t hexSize = size * 2 + 1;

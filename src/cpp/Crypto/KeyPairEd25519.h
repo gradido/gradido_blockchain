@@ -30,7 +30,7 @@ public:
 
 	//! \param passphrase must contain word indices
 	//! \return create KeyPairEd25519, caller muss call delete at return after finish
-	static KeyPairEd25519* create(const std::shared_ptr<Passphrase> passphrase, NotificationList* errorList);
+	static KeyPairEd25519* create(const std::shared_ptr<Passphrase> passphrase);
 
 	//! \return caller take ownership of return value
 	MemoryBin* sign(const MemoryBin* message) const { return sign(message->data(), message->size()); }

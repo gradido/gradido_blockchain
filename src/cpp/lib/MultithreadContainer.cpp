@@ -1,5 +1,4 @@
 #include "MultithreadContainer.h"
-#include "NotificationList.h"
 
 #include <thread>
 #include <chrono>
@@ -23,20 +22,50 @@ namespace UniLib {
 				}
 			}
 			else {
-				NotificationList errors;
-				errors.addError(new Error(functionName, "lock timeout"));
-				if (mLastSucceededLock != "") {
-					errors.addError(new ParamError(functionName, "last succeed lock by ", mLastSucceededLock.data()));
-				}
-				if (stackDetails) {
-					errors.addError(new Error(functionName, stackDetails));
-				}
+				throw MultithreadContainerLockTimeoutException(mLastSucceededLock.data(), stackDetails);
 			}			
 		}
 
 		bool MultithreadContainer::tryLock()
 		{
 			return mWorkMutex.try_lock();
+		}
+
+		// ************ Exception **************
+		MultithreadContainerLockTimeoutException::MultithreadContainerLockTimeoutException(const char* lastSucceedLock, const char* stackDetails)
+			: GradidoBlockchainException("MultithreadContainer lock timeout")
+		{
+			if (lastSucceedLock) {
+				mLastSucceedLock = lastSucceedLock;
+			}
+			if (stackDetails) {
+				mStackDetails = stackDetails;
+			}
+		}
+
+		std::string MultithreadContainerLockTimeoutException::getFullString() const
+		{
+			if (mLastSucceedLock.size() || mStackDetails.size()) {
+				size_t resultSize = 0;
+				if (mLastSucceedLock.size()) {
+					resultSize += mLastSucceedLock.size() + 14;
+				}
+				if (mStackDetails.size()) {
+					resultSize += mStackDetails.size() + 10;
+				}
+				std::string result;
+				result.reserve(resultSize);
+				if (mLastSucceedLock.size()) {
+					result += "last succeed: " + mLastSucceedLock;
+				}
+				if (mStackDetails.size()) {
+					result += ", stack: " + mStackDetails;
+				}
+				return result;
+			}
+			else {
+				return what();
+			}			
 		}
 	}
 }

@@ -133,10 +133,6 @@ int Mnemonic::init(void(*fill_words_func)(unsigned char*), unsigned int original
 						printf("c[Mnemonc::%s] error inserting hash collided word entry\n", __FUNCTION__);
 						return -7;
 					}
-
-					//printf("c[Mnemonic::%s] error inserting word, hash collision?\n", __FUNCTION__);
-					//printf("current word: %s\n", mWords[cursor]);
-					//printf("existing word: %s\n", mWords[result.first->second]);
 				}
 
 				word_begin = i + 1;
@@ -185,7 +181,7 @@ bool Mnemonic::isWordExist(const std::string& word) const
 }
 */
 
-const char* Mnemonic::getWord(short index, NotificationList* errorList) const {
+const char* Mnemonic::getWord(short index) const {
 	//std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);
 	
 	if (index < 2048 && index >= 0) {
@@ -196,27 +192,18 @@ const char* Mnemonic::getWord(short index, NotificationList* errorList) const {
 		}
 
 		if (!g_checkValidWord.match(word, 0, Poco::RegularExpression::RE_NOTEMPTY)) {
-			const char* function_name = "Mnemonic::getWord";
-			errorList->addError(new ParamError(function_name, "invalid word", word));
-			errorList->addError(new Error(function_name, "try to reload mnemonic word list, but this error is maybe evidence for a serious memory problem!!!"));
-
+			
 			if (!CryptoConfig::loadMnemonicWordLists()) {
-				errorList->addError(new Error(function_name, "error reloading mnemonic word lists"));
-				errorList->sendErrorsAsEmail();
-				return nullptr;
-			}
+				throw MnemonicException("error loading mnemonic word lists");
+			}	
 
 			{
 				std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);
 				word = mWords[index];
 			}
 			if (!g_checkValidWord.match(word, 0, Poco::RegularExpression::RE_NOTEMPTY)) {
-				errorList->addError(new Error(function_name, "word invalid after reload mnemonic word lists"));
-				errorList->sendErrorsAsEmail();
-				return nullptr;
+				throw MnemonicException("empty word, reload mnemonic word list doesn't helped", word.data());
 			}
-			errorList->sendErrorsAsEmail();
-
 		}
 
 		{
@@ -356,4 +343,38 @@ std::string Mnemonic::getSortedWordListJsonString()
 	}
 	json_string += ']';
 	return json_string;
+}
+
+
+MnemonicException::MnemonicException(const char* what, const char* word/* = nullptr*/) :
+	GradidoBlockchainException(what), mMnemonicIndex(-1)
+{
+	if (word) {
+		mWord = word;
+	}
+}
+
+void MnemonicException::setMnemonic(const Mnemonic* mnemonic)
+{
+	for (int i = 0; i < CryptoConfig::Mnemonic_Types::MNEMONIC_MAX; i++) {
+		if (&CryptoConfig::g_Mnemonic_WordLists[i] == mnemonic) {
+			mMnemonicIndex = i;
+			break;
+		}
+	}
+}
+
+std::string MnemonicException::getFullString() const noexcept
+{
+	if (mWord.size()) {
+		std::string result;
+		auto whatString = what();
+		result.reserve(strlen(whatString) + mWord.size() + 14); 
+		result = whatString;
+		result += " with word: " + mWord;
+		return result;
+	}
+	else {
+		return what();
+	}
 }
