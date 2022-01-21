@@ -68,5 +68,6 @@ namespace UniLib {
 		};
 	}
 }
+#define LOCK_RECURSIVE std::lock_guard<std::recursive_mutex> _lock_from_macro(mWorkMutex)
 
 #endif //__DR_UNIVERSUM_LIB_LIB_MULTITHREAD_CONTAINER_H__

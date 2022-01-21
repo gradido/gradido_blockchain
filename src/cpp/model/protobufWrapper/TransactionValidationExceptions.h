@@ -5,6 +5,7 @@
 #include <string>
 
 #include "SingletonManager/MemoryManager.h"
+#include "TransactionBody.h"
 
 #include "Poco/DateTime.h"
 
@@ -14,13 +15,20 @@ namespace model {
 		class TransactionValidationException : public GradidoBlockchainException
 		{
 		public:
-			TransactionValidationException(const char* what) noexcept;
+			explicit TransactionValidationException(const char* what) noexcept;
 			virtual ~TransactionValidationException() {}
 
-			inline void setMemo(const std::string& memo) { mTransactionMemo = memo; }
+			std::string getFullString() const noexcept;
+
+			inline TransactionValidationException& setMemo(const std::string& memo) { mTransactionMemo = memo; return *this; }
 			inline const std::string& getMemo() const { return mTransactionMemo; }
+
+			inline TransactionValidationException& setTransactionType(TransactionType type) { mType = type; return *this; }
+			inline TransactionType getTransactionType() { return mType; }
+			inline const char* getTransactionTypeString() { return TransactionBody::transactionTypeToString(mType); }
 		protected:
 			std::string mTransactionMemo;
+			TransactionType mType;
 		};
 
 		class TransactionValidationInvalidInputException : public TransactionValidationException

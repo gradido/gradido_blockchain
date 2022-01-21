@@ -8,9 +8,14 @@ namespace model {
 	namespace gradido {
 
 		TransactionValidationException::TransactionValidationException(const char* what) noexcept
-			: GradidoBlockchainException (what)
+			: GradidoBlockchainException (what), mType(TRANSACTION_NONE)
 		{
 
+		}
+
+		std::string TransactionValidationException::getFullString() const noexcept
+		{
+			return what();
 		}
 
 		//************* Invalid Input *******************
