@@ -26,7 +26,7 @@ public:
 
 protected:
 	std::string POST(const char* path, const rapidjson::Document& payload, const char* version = nullptr);
-	rapidjson::Document parseResponse(std::string responseString, NotificationList* errorReciver = nullptr);
+	rapidjson::Document parseResponse(std::string responseString);
 
 	rapidjson::Document mJsonDocument;
 };

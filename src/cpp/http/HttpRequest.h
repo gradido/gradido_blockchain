@@ -8,9 +8,7 @@
 
 #include "rapidjson/document.h"
 
-#include "lib/NotificationList.h"
-
-class HttpRequest : public NotificationList
+class HttpRequest
 {
 public:
 	HttpRequest(const std::string& url);
@@ -18,7 +16,7 @@ public:
 	virtual ~HttpRequest() {}
 
 protected:
-	Poco::SharedPtr<Poco::Net::HTTPClientSession> createClientSession(NotificationList* errorReciver = nullptr);
+	Poco::SharedPtr<Poco::Net::HTTPClientSession> createClientSession();
 	std::string GET(const char* pathAndQuery = nullptr, const char* version = nullptr);
 	// 
 	Poco::URI mRequestUri;

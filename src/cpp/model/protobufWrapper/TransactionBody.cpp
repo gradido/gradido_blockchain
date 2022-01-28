@@ -3,12 +3,13 @@
 #include "../../SingletonManager/MemoryManager.h"
 #include "lib/DataTypeConverter.h"
 #include "ProtobufExceptions.h"
+#include "TransactionValidationExceptions.h"
 
 namespace model {
 	namespace gradido {
 
 		TransactionBody::TransactionBody()
-			: mTransactionSpecific(nullptr), mType(TRANSACTION_NONE)
+			: mTransactionSpecific(nullptr), mTransactionType(TRANSACTION_NONE)
 		{
 			auto created = mProtoTransactionBody.mutable_created();
 			DataTypeConverter::convertToProtoTimestampSeconds(Poco::Timestamp(), created);
@@ -41,19 +42,35 @@ namespace model {
 
 			// check Type
 			if (obj->mProtoTransactionBody.has_creation()) {
-				obj->mType = TRANSACTION_CREATION;
-				obj->mTransactionSpecific = new model::gradido::TransactionCreation(obj->mProtoTransactionBody.memo(), obj->mProtoTransactionBody.creation());
+				obj->mTransactionType = TRANSACTION_CREATION;
+				obj->mTransactionSpecific = new model::gradido::TransactionCreation(obj->mProtoTransactionBody.creation());
 			}
 			else if (obj->mProtoTransactionBody.has_transfer()) {
-				obj->mType = TRANSACTION_TRANSFER;
-				obj->mTransactionSpecific = new model::gradido::TransactionTransfer(obj->mProtoTransactionBody.memo(), obj->mProtoTransactionBody.transfer());
+				obj->mTransactionType = TRANSACTION_TRANSFER;
+				obj->mTransactionSpecific = new model::gradido::TransactionTransfer(obj->mProtoTransactionBody.transfer());
+			}
+			else if (obj->mProtoTransactionBody.has_global_group_add()) {
+				obj->mTransactionType = TRANSACTION_GLOBAL_GROUP_ADD;
+				obj->mTransactionSpecific = new model::gradido::GlobalGroupAdd(obj->mProtoTransactionBody.global_group_add());
+			}
+			else if (obj->mProtoTransactionBody.has_group_friends_update()) {
+				obj->mTransactionType = TRANSACTION_GROUP_FRIENDS_UPDATE;
+				obj->mTransactionSpecific = new model::gradido::GroupFriendsUpdate(obj->mProtoTransactionBody.group_friends_update());
+			}
+			else if (obj->mProtoTransactionBody.has_register_address()) {
+				obj->mTransactionType = TRANSACTION_REGISTER_ADDRESS;
+				obj->mTransactionSpecific = new model::gradido::RegisterAddress(obj->mProtoTransactionBody.register_address());
+			}
+			else if (obj->mProtoTransactionBody.has_deferred_transfer()) {
+				obj->mTransactionType = TRANSACTION_DEFERRED_TRANSFER;
+				obj->mTransactionSpecific = new model::gradido::DeferredTransfer(obj->mProtoTransactionBody.deferred_transfer());
 			}
 			obj->mTransactionSpecific->prepare();
 			return obj;
 		}
 
 
-		std::string TransactionBody::getMemo()
+		std::string TransactionBody::getMemo() const
 		{
 			LOCK_RECURSIVE;
 			if (mProtoTransactionBody.IsInitialized()) {
@@ -70,9 +87,8 @@ namespace model {
 			mProtoTransactionBody.set_memo(memo);
 		}
 
-		std::string TransactionBody::getBodyBytes()
+		std::string TransactionBody::getBodyBytes() const
 		{
-			LOCK_RECURSIVE;
 			if (mProtoTransactionBody.IsInitialized()) {
 				auto size = mProtoTransactionBody.ByteSizeLong();
 				//auto bodyBytesSize = MemoryManager::getInstance()->getFreeMemory(mProtoCreation.ByteSizeLong());
@@ -103,7 +119,25 @@ namespace model {
 			return "<unknown>";
 		}
 
+		const DeferredTransfer* TransactionBody::getDeferredTransfer() const
+		{
+			return dynamic_cast<DeferredTransfer*>(mTransactionSpecific);
+		}
 
+		GlobalGroupAdd* TransactionBody::getGlobalGroupAdd()
+		{
+			return dynamic_cast<GlobalGroupAdd*>(mTransactionSpecific);
+		}
+
+		GroupFriendsUpdate* TransactionBody::getGroupFriendsUpdate()
+		{
+			return dynamic_cast<GroupFriendsUpdate*>(mTransactionSpecific);
+		}
+
+		RegisterAddress* TransactionBody::getRegisterAddress()
+		{
+			return dynamic_cast<RegisterAddress*>(mTransactionSpecific);
+		}
 
 		TransactionCreation* TransactionBody::getCreationTransaction()
 		{
@@ -118,6 +152,42 @@ namespace model {
 		TransactionBase* TransactionBody::getTransactionBase()
 		{
 			return mTransactionSpecific;
+		}
+		
+		bool TransactionBody::validate(TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/, IGradidoBlockchain* blockchain/* = nullptr*/) const
+		{
+			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
+				if (getVersionNumber() != 2) {
+					throw TransactionValidationInvalidInputException("wrong version", "version_number", "uint64")
+						.setTransactionBody(this);
+				}
+				if (getMemo().size() < 5 || getMemo().size() > 350) {
+					throw TransactionValidationInvalidInputException("not in expected range [5;350]", "memo", "string")
+						.setTransactionBody(this);
+				}
+				if (!TransactionBase::isValidGroupAlias(getOtherGroup())) {
+					throw TransactionValidationInvalidInputException("invalid character, only ascii", "other_group", "string")
+						.setTransactionBody(this);
+				}
+				if (isDeferredTransfer()) {
+					auto deferredTransfer = getDeferredTransfer();
+					auto timeout = deferredTransfer->getTimeoutAsPocoTimestamp();
+					if (getCreatedSeconds() >= timeout.epochTime()) {
+						throw TransactionValidationInvalidInputException("already reached", "timeout", "Timestamp")
+							.setTransactionBody(this);
+					}
+				}
+			}
+			try {
+				mTransactionSpecific->validate(level, blockchain);
+			}
+			catch (TransactionValidationException& ex) {
+				ex.setTransactionBody(this);
+				throw;
+			}
+
+			return true;
+
 		}
 
 	}

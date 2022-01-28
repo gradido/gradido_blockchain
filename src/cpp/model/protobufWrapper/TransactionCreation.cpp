@@ -11,8 +11,8 @@
 namespace model {
 	namespace gradido {
 
-		TransactionCreation::TransactionCreation(const std::string& memo, const proto::gradido::GradidoCreation& protoCreation)
-			: TransactionBase(memo), mProtoCreation(protoCreation)
+		TransactionCreation::TransactionCreation(const proto::gradido::GradidoCreation& protoCreation)
+			: mProtoCreation(protoCreation)
 		{
 		}
 
@@ -54,64 +54,55 @@ namespace model {
 			return Poco::DateTimeFormatter::format(pocoStamp, "%d. %b %y");
 		}
 
-		bool TransactionCreation::validate()
+		bool TransactionCreation::validate(TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/, IGradidoBlockchain* blockchain/* = nullptr*/) const
 		{
-			
 			auto target_date = Poco::DateTime(DataTypeConverter::convertFromProtoTimestampSeconds(mProtoCreation.target_date()));
+			// TODO: check with created date not with current clock date
 			auto now = Poco::DateTime();
 			auto mm = MemoryManager::getInstance();
 			//  2021-09-01 02:00:00 | 2021-12-04 01:22:14
 			if (target_date.year() == now.year()) 
 			{
 				if (target_date.month() + 2 < now.month()) {
-					addError(new Error(function_name, "year is the same, target date month is more than 2 month in past"));
-					return TRANSACTION_VALID_INVALID_TARGET_DATE;
+					throw TransactionValidationInvalidInputException("year is the same, target date month is more than 2 month in past", "target_date", "date time");
 				}
 				if (target_date.month() > now.month()) {
-					addError(new Error(function_name, "year is the same, target date month is in future"));
-					return TRANSACTION_VALID_INVALID_TARGET_DATE;
+					throw TransactionValidationInvalidInputException("year is the same, target date month is in future", "target_date", "date time");
 				}
 			}
 			else if(target_date.year() > now.year()) 
 			{
-				addError(new Error(function_name, "target date year is in future"));
-				return TRANSACTION_VALID_INVALID_TARGET_DATE;
+				throw TransactionValidationInvalidInputException("target date year is in future", "target_date", "date time");
 			}
 			else if(target_date.year() +1 < now.year())
 			{
-				addError(new Error(function_name, "target date year is in past"));
-				return TRANSACTION_VALID_INVALID_TARGET_DATE;
+				throw TransactionValidationInvalidInputException("target date year is in past", "target_date", "date time");
 			}
 			else 
 			{
 				// target_date.year +1 == now.year
 				if (target_date.month() + 2 < now.month() + 12) {
-					addError(new Error(function_name, "target date is more than 2 month in past"));
-					return TRANSACTION_VALID_INVALID_TARGET_DATE;
+					throw TransactionValidationInvalidInputException("target date is more than 2 month in past", "target_date", "date time");
 				}
 			}
-			auto amount = mProtoCreation.recipiant().amount();
+			auto amount = mProtoCreation.recipient().amount();
 			if (amount > 1000 * 10000) {
-				addError(new Error(function_name, "creation amount to high, max 1000 per month"));
-				return TRANSACTION_VALID_CREATION_OUT_OF_BORDER;
+				throw TransactionValidationInvalidInputException("creation amount to high, max 1000 per month", "amount", "integer");
 			}
 			if (amount < 10000) {
-				addError(new Error(function_name, "creation amount to low, min 1 GDD"));
-				return TRANSACTION_VALID_CREATION_OUT_OF_BORDER;
+				throw TransactionValidationInvalidInputException("creation amount to low, min 1 GDD", "amount", "integer");
 			}
 			
-			if (mProtoCreation.recipiant().pubkey().size() != crypto_sign_PUBLICKEYBYTES) {
-				addError(new Error(function_name, "recipiant pubkey has invalid size"));
-				return TRANSACTION_VALID_INVALID_PUBKEY;
+			if (mProtoCreation.recipient().pubkey().size() != crypto_sign_PUBLICKEYBYTES) {
+				throw TransactionValidationInvalidInputException("invalid size", "recipient pubkey", "public key");
 			}			
 			auto empty = mm->getFreeMemory(crypto_sign_PUBLICKEYBYTES);
 			memset(*empty, 0, crypto_sign_PUBLICKEYBYTES);
-			if (0 == memcmp(mProtoCreation.recipiant().pubkey().data(), *empty, crypto_sign_PUBLICKEYBYTES)) {
-				addError(new Error(function_name, "recipiant pubkey is zero"));
-				return TRANSACTION_VALID_INVALID_PUBKEY;
+			if (0 == memcmp(mProtoCreation.recipient().pubkey().data(), *empty, crypto_sign_PUBLICKEYBYTES)) {
+				throw TransactionValidationInvalidInputException("empty", "recipient pubkey", "public key");
 			}
 			
-			return TRANSACTION_VALID_OK;
+			return true;
 		}
 
 

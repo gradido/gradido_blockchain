@@ -1,4 +1,6 @@
 #include "IotaRequest.h"
+#include "IotaRequestExceptions.h"
+
 #include "lib/Profiler.h"
 
 #include <algorithm>
@@ -27,26 +29,19 @@ IotaRequest::~IotaRequest()
 
 }
 
-std::vector<std::string> IotaRequest::getTips(NotificationList* errorReciver)
+std::vector<std::string> IotaRequest::getTips()
 {
-	static const char* functionName = "IotaRequest::getTips";
 	std::string fullPath = mRequestUri.getPath() + "tips";
 	auto responseString = GET(fullPath.data(), "HTTP/1.1");
-	if (responseString == "client session zero") {
-		errorReciver->getErrors(this);
-		return {};
-	}
-	
-	auto json = parseResponse(responseString, errorReciver);
+		
+	auto json = parseResponse(responseString);
 
 	if (!json.HasMember("data")) {
-		errorReciver->addError(new Error(functionName, "data member missing"));
-		return {};
+		throw IotaRequestException("data member missing", fullPath);
 	}
 	Value& data = json["data"];
 	if (!data.HasMember("tipMessageIds") || !data["tipMessageIds"].IsArray()) {
-		errorReciver->addError(new Error(functionName, "tipMessageIds member missing"));
-		return {};
+		throw IotaRequestException("tipMessageIds member missing", fullPath);
 	}
 
 	std::vector<std::string> parentIds;
@@ -61,14 +56,11 @@ std::vector<std::string> IotaRequest::getTips(NotificationList* errorReciver)
 
 
 
-std::string IotaRequest::sendMessage(const std::string& indexHex, const std::string& messageHex, NotificationList* errorReciver)
-{
-	static const char* functionName = "IotaRequest::sendMessage";
-	
-	auto tips = getTips(errorReciver);
+std::string IotaRequest::sendMessage(const std::string& indexHex, const std::string& messageHex)
+{	
+	auto tips = getTips();
 	if (!tips.size()) {
-		errorReciver->addError(new Error(functionName, "no get tips"));
-		return "";
+		throw IotaRequestException("no tips", mRequestUri.getPath() + "tips");
 	}
 
 	Document requestJson(kObjectType);
@@ -76,11 +68,10 @@ std::string IotaRequest::sendMessage(const std::string& indexHex, const std::str
 	requestJson.AddMember("networkId", "", alloc);
 
 	Value parentMessageIds(kArrayType);
-//	int i = 0;
+
 	for (auto it = tips.begin(); it != tips.end(); it++) {
-		//if (i > 1) break;
 		parentMessageIds.PushBack(Value(it->data(), alloc), alloc);
-		//i++;
+		//if (parentMessageIds.Size() > 2) break;
 	}
 	requestJson.AddMember("parentMessageIds", parentMessageIds, alloc);
 	Value payload(kObjectType);
@@ -104,16 +95,15 @@ std::string IotaRequest::sendMessage(const std::string& indexHex, const std::str
 	auto fullPath = mRequestUri.getPath() + "messages";
 	auto responseString = POST(fullPath.data(), requestJson, "HTTP/1.1");
 	
-	auto json = parseResponse(responseString, errorReciver);
+	auto json = parseResponse(responseString);
 	if (!json.HasMember("data")) {
-		errorReciver->addError(new Error(functionName, "data member in response missing"));
-		return "";
+		throw IotaPostRequestException("data member in response missing", fullPath)
+			.setRequestJson(requestJson);
 	}
 	Value& data = json["data"];
 	if (!data.HasMember("messageId") || !data["messageId"].IsString()) {
-		errorReciver->addError(new Error(functionName, "messageId in response is missing or not a string"));
-		return "";
+		throw IotaPostRequestException("messageId in response is missing or not a string", fullPath)
+			.setRequestJson(requestJson);
 	}
-	return data["messageId"].GetString();	
-
+	return data["messageId"].GetString();
 }

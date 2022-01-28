@@ -24,11 +24,11 @@ namespace model {
 		class TransactionTransfer : public TransactionBase
 		{
 		public:
-			TransactionTransfer(const std::string& memo, const proto::gradido::GradidoTransfer& protoTransfer);
+			TransactionTransfer(const proto::gradido::GradidoTransfer& protoTransfer);
 			~TransactionTransfer();
 
 			int prepare();
-			bool validate();
+			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
 
 			
 		protected:

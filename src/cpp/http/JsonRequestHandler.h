@@ -4,7 +4,6 @@
 #include "Poco/Net/HTTPRequestHandler.h"
 #include "Poco/Net/IPAddress.h"
 #include "Poco/URI.h"
-#include "lib/NotificationList.h"
 
 #include "rapidjson/document.h"
 
@@ -20,7 +19,7 @@ public:
 
 	virtual rapidjson::Document handle(const rapidjson::Document& params) { return rapidjson::Document(); };
 
-	void parseJsonWithErrorPrintFile(std::istream& request_stream, rapidjson::Document& rapidParams, NotificationList* errorHandler = nullptr, const char* functionName = nullptr);
+	void parseJsonWithErrorPrintFile(std::istream& request_stream, rapidjson::Document& rapidParams, const char* functionName = nullptr);
 	static bool parseQueryParametersToRapidjson(const Poco::URI& uri, rapidjson::Document& rapidParams);
 
 
@@ -36,7 +35,6 @@ public:
 
 
 	static rapidjson::Document stateError(const char* msg, std::string details = "");
-	static rapidjson::Document stateError(const char* msg, NotificationList* errorReciver);
 	static rapidjson::Document customStateError(const char* state, const char* msg, std::string details = "");
 	static rapidjson::Document stateSuccess();
 	static rapidjson::Document stateWarning(const char* msg, std::string details = "");
@@ -44,10 +42,7 @@ public:
 protected:
 	Poco::Net::IPAddress mClientIp;
 	std::string			mServerHost;
-	
-	bool getTargetGroup(const rapidjson::Document& params);
 
-	
 };
 
 #endif // __JSON_INTERFACE_JSON_REQUEST_HANDLER_

@@ -1,6 +1,6 @@
 #include "ProtobufExceptions.h"
-
-ProtobufSerializationException::ProtobufSerializationException(const google::protobuf::Message& message)
+ 
+ProtobufSerializationException::ProtobufSerializationException(const google::protobuf::Message& message) noexcept
 	: GradidoBlockchainException("Protobuf Serialization Exception"), mMessage(message)
 {
 

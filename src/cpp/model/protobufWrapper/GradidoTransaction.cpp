@@ -1,0 +1,63 @@
+#include "GradidoTransaction.h"
+
+#include "TransactionValidationExceptions.h"
+
+#include "Crypto/KeyPairEd25519.h"
+
+namespace model {
+	namespace gradido {
+		GradidoTransaction::GradidoTransaction()
+		{
+
+		}
+
+		GradidoTransaction::~GradidoTransaction()
+		{
+
+		}
+
+		bool GradidoTransaction::validate(
+			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
+			IGradidoBlockchain* blockchain/* = nullptr*/,
+			IGradidoBlockchain* otherBlockchain/* = nullptr*/
+		) const
+		{
+			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) 
+			{
+				auto sig_map = mProtoGradidoTransaction->sig_map();
+
+				// check if all signatures belong to current body bytes
+				auto body_bytes = mProtoGradidoTransaction->body_bytes();
+				for (auto it = sig_map.sigpair().begin(); it != sig_map.sigpair().end(); it++)
+				{
+					KeyPairEd25519 key_pair((const unsigned char*)it->pubkey().data());
+					if (!key_pair.verify(body_bytes, it->signature())) {
+						throw TransactionValidationInvalidSignatureException(
+							"pubkey don't belong to bodybytes", it->pubkey(), it->signature(), body_bytes
+						);
+					}
+				}
+
+				auto transaction_base = mTransactionBody->getTransactionBase();
+				auto result = transaction_base->checkRequiredSignatures(&sig_map);
+
+				transaction_base->validate();
+			}
+			/* 
+			// must be implemented in gradido node server
+			if ((level & TRANSACTION_VALIDATION_PAIRED) == TRANSACTION_VALIDATION_PAIRED)
+			{
+				auto transactionBody = getTransactionBody();
+				if (transactionBody->getCrossGroupType() == proto::gradido::TransactionBody_CrossGroupType_LOCAL) {
+					return true;
+				}
+				if (transactionBody->getCrossGroupType() == proto::gradido::TransactionBody_CrossGroupType_INBOUND) {
+
+				}
+			}
+			*/
+			return true;
+
+		}
+	}
+}

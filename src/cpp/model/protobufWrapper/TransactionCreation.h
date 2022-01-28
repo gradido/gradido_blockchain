@@ -20,13 +20,13 @@ namespace model {
 		class TransactionCreation : public TransactionBase
 		{
 		public:
-			TransactionCreation(const std::string& memo, const proto::gradido::GradidoCreation& protoCreation);
+			TransactionCreation(const proto::gradido::GradidoCreation& protoCreation);
 			~TransactionCreation();
 
 			int prepare();
 			//! TODO: check created sum in the last 3 month if 1.000 per month isn't exceed
 			//! maybe ask node server and hope the answer came fast
-			bool validate();
+			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
 
 			inline google::protobuf::int64 getAmount() { return mProtoCreation.recipient().amount(); }
 

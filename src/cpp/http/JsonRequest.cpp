@@ -7,6 +7,8 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
+#include "GradidoBlockchainException.h"
+
 using namespace rapidjson;
 
 JsonRequest::JsonRequest(const std::string& serverHost, int serverPort)
@@ -33,10 +35,7 @@ Document JsonRequest::postRequest(const char* path, Value& payload)
 	}
 	auto responseString = POST(path, mJsonDocument);
 	auto responseJson = parseResponse(responseString);
-	if (!responseJson.IsObject()) {
-		sendErrorsAsEmail(responseString);
-		return nullptr;
-	}
+	
 	return responseJson;
 }
 
@@ -44,10 +43,7 @@ Document JsonRequest::postRequest(const char* path, Value& payload)
 std::string JsonRequest::POST(const char* path, const rapidjson::Document& payload, const char* version/* = nullptr*/)
 {
 	auto clientSession = createClientSession();
-	if (clientSession.isNull()) {
-		return "client session zero";
-	}
-
+	
 	std::string _version = "HTTP/1.0";
 	if (version) _version = version;
 	Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, path, _version);
@@ -75,19 +71,15 @@ std::string JsonRequest::POST(const char* path, const rapidjson::Document& paylo
 	return responseString;
 }
 
-Document JsonRequest::parseResponse(std::string responseString, NotificationList* errorReciver/* = nullptr*/)
+Document JsonRequest::parseResponse(std::string responseString)
 {
-	static const char* functionName = "JsonRequest::parseResponse";
-	if (!errorReciver) {
-		errorReciver = this;
-	}
 	Document result;
 	// extract parameter from request
 	result.Parse(responseString.data());
 
 	if (result.HasParseError()) {
-		errorReciver->addError(new ParamError(functionName, "error parsing request answer", result.GetParseError()));
-		errorReciver->addError(new ParamError(functionName, "position of last parsing error", result.GetErrorOffset()));
+		throw RapidjsonParseErrorException("error parsing request answer", result.GetParseError(), result.GetErrorOffset())
+			.setRawText(responseString);
 	}
 	return result;
 }

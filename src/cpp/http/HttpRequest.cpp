@@ -24,38 +24,24 @@ HttpRequest::HttpRequest(const std::string& host, int port, const char* path/* =
 	}
 }
 
-Poco::SharedPtr<Poco::Net::HTTPClientSession> HttpRequest::createClientSession(NotificationList* errorReciver/* = nullptr*/)
+Poco::SharedPtr<Poco::Net::HTTPClientSession> HttpRequest::createClientSession()
 {
-	if (!errorReciver) {
-		errorReciver = this;
+	assert(!mRequestUri.getHost().empty() && mRequestUri.getPort());
+	
+	Poco::SharedPtr<Poco::Net::HTTPClientSession> clientSession;
+	if (mRequestUri.getPort() == 443) {
+		clientSession = new Poco::Net::HTTPSClientSession(mRequestUri.getHost(), mRequestUri.getPort(), ServerConfig::g_SSL_CLient_Context);
 	}
-	if (mRequestUri.getHost().empty() || !mRequestUri.getPort()) {
-		errorReciver->addError(new Error("HttpRequest::createClientSession", "server host or server port not given"));
-		return nullptr;
+	else {
+		clientSession = new Poco::Net::HTTPClientSession(mRequestUri.getHost(), mRequestUri.getPort());
 	}
-	try {
-
-		Poco::SharedPtr<Poco::Net::HTTPClientSession> clientSession;
-		if (mRequestUri.getPort() == 443) {
-			clientSession = new Poco::Net::HTTPSClientSession(mRequestUri.getHost(), mRequestUri.getPort(), ServerConfig::g_SSL_CLient_Context);
-		}
-		else {
-			clientSession = new Poco::Net::HTTPClientSession(mRequestUri.getHost(), mRequestUri.getPort());
-		}
-		return clientSession;
-	}
-	catch (Poco::Exception& ex) {
-		errorReciver->addError(new ParamError("HttpRequest::createClientSession", "exception by creating client session", ex.displayText()));
-		return nullptr;
-	}
+	return clientSession;	
 }
 
 std::string HttpRequest::GET(const char* pathAndQuery/* = nullptr*/, const char* version/* = nullptr*/)
 {
 	auto clientSession = createClientSession();
-	if (clientSession.isNull()) {
-		return "client session zero";
-	}
+	
 	if (!pathAndQuery) {
 		pathAndQuery = mRequestUri.getPathAndQuery().data();
 	}

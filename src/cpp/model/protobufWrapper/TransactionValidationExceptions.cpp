@@ -4,6 +4,8 @@
 
 #include "lib/DataTypeConverter.h"
 
+#include "GradidoTransaction.h"
+
 namespace model {
 	namespace gradido {
 
@@ -16,6 +18,13 @@ namespace model {
 		std::string TransactionValidationException::getFullString() const noexcept
 		{
 			return what();
+		}
+
+		TransactionValidationException& TransactionValidationException::setTransactionBody(const TransactionBody* transactionBody)
+		{
+			mTransactionMemo = transactionBody->getMemo();
+			mType = transactionBody->getTransactionType();
+			return *this;
 		}
 
 		//************* Invalid Input *******************
@@ -43,17 +52,29 @@ namespace model {
 		//************* Invalid Signature *******************
 
 		TransactionValidationInvalidSignatureException::TransactionValidationInvalidSignatureException(
-			const char* what, MemoryBin* pubkey, MemoryBin* signature, MemoryBin* bodyBytes/* = nullptr*/
+			const char* what, MemoryBin* pubkey, MemoryBin* signature, const std::string& bodyBytes/* = ""*/
 		) noexcept
 			: TransactionValidationException(what), mPubkey(pubkey), mSignature(signature), mBodyBytes(bodyBytes)
 		{
 
 		}
 
+		TransactionValidationInvalidSignatureException::TransactionValidationInvalidSignatureException(
+			const char* what, const std::string& pubkey, const std::string& signature, const std::string& bodyBytes/* = ""*/
+		) noexcept
+			: TransactionValidationException(what), mPubkey(nullptr), mSignature(nullptr), mBodyBytes(bodyBytes)
+		{
+			auto mm = MemoryManager::getInstance();
+			mPubkey = mm->getFreeMemory(pubkey.size());
+			mSignature = mm->getFreeMemory(signature.size());
+			
+			mPubkey->copyFromProtoBytes(pubkey);
+			mSignature->copyFromProtoBytes(signature);
+		}
+
 		TransactionValidationInvalidSignatureException::~TransactionValidationInvalidSignatureException()
 		{
 			auto mm = MemoryManager::getInstance();
-			mm->releaseMemory(mBodyBytes);
 			mm->releaseMemory(mPubkey);
 			mm->releaseMemory(mSignature);
 		}
@@ -77,31 +98,30 @@ namespace model {
 				}
 				catch (...) {}
 			}
-			if (mBodyBytes) {
+			if (mBodyBytes.size()) {
 				try {
 					bodyBytesBase64 = DataTypeConverter::binToBase64(mBodyBytes);
 				} catch(...) {}
 			}
 			size_t staticTextSize = 29;
-			if (mBodyBytes) {
+			if (mBodyBytes.size()) {
 				staticTextSize += 14;
 			}
 			result.reserve(pubkeyHex.size() + signatureHex.size() + bodyBytesBase64.size() + strlen(whatString) + staticTextSize);
 			result = whatString;
 			result += " with pubkey: " + pubkeyHex;
 			result += ", signature: " + signatureHex;
-			if (mBodyBytes) {
+			if (mBodyBytes.size()) {
 				result += ", body bytes: " + bodyBytesBase64;
 			}
 			return result;
 		}
 
 		// ************* Forbidden Sign *******************
-		TransactionValidationForbiddenSignException::TransactionValidationForbiddenSignException(MemoryBin* forbiddenPubkey, const std::string& memo)
+		TransactionValidationForbiddenSignException::TransactionValidationForbiddenSignException(MemoryBin* forbiddenPubkey)
 			: TransactionValidationException("Forbidden Sign")
 		{
 			mForbiddenPubkey = forbiddenPubkey;
-			setMemo(memo);
 		}
 		TransactionValidationForbiddenSignException::~TransactionValidationForbiddenSignException()
 		{
@@ -119,13 +139,18 @@ namespace model {
 				}
 				catch (...) {}
 			}
-			size_t resultSize = mTransactionMemo.size() + 25;
+			size_t resultSize = 0;
+			if (mTransactionMemo.size()) {
+				resultSize += mTransactionMemo.size() + 25;
+			}
 			if (forbiddenPubkeyHex.size()) {
 				resultSize += forbiddenPubkeyHex.size() + 47;
 			}
 			std::string result;
 			result.reserve(resultSize);
-			result = "transaction with memo: " + mTransactionMemo;
+			if (mTransactionMemo.size()) {
+				result += "transaction with memo: " + mTransactionMemo;
+			}
 			if (forbiddenPubkeyHex.size()) {
 				result += ", this forbidden pubkey was used for signing: " + forbiddenPubkeyHex;
 			}

@@ -12,11 +12,11 @@ public:
 	~IotaRequest();	
 
 	//! \return messageId as hex string
-	std::string sendMessage(const std::string& indexHex, const std::string& messageHex, NotificationList* errorReciver);
+	std::string sendMessage(const std::string& indexHex, const std::string& messageHex);
 
 protected:
 	// Iota get parent message ids for own message
-	std::vector<std::string> getTips(NotificationList* errorReciver);
+	std::vector<std::string> getTips();
 
 };
 

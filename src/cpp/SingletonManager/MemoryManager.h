@@ -49,6 +49,7 @@ public:
 	//!        -1 if bin is to small
 	//!        -2 if hex is invalid
 	int convertFromHex(const std::string& hex);
+	void copyFromProtoBytes(const std::string& bytes);
 	inline void copyFrom(MemoryBin* origin) { assert(mSize == origin->size()); memcpy(mData, *origin, mSize); }
 
 	bool isSame(const MemoryBin* b) const;
@@ -94,6 +95,17 @@ protected:
 	MemoryPageStack* mMemoryPageStacks[6];
 };
 
+
+class MemoryManagerException : public GradidoBlockchainException
+{
+public:
+	MemoryManagerException(const char* what, uint32_t size = 0);
+	std::string getFullString() const;
+
+protected:
+	uint32_t mSize;
+
+};
 
 
 #endif //GRADIDO_LOGIN_SERVER_SINGLETON_MANAGER_MEMORY_MANAGER_H

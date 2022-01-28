@@ -1,4 +1,5 @@
 #include "TransactionBase.h"
+#include "GradidoTransaction.h"
 
 #include "Poco/RegularExpression.h"
 #include "TransactionValidationExceptions.h"
@@ -19,8 +20,8 @@ namespace model {
 		}
 
 
-		TransactionBase::TransactionBase(const std::string& memo)
-			: mMemo(memo), mMinSignatureCount(0), mIsPrepared(false)
+		TransactionBase::TransactionBase()
+			: mMinSignatureCount(0), mIsPrepared(false)
 		{
 
 		}
@@ -90,7 +91,7 @@ namespace model {
 							auto forbiddenKey = MemoryManager::getInstance()->getFreeMemory(pubkey_size);
 							forbiddenKey->copyFrom(*it2);
 
-							throw TransactionValidationForbiddenSignException(forbiddenKey, getMemo());
+							throw TransactionValidationForbiddenSignException(forbiddenKey);
 						}
 					}
 				}

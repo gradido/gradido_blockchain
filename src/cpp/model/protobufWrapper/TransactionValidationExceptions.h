@@ -25,6 +25,8 @@ namespace model {
 
 			inline TransactionValidationException& setTransactionType(TransactionType type) { mType = type; return *this; }
 			inline TransactionType getTransactionType() { return mType; }
+
+			TransactionValidationException& setTransactionBody(const TransactionBody* transactionBody);
 			inline const char* getTransactionTypeString() { return TransactionBody::transactionTypeToString(mType); }
 		protected:
 			std::string mTransactionMemo;
@@ -47,24 +49,26 @@ namespace model {
 		class TransactionValidationInvalidSignatureException : public TransactionValidationException
 		{
 		public:
-			explicit TransactionValidationInvalidSignatureException(const char* what, MemoryBin* pubkey, MemoryBin* signature, MemoryBin* bodyBytes = nullptr) noexcept;
+			explicit TransactionValidationInvalidSignatureException(const char* what, MemoryBin* pubkey, MemoryBin* signature, const std::string& bodyBytes = "") noexcept;
+			explicit TransactionValidationInvalidSignatureException(
+				const char* what, const std::string& pubkey, const std::string& signature, const std::string& bodyBytes = "") noexcept;
 			~TransactionValidationInvalidSignatureException();
 
 			std::string getFullString() const noexcept;
 			inline const MemoryBin* getPubkey() const { return mPubkey; }
 			inline const MemoryBin* getSignature() const { return mSignature; }
-			inline const MemoryBin* getBodyBytes() const { return mBodyBytes; }
+			inline const std::string& getBodyBytes() const { return mBodyBytes; }
 
 		protected:
 			MemoryBin* mPubkey;
 			MemoryBin* mSignature;
-			MemoryBin* mBodyBytes;
+			std::string mBodyBytes;
 		};
 
 		class TransactionValidationForbiddenSignException : public TransactionValidationException 
 		{
 		public: 
-			explicit TransactionValidationForbiddenSignException(MemoryBin* forbiddenPubkey, const std::string& memo);
+			explicit TransactionValidationForbiddenSignException(MemoryBin* forbiddenPubkey);
 			~TransactionValidationForbiddenSignException();
 
 			std::string getFullString() const noexcept;

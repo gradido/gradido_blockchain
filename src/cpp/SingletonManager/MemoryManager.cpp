@@ -2,6 +2,7 @@
 #include "sodium.h"
 #include <memory.h>
 #include <exception>
+#include <string> 
 
 #define _DEFAULT_PAGE_SIZE 10
 
@@ -56,6 +57,12 @@ int MemoryBin::convertFromHex(const std::string& hex)
 		return -2;
 	}
 	return 0;
+}
+
+void MemoryBin::copyFromProtoBytes(const std::string& bytes)
+{
+	assert(bytes.size() == size());
+	memcpy(mData, bytes.data(), bytes.size());
 }
 
 bool MemoryBin::isSame(const MemoryBin* b) const
@@ -160,7 +167,7 @@ int8_t MemoryManager::getMemoryStackIndex(uint16_t size) noexcept
 MemoryBin* MemoryManager::getFreeMemory(uint32_t size)
 {
 	if (size != (uint32_t)((uint16_t)size)) {
-		throw std::runtime_error("MemoryManager::getFreeMemory size is to large, only 16 Bit allowed");
+		throw MemoryManagerException("MemoryManager::getFreeMemory size is to large, only 16 Bit allowed", size);
 	}
 	auto index = getMemoryStackIndex(size);
 	if (index < 0) {
@@ -186,5 +193,28 @@ void MemoryManager::releaseMemory(MemoryBin* memory) noexcept
 		catch (...) {
 			delete memory;
 		}
+	}
+}
+
+
+// ******************* Exception **************************
+MemoryManagerException::MemoryManagerException(const char* what, uint32_t size /* = 0*/)
+	: GradidoBlockchainException(what), mSize(size)
+{
+
+}
+
+std::string MemoryManagerException::getFullString() const
+{
+	if (mSize) {
+		std::string result;
+		size_t resultSize = strlen(what());
+		resultSize += 3 + 14;
+		result = what();
+		result += " with size: " + std::to_string(mSize);
+		return result;
+	}
+	else {
+		return what();
 	}
 }

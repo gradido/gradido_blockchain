@@ -1,25 +1,21 @@
-#ifndef GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_TRANSACTION_BASE_H
-#define GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_TRANSACTION_BASE_H
+#ifndef GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_TRANSACTION_BODY_H
+#define GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_TRANSACTION_BODY_H
 
 #include "gradido/TransactionBody.pb.h"
-#include "TransactionTransfer.h"
+
+#include "DeferredTransfer.h"
+#include "GlobalGroupAdd.h"
+#include "GroupFriendsUpdate.h"
+#include "RegisterAddress.h"
 #include "TransactionCreation.h"
+#include "TransactionTransfer.h"
+
+#include "Poco/DateTime.h"
 
 #include "../../lib/MultithreadContainer.h"
 
 namespace model {
 	namespace gradido {
-
-		enum TransactionType {
-			TRANSACTION_NONE,
-			TRANSACTION_CREATION,
-			TRANSACTION_TRANSFER,
-			TRANSACTION_GROUP_FRIENDS_UPDATE,
-			TRANSACTION_REGISTER_ADDRESS,
-			TRANSACTION_GLOBAL_GROUP_ADD,
-			TRANSACTION_DEFERRED_TRANSFER
-		};
-
 
 		class TransactionBody : public UniLib::lib::MultithreadContainer
 		{
@@ -28,35 +24,45 @@ namespace model {
 			virtual ~TransactionBody();
 
 			void setCreated(Poco::DateTime created);
-			inline uint32_t getCreatedSeconds() { return mProtoTransactionBody.created().seconds(); }
+			inline uint32_t getCreatedSeconds() const { return mProtoTransactionBody.created().seconds(); }
 
 			static std::shared_ptr<TransactionBody> load(const std::string& protoMessageBin);
 
-			inline TransactionType getType() { LOCK_RECURSIVE; return mType; }
+			inline TransactionType getTransactionType() const { return mTransactionType; }
+			inline proto::gradido::TransactionBody_CrossGroupType getCrossGroupType() const { return mProtoTransactionBody.type(); }
+			inline uint64_t getVersionNumber() const { return mProtoTransactionBody.version_number(); }
+			inline const std::string& getOtherGroup() const { return mProtoTransactionBody.other_group(); }
 			static const char* transactionTypeToString(TransactionType type);
-			std::string getMemo();
+			std::string getMemo() const;
 			void setMemo(const std::string& memo);
 
-			inline bool isCreation() { LOCK_RECURSIVE; return mType == TRANSACTION_CREATION; }
-			inline bool isTransfer() { LOCK_RECURSIVE; return mType == TRANSACTION_TRANSFER; }
-			inline bool isGroupFriendsUpdate() { LOCK_RECURSIVE; return mType == TRANSACTION_GROUP_FRIENDS_UPDATE; }
-			inline bool isRegisterAddress() { LOCK_RECURSIVE; return mType == TRANSACTION_REGISTER_ADDRESS; }
-			inline bool isGlobalGroupAdd() { LOCK_RECURSIVE; return mType == TRANSACTION_GLOBAL_GROUP_ADD; }
-			inline bool isDeferredTransaction() { LOCK_RECURSIVE; return mType == TRANSACTION_DEFERRED_TRANSFER; }
+			inline bool isDeferredTransfer() const { return mTransactionType == TRANSACTION_DEFERRED_TRANSFER; }
+			inline bool isGlobalGroupAdd() const { return mTransactionType == TRANSACTION_GLOBAL_GROUP_ADD; }
+			inline bool isGroupFriendsUpdate() const { return mTransactionType == TRANSACTION_GROUP_FRIENDS_UPDATE; }
+			inline bool isRegisterAddress() const { return mTransactionType == TRANSACTION_REGISTER_ADDRESS; }
+			inline bool isCreation() const { return mTransactionType == TRANSACTION_CREATION; }
+			inline bool isTransfer() const  { return mTransactionType == TRANSACTION_TRANSFER; }		
 
-			std::string getBodyBytes();
-			const proto::gradido::TransactionBody* getBody() { return &mProtoTransactionBody; }
+			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
 
+			std::string getBodyBytes() const;
+			const proto::gradido::TransactionBody* getBody() const { return &mProtoTransactionBody; }
+
+			const DeferredTransfer* getDeferredTransfer() const;
+			GlobalGroupAdd* getGlobalGroupAdd();
+			GroupFriendsUpdate* getGroupFriendsUpdate();
+			RegisterAddress* getRegisterAddress();
 			TransactionCreation* getCreationTransaction();
-			TransactionTransfer* getTransferTransaction();
+			TransactionTransfer* getTransferTransaction();			
+
 			TransactionBase* getTransactionBase();
 		protected:
 			
 			proto::gradido::TransactionBody mProtoTransactionBody;
 			TransactionBase* mTransactionSpecific;
-			TransactionType mType;
+			TransactionType mTransactionType;
 		};
 	}
 }
 
-#endif //GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_TRANSACTION_BASE_H
+#endif //GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_TRANSACTION_BODY_H

@@ -8,8 +8,8 @@ namespace model {
 
 		// ********************************************************************************************************************************
 
-		TransactionTransfer::TransactionTransfer(const std::string& memo, const proto::gradido::GradidoTransfer& protoTransfer)
-			: TransactionBase(memo), mProtoTransfer(protoTransfer)
+		TransactionTransfer::TransactionTransfer(const proto::gradido::GradidoTransfer& protoTransfer)
+			: mProtoTransfer(protoTransfer)
 		{
 
 		}
@@ -38,7 +38,7 @@ namespace model {
 			return 0;
 		}
 
-		bool TransactionTransfer::validate()
+		bool TransactionTransfer::validate(TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/, IGradidoBlockchain* blockchain/* = nullptr*/) const
 		{
 			LOCK_RECURSIVE;
 			
@@ -48,42 +48,32 @@ namespace model {
 			auto amount = sender.amount();
 			auto mm = MemoryManager::getInstance();
 			if (0 == amount) {
-				throw TransactionValidationInvalidInputException("amount is empty", "amount", "number")
-					.setTransactionType(TRANSACTION_TRANSFER).setMemo(mMemo);
+				throw TransactionValidationInvalidInputException("amount is empty", "amount", "integer");
 			}
 			else if (amount < 0) {
-				throw TransactionValidationInvalidInputException("negative amount", "amount", "number")
-					.setTransactionType(TRANSACTION_TRANSFER).setMemo(mMemo);
+				throw TransactionValidationInvalidInputException("negative amount", "amount", "integer");
 			}
 			if (recipient_pubkey.size() != crypto_sign_PUBLICKEYBYTES) {
-				throw TransactionValidationInvalidInputException("invalid size", "recipient", "public key")
-					.setTransactionType(TRANSACTION_TRANSFER).setMemo(mMemo);
+				throw TransactionValidationInvalidInputException("invalid size", "recipient", "public key");
 			}
 			if (sender.pubkey().size() != crypto_sign_PUBLICKEYBYTES) {
-				throw TransactionValidationInvalidInputException("invalid size", "sender", "public key")
-					.setTransactionType(TRANSACTION_TRANSFER).setMemo(mMemo);
+				throw TransactionValidationInvalidInputException("invalid size", "sender", "public key");
 			}
 			if (0 == memcmp(sender.pubkey().data(), recipient_pubkey.data(), crypto_sign_PUBLICKEYBYTES)) {
-				throw TransactionValidationException("sender and recipient are the same")
-					  .setTransactionType(TRANSACTION_TRANSFER).setMemo(mMemo);
+				throw TransactionValidationException("sender and recipient are the same");
 			}
 			auto empty = mm->getFreeMemory(crypto_sign_PUBLICKEYBYTES);
 			memset(*empty, 0, crypto_sign_PUBLICKEYBYTES);
 			if (0 == memcmp(sender.pubkey().data(), *empty, crypto_sign_PUBLICKEYBYTES)) {
 				mm->releaseMemory(empty);
-				throw TransactionValidationInvalidInputException("empty", "sender", "public key")
-					.setTransactionType(TRANSACTION_TRANSFER).setMemo(mMemo);
+				throw TransactionValidationInvalidInputException("empty", "sender", "public key");
 			}
 			if (0 == memcmp(recipient_pubkey.data(), *empty, crypto_sign_PUBLICKEYBYTES)) {
 				mm->releaseMemory(empty);
-				throw TransactionValidationInvalidInputException("empty", "recipient", "public key")
-					.setTransactionType(TRANSACTION_TRANSFER).setMemo(mMemo);
+				throw TransactionValidationInvalidInputException("empty", "recipient", "public key");
 			}
 			mm->releaseMemory(empty);
-			if (mMemo.size() < 5 || mMemo.size() > 150) {
-				throw TransactionValidationInvalidInputException("not in expected range [5;150]", "memo", "string")
-					.setTransactionType(TRANSACTION_TRANSFER).setMemo(mMemo);
-			}
+			
 			return true;
 		}
 	}

@@ -12,6 +12,8 @@
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"
 
+#include "GradidoBlockchainException.h"
+
 using namespace rapidjson;
 
 
@@ -112,7 +114,7 @@ bool JsonRequestHandler::parseQueryParametersToRapidjson(const Poco::URI& uri, D
 	return true;
 }
 
-void JsonRequestHandler::parseJsonWithErrorPrintFile(std::istream& request_stream, Document& rapidParams, NotificationList* errorHandler /* = nullptr*/, const char* functionName /* = nullptr*/)
+void JsonRequestHandler::parseJsonWithErrorPrintFile(std::istream& request_stream, Document& rapidParams, const char* functionName /* = nullptr*/)
 {
 	// debugging answer
 
@@ -123,19 +125,8 @@ void JsonRequestHandler::parseJsonWithErrorPrintFile(std::istream& request_strea
 
 	rapidParams.Parse(responseStringStream.str().data());
 	if (rapidParams.HasParseError()) {
-		auto error_code = rapidParams.GetParseError();
-		if (errorHandler) {
-			errorHandler->addError(new ParamError(functionName, "error parsing request answer", error_code));
-			errorHandler->addError(new ParamError(functionName, "position of last parsing error", rapidParams.GetErrorOffset()));
-		}
-		std::string dateTimeString = Poco::DateTimeFormatter::format(Poco::DateTime(), "%d_%m_%yT%H_%M_%S");
-		std::string filename = dateTimeString + "_response.html";
-		FILE* f = fopen(filename.data(), "wt");
-		if (f) {
-			std::string responseString = responseStringStream.str();
-			fwrite(responseString.data(), 1, responseString.size(), f);
-			fclose(f);
-		}
+		throw RapidjsonParseErrorException("error parsing request answer", rapidParams.GetParseError(), rapidParams.GetErrorOffset())
+			.setRawText(responseStringStream.str());
 	}
 
 }
@@ -154,21 +145,6 @@ Document JsonRequestHandler::stateError(const char* msg, std::string details)
 	return obj;
 }
 
-
-rapidjson::Document JsonRequestHandler::stateError(const char* msg, NotificationList* errorReciver)
-{
-	Document obj(kObjectType);
-	obj.AddMember("state", "error", obj.GetAllocator());
-	obj.AddMember("msg", Value(msg, obj.GetAllocator()).Move(), obj.GetAllocator());
-	Value details(kArrayType);
-	auto error_vec = errorReciver->getErrorsArray();
-	for (auto it = error_vec.begin(); it != error_vec.end(); it++) {
-		details.PushBack(Value(it->data(), obj.GetAllocator()).Move(), obj.GetAllocator());
-	}
-	obj.AddMember("details", details.Move(), obj.GetAllocator());
-
-	return obj;
-}
 
 Document JsonRequestHandler::stateSuccess()
 {
