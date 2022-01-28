@@ -3,17 +3,30 @@
 #include "TransactionValidationExceptions.h"
 
 #include "Crypto/KeyPairEd25519.h"
+#include "ProtobufExceptions.h"
 
 namespace model {
 	namespace gradido {
-		GradidoTransaction::GradidoTransaction()
+		GradidoTransaction::GradidoTransaction(proto::gradido::GradidoTransaction* protoGradidoTransaction)
+			: mProtoGradidoTransaction(protoGradidoTransaction), mTransactionBody(nullptr)
 		{
+			mTransactionBody = TransactionBody::load(protoGradidoTransaction->body_bytes());
+		}
 
+		GradidoTransaction::GradidoTransaction(const std::string& serializedProtobuf)
+		{
+			mProtoGradidoTransaction = new proto::gradido::GradidoTransaction;
+			if (!mProtoGradidoTransaction->ParseFromString(serializedProtobuf)) {
+				throw ProtobufParseException(serializedProtobuf);
+			}
+			mTransactionBody = TransactionBody::load(mProtoGradidoTransaction->body_bytes());
 		}
 
 		GradidoTransaction::~GradidoTransaction()
 		{
-
+			if (mTransactionBody) {
+				delete mTransactionBody;
+			}
 		}
 
 		bool GradidoTransaction::validate(

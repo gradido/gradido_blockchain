@@ -15,12 +15,6 @@ namespace model {
 			DataTypeConverter::convertToProtoTimestampSeconds(Poco::Timestamp(), created);
 		}
 
-		void TransactionBody::setCreated(Poco::DateTime created)
-		{
-			auto protoCreated = mProtoTransactionBody.mutable_created();
-			DataTypeConverter::convertToProtoTimestampSeconds(created.timestamp(), protoCreated);
-		}
-
 		TransactionBody::~TransactionBody()
 		{
 			lock("TransactionBody::~TransactionBody");
@@ -31,13 +25,19 @@ namespace model {
 			unlock();
 		}
 
-
-		std::shared_ptr<TransactionBody> TransactionBody::load(const std::string& protoMessageBin)
+		void TransactionBody::setCreated(Poco::DateTime created)
 		{
-			std::shared_ptr<TransactionBody> obj(new TransactionBody);
+			auto protoCreated = mProtoTransactionBody.mutable_created();
+			DataTypeConverter::convertToProtoTimestampSeconds(created.timestamp(), protoCreated);
+		}
+
+		TransactionBody* TransactionBody::load(const std::string& protoMessageBin)
+		{
+			auto obj = new TransactionBody;
 
 			if (!obj->mProtoTransactionBody.ParseFromString(protoMessageBin)) {
-				return nullptr;
+				delete obj;
+				throw ProtobufParseException(protoMessageBin);
 			}
 
 			// check Type
@@ -124,32 +124,32 @@ namespace model {
 			return dynamic_cast<DeferredTransfer*>(mTransactionSpecific);
 		}
 
-		GlobalGroupAdd* TransactionBody::getGlobalGroupAdd()
+		const GlobalGroupAdd* TransactionBody::getGlobalGroupAdd() const
 		{
 			return dynamic_cast<GlobalGroupAdd*>(mTransactionSpecific);
 		}
 
-		GroupFriendsUpdate* TransactionBody::getGroupFriendsUpdate()
+		const GroupFriendsUpdate* TransactionBody::getGroupFriendsUpdate() const
 		{
 			return dynamic_cast<GroupFriendsUpdate*>(mTransactionSpecific);
 		}
 
-		RegisterAddress* TransactionBody::getRegisterAddress()
+		const RegisterAddress* TransactionBody::getRegisterAddress() const
 		{
 			return dynamic_cast<RegisterAddress*>(mTransactionSpecific);
 		}
 
-		TransactionCreation* TransactionBody::getCreationTransaction()
+		const TransactionCreation* TransactionBody::getCreationTransaction() const
 		{
 			return dynamic_cast<TransactionCreation*>(mTransactionSpecific);
 		}
 
-		TransactionTransfer* TransactionBody::getTransferTransaction()
+		const TransactionTransfer* TransactionBody::getTransferTransaction() const
 		{
 			return dynamic_cast<TransactionTransfer*>(mTransactionSpecific);
 		}
 
-		TransactionBase* TransactionBody::getTransactionBase()
+		const TransactionBase* TransactionBody::getTransactionBase() const
 		{
 			return mTransactionSpecific;
 		}

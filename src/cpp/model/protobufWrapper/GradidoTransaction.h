@@ -10,19 +10,23 @@ namespace model {
 		class GradidoTransaction
 		{
 		public:
-			GradidoTransaction();
+			GradidoTransaction(proto::gradido::GradidoTransaction* protoGradidoTransaction);
+			GradidoTransaction(const std::string& serializedProtobuf);
 			~GradidoTransaction();
 
-			inline const std::shared_ptr<TransactionBody> getTransactionBody() const { return mTransactionBody; }
+			inline const TransactionBody* getTransactionBody() const { return mTransactionBody; }
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
 				IGradidoBlockchain* otherBlockchain = nullptr
 			) const;
 
+			inline GradidoTransaction* setMemo(const std::string& memo) { mTransactionBody->setMemo(memo); return this; }
+			inline GradidoTransaction* setCreated(Poco::DateTime created) { mTransactionBody->setCreated(created); return this; }
+
 		protected:
 			proto::gradido::GradidoTransaction* mProtoGradidoTransaction;
-			std::shared_ptr<TransactionBody> mTransactionBody;
+			TransactionBody* mTransactionBody;
 
 		};
 	}

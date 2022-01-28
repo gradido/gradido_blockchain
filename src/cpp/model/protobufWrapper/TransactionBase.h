@@ -63,7 +63,7 @@ namespace model {
 			static std::string amountToString(google::protobuf::int64 amount);
 
 			//! \return true if all required signatures are found in signature pairs
-			bool checkRequiredSignatures(const proto::gradido::SignatureMap* sig_map);
+			bool checkRequiredSignatures(const proto::gradido::SignatureMap* sig_map) const;
 			//! \param pubkey pointer must point to valid unsigned char[KeyPairEd25519::getPublicKeySize()] array
 			bool isPublicKeyRequired(const unsigned char* pubkey);
 			//! \param pubkey pointer must point to valid unsigned char[KeyPairEd25519::getPublicKeySize()] array

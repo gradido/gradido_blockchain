@@ -58,7 +58,7 @@ namespace model {
 			//return ss.str();
 		}
 
-		bool TransactionBase::checkRequiredSignatures(const proto::gradido::SignatureMap* sig_map)
+		bool TransactionBase::checkRequiredSignatures(const proto::gradido::SignatureMap* sig_map) const
 		{
 			assert(mMinSignatureCount);
 			
@@ -71,7 +71,7 @@ namespace model {
 				return true;
 			}
 			// check if specific signatures can be found
-			static const char function_name[] = "TransactionBase::checkRequiredSignatures";
+			
 			// prepare
 			std::vector<MemoryBin*> required_keys = mRequiredSignPublicKeys;
 			

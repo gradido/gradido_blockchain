@@ -20,13 +20,12 @@ namespace model {
 		class TransactionBody : public UniLib::lib::MultithreadContainer
 		{
 		public:
-			TransactionBody();
 			virtual ~TransactionBody();
 
 			void setCreated(Poco::DateTime created);
 			inline uint32_t getCreatedSeconds() const { return mProtoTransactionBody.created().seconds(); }
 
-			static std::shared_ptr<TransactionBody> load(const std::string& protoMessageBin);
+			static TransactionBody* load(const std::string& protoMessageBin);
 
 			inline TransactionType getTransactionType() const { return mTransactionType; }
 			inline proto::gradido::TransactionBody_CrossGroupType getCrossGroupType() const { return mProtoTransactionBody.type(); }
@@ -49,14 +48,15 @@ namespace model {
 			const proto::gradido::TransactionBody* getBody() const { return &mProtoTransactionBody; }
 
 			const DeferredTransfer* getDeferredTransfer() const;
-			GlobalGroupAdd* getGlobalGroupAdd();
-			GroupFriendsUpdate* getGroupFriendsUpdate();
-			RegisterAddress* getRegisterAddress();
-			TransactionCreation* getCreationTransaction();
-			TransactionTransfer* getTransferTransaction();			
+			const GlobalGroupAdd* getGlobalGroupAdd() const;
+			const GroupFriendsUpdate* getGroupFriendsUpdate() const;
+			const RegisterAddress* getRegisterAddress() const;
+			const TransactionCreation* getCreationTransaction() const;
+			const TransactionTransfer* getTransferTransaction() const;
 
-			TransactionBase* getTransactionBase();
+			const TransactionBase* getTransactionBase() const;
 		protected:
+			TransactionBody();
 			
 			proto::gradido::TransactionBody mProtoTransactionBody;
 			TransactionBase* mTransactionSpecific;
