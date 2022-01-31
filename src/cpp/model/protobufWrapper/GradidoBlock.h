@@ -6,13 +6,18 @@
 
 namespace model {
 	namespace gradido {
-		class GradidoBlock : public GradidoTransaction
+		class GradidoBlock : public UniLib::lib::MultithreadContainer
 		{
 		public:
 			GradidoBlock(std::string serializedGradidoBlock);
+			~GradidoBlock();
 			std::string toJson();
+			inline const GradidoTransaction* getGradidoTransaction() const { return mGradidoTransaction; }
+			
+
 		protected:
 			proto::gradido::GradidoBlock mProtoGradidoBlock;
+			GradidoTransaction* mGradidoTransaction;
 
 		};
 	}

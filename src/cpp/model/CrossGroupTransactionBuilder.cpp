@@ -17,9 +17,9 @@ CrossGroupTransactionBuilder::~CrossGroupTransactionBuilder()
 
 model::gradido::GradidoTransaction* CrossGroupTransactionBuilder::createOutboundTransaction(const std::string& otherGroup)
 {
-
+	return nullptr;
 }
 model::gradido::GradidoTransaction* CrossGroupTransactionBuilder::createInboundTransaction(const std::string& otherGroup, MemoryBin* outboundMessageId)
 {
-
+	return nullptr;
 }

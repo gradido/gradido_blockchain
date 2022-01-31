@@ -14,6 +14,8 @@
 
 #include "../../lib/MultithreadContainer.h"
 
+#define GRADIDO_PROTOCOL_VERSION 3
+
 namespace model {
 	namespace gradido {
 
@@ -26,6 +28,17 @@ namespace model {
 			inline uint32_t getCreatedSeconds() const { return mProtoTransactionBody.created().seconds(); }
 
 			static TransactionBody* load(const std::string& protoMessageBin);
+			void upgradeToDeferredTransaction(Poco::Timestamp timeout);
+			static TransactionBody* createGlobalGroupAdd(const std::string& groupName, const std::string& groupAlias, uint32_t nativeCoinColor);
+			static TransactionBody* createGroupFriendsUpdate(bool colorFusion);
+			static TransactionBody* createRegisterAddress(
+				const MemoryBin* userPubkey,
+				proto::gradido::RegisterAddress_AddressType type,
+				const MemoryBin* nameHash,
+				const MemoryBin* subaccountPubkey
+			);
+			static TransactionBody* createTransactionCreation(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, Poco::DateTime targetDate);
+			static TransactionBody* createTransactionTransfer(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, const MemoryBin* recipientPubkey);
 
 			inline TransactionType getTransactionType() const { return mTransactionType; }
 			inline proto::gradido::TransactionBody_CrossGroupType getCrossGroupType() const { return mProtoTransactionBody.type(); }
@@ -57,6 +70,8 @@ namespace model {
 			const TransactionBase* getTransactionBase() const;
 		protected:
 			TransactionBody();
+
+			void initSpecificTransaction();
 			
 			proto::gradido::TransactionBody mProtoTransactionBody;
 			TransactionBase* mTransactionSpecific;

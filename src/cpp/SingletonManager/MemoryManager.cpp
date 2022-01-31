@@ -20,7 +20,7 @@ MemoryBin::~MemoryBin()
 	}
 }
 
-std::string MemoryBin::convertToHex()
+std::string MemoryBin::convertToHex() const
 {
 	auto mm = MemoryManager::getInstance();
 	
@@ -36,7 +36,7 @@ std::string MemoryBin::convertToHex()
 	return hex;
 }
 
-std::string MemoryBin::copyAsString()
+std::string MemoryBin::copyAsString() const
 {
 	return std::string((const char*)mData, mSize);
 }

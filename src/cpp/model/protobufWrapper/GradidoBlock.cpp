@@ -6,18 +6,30 @@
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h"
 
+#include "ProtobufExceptions.h"
+
 using namespace rapidjson;
 
 namespace model {
 	namespace gradido {
 		GradidoBlock::GradidoBlock(std::string serializedGradidoBlock)
+			: mGradidoTransaction(nullptr)
 		{
-			mProtoGradidoBlock.ParseFromString(serializedGradidoBlock);
+			if (!mProtoGradidoBlock.ParseFromString(serializedGradidoBlock)) {
+				throw ProtobufParseException(serializedGradidoBlock);
+			}
+			mGradidoTransaction = new GradidoTransaction(mProtoGradidoBlock.mutable_transaction());
+		}
+
+		GradidoBlock::~GradidoBlock()
+		{
+			if (mGradidoTransaction) {
+				delete mGradidoTransaction;
+			}
 		}
 
 		std::string GradidoBlock::toJson()
 		{
-			static const char* function_name = "Transaction::getTransactionAsJson";
 			std::string json_message = "";
 			std::string json_message_body = "";
 			google::protobuf::util::JsonPrintOptions options;
@@ -26,13 +38,13 @@ namespace model {
 
 			auto status = google::protobuf::util::MessageToJsonString(mProtoGradidoBlock, &json_message, options);
 			if (!status.ok()) {
-				return "error parsing gradido block: " + status.ToString();
+				throw ProtobufJsonSerializationException("error parsing gradido block", mProtoGradidoBlock, status);
 			}
 			proto::gradido::TransactionBody body;
 			body.ParseFromString(mProtoGradidoBlock.transaction().body_bytes());
 			status = google::protobuf::util::MessageToJsonString(body, &json_message_body, options);
 			if (!status.ok()) {				
-				return "error parsing transaction body: " + status.ToString();
+				throw ProtobufJsonSerializationException("error parsing transaction body", mProtoGradidoBlock, status);
 			}
 			//\"bodyBytes\": \"MigKIC7Sihz14RbYNhVAa8V3FSIhwvd0pWVvZqDnVA91dtcbIgRnZGQx\"
 			int startBodyBytes = json_message.find("bodyBytes") + std::string("\"bodyBytes\": \"").size() - 2;
@@ -44,8 +56,7 @@ namespace model {
 			Document parsed_json;
 			parsed_json.Parse(json_message.data(), json_message.size());
 			if (parsed_json.HasParseError()) {
-				printf("error parsing json, error code: %d, offset: %d\n",
-					parsed_json.GetParseError(), parsed_json.GetErrorOffset());
+				throw RapidjsonParseErrorException("error parsing json", parsed_json.GetParseError(), parsed_json.GetErrorOffset());
 			}
 			else {
 				if (DataTypeConverter::replaceBase64WithHex(parsed_json, parsed_json.GetAllocator())) {

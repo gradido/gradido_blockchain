@@ -52,7 +52,7 @@ namespace model {
 				assert(blockchain);
 				auto transactions = blockchain->getAllTransactions(TRANSACTION_GLOBAL_GROUP_ADD);
 				for (auto it = transactions.begin(); it != transactions.end(); it++) {
-					auto groupAdd = (*it)->getTransactionBody()->getGlobalGroupAdd();
+					auto groupAdd = (*it)->getGradidoTransaction()->getTransactionBody()->getGlobalGroupAdd();
 					if (groupAdd->getCoinColor() == getCoinColor()) {
 						throw TransactionValidationInvalidInputException("already exist", "native_coin_color", "uint32");
 					}

@@ -1,5 +1,11 @@
 #include "ProtobufExceptions.h"
  
+ProtobufSerializationException::ProtobufSerializationException(const char* what, const google::protobuf::Message& message) noexcept
+	: GradidoBlockchainException(what), mMessage(message)
+{
+
+}
+
 ProtobufSerializationException::ProtobufSerializationException(const google::protobuf::Message& message) noexcept
 	: GradidoBlockchainException("Protobuf Serialization Exception"), mMessage(message)
 {
@@ -8,6 +14,24 @@ ProtobufSerializationException::ProtobufSerializationException(const google::pro
 std::string ProtobufSerializationException::getFullString() const noexcept
 {
 	return what();
+}
+
+// ****************** Protobuf serialize to json exception **************
+ProtobufJsonSerializationException::ProtobufJsonSerializationException(const char* what, const google::protobuf::Message& message, google::protobuf::util::status_internal::Status status) noexcept
+	: ProtobufSerializationException(what, message), mStatus(status)
+{
+
+}
+
+std::string ProtobufJsonSerializationException::getFullString() const noexcept
+{
+	std::string resultString;
+	std::string statusString = mStatus.ToString();
+	size_t resultSize = strlen(what()) + statusString.size() + 16;
+	resultString.reserve(resultSize);
+	resultString = what();
+	resultString += " with status: " + statusString;
+	return resultString;
 }
 
 // ****************** Protobuf parse exception **************************

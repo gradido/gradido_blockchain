@@ -11,26 +11,30 @@ public:
 	static model::gradido::GradidoTransaction* createGlobalGroupAdd(const std::string& groupName, const std::string& groupAlias, uint32_t nativeCoinColor);
 	static model::gradido::GradidoTransaction* createGroupFriendsUpdate(bool colorFusion);
 	static model::gradido::GradidoTransaction* createRegisterAddress(
-		MemoryBin* userPubkey,
+		const MemoryBin* userPubkey,
 		proto::gradido::RegisterAddress_AddressType type,
-		MemoryBin* nameHash,
-		MemoryBin* subaccountPubkey
+		const MemoryBin* nameHash,
+		const MemoryBin* subaccountPubkey
 	);
 	static model::gradido::GradidoTransaction* createTransactionCreation(
-		MemoryBin* recipientPubkey,
+		const MemoryBin* recipientPubkey,
 		int64_t amountGddCent,
 		uint32_t coinColor,
 		Poco::DateTime targetDate
 	);
 	static model::gradido::GradidoTransaction* createTransactionTransfer(
-		MemoryBin* senderPubkey,
+		const MemoryBin* senderPubkey,
 		int64_t amountGddCent,
 		uint32_t coinColor,
-		MemoryBin* recipientPubkey
+		const MemoryBin* recipientPubkey
 	);
 
 protected:
-
+	static std::unique_ptr<proto::gradido::TransferAmount> createTransferAmount(
+		const MemoryBin* recipientPubkey,
+		int64_t amountGddCent,
+		uint32_t coinColor
+	);
 };
 
 #endif //__GRADIDO_BLOCKCHAIN_MODEL_TRANSACTION_FACTORY_H

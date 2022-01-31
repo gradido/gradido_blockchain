@@ -22,6 +22,13 @@ namespace model {
 			mTransactionBody = TransactionBody::load(mProtoGradidoTransaction->body_bytes());
 		}
 
+		GradidoTransaction::GradidoTransaction(model::gradido::TransactionBody* body)
+		{
+			assert(body);
+			mProtoGradidoTransaction = new proto::gradido::GradidoTransaction;
+			mTransactionBody = body;
+		}
+
 		GradidoTransaction::~GradidoTransaction()
 		{
 			if (mTransactionBody) {

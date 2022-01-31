@@ -4,14 +4,19 @@
 #include "TransactionBody.h"
 #include "gradido/GradidoTransaction.pb.h"
 
-namespace model {
+class TransactionFactory;
+
+namespace model {	
+
 	namespace gradido {
 
 		class GradidoTransaction
 		{
+			friend TransactionFactory;
 		public:
 			GradidoTransaction(proto::gradido::GradidoTransaction* protoGradidoTransaction);
 			GradidoTransaction(const std::string& serializedProtobuf);
+			GradidoTransaction(model::gradido::TransactionBody* body);
 			~GradidoTransaction();
 
 			inline const TransactionBody* getTransactionBody() const { return mTransactionBody; }
@@ -27,6 +32,9 @@ namespace model {
 		protected:
 			proto::gradido::GradidoTransaction* mProtoGradidoTransaction;
 			TransactionBody* mTransactionBody;
+
+			inline TransactionBody* getMutableTransactionBody() { return mTransactionBody; }
+
 
 		};
 	}
