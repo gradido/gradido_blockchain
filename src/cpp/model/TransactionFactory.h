@@ -7,22 +7,22 @@
 class TransactionFactory
 {
 public:
-	static model::gradido::GradidoTransaction* createDeferredTransfer(model::gradido::GradidoTransaction* transfer, Poco::Timestamp timeout);
-	static model::gradido::GradidoTransaction* createGlobalGroupAdd(const std::string& groupName, const std::string& groupAlias, uint32_t nativeCoinColor);
-	static model::gradido::GradidoTransaction* createGroupFriendsUpdate(bool colorFusion);
-	static model::gradido::GradidoTransaction* createRegisterAddress(
+	static std::unique_ptr<model::gradido::GradidoTransaction> createDeferredTransfer(std::unique_ptr<model::gradido::GradidoTransaction> transfer, Poco::Timestamp timeout);
+	static std::unique_ptr<model::gradido::GradidoTransaction> createGlobalGroupAdd(const std::string& groupName, const std::string& groupAlias, uint32_t nativeCoinColor);
+	static std::unique_ptr<model::gradido::GradidoTransaction> createGroupFriendsUpdate(bool colorFusion);
+	static std::unique_ptr<model::gradido::GradidoTransaction> createRegisterAddress(
 		const MemoryBin* userPubkey,
 		proto::gradido::RegisterAddress_AddressType type,
 		const MemoryBin* nameHash,
 		const MemoryBin* subaccountPubkey
 	);
-	static model::gradido::GradidoTransaction* createTransactionCreation(
+	static std::unique_ptr<model::gradido::GradidoTransaction> createTransactionCreation(
 		const MemoryBin* recipientPubkey,
 		int64_t amountGddCent,
 		uint32_t coinColor,
 		Poco::DateTime targetDate
 	);
-	static model::gradido::GradidoTransaction* createTransactionTransfer(
+	static std::unique_ptr<model::gradido::GradidoTransaction> createTransactionTransfer(
 		const MemoryBin* senderPubkey,
 		int64_t amountGddCent,
 		uint32_t coinColor,

@@ -1,25 +1,28 @@
 #include "CrossGroupTransactionBuilder.h"
 
-CrossGroupTransactionBuilder::CrossGroupTransactionBuilder(model::gradido::GradidoTransaction* baseTransaction)
-	: mBaseTransaction(baseTransaction)
+CrossGroupTransactionBuilder::CrossGroupTransactionBuilder(std::unique_ptr<model::gradido::GradidoTransaction> baseTransaction)
+	: mBaseTransaction(std::move(baseTransaction))
 {
 
 }
 
 CrossGroupTransactionBuilder::~CrossGroupTransactionBuilder()
 {
-	if (mBaseTransaction) {
-		delete mBaseTransaction;
-		mBaseTransaction = nullptr;
-	}
 
 }
 
-model::gradido::GradidoTransaction* CrossGroupTransactionBuilder::createOutboundTransaction(const std::string& otherGroup)
+std::unique_ptr<model::gradido::GradidoTransaction> CrossGroupTransactionBuilder::createOutboundTransaction(const std::string& otherGroup)
 {
-	return nullptr;
+	auto serializedTransaction = mBaseTransaction->getSerialized();
+	std::unique_ptr<model::gradido::GradidoTransaction> outbound(new model::gradido::GradidoTransaction(*serializedTransaction));
+	outbound->getMutableTransactionBody()->updateToOutbound(otherGroup);
+	return outbound;
 }
-model::gradido::GradidoTransaction* CrossGroupTransactionBuilder::createInboundTransaction(const std::string& otherGroup, MemoryBin* outboundMessageId)
+std::unique_ptr<model::gradido::GradidoTransaction> CrossGroupTransactionBuilder::createInboundTransaction(const std::string& otherGroup, MemoryBin* outboundMessageId)
 {
-	return nullptr;
+	assert(outboundMessageId);
+	mBaseTransaction->setParentMessageId(outboundMessageId);
+	mBaseTransaction->getMutableTransactionBody()->updateToInbound(otherGroup);
+
+	return std::move(mBaseTransaction);
 }

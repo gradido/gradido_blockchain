@@ -20,7 +20,7 @@ MemoryBin::~MemoryBin()
 	}
 }
 
-std::string MemoryBin::convertToHex() const
+std::unique_ptr<std::string> MemoryBin::convertToHex() const
 {
 	auto mm = MemoryManager::getInstance();
 	
@@ -29,16 +29,16 @@ std::string MemoryBin::convertToHex() const
 	//char* hexString = (char*)malloc(hexSize);
 	memset(*hexMem, 0, hexSize);
 	sodium_bin2hex(*hexMem, hexSize, mData, mSize);
-	std::string hex = (char*)*hexMem;
+	std::unique_ptr<std::string> hex(new std::string((const char*)hexMem->data(), hexMem->size()));
 	//	free(hexString);
 	mm->releaseMemory(hexMem);
 
 	return hex;
 }
 
-std::string MemoryBin::copyAsString() const
+std::unique_ptr<std::string> MemoryBin::copyAsString() const
 {
-	return std::string((const char*)mData, mSize);
+	return std::unique_ptr<std::string>(new std::string((const char*)mData, mSize));
 }
 
 int MemoryBin::convertFromHex(const std::string& hex)

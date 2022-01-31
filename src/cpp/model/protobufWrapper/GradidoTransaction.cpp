@@ -79,5 +79,21 @@ namespace model {
 			return true;
 
 		}
+
+		std::unique_ptr<std::string> GradidoTransaction::getSerialized()
+		{
+			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
+
+			auto size = mProtoGradidoTransaction->ByteSizeLong();
+			//auto bodyBytesSize = MemoryManager::getInstance()->getFreeMemory(mProtoCreation.ByteSizeLong());
+			std::string* resultString(new std::string(size, 0));
+			if (!mProtoGradidoTransaction->SerializeToString(resultString)) {
+				//addError(new Error("TransactionCreation::getBodyBytes", "error serializing string"));
+				throw ProtobufSerializationException(*mProtoGradidoTransaction);
+			}
+			std::unique_ptr<std::string> result;
+			result.reset(resultString);
+			return result;
+		}
 	}
 }

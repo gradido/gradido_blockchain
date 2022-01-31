@@ -14,14 +14,16 @@
 class CrossGroupTransactionBuilder
 {
 public:
-	CrossGroupTransactionBuilder(model::gradido::GradidoTransaction* baseTransaction);
+	CrossGroupTransactionBuilder(std::unique_ptr<model::gradido::GradidoTransaction> baseTransaction);
 	virtual ~CrossGroupTransactionBuilder();
 
-	model::gradido::GradidoTransaction* createOutboundTransaction(const std::string& otherGroup);
-	model::gradido::GradidoTransaction* createInboundTransaction(const std::string& otherGroup, MemoryBin* outboundMessageId);
+	// must be called first
+	std::unique_ptr<model::gradido::GradidoTransaction> createOutboundTransaction(const std::string& otherGroup);
+	// must be called second, after this call, object is empty
+	std::unique_ptr<model::gradido::GradidoTransaction> createInboundTransaction(const std::string& otherGroup, MemoryBin* outboundMessageId);
 
 protected:
-	model::gradido::GradidoTransaction* mBaseTransaction;
+	std::unique_ptr<model::gradido::GradidoTransaction> mBaseTransaction;
 };
 
 #endif //__GRADIDO_BLOCKCHAIN_MODEL_CROSS_GROUP_TRANSACTION_BUILDER_H

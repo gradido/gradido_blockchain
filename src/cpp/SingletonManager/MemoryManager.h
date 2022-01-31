@@ -43,8 +43,8 @@ public:
 
 	inline unsigned char* data(size_t startIndex) { assert(startIndex < mSize); return &mData[startIndex]; }
 	inline const unsigned char* data(size_t startIndex) const { assert(startIndex < mSize); return &mData[startIndex]; }
-	std::string convertToHex() const;
-	std::string copyAsString() const;
+	std::unique_ptr<std::string> convertToHex() const;
+	std::unique_ptr<std::string> copyAsString() const;
 	//! \return 0 if ok
 	//!        -1 if bin is to small
 	//!        -2 if hex is invalid

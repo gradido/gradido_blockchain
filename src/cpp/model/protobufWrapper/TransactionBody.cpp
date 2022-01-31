@@ -91,14 +91,14 @@ namespace model {
 			auto obj = new TransactionBody;
 			auto registerAddress = obj->mProtoTransactionBody.mutable_register_address();
 			if (userPubkey) {
-				registerAddress->set_user_pubkey(userPubkey->copyAsString());
+				registerAddress->set_allocated_user_pubkey(userPubkey->copyAsString().release());
 			}
 			registerAddress->set_address_type(type);
 			if (nameHash) {
-				registerAddress->set_name_hash(nameHash->copyAsString());
+				registerAddress->set_allocated_name_hash(nameHash->copyAsString().release());
 			}
 			if (subaccountPubkey) {
-				registerAddress->set_subaccount_pubkey(subaccountPubkey->copyAsString());
+				registerAddress->set_allocated_subaccount_pubkey(subaccountPubkey->copyAsString().release());
 			}
 			obj->initSpecificTransaction();
 			return obj;
@@ -120,11 +120,22 @@ namespace model {
 			auto obj = new TransactionBody;
 			auto transfer = obj->mProtoTransactionBody.mutable_transfer();
 			transfer->set_allocated_sender(transferAmount.release());
-			transfer->set_recipient(recipientPubkey->copyAsString());
+			transfer->set_allocated_recipient(recipientPubkey->copyAsString().release());
 			obj->initSpecificTransaction();
 			return obj;
 		}
 
+		void TransactionBody::updateToOutbound(const std::string& otherGroup)
+		{
+			mProtoTransactionBody.set_other_group(otherGroup);
+			mProtoTransactionBody.set_type(proto::gradido::TransactionBody_CrossGroupType_OUTBOUND);
+		}
+
+		void TransactionBody::updateToInbound(const std::string& otherGroup)
+		{
+			mProtoTransactionBody.set_other_group(otherGroup);
+			mProtoTransactionBody.set_type(proto::gradido::TransactionBody_CrossGroupType_INBOUND);
+		}
 
 		std::string TransactionBody::getMemo() const
 		{
@@ -143,22 +154,22 @@ namespace model {
 			mProtoTransactionBody.set_memo(memo);
 		}
 
-		std::string TransactionBody::getBodyBytes() const
+		std::unique_ptr<std::string> TransactionBody::getBodyBytes() const
 		{
 			LOCK_RECURSIVE;
-			if (mProtoTransactionBody.IsInitialized()) {
-				auto size = mProtoTransactionBody.ByteSizeLong();
-				//auto bodyBytesSize = MemoryManager::getInstance()->getFreeMemory(mProtoCreation.ByteSizeLong());
-				std::string resultString(size, 0);
-				if (!mProtoTransactionBody.SerializeToString(&resultString)) {
-					//addError(new Error("TransactionCreation::getBodyBytes", "error serializing string"));
-					throw ProtobufSerializationException(mProtoTransactionBody);
-				}
-
-				return resultString;
+			assert(mProtoTransactionBody.IsInitialized());
+			
+			auto size = mProtoTransactionBody.ByteSizeLong();
+			//auto bodyBytesSize = MemoryManager::getInstance()->getFreeMemory(mProtoCreation.ByteSizeLong());
+			std::string* resultString(new std::string(size, 0));
+			if (!mProtoTransactionBody.SerializeToString(resultString)) {
+				//addError(new Error("TransactionCreation::getBodyBytes", "error serializing string"));
+				throw ProtobufSerializationException(mProtoTransactionBody);
 			}
 
-			return "<uninitalized>";
+			std::unique_ptr<std::string> result;
+			result.reset(resultString);
+			return result;
 		}
 
 		const char* TransactionBody::transactionTypeToString(TransactionType type)

@@ -40,6 +40,9 @@ namespace model {
 			static TransactionBody* createTransactionCreation(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, Poco::DateTime targetDate);
 			static TransactionBody* createTransactionTransfer(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, const MemoryBin* recipientPubkey);
 
+			void updateToOutbound(const std::string& otherGroup);
+			void updateToInbound(const std::string& otherGroup);
+
 			inline TransactionType getTransactionType() const { return mTransactionType; }
 			inline proto::gradido::TransactionBody_CrossGroupType getCrossGroupType() const { return mProtoTransactionBody.type(); }
 			inline uint64_t getVersionNumber() const { return mProtoTransactionBody.version_number(); }
@@ -57,7 +60,7 @@ namespace model {
 
 			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
 
-			std::string getBodyBytes() const;
+			std::unique_ptr<std::string> getBodyBytes() const;
 			const proto::gradido::TransactionBody* getBody() const { return &mProtoTransactionBody; }
 
 			const DeferredTransfer* getDeferredTransfer() const;
