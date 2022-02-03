@@ -90,7 +90,7 @@ KeyPairEd25519* KeyPairEd25519::create(const std::shared_ptr<Passphrase> passphr
 
 	KeyPairEd25519* key_pair = new KeyPairEd25519;
 	if (!key_pair->mSodiumSecret) {
-		key_pair->mSodiumSecret = mm->getFreeMemory(crypto_sign_SECRETKEYBYTES);
+		key_pair->mSodiumSecret = mm->getMemory(crypto_sign_SECRETKEYBYTES);
 	}
 
 	crypto_sign_seed_keypair(key_pair->mSodiumPublic, *key_pair->mSodiumSecret, hash);
@@ -115,7 +115,7 @@ MemoryBin* KeyPairEd25519::sign(const unsigned char* message, size_t messageSize
 
 	const static char functionName[] = "KeyPairEd25519::sign";
 
-	auto signBinBuffer = mm->getFreeMemory(crypto_sign_BYTES);
+	auto signBinBuffer = mm->getMemory(crypto_sign_BYTES);
 	unsigned long long actualSignLength = 0;
 
 	if (crypto_sign_detached(*signBinBuffer, &actualSignLength, message, messageSize, *mSodiumSecret)) {

@@ -1,4 +1,5 @@
 #include "DataTypeConverter.h"
+#include "GradidoBlockchainException.h"
 
 #include "Poco/RegularExpression.h"
 
@@ -153,7 +154,7 @@ namespace DataTypeConverter
 		auto mm = MemoryManager::getInstance();
 		size_t hexSize = hexString.size();
 		size_t binSize = (hexSize) / 2;
-		MemoryBin* bin = mm->getFreeMemory(binSize);
+		MemoryBin* bin = mm->getMemory(binSize);
 		memset(*bin, 0, binSize);
 
 		size_t resultBinSize = 0;
@@ -179,23 +180,43 @@ namespace DataTypeConverter
 		auto mm = MemoryManager::getInstance();
 		size_t encodedSize = base64String.size();
 		size_t binSize = (encodedSize / 4) * 3;
-		auto bin = mm->getFreeMemory(binSize);
+		auto bin = mm->getMemory(binSize);
 		memset(*bin, 0, binSize);
 
 		size_t resultBinSize = 0;
 
 		if (0 != sodium_base642bin(*bin, binSize, base64String.data(), encodedSize, nullptr, &resultBinSize, nullptr, sodium_base64_VARIANT_ORIGINAL)) {
 			mm->releaseMemory(bin);
-			return nullptr;
+			throw GradidoInvalidBase64Exception("invalid base64", base64String.data());
 		}
 		if (resultBinSize < binSize) {
-			auto bin_real = mm->getFreeMemory(resultBinSize);
+			auto bin_real = mm->getMemory(resultBinSize);
 			memcpy(*bin_real, *bin, resultBinSize);
 			mm->releaseMemory(bin);
 			return bin_real;
 		}
 
 		return bin;
+	}
+
+	std::unique_ptr<std::string> base64ToBinString(std::unique_ptr<std::string> base64String, int variant/* = sodium_base64_VARIANT_ORIGINAL*/)
+	{
+		auto mm = MemoryManager::getInstance();
+		size_t encodedSize = base64String->size();
+		size_t binSize = (encodedSize / 4) * 3;
+		MemoryBin* bin = mm->getMemory(binSize);
+		memset(*bin, 0, binSize);
+
+		size_t resultBinSize = 0;
+
+		if (0 != sodium_base642bin(*bin, binSize, base64String->data(), encodedSize, nullptr, &resultBinSize, nullptr, sodium_base64_VARIANT_ORIGINAL)) {
+			mm->releaseMemory(bin);
+			throw GradidoInvalidBase64Exception("invalid base64", base64String.release()->data());
+		}
+		base64String->reserve(resultBinSize);
+		base64String->assign((const char*)*bin, resultBinSize);
+		mm->releaseMemory(bin);
+		return base64String;
 	}
 
 
@@ -206,7 +227,7 @@ namespace DataTypeConverter
 		auto mm = MemoryManager::getInstance();
 
 		size_t encodedSize = sodium_base64_encoded_len(size, variant);
-		auto base64 = mm->getFreeMemory(encodedSize);
+		auto base64 = mm->getMemory(encodedSize);
 		memset(*base64, 0, encodedSize);
 
 		if (nullptr == sodium_bin2base64(*base64, encodedSize, data, size, variant)) {
@@ -224,7 +245,7 @@ namespace DataTypeConverter
 		auto mm = MemoryManager::getInstance();
 
 		size_t encodedSize = sodium_base64_encoded_len(proto_bin->size(), variant);
-		auto base64 = mm->getFreeMemory(encodedSize);
+		auto base64 = mm->getMemory(encodedSize);
 		memset(*base64, 0, encodedSize);
 
 		if (nullptr == sodium_bin2base64(*base64, encodedSize, (const unsigned char*)proto_bin->data(), proto_bin->size(), variant)) {
@@ -237,13 +258,14 @@ namespace DataTypeConverter
 		mm->releaseMemory(base64);
 		return proto_bin;
 	}
+	
 	 
 	std::string binToHex(const unsigned char* data, size_t size) 
 	{
 		auto mm = MemoryManager::getInstance();
 		size_t hexSize = size * 2 + 1;
 		size_t binSize = size;
-		MemoryBin* hex = mm->getFreeMemory(hexSize);
+		MemoryBin* hex = mm->getMemory(hexSize);
 		memset(*hex, 0, hexSize);
 
 		size_t resultBinSize = 0;
@@ -253,6 +275,23 @@ namespace DataTypeConverter
 		std::string hexString((const char*)*hex, hexSize);
 		mm->releaseMemory(hex);
 		return hexString;
+	}
+
+	std::unique_ptr<std::string> binToHex(std::unique_ptr<std::string> binString)
+	{
+		auto mm = MemoryManager::getInstance();
+		size_t binSize = binString->size();
+		size_t hexSize = binSize * 2 + 1;
+		
+		MemoryBin* hex = mm->getMemory(hexSize);
+		memset(*hex, 0, hexSize);
+
+		size_t resultBinSize = 0;
+		sodium_bin2hex(*hex, hexSize, (const unsigned char*)binString->data(), binSize);
+		binString->assign((const char*)*hex, hexSize);
+
+		mm->releaseMemory(hex);
+		return binString;
 	}
 
 	std::string binToHex(const Poco::Nullable<Poco::Data::BLOB>& nullableBin)
@@ -271,7 +310,7 @@ namespace DataTypeConverter
 		size_t hexSize = crypto_sign_PUBLICKEYBYTES * 2 + 1;
 		size_t binSize = crypto_sign_PUBLICKEYBYTES;
 
-		MemoryBin* hex = mm->getFreeMemory(hexSize);
+		MemoryBin* hex = mm->getMemory(hexSize);
 		memset(*hex, 0, hexSize);
 
 		size_t resultBinSize = 0;

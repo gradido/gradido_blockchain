@@ -38,7 +38,7 @@ namespace model {
 			//
 			mMinSignatureCount = 1;
 			auto mm = MemoryManager::getInstance();
-			auto pubkey_copy = mm->getFreeMemory(crypto_sign_PUBLICKEYBYTES);
+			auto pubkey_copy = mm->getMemory(crypto_sign_PUBLICKEYBYTES);
 			memcpy(*pubkey_copy, receiverPublic.data(), crypto_sign_PUBLICKEYBYTES);
 			mForbiddenSignPublicKeys.push_back(pubkey_copy);
 
@@ -96,7 +96,7 @@ namespace model {
 			if (mProtoCreation.recipient().pubkey().size() != crypto_sign_PUBLICKEYBYTES) {
 				throw TransactionValidationInvalidInputException("invalid size", "recipient pubkey", "public key");
 			}			
-			auto empty = mm->getFreeMemory(crypto_sign_PUBLICKEYBYTES);
+			auto empty = mm->getMemory(crypto_sign_PUBLICKEYBYTES);
 			memset(*empty, 0, crypto_sign_PUBLICKEYBYTES);
 			if (0 == memcmp(mProtoCreation.recipient().pubkey().data(), *empty, crypto_sign_PUBLICKEYBYTES)) {
 				throw TransactionValidationInvalidInputException("empty", "recipient pubkey", "public key");

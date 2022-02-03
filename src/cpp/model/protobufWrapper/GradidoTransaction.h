@@ -27,6 +27,10 @@ namespace model {
 				IGradidoBlockchain* otherBlockchain = nullptr
 			) const;
 
+			bool addSign(const MemoryBin* pubkeyBin, const MemoryBin* signatureBin);
+
+			int getSignCount() const { return mProtoGradidoTransaction->sig_map().sigpair_size(); }
+
 			inline GradidoTransaction& setMemo(const std::string& memo) { mTransactionBody->setMemo(memo); return *this; }
 			inline GradidoTransaction& setCreated(Poco::DateTime created) { mTransactionBody->setCreated(created); return *this; }
 			inline GradidoTransaction& setParentMessageId(MemoryBin* parentMessageId) { mProtoGradidoTransaction->set_allocated_parent_message_id(parentMessageId->copyAsString().release()); return *this; }

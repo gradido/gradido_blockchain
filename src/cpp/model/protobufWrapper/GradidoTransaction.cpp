@@ -85,6 +85,34 @@ namespace model {
 
 		}
 
+		bool GradidoTransaction::addSign(MemoryBin* pubkeyBin, MemoryBin* signatureBin)
+		{
+			std::unique_ptr<std::string> bodyBytes;
+			
+			bodyBytes = mTransactionBody->getBodyBytes();	
+			auto sigMap = mProtoGradidoTransaction->mutable_sig_map();
+
+			// check if pubkey already exist
+			for (auto it = sigMap->sigpair().begin(); it != sigMap->sigpair().end(); it++)
+			{
+				if (it->pubkey().size() != KeyPairEd25519::getPublicKeySize()) {
+					throw TransactionValidationInvalidInputException("invalid size", "public key");
+				}
+				if (0 == memcmp(pubkeyBin, it->pubkey().data(), KeyPairEd25519::getPublicKeySize())) {
+					throw TransactionValidationInvalidInputException("already exist", "public key");
+				}
+			}
+
+			auto sigPair = sigMap->add_sigpair();
+			auto pubkeyBytes = sigPair->mutable_pubkey();
+			*pubkeyBytes = std::string((const char*)pubkeyBin, crypto_sign_PUBLICKEYBYTES);
+
+			auto sigBytes = sigPair->mutable_signature();
+			*sigBytes = std::string((char*)*signatureBin, crypto_sign_BYTES);
+			return sigMap->sigpair_size() >= mTransactionBody->getTransactionBase()->getMinSignatureCount();
+			
+		}
+
 		std::unique_ptr<std::string> GradidoTransaction::getSerialized()
 		{
 			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());

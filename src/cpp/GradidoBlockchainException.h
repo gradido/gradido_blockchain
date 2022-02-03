@@ -37,4 +37,14 @@ protected:
 	std::string mEnumString;
 };
 
+class GradidoInvalidBase64Exception : public GradidoBlockchainException
+{
+public:
+	explicit GradidoInvalidBase64Exception(const char* what, const std::string& base64) noexcept;
+	std::string getFullString() const;
+protected:
+	std::string mBase64;
+};
+
+
 #endif __GRADIDO_BLOCKCHAIN_EXCEPTION_H

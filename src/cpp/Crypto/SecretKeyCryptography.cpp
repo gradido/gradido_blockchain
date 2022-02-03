@@ -42,7 +42,7 @@ SecretKeyCryptography::ResultType SecretKeyCryptography::createKey(const std::st
 #endif 
 	
 	// use hash512 because existing data where calculated with that, but could be also changed to hash256
-	auto hash512_salt = mm->getFreeMemory(crypto_hash_sha512_BYTES); // need at least crypto_pwhash_SALTBYTES 16U
+	auto hash512_salt = mm->getMemory(crypto_hash_sha512_BYTES); // need at least crypto_pwhash_SALTBYTES 16U
 
 	crypto_hash_sha512_state state;
 	crypto_hash_sha512_init(&state);
@@ -61,7 +61,7 @@ SecretKeyCryptography::ResultType SecretKeyCryptography::createKey(const std::st
 	//unsigned char* key = (unsigned char *)malloc(crypto_box_SEEDBYTES); // 32U
 	//ObfusArray* key = new ObfusArray(crypto_box_SEEDBYTES);
 	if (!mEncryptionKey) {
-		mEncryptionKey = mm->getFreeMemory(crypto_box_SEEDBYTES);
+		mEncryptionKey = mm->getMemory(crypto_box_SEEDBYTES);
 	}
 	//Bin32Bytes* key = mm->get32Bytes();
 
@@ -103,7 +103,7 @@ SecretKeyCryptography::ResultType SecretKeyCryptography::encrypt(const MemoryBin
 	memset(nonce, 31, crypto_secretbox_NONCEBYTES);
 
 	auto mm = MemoryManager::getInstance();
-	auto ciphertext = mm->getFreeMemory(ciphertext_len);
+	auto ciphertext = mm->getMemory(ciphertext_len);
 	memset(*ciphertext, 0, ciphertext_len);
 
 	if (0 != crypto_secretbox_easy(*ciphertext, *message, message_len, nonce, *mEncryptionKey)) {
@@ -130,7 +130,7 @@ SecretKeyCryptography::ResultType SecretKeyCryptography::decrypt(const unsigned 
 	//unsigned char* decryptBuffer = (unsigned char*)malloc(decryptSize);
 	auto mm = MemoryManager::getInstance();
 	//ObfusArray* decryptedData = new ObfusArray(decryptSize);
-	auto decryptedData = mm->getFreeMemory(decryptSize);
+	auto decryptedData = mm->getMemory(decryptSize);
 	unsigned char nonce[crypto_secretbox_NONCEBYTES];
 	// we use a hardcoded value for nonce
 	// TODO: use a dynamic value, save it along with the other parameters

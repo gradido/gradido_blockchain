@@ -69,7 +69,7 @@ namespace model {
 			//! \param pubkey pointer must point to valid unsigned char[KeyPairEd25519::getPublicKeySize()] array
 			bool isPublicKeyForbidden(const unsigned char* pubkey);
 
-			inline uint32_t getMinSignatureCount() { return mMinSignatureCount; }
+			inline uint32_t getMinSignatureCount() const { return mMinSignatureCount; }
 			void setMinSignatureCount(uint32_t minSignatureCount) { mMinSignatureCount = minSignatureCount; }
 
 			static bool isValidGroupAlias(const std::string& groupAlias);

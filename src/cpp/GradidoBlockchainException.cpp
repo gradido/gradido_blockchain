@@ -53,3 +53,21 @@ std::string GradidoInvalidEnumException::getFullString() const
 	resultString += ", with: " + mEnumString;
 	return resultString;
 }
+
+// **************************** Invalid Base64 ****************************************
+GradidoInvalidBase64Exception::GradidoInvalidBase64Exception(const char* what, const std::string& base64) noexcept
+	: GradidoBlockchainException(what), mBase64(base64)
+{
+
+}
+
+std::string GradidoInvalidBase64Exception::getFullString() const
+{
+	std::string resultString;
+	size_t resultSize = strlen(what()) + mBase64.size() + 10;
+	resultString.reserve(resultSize);
+	resultString = what();
+	resultString += ", with: " + mBase64;
+	return resultString;
+}
+

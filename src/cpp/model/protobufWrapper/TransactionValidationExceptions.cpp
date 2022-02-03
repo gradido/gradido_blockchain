@@ -65,8 +65,8 @@ namespace model {
 			: TransactionValidationException(what), mPubkey(nullptr), mSignature(nullptr), mBodyBytes(bodyBytes)
 		{
 			auto mm = MemoryManager::getInstance();
-			mPubkey = mm->getFreeMemory(pubkey.size());
-			mSignature = mm->getFreeMemory(signature.size());
+			mPubkey = mm->getMemory(pubkey.size());
+			mSignature = mm->getMemory(signature.size());
 			
 			mPubkey->copyFromProtoBytes(pubkey);
 			mSignature->copyFromProtoBytes(signature);

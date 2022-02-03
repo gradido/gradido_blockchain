@@ -69,7 +69,7 @@ public:
 	MemoryPageStack(uint16_t size);
 	~MemoryPageStack();
 
-	MemoryBin* getFreeMemory();
+	MemoryBin* getMemory();
 	void releaseMemory(MemoryBin* memory);
 
 protected:
@@ -84,7 +84,7 @@ public:
 
 	static MemoryManager* getInstance();
 
-	MemoryBin* getFreeMemory(uint32_t size);
+	MemoryBin* getMemory(uint32_t size);
 	void releaseMemory(MemoryBin* memory) noexcept;
 	
 protected:

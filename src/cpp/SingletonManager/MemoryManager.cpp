@@ -25,7 +25,7 @@ std::unique_ptr<std::string> MemoryBin::convertToHex() const
 	auto mm = MemoryManager::getInstance();
 	
 	uint32_t hexSize = mSize * 2 + 1;
-	auto hexMem = mm->getFreeMemory(hexSize);
+	auto hexMem = mm->getMemory(hexSize);
 	//char* hexString = (char*)malloc(hexSize);
 	memset(*hexMem, 0, hexSize);
 	sodium_bin2hex(*hexMem, hexSize, mData, mSize);
@@ -95,7 +95,7 @@ MemoryPageStack::~MemoryPageStack()
 	unlock();
 }
 
-MemoryBin* MemoryPageStack::getFreeMemory()
+MemoryBin* MemoryPageStack::getMemory()
 {
 	std::scoped_lock<std::recursive_mutex> _lock(mWorkMutex);
 	
@@ -164,7 +164,7 @@ int8_t MemoryManager::getMemoryStackIndex(uint16_t size) noexcept
 
 
 
-MemoryBin* MemoryManager::getFreeMemory(uint32_t size)
+MemoryBin* MemoryManager::getMemory(uint32_t size)
 {
 	assert(size == (uint32_t)((uint16_t)size));
 
@@ -173,7 +173,7 @@ MemoryBin* MemoryManager::getFreeMemory(uint32_t size)
 		return new MemoryBin(size);
 	}
 	else {
-		return mMemoryPageStacks[index]->getFreeMemory();
+		return mMemoryPageStacks[index]->getMemory();
 	}
 	return nullptr;
 }

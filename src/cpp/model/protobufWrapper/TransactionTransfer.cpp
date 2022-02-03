@@ -29,7 +29,7 @@ namespace model {
 
 			mMinSignatureCount = 1;
 			auto mm = MemoryManager::getInstance();
-			auto pubkey_copy = mm->getFreeMemory(crypto_sign_PUBLICKEYBYTES);
+			auto pubkey_copy = mm->getMemory(crypto_sign_PUBLICKEYBYTES);
 			memcpy(*pubkey_copy, sender_pubkey.data(), crypto_sign_PUBLICKEYBYTES);
 			mRequiredSignPublicKeys.push_back(pubkey_copy);
 
@@ -62,7 +62,7 @@ namespace model {
 			if (0 == memcmp(sender.pubkey().data(), recipient_pubkey.data(), crypto_sign_PUBLICKEYBYTES)) {
 				throw TransactionValidationException("sender and recipient are the same");
 			}
-			auto empty = mm->getFreeMemory(crypto_sign_PUBLICKEYBYTES);
+			auto empty = mm->getMemory(crypto_sign_PUBLICKEYBYTES);
 			memset(*empty, 0, crypto_sign_PUBLICKEYBYTES);
 			if (0 == memcmp(sender.pubkey().data(), *empty, crypto_sign_PUBLICKEYBYTES)) {
 				mm->releaseMemory(empty);

@@ -163,7 +163,7 @@ std::shared_ptr<Passphrase> Passphrase::create(const uint16_t wordIndices[PHRASE
 std::shared_ptr<Passphrase> Passphrase::generate(const Mnemonic* wordSource)
 {
 	auto mm = MemoryManager::getInstance();
-	auto word_indices = mm->getFreeMemory(PHRASE_WORD_COUNT * sizeof(Poco::UInt16));
+	auto word_indices = mm->getMemory(PHRASE_WORD_COUNT * sizeof(Poco::UInt16));
 	uint16_t* word_indices_p = (uint16_t*)word_indices->data();
 
 	for (int i = 0; i < PHRASE_WORD_COUNT; i++) {

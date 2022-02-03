@@ -88,7 +88,7 @@ namespace model {
 						assert((*it2)->size() == crypto_sign_PUBLICKEYBYTES);
 						if (0 == memcmp((*it2)->data(), it->pubkey().data(), pubkey_size)) 
 						{
-							auto forbiddenKey = MemoryManager::getInstance()->getFreeMemory(pubkey_size);
+							auto forbiddenKey = MemoryManager::getInstance()->getMemory(pubkey_size);
 							forbiddenKey->copyFrom(*it2);
 
 							throw TransactionValidationForbiddenSignException(forbiddenKey);
