@@ -62,7 +62,12 @@ void JsonRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Po
 		parseJsonWithErrorPrintFile(request_stream, rapidjson_params);
 	    
 		if (rapidjson_params.IsObject()) {
-			rapid_json_result = handle(rapidjson_params);
+			try {
+				rapid_json_result = handle(rapidjson_params);
+			}
+			catch (GradidoBlockchainException& ex) {
+				rapid_json_result = stateError(ex.getFullString().data());
+			}
 		}
 		else {
 			rapid_json_result = stateError("empty body");
@@ -72,7 +77,13 @@ void JsonRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Po
 		Poco::URI uri(request.getURI());
 		parseQueryParametersToRapidjson(uri, rapidjson_params);
 		
-		rapid_json_result = handle(rapidjson_params);
+		try {
+			rapid_json_result = handle(rapidjson_params);
+		}
+		catch (GradidoBlockchainException& ex)
+		{
+			rapid_json_result = stateError(ex.getFullString().data());
+		}
 	}
 
 	if (!rapid_json_result.IsNull()) {
@@ -334,3 +345,4 @@ Document JsonRequestHandler::checkObjectParameter(const Document& params, const 
 
 	return Document();
 }
+

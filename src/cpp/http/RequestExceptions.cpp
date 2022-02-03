@@ -122,3 +122,16 @@ RequestResponseErrorException& RequestResponseCakePHPException::setDetails(const
 	}
 	return *this;
 }
+
+// ****************** Handle Request Exception ************************************
+HandleRequestException::HandleRequestException(const char* what) noexcept
+	: GradidoBlockchainException(what)
+{
+
+}
+
+std::string HandleRequestException::getFullString() const
+{
+	return what();
+}
+	

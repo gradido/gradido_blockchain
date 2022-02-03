@@ -27,4 +27,14 @@ protected:
 	std::string				  mRawText;
 };
 
+class GradidoInvalidEnumException : public GradidoBlockchainException
+{
+public:
+	explicit GradidoInvalidEnumException(const char* what, const std::string& enumString) noexcept;
+	std::string getFullString() const;
+
+protected:
+	std::string mEnumString;
+};
+
 #endif __GRADIDO_BLOCKCHAIN_EXCEPTION_H

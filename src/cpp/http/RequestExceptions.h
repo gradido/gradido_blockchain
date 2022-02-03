@@ -65,4 +65,12 @@ protected:
 
 };
 
+class HandleRequestException : public GradidoBlockchainException
+{
+public:
+	HandleRequestException(const char* what) noexcept;
+	std::string getFullString() const;
+};
+
+
 #endif //__GRADIDO_BLOCKCHAIN_HTTP_REQUEST_EXCEPTION_H

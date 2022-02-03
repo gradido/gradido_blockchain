@@ -127,12 +127,14 @@ namespace model {
 
 		void TransactionBody::updateToOutbound(const std::string& otherGroup)
 		{
+			LOCK_RECURSIVE;
 			mProtoTransactionBody.set_other_group(otherGroup);
 			mProtoTransactionBody.set_type(proto::gradido::TransactionBody_CrossGroupType_OUTBOUND);
 		}
 
 		void TransactionBody::updateToInbound(const std::string& otherGroup)
 		{
+			LOCK_RECURSIVE;
 			mProtoTransactionBody.set_other_group(otherGroup);
 			mProtoTransactionBody.set_type(proto::gradido::TransactionBody_CrossGroupType_INBOUND);
 		}

@@ -166,9 +166,8 @@ int8_t MemoryManager::getMemoryStackIndex(uint16_t size) noexcept
 
 MemoryBin* MemoryManager::getFreeMemory(uint32_t size)
 {
-	if (size != (uint32_t)((uint16_t)size)) {
-		throw MemoryManagerException("MemoryManager::getFreeMemory size is to large, only 16 Bit allowed", size);
-	}
+	assert(size == (uint32_t)((uint16_t)size));
+
 	auto index = getMemoryStackIndex(size);
 	if (index < 0) {
 		return new MemoryBin(size);

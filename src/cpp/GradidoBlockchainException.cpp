@@ -36,3 +36,20 @@ std::string RapidjsonParseErrorException::getFullString() const
 	}
 	return resultString;
 }
+
+// *************************** Invalid Enum Exception *****************************
+GradidoInvalidEnumException::GradidoInvalidEnumException(const char* what, const std::string& enumString) noexcept
+	: GradidoBlockchainException(what), mEnumString(enumString)
+{
+
+}
+
+std::string GradidoInvalidEnumException::getFullString() const
+{
+	std::string resultString;
+	size_t resultSize = strlen(what()) + mEnumString.size() + 10;
+	resultString.reserve(resultSize);
+	resultString = what();
+	resultString += ", with: " + mEnumString;
+	return resultString;
+}

@@ -218,6 +218,25 @@ namespace DataTypeConverter
 		mm->releaseMemory(base64);
 		return base64String;
 	}
+
+	std::unique_ptr<std::string> binToBase64(std::unique_ptr<std::string> proto_bin, int variant/* = sodium_base64_VARIANT_ORIGINAL*/)
+	{
+		auto mm = MemoryManager::getInstance();
+
+		size_t encodedSize = sodium_base64_encoded_len(proto_bin->size(), variant);
+		auto base64 = mm->getFreeMemory(encodedSize);
+		memset(*base64, 0, encodedSize);
+
+		if (nullptr == sodium_bin2base64(*base64, encodedSize, (const unsigned char*)proto_bin->data(), proto_bin->size(), variant)) {
+			mm->releaseMemory(base64);
+			return nullptr;
+		}
+		proto_bin->reserve(encodedSize);
+		proto_bin->assign((const char*)*base64, encodedSize);
+		
+		mm->releaseMemory(base64);
+		return proto_bin;
+	}
 	 
 	std::string binToHex(const unsigned char* data, size_t size) 
 	{

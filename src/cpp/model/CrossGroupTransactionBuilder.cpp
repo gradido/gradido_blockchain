@@ -22,7 +22,11 @@ std::unique_ptr<model::gradido::GradidoTransaction> CrossGroupTransactionBuilder
 {
 	assert(outboundMessageId);
 	mBaseTransaction->setParentMessageId(outboundMessageId);
-	mBaseTransaction->getMutableTransactionBody()->updateToInbound(otherGroup);
+	return std::move(mBaseTransaction);
+}
 
+std::unique_ptr<model::gradido::GradidoTransaction> CrossGroupTransactionBuilder::createInboundTransaction(const std::string& otherGroup)
+{
+	mBaseTransaction->getMutableTransactionBody()->updateToInbound(otherGroup);
 	return std::move(mBaseTransaction);
 }

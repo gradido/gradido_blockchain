@@ -13,8 +13,6 @@ namespace model {
 
 		class GradidoTransaction
 		{
-			friend TransactionFactory;
-			friend CrossGroupTransactionBuilder;
 		public:
 			GradidoTransaction(proto::gradido::GradidoTransaction* protoGradidoTransaction);
 			GradidoTransaction(const std::string& serializedProtobuf);
@@ -22,23 +20,25 @@ namespace model {
 			~GradidoTransaction();
 
 			inline const TransactionBody* getTransactionBody() const { return mTransactionBody; }
+			inline TransactionBody* getMutableTransactionBody() { return mTransactionBody; }
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
 				IGradidoBlockchain* otherBlockchain = nullptr
 			) const;
 
-			inline GradidoTransaction* setMemo(const std::string& memo) { mTransactionBody->setMemo(memo); return this; }
-			inline GradidoTransaction* setCreated(Poco::DateTime created) { mTransactionBody->setCreated(created); return this; }
-			inline GradidoTransaction* setParentMessageId(MemoryBin* parentMessageId) { mProtoGradidoTransaction->set_allocated_parent_message_id(parentMessageId->copyAsString().release()); return this; }
+			inline GradidoTransaction& setMemo(const std::string& memo) { mTransactionBody->setMemo(memo); return *this; }
+			inline GradidoTransaction& setCreated(Poco::DateTime created) { mTransactionBody->setCreated(created); return *this; }
+			inline GradidoTransaction& setParentMessageId(MemoryBin* parentMessageId) { mProtoGradidoTransaction->set_allocated_parent_message_id(parentMessageId->copyAsString().release()); return *this; }
 
 			std::unique_ptr<std::string> getSerialized();
+			std::string toJson();
 
 		protected:
 			proto::gradido::GradidoTransaction* mProtoGradidoTransaction;
 			TransactionBody* mTransactionBody;
 
-			inline TransactionBody* getMutableTransactionBody() { return mTransactionBody; }
+			
 
 
 		};

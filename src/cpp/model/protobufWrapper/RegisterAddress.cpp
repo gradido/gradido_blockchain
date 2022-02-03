@@ -1,4 +1,5 @@
 #include "RegisterAddress.h"
+#include "GradidoBlockchainException.h"
 
 namespace model {
 	namespace gradido {
@@ -19,6 +20,16 @@ namespace model {
 
 			}
 			return true;
+		}
+
+		proto::gradido::RegisterAddress_AddressType RegisterAddress::getAddressTypeFromString(const std::string& addressType) 
+		{
+			proto::gradido::RegisterAddress_AddressType type;
+			if (!proto::gradido::RegisterAddress_AddressType_Parse(addressType, &type)) {
+				throw GradidoInvalidEnumException("getAddressTypeFromString", addressType);
+			}
+
+			return type;
 		}
 
 	}

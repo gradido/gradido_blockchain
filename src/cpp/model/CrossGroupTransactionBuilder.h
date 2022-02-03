@@ -21,6 +21,7 @@ public:
 	std::unique_ptr<model::gradido::GradidoTransaction> createOutboundTransaction(const std::string& otherGroup);
 	// must be called second, after this call, object is empty
 	std::unique_ptr<model::gradido::GradidoTransaction> createInboundTransaction(const std::string& otherGroup, MemoryBin* outboundMessageId);
+	std::unique_ptr<model::gradido::GradidoTransaction> createInboundTransaction(const std::string& otherGroup);
 
 protected:
 	std::unique_ptr<model::gradido::GradidoTransaction> mBaseTransaction;
