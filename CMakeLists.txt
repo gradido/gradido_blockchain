@@ -29,10 +29,10 @@ include_directories(
 IF(UNIX)
 	include_directories(
 		"dependencies/poco/Crypto/include" 
-		"dependencies/poco/Data/include" 
+#		"dependencies/poco/Data/include" 
 		"dependencies/poco/Util/include" 
 		"dependencies/poco/Foundation/include"
-		"dependencies/poco/JSON/include"
+#		"dependencies/poco/JSON/include"
 		"dependencies/poco/Net/include"
 		"dependencies/poco/NetSSL_OpenSSL/include"
 	)
