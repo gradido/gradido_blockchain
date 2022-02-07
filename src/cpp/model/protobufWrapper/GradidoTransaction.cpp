@@ -85,7 +85,7 @@ namespace model {
 
 		}
 
-		bool GradidoTransaction::addSign(MemoryBin* pubkeyBin, MemoryBin* signatureBin)
+		bool GradidoTransaction::addSign(const MemoryBin* pubkeyBin, const MemoryBin* signatureBin)
 		{
 			std::unique_ptr<std::string> bodyBytes;
 			
@@ -108,7 +108,7 @@ namespace model {
 			*pubkeyBytes = std::string((const char*)pubkeyBin, crypto_sign_PUBLICKEYBYTES);
 
 			auto sigBytes = sigPair->mutable_signature();
-			*sigBytes = std::string((char*)*signatureBin, crypto_sign_BYTES);
+			*sigBytes = std::string((const char*)signatureBin->data(), crypto_sign_BYTES);
 			return sigMap->sigpair_size() >= mTransactionBody->getTransactionBase()->getMinSignatureCount();
 			
 		}

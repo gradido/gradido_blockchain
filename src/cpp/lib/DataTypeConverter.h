@@ -6,7 +6,6 @@
 
 #include "Poco/Timespan.h"
 #include "Poco/Nullable.h"
-#include "Poco/Data/LOB.h"
 #include "Poco/Dynamic/Var.h"
 
 #include "gradido/BasicTypes.pb.h"
@@ -45,11 +44,10 @@ namespace DataTypeConverter {
 	inline std::string binToBase64(const std::string& proto_bin, int variant = sodium_base64_VARIANT_ORIGINAL) {
 		return binToBase64((const unsigned char*)proto_bin.data(), proto_bin.size(), variant);
 	}
-	inline std::unique_ptr<std::string> binToBase64(std::unique_ptr<std::string> proto_bin, int variant = sodium_base64_VARIANT_ORIGINAL);
+	std::unique_ptr<std::string> binToBase64(std::unique_ptr<std::string> proto_bin, int variant = sodium_base64_VARIANT_ORIGINAL);
 	
 
 	std::string binToHex(const unsigned char* data, size_t size);
-	std::string binToHex(const Poco::Nullable<Poco::Data::BLOB>& nullableBin);
 	std::unique_ptr<std::string> binToHex(std::unique_ptr<std::string> binString);
 	inline std::string binToHex(const MemoryBin* data) noexcept { return binToHex(data->data(), data->size());}
 	inline std::string binToHex(const std::vector<unsigned char>& data) { return binToHex(data.data(), data.size()); }
