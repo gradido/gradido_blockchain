@@ -52,18 +52,18 @@ Document JsonRPCRequest::request(const char* methodName, Value& params)
 		state = stateValue.GetString();
 	}
 
+	std::string errorMsg, detailsString;
+	Value& msg = Pointer("/result/msg").GetWithDefault(jsonAnswear, "");
+	if (msg.GetStringLength()) {
+		errorMsg = msg.GetString();
+	}
+	Value& details = Pointer("/result/details").GetWithDefault(jsonAnswear, "");
+	if (details.GetStringLength()) {
+		detailsString = details.GetString();
+	}
 	if (state == "error") {
-		std::string errorMsg;
-		Value& msg = Pointer("/result/msg").GetWithDefault(jsonAnswear, "");
-		if (msg.GetStringLength()) {
-			errorMsg = msg.GetString();
-		}
 		RequestResponseErrorException exception("node server return error", mRequestUri, errorMsg);
-		Value& details = Pointer("/result/details").GetWithDefault(jsonAnswear, "");
-		if (details.GetStringLength()) {
-			exception.setDetails(details.GetString());
-		}
-		throw exception;
+		throw exception.setDetails(detailsString);
 	}
 	else if (state == "success") {
 		/*for (auto it = result->begin(); it != result->end(); it++) {
@@ -73,5 +73,6 @@ Document JsonRPCRequest::request(const char* methodName, Value& params)
 		}*/
 		return jsonAnswear;
 	}
-	
+	RequestResponseErrorException exception("node server return unhandled state", mRequestUri, errorMsg);
+	throw exception.setDetails(detailsString);
 }
