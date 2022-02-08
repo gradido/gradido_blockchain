@@ -5,7 +5,7 @@
 * \date: 01.11.19
 *
 * \brief: manage memory blocks to reduce dynamic memory allocation for preventing memory fragmentation,
-* specially for key memory blocks of 32 and 64 byte 
+* specially for key memory blocks of 32 and 64 byte
 */
 
 #ifndef GRADIDO_LOGIN_SERVER_SINGLETON_MANAGER_MEMORY_MANAGER_H
@@ -18,18 +18,19 @@
 #include <stack>
 #include <assert.h>
 #include <mutex>
+#include <memory>
 
 #define MEMORY_MANAGER_PAGE_SIZE 10
 
 class MemoryPageStack;
 class MemoryManager;
 
-class MemoryBin 
+class MemoryBin
 {
 	friend MemoryPageStack;
 	friend MemoryManager;
-public: 
-	
+public:
+
 	inline operator unsigned char*() { return mData; }
 	inline operator char*() { return (char*)mData; }
 	inline operator void* () { return mData; }
@@ -86,7 +87,7 @@ public:
 
 	MemoryBin* getMemory(uint32_t size);
 	void releaseMemory(MemoryBin* memory) noexcept;
-	
+
 protected:
 
 	int8_t getMemoryStackIndex(uint16_t size) noexcept;
