@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_LIB_CRYPTO_CONFIG_
 #define __GRADIDO_BLOCKCHAIN_LIB_CRYPTO_CONFIG_
 
-#include "../SingletonManager/MemoryManager.h"
+#include "gradido_blockchain/MemoryManager.h"
 #include "mnemonic.h"
 
 namespace CryptoConfig

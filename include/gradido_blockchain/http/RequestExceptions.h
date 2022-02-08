@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_HTTP_REQUEST_EXCEPTION_H
 #define __GRADIDO_BLOCKCHAIN_HTTP_REQUEST_EXCEPTION_H
 
-#include "GradidoBlockchainException.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 #include "Poco/URI.h"
 
 #include "rapidjson/error/error.h"

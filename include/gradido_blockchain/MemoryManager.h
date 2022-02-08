@@ -11,8 +11,7 @@
 #ifndef GRADIDO_LOGIN_SERVER_SINGLETON_MANAGER_MEMORY_MANAGER_H
 #define GRADIDO_LOGIN_SERVER_SINGLETON_MANAGER_MEMORY_MANAGER_H
 
-//#include "../lib/DRMemoryList.h"
-#include "../lib/MultithreadContainer.h"
+#include "gradido_blockchain/lib/MultithreadContainer.h"
 
 #include <list>
 #include <stack>
@@ -64,7 +63,7 @@ protected:
 
 };
 
-class MemoryPageStack : protected UniLib::lib::MultithreadContainer
+class MemoryPageStack : protected MultithreadContainer
 {
 public:
 	MemoryPageStack(uint16_t size);

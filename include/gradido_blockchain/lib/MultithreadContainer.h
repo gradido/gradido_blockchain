@@ -34,40 +34,37 @@
 #ifndef __DR_UNIVERSUM_LIB_LIB_MULTITHREAD_CONTAINER_H__
 #define __DR_UNIVERSUM_LIB_LIB_MULTITHREAD_CONTAINER_H__
 
-#include "GradidoBlockchainException.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 #include <mutex>
 
-namespace UniLib {
-	namespace lib {
-		class MultithreadContainer
-		{
-		public:
+class MultithreadContainer
+{
+public:
 
-			void lock(const char* stackDetails = nullptr);
-			// \return false if mutex was locked from another thread
-			bool tryLock();
+	void lock(const char* stackDetails = nullptr);
+	// \return false if mutex was locked from another thread
+	bool tryLock();
 
-			inline void unlock() { mWorkMutex.unlock(); mLastSucceededLock = ""; }
+	inline void unlock() { mWorkMutex.unlock(); mLastSucceededLock = ""; }
 
-			inline const std::string& getLastSucceededLock() { return mLastSucceededLock; }
-		protected:
-			mutable std::recursive_mutex mWorkMutex;
-		private:
-			std::string mLastSucceededLock;
-		};
+	inline const std::string& getLastSucceededLock() { return mLastSucceededLock; }
+protected:
+	mutable std::recursive_mutex mWorkMutex;
+private:
+	std::string mLastSucceededLock;
+};
 
-		class MultithreadContainerLockTimeoutException : public GradidoBlockchainException
-		{
-		public:
-			explicit MultithreadContainerLockTimeoutException(const char* lastSucceedLock, const char* stackDetails);
-			std::string getFullString() const;
+class MultithreadContainerLockTimeoutException : public GradidoBlockchainException
+{
+public:
+	explicit MultithreadContainerLockTimeoutException(const char* lastSucceedLock, const char* stackDetails);
+	std::string getFullString() const;
 
-		protected:
-			std::string mLastSucceedLock;
-			std::string mStackDetails;
-		};
-	}
-}
+protected:
+	std::string mLastSucceedLock;
+	std::string mStackDetails;
+};
+	
 #define LOCK_RECURSIVE std::lock_guard<std::recursive_mutex> _lock_from_macro(mWorkMutex)
 
 #endif //__DR_UNIVERSUM_LIB_LIB_MULTITHREAD_CONTAINER_H__

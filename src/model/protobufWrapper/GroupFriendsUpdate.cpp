@@ -1,4 +1,4 @@
-#include "GroupFriendsUpdate.h"
+#include "gradido_blockchain/model/protobufWrapper/GroupFriendsUpdate.h"
 
 namespace model {
 	namespace gradido {

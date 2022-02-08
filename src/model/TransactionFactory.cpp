@@ -1,5 +1,5 @@
-#include "TransactionFactory.h"
-#include "lib/DataTypeConverter.h"
+#include "gradido_blockchain/model/TransactionFactory.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 
 using namespace model::gradido;
 

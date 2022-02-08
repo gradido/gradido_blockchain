@@ -1,5 +1,5 @@
 
-#include "JsonRequest.h"
+#include "gradido_blockchain/http/JsonRequest.h"
 
 #include "Poco/Net/HTTPRequest.h"
 #include "Poco/Net/HTTPResponse.h"
@@ -7,7 +7,7 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
-#include "GradidoBlockchainException.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 
 using namespace rapidjson;
 

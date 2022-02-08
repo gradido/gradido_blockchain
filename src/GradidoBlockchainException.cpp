@@ -1,4 +1,4 @@
-#include "GradidoBlockchainException.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 
 #include "rapidjson/error/en.h"
 

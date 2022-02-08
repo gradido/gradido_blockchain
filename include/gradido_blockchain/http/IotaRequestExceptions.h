@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_HTTP_IOTA_REQUEST_EXCEPTIONS_H
 #define __GRADIDO_BLOCKCHAIN_HTTP_IOTA_REQUEST_EXCEPTIONS_H
 
-#include "GradidoBlockchainException.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 #include "rapidjson/document.h"
 
 class IotaRequestException : public GradidoBlockchainException

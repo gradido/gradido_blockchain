@@ -1,4 +1,4 @@
-#include "MemoryManager.h"
+#include "gradido_blockchain/MemoryManager.h"
 #include "sodium.h"
 #include <memory.h>
 #include <exception>

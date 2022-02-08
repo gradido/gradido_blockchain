@@ -1,8 +1,8 @@
-#include "CryptoConfig.h"
+#include "gradido_blockchain/crypto/CryptoConfig.h"
 
-#include "Crypto/mnemonic_german.h"
-#include "Crypto/mnemonic_german2.h"
-#include "Crypto/mnemonic_bip0039.h"
+#include "gradido_blockchain/crypto/mnemonic_german.h"
+#include "gradido_blockchain/crypto/mnemonic_german2.h"
+#include "gradido_blockchain/crypto/mnemonic_bip0039.h"
 
 namespace CryptoConfig
 {

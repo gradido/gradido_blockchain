@@ -2,7 +2,7 @@
 #define __GRADIDO_LOGIN_SERVER_LIB_DATA_TYPE_CONVERTER_H
 
 #include <string>
-#include "../SingletonManager/MemoryManager.h"
+#include "gradido_blockchain/MemoryManager.h"
 
 #include "Poco/Timespan.h"
 #include "Poco/Nullable.h"

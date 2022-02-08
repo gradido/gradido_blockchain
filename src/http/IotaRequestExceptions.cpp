@@ -1,4 +1,4 @@
-#include "IotaRequestExceptions.h"
+#include "gradido_blockchain/http/IotaRequestExceptions.h"
 
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"

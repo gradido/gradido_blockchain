@@ -1,10 +1,10 @@
-#include "TransactionValidationExceptions.h"
+#include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 
 #include <sstream>
 
-#include "lib/DataTypeConverter.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 
-#include "GradidoTransaction.h"
+#include "gradido_blockchain/model/protobufWrapper/GradidoTransaction.h"
 
 namespace model {
 	namespace gradido {

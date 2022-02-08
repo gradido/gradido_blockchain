@@ -1,12 +1,13 @@
-#include "GradidoBlock.h"
+#include "gradido_blockchain/model/protobufWrapper/GradidoBlock.h"
 #include <google/protobuf/util/json_util.h>
 #include "gradido/TransactionBody.pb.h"
-#include "../../lib/DataTypeConverter.h"
+
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h"
 
-#include "ProtobufExceptions.h"
+#include "gradido_blockchain/model/protobufWrapper/ProtobufExceptions.h"
 
 using namespace rapidjson;
 

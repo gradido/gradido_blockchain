@@ -12,8 +12,8 @@
 #pragma warning(disable:4800)
 
 #include "gradido/BasicTypes.pb.h"
-#include "../../SingletonManager/MemoryManager.h"
-#include "lib/MultithreadContainer.h"
+#include "gradido_blockchain/MemoryManager.h"
+#include "gradido_blockchain/lib/MultithreadContainer.h"
 
 
 namespace model {

@@ -1,9 +1,12 @@
-#include "SecretKeyCryptography.h"
+#include "gradido_blockchain/crypto/SecretKeyCryptography.h"
+#include "gradido_blockchain/crypto/CryptoConfig.h"
+
+#include "gradido_blockchain/lib/Profiler.h"
 
 #include "sodium.h"
-#include "CryptoConfig.h"
 #include <assert.h>
-#include "../lib/Profiler.h"
+
+
 
 SecretKeyCryptography::SecretKeyCryptography()
 	: mOpsLimit(10), mMemLimit(33554432), mAlgo(2), mEncryptionKey(nullptr), mEncryptionKeyHash(0)

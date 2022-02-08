@@ -1,4 +1,4 @@
-#include "CrossGroupTransactionBuilder.h"
+#include "gradido_blockchain/model/CrossGroupTransactionBuilder.h"
 
 CrossGroupTransactionBuilder::CrossGroupTransactionBuilder(std::unique_ptr<model::gradido::GradidoTransaction> baseTransaction)
 	: mBaseTransaction(std::move(baseTransaction))

@@ -11,7 +11,7 @@
  *
  */
 
-#include "../SingletonManager/MemoryManager.h"
+#include "gradido_blockchain/MemoryManager.h"
 
 class IKeyPair 
 {

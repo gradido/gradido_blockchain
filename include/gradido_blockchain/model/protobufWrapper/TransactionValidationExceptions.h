@@ -1,11 +1,11 @@
 #ifndef __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_TRANSACTION_VALIDATION_EXCEPTIONS
 #define __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_TRANSACTION_VALIDATION_EXCEPTIONS
 
-#include "GradidoBlockchainException.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 #include <string>
 
-#include "SingletonManager/MemoryManager.h"
-#include "TransactionBody.h"
+#include "gradido_blockchain/MemoryManager.h"
+#include "gradido_blockchain/model/protobufWrapper/TransactionBody.h"
 
 #include "Poco/DateTime.h"
 

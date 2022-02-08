@@ -1,11 +1,11 @@
-#include "JsonCakePHPRequest.h"
+#include "gradido_blockchain/http/JsonCakePHPRequest.h"
 
 #include "Poco/Net/HTTPRequest.h"
 #include "Poco/Net/HTTPResponse.h"
 #include "Poco/DateTimeFormatter.h"
 
-#include "JsonRequestHandler.h"
-#include "RequestExceptions.h"
+#include "gradido_blockchain/http/JsonRequestHandler.h"
+#include "gradido_blockchain/http/RequestExceptions.h"
 
 #include "rapidjson/writer.h"
 using namespace rapidjson;

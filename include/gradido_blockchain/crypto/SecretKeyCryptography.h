@@ -2,7 +2,7 @@
 #define __GRADIDO_LOGIN_SERVER_CRYPTO_AUTHENTICATED_ENCRYPTION_H
 
 
-#include "../SingletonManager/MemoryManager.h"
+#include "gradido_blockchain/MemoryManager.h"
 
 
 #include <shared_mutex>

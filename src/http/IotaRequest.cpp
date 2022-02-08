@@ -1,7 +1,7 @@
-#include "IotaRequest.h"
-#include "IotaRequestExceptions.h"
+#include "gradido_blockchain/http/IotaRequest.h"
+#include "gradido_blockchain/http/IotaRequestExceptions.h"
 
-#include "lib/Profiler.h"
+#include "gradido_blockchain/lib/Profiler.h"
 
 #include <algorithm>
 #include <cctype>
@@ -13,7 +13,6 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
-#include "ServerConfig.h"
 
 using namespace rapidjson;
 

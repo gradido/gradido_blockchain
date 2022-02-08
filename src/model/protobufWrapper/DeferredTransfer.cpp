@@ -1,5 +1,5 @@
-#include "DeferredTransfer.h"
-#include "lib/DataTypeConverter.h"
+#include "gradido_blockchain/model/protobufWrapper/DeferredTransfer.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 
 namespace model {
 	namespace gradido {

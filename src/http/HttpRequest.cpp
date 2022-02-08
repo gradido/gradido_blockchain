@@ -1,9 +1,10 @@
-#include "HttpRequest.h"
+#include "gradido_blockchain/http/HttpRequest.h"
 
 #include "Poco/Net/HTTPSClientSession.h"
 #include "Poco/Net/HTTPRequest.h"
 #include "Poco/Net/HTTPResponse.h"
-#include "ServerConfig.h"
+
+#include "gradido_blockchain/ServerConfig.h"
 
 
 using namespace rapidjson;

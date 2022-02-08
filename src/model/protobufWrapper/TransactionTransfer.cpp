@@ -1,5 +1,5 @@
-#include "TransactionTransfer.h"
-#include "TransactionValidationExceptions.h"
+#include "gradido_blockchain/model/protobufWrapper/TransactionTransfer.h"
+#include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 
 #include <sodium.h>
 

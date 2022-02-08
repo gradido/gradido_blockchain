@@ -11,9 +11,9 @@
  * 
  */
 
-#include "GradidoBlockchainException.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 
-#include "lib/DRHashList.h"
+#include "gradido_blockchain/lib/DRHashList.h"
 #include <string>
 #include <shared_mutex>
 #include <map>

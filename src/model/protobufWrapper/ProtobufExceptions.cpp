@@ -1,4 +1,4 @@
-#include "ProtobufExceptions.h"
+#include "gradido_blockchain/model/protobufWrapper/ProtobufExceptions.h"
  
 ProtobufSerializationException::ProtobufSerializationException(const char* what, const google::protobuf::Message& message) noexcept
 	: GradidoBlockchainException(what), mMessage(message)

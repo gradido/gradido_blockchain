@@ -1,8 +1,8 @@
-#include "TransactionBase.h"
-#include "GradidoTransaction.h"
+#include "gradido_blockchain/model/protobufWrapper/TransactionBase.h"
+#include "gradido_blockchain/model/protobufWrapper/GradidoTransaction.h"
 
 #include "Poco/RegularExpression.h"
-#include "TransactionValidationExceptions.h"
+#include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 
 #include <iomanip>
 #include <sodium.h>

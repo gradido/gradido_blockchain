@@ -1,5 +1,5 @@
-#include "DataTypeConverter.h"
-#include "GradidoBlockchainException.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 
 #include "Poco/RegularExpression.h"
 

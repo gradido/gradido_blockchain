@@ -1,13 +1,10 @@
-#include "Passphrase.h"
-
 #include "Poco/Types.h"
 #include "Poco/Tuple.h"
 
-#include "KeyPairEd25519.h"
-
-#include "CryptoConfig.h"
-
-#include "../lib/DataTypeConverter.h"
+#include "gradido_blockchain/crypto/Passphrase.h"
+#include "gradido_blockchain/crypto/KeyPairEd25519.h"
+#include "gradido_blockchain/crypto/CryptoConfig.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 
 #include <sstream>
 

@@ -1,18 +1,18 @@
-#include "JsonRequestHandler.h"
+#include "gradido_blockchain/http/JsonRequestHandler.h"
 
 #include "Poco/Net/HTTPServerRequest.h"
 #include "Poco/Net/HTTPServerResponse.h"
 
 #include "Poco/DeflatingStream.h"
 
-#include "ServerConfig.h"
-#include "../lib/DataTypeConverter.h"
+//#include "ServerConfig.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 
 #include "rapidjson/writer.h"
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"
 
-#include "GradidoBlockchainException.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 
 using namespace rapidjson;
 

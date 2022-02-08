@@ -1,13 +1,13 @@
 
 
-#include "mnemonic.h"
+#include "gradido_blockchain/crypto/mnemonic.h"
 #include <memory>
 #include <cstring>
 #include <assert.h>
 #include <mutex> 
 #include "../dependencies/tinf/src/tinf.h"
 
-#include "CryptoConfig.h"
+#include "gradido_blockchain/crypto/CryptoConfig.h"
 
 #include "Poco/RegularExpression.h"
 

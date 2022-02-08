@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_PROTOBUF_EXCEPTIONS_
 #define __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_PROTOBUF_EXCEPTIONS_
 
-#include "GradidoBlockchainException.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 #include <google/protobuf/message.h>
 #include <google/protobuf/util/json_util.h>
 

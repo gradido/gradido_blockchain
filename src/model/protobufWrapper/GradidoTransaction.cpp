@@ -1,9 +1,8 @@
-#include "GradidoTransaction.h"
+#include "gradido_blockchain/model/protobufWrapper/GradidoTransaction.h"
+#include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
+#include "gradido_blockchain/model/protobufWrapper/ProtobufExceptions.h"
 
-#include "TransactionValidationExceptions.h"
-
-#include "Crypto/KeyPairEd25519.h"
-#include "ProtobufExceptions.h"
+#include "gradido_blockchain/crypto/KeyPairEd25519.h"
 
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h"

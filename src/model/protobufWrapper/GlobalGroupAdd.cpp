@@ -1,10 +1,11 @@
-#include "GlobalGroupAdd.h"
-#include "GradidoBlock.h"
-#include "TransactionValidationExceptions.h"
+#include "gradido_blockchain/model/protobufWrapper/GlobalGroupAdd.h"
+#include "gradido_blockchain/model/protobufWrapper/GradidoBlock.h"
+#include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
+
+#include "gradido_blockchain/model/IGradidoBlockchain.h"
 
 #include "Poco/RegularExpression.h"
 
-#include "../IGradidoBlockchain.h"
 
 namespace model {
 	namespace gradido {

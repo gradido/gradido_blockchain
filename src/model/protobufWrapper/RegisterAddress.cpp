@@ -1,5 +1,5 @@
-#include "RegisterAddress.h"
-#include "GradidoBlockchainException.h"
+#include "gradido_blockchain/model/protobufWrapper/RegisterAddress.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 
 namespace model {
 	namespace gradido {

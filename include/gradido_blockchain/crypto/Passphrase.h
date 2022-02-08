@@ -3,8 +3,8 @@
 
 //#include <string>
 #include "mnemonic.h"
-#include "SingletonManager/MemoryManager.h"
-#include "GradidoBlockchainException.h"
+#include "gradido_blockchain/MemoryManager.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 #include <memory>
 
 

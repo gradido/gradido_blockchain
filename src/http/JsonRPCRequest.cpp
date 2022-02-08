@@ -1,7 +1,7 @@
-#include "JsonRPCRequest.h"
+#include "gradido_blockchain/http/JsonRPCRequest.h"
 
-#include "JsonRequestHandler.h"
-#include "RequestExceptions.h"
+#include "gradido_blockchain/http/JsonRequestHandler.h"
+#include "gradido_blockchain/http/RequestExceptions.h"
 
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"

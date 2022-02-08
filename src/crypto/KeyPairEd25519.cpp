@@ -1,8 +1,8 @@
 
-#include "KeyPairEd25519.h"
+#include "gradido_blockchain/crypto/KeyPairEd25519.h"
 #include <assert.h>
 
-#include "../lib/DataTypeConverter.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 
 
 

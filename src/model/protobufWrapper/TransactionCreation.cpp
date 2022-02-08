@@ -1,9 +1,9 @@
-#include "TransactionCreation.h"
+#include "gradido_blockchain/model/protobufWrapper/TransactionCreation.h"
 
-#include "lib/DataTypeConverter.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "Poco/DateTimeFormatter.h"
 
-#include "TransactionValidationExceptions.h"
+#include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 
 #include <sodium.h>
 

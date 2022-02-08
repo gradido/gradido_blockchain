@@ -1,9 +1,9 @@
-#include "TransactionBody.h"
+#include "gradido_blockchain/model/protobufWrapper/TransactionBody.h"
 
-#include "../../SingletonManager/MemoryManager.h"
-#include "lib/DataTypeConverter.h"
-#include "ProtobufExceptions.h"
-#include "TransactionValidationExceptions.h"
+#include "gradido_blockchain/MemoryManager.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain/model/protobufWrapper/ProtobufExceptions.h"
+#include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 
 namespace model {
 	namespace gradido {
