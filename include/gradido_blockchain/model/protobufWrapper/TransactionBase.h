@@ -51,7 +51,7 @@ namespace model {
 			TRANSACTION_VALIDATION_CONNECTED_BLOCKCHAIN = 32
 		};
 	
-		class TransactionBase : public UniLib::lib::MultithreadContainer
+		class TransactionBase : public MultithreadContainer
 		{
 		public:
 			TransactionBase();

@@ -4,7 +4,7 @@
 #include "Poco/Net/HTTPRequest.h"
 #include "Poco/Net/HTTPResponse.h"
 
-#include "gradido_blockchain/ServerConfig.h"
+#include "gradido_blockchain/http/ServerConfig.h"
 
 
 using namespace rapidjson;
@@ -31,7 +31,7 @@ Poco::SharedPtr<Poco::Net::HTTPClientSession> HttpRequest::createClientSession()
 	
 	Poco::SharedPtr<Poco::Net::HTTPClientSession> clientSession;
 	if (mRequestUri.getPort() == 443) {
-		clientSession = new Poco::Net::HTTPSClientSession(mRequestUri.getHost(), mRequestUri.getPort(), ServerConfig::g_SSL_CLient_Context);
+		clientSession = new Poco::Net::HTTPSClientSession(mRequestUri.getHost(), mRequestUri.getPort(), ServerConfig::g_SSL_Client_Context);
 	}
 	else {
 		clientSession = new Poco::Net::HTTPClientSession(mRequestUri.getHost(), mRequestUri.getPort());

@@ -19,7 +19,7 @@
 namespace model {
 	namespace gradido {
 
-		class TransactionBody : public UniLib::lib::MultithreadContainer
+		class TransactionBody : public MultithreadContainer
 		{
 		public:
 			virtual ~TransactionBody();

@@ -6,7 +6,7 @@
 
 namespace model {
 	namespace gradido {
-		class GradidoBlock : public UniLib::lib::MultithreadContainer
+		class GradidoBlock : public MultithreadContainer
 		{
 		public:
 			GradidoBlock(std::string serializedGradidoBlock);
