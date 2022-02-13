@@ -17,8 +17,11 @@ endif()
 
 IF(WIN32)
     # if static lib build
-	#include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-	#conan_basic_setup()
+    message("build shared libs: ${BUILD_SHARED_LIBS}")
+    if(NOT BUILD_SHARED_LIBS)
+	    include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+	    conan_basic_setup()
+    ENDIF()
 ENDIF()
 
 enable_testing()
@@ -33,7 +36,13 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 #FetchContent_MakeAvailable(googletest)
 
 add_executable(GradidoBlockchainTest ${TEST_SRC})
-target_link_libraries(GradidoBlockchainTest GradidoBlockchain gtest_main)
+target_link_libraries(GradidoBlockchainTest GradidoBlockchain)
+
+IF(NOT BUILD_SHARED_LIBS) 
+    IF(WIN32) 
+        target_link_libraries(GradidoBlockchainTest ${CONAN_LIBS})
+    ENDIF()
+ENDIF()
 
 include(GoogleTest)
 gtest_discover_tests(GradidoBlockchainTest)

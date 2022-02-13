@@ -156,3 +156,9 @@ option(GradidoBlockchain_INCLUDE_PACKAGING "Include packaging rules for GradidoB
 if (GradidoBlockchain_INCLUDE_PACKAGING)
     add_subdirectory(packaging)
 endif ()
+
+# add test
+include(CTest)
+add_subdirectory(test)
+add_test(NAME GradidoBlockchainTest
+         COMMAND GradidoBlockchainTest)
