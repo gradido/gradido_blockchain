@@ -185,9 +185,10 @@ namespace DataTypeConverter
 
 		size_t resultBinSize = 0;
 
-		if (0 != sodium_base642bin(*bin, binSize, base64String.data(), encodedSize, nullptr, &resultBinSize, nullptr, sodium_base64_VARIANT_ORIGINAL)) {
+		auto convertResult = sodium_base642bin(*bin, binSize, base64String.data(), encodedSize, nullptr, &resultBinSize, nullptr, variant);
+		if (0 != convertResult) {
 			mm->releaseMemory(bin);
-			throw GradidoInvalidBase64Exception("invalid base64", base64String.data());
+			throw GradidoInvalidBase64Exception("invalid base64", base64String.data(), convertResult);
 		}
 		if (resultBinSize < binSize) {
 			auto bin_real = mm->getMemory(resultBinSize);
@@ -209,9 +210,10 @@ namespace DataTypeConverter
 
 		size_t resultBinSize = 0;
 
-		if (0 != sodium_base642bin(*bin, binSize, base64String->data(), encodedSize, nullptr, &resultBinSize, nullptr, sodium_base64_VARIANT_ORIGINAL)) {
+		auto convertResult = sodium_base642bin(*bin, binSize, base64String->data(), encodedSize, nullptr, &resultBinSize, nullptr, variant);
+		if (0 != convertResult) {
 			mm->releaseMemory(bin);
-			throw GradidoInvalidBase64Exception("invalid base64", base64String.release()->data());
+			throw GradidoInvalidBase64Exception("invalid base64", base64String.release()->data(), convertResult);
 		}
 		base64String->reserve(resultBinSize);
 		base64String->assign((const char*)*bin, resultBinSize);

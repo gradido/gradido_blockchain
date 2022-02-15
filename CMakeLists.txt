@@ -51,8 +51,7 @@ FILE(GLOB DATAMODEL_GRADIDO_PROTOS "${GRADIDO_PROTO_MODEL_PATH}/gradido/*.proto"
 include_directories(${PROTOBINDING_PATH})
 IF(WIN32)
 	set(PROTOC_BIN_PATH "${PROJECT_BINARY_DIR}/bin")
-	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${PROTOC_BIN_PATH}/Debug" )
-	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${PROTOC_BIN_PATH}/Release" )
+	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${PROTOC_BIN_PATH}/${CMAKE_BUILD_TYPE}" )
 	MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${PROTOC_BIN_PATH}/${CMAKE_BUILD_TYPE}")
 ELSE()
 	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" )
@@ -100,6 +99,10 @@ FILE(GLOB CRYPTO "src/cpp/Crypto/*.h" "src/cpp/Crypto/*.cpp")
 FILE(GLOB MAIN "src/cpp/*.cpp" "src/cpp/*.c"  "src/cpp/*.h")
 FILE(GLOB PROTO_GRADIDO "build/proto/gradido/*.cc" "build/proto/gradido/*.h")
 
+# used only for test project 
+FILE(GLOB TEST "src/cpp/test/*.cpp" "src/cpp/test/*.h")
+FILE(GLOB TEST_LIB "src/cpp/test/lib/*.cpp" "src/cpp/test/lib/*.h")
+
 SET(LOCAL_SRCS 
 	${TINF} ${MAIN} ${HTTP}
 	${CRYPTO} ${MODEL} ${MODEL_GRADIDO} ${MODEL_PROTOBUF_WRAPPER}
@@ -107,6 +110,9 @@ SET(LOCAL_SRCS
 	${PROTO_GRADIDO} 
 )
 
+SET(TEST_SRCS
+	${LOCAL_SRCS} ${TEST} ${TEST_LIB}
+)
 aux_source_directory("src/cpp" LOCAL_SRCS)
 
 if(MSVC)
@@ -120,6 +126,9 @@ if(MSVC)
 	source_group("model" FILES ${MODEL})
 	source_group("SingletonManager" FILES ${SINGLETON_MANAGER})
 	source_group("lib" FILES ${LIB_SRC})
+	# test
+	source_group("test\\lib" FILES ${TEST_LIB})
+	source_group("test" FILES ${TEST})
 endif()
 
 #if(WIN32)
@@ -148,3 +157,4 @@ else() # unix
 	target_link_libraries(GradidoBlockchain ${POCO_LIBS} sodium libprotobuf)
 endif()
 
+############################# build test ##############################################
