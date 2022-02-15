@@ -61,11 +61,10 @@ namespace model {
 						);
 					}
 				}
-
-				auto transaction_base = mTransactionBody->getTransactionBase();
-				auto result = transaction_base->checkRequiredSignatures(&sig_map);
-
-				transaction_base->validate();
+				
+				// check for not allowed signatures
+				mTransactionBody->getTransactionBase()->checkRequiredSignatures(&sig_map);
+				return mTransactionBody->validate(level, blockchain);
 			}
 			/* 
 			// must be implemented in gradido node server

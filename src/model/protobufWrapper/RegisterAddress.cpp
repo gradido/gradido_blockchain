@@ -22,6 +22,12 @@ namespace model {
 			return true;
 		}
 
+		int RegisterAddress::prepare()
+		{
+			mMinSignatureCount = 1;
+			return 0;
+		}
+
 		proto::gradido::RegisterAddress_AddressType RegisterAddress::getAddressTypeFromString(const std::string& addressType) 
 		{
 			proto::gradido::RegisterAddress_AddressType type;

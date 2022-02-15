@@ -16,7 +16,7 @@ public:
 	virtual ~HttpRequest() {}
 
 protected:
-	Poco::SharedPtr<Poco::Net::HTTPClientSession> createClientSession();
+	virtual Poco::SharedPtr<Poco::Net::HTTPClientSession> createClientSession();
 	std::string GET(const char* pathAndQuery = nullptr, const char* version = nullptr);
 	// 
 	Poco::URI mRequestUri;

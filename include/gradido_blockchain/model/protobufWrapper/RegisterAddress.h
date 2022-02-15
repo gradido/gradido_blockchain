@@ -13,6 +13,7 @@ namespace model {
 			RegisterAddress(const proto::gradido::RegisterAddress& registerAddress);
 			~RegisterAddress();
 
+			int prepare();
 			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
 
 			static proto::gradido::RegisterAddress_AddressType getAddressTypeFromString(const std::string& addressType);
