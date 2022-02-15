@@ -185,9 +185,10 @@ namespace DataTypeConverter
 
 		size_t resultBinSize = 0;
 
-		if (0 != sodium_base642bin(*bin, binSize, base64String.data(), encodedSize, nullptr, &resultBinSize, nullptr, sodium_base64_VARIANT_ORIGINAL)) {
+		auto convertResult = sodium_base642bin(*bin, binSize, base64String.data(), encodedSize, nullptr, &resultBinSize, nullptr, variant);
+		if (0 != convertResult) {
 			mm->releaseMemory(bin);
-			throw GradidoInvalidBase64Exception("invalid base64", base64String.data());
+			throw GradidoInvalidBase64Exception("invalid base64", base64String.data(), convertResult);
 		}
 		if (resultBinSize < binSize) {
 			auto bin_real = mm->getMemory(resultBinSize);
@@ -208,18 +209,16 @@ namespace DataTypeConverter
 		memset(*bin, 0, binSize);
 
 		size_t resultBinSize = 0;
-
-		if (0 != sodium_base642bin(*bin, binSize, base64String->data(), encodedSize, nullptr, &resultBinSize, nullptr, sodium_base64_VARIANT_ORIGINAL)) {
+		auto convertResult = sodium_base642bin(*bin, binSize, base64String->data(), encodedSize, nullptr, &resultBinSize, nullptr, variant);
+		if (0 != convertResult) {
 			mm->releaseMemory(bin);
-			throw GradidoInvalidBase64Exception("invalid base64", base64String.release()->data());
+			throw GradidoInvalidBase64Exception("invalid base64", base64String.release()->data(), convertResult);
 		}
 		base64String->reserve(resultBinSize);
 		base64String->assign((const char*)*bin, resultBinSize);
 		mm->releaseMemory(bin);
 		return base64String;
 	}
-
-
 
 
 	std::string binToBase64(const unsigned char* data, size_t size, int variant /*= sodium_base64_VARIANT_ORIGINAL*/)
@@ -235,7 +234,7 @@ namespace DataTypeConverter
 			return "";
 		}
 
-		std::string base64String((const char*)*base64);
+		std::string base64String((const char*)*base64, encodedSize-1);
 		mm->releaseMemory(base64);
 		return base64String;
 	}
@@ -244,6 +243,7 @@ namespace DataTypeConverter
 	{
 		auto mm = MemoryManager::getInstance();
 
+		// return encodedSize + 1 for trailing \0
 		size_t encodedSize = sodium_base64_encoded_len(proto_bin->size(), variant);
 		auto base64 = mm->getMemory(encodedSize);
 		memset(*base64, 0, encodedSize);
@@ -252,8 +252,9 @@ namespace DataTypeConverter
 			mm->releaseMemory(base64);
 			return nullptr;
 		}
-		proto_bin->reserve(encodedSize);
-		proto_bin->assign((const char*)*base64, encodedSize);
+		// we don't need a trailing \0 because string already store the size
+		proto_bin->reserve(encodedSize-1);
+		proto_bin->assign((const char*)*base64, encodedSize-1);
 		
 		mm->releaseMemory(base64);
 		return proto_bin;
