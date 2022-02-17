@@ -37,7 +37,7 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include <mutex>
 
-class MultithreadContainer
+class GRADIDOBLOCKCHAIN_EXPORT MultithreadContainer
 {
 public:
 
@@ -54,7 +54,7 @@ private:
 	std::string mLastSucceededLock;
 };
 
-class MultithreadContainerLockTimeoutException : public GradidoBlockchainException
+class GRADIDOBLOCKCHAIN_EXPORT MultithreadContainerLockTimeoutException : public GradidoBlockchainException
 {
 public:
 	explicit MultithreadContainerLockTimeoutException(const char* lastSucceedLock, const char* stackDetails);

@@ -4,6 +4,10 @@ project(GradidoBlockchainTest)
 # GoogleTest requires at least C++11
 set(CMAKE_CXX_STANDARD 11)
 
+include_directories(
+	"../dependencies/protobuf/third_party/googletest/googletest/include"
+)
+
 # collect source code files
 FILE(GLOB TEST_MAIN "*.cpp" "*.h")
 FILE(GLOB TEST_LIB "lib/*.cpp" "lib/*.h")
@@ -36,7 +40,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 #FetchContent_MakeAvailable(googletest)
 
 add_executable(GradidoBlockchainTest ${TEST_SRC})
-target_link_libraries(GradidoBlockchainTest GradidoBlockchain)
+target_link_libraries(GradidoBlockchainTest GradidoBlockchain gtest)
 
 IF(NOT BUILD_SHARED_LIBS) 
     IF(WIN32) 

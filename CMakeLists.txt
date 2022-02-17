@@ -3,6 +3,9 @@
 cmake_minimum_required(VERSION 3.18.2)
 project(GradidoBlockchain VERSION 1.0.0)
 #project(GradidoBlockchain C CXX)
+IF(WIN32)
+	set(CMAKE_CXX_FLAGS         "/EHsc")
+ENDIF()
 
 if (NOT DEFINED CMAKE_CXX_VISIBILITY_PRESET AND
     NOT DEFINED CMAKE_VISIBILITY_INLINES_HIDDEN)
@@ -17,7 +20,10 @@ endif ()
 
 ############################## find protobuf  #########################################
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+# prevent problems with two libs including googletest 
+option(protobuf_BUILD_TESTS "Build tests" OFF)
 add_subdirectory(dependencies/protobuf/cmake)
+
 ############################## parse protobuf files ###################################
 
 FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/gradido_protocol GRADIDO_PROTO_MODEL_PATH)
@@ -29,7 +35,12 @@ include_directories(${PROTOBINDING_PATH})
 IF(WIN32)
 	set(PROTOC_BIN_PATH "${PROJECT_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}")
 	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${PROTOC_BIN_PATH}" )
-	MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${PROTOC_BIN_PATH}")
+	IF(PROTOBUF_PROTOC_EXECUTABLE)
+		MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${PROTOC_BIN_PATH}")
+	ELSE()
+		find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" )
+		MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${CMAKE_BINARY_DIR}/bin")
+	ENDIF()
 ELSE()
 	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" )
 	MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${CMAKE_BINARY_DIR}/bin")
@@ -74,19 +85,10 @@ FILE(GLOB CRYPTO "include/gradido_blockchain/crypto/*.h" "src/crypto/*.cpp")
 FILE(GLOB MAIN "src/*.cpp" "src/*.c"  "include/gradido_blockchain/*.h")
 FILE(GLOB PROTO_GRADIDO "build/proto/gradido/*.cc" "build/proto/gradido/*.h")
 
-# used only for test project 
-FILE(GLOB TEST "test/*.cpp" "src/cpp/test/*.h")
-FILE(GLOB TEST_LIB "test/lib/*.cpp" "src/cpp/test/lib/*.h")
-
-SET(LOCAL_SRCS 
+SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS 
 	${TINF} ${MAIN} ${HTTP}
-	${CRYPTO} ${MODEL} ${MODEL_PROTOBUF_WRAPPER}
-	${SINGLETON_MANAGER} ${LIB_SRC} 
+	${CRYPTO} ${MODEL} ${MODEL_PROTOBUF_WRAPPER} ${LIB_SRC} 
 	${PROTO_GRADIDO} 
-)
-
-SET(TEST_SRCS
-	${LOCAL_SRCS} ${TEST} ${TEST_LIB}
 )
 
 if(MSVC)
@@ -126,7 +128,7 @@ IF(UNIX)
 
 ENDIF()
 
-add_library(GradidoBlockchain ${LOCAL_SRCS})
+add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
 if(BUILD_SHARED_LIBS) 
@@ -159,6 +161,7 @@ endif ()
 
 # add test
 include(CTest)
+add_subdirectory("dependencies/protobuf/third_party/googletest")
 add_subdirectory(test)
 add_test(NAME GradidoBlockchainTest
          COMMAND GradidoBlockchainTest)

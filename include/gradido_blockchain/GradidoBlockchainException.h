@@ -2,10 +2,10 @@
 #define __GRADIDO_BLOCKCHAIN_EXCEPTION_H
 
 #include <stdexcept>
-
+#include "gradido_blockchain/export.h"
 #include "rapidjson/error/error.h"
 
-class GradidoBlockchainException : public std::runtime_error
+class GRADIDOBLOCKCHAIN_EXPORT GradidoBlockchainException : public std::runtime_error
 {
 public:
 	explicit GradidoBlockchainException(const char* what) : std::runtime_error(what) {}
@@ -13,7 +13,7 @@ public:
 	virtual std::string getFullString() const = 0;
 };
 
-class RapidjsonParseErrorException : public GradidoBlockchainException
+class GRADIDOBLOCKCHAIN_EXPORT RapidjsonParseErrorException : public GradidoBlockchainException
 {
 public:
 	explicit RapidjsonParseErrorException(const char* what, rapidjson::ParseErrorCode parseErrorCode, size_t parseErrorOffset) noexcept;
@@ -27,7 +27,7 @@ protected:
 	std::string				  mRawText;
 };
 
-class GradidoInvalidEnumException : public GradidoBlockchainException
+class GRADIDOBLOCKCHAIN_EXPORT GradidoInvalidEnumException : public GradidoBlockchainException
 {
 public:
 	explicit GradidoInvalidEnumException(const char* what, const std::string& enumString) noexcept;
@@ -37,7 +37,7 @@ protected:
 	std::string mEnumString;
 };
 
-class GradidoInvalidBase64Exception : public GradidoBlockchainException
+class GRADIDOBLOCKCHAIN_EXPORT GradidoInvalidBase64Exception : public GradidoBlockchainException
 {
 public:
 	explicit GradidoInvalidBase64Exception(const char* what, const std::string& base64, int lastValidCharacter) noexcept;

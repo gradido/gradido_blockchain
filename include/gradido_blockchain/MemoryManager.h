@@ -24,7 +24,7 @@
 class MemoryPageStack;
 class MemoryManager;
 
-class MemoryBin
+class GRADIDOBLOCKCHAIN_EXPORT MemoryBin
 {
 	friend MemoryPageStack;
 	friend MemoryManager;
@@ -77,7 +77,7 @@ protected:
 	uint16_t mSize;
 };
 
-class MemoryManager
+class GRADIDOBLOCKCHAIN_EXPORT MemoryManager
 {
 public:
 	~MemoryManager();
@@ -96,7 +96,7 @@ protected:
 };
 
 
-class MemoryManagerException : public GradidoBlockchainException
+class GRADIDOBLOCKCHAIN_EXPORT MemoryManagerException : public GradidoBlockchainException
 {
 public:
 	MemoryManagerException(const char* what, uint32_t size = 0);
