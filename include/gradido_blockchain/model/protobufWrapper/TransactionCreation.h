@@ -28,6 +28,8 @@ namespace model {
 			//! maybe ask node server and hope the answer came fast
 			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
 
+			std::vector<MemoryBin*> getInvolvedAddresses() const;
+
 			inline google::protobuf::int64 getAmount() { return mProtoCreation.recipient().amount(); }
 
 			inline std::string getAmountString() { return amountToString(getAmount()); }

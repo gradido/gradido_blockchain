@@ -76,5 +76,18 @@ namespace model {
 			
 			return true;
 		}
+
+		std::vector<MemoryBin*> TransactionTransfer::getInvolvedAddresses() const
+		{
+			auto mm = MemoryManager::getInstance();
+			auto senderPubkeySize = mProtoTransfer.sender().pubkey().size();
+			auto senderPubkey = mm->getMemory(senderPubkeySize);
+			memcpy(*senderPubkey, mProtoTransfer.sender().pubkey().data(), senderPubkeySize);
+
+			auto recipientPubkeySize = mProtoTransfer.recipient().size();
+			auto recipientPubkey = mm->getMemory(recipientPubkeySize);
+			memcpy(*recipientPubkey, mProtoTransfer.recipient().data(), recipientPubkeySize);
+			return { senderPubkey, recipientPubkey };
+		}
 	}
 }

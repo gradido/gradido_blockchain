@@ -22,6 +22,26 @@ namespace model {
 			return true;
 		}
 
+		std::vector<MemoryBin*> RegisterAddress::getInvolvedAddresses() const 
+		{
+			auto mm = MemoryManager::getInstance();
+			std::vector<MemoryBin*> result;
+
+			auto userPubkeySize = mRegisterAddress.user_pubkey().size();			
+			if (userPubkeySize) {
+				auto userPubkey = mm->getMemory(userPubkeySize);
+				memcpy(*userPubkey, mRegisterAddress.user_pubkey().data(), userPubkeySize);
+				result.push_back(userPubkey);
+			}
+			auto subaccountPubkeySize = mRegisterAddress.subaccount_pubkey().size();
+			if (subaccountPubkeySize) {
+				auto subaccountPubkey = mm->getMemory(subaccountPubkeySize);
+				memcpy(*subaccountPubkey, mRegisterAddress.subaccount_pubkey().data(), subaccountPubkeySize);
+				result.push_back(subaccountPubkey);
+			}
+			return result;
+		}
+
 		int RegisterAddress::prepare()
 		{
 			mMinSignatureCount = 1;

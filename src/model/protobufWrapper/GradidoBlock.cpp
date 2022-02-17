@@ -13,7 +13,7 @@ using namespace rapidjson;
 
 namespace model {
 	namespace gradido {
-		GradidoBlock::GradidoBlock(std::string serializedGradidoBlock)
+		GradidoBlock::GradidoBlock(const std::string& serializedGradidoBlock)
 			: mGradidoTransaction(nullptr)
 		{
 			if (!mProtoGradidoBlock.ParseFromString(serializedGradidoBlock)) {
@@ -71,5 +71,23 @@ namespace model {
 
 			return json_message;
 		}
+
+		std::unique_ptr<std::string> GradidoBlock::getSerialized()
+		{
+			mProtoGradidoBlock.mutable_transaction()->set_allocated_body_bytes(mGradidoTransaction->getTransactionBody()->getBodyBytes().release());
+			//mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
+
+			auto size = mProtoGradidoBlock.ByteSizeLong();
+			//auto bodyBytesSize = MemoryManager::getInstance()->getFreeMemory(mProtoCreation.ByteSizeLong());
+			std::string* resultString(new std::string(size, 0));
+			if (!mProtoGradidoBlock.SerializeToString(resultString)) {
+				//addError(new Error("TransactionCreation::getBodyBytes", "error serializing string"));
+				throw ProtobufSerializationException(mProtoGradidoBlock);
+			}
+			std::unique_ptr<std::string> result;
+			result.reset(resultString);
+			return result;
+		}
+
 	}
 }

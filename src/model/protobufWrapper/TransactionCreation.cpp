@@ -105,6 +105,15 @@ namespace model {
 			return true;
 		}
 
+		std::vector<MemoryBin*> TransactionCreation::getInvolvedAddresses() const
+		{
+			auto mm = MemoryManager::getInstance();
+			auto recipientPubkeySize = mProtoCreation.recipient().pubkey().size();
+			auto recipientPubkey = mm->getMemory(recipientPubkeySize);
+			memcpy(*recipientPubkey, mProtoCreation.recipient().pubkey().data(), recipientPubkeySize);
+			return { recipientPubkey };
+		}
+
 
 	}
 }

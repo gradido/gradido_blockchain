@@ -35,53 +35,48 @@
 #include "MultithreadContainer.h"
 #include <queue>
 
-namespace UniLib {
-	namespace lib {
-		template <class ResourceType>
-		class MultithreadQueue: protected std::queue<ResourceType>, protected MultithreadContainer
-		{
-		public:
-			virtual ~MultithreadQueue() {
-				clear();
-			}
-			void clear() {
-				lock();
-				while (!std::queue<ResourceType>::empty()) std::queue<ResourceType>::pop();
-				unlock();
-			}
-			void push(ResourceType val) 
-			{
-				lock();
-				std::queue<ResourceType>::push(val);
-				unlock();
-			}
-			bool empty()
-			{
-				bool result = false;
-				lock();
-				result = std::queue<ResourceType>::empty();
-				unlock();
-				return result;
-			}
-			//! \return false if no values are there
-			//! \return true if value is there, gave val a copy from the value on top of queue
-			bool pop(ResourceType& val) 
-			{
-				lock();
-				if(!std::queue<ResourceType>::empty()) {
-					val = std::queue<ResourceType>::front();
-					std::queue<ResourceType>::pop();
-					unlock();
-					return true;
-				}
-				unlock();
-				return false;
-			}
-
-
-		};
-
+template <class ResourceType>
+class MultithreadQueue: protected std::queue<ResourceType>, protected MultithreadContainer
+{
+public:
+	virtual ~MultithreadQueue() {
+		clear();
 	}
-}
+	void clear() {
+		lock();
+		while (!std::queue<ResourceType>::empty()) std::queue<ResourceType>::pop();
+		unlock();
+	}
+	void push(ResourceType val) 
+	{
+		lock();
+		std::queue<ResourceType>::push(val);
+		unlock();
+	}
+	bool empty()
+	{
+		bool result = false;
+		lock();
+		result = std::queue<ResourceType>::empty();
+		unlock();
+		return result;
+	}
+	//! \return false if no values are there
+	//! \return true if value is there, gave val a copy from the value on top of queue
+	bool pop(ResourceType& val) 
+	{
+		lock();
+		if(!std::queue<ResourceType>::empty()) {
+			val = std::queue<ResourceType>::front();
+			std::queue<ResourceType>::pop();
+			unlock();
+			return true;
+		}
+		unlock();
+		return false;
+	}
+
+
+};
 
 #endif //_DR_UNIVERSUM_LIB_LIB_MULTITHREAD_QUEUE_H__

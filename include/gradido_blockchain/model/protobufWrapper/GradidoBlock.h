@@ -9,11 +9,19 @@ namespace model {
 		class GradidoBlock : public MultithreadContainer
 		{
 		public:
-			GradidoBlock(std::string serializedGradidoBlock);
+			GradidoBlock(const std::string& serializedGradidoBlock);
 			~GradidoBlock();
 			std::string toJson();
 			inline const GradidoTransaction* getGradidoTransaction() const { return mGradidoTransaction; }
 			
+			// proto member variable accessors
+			inline uint64_t getID() { return mProtoGradidoBlock.id(); }
+			// convert from proto timestamp seconds to poco DateTime
+			inline Poco::DateTime getReceived() const {
+				return Poco::Timestamp(mProtoGradidoBlock.received().seconds() * Poco::Timestamp::resolution());
+			}
+
+			std::unique_ptr<std::string> getSerialized();
 
 		protected:
 			proto::gradido::GradidoBlock mProtoGradidoBlock;

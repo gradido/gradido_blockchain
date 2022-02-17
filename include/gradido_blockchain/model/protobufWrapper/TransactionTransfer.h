@@ -30,6 +30,7 @@ namespace model {
 			int prepare();
 			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
 
+			std::vector<MemoryBin*> getInvolvedAddresses() const;
 			
 		protected:
 			const proto::gradido::GradidoTransfer& mProtoTransfer;			

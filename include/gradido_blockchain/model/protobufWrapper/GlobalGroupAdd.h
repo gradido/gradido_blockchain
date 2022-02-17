@@ -15,6 +15,7 @@ namespace model {
 			~GlobalGroupAdd();
 
 			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
+			std::vector<MemoryBin*> getInvolvedAddresses() const;
 
 			inline const std::string& getGroupName() const { return mProtoGlobalGroupAdd.group_name(); }
 			inline const std::string& getGroupAlias() const { return mProtoGlobalGroupAdd.group_alias(); }

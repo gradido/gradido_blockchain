@@ -64,6 +64,11 @@ namespace model {
 			}
 			return false;
 		}
+
+		std::vector<MemoryBin*> GlobalGroupAdd::getInvolvedAddresses() const
+		{
+			return {};
+		}
 	}
 }
 

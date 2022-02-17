@@ -18,5 +18,10 @@ namespace model {
 			return true;
 		}
 
+		std::vector<MemoryBin*> GroupFriendsUpdate::getInvolvedAddresses() const
+		{
+			return {};
+		}
+
 	}
 }

@@ -59,6 +59,8 @@ namespace model {
 			//! \return 0 if ok, < 0 if error, > 0 if not implemented
 			virtual int prepare() {return 1;}
 			virtual bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const = 0;
+			//! \return caller need to clean up memory bins
+			virtual std::vector<MemoryBin*> getInvolvedAddresses() const = 0;
 
 			static std::string amountToString(google::protobuf::int64 amount);
 
