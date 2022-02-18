@@ -10,10 +10,11 @@
 
 namespace model {
 	namespace gradido {
-		class GRADIDOBLOCKCHAIN_EXPORT GradidoBlock : public MultithreadContainer
+		class GRADIDOBLOCKCHAIN_EXPORT GradidoBlock : public MultithreadContainer, public Poco::RefCountedObject
 		{
 		public:
 			GradidoBlock(std::unique_ptr<std::string> serializedGradidoBlock);
+			GradidoBlock(const std::string* serializedGradidoBlock);
 			~GradidoBlock();
 
 			static Poco::SharedPtr<GradidoBlock> create(std::unique_ptr<GradidoTransaction> transaction, uint64_t id, int64_t received, const MemoryBin* messageId);

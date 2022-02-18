@@ -3,6 +3,7 @@
 
 #include "TransactionBody.h"
 #include "gradido/GradidoTransaction.pb.h"
+#include "Poco/RefCountedObject.h"
 
 class TransactionFactory;
 class CrossGroupTransactionBuilder;
@@ -11,7 +12,7 @@ namespace model {
 
 	namespace gradido {
 
-		class GRADIDOBLOCKCHAIN_EXPORT GradidoTransaction
+		class GRADIDOBLOCKCHAIN_EXPORT GradidoTransaction: public Poco::RefCountedObject
 		{
 		public:
 			GradidoTransaction(proto::gradido::GradidoTransaction* protoGradidoTransaction);

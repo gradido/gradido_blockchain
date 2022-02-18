@@ -18,6 +18,12 @@ using namespace rapidjson;
 namespace model {
 	namespace gradido {
 		GradidoBlock::GradidoBlock(std::unique_ptr<std::string> serializedGradidoBlock)
+			: GradidoBlock(serializedGradidoBlock.get())
+		{
+			
+		}
+
+		GradidoBlock::GradidoBlock(const std::string* serializedGradidoBlock)
 			: mGradidoTransaction(nullptr)
 		{
 			if (!mProtoGradidoBlock.ParseFromString(serializedGradidoBlock->data())) {
