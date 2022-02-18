@@ -13,6 +13,16 @@ public:
 	virtual std::string getFullString() const = 0;
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT GradidoBlockchainTransactionNotFoundException : public GradidoBlockchainException
+{
+public:
+	explicit GradidoBlockchainTransactionNotFoundException(const char* what) noexcept;
+	std::string getFullString() const;
+	inline GradidoBlockchainTransactionNotFoundException& setTransactionId(uint64_t id) { mTransactionId = id; return *this; }
+protected:
+	uint64_t mTransactionId;
+};
+
 class GRADIDOBLOCKCHAIN_EXPORT RapidjsonParseErrorException : public GradidoBlockchainException
 {
 public:

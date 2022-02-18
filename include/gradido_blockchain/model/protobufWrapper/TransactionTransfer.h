@@ -21,7 +21,7 @@ namespace model {
 
 		class Transaction;
 
-		class TransactionTransfer : public TransactionBase
+		class GRADIDOBLOCKCHAIN_EXPORT TransactionTransfer : public TransactionBase
 		{
 		public:
 			TransactionTransfer(const proto::gradido::GradidoTransfer& protoTransfer);
@@ -31,6 +31,7 @@ namespace model {
 			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
 
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
+			uint32_t getCoinColor() const;
 			
 		protected:
 			const proto::gradido::GradidoTransfer& mProtoTransfer;			

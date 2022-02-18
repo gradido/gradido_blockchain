@@ -6,7 +6,7 @@
 
 namespace model {
 	namespace gradido {
-		class GroupFriendsUpdate : public TransactionBase
+		class GRADIDOBLOCKCHAIN_EXPORT GroupFriendsUpdate : public TransactionBase
 		{
 		public:
 			GroupFriendsUpdate(const proto::gradido::GroupFriendsUpdate& protoGroupFriendsUpdate);
@@ -14,6 +14,7 @@ namespace model {
 
 			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
+			uint32_t getCoinColor() const;
 
 			inline bool isColorFusion() const { return mProtoGroupFriendsUpdate.color_fusion(); }
 		protected:

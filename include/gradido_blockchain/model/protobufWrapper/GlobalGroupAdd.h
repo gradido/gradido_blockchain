@@ -8,7 +8,7 @@
 namespace model {
 	namespace gradido {
 
-		class GlobalGroupAdd : public TransactionBase
+		class GRADIDOBLOCKCHAIN_EXPORT GlobalGroupAdd : public TransactionBase
 		{
 		public:
 			GlobalGroupAdd(const proto::gradido::GlobalGroupAdd& protoGlobalGroupAdd);
@@ -19,7 +19,7 @@ namespace model {
 
 			inline const std::string& getGroupName() const { return mProtoGlobalGroupAdd.group_name(); }
 			inline const std::string& getGroupAlias() const { return mProtoGlobalGroupAdd.group_alias(); }
-			inline uint32_t getCoinColor() const { return mProtoGlobalGroupAdd.native_coin_color(); }
+			uint32_t getCoinColor() const;
 
 		protected:
 			const proto::gradido::GlobalGroupAdd& mProtoGlobalGroupAdd;

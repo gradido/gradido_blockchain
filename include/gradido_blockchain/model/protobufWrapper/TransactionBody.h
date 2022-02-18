@@ -19,7 +19,7 @@
 namespace model {
 	namespace gradido {
 
-		class TransactionBody : public MultithreadContainer
+		class GRADIDOBLOCKCHAIN_EXPORT TransactionBody : public MultithreadContainer
 		{
 		public:
 			virtual ~TransactionBody();
@@ -50,6 +50,8 @@ namespace model {
 			static const char* transactionTypeToString(TransactionType type);
 			std::string getMemo() const;
 			void setMemo(const std::string& memo);
+
+			uint32_t getCoinColor(const IGradidoBlockchain* blockchain) const;
 
 			inline bool isDeferredTransfer() const { return mTransactionType == TRANSACTION_DEFERRED_TRANSFER; }
 			inline bool isGlobalGroupAdd() const { return mTransactionType == TRANSACTION_GLOBAL_GROUP_ADD; }

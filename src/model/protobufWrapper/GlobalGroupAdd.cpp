@@ -69,6 +69,10 @@ namespace model {
 		{
 			return {};
 		}
+		uint32_t GlobalGroupAdd::getCoinColor() const 
+		{ 
+			return mProtoGlobalGroupAdd.native_coin_color(); 
+		}
 	}
 }
 

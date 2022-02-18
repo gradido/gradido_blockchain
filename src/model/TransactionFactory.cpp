@@ -52,6 +52,16 @@ std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createTr
 	return std::unique_ptr<model::gradido::GradidoTransaction>(new GradidoTransaction(TransactionBody::createTransactionTransfer(std::move(transferAmount), recipientPubkey)));
 }
 
+Poco::SharedPtr<model::gradido::GradidoBlock> TransactionFactory::createGradidoBlock(
+	std::unique_ptr<model::gradido::GradidoTransaction> transaction,
+	uint64_t id,
+	int64_t received,
+	const MemoryBin* messageId
+)
+{
+	return model::gradido::GradidoBlock::create(std::move(transaction), id, received, messageId);
+}
+
 std::unique_ptr<proto::gradido::TransferAmount> TransactionFactory::createTransferAmount(
 	const MemoryBin* recipientPubkey,
 	int64_t amountGddCent,
@@ -65,3 +75,4 @@ std::unique_ptr<proto::gradido::TransferAmount> TransactionFactory::createTransf
 	transferAmount->set_coin_color(coinColor);
 	return transferAmount;
 }
+

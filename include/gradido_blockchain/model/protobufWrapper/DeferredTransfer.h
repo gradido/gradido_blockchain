@@ -8,7 +8,7 @@
 
 namespace model {
 	namespace gradido {
-		class DeferredTransfer : public TransactionTransfer
+		class GRADIDOBLOCKCHAIN_EXPORT DeferredTransfer : public TransactionTransfer
 		{
 		public:
 			DeferredTransfer(const proto::gradido::GradidoDeferredTransfer& deferredTransfer);

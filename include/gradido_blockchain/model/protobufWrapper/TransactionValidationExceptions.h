@@ -12,7 +12,7 @@
 namespace model {
 	namespace gradido {
 
-		class TransactionValidationException : public GradidoBlockchainException
+		class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationException : public GradidoBlockchainException
 		{
 		public:
 			explicit TransactionValidationException(const char* what) noexcept;
@@ -33,7 +33,7 @@ namespace model {
 			TransactionType mType;
 		};
 
-		class TransactionValidationInvalidInputException : public TransactionValidationException
+		class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationInvalidInputException : public TransactionValidationException
 		{
 		public:
 			explicit TransactionValidationInvalidInputException(const char* what, const char* fieldname, const char* fieldType = nullptr) noexcept;
@@ -46,7 +46,7 @@ namespace model {
 			std::string mFieldType;
 		};
 
-		class TransactionValidationInvalidSignatureException : public TransactionValidationException
+		class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationInvalidSignatureException : public TransactionValidationException
 		{
 		public:
 			explicit TransactionValidationInvalidSignatureException(const char* what, MemoryBin* pubkey, MemoryBin* signature, const std::string& bodyBytes = "") noexcept;
@@ -65,7 +65,7 @@ namespace model {
 			std::string mBodyBytes;
 		};
 
-		class TransactionValidationForbiddenSignException : public TransactionValidationException 
+		class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationForbiddenSignException : public TransactionValidationException
 		{
 		public: 
 			explicit TransactionValidationForbiddenSignException(MemoryBin* forbiddenPubkey);

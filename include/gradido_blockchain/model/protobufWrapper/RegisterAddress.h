@@ -7,7 +7,7 @@
 namespace model {
 	namespace gradido {
 
-		class RegisterAddress : public TransactionBase
+		class GRADIDOBLOCKCHAIN_EXPORT RegisterAddress : public TransactionBase
 		{
 		public:
 			RegisterAddress(const proto::gradido::RegisterAddress& registerAddress);
@@ -16,6 +16,7 @@ namespace model {
 			int prepare();
 			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
+			uint32_t getCoinColor() const;
 
 			static proto::gradido::RegisterAddress_AddressType getAddressTypeFromString(const std::string& addressType);
 

@@ -23,5 +23,10 @@ namespace model {
 			return {};
 		}
 
+		uint32_t GroupFriendsUpdate::getCoinColor() const
+		{
+			return 0;
+		}
+
 	}
 }

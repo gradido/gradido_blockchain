@@ -42,6 +42,11 @@ namespace model {
 			return result;
 		}
 
+		uint32_t RegisterAddress::getCoinColor() const
+		{
+			return 0;
+		}
+
 		int RegisterAddress::prepare()
 		{
 			mMinSignatureCount = 1;

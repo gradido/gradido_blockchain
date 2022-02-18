@@ -2,6 +2,7 @@
 
 #include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain/model/IGradidoBlockchain.h"
 #include "gradido_blockchain/model/protobufWrapper/ProtobufExceptions.h"
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 
@@ -148,6 +149,15 @@ namespace model {
 				return result;
 			}
 			return "<uninitalized>";
+		}
+
+		uint32_t TransactionBody::getCoinColor(const IGradidoBlockchain* blockchain) const
+		{			
+			auto color = mTransactionSpecific->getCoinColor();
+			if (!color) {
+				color = blockchain->getGroupDefaultCoinColor();
+			}
+			return color;
 		}
 
 		void TransactionBody::setMemo(const std::string& memo)
@@ -298,6 +308,8 @@ namespace model {
 			}
 			mTransactionSpecific->prepare();
 		}
+
+		
 
 	}
 }

@@ -14,7 +14,7 @@
 #include "gradido/BasicTypes.pb.h"
 #include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/lib/MultithreadContainer.h"
-
+#include "gradido_blockchain/export.h"
 
 namespace model {
 	class IGradidoBlockchain;
@@ -25,7 +25,7 @@ namespace model {
 		class GradidoBlock;
 		
 
-		enum TransactionType {
+		enum GRADIDOBLOCKCHAIN_EXPORT TransactionType {
 			TRANSACTION_NONE,
 			TRANSACTION_CREATION,
 			TRANSACTION_TRANSFER,
@@ -35,7 +35,7 @@ namespace model {
 			TRANSACTION_DEFERRED_TRANSFER
 		};
 
-		enum TransactionValidationLevel {
+		enum GRADIDOBLOCKCHAIN_EXPORT TransactionValidationLevel {
 			// check only the transaction
 			TRANSACTION_VALIDATION_SINGLE = 1,
 			// check also with previous transaction
@@ -51,7 +51,7 @@ namespace model {
 			TRANSACTION_VALIDATION_CONNECTED_BLOCKCHAIN = 32
 		};
 	
-		class TransactionBase : public MultithreadContainer
+		class GRADIDOBLOCKCHAIN_EXPORT TransactionBase : public MultithreadContainer
 		{
 		public:
 			TransactionBase();
@@ -61,6 +61,7 @@ namespace model {
 			virtual bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const = 0;
 			//! \return caller need to clean up memory bins
 			virtual std::vector<MemoryBin*> getInvolvedAddresses() const = 0;
+			virtual uint32_t getCoinColor() const = 0;
 
 			static std::string amountToString(google::protobuf::int64 amount);
 
@@ -75,6 +76,8 @@ namespace model {
 			void setMinSignatureCount(uint32_t minSignatureCount) { mMinSignatureCount = minSignatureCount; }
 
 			static bool isValidGroupAlias(const std::string& groupAlias);
+
+			
 
 		protected:
 			uint32_t mMinSignatureCount;

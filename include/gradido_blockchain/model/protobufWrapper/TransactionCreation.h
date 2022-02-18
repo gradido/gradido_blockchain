@@ -17,7 +17,7 @@
 namespace model {
 	namespace gradido {
 
-		class TransactionCreation : public TransactionBase
+		class GRADIDOBLOCKCHAIN_EXPORT TransactionCreation : public TransactionBase
 		{
 		public:
 			TransactionCreation(const proto::gradido::GradidoCreation& protoCreation);
@@ -29,6 +29,7 @@ namespace model {
 			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
 
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
+			uint32_t getCoinColor() const;
 
 			inline google::protobuf::int64 getAmount() { return mProtoCreation.recipient().amount(); }
 

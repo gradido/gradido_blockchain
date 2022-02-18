@@ -11,7 +11,7 @@
 * @brief Used to Build Gradido Cross Group Transactions
 */
 
-class CrossGroupTransactionBuilder
+class GRADIDOBLOCKCHAIN_EXPORT CrossGroupTransactionBuilder
 {
 public:
 	CrossGroupTransactionBuilder(std::unique_ptr<model::gradido::GradidoTransaction> baseTransaction);

@@ -114,6 +114,11 @@ namespace model {
 			return { recipientPubkey };
 		}
 
+		uint32_t TransactionCreation::getCoinColor() const
+		{
+			return mProtoCreation.recipient().coin_color();
+		}
+
 
 	}
 }

@@ -1,10 +1,12 @@
 #ifndef __GRADIDO_BLOCKCHAIN_MODEL_TRANSACTION_FACTORY_H
 #define __GRADIDO_BLOCKCHAIN_MODEL_TRANSACTION_FACTORY_H
 
-#include "protobufWrapper/GradidoTransaction.h"
+//#include "protobufWrapper/GradidoTransaction.h"
+#include "protobufWrapper/GradidoBlock.h"
 #include "Poco/Timestamp.h"
+#include "Poco/SharedPtr.h"
 
-class TransactionFactory
+class GRADIDOBLOCKCHAIN_EXPORT TransactionFactory
 {
 public:
 	static std::unique_ptr<model::gradido::GradidoTransaction> createDeferredTransfer(std::unique_ptr<model::gradido::GradidoTransaction> transfer, Poco::Timestamp timeout);
@@ -27,6 +29,12 @@ public:
 		int64_t amountGddCent,
 		uint32_t coinColor,
 		const MemoryBin* recipientPubkey
+	);
+	static Poco::SharedPtr<model::gradido::GradidoBlock> createGradidoBlock(
+		std::unique_ptr<model::gradido::GradidoTransaction> transaction,
+		uint64_t id,
+		int64_t received,
+		const MemoryBin* messageId
 	);
 
 protected:

@@ -89,5 +89,10 @@ namespace model {
 			memcpy(*recipientPubkey, mProtoTransfer.recipient().data(), recipientPubkeySize);
 			return { senderPubkey, recipientPubkey };
 		}
+
+		uint32_t TransactionTransfer::getCoinColor() const
+		{
+			return mProtoTransfer.sender().coin_color();
+		}
 	}
 }

@@ -6,6 +6,29 @@
 
 using namespace rapidjson;
 
+GradidoBlockchainTransactionNotFoundException::GradidoBlockchainTransactionNotFoundException(const char* what) noexcept
+	: GradidoBlockchainException(what), mTransactionId(0)
+{
+
+}
+
+std::string GradidoBlockchainTransactionNotFoundException::getFullString() const
+{
+	std::string result;
+	std::string transactionIdString;
+	size_t resultSize = strlen(what()) + 2;
+	if (mTransactionId) {
+		transactionIdString = std::to_string(mTransactionId);
+		resultSize += transactionIdString.size() + 17;
+	}
+	result.reserve(resultSize);
+	result = what();
+	result += ", transactionId: " + transactionIdString;
+	return result;
+}
+
+// ################################ RapidJson Parse Error Exception ###############################################################
+
 RapidjsonParseErrorException::RapidjsonParseErrorException(const char* what, ParseErrorCode parseErrorCode, size_t parseErrorOffset) noexcept
 	: GradidoBlockchainException(what), mParseErrorCode(parseErrorCode), mParseErrorOffset(parseErrorOffset)
 {

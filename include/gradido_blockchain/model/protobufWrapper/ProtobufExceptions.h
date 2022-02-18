@@ -5,7 +5,7 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/util/json_util.h>
 
-class ProtobufSerializationException : public GradidoBlockchainException
+class GRADIDOBLOCKCHAIN_EXPORT ProtobufSerializationException : public GradidoBlockchainException
 {
 public:
 	explicit ProtobufSerializationException(const char* what, const google::protobuf::Message& message) noexcept;
@@ -16,7 +16,7 @@ protected:
 	
 };
 
-class ProtobufJsonSerializationException : public ProtobufSerializationException
+class GRADIDOBLOCKCHAIN_EXPORT ProtobufJsonSerializationException : public ProtobufSerializationException
 {
 public: 
 	explicit ProtobufJsonSerializationException(const char* what, const google::protobuf::Message& message, google::protobuf::util::status_internal::Status status) noexcept;
@@ -25,7 +25,7 @@ protected:
 	google::protobuf::util::status_internal::Status mStatus;
 };
 
-class ProtobufParseException : public GradidoBlockchainException
+class GRADIDOBLOCKCHAIN_EXPORT ProtobufParseException : public GradidoBlockchainException
 {
 public:
 	explicit ProtobufParseException(const std::string& serializedProtobuf) noexcept;
