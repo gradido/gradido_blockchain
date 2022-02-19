@@ -5,10 +5,6 @@
 
 #include "gradido_blockchain/export.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 struct S_GradidoWithDecimal
 {
 	S_GradidoWithDecimal(long long gradidoCent)
@@ -90,9 +86,5 @@ GRADIDOBLOCKCHAIN_EXPORT GradidoWithDecimal calculateDecayForDuration(mpfr_ptr d
 //! \brief call ::calculateDecayFactorForDuration and ::calculateDecayForDuration, allocate memory 
 //! \return decayed gradido balance
 GRADIDOBLOCKCHAIN_EXPORT GradidoWithDecimal calculateDecay(GradidoWithDecimal input, unsigned long seconds, mpfr_ptr decay_factor);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif //_GRADIDO_MATH_H
