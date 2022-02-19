@@ -195,13 +195,15 @@ namespace model {
 			return hash;
 		}
 
-		void GradidoBlock::calculateFinalGDD(const IGradidoBlockchain* blockchain)
+		void GradidoBlock::calculateFinalGDD(const IGradidoBlockchain* blockchain, std::shared_ptr<GradidoBlock> lastFinalBlock)
 		{
 			std::unique_lock _lock(mWorkMutex);
 			// get coin color
 			auto color = mGradidoTransaction->getTransactionBody()->getCoinColor(blockchain);
 			// search for last transaction for this address with the same coin color
+			// must be done before this function call
 			// take last value + decay until this block
+			// 
 			// add value from this block if it was a transfer or creation transaction
 			
 			throw std::runtime_error("not implemented yet");

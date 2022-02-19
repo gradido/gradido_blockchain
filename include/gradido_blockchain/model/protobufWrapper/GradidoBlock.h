@@ -41,7 +41,7 @@ namespace model {
 
 			//! \return caller must free result
 			MemoryBin* calculateTxHash(std::shared_ptr<GradidoBlock> previousBlock) const;
-			void calculateFinalGDD(const IGradidoBlockchain* blockchain);
+			void calculateFinalGDD(const IGradidoBlockchain* blockchain, std::shared_ptr<GradidoBlock> lastFinalBlock);
 
 		protected:
 			proto::gradido::GradidoBlock mProtoGradidoBlock;
