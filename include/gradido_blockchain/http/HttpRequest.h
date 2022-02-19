@@ -8,7 +8,9 @@
 
 #include "rapidjson/document.h"
 
-class HttpRequest
+#include "gradido_blockchain/export.h"
+
+class GRADIDOBLOCKCHAIN_EXPORT HttpRequest
 {
 public:
 	HttpRequest(const std::string& url);

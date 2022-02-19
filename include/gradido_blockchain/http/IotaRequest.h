@@ -5,7 +5,7 @@
 
 #include "rapidjson/document.h"
 
-class IotaRequest : public JsonRequest
+class GRADIDOBLOCKCHAIN_EXPORT IotaRequest : public JsonRequest
 {
 public:
 	IotaRequest(const std::string& serverHost, int serverPort, const std::string& urlPath);

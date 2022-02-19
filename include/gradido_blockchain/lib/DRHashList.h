@@ -41,7 +41,7 @@ public:
 //---------------------------------------------------------
 //	static hash list implementation
 //---------------------------------------------------------
-class  DRStaticHashList
+class DRStaticHashList
 {
 public:
 	DRStaticHashList() : m_nItems(0),m_pItems(0) { /*empty*/ }

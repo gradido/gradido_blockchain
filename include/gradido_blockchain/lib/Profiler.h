@@ -12,8 +12,9 @@
 
 #include <chrono>
 #include <string>
+#include "gradido_blockchain/export.h"
 
-class Profiler
+class GRADIDOBLOCKCHAIN_EXPORT Profiler
 {
 public:
 	Profiler();

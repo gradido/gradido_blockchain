@@ -14,7 +14,7 @@
 #include "HttpRequest.h"
 
 
-class JsonRequest : public HttpRequest
+class GRADIDOBLOCKCHAIN_EXPORT JsonRequest : public HttpRequest
 {
 public:
 	JsonRequest(const std::string& serverHost, int serverPort);

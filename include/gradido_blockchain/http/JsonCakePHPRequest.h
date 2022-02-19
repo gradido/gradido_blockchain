@@ -3,7 +3,7 @@
 
 #include "JsonRequest.h"
 
-class JsonCakePHPRequest : public JsonRequest
+class GRADIDOBLOCKCHAIN_EXPORT JsonCakePHPRequest : public JsonRequest
 {
 public:
 	JsonCakePHPRequest(const std::string& serverHost, int serverPort);

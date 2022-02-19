@@ -7,8 +7,9 @@
 
 #include "rapidjson/document.h"
 
+#include "gradido_blockchain/export.h"
 
-class JsonRequestHandler : public Poco::Net::HTTPRequestHandler
+class GRADIDOBLOCKCHAIN_EXPORT JsonRequestHandler : public Poco::Net::HTTPRequestHandler
 {
 public:
 
