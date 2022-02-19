@@ -7,7 +7,7 @@
 #include "rapidjson/error/error.h"
 #include "rapidjson/document.h"
 
-class RequestException : public GradidoBlockchainException
+class GRADIDOBLOCKCHAIN_EXPORT RequestException : public GradidoBlockchainException
 {
 public:
 	explicit RequestException(const char* what, const char* host, int port) noexcept;
@@ -18,14 +18,14 @@ protected:
 	Poco::URI mUri;
 };
 
-class RequestEmptyResponseException : public RequestException
+class GRADIDOBLOCKCHAIN_EXPORT RequestEmptyResponseException : public RequestException
 {
 public: 
 	explicit RequestEmptyResponseException(const char* what, const char* host, int port) noexcept;
 	explicit RequestEmptyResponseException(const char* what, const Poco::URI& uri) noexcept;
 };
 
-class RequestResponseInvalidJsonException : public RequestException
+class GRADIDOBLOCKCHAIN_EXPORT RequestResponseInvalidJsonException : public RequestException
 {
 public:
 	explicit RequestResponseInvalidJsonException(const char* what, const Poco::URI& uri, const std::string& rawText) noexcept;
@@ -42,7 +42,7 @@ protected:
 
 
 
-class RequestResponseErrorException : public RequestException
+class GRADIDOBLOCKCHAIN_EXPORT RequestResponseErrorException : public RequestException
 {
 public:
 	explicit RequestResponseErrorException(const char* what, const Poco::URI& uri, const std::string& msg) noexcept;
@@ -55,7 +55,7 @@ protected:
 	std::string mErrorDetails;
 };
 
-class RequestResponseCakePHPException : public RequestResponseErrorException
+class GRADIDOBLOCKCHAIN_EXPORT RequestResponseCakePHPException : public RequestResponseErrorException
 {
 public:
 	explicit RequestResponseCakePHPException(const char* what, const Poco::URI& uri, const std::string& msg) noexcept;
@@ -65,7 +65,7 @@ protected:
 
 };
 
-class HandleRequestException : public GradidoBlockchainException
+class GRADIDOBLOCKCHAIN_EXPORT HandleRequestException : public GradidoBlockchainException
 {
 public:
 	HandleRequestException(const char* what) noexcept;

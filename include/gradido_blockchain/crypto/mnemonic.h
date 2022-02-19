@@ -23,7 +23,7 @@
 #define PHRASE_WORD_COUNT 24
 
 
-class Mnemonic 
+class GRADIDOBLOCKCHAIN_EXPORT Mnemonic
 {
 public: 
 	Mnemonic();

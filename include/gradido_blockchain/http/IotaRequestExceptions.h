@@ -4,7 +4,7 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "rapidjson/document.h"
 
-class IotaRequestException : public GradidoBlockchainException
+class GRADIDOBLOCKCHAIN_EXPORT IotaRequestException : public GradidoBlockchainException
 {
 public: 
 	explicit IotaRequestException(const char* what, const std::string& url) noexcept;
@@ -14,7 +14,7 @@ protected:
 
 };
 
-class IotaPostRequestException : public IotaRequestException
+class GRADIDOBLOCKCHAIN_EXPORT IotaPostRequestException : public IotaRequestException
 {
 public:
 	explicit IotaPostRequestException(const char* what, const std::string& url) noexcept;

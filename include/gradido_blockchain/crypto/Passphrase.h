@@ -10,7 +10,7 @@
 
 class KeyPairEd25519;
 
-class Passphrase
+class GRADIDOBLOCKCHAIN_EXPORT Passphrase
 {
 public:
 	Passphrase(const std::string& passphrase, const Mnemonic* wordSource);

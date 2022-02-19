@@ -18,7 +18,7 @@
 #include "Passphrase.h"
 #include "../lib/DataTypeConverter.h"
 
-class KeyPairEd25519 : public IKeyPair
+class GRADIDOBLOCKCHAIN_EXPORT KeyPairEd25519 : public IKeyPair
 {
 public:
 	//! \param privateKey: take ownership, release after object destruction

@@ -23,7 +23,7 @@
 
 typedef uint64_t KeyHashed;
 
-class SecretKeyCryptography
+class GRADIDOBLOCKCHAIN_EXPORT SecretKeyCryptography
 {
 public:
 
