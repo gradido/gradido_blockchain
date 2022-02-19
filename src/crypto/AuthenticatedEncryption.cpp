@@ -69,7 +69,7 @@ MemoryBin* AuthenticatedEncryption::decrypt(MemoryBin* encryptedMessage, Authent
 {
 	if (!mPrivkey) return nullptr;
 	auto mm = MemoryManager::getInstance();
-	auto result = mm->getFreeMemory(encryptedMessage->size() - crypto_box_NONCEBYTES - crypto_box_MACBYTES);
+	auto result = mm->getMemory(encryptedMessage->size() - crypto_box_NONCEBYTES - crypto_box_MACBYTES);
 
 	/*int crypto_box_open_easy(unsigned char* m, const unsigned char* c,
 		unsigned long long clen, const unsigned char* n,
@@ -88,7 +88,7 @@ MemoryBin* AuthenticatedEncryption::decrypt(MemoryBin* encryptedMessage, int pre
 {
 	if (!mPrivkey) return nullptr;
 	auto mm = MemoryManager::getInstance();
-	auto result = mm->getFreeMemory(encryptedMessage->size() - crypto_box_NONCEBYTES - crypto_box_MACBYTES);
+	auto result = mm->getMemory(encryptedMessage->size() - crypto_box_NONCEBYTES - crypto_box_MACBYTES);
 	int function_result = -1;
 
 	mPrecalculatedSharedSecretsMutex.lock();
@@ -118,7 +118,7 @@ int AuthenticatedEncryption::precalculateSharedSecret(AuthenticatedEncryption* r
 	Poco::ScopedLock<Poco::FastMutex> _lock(mPrecalculatedSharedSecretsMutex);
 	/*int crypto_box_beforenm(unsigned char* k, const unsigned char* pk,
 		const unsigned char* sk);*/
-	auto sharedSecret = MemoryManager::getInstance()->getFreeMemory(crypto_box_BEFORENMBYTES);
+	auto sharedSecret = MemoryManager::getInstance()->getMemory(crypto_box_BEFORENMBYTES);
 	crypto_box_beforenm(*sharedSecret, recipiantKey->mPubkey, *mPrivkey);
 	mPrecalculatedSharedSecretLastIndex++;
 	mPrecalculatedSharedSecrets.insert({ mPrecalculatedSharedSecretLastIndex, sharedSecret });

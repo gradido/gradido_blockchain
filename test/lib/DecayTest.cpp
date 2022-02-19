@@ -1,5 +1,5 @@
 
-#include "gradidomath.h"
+#include "gradido_blockchain/lib/Decay.h"
 #include "gtest/gtest.h"
 
 #include <chrono>
@@ -185,16 +185,3 @@ TEST(gradido_math, calculate_decay)
 
 	mpfr_clear(decay_factor);
 }
-
-//*/
-
-int main(int argc, char** argv) 
-{
-//	void* memtest = malloc(100);
-  //      free(memtest);
-	::testing::InitGoogleTest(&argc, argv);
-
-	auto result = RUN_ALL_TESTS();
-	return result;
-}
-
