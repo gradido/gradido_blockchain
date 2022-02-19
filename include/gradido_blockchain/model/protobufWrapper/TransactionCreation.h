@@ -31,7 +31,7 @@ namespace model {
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
 			uint32_t getCoinColor() const;
 
-			inline google::protobuf::int64 getAmount() { return mProtoCreation.recipient().amount(); }
+			inline google::protobuf::int64 getAmount() const { return mProtoCreation.recipient().amount(); }
 
 			inline std::string getAmountString() { return amountToString(getAmount()); }
 			std::string getTargetDateString();

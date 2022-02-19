@@ -32,6 +32,8 @@ namespace model {
 
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
 			uint32_t getCoinColor() const;
+
+			inline google::protobuf::int64 getAmount() const { return mProtoTransfer.sender().amount(); }
 			
 		protected:
 			const proto::gradido::GradidoTransfer& mProtoTransfer;			

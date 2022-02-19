@@ -15,6 +15,24 @@ MPFR_RNDNA = -1 // round to nearest, with ties away from zero (mpfr_round)
 */
 static const mpfr_rnd_t default_round = MPFR_RNDN;
 
+mpfr_ptr gDecayFactor356Days = nullptr;
+mpfr_ptr gDecayFactor366Days = nullptr;
+
+void initDefaultDecayFactors()
+{
+	mpfr_init(gDecayFactor356Days);
+	calculateDecayFactor(gDecayFactor356Days, 356);
+	mpfr_init(gDecayFactor366Days);
+	calculateDecayFactor(gDecayFactor366Days, 366);
+}
+
+void unloadDefaultDecayFactors()
+{
+	mpfr_clear(gDecayFactor356Days);
+	gDecayFactor356Days = nullptr;
+	mpfr_clear(gDecayFactor366Days);
+	gDecayFactor366Days = nullptr;
+}
 
 void calculateDecayFactor(mpfr_ptr decay_factor, int days_per_year)
 {
@@ -33,7 +51,6 @@ void calculateDecayFactor(mpfr_ptr decay_factor, int days_per_year)
 	mpfr_exp(decay_factor, decay_factor, MPFR_RNDZ);
 	
 	mpfr_clear(temp);
-	
 }
 
 void calculateDecayFactorForDuration(mpfr_ptr decay_for_duration, mpfr_ptr decay_factor, unsigned long seconds)
@@ -58,10 +75,10 @@ void calculateDecayFast(mpfr_ptr decay_for_duration, mpfr_ptr gradido_decimal, m
 GradidoWithDecimal calculateDecayForDuration(mpfr_ptr decay_for_duration, GradidoWithDecimal input)
 {
 	mpfr_t temp, gradido_decimal;
-	mpz_t gdd_cent, z_temp;
+	mpz_t gdd_cent;
 
 	mpfr_init(temp); mpfr_init(gradido_decimal);
-	mpz_init(gdd_cent); mpz_init(z_temp);
+	mpz_init(gdd_cent);
 
 	mpfr_set_si(gradido_decimal, input.decimal, default_round);
 	mpfr_div_si(gradido_decimal, gradido_decimal, GRADIDO_DECIMAL_CONVERSION_FACTOR, default_round);
@@ -77,7 +94,7 @@ GradidoWithDecimal calculateDecayForDuration(mpfr_ptr decay_for_duration, Gradid
 	result.decimal = mpfr_get_si(gradido_decimal, default_round);
 
 	mpfr_clear(temp); mpfr_clear(gradido_decimal);
-	mpz_clear(gdd_cent); mpz_clear(z_temp);
+	mpz_clear(gdd_cent);
 
 	return result;
 }

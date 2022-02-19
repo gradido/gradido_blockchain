@@ -11,15 +11,25 @@ extern "C" {
 
 struct S_GradidoWithDecimal
 {
+	S_GradidoWithDecimal(long long gradidoCent)
+		: gradido(gradidoCent), decimal(0) {}
+	S_GradidoWithDecimal()
+		: gradido(0), decimal(0) {}
 	long long gradido;
 	long decimal; // / 1,000,000
 };
+
+extern mpfr_ptr gDecayFactor356Days;
+extern mpfr_ptr gDecayFactor366Days;
+GRADIDOBLOCKCHAIN_EXPORT void initDefaultDecayFactors();
+GRADIDOBLOCKCHAIN_EXPORT void unloadDefaultDecayFactors();
 
 // 1 second = 1×10^9 nanoseconds
 
 #define GRADIDO_DECIMAL_CONVERSION_FACTOR 1000000
 
 GRADIDOBLOCKCHAIN_EXPORT typedef struct S_GradidoWithDecimal GradidoWithDecimal;
+
 
 //! \param decay_factor to store the result, decay factor per second
 //! \param days_per_year 365 days in normal year, 366 days in leap year
