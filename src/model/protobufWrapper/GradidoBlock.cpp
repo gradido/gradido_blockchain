@@ -144,6 +144,9 @@ namespace model {
 						GradidoBlockchainTransactionNotFoundException exception("previous transaction not found");
 						throw exception.setTransactionId(getID() - 1);
 					}
+					if (previousBlock->getReceived() > getReceived()) {
+						throw BlockchainOrderException("previous transaction is younger");						
+					}
 					auto mm = MemoryManager::getInstance();
 					auto txHash = calculateTxHash(previousBlock);
 					if (txHash->size() != mProtoGradidoBlock.running_hash().size()) {
@@ -175,6 +178,7 @@ namespace model {
 			Poco::DateTime received(Poco::Timestamp(mProtoGradidoBlock.received().seconds() * Poco::Timestamp::resolution()));
 			receivedString = Poco::DateTimeFormatter::format(received, "%Y-%m-%d %H:%M:%S");
 			std::string signatureMapString = mProtoGradidoBlock.transaction().sig_map().SerializeAsString();
+			uint64_t finalGdd = mProtoGradidoBlock.final_gdd();
 
 			auto hash = mm->getMemory(crypto_generichash_BYTES);
 
@@ -192,6 +196,7 @@ namespace model {
 			//printf("received: %s\n", receivedString.data());
 			crypto_generichash_update(&state, (const unsigned char*)signatureMapString.data(), signatureMapString.size());
 			//printf("signature map serialized: %s\n", convertBinToHex(signatureMapString).data());
+			crypto_generichash_update(&state, (const unsigned char*)&finalGdd, sizeof(uint64_t));
 			crypto_generichash_final(&state, *hash, hash->size());
 			return hash;
 		}

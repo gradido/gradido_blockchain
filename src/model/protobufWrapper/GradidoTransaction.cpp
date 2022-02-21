@@ -66,19 +66,19 @@ namespace model {
 				mTransactionBody->getTransactionBase()->checkRequiredSignatures(&sig_map);
 				return mTransactionBody->validate(level, blockchain);
 			}
-			/* 
+			 
 			// must be implemented in gradido node server
 			if ((level & TRANSACTION_VALIDATION_PAIRED) == TRANSACTION_VALIDATION_PAIRED)
 			{
 				auto transactionBody = getTransactionBody();
-				if (transactionBody->getCrossGroupType() == proto::gradido::TransactionBody_CrossGroupType_LOCAL) {
-					return true;
-				}
-				if (transactionBody->getCrossGroupType() == proto::gradido::TransactionBody_CrossGroupType_INBOUND) {
-
+				switch (transactionBody->getCrossGroupType()) {
+				case proto::gradido::TransactionBody_CrossGroupType_LOCAL: break; 
+				case proto::gradido::TransactionBody_CrossGroupType_INBOUND: break;
+				case proto::gradido::TransactionBody_CrossGroupType_OUTBOUND: break;
+				case proto::gradido::TransactionBody_CrossGroupType_CROSS: break;
 				}
 			}
-			*/
+			
 			return true;
 
 		}

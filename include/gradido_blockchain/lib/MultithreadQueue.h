@@ -76,6 +76,7 @@ public:
 		return false;
 	}
 
+	inline size_t size() { lock(); size_t _size = std::queue<ResourceType>::size();  unlock(); return _size; }
 
 };
 

@@ -23,6 +23,16 @@ protected:
 	uint64_t mTransactionId;
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT GradidoBlockchainTransactionAlreadyExistException : public GradidoBlockchainException
+{
+public:
+	explicit GradidoBlockchainTransactionAlreadyExistException(const char* what) noexcept;
+	std::string getFullString() const;
+	inline GradidoBlockchainTransactionAlreadyExistException& setTransactionId(uint64_t id) { mTransactionId = id; return *this; }
+protected:
+	uint64_t mTransactionId;
+};
+
 class GRADIDOBLOCKCHAIN_EXPORT RapidjsonParseErrorException : public GradidoBlockchainException
 {
 public:
@@ -57,6 +67,14 @@ protected:
 	int         mLastValidCharacter;
 
 };
+
+class GRADIDOBLOCKCHAIN_EXPORT BlockchainOrderException : public GradidoBlockchainException
+{
+public:
+	explicit BlockchainOrderException(const char* what) noexcept;
+	std::string getFullString() const;
+};
+
 
 
 #endif __GRADIDO_BLOCKCHAIN_EXCEPTION_H
