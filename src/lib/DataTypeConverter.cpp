@@ -161,10 +161,27 @@ namespace DataTypeConverter
 
 		if (0 != sodium_hex2bin(*bin, binSize, hexString.data(), hexSize, nullptr, &resultBinSize, nullptr)) {
 			mm->releaseMemory(bin);
+			// TODO: throw InvalidHexException
 			return nullptr;
 		}
 		return bin;
 
+	}
+
+	std::unique_ptr<std::string> hexToBinString(const std::string& hexString)
+	{
+		auto mm = MemoryManager::getInstance();
+		size_t hexSize = hexString.size();
+		size_t binSize = (hexSize) / 2;
+		std::unique_ptr<std::string> binString(new std::string(binSize, 0));
+		
+		size_t resultBinSize = 0;
+
+		if (0 != sodium_hex2bin((unsigned char*)binString->data(), binSize, hexString.data(), hexSize, nullptr, &resultBinSize, nullptr)) {
+			// TODO: throw InvalidHexException
+			return nullptr;
+		}
+		return binString;
 	}
 
 	MemoryBin* base64ToBin(const std::string& base64String, int variant /*= sodium_base64_VARIANT_ORIGINAL*/)

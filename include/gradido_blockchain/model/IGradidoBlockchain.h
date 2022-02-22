@@ -3,7 +3,7 @@
 
 //#include "protobufWrapper/GradidoBlock.h"
 #include "protobufWrapper/TransactionBase.h"
-
+#include "Poco/SharedPtr.h"
 #include <vector>
 
 namespace model {

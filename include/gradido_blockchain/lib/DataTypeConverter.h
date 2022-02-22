@@ -32,6 +32,7 @@ namespace DataTypeConverter {
 	GRADIDOBLOCKCHAIN_EXPORT NumberParseState strToDouble(const std::string& input, double& result);
 
 	GRADIDOBLOCKCHAIN_EXPORT MemoryBin* hexToBin(const std::string& hexString);
+	GRADIDOBLOCKCHAIN_EXPORT std::unique_ptr<std::string> hexToBinString(const std::string& hexString);
 	GRADIDOBLOCKCHAIN_EXPORT MemoryBin* base64ToBin(const std::string& base64String, int variant = sodium_base64_VARIANT_ORIGINAL);
 	GRADIDOBLOCKCHAIN_EXPORT inline std::string base64ToBinString(const std::string& base64String, int variant = sodium_base64_VARIANT_ORIGINAL) {
 		auto bin = base64ToBin(base64String, variant);
