@@ -59,6 +59,10 @@ namespace model {
 			inline bool isRegisterAddress() const { return mTransactionType == TRANSACTION_REGISTER_ADDRESS; }
 			inline bool isCreation() const { return mTransactionType == TRANSACTION_CREATION; }
 			inline bool isTransfer() const  { return mTransactionType == TRANSACTION_TRANSFER; }		
+			// cross group types
+			inline bool isInbound() const { return mProtoTransactionBody.type() == proto::gradido::TransactionBody_CrossGroupType_INBOUND; }
+			inline bool isOutbound() const { return mProtoTransactionBody.type() == proto::gradido::TransactionBody_CrossGroupType_OUTBOUND; }
+			inline bool isCross() const { return mProtoTransactionBody.type() == proto::gradido::TransactionBody_CrossGroupType_CROSS; }
 
 			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
 
