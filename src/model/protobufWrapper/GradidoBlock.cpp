@@ -117,6 +117,25 @@ namespace model {
 			return result;
 		}
 
+		MemoryBin* GradidoBlock::getMessageId() const
+		{
+			if (!mProtoGradidoBlock.message_id().size()) {
+				return nullptr;
+			}
+			auto mm = MemoryManager::getInstance();
+			auto result = mm->getMemory(mProtoGradidoBlock.message_id().size());
+			memcpy(*result, mProtoGradidoBlock.message_id().data(), result->size());
+			return result;
+		}
+
+		std::string GradidoBlock::getMessageIdHex() const 
+		{
+			return DataTypeConverter::binToHex(
+				(const unsigned char*)mProtoGradidoBlock.message_id().data(),
+				mProtoGradidoBlock.message_id().size()
+			);
+		}
+
 		bool GradidoBlock::validate(
 			TransactionValidationLevel level /*= TRANSACTION_VALIDATION_SINGLE*/,
 			IGradidoBlockchain* blockchain /*= nullptr*/,
@@ -163,7 +182,7 @@ namespace model {
 			return mGradidoTransaction->validate(level, blockchain, otherBlockchain);
 		}
 
-		MemoryBin* GradidoBlock::calculateTxHash(std::shared_ptr<GradidoBlock> previousBlock) const
+		MemoryBin* GradidoBlock::calculateTxHash(Poco::SharedPtr<GradidoBlock> previousBlock) const
 		{
 			auto mm = MemoryManager::getInstance();
 			std::string prevTxHash;
@@ -201,8 +220,9 @@ namespace model {
 			return hash;
 		}
 
-		void GradidoBlock::calculateFinalGDD(std::shared_ptr<GradidoBlock> lastFinalBlock, std::vector<std::pair<int64_t, Poco::DateTime>> amountRetrievedSinceLastFinalBlock)
+		void GradidoBlock::calculateFinalGDD(Poco::SharedPtr<GradidoBlock> lastFinalBlock, std::vector<std::pair<int64_t, Poco::DateTime>> amountRetrievedSinceLastFinalBlock)
 		{
+			assert(!lastFinalBlock.isNull());
 			std::unique_lock _lock(mWorkMutex);
 			// get coin color
 			// search for last transaction for this address with the same coin color

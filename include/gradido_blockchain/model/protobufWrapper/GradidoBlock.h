@@ -40,9 +40,12 @@ namespace model {
 			}
 
 			std::unique_ptr<std::string> getSerialized();
+			//! \return MemoryBin containing message id binar, must be freed from caller
+			MemoryBin* getMessageId() const;
+			std::string getMessageIdHex() const;
 
 			//! \return caller must free result
-			MemoryBin* calculateTxHash(std::shared_ptr<GradidoBlock> previousBlock) const;
+			MemoryBin* calculateTxHash(Poco::SharedPtr<GradidoBlock> previousBlock) const;
 
 			//! \brief calculate final gdd for this transaction and set value into proto structure
 			//! 
@@ -50,7 +53,7 @@ namespace model {
 			//! \param lastFinalBlock previous GradidoBlock with calculated final balance for same address and coin color (sender of transfer transaction or creation)
 			//! \param amountRetrievedSinceLastFinalBlock vector with amount and received date from all transfer transaction since last final balance block for this address and coin color
 			//!                                           should be all transfer transactions where this address is the recipient
-			void calculateFinalGDD(std::shared_ptr<GradidoBlock> lastFinalBlock, std::vector<std::pair<int64_t, Poco::DateTime>> amountRetrievedSinceLastFinalBlock);
+			void calculateFinalGDD(Poco::SharedPtr<GradidoBlock> lastFinalBlock, std::vector<std::pair<int64_t, Poco::DateTime>> amountRetrievedSinceLastFinalBlock);
 
 		protected:
 			proto::gradido::GradidoBlock mProtoGradidoBlock;

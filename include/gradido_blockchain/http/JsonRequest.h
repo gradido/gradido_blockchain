@@ -18,9 +18,12 @@ class GRADIDOBLOCKCHAIN_EXPORT JsonRequest : public HttpRequest
 {
 public:
 	JsonRequest(const std::string& serverHost, int serverPort);
+	JsonRequest(const Poco::URI& requestUri);
 	virtual ~JsonRequest();
 
 	rapidjson::Document postRequest(const char* path, rapidjson::Value& payload);
+	//! \brief take path from mRequestURI
+	rapidjson::Document postRequest(rapidjson::Value& payload);
 
 	rapidjson::Document::AllocatorType& getJsonAllocator() { return mJsonDocument.GetAllocator(); }
 

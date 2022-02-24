@@ -111,6 +111,17 @@ namespace model {
 			
 		}
 
+		MemoryBin* GradidoTransaction::getParentMessageId() const
+		{
+			auto mm = MemoryManager::getInstance();
+			if (!mProtoGradidoTransaction->parent_message_id().size()) {
+				return nullptr;
+			}
+			auto result = mm->getMemory(mProtoGradidoTransaction->parent_message_id().size());
+			memcpy(*result, mProtoGradidoTransaction->parent_message_id().data(), result->size());
+			return result;
+		}
+
 		std::unique_ptr<std::string> GradidoTransaction::getSerialized()
 		{
 			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
@@ -127,7 +138,7 @@ namespace model {
 			return result;
 		}
 
-		std::string GradidoTransaction::toJson()
+		std::string GradidoTransaction::toJson() const
 		{
 			std::string json_message = "";
 			std::string json_message_body = "";

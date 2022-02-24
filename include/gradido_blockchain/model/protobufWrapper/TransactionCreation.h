@@ -13,6 +13,8 @@
 
 #include "TransactionBase.h"
 #include "gradido/GradidoCreation.pb.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "Poco/DateTime.h"
 
 namespace model {
 	namespace gradido {
@@ -33,8 +35,9 @@ namespace model {
 
 			inline google::protobuf::int64 getAmount() const { return mProtoCreation.recipient().amount(); }
 
-			inline std::string getAmountString() { return amountToString(getAmount()); }
-			std::string getTargetDateString();
+			inline std::string getAmountString() const { return amountToString(getAmount()); }
+			std::string getTargetDateString() const;
+			inline Poco::DateTime getTargetDate() const { return DataTypeConverter::convertFromProtoTimestampSeconds(mProtoCreation.target_date()); }
 
 		protected:
 			const proto::gradido::GradidoCreation& mProtoCreation;

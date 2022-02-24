@@ -15,6 +15,7 @@ class GRADIDOBLOCKCHAIN_EXPORT HttpRequest
 public:
 	HttpRequest(const std::string& url);
 	HttpRequest(const std::string& host, int port, const char* path = nullptr, const char* query = nullptr);
+	HttpRequest(const Poco::URI& requestUri);
 	virtual ~HttpRequest() {}
 
 protected:

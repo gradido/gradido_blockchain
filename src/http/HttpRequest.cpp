@@ -13,6 +13,11 @@ HttpRequest::HttpRequest(const std::string& url)
 	: mRequestUri(url)
 {
 }
+HttpRequest::HttpRequest(const Poco::URI& requestUri)
+	: mRequestUri(requestUri)
+{
+
+}
 HttpRequest::HttpRequest(const std::string& host, int port, const char* path/* = nullptr*/, const char* query/* = nullptr*/)
 {
 	mRequestUri.setHost(host);

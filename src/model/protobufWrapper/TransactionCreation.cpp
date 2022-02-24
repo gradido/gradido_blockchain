@@ -46,7 +46,7 @@ namespace model {
 			return 0;
 		}
 
-		std::string TransactionCreation::getTargetDateString()
+		std::string TransactionCreation::getTargetDateString() const
 		{
 			// proto format is seconds, poco timestamp format is microseconds
 			Poco::Timestamp pocoStamp(mProtoCreation.target_date().seconds() * 1000 * 1000);

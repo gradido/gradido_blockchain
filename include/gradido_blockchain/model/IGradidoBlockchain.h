@@ -11,9 +11,9 @@ namespace model {
 	class IGradidoBlockchain
 	{
 	public:
-		virtual std::vector<std::shared_ptr<gradido::GradidoBlock>> getAllTransactions(gradido::TransactionType type) = 0;
-		virtual std::shared_ptr<gradido::GradidoBlock> getLastTransaction() = 0;
-		virtual std::shared_ptr<gradido::GradidoBlock> getTransactionForId(uint64_t transactionId) = 0;
+		virtual std::vector<Poco::SharedPtr<gradido::GradidoBlock>> getAllTransactions(gradido::TransactionType type) = 0;
+		virtual Poco::SharedPtr<gradido::GradidoBlock> getLastTransaction() = 0;
+		virtual Poco::SharedPtr<gradido::GradidoBlock> getTransactionForId(uint64_t transactionId) = 0;
 		virtual Poco::SharedPtr<gradido::GradidoBlock> findByMessageId(MemoryBin* messageId) = 0;
 		virtual uint32_t getGroupDefaultCoinColor() const = 0;
 

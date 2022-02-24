@@ -17,6 +17,12 @@ JsonRequest::JsonRequest(const std::string& serverHost, int serverPort)
 
 }
 
+JsonRequest::JsonRequest(const Poco::URI& requestUri)
+	: HttpRequest(requestUri), mJsonDocument(kObjectType)
+{
+
+}
+
 JsonRequest::~JsonRequest()
 {
 
@@ -24,8 +30,6 @@ JsonRequest::~JsonRequest()
 
 Document JsonRequest::postRequest(const char* path, Value& payload)
 {
-	static const char* functionName = "JsonRequest::requestLogin";
-
 	auto alloc = mJsonDocument.GetAllocator();
 
 	if (payload.IsObject()) {
@@ -36,6 +40,21 @@ Document JsonRequest::postRequest(const char* path, Value& payload)
 	auto responseString = POST(path, mJsonDocument);
 	auto responseJson = parseResponse(responseString);
 	
+	return responseJson;
+}
+
+rapidjson::Document JsonRequest::postRequest(rapidjson::Value& payload)
+{
+	auto alloc = mJsonDocument.GetAllocator();
+
+	if (payload.IsObject()) {
+		for (auto it = payload.MemberBegin(); it != payload.MemberEnd(); it++) {
+			mJsonDocument.AddMember(it->name, it->value, alloc);
+		}
+	}
+	auto responseString = POST(mRequestUri.getPath().data(), mJsonDocument);
+	auto responseJson = parseResponse(responseString);
+
 	return responseJson;
 }
 
