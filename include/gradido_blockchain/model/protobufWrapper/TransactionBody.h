@@ -82,7 +82,7 @@ namespace model {
 			TransactionBody();
 
 			void initSpecificTransaction();
-			
+			// TODO: use Pool for reducing memory allocation for google protobuf objects
 			proto::gradido::TransactionBody mProtoTransactionBody;
 			TransactionBase* mTransactionSpecific;
 			TransactionType mTransactionType;

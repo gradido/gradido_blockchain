@@ -138,6 +138,29 @@ namespace model {
 			}
 			return false;
 		}
+
+		/*
+			TRANSACTION_NONE,
+			TRANSACTION_CREATION,
+			TRANSACTION_TRANSFER,
+			TRANSACTION_GROUP_FRIENDS_UPDATE,
+			TRANSACTION_REGISTER_ADDRESS,
+			TRANSACTION_GLOBAL_GROUP_ADD,
+			TRANSACTION_DEFERRED_TRANSFER
+		*/
+		const char* TransactionBase::getTransactionTypeString(TransactionType type)
+		{
+			switch (type) {
+			case TRANSACTION_NONE: return "none";
+			case TRANSACTION_CREATION: return "creation";
+			case TRANSACTION_TRANSFER: return "transfer";
+			case TRANSACTION_GROUP_FRIENDS_UPDATE: return "group friends update";
+			case TRANSACTION_REGISTER_ADDRESS: return "register address";
+			case TRANSACTION_GLOBAL_GROUP_ADD: return "global group add";
+			case TRANSACTION_DEFERRED_TRANSFER: return "deferred transfer";
+			default: return "<unknown>";
+			}
+		}
 	}
 }
 

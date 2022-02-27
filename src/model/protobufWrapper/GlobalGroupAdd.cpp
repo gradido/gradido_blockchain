@@ -51,9 +51,14 @@ namespace model {
 			if ((level & TRANSACTION_VALIDATION_CONNECTED_GROUP) == TRANSACTION_VALIDATION_CONNECTED_GROUP)
 			{
 				assert(blockchain);
-				auto transactions = blockchain->getAllTransactions(TRANSACTION_GLOBAL_GROUP_ADD);
+				auto transactions = blockchain->getAllTransactions();
 				for (auto it = transactions.begin(); it != transactions.end(); it++) {
-					auto groupAdd = (*it)->getGradidoTransaction()->getTransactionBody()->getGlobalGroupAdd();
+					auto gradidoBlock = std::make_unique<GradidoBlock>((*it)->getSerializedTransaction());
+					auto transactionBody = gradidoBlock->getGradidoTransaction()->getTransactionBody();
+					if (transactionBody->getTransactionType() != TRANSACTION_GLOBAL_GROUP_ADD) {
+						throw InvalidTransactionTypeOnBlockchain("invalid transaction on global groups chain", transactionBody->getTransactionType());
+					}
+					auto groupAdd = transactionBody->getGlobalGroupAdd();
 					if (groupAdd->getCoinColor() == getCoinColor()) {
 						throw TransactionValidationInvalidInputException("already exist", "native_coin_color", "uint32");
 					}

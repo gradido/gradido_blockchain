@@ -25,7 +25,7 @@ namespace model {
 		class GradidoBlock;
 		
 
-		enum GRADIDOBLOCKCHAIN_EXPORT TransactionType {
+		enum GRADIDOBLOCKCHAIN_EXPORT TransactionType: uint8_t {
 			TRANSACTION_NONE,
 			TRANSACTION_CREATION,
 			TRANSACTION_TRANSFER,
@@ -76,7 +76,7 @@ namespace model {
 			void setMinSignatureCount(uint32_t minSignatureCount) { mMinSignatureCount = minSignatureCount; }
 
 			static bool isValidGroupAlias(const std::string& groupAlias);
-
+			static const char* getTransactionTypeString(TransactionType type);
 			
 
 		protected:

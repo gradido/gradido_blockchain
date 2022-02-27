@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.18.2)
 project(GradidoBlockchain VERSION 1.0.0)
 #project(GradidoBlockchain C CXX)
 IF(WIN32)
-	set(CMAKE_CXX_FLAGS         "/EHsc")
+	set(CMAKE_CXX_FLAGS         "/EHsc /MP")
 ENDIF()
 
 if (NOT DEFINED CMAKE_CXX_VISIBILITY_PRESET AND

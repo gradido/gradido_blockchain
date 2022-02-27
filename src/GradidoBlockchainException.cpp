@@ -1,5 +1,5 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
-
+#include "gradido_blockchain/model/protobufWrapper/TransactionBase.h"
 #include "rapidjson/error/en.h"
 
 #include <string>
@@ -127,4 +127,22 @@ BlockchainOrderException::BlockchainOrderException(const char* what) noexcept
 std::string BlockchainOrderException::getFullString() const
 {
 	return what();
+}
+
+// *************************** Invalid Transaction Type on Blockchain
+InvalidTransactionTypeOnBlockchain::InvalidTransactionTypeOnBlockchain(const char* what, model::gradido::TransactionType type) noexcept
+	: GradidoBlockchainException(what), mTransactionType(type)
+{
+
+}
+
+std::string InvalidTransactionTypeOnBlockchain::getFullString() const
+{
+	auto transactionTypeString = model::gradido::TransactionBase::getTransactionTypeString(mTransactionType);
+	std::string resultString;
+	resultString.reserve(strlen(what()) + strlen(transactionTypeString) + 2 + 20);
+	resultString = what();
+	resultString += ", transaction type: ";
+	resultString += transactionTypeString;
+	return resultString;
 }

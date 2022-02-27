@@ -13,7 +13,6 @@ namespace model {
 		class GRADIDOBLOCKCHAIN_EXPORT GradidoBlock : public MultithreadContainer, public Poco::RefCountedObject
 		{
 		public:
-			GradidoBlock(std::unique_ptr<std::string> serializedGradidoBlock);
 			GradidoBlock(const std::string* serializedGradidoBlock);
 			~GradidoBlock();
 
@@ -29,14 +28,14 @@ namespace model {
 			) const;
 			
 			// proto member variable accessors
-			inline uint64_t getID() const { return mProtoGradidoBlock.id(); }
-			inline const std::string& getTxHash() const { return mProtoGradidoBlock.running_hash(); }
-			inline uint64_t getFinalBalance() const { return mProtoGradidoBlock.final_gdd(); }
+			inline uint64_t getID() const { return mProtoGradidoBlock->id(); }
+			inline const std::string& getTxHash() const { return mProtoGradidoBlock->running_hash(); }
+			inline uint64_t getFinalBalance() const { return mProtoGradidoBlock->final_gdd(); }
 
-			inline void setTxHash(const MemoryBin* txHash) { mProtoGradidoBlock.set_allocated_running_hash(txHash->copyAsString().release()); }
+			inline void setTxHash(const MemoryBin* txHash) { mProtoGradidoBlock->set_allocated_running_hash(txHash->copyAsString().release()); }
 			// convert from proto timestamp seconds to poco DateTime
 			inline Poco::DateTime getReceived() const {
-				return Poco::Timestamp(mProtoGradidoBlock.received().seconds() * Poco::Timestamp::resolution());
+				return Poco::Timestamp(mProtoGradidoBlock->received().seconds() * Poco::Timestamp::resolution());
 			}
 
 			std::unique_ptr<std::string> getSerialized();
@@ -45,7 +44,7 @@ namespace model {
 			std::string getMessageIdHex() const;
 
 			//! \return caller must free result
-			MemoryBin* calculateTxHash(Poco::SharedPtr<GradidoBlock> previousBlock) const;
+			MemoryBin* calculateTxHash(const GradidoBlock* previousBlock) const;
 
 			//! \brief calculate final gdd for this transaction and set value into proto structure
 			//! 
@@ -56,7 +55,8 @@ namespace model {
 			void calculateFinalGDD(Poco::SharedPtr<GradidoBlock> lastFinalBlock, std::vector<std::pair<int64_t, Poco::DateTime>> amountRetrievedSinceLastFinalBlock);
 
 		protected:
-			proto::gradido::GradidoBlock mProtoGradidoBlock;
+			// TODO: use Pool for reducing memory allocation for google protobuf objects
+			proto::gradido::GradidoBlock* mProtoGradidoBlock;
 			GradidoTransaction* mGradidoTransaction;
 			GradidoBlock(std::unique_ptr<GradidoTransaction> transaction);
 		};

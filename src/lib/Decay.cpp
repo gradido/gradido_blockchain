@@ -37,7 +37,7 @@ void unloadDefaultDecayFactors()
 void calculateDecayFactor(mpfr_ptr decay_factor, int days_per_year)
 {
 	mpfr_t temp;
-	mpfr_init(temp);
+	mpfr_init2(temp, decay_factor->_mpfr_prec);
 	// (lg Kn - lg K0) / seconds in year
 	mpfr_log_ui(temp, 50, default_round);
 	mpfr_log_ui(decay_factor, 100, default_round);
@@ -77,7 +77,7 @@ GradidoWithDecimal calculateDecayForDuration(mpfr_ptr decay_for_duration, Gradid
 	mpfr_t temp, gradido_decimal;
 	mpz_t gdd_cent;
 
-	mpfr_init(temp); mpfr_init(gradido_decimal);
+	mpfr_init2(temp, decay_for_duration->_mpfr_prec); mpfr_init(gradido_decimal);
 	mpz_init(gdd_cent);
 
 	mpfr_set_si(gradido_decimal, input.decimal, default_round);
@@ -102,7 +102,8 @@ GradidoWithDecimal calculateDecayForDuration(mpfr_ptr decay_for_duration, Gradid
 GradidoWithDecimal calculateDecay(GradidoWithDecimal input, unsigned long seconds, mpfr_ptr decay_factor)
 {
 	mpfr_t decay_for_duration;
-	mpfr_init(decay_for_duration);
+	// use high precision
+	mpfr_init2(decay_for_duration, 128);
 	calculateDecayFactorForDuration(decay_for_duration, decay_factor, seconds);
 
 	GradidoWithDecimal result = calculateDecayForDuration(decay_for_duration, input);
