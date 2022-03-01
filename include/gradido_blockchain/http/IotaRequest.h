@@ -7,6 +7,8 @@
 
 #include "gradido_blockchain/MemoryManager.h"
 
+#include "Poco/Logger.h"
+
 namespace iota {
 	struct NodeInfo
 	{
@@ -50,6 +52,10 @@ public:
 	MemoryBin* getMilestoneByIndex(int32_t milestoneIndex);
 	uint64_t getMilestoneTimestamp(int32_t milestoneIndex);
 	iota::NodeInfo getNodeInfo();
+
+	//! \brief use inside of catch clause by calling one of the iota requests
+	//! \param terminate if set to true program will be terminated!
+	static void defaultExceptionHandler(Poco::Logger& errorLog, bool terminate = true);
 
 protected:
 	// Iota get parent message ids for own message

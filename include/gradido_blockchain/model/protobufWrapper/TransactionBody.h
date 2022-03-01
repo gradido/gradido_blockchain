@@ -65,7 +65,11 @@ namespace model {
 			inline bool isOutbound() const { return mProtoTransactionBody.type() == proto::gradido::TransactionBody_CrossGroupType_OUTBOUND; }
 			inline bool isCross() const { return mProtoTransactionBody.type() == proto::gradido::TransactionBody_CrossGroupType_CROSS; }
 
-			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
+			bool validate(
+				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, 
+				IGradidoBlockchain* blockchain = nullptr,
+				const GradidoBlock* parentGradidoBlock = nullptr
+				) const;
 
 			std::unique_ptr<std::string> getBodyBytes() const;
 			const proto::gradido::TransactionBody* getBody() const { return &mProtoTransactionBody; }

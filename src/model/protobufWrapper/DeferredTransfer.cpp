@@ -9,9 +9,13 @@ namespace model {
 
 		}
 
-		bool DeferredTransfer::validate(TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/, IGradidoBlockchain* blockchain/* = nullptr*/) const
+		bool DeferredTransfer::validate(
+			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
+			IGradidoBlockchain* blockchain/* = nullptr*/,
+			const GradidoBlock* parentGradidoBlock/* = nullptr*/
+		) const
 		{
-			return TransactionTransfer::validate(level, blockchain);
+			return TransactionTransfer::validate(level, blockchain, parentGradidoBlock);
 		}
 
 		Poco::Timestamp DeferredTransfer::getTimeoutAsPocoTimestamp() const

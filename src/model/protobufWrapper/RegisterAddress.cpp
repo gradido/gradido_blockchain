@@ -14,7 +14,10 @@ namespace model {
 
 		}
 
-		bool RegisterAddress::validate(TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/, IGradidoBlockchain* blockchain/* = nullptr*/) const
+		bool RegisterAddress::validate(
+			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/, 
+			IGradidoBlockchain* blockchain/* = nullptr*/,
+			const GradidoBlock* parentGradidoBlock/* = nullptr*/) const
 		{
 			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
 

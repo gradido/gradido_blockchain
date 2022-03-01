@@ -13,7 +13,11 @@ namespace model {
 
 		}
 
-		bool GroupFriendsUpdate::validate(TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/, IGradidoBlockchain* blockchain/* = nullptr*/) const
+		bool GroupFriendsUpdate::validate(
+			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
+			IGradidoBlockchain* blockchain/* = nullptr*/,
+			const GradidoBlock* parentGradidoBlock/* = nullptr*/
+		) const
 		{
 			return true;
 		}

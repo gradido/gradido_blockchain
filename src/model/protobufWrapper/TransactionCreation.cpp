@@ -4,6 +4,8 @@
 #include "Poco/DateTimeFormatter.h"
 
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
+#include "gradido_blockchain/model/protobufWrapper/GradidoBlock.h"
+#include "gradido_blockchain/model/IGradidoBlockchain.h"
 
 #include <sodium.h>
 
@@ -54,55 +56,89 @@ namespace model {
 			return Poco::DateTimeFormatter::format(pocoStamp, "%d. %b %y");
 		}
 
-		bool TransactionCreation::validate(TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/, IGradidoBlockchain* blockchain/* = nullptr*/) const
+		bool TransactionCreation::validate(
+			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/, 
+			IGradidoBlockchain* blockchain/* = nullptr*/,
+			const GradidoBlock* parentGradidoBlock/* = nullptr*/
+		) const
 		{
-			auto target_date = Poco::DateTime(DataTypeConverter::convertFromProtoTimestampSeconds(mProtoCreation.target_date()));
-			// TODO: check with created date not with current clock date
-			auto now = Poco::DateTime();
-			auto mm = MemoryManager::getInstance();
-			//  2021-09-01 02:00:00 | 2021-12-04 01:22:14
-			if (target_date.year() == now.year()) 
-			{
-				if (target_date.month() + 2 < now.month()) {
-					throw TransactionValidationInvalidInputException("year is the same, target date month is more than 2 month in past", "target_date", "date time");
+			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
+				auto mm = MemoryManager::getInstance();				
+				auto amount = mProtoCreation.recipient().amount();
+				if (amount > 1000 * 10000) {
+					throw TransactionValidationInvalidInputException("creation amount to high, max 1000 per month", "amount", "integer");
 				}
-				if (target_date.month() > now.month()) {
-					throw TransactionValidationInvalidInputException("year is the same, target date month is in future", "target_date", "date time");
+				if (amount < 10000) {
+					throw TransactionValidationInvalidInputException("creation amount to low, min 1 GDD", "amount", "integer");
 				}
-			}
-			else if(target_date.year() > now.year()) 
-			{
-				throw TransactionValidationInvalidInputException("target date year is in future", "target_date", "date time");
-			}
-			else if(target_date.year() +1 < now.year())
-			{
-				throw TransactionValidationInvalidInputException("target date year is in past", "target_date", "date time");
-			}
-			else 
-			{
-				// target_date.year +1 == now.year
-				if (target_date.month() + 2 < now.month() + 12) {
-					throw TransactionValidationInvalidInputException("target date is more than 2 month in past", "target_date", "date time");
+
+				if (mProtoCreation.recipient().pubkey().size() != crypto_sign_PUBLICKEYBYTES) {
+					throw TransactionValidationInvalidInputException("invalid size", "recipient pubkey", "public key");
+				}
+				auto empty = mm->getMemory(crypto_sign_PUBLICKEYBYTES);
+				memset(*empty, 0, crypto_sign_PUBLICKEYBYTES);
+				if (0 == memcmp(mProtoCreation.recipient().pubkey().data(), *empty, crypto_sign_PUBLICKEYBYTES)) {
+					throw TransactionValidationInvalidInputException("empty", "recipient pubkey", "public key");
 				}
 			}
-			auto amount = mProtoCreation.recipient().amount();
-			if (amount > 1000 * 10000) {
-				throw TransactionValidationInvalidInputException("creation amount to high, max 1000 per month", "amount", "integer");
-			}
-			if (amount < 10000) {
-				throw TransactionValidationInvalidInputException("creation amount to low, min 1 GDD", "amount", "integer");
-			}
-			
-			if (mProtoCreation.recipient().pubkey().size() != crypto_sign_PUBLICKEYBYTES) {
-				throw TransactionValidationInvalidInputException("invalid size", "recipient pubkey", "public key");
-			}			
-			auto empty = mm->getMemory(crypto_sign_PUBLICKEYBYTES);
-			memset(*empty, 0, crypto_sign_PUBLICKEYBYTES);
-			if (0 == memcmp(mProtoCreation.recipient().pubkey().data(), *empty, crypto_sign_PUBLICKEYBYTES)) {
-				throw TransactionValidationInvalidInputException("empty", "recipient pubkey", "public key");
+
+			if ((level & TRANSACTION_VALIDATION_DATE_RANGE) == TRANSACTION_VALIDATION_DATE_RANGE) 
+			{
+				Poco::DateTime targetDate = Poco::Timestamp(mProtoCreation.target_date().seconds() * Poco::Timestamp::resolution());
+				assert(blockchain);
+				assert(parentGradidoBlock);
+					
+				auto pubkey = mProtoCreation.recipient().pubkey();
+				uint64_t sum = mProtoCreation.recipient().amount();				
+				sum += blockchain->calculateCreationSum(pubkey, targetDate.month(), targetDate.year(), parentGradidoBlock->getReceived());
+				
+				auto id = parentGradidoBlock->getID();
+				int lastId = 0;
+				if (blockchain->getLastTransaction()) {
+					lastId = blockchain->getLastTransaction()->getID();
+				}
+				if (id <= lastId) {
+					// this transaction was already added to blockchain and therefor also added in calculateCreationSum
+					sum -= mProtoCreation.recipient().amount();
+				}
+				// TODO: replace with variable, state transaction for group
+				if (sum > 10000000) {
+					throw TransactionValidationInvalidInputException("creation more than 1.000 GDD per month not allowed", "amount");
+				}
 			}
 			
 			return true;
+		}
+
+		bool TransactionCreation::validateTargetDate(uint64_t receivedSeconds) const
+		{
+			auto target_date = Poco::DateTime(DataTypeConverter::convertFromProtoTimestampSeconds(mProtoCreation.target_date()));
+			auto received = Poco::DateTime(Poco::Timestamp(receivedSeconds * Poco::Timestamp::resolution()));
+			//  2021-09-01 02:00:00 | 2021-12-04 01:22:14
+			if (target_date.year() == received.year())
+			{
+				if (target_date.month() + 2 < received.month()) {
+					throw TransactionValidationInvalidInputException("year is the same, target date month is more than 2 month in past", "target_date", "date time");
+				}
+				if (target_date.month() > received.month()) {
+					throw TransactionValidationInvalidInputException("year is the same, target date month is in future", "target_date", "date time");
+				}
+			}
+			else if (target_date.year() > received.year())
+			{
+				throw TransactionValidationInvalidInputException("target date year is in future", "target_date", "date time");
+			}
+			else if (target_date.year() + 1 < received.year())
+			{
+				throw TransactionValidationInvalidInputException("target date year is in past", "target_date", "date time");
+			}
+			else
+			{
+				// target_date.year +1 == now.year
+				if (target_date.month() + 2 < received.month() + 12) {
+					throw TransactionValidationInvalidInputException("target date is more than 2 month in past", "target_date", "date time");
+				}
+			}
 		}
 
 		std::vector<MemoryBin*> TransactionCreation::getInvolvedAddresses() const

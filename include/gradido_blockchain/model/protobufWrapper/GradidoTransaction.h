@@ -30,6 +30,7 @@ namespace model {
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
+				const GradidoBlock* parentGradidoBlock = nullptr,
 				IGradidoBlockchain* otherBlockchain = nullptr
 			) const;
 

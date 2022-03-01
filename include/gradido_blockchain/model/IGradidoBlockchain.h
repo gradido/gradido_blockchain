@@ -12,10 +12,11 @@ namespace model {
 	class IGradidoBlockchain
 	{
 	public:
-		virtual std::vector<Poco::SharedPtr<TransactionEntry>> getAllTransactions() = 0;
-		virtual Poco::SharedPtr<TransactionEntry> getLastTransaction() = 0;
+		virtual std::vector<Poco::SharedPtr<TransactionEntry>> getAllTransactions(std::function<bool(model::TransactionEntry*)> filter = nullptr) = 0;
+		virtual Poco::SharedPtr<gradido::GradidoBlock> getLastTransaction() = 0;
 		virtual Poco::SharedPtr<TransactionEntry> getTransactionForId(uint64_t transactionId) = 0;
-		virtual Poco::SharedPtr<TransactionEntry> findByMessageId(MemoryBin* messageId) = 0;
+		virtual Poco::SharedPtr<TransactionEntry> findByMessageId(const MemoryBin* messageId, bool cachedOnly = true) = 0;
+		virtual uint64_t calculateCreationSum(const std::string& address, int month, int year, Poco::DateTime received) = 0;
 		virtual uint32_t getGroupDefaultCoinColor() const = 0;
 
 	protected:

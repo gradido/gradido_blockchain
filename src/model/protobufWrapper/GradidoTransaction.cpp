@@ -43,6 +43,7 @@ namespace model {
 		bool GradidoTransaction::validate(
 			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
 			IGradidoBlockchain* blockchain/* = nullptr*/,
+			const GradidoBlock* parentGradidoBlock/* = nullptr*/,
 			IGradidoBlockchain* otherBlockchain/* = nullptr*/
 		) const
 		{
@@ -64,7 +65,7 @@ namespace model {
 				
 				// check for not allowed signatures
 				mTransactionBody->getTransactionBase()->checkRequiredSignatures(&sig_map);
-				return mTransactionBody->validate(level, blockchain);
+				return mTransactionBody->validate(level, blockchain, parentGradidoBlock);
 			}
 			 
 			// must be implemented in gradido node server
@@ -77,6 +78,7 @@ namespace model {
 				case proto::gradido::TransactionBody_CrossGroupType_OUTBOUND: break;
 				case proto::gradido::TransactionBody_CrossGroupType_CROSS: break;
 				}
+				throw std::runtime_error("not implemented yet");
 			}
 			
 			return true;

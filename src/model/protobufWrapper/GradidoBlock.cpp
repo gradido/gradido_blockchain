@@ -183,7 +183,7 @@ namespace model {
 					mm->releaseMemory(txHash);
 				}
 			}
-			return mGradidoTransaction->validate(level, blockchain, otherBlockchain);
+			return mGradidoTransaction->validate(level, blockchain, this, otherBlockchain);
 		}
 
 		MemoryBin* GradidoBlock::calculateTxHash(const GradidoBlock* previousBlock) const

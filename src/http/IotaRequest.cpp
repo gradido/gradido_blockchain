@@ -10,10 +10,12 @@
 #include "Poco/Net/HTTPSClientSession.h"
 #include "Poco/Net/HTTPRequest.h"
 #include "Poco/Net/HTTPResponse.h"
+#include "Poco/Util/ServerApplication.h"
 
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/pointer.h"
+
 
 
 using namespace rapidjson;
@@ -255,4 +257,33 @@ iota::NodeInfo IotaRequest::getNodeInfo()
 	result.lastMilestoneTimestamp = data["latestMilestoneTimestamp"].GetInt64();
 	
 	return result;
+}
+
+
+void IotaRequest::defaultExceptionHandler(Poco::Logger& errorLog, bool terminate/* = true*/)
+{
+	std::pair<std::string, std::unique_ptr<std::string>> dataIndex;
+	try {
+		throw; // assumes that defaultExceptionHandler() is called from catch-clause
+	}
+	catch (IotaRequestException& ex) {
+		// terminate application
+		errorLog.critical("Iota Request exception, has the API changed? More details: %s", ex.getFullString());
+		if (terminate) {
+			Poco::Util::ServerApplication::terminate();
+		}
+	}
+	catch (RapidjsonParseErrorException& ex) {
+		errorLog.error("Json parse error by calling Iota API: %s", ex.getFullString());
+		if (terminate) {
+			Poco::Util::ServerApplication::terminate();
+		}
+		
+	}
+	catch (Poco::Exception& ex) {
+		errorLog.error("Poco Exception by calling Iota Request: %s", ex.displayText());
+		if (terminate) {
+			Poco::Util::ServerApplication::terminate();
+		}
+	}
 }

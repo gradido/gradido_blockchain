@@ -234,7 +234,10 @@ namespace model {
 			return mTransactionSpecific;
 		}
 		
-		bool TransactionBody::validate(TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/, IGradidoBlockchain* blockchain/* = nullptr*/) const
+		bool TransactionBody::validate(
+			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
+			IGradidoBlockchain* blockchain/* = nullptr*/,
+			const GradidoBlock* parentGradidoBlock/* = nullptr*/) const
 		{
 			LOCK_RECURSIVE;
 			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {

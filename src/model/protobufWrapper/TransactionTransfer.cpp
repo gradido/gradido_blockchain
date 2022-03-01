@@ -38,7 +38,11 @@ namespace model {
 			return 0;
 		}
 
-		bool TransactionTransfer::validate(TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/, IGradidoBlockchain* blockchain/* = nullptr*/) const
+		bool TransactionTransfer::validate(
+			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/, 
+			IGradidoBlockchain* blockchain/* = nullptr*/,
+			const GradidoBlock* parentGradidoBlock/* = nullptr*/)
+			const
 		{
 			LOCK_RECURSIVE;
 			

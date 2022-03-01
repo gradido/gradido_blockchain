@@ -14,7 +14,11 @@ namespace model {
 			GlobalGroupAdd(const proto::gradido::GlobalGroupAdd& protoGlobalGroupAdd);
 			~GlobalGroupAdd();
 
-			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
+			bool validate(
+				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
+				IGradidoBlockchain* blockchain = nullptr,
+				const GradidoBlock* parentGradidoBlock = nullptr
+			) const;
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
 
 			inline const std::string& getGroupName() const { return mProtoGlobalGroupAdd.group_name(); }

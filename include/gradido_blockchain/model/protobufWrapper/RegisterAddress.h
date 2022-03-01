@@ -14,7 +14,11 @@ namespace model {
 			~RegisterAddress();
 
 			int prepare();
-			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
+			bool validate(
+				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
+				IGradidoBlockchain* blockchain = nullptr,
+				const GradidoBlock* parentGradidoBlock = nullptr
+			) const;
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
 			uint32_t getCoinColor() const;
 

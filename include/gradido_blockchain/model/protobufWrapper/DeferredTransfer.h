@@ -13,7 +13,11 @@ namespace model {
 		public:
 			DeferredTransfer(const proto::gradido::GradidoDeferredTransfer& deferredTransfer);
 
-			bool validate(TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, IGradidoBlockchain* blockchain = nullptr) const;
+			bool validate(
+				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, 
+				IGradidoBlockchain* blockchain = nullptr,
+				const GradidoBlock* parentGradidoBlock = nullptr
+			)const;
 
 			Poco::Timestamp getTimeoutAsPocoTimestamp() const;
 		protected:
