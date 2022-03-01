@@ -74,6 +74,12 @@ namespace model {
 			return false;
 		}
 
+		bool GlobalGroupAdd::isBelongToUs(const TransactionBase* pairingTransaction) const
+		{
+			//auto pair = dynamic_cast<const GlobalGroupAdd*>(pairingTransaction);
+			throw InvalidCrossGroupTransaction("try cross group transaction with ", TRANSACTION_GLOBAL_GROUP_ADD);
+		}
+
 		std::vector<MemoryBin*> GlobalGroupAdd::getInvolvedAddresses() const
 		{
 			return {};

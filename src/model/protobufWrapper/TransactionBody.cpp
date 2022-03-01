@@ -282,6 +282,20 @@ namespace model {
 
 		}
 
+		bool TransactionBody::isBelongToUs(const TransactionBody* pairingTransaction) const
+		{
+			if (getMemo() != pairingTransaction->getMemo()) {
+				return false;
+			}
+			if (getCreatedSeconds() != pairingTransaction->getCreatedSeconds()) {
+				return false;
+			}
+			if (getOtherGroup() == pairingTransaction->getOtherGroup()) {
+				return false;
+			}
+			return getTransactionBase()->isBelongToUs(pairingTransaction->getTransactionBase());
+		}
+
 		void TransactionBody::initSpecificTransaction()
 		{
 			// check Type

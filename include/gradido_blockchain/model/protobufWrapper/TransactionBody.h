@@ -70,6 +70,7 @@ namespace model {
 				IGradidoBlockchain* blockchain = nullptr,
 				const GradidoBlock* parentGradidoBlock = nullptr
 				) const;
+			bool isBelongToUs(const TransactionBody* pairingTransaction) const;
 
 			std::unique_ptr<std::string> getBodyBytes() const;
 			const proto::gradido::TransactionBody* getBody() const { return &mProtoTransactionBody; }

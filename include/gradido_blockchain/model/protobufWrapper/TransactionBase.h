@@ -66,6 +66,7 @@ namespace model {
 			//! \return caller need to clean up memory bins
 			virtual std::vector<MemoryBin*> getInvolvedAddresses() const = 0;
 			virtual uint32_t getCoinColor() const = 0;
+			virtual bool isBelongToUs(const TransactionBase* pairingTransaction) const = 0;
 
 			static std::string amountToString(google::protobuf::int64 amount);
 

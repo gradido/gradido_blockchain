@@ -19,6 +19,8 @@ namespace model {
 				const GradidoBlock* parentGradidoBlock = nullptr
 			)const;
 
+			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
+
 			Poco::Timestamp getTimeoutAsPocoTimestamp() const;
 		protected:
 			const proto::gradido::GradidoDeferredTransfer& mProtoDeferredTransfer;

@@ -18,6 +18,17 @@ namespace model {
 			return TransactionTransfer::validate(level, blockchain, parentGradidoBlock);
 		}
 
+		bool DeferredTransfer::isBelongToUs(const TransactionBase* pairingTransaction) const
+		{
+			auto pair = dynamic_cast<const DeferredTransfer*>(pairingTransaction);
+			if (getTimeoutAsPocoTimestamp() == pair->getTimeoutAsPocoTimestamp()) {
+				return TransactionTransfer::isBelongToUs(pairingTransaction);
+			}
+			else {
+				return false;
+			}
+		}
+
 		Poco::Timestamp DeferredTransfer::getTimeoutAsPocoTimestamp() const
 		{
 			return DataTypeConverter::convertFromProtoTimestamp(mProtoDeferredTransfer.timeout());

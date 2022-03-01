@@ -4,7 +4,7 @@
 namespace model {
 	namespace gradido {
 		RegisterAddress::RegisterAddress(const proto::gradido::RegisterAddress& registerAddress)
-			: mRegisterAddress(registerAddress)
+			: mProtoRegisterAddress(registerAddress)
 		{
 
 		}
@@ -12,6 +12,12 @@ namespace model {
 		RegisterAddress::~RegisterAddress()
 		{
 
+		}
+
+		int RegisterAddress::prepare()
+		{
+			mMinSignatureCount = 1;
+			return 0;
 		}
 
 		bool RegisterAddress::validate(
@@ -30,16 +36,16 @@ namespace model {
 			auto mm = MemoryManager::getInstance();
 			std::vector<MemoryBin*> result;
 
-			auto userPubkeySize = mRegisterAddress.user_pubkey().size();			
+			auto userPubkeySize = mProtoRegisterAddress.user_pubkey().size();			
 			if (userPubkeySize) {
 				auto userPubkey = mm->getMemory(userPubkeySize);
-				memcpy(*userPubkey, mRegisterAddress.user_pubkey().data(), userPubkeySize);
+				memcpy(*userPubkey, mProtoRegisterAddress.user_pubkey().data(), userPubkeySize);
 				result.push_back(userPubkey);
 			}
-			auto subaccountPubkeySize = mRegisterAddress.subaccount_pubkey().size();
+			auto subaccountPubkeySize = mProtoRegisterAddress.subaccount_pubkey().size();
 			if (subaccountPubkeySize) {
 				auto subaccountPubkey = mm->getMemory(subaccountPubkeySize);
-				memcpy(*subaccountPubkey, mRegisterAddress.subaccount_pubkey().data(), subaccountPubkeySize);
+				memcpy(*subaccountPubkey, mProtoRegisterAddress.subaccount_pubkey().data(), subaccountPubkeySize);
 				result.push_back(subaccountPubkey);
 			}
 			return result;
@@ -50,10 +56,55 @@ namespace model {
 			return 0;
 		}
 
-		int RegisterAddress::prepare()
+		bool RegisterAddress::isBelongToUs(const TransactionBase* pairingTransaction) const
 		{
-			mMinSignatureCount = 1;
-			return 0;
+			auto pair = dynamic_cast<const RegisterAddress*>(pairingTransaction);
+			auto mm = MemoryManager::getInstance();
+			bool belongToUs = true;
+
+			auto a = getUserPubkey();
+			auto b = pair->getUserPubkey();			
+			if (!a->isSame(b)) {
+				belongToUs = false;
+			}
+			mm->releaseMemory(a); mm->releaseMemory(b);
+
+			a = getNameHash();
+			b = pair->getNameHash();
+			if (!a->isSame(b)) {
+				belongToUs = false;
+			}
+			mm->releaseMemory(a); mm->releaseMemory(b);
+
+			a = getSubaccountPubkey();
+			b = pair->getSubaccountPubkey();
+			if (!a->isSame(b)) {
+				belongToUs = false;
+			}
+			mm->releaseMemory(a); mm->releaseMemory(b);
+			
+			return belongToUs;
+		}
+
+		MemoryBin* RegisterAddress::getUserPubkey() const
+		{
+			auto bin = MemoryManager::getInstance()->getMemory(mProtoRegisterAddress.user_pubkey().size());
+			bin->copyFromProtoBytes(mProtoRegisterAddress.user_pubkey());
+			return bin;
+		}
+
+		MemoryBin* RegisterAddress::getNameHash() const
+		{
+			auto bin = MemoryManager::getInstance()->getMemory(mProtoRegisterAddress.name_hash().size());
+			bin->copyFromProtoBytes(mProtoRegisterAddress.name_hash());
+			return bin;
+		}
+
+		MemoryBin* RegisterAddress::getSubaccountPubkey() const
+		{
+			auto bin = MemoryManager::getInstance()->getMemory(mProtoRegisterAddress.subaccount_pubkey().size());
+			bin->copyFromProtoBytes(mProtoRegisterAddress.subaccount_pubkey());
+			return bin;
 		}
 
 		proto::gradido::RegisterAddress_AddressType RegisterAddress::getAddressTypeFromString(const std::string& addressType) 

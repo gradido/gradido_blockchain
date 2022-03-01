@@ -93,4 +93,11 @@ protected:
 	model::gradido::TransactionType mTransactionType;
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT InvalidCrossGroupTransaction : public InvalidTransactionTypeOnBlockchain
+{
+public:
+	explicit InvalidCrossGroupTransaction(const char* what, model::gradido::TransactionType type) noexcept
+		: InvalidTransactionTypeOnBlockchain(what, type) {}
+};
+
 #endif __GRADIDO_BLOCKCHAIN_EXCEPTION_H

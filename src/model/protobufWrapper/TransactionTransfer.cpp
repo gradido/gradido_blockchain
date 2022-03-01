@@ -98,5 +98,46 @@ namespace model {
 		{
 			return mProtoTransfer.sender().coin_color();
 		}
+
+		bool TransactionTransfer::isBelongToUs(const TransactionBase* pairingTransaction) const
+		{
+			auto pair = dynamic_cast<const TransactionTransfer*>(pairingTransaction);
+			auto mm = MemoryManager::getInstance();
+			bool belongToUs = true;
+
+			if (getCoinColor() != pair->getCoinColor()) {
+				belongToUs = false;
+			}
+			if (getAmount() != pair->getAmount()) {
+				belongToUs = false;
+			}
+			auto senderPubkey = getSenderPublicKey();
+			auto senderPubkeyPair = pair->getSenderPublicKey();
+			if (!senderPubkey->isSame(senderPubkeyPair)) {
+				belongToUs = false;
+			}
+			mm->releaseMemory(senderPubkey); mm->releaseMemory(senderPubkeyPair);
+
+			auto recipientPubkey = getRecipientPublicKey();
+			auto recipientPubkeyPair = pair->getRecipientPublicKey();
+			if (!recipientPubkey->isSame(recipientPubkeyPair)) {
+				belongToUs = false;
+			}
+			mm->releaseMemory(recipientPubkey); mm->releaseMemory(recipientPubkeyPair);
+			return belongToUs;
+		}
+
+		MemoryBin* TransactionTransfer::getSenderPublicKey() const
+		{
+			auto bin = MemoryManager::getInstance()->getMemory(mProtoTransfer.sender().pubkey().size());
+			bin->copyFromProtoBytes(mProtoTransfer.sender().pubkey());
+			return bin;
+		}
+		MemoryBin* TransactionTransfer::getRecipientPublicKey() const
+		{
+			auto bin = MemoryManager::getInstance()->getMemory(mProtoTransfer.recipient().size());
+			bin->copyFromProtoBytes(mProtoTransfer.recipient());
+			return bin;
+		}
 	}
 }

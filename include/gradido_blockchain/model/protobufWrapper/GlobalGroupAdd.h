@@ -19,6 +19,9 @@ namespace model {
 				IGradidoBlockchain* blockchain = nullptr,
 				const GradidoBlock* parentGradidoBlock = nullptr
 			) const;
+
+			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
+
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
 
 			inline const std::string& getGroupName() const { return mProtoGlobalGroupAdd.group_name(); }

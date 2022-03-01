@@ -21,11 +21,17 @@ namespace model {
 			) const;
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
 			uint32_t getCoinColor() const;
+			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
+
+			MemoryBin* getUserPubkey() const;
+			proto::gradido::RegisterAddress_AddressType getAddressType() { return mProtoRegisterAddress.address_type(); }
+			MemoryBin* getNameHash() const;
+			MemoryBin* getSubaccountPubkey() const;
 
 			static proto::gradido::RegisterAddress_AddressType getAddressTypeFromString(const std::string& addressType);
 
 		protected:
-			const proto::gradido::RegisterAddress& mRegisterAddress;
+			const proto::gradido::RegisterAddress& mProtoRegisterAddress;
 		};
 	}
 }

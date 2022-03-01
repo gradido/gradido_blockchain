@@ -85,6 +85,23 @@ namespace model {
 
 		}
 
+		bool GradidoTransaction::isBelongToUs(const GradidoTransaction* pairingTransaction) const
+		{
+			auto sigMap = getSigMap();
+			auto sigMapPair = pairingTransaction->getSigMap();
+			if (sigMap.sigpair_size() != sigMapPair.sigpair_size()) {
+				return false;
+			}
+			auto mm = MemoryManager::getInstance();
+			for (int i = 0; i < sigMap.sigpair_size(); i++) {
+				// compare return 0 if strings identical, else < 0 or > 0
+				if (sigMap.sigpair()[i].pubkey().compare(sigMapPair.sigpair()[i].pubkey())) {
+					return false;
+				}
+			}
+			return getTransactionBody()->isBelongToUs(pairingTransaction->getTransactionBody());
+		}
+
 		bool GradidoTransaction::addSign(const MemoryBin* pubkeyBin, const MemoryBin* signatureBin)
 		{
 			std::unique_ptr<std::string> bodyBytes;

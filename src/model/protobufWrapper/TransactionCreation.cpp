@@ -155,6 +155,38 @@ namespace model {
 			return mProtoCreation.recipient().coin_color();
 		}
 
+		bool TransactionCreation::isBelongToUs(const TransactionBase* pairingTransaction) const
+		{
+			auto pair = dynamic_cast<const TransactionCreation*>(pairingTransaction);
+			bool belongToUs = true;
+			auto mm = MemoryManager::getInstance();
+			if (getTargetDate() != pair->getTargetDate()) {
+				belongToUs = false;
+			}
+			if (getAmount() != pair->getAmount()) {
+				belongToUs = false;
+			}
+
+			if (getCoinColor() != pair->getCoinColor()) {
+				belongToUs = false;
+			}
+
+			auto recipient = getRecipientPublicKey();
+			auto pairRecipient = pair->getRecipientPublicKey();
+			if (!recipient->isSame(pairRecipient)) {
+				belongToUs = false;
+			}
+			mm->releaseMemory(recipient); mm->releaseMemory(pairRecipient);
+			return belongToUs;
+		}
+
+
+		MemoryBin* TransactionCreation::getRecipientPublicKey() const
+		{
+			auto bin = MemoryManager::getInstance()->getMemory(mProtoCreation.recipient().pubkey().size());
+			bin->copyFromProtoBytes(mProtoCreation.recipient().pubkey());
+			return bin;
+		}
 
 	}
 }

@@ -32,5 +32,11 @@ namespace model {
 			return 0;
 		}
 
+		bool GroupFriendsUpdate::isBelongToUs(const TransactionBase* pairingTransaction) const
+		{
+			auto pair = dynamic_cast<const GroupFriendsUpdate*>(pairingTransaction);
+			return isColorFusion() == pair->isColorFusion();
+		}
+
 	}
 }

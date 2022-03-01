@@ -34,6 +34,8 @@ namespace model {
 				IGradidoBlockchain* otherBlockchain = nullptr
 			) const;
 
+			bool isBelongToUs(const GradidoTransaction* pairingTransaction) const;
+
 			bool addSign(const MemoryBin* pubkeyBin, const MemoryBin* signatureBin);
 
 			int getSignCount() const { return mProtoGradidoTransaction->sig_map().sigpair_size(); }
