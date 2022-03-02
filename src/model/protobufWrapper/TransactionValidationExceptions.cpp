@@ -118,7 +118,7 @@ namespace model {
 		}
 
 		// ************* Forbidden Sign *******************
-		TransactionValidationForbiddenSignException::TransactionValidationForbiddenSignException(MemoryBin* forbiddenPubkey)
+		TransactionValidationForbiddenSignException::TransactionValidationForbiddenSignException(MemoryBin* forbiddenPubkey) noexcept
 			: TransactionValidationException("Forbidden Sign")
 		{
 			mForbiddenPubkey = forbiddenPubkey;
@@ -155,6 +155,34 @@ namespace model {
 				result += ", this forbidden pubkey was used for signing: " + forbiddenPubkeyHex;
 			}
 			return result;
+		}
+
+		// ******************************** Invalid Pairing transaction **********************************************
+		PairingTransactionNotMatchException::PairingTransactionNotMatchException(const char* what, const std::string* serializedTransaction, const std::string* serializedPairingTransaction) noexcept
+			:TransactionValidationException(what) 
+		{
+			try {
+				mTransaction = std::make_unique<model::gradido::GradidoTransaction>(serializedTransaction);
+				mPairingTransaction = std::make_unique<model::gradido::GradidoTransaction>(serializedPairingTransaction);
+			}
+			catch (...) {
+				printf("exception by creating transaction from serialized string\n");
+			}
+		}
+
+		std::string PairingTransactionNotMatchException::getFullString() const noexcept
+		{
+			std::string resultString;
+			auto transactionJson = mTransaction->toJson();
+			auto pairedTransactionJson = mPairingTransaction->toJson();
+			size_t resultSize = strlen(what()) + transactionJson.size() + pairedTransactionJson.size() + 4;
+			resultString.reserve(resultSize);
+			resultString = what();
+			resultString += "\n";
+			resultString += transactionJson + "\n";
+			resultString += pairedTransactionJson;
+
+			return resultString;
 		}
 	}
 }

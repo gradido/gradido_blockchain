@@ -19,7 +19,7 @@ namespace model {
 			friend GradidoBlock;
 		public:
 			GradidoTransaction(proto::gradido::GradidoTransaction* protoGradidoTransaction);
-			GradidoTransaction(const std::string& serializedProtobuf);
+			GradidoTransaction(const std::string* serializedProtobuf);
 			GradidoTransaction(model::gradido::TransactionBody* body);
 			~GradidoTransaction();
 
@@ -49,6 +49,7 @@ namespace model {
 			MemoryBin* getParentMessageId() const;
 
 			std::unique_ptr<std::string> getSerialized();
+			std::unique_ptr<std::string> getSerializedConst() const;
 			std::string toJson() const;
 
 		protected:

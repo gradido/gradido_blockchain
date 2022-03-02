@@ -1,8 +1,10 @@
 #include "gradido_blockchain/model/protobufWrapper/GradidoTransaction.h"
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 #include "gradido_blockchain/model/protobufWrapper/ProtobufExceptions.h"
+#include "gradido_blockchain/model/IGradidoBlockchain.h"
 
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
+
 
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h"
@@ -17,11 +19,11 @@ namespace model {
 			mTransactionBody = TransactionBody::load(protoGradidoTransaction->body_bytes());
 		}
 
-		GradidoTransaction::GradidoTransaction(const std::string& serializedProtobuf)
+		GradidoTransaction::GradidoTransaction(const std::string* serializedProtobuf)
 		{
 			mProtoGradidoTransaction = new proto::gradido::GradidoTransaction;
-			if (!mProtoGradidoTransaction->ParseFromString(serializedProtobuf)) {
-				throw ProtobufParseException(serializedProtobuf);
+			if (!mProtoGradidoTransaction->ParseFromString(*serializedProtobuf)) {
+				throw ProtobufParseException(*serializedProtobuf);
 			}
 			mTransactionBody = TransactionBody::load(mProtoGradidoTransaction->body_bytes());
 		}
@@ -71,18 +73,44 @@ namespace model {
 			// must be implemented in gradido node server
 			if ((level & TRANSACTION_VALIDATION_PAIRED) == TRANSACTION_VALIDATION_PAIRED)
 			{
+				assert(otherBlockchain);
+				
 				auto transactionBody = getTransactionBody();
+				auto mm = MemoryManager::getInstance();
+				Poco::SharedPtr<TransactionEntry> pairTransactionEntry;
 				switch (transactionBody->getCrossGroupType()) {
-				case proto::gradido::TransactionBody_CrossGroupType_LOCAL: break; 
-				case proto::gradido::TransactionBody_CrossGroupType_INBOUND: break;
-				case proto::gradido::TransactionBody_CrossGroupType_OUTBOUND: break;
-				case proto::gradido::TransactionBody_CrossGroupType_CROSS: break;
+				case proto::gradido::TransactionBody_CrossGroupType_LOCAL: break; // no cross grouü
+				case proto::gradido::TransactionBody_CrossGroupType_INBOUND: 
+					// happen before inbound, can only be checked after both transactions are written to blockchain
+				case proto::gradido::TransactionBody_CrossGroupType_OUTBOUND: 
+				case proto::gradido::TransactionBody_CrossGroupType_CROSS:
+					if (!mProtoGradidoTransaction->parent_message_id().size()) {
+						throw TransactionValidationInvalidInputException("parent message id not set for outbound", "parent message id", "binary");
+					}
+					else {
+						auto parentMessageId = getParentMessageId();
+						pairTransactionEntry = otherBlockchain->findByMessageId(parentMessageId, false);
+						mm->releaseMemory(parentMessageId);
+						if (pairTransactionEntry.isNull()) {
+							throw TransactionValidationException("pairing transaction not found");
+						}
+						auto pairingGradidoBlock = std::make_unique<GradidoBlock>(pairTransactionEntry->getSerializedTransaction());
+						auto pairingTransaction = pairingGradidoBlock->getGradidoTransaction();
+						if (!isBelongToUs(pairingTransaction)) {
+							throw PairingTransactionNotMatchException(
+								"pairing transaction not matching", 
+								getSerializedConst().get(), 
+								pairingTransaction->getSerializedConst().get()
+							);
+						}
+					}
+					break;
+				default: throw std::runtime_error("unknown cross group type");
 				}
-				throw std::runtime_error("not implemented yet");
+				
 			}
 			
 			return true;
-
 		}
 
 		bool GradidoTransaction::isBelongToUs(const GradidoTransaction* pairingTransaction) const
@@ -145,6 +173,20 @@ namespace model {
 		{
 			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
 
+			auto size = mProtoGradidoTransaction->ByteSizeLong();
+			//auto bodyBytesSize = MemoryManager::getInstance()->getFreeMemory(mProtoCreation.ByteSizeLong());
+			std::string* resultString(new std::string(size, 0));
+			if (!mProtoGradidoTransaction->SerializeToString(resultString)) {
+				//addError(new Error("TransactionCreation::getBodyBytes", "error serializing string"));
+				throw ProtobufSerializationException(*mProtoGradidoTransaction);
+			}
+			std::unique_ptr<std::string> result;
+			result.reset(resultString);
+			return result;
+		}
+
+		std::unique_ptr<std::string> GradidoTransaction::getSerializedConst() const
+		{
 			auto size = mProtoGradidoTransaction->ByteSizeLong();
 			//auto bodyBytesSize = MemoryManager::getInstance()->getFreeMemory(mProtoCreation.ByteSizeLong());
 			std::string* resultString(new std::string(size, 0));

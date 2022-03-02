@@ -5,7 +5,7 @@
 #include <string>
 
 #include "gradido_blockchain/MemoryManager.h"
-#include "gradido_blockchain/model/protobufWrapper/TransactionBody.h"
+#include "gradido_blockchain/model/protobufWrapper/GradidoTransaction.h"
 
 #include "Poco/DateTime.h"
 
@@ -68,13 +68,25 @@ namespace model {
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationForbiddenSignException : public TransactionValidationException
 		{
 		public: 
-			explicit TransactionValidationForbiddenSignException(MemoryBin* forbiddenPubkey);
+			explicit TransactionValidationForbiddenSignException(MemoryBin* forbiddenPubkey) noexcept;
 			~TransactionValidationForbiddenSignException();
 
 			std::string getFullString() const noexcept;
 		protected:
 			MemoryBin* mForbiddenPubkey;
 
+		};
+
+		class GRADIDOBLOCKCHAIN_EXPORT PairingTransactionNotMatchException : public TransactionValidationException
+		{
+		public:
+			explicit PairingTransactionNotMatchException(const char* what, const std::string* serializedTransaction, const std::string* serializedPairingTransaction) noexcept;
+
+			std::string getFullString() const noexcept;
+
+		protected:
+			std::unique_ptr<model::gradido::GradidoTransaction> mTransaction;
+			std::unique_ptr<model::gradido::GradidoTransaction> mPairingTransaction;
 		};
 
 	}

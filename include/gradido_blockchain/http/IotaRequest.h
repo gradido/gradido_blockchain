@@ -43,7 +43,7 @@ public:
 	//! \return messageId as hex string
 	std::string sendMessage(const std::string& indexHex, const std::string& messageHex);
 	rapidjson::Document getMessageJson(const std::string& messageIdHex);
-	std::pair<std::string, std::unique_ptr<std::string>> getIndexiationMessageDataIndex(const std::string& messageIdHex);
+	std::pair<std::unique_ptr<std::string>, std::unique_ptr<std::string>> getIndexiationMessageDataIndex(const std::string& messageIdHex);
 	//! use metadata call to check if it is referenced by a milestone
 	//! \return return 0 if not, else return milestone id
 	uint32_t getMessageMilestoneId(const std::string& messageIdHex);

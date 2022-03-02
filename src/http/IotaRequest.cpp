@@ -122,7 +122,7 @@ rapidjson::Document IotaRequest::getMessageJson(const std::string& messageIdHex)
 	return parseResponse(GET(fullPath.data(), "HTTP/1.1"));
 }
 
-std::pair<std::string, std::unique_ptr<std::string>> IotaRequest::getIndexiationMessageDataIndex(const std::string& messageIdHex)
+std::pair<std::unique_ptr<std::string>, std::unique_ptr<std::string>> IotaRequest::getIndexiationMessageDataIndex(const std::string& messageIdHex)
 {
 	auto json = getMessageJson(messageIdHex);
 	if (!json.IsObject() || json.FindMember("data") == json.MemberEnd()) {
@@ -132,7 +132,7 @@ std::pair<std::string, std::unique_ptr<std::string>> IotaRequest::getIndexiation
 	if (!payload->HasMember("data") || !payload->HasMember("index")) {
 		throw IotaRequestException("json field data.payload.data or data.payload.index missing", mRequestUri.getPath() + "messages/" + messageIdHex);
 	}
-	return { (*payload)["data"].GetString(), DataTypeConverter::hexToBinString((*payload)["index"].GetString()) };
+	return { DataTypeConverter::hexToBinString((*payload)["data"].GetString()), DataTypeConverter::hexToBinString((*payload)["index"].GetString()) };
 }
 
 uint32_t IotaRequest::getMessageMilestoneId(const std::string& messageIdHex)

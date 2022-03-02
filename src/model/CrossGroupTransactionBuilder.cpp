@@ -14,7 +14,7 @@ CrossGroupTransactionBuilder::~CrossGroupTransactionBuilder()
 std::unique_ptr<model::gradido::GradidoTransaction> CrossGroupTransactionBuilder::createOutboundTransaction(const std::string& otherGroup)
 {
 	auto serializedTransaction = mBaseTransaction->getSerialized();
-	std::unique_ptr<model::gradido::GradidoTransaction> outbound(new model::gradido::GradidoTransaction(*serializedTransaction));
+	std::unique_ptr<model::gradido::GradidoTransaction> outbound(new model::gradido::GradidoTransaction(serializedTransaction.get()));
 	outbound->getMutableTransactionBody()->updateToOutbound(otherGroup);
 	return outbound;
 }
