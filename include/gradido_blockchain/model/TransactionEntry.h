@@ -19,7 +19,7 @@ namespace model {
 	* Used between multiple controller while write to block is pending and while it is cached
 	* It contains the serialized transaction and multiple data for fast indexing
 	*/
-	class TransactionEntry
+	class GRADIDOBLOCKCHAIN_EXPORT TransactionEntry
 	{
 	public:
 		TransactionEntry()

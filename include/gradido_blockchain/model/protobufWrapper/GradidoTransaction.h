@@ -25,7 +25,6 @@ namespace model {
 
 			inline const TransactionBody* getTransactionBody() const { return mTransactionBody; }
 			inline TransactionBody* getMutableTransactionBody() { return mTransactionBody; }
-			inline const proto::gradido::GradidoTransaction* getProto() const { return mProtoGradidoTransaction; }
 			
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
@@ -39,7 +38,10 @@ namespace model {
 			bool addSign(const MemoryBin* pubkeyBin, const MemoryBin* signatureBin);
 
 			int getSignCount() const { return mProtoGradidoTransaction->sig_map().sigpair_size(); }
- 			const proto::gradido::SignatureMap&	getSigMap() const { return mProtoGradidoTransaction->sig_map(); }
+			// caller must release MemoryBin afterwards
+			inline std::vector<std::pair<MemoryBin*, MemoryBin*>> getPublicKeySignaturePairs(bool onlyFirst = true) const { return getPublicKeySignaturePairs(true, true, onlyFirst); }
+			std::vector<MemoryBin*> getPublicKeysfromSignatureMap(bool onlyFirst = true) const;
+			std::vector<MemoryBin*> getSignaturesfromSignatureMap(bool onlyFirst = true) const;
 
 			inline GradidoTransaction& setMemo(const std::string& memo) { mTransactionBody->setMemo(memo); return *this; }
 			inline GradidoTransaction& setCreated(Poco::DateTime created) { mTransactionBody->setCreated(created); return *this; }
@@ -53,6 +55,7 @@ namespace model {
 			std::string toJson() const;
 
 		protected:
+			std::vector<std::pair<MemoryBin*, MemoryBin*>> getPublicKeySignaturePairs(bool withPublicKey, bool withSignatures, bool onlyFirst = true) const;
 			inline proto::gradido::GradidoTransaction* getProto() { return mProtoGradidoTransaction; }
 			proto::gradido::GradidoTransaction* mProtoGradidoTransaction;
 			TransactionBody* mTransactionBody;

@@ -36,7 +36,7 @@
 #include <queue>
 
 template <class ResourceType>
-class GRADIDOBLOCKCHAIN_EXPORT MultithreadQueue: protected std::queue<ResourceType>, protected MultithreadContainer
+class MultithreadQueue: protected std::queue<ResourceType>, protected MultithreadContainer
 {
 public:
 	virtual ~MultithreadQueue() {

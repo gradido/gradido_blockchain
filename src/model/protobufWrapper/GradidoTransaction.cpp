@@ -115,18 +115,24 @@ namespace model {
 
 		bool GradidoTransaction::isBelongToUs(const GradidoTransaction* pairingTransaction) const
 		{
-			auto sigMap = getSigMap();
-			auto sigMapPair = pairingTransaction->getSigMap();
-			if (sigMap.sigpair_size() != sigMapPair.sigpair_size()) {
-				return false;
-			}
+			auto publicKeys = getPublicKeysfromSignatureMap(false);
+			auto publicKeysPair = pairingTransaction->getPublicKeysfromSignatureMap(false);
+			bool result = true;
 			auto mm = MemoryManager::getInstance();
-			for (int i = 0; i < sigMap.sigpair_size(); i++) {
-				// compare return 0 if strings identical, else < 0 or > 0
-				if (sigMap.sigpair()[i].pubkey().compare(sigMapPair.sigpair()[i].pubkey())) {
-					return false;
+
+			if (publicKeys.size() != publicKeysPair.size()) {
+				result = false;
+			}
+			else {
+				for (int i = 0; i < publicKeys.size(); i++) {
+					if (!publicKeys[i]->isSame(publicKeysPair[i])) {
+						result = false;
+					}
+					mm->releaseMemory(publicKeys[i]);
+					mm->releaseMemory(publicKeysPair[i]);
 				}
 			}
+			if (!result) return false;
 			return getTransactionBody()->isBelongToUs(pairingTransaction->getTransactionBody());
 		}
 
@@ -156,6 +162,68 @@ namespace model {
 			*sigBytes = std::string((const char*)signatureBin->data(), crypto_sign_BYTES);
 			return sigMap->sigpair_size() >= mTransactionBody->getTransactionBase()->getMinSignatureCount();
 			
+		}
+
+		std::vector<std::pair<MemoryBin*, MemoryBin*>> GradidoTransaction::getPublicKeySignaturePairs(bool withPublicKey, bool withSignatures, bool onlyFirst/* = true*/) const
+		{
+			auto mm = MemoryManager::getInstance();
+			assert(withPublicKey || withSignatures);
+			std::vector<std::pair<MemoryBin*, MemoryBin*>> result;
+			if (!onlyFirst) {
+				result.reserve(getSignCount());
+			}
+			auto sigMap = mProtoGradidoTransaction->sig_map();
+
+			MemoryBin* pubkey = nullptr;
+			MemoryBin* signature = nullptr;
+
+			for (int i = 0; i < sigMap.sigpair_size(); i++) {
+				auto sigPair = sigMap.sigpair()[i];
+				if (withPublicKey) {
+					pubkey = mm->getMemory(sigPair.pubkey().size());
+					pubkey->copyFromProtoBytes(sigPair.pubkey());
+				}
+
+				if (withSignatures) {
+					signature = mm->getMemory(sigPair.signature().size());
+					signature->copyFromProtoBytes(sigPair.signature());
+				}
+				result.push_back({ pubkey, signature });
+				if (onlyFirst) break;
+			}
+			return result;
+		}
+
+		std::vector<MemoryBin*> GradidoTransaction::getPublicKeysfromSignatureMap(bool onlyFirst/* = true*/) const
+		{
+			auto publicSignatures = getPublicKeySignaturePairs(true, false, onlyFirst);
+			
+			std::vector<MemoryBin*> result;
+			if (!onlyFirst) {
+				result.reserve(publicSignatures.size());
+			}
+			for (int i = 0; i < publicSignatures.size(); i++) {
+				result.push_back(publicSignatures[i].first);
+				if (onlyFirst) break;
+			}
+			
+			return result;
+		}
+
+		std::vector<MemoryBin*> GradidoTransaction::getSignaturesfromSignatureMap(bool onlyFirst/* = true*/) const
+		{
+			auto publicSignatures = getPublicKeySignaturePairs(false, true, onlyFirst);
+
+			std::vector<MemoryBin*> result;
+			if (!onlyFirst) {
+				result.reserve(publicSignatures.size());
+			}
+			for (int i = 0; i < publicSignatures.size(); i++) {
+				result.push_back(publicSignatures[i].second);
+				if (onlyFirst) break;
+			}
+
+			return result;
 		}
 
 		MemoryBin* GradidoTransaction::getParentMessageId() const
