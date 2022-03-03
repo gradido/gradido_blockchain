@@ -1,7 +1,7 @@
 #ifndef GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_TRANSACTION_BODY_H
 #define GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_TRANSACTION_BODY_H
 
-#include "gradido/TransactionBody.pb.h"
+#include "proto/gradido/TransactionBody.pb.h"
 
 #include "DeferredTransfer.h"
 #include "GlobalGroupAdd.h"

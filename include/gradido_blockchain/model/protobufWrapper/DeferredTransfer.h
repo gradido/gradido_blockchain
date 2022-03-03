@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_PROTOBUF_WRAPPER_DEFERRED_TRANSFER_H
 
 #include "TransactionTransfer.h"
-#include "gradido/GradidoTransfer.pb.h"
+#include "proto/gradido/GradidoTransfer.pb.h"
 
 #include "Poco/Timestamp.h"
 

@@ -13,7 +13,7 @@
 
 #include "TransactionBase.h"
 //#include "Transaction.h"
-#include "gradido/GradidoTransfer.pb.h"
+#include "proto/gradido/GradidoTransfer.pb.h"
 
 
 namespace model {

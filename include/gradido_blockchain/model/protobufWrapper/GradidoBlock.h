@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_GRADIDO_BLOCK
 #define __GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_GRADIDO_BLOCK
 
-#include "gradido/GradidoBlock.pb.h"
+#include "proto/gradido/GradidoBlock.pb.h"
 #include "GradidoTransaction.h"
 
 #include "Poco/SharedPtr.h"

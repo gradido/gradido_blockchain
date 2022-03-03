@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_GLOBAL_GROUP_ADD_H
 
 #include "TransactionBase.h"
-#include "gradido/GlobalGroupAdd.pb.h"
+#include "proto/gradido/GlobalGroupAdd.pb.h"
 
 
 namespace model {

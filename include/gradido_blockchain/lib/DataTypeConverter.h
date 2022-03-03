@@ -8,7 +8,7 @@
 #include "Poco/Nullable.h"
 #include "Poco/Dynamic/Var.h"
 
-#include "gradido/BasicTypes.pb.h"
+#include "proto/gradido/BasicTypes.pb.h"
 
 #include "sodium.h"
 

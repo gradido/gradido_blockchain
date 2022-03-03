@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_GRADIDO_TRANSACTION_H
 
 #include "TransactionBody.h"
-#include "gradido/GradidoTransaction.pb.h"
+#include "proto/gradido/GradidoTransaction.pb.h"
 #include "Poco/RefCountedObject.h"
 
 class TransactionFactory;

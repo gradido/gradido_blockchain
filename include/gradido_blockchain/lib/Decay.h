@@ -8,7 +8,7 @@
 extern mpfr_ptr gDecayFactor356Days;
 extern mpfr_ptr gDecayFactor366Days;
 extern mpfr_ptr gDecayFactorGregorianCalender;
-extern const mpfr_rnd_t gDefaultRound;
+GRADIDOBLOCKCHAIN_EXPORT extern const mpfr_rnd_t gDefaultRound;
 GRADIDOBLOCKCHAIN_EXPORT void initDefaultDecayFactors();
 GRADIDOBLOCKCHAIN_EXPORT void unloadDefaultDecayFactors();
 

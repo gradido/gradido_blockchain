@@ -12,7 +12,7 @@
 #pragma warning(disable:4800)
 
 #include "TransactionBase.h"
-#include "gradido/GradidoCreation.pb.h"
+#include "proto/gradido/GradidoCreation.pb.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "Poco/DateTime.h"
 

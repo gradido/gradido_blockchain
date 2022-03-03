@@ -4,7 +4,7 @@
 #include "gradido_blockchain/model/IGradidoBlockchain.h"
 
 #include <google/protobuf/util/json_util.h>
-#include "gradido/TransactionBody.pb.h"
+#include "proto/gradido/TransactionBody.pb.h"
 
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/lib/Decay.h"

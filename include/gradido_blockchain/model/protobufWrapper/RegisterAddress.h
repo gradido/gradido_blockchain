@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_REGISTER_ADDRESS_H
 #define __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_REGISTER_ADDRESS_H
 
-#include "gradido/RegisterAddress.pb.h"
+#include "proto/gradido/RegisterAddress.pb.h"
 #include "TransactionBase.h"
 
 namespace model {

@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_GROUP_FRIENDS_UPDATE_H
 
 #include "TransactionBase.h"
-#include "gradido/GroupFriendsUpdate.pb.h"
+#include "proto/gradido/GroupFriendsUpdate.pb.h"
 
 namespace model {
 	namespace gradido {

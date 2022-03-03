@@ -11,7 +11,7 @@
 
 #pragma warning(disable:4800)
 
-#include "gradido/BasicTypes.pb.h"
+#include "proto/gradido/BasicTypes.pb.h"
 #include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/lib/MultithreadContainer.h"
 #include "gradido_blockchain/export.h"
