@@ -38,7 +38,7 @@ namespace model {
 			uint32_t getCoinColor() const;
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 
-			inline google::protobuf::int64 getAmount() const { return mProtoTransfer.sender().amount(); }
+			const std::string& getAmount() const { return mProtoTransfer.sender().amount(); }
 			MemoryBin* getSenderPublicKey() const;
 			MemoryBin* getRecipientPublicKey() const;
 			

@@ -4,6 +4,8 @@
 #include "Poco/RegularExpression.h"
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 
+#include "gradido_blockchain/lib/Decay.h"
+
 #include <iomanip>
 #include <sodium.h>
 #include <sstream>
@@ -41,22 +43,6 @@ namespace model {
 			mForbiddenSignPublicKeys.clear();
 		}
 
-
-		std::string TransactionBase::amountToString(google::protobuf::int64 amount)
-		{
-			std::stringstream ss;
-			double dAmount = amount / 10000.0;
-			ss << std::fixed << std::setprecision(2) << dAmount;
-			std::string amountString = ss.str();
-			if (amountString.find('.') != amountString.npos) {
-				int pointPlace = amountString.find('.');
-				if (amountString.substr(pointPlace + 1) == "00") {
-					amountString = amountString.substr(0, pointPlace);
-				}
-			}
-			return amountString;
-			//return ss.str();
-		}
 
 		bool TransactionBase::checkRequiredSignatures(const proto::gradido::SignatureMap* sig_map) const
 		{
@@ -160,6 +146,34 @@ namespace model {
 			case TRANSACTION_DEFERRED_TRANSFER: return "deferred transfer";
 			default: return "<unknown>";
 			}
+		}
+
+		void TransactionBase::amountToString(std::string* strPointer, mpfr_ptr amount)
+		{
+			mpfr_exp_t exp_temp;
+			auto str = mpfr_get_str(nullptr, &exp_temp, 10, 45, amount, gDefaultRound);
+			auto strLength = strlen(str);
+			int i = strLength - 1;
+			for (; i >= 0; i--) {
+				if (str[i] != '0') break;
+			}
+			if (exp_temp > 0) {
+				strPointer->reserve(i + 2);
+				memcpy(strPointer->data(), str, exp_temp);
+				strPointer->data()[exp_temp + 1] = '.';
+				memcpy(&strPointer->data()[exp_temp + 2], &str[exp_temp + 1], i - exp_temp);
+			}
+			else if (!exp_temp) {
+				strPointer->reserve(i + 3);
+				strPointer->assign("0.");
+				memcpy(&strPointer->data()[2], str, i);
+			}
+			else if (exp_temp < 0) {
+				mpfr_free_str(str);
+				throw std::runtime_error("not implemented yet");
+			}
+
+			mpfr_free_str(str);
 		}
 	}
 }

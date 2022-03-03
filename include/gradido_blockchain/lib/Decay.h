@@ -5,26 +5,14 @@
 
 #include "gradido_blockchain/export.h"
 
-struct S_GradidoWithDecimal
-{
-	S_GradidoWithDecimal(long long gradidoCent)
-		: gradido(gradidoCent), decimal(0) {}
-	S_GradidoWithDecimal()
-		: gradido(0), decimal(0) {}
-	long long gradido;
-	long decimal; // / 1,000,000
-};
-
 extern mpfr_ptr gDecayFactor356Days;
 extern mpfr_ptr gDecayFactor366Days;
+extern mpfr_ptr gDecayFactorGregorianCalender;
+extern const mpfr_rnd_t gDefaultRound;
 GRADIDOBLOCKCHAIN_EXPORT void initDefaultDecayFactors();
 GRADIDOBLOCKCHAIN_EXPORT void unloadDefaultDecayFactors();
 
 // 1 second = 1×10^9 nanoseconds
-
-#define GRADIDO_DECIMAL_CONVERSION_FACTOR 1000000
-
-GRADIDOBLOCKCHAIN_EXPORT typedef struct S_GradidoWithDecimal GradidoWithDecimal;
 
 
 //! \param decay_factor to store the result, decay factor per second
@@ -67,24 +55,10 @@ GRADIDOBLOCKCHAIN_EXPORT void calculateDecayFactorForDuration(mpfr_ptr decay_for
  * gradido_cent = round(temp) <br>
  * gradido_decimal = temp - gradido_cent <br>
  */
-GRADIDOBLOCKCHAIN_EXPORT void calculateDecayFast(mpfr_ptr decay_for_duration, mpfr_ptr gradido_decimal, mpz_ptr gradido_cent, mpfr_ptr temp);
+GRADIDOBLOCKCHAIN_EXPORT void calculateDecayFast(mpfr_ptr decay_for_duration, mpfr_ptr gradido);
 
-//! \param decay_for_duration decay factor for specific duration, taken from ::calculateDecayFactorForDuration
-//! \param input Gradido cent and decimal in on struct, will be converted before calculating
-//! \brief calculate decayed balance for specific time duration, allocate memory 
-//! \return decayed gradido balance
-/*!
- * convert input.gradido to gradido_cent:mpz_t and input.decimal / GRADIDO_DECIMAL_CONVERSION_FACTOR to gradido_decimal:mpfr_t
- * call calculateDecayFast
- * convert result back to GradidoWithDecimal struct
- */
-GRADIDOBLOCKCHAIN_EXPORT GradidoWithDecimal calculateDecayForDuration(mpfr_ptr decay_for_duration, GradidoWithDecimal input);
+GRADIDOBLOCKCHAIN_EXPORT void calculateDecay(const mpfr_ptr decay_factor, unsigned long seconds, mpfr_ptr gradido);
 
-//! \param input Gradido cent and decimal in on struct, will be converted before calculating
-//! \param seconds duration in seconds
-//! \param decay_factor per second from ::calculateDecayFactor
-//! \brief call ::calculateDecayFactorForDuration and ::calculateDecayForDuration, allocate memory 
-//! \return decayed gradido balance
-GRADIDOBLOCKCHAIN_EXPORT GradidoWithDecimal calculateDecay(GradidoWithDecimal input, unsigned long seconds, mpfr_ptr decay_factor);
+
 
 #endif //_GRADIDO_MATH_H

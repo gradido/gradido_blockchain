@@ -201,8 +201,7 @@ namespace model {
 			Poco::DateTime received(Poco::Timestamp(mProtoGradidoBlock->received().seconds() * Poco::Timestamp::resolution()));
 			receivedString = Poco::DateTimeFormatter::format(received, "%Y-%m-%d %H:%M:%S");
 			std::string signatureMapString = mProtoGradidoBlock->transaction().sig_map().SerializeAsString();
-			uint64_t finalGdd = mProtoGradidoBlock->final_gdd();
-
+			
 			auto hash = mm->getMemory(crypto_generichash_BYTES);
 
 			// Sodium use for the generichash function BLAKE2b today (11.11.2019), mabye change in the future
@@ -219,12 +218,12 @@ namespace model {
 			//printf("received: %s\n", receivedString.data());
 			crypto_generichash_update(&state, (const unsigned char*)signatureMapString.data(), signatureMapString.size());
 			//printf("signature map serialized: %s\n", convertBinToHex(signatureMapString).data());
-			crypto_generichash_update(&state, (const unsigned char*)&finalGdd, sizeof(uint64_t));
+			crypto_generichash_update(&state, (const unsigned char*)mProtoGradidoBlock->final_gdd().data(), sizeof(uint64_t));
 			crypto_generichash_final(&state, *hash, hash->size());
 			return hash;
 		}
 
-		void GradidoBlock::calculateFinalGDD(Poco::SharedPtr<GradidoBlock> lastFinalBlock, std::vector<std::pair<int64_t, Poco::DateTime>> amountRetrievedSinceLastFinalBlock)
+		void GradidoBlock::calculateFinalGDD(Poco::SharedPtr<GradidoBlock> lastFinalBlock, std::vector<std::pair<mpfr_ptr, Poco::DateTime>> amountRetrievedSinceLastFinalBlock)
 		{
 			assert(!lastFinalBlock.isNull());
 			std::unique_lock _lock(mWorkMutex);
@@ -232,45 +231,43 @@ namespace model {
 			// search for last transaction for this address with the same coin color
 			// must be done before this function call
 			// take last value + decay until this block
+			auto mm = MemoryManager::getInstance();
+			auto temp = mm->getMathMemory();
+			auto gdd = mm->getMathMemory();
 			
-			mpfr_t temp, gradido_decimal, decay_for_duration;
-			mpz_t gdd_cent;
 			auto lastDate = lastFinalBlock->getReceived();
 
-			mpfr_init(temp); mpfr_init(gradido_decimal); mpfr_init(decay_for_duration);
-			mpz_init(gdd_cent);
-			mpfr_set_si(gradido_decimal, 0, MPFR_RNDN);
+			
 			//mpz_set_sll(gdd_cent, input.gradido);
-			mpz_set_si(gdd_cent, lastFinalBlock->getFinalBalance());
+			//mpz_set_si(gdd_cent, lastFinalBlock->getFinalBalance());
+			mpfr_set_str(gdd, lastFinalBlock->getFinalBalance().data(), 10, gDefaultRound);
 
 			for (auto it = amountRetrievedSinceLastFinalBlock.begin(); it != amountRetrievedSinceLastFinalBlock.end(); it++) {
 				assert(it->second > lastDate);
-				calculateDecayFactorForDuration(decay_for_duration, gDecayFactor356Days, Poco::Timespan(it->second - lastDate).totalSeconds());
-				calculateDecayFast(decay_for_duration, gradido_decimal, gdd_cent, temp);
-				mpz_add_ui(gdd_cent, gdd_cent, it->first);
+				calculateDecayFactorForDuration(temp, gDecayFactorGregorianCalender, Poco::Timespan(it->second - lastDate).totalSeconds());
+				calculateDecayFast(temp, gdd);
+				mpfr_add(gdd, gdd, it->first, gDefaultRound);
 				lastDate = it->second;
 			}
 			assert(getReceived() > lastDate);
-			calculateDecayFactorForDuration(decay_for_duration, gDecayFactor356Days, Poco::Timespan(getReceived() - lastDate).totalSeconds());
-			calculateDecayFast(decay_for_duration, gradido_decimal, gdd_cent, temp);
-			auto newFinalBalance = mpz_get_si(gdd_cent);
-
-			mpfr_clear(temp); mpfr_clear(gradido_decimal); mpfr_clear(decay_for_duration);
-			mpz_clear(gdd_cent);
-			
+			calculateDecayFactorForDuration(temp, gDecayFactorGregorianCalender, Poco::Timespan(getReceived() - lastDate).totalSeconds());
+			calculateDecayFast(temp, gdd);
+						
 			// add value from this block if it was a transfer or creation transaction
 			auto transactionBody = mGradidoTransaction->getTransactionBody();
 			auto transactionType = transactionBody->getTransactionType();
 
 			if (TRANSACTION_CREATION == transactionType) {
-				newFinalBalance += transactionBody->getCreationTransaction()->getAmount();
+				mpfr_set_str(temp, transactionBody->getCreationTransaction()->getAmount().data(), 10, gDefaultRound);
 			}
 			else if (TRANSACTION_TRANSFER == transactionType || TRANSACTION_DEFERRED_TRANSFER == transactionType) {
 				// if it is a transfer transaction this address must be the sender
-				newFinalBalance -= transactionBody->getTransferTransaction()->getAmount();
+				mpfr_set_str(temp, transactionBody->getTransferTransaction()->getAmount().data(), 10, gDefaultRound);
 			}
-			mProtoGradidoBlock->set_final_gdd(newFinalBalance);
-			
+			mpfr_add(gdd, gdd, temp, gDefaultRound);
+			TransactionBase::amountToString(mProtoGradidoBlock->mutable_final_gdd(), gdd);
+			mm->releaseMathMemory(gdd);
+			mm->releaseMathMemory(temp);			
 		}
 
 	}

@@ -1,6 +1,7 @@
 #include "gradido_blockchain/model/protobufWrapper/TransactionCreation.h"
 
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain/lib/Decay.h"
 #include "Poco/DateTimeFormatter.h"
 
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
@@ -64,14 +65,17 @@ namespace model {
 		{
 			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
 				auto mm = MemoryManager::getInstance();				
-				auto amount = mProtoCreation.recipient().amount();
-				if (amount > 1000 * 10000) {
-					throw TransactionValidationInvalidInputException("creation amount to high, max 1000 per month", "amount", "integer");
+				mpfr_ptr amount = mm->getMathMemory();
+				if (mpfr_set_str(amount, mProtoCreation.recipient().amount().data(), 10, gDefaultRound)) {
+					throw TransactionValidationInvalidInputException("amount cannot be parsed to a number", "amount", "string");
 				}
-				if (amount < 10000) {
-					throw TransactionValidationInvalidInputException("creation amount to low, min 1 GDD", "amount", "integer");
+				if(mpfr_cmp_si(amount, 1000) > 0) {
+					throw TransactionValidationInvalidInputException("creation amount to high, max 1000 per month", "amount", "string");
 				}
-
+				if (mpfr_cmp_si(amount, 1) < 0) {
+					throw TransactionValidationInvalidInputException("creation amount to low, min 1 GDD", "amount", "string");
+				}
+				mm->releaseMathMemory(amount);
 				if (mProtoCreation.recipient().pubkey().size() != crypto_sign_PUBLICKEYBYTES) {
 					throw TransactionValidationInvalidInputException("invalid size", "recipient pubkey", "public key");
 				}
@@ -89,8 +93,15 @@ namespace model {
 				assert(parentGradidoBlock);
 					
 				auto pubkey = mProtoCreation.recipient().pubkey();
-				uint64_t sum = mProtoCreation.recipient().amount();				
-				sum += blockchain->calculateCreationSum(pubkey, targetDate.month(), targetDate.year(), parentGradidoBlock->getReceived());
+				auto mm = MemoryManager::getInstance();
+				auto amount = mm->getMathMemory();
+				mpfr_ptr sum = mm->getMathMemory();
+				if (mpfr_set_str(amount, mProtoCreation.recipient().amount().data(), 10, gDefaultRound)) {
+					throw TransactionValidationInvalidInputException("amount cannot be parsed to a number", "amount", "string");
+				}
+				
+				blockchain->calculateCreationSum(pubkey, targetDate.month(), targetDate.year(), parentGradidoBlock->getReceived(), sum);
+				mpfr_add(sum, sum, amount, gDefaultRound);
 				
 				auto id = parentGradidoBlock->getID();
 				int lastId = 0;
@@ -99,12 +110,14 @@ namespace model {
 				}
 				if (id <= lastId) {
 					// this transaction was already added to blockchain and therefor also added in calculateCreationSum
-					sum -= mProtoCreation.recipient().amount();
+					mpfr_sub(sum, sum, amount, gDefaultRound);
 				}
 				// TODO: replace with variable, state transaction for group
-				if (sum > 10000000) {
+				if (mpfr_cmp_si(sum, 1000) > 0) {
 					throw TransactionValidationInvalidInputException("creation more than 1.000 GDD per month not allowed", "amount");
 				}
+				mm->releaseMathMemory(sum);
+				mm->releaseMathMemory(amount);
 			}
 			
 			return true;
@@ -139,6 +152,7 @@ namespace model {
 					throw TransactionValidationInvalidInputException("target date is more than 2 month in past", "target_date", "date time");
 				}
 			}
+			return true;
 		}
 
 		std::vector<MemoryBin*> TransactionCreation::getInvolvedAddresses() const

@@ -20,13 +20,13 @@ public:
 	);
 	static std::unique_ptr<model::gradido::GradidoTransaction> createTransactionCreation(
 		const MemoryBin* recipientPubkey,
-		int64_t amountGddCent,
+		const std::string& amountGddCent,
 		uint32_t coinColor,
 		Poco::DateTime targetDate
 	);
 	static std::unique_ptr<model::gradido::GradidoTransaction> createTransactionTransfer(
 		const MemoryBin* senderPubkey,
-		int64_t amountGddCent,
+		const std::string& amountGddCent,
 		uint32_t coinColor,
 		const MemoryBin* recipientPubkey
 	);
@@ -40,7 +40,7 @@ public:
 protected:
 	static std::unique_ptr<proto::gradido::TransferAmount> createTransferAmount(
 		const MemoryBin* recipientPubkey,
-		int64_t amountGddCent,
+		const std::string& amountGddCent,
 		uint32_t coinColor
 	);
 };

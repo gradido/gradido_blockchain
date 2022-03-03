@@ -18,11 +18,17 @@
 #include <assert.h>
 #include <mutex>
 #include <memory>
+#include <mpfr.h>
 
 #define MEMORY_MANAGER_PAGE_SIZE 10
 
+// MAGIC NUMBER: Define how many bits are used for amount calculation
+#define MAGIC_NUMBER_AMOUNT_PRECISION_BITS 128 
+
 class MemoryPageStack;
 class MemoryManager;
+
+
 
 class GRADIDOBLOCKCHAIN_EXPORT MemoryBin
 {
@@ -77,6 +83,10 @@ protected:
 	uint16_t mSize;
 };
 
+
+// TODO: Add handling for mpfr pointer
+// TODO: Add handling for protobuf messages
+
 class GRADIDOBLOCKCHAIN_EXPORT MemoryManager
 {
 public:
@@ -87,12 +97,17 @@ public:
 	MemoryBin* getMemory(uint32_t size);
 	void releaseMemory(MemoryBin* memory) noexcept;
 
+	mpfr_ptr getMathMemory();
+	void releaseMathMemory(mpfr_ptr ptr);
+
 protected:
 
 	int8_t getMemoryStackIndex(uint16_t size) noexcept;
 
 	MemoryManager();
 	MemoryPageStack* mMemoryPageStacks[6];
+	std::mutex mMpfrMutex;
+	std::stack<mpfr_ptr> mMpfrPtrStack;
 };
 
 

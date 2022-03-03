@@ -1,4 +1,5 @@
 #include "gradido_blockchain/MemoryManager.h"
+#include "gradido_blockchain/lib/Decay.h"
 #include "sodium.h"
 #include <memory.h>
 #include <exception>
@@ -116,10 +117,12 @@ void MemoryPageStack::releaseMemory(MemoryBin* memory)
 	std::scoped_lock<std::recursive_mutex> _lock(mWorkMutex);
 	
 	if (memory->size() != mSize) {
-		throw std::runtime_error("MemoryPageStack::releaseMemory wrong memory page stack");
+		throw MemoryManagerException("MemoryPageStack::releaseMemory wrong memory page stack", memory->size());
 	}
 	mMemoryBinStack.push(memory);
 }
+
+
 
 // ***********************************************************************************
 
@@ -144,6 +147,12 @@ MemoryManager::~MemoryManager()
 {
 	for (int i = 0; i < 5; i++) {
 		delete mMemoryPageStacks[i];
+	}
+	std::scoped_lock<std::mutex> _lock(mMpfrMutex);
+	while (mMpfrPtrStack.size() > 0) {
+		mpfr_ptr mathMemory = mMpfrPtrStack.top();
+		mMpfrPtrStack.pop();
+		mpfr_clear(mathMemory);
 	}
 }
 
@@ -193,6 +202,30 @@ void MemoryManager::releaseMemory(MemoryBin* memory) noexcept
 			delete memory;
 		}
 	}
+}
+
+mpfr_ptr MemoryManager::getMathMemory()
+{
+	mpfr_ptr mathMemory = nullptr;
+	std::scoped_lock<std::mutex> _lock(mMpfrMutex);
+	if (mMpfrPtrStack.size()) {
+		mathMemory = mMpfrPtrStack.top();
+		mMpfrPtrStack.pop();
+		mpfr_init_set_si(mathMemory, 0, gDefaultRound);
+		return mathMemory;
+	}
+	mpfr_init2(mathMemory, MAGIC_NUMBER_AMOUNT_PRECISION_BITS);
+	return mathMemory;
+}
+void MemoryManager::releaseMathMemory(mpfr_ptr ptr)
+{
+	if (!ptr) return;
+	std::scoped_lock<std::mutex> _lock(mMpfrMutex);
+	
+	if (ptr->_mpfr_prec != MAGIC_NUMBER_AMOUNT_PRECISION_BITS) {
+		throw MemoryManagerException("wrong precision", ptr->_mpfr_prec);
+	}
+	mMpfrPtrStack.push(ptr);
 }
 
 

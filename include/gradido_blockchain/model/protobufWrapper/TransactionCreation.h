@@ -40,10 +40,9 @@ namespace model {
 			uint32_t getCoinColor() const;
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 
-			inline google::protobuf::int64 getAmount() const { return mProtoCreation.recipient().amount(); }
+			inline const std::string& getAmount() const { return mProtoCreation.recipient().amount(); }
 			MemoryBin* getRecipientPublicKey() const;
 
-			inline std::string getAmountString() const { return amountToString(getAmount()); }
 			std::string getTargetDateString() const;
 			inline Poco::DateTime getTargetDate() const { return DataTypeConverter::convertFromProtoTimestampSeconds(mProtoCreation.target_date()); }
 

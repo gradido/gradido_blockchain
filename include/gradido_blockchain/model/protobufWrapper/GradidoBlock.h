@@ -30,7 +30,7 @@ namespace model {
 			// proto member variable accessors
 			inline uint64_t getID() const { return mProtoGradidoBlock->id(); }
 			inline const std::string& getTxHash() const { return mProtoGradidoBlock->running_hash(); }
-			inline uint64_t getFinalBalance() const { return mProtoGradidoBlock->final_gdd(); }
+			inline const std::string& getFinalBalance() const { return mProtoGradidoBlock->final_gdd(); }
 
 			inline void setTxHash(const MemoryBin* txHash) { mProtoGradidoBlock->set_allocated_running_hash(txHash->copyAsString().release()); }
 			// convert from proto timestamp seconds to poco DateTime
@@ -52,7 +52,7 @@ namespace model {
 			//! \param lastFinalBlock previous GradidoBlock with calculated final balance for same address and coin color (sender of transfer transaction or creation)
 			//! \param amountRetrievedSinceLastFinalBlock vector with amount and received date from all transfer transaction since last final balance block for this address and coin color
 			//!                                           should be all transfer transactions where this address is the recipient
-			void calculateFinalGDD(Poco::SharedPtr<GradidoBlock> lastFinalBlock, std::vector<std::pair<int64_t, Poco::DateTime>> amountRetrievedSinceLastFinalBlock);
+			void calculateFinalGDD(Poco::SharedPtr<GradidoBlock> lastFinalBlock, std::vector<std::pair<mpfr_ptr, Poco::DateTime>> amountRetrievedSinceLastFinalBlock);
 
 		protected:
 			// TODO: use Pool for reducing memory allocation for google protobuf objects

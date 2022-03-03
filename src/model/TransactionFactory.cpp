@@ -31,7 +31,7 @@ std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createRe
 
 std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createTransactionCreation(
 	const MemoryBin* recipientPubkey,
-	int64_t amountGddCent,
+	const std::string& amountGddCent,
 	uint32_t coinColor,
 	Poco::DateTime targetDate
 )
@@ -42,7 +42,7 @@ std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createTr
 
 std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createTransactionTransfer(
 	const MemoryBin* senderPubkey,
-	int64_t amountGddCent,
+	const std::string& amountGddCent,
 	uint32_t coinColor,
 	const MemoryBin* recipientPubkey
 )
@@ -64,7 +64,7 @@ Poco::SharedPtr<model::gradido::GradidoBlock> TransactionFactory::createGradidoB
 
 std::unique_ptr<proto::gradido::TransferAmount> TransactionFactory::createTransferAmount(
 	const MemoryBin* recipientPubkey,
-	int64_t amountGddCent,
+	const std::string& amountGddCent,
 	uint32_t coinColor
 )
 {

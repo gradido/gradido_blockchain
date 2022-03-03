@@ -16,7 +16,7 @@ namespace model {
 		virtual Poco::SharedPtr<gradido::GradidoBlock> getLastTransaction() = 0;
 		virtual Poco::SharedPtr<TransactionEntry> getTransactionForId(uint64_t transactionId) = 0;
 		virtual Poco::SharedPtr<TransactionEntry> findByMessageId(const MemoryBin* messageId, bool cachedOnly = true) = 0;
-		virtual uint64_t calculateCreationSum(const std::string& address, int month, int year, Poco::DateTime received) = 0;
+		virtual void calculateCreationSum(const std::string& address, int month, int year, Poco::DateTime received, mpfr_ptr sum) = 0;
 		virtual uint32_t getGroupDefaultCoinColor() const = 0;
 
 	protected:

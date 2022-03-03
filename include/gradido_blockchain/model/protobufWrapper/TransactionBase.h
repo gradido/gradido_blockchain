@@ -16,6 +16,8 @@
 #include "gradido_blockchain/lib/MultithreadContainer.h"
 #include "gradido_blockchain/export.h"
 
+
+
 namespace model {
 	class IGradidoBlockchain;
 
@@ -67,9 +69,7 @@ namespace model {
 			virtual std::vector<MemoryBin*> getInvolvedAddresses() const = 0;
 			virtual uint32_t getCoinColor() const = 0;
 			virtual bool isBelongToUs(const TransactionBase* pairingTransaction) const = 0;
-
-			static std::string amountToString(google::protobuf::int64 amount);
-
+	
 			//! \return true if all required signatures are found in signature pairs
 			bool checkRequiredSignatures(const proto::gradido::SignatureMap* sig_map) const;
 			//! \param pubkey pointer must point to valid unsigned char[KeyPairEd25519::getPublicKeySize()] array
@@ -82,6 +82,7 @@ namespace model {
 
 			static bool isValidGroupAlias(const std::string& groupAlias);
 			static const char* getTransactionTypeString(TransactionType type);
+			static void amountToString(std::string* strPointer, mpfr_ptr amount);
 			
 
 		protected:

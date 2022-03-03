@@ -27,10 +27,10 @@ add_subdirectory(dependencies/protobuf/cmake)
 ############################## parse protobuf files ###################################
 
 FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/gradido_protocol GRADIDO_PROTO_MODEL_PATH)
-FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build/proto PROTOBINDING_PATH)
+FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build PROTOBINDING_PATH)
 file(MAKE_DIRECTORY ${PROTOBINDING_PATH})
-file(MAKE_DIRECTORY ${PROTOBINDING_PATH}/gradido)
-FILE(GLOB DATAMODEL_GRADIDO_PROTOS "${GRADIDO_PROTO_MODEL_PATH}/gradido/*.proto")
+file(MAKE_DIRECTORY ${PROTOBINDING_PATH}/proto/gradido)
+FILE(GLOB DATAMODEL_GRADIDO_PROTOS "${GRADIDO_PROTO_MODEL_PATH}/proto/gradido/*.proto")
 include_directories(${PROTOBINDING_PATH})
 IF(WIN32)
 	set(PROTOC_BIN_PATH "${PROJECT_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}")
@@ -53,7 +53,7 @@ ENDIF()
 FOREACH(proto ${DATAMODEL_GRADIDO_PROTOS})
    FILE(TO_NATIVE_PATH ${proto} proto_native)
    get_filename_component(proto_parsed ${proto} NAME_WLE)
-   FILE(TO_NATIVE_PATH ${PROTOBINDING_PATH}/gradido/${proto_parsed}.pb.h proto_parsed_native)
+   FILE(TO_NATIVE_PATH ${PROTOBINDING_PATH}/proto/gradido/${proto_parsed}.pb.h proto_parsed_native)
    
    IF(${proto_native} IS_NEWER_THAN ${proto_parsed_native})
 		EXECUTE_PROCESS(

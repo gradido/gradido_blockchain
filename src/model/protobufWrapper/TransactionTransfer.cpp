@@ -1,7 +1,9 @@
 #include "gradido_blockchain/model/protobufWrapper/TransactionTransfer.h"
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
+#include "gradido_blockchain/lib/Decay.h"
 
 #include <sodium.h>
+
 
 namespace model {
 	namespace gradido {
@@ -49,14 +51,19 @@ namespace model {
 			auto sender = mProtoTransfer.sender();
 			auto recipient_pubkey = mProtoTransfer.recipient();
 			
-			auto amount = sender.amount();
+			//auto amount = sender.amount();
 			auto mm = MemoryManager::getInstance();
-			if (0 == amount) {
-				throw TransactionValidationInvalidInputException("amount is empty", "amount", "integer");
+			mpfr_ptr amount = mm->getMathMemory(); 
+			if (mpfr_set_str(amount, sender.amount().data(), 10, gDefaultRound)) {
+				throw TransactionValidationInvalidInputException("amount cannot be parsed to a number", "amount", "string");
 			}
-			else if (amount < 0) {
-				throw TransactionValidationInvalidInputException("negative amount", "amount", "integer");
+			if (!sender.amount().size()) {
+				throw TransactionValidationInvalidInputException("amount is empty", "amount", "string");
 			}
+			else if (mpfr_cmp_si(amount, 0) < 0.0) {
+				throw TransactionValidationInvalidInputException("negative amount", "amount", "string");
+			}
+			mm->releaseMathMemory(amount);
 			if (recipient_pubkey.size() != crypto_sign_PUBLICKEYBYTES) {
 				throw TransactionValidationInvalidInputException("invalid size", "recipient", "public key");
 			}
