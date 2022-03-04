@@ -169,6 +169,7 @@ MemoryManager::~MemoryManager()
 		mpfr_ptr mathMemory = mMpfrPtrStack.top();
 		mMpfrPtrStack.pop();
 		mpfr_clear(mathMemory);
+		delete mathMemory;
 	}
 }
 
@@ -222,14 +223,16 @@ void MemoryManager::releaseMemory(MemoryBin* memory) noexcept
 
 mpfr_ptr MemoryManager::getMathMemory()
 {
-	mpfr_ptr mathMemory = nullptr;
+	mpfr_ptr mathMemory;
 	std::scoped_lock<std::mutex> _lock(mMpfrMutex);
 	if (mMpfrPtrStack.size()) {
 		mathMemory = mMpfrPtrStack.top();
 		mMpfrPtrStack.pop();
-		mpfr_init_set_si(mathMemory, 0, gDefaultRound);
+		mpfr_init2(mathMemory, MAGIC_NUMBER_AMOUNT_PRECISION_BITS);
+		mpfr_set_si(mathMemory, 0, gDefaultRound);
 		return mathMemory;
 	}
+	mathMemory = new mpfr_t;
 	mpfr_init2(mathMemory, MAGIC_NUMBER_AMOUNT_PRECISION_BITS);
 	return mathMemory;
 }
