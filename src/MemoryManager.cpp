@@ -123,6 +123,22 @@ void MemoryPageStack::releaseMemory(MemoryBin* memory)
 }
 
 
+// ***************** Mathe Memory *************************************************
+MathMemory::MathMemory()
+{
+	mData = MemoryManager::getInstance()->getMathMemory();
+}
+
+MathMemory::~MathMemory()
+{
+	MemoryManager::getInstance()->releaseMathMemory(mData);
+}
+
+std::unique_ptr<MathMemory> MathMemory::create()
+{
+	return std::move(std::unique_ptr<MathMemory>(new MathMemory));
+}
+
 
 // ***********************************************************************************
 

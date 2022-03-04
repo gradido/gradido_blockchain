@@ -49,10 +49,7 @@ namespace model {
 			//! \brief calculate final gdd for this transaction and set value into proto structure
 			//! 
 			//! for transfer transaction, it is the final balance from sender
-			//! \param lastFinalBlock previous GradidoBlock with calculated final balance for same address and coin color (sender of transfer transaction or creation)
-			//! \param amountRetrievedSinceLastFinalBlock vector with amount and received date from all transfer transaction since last final balance block for this address and coin color
-			//!                                           should be all transfer transactions where this address is the recipient
-			void calculateFinalGDD(Poco::SharedPtr<GradidoBlock> lastFinalBlock, std::vector<std::pair<mpfr_ptr, Poco::DateTime>> amountRetrievedSinceLastFinalBlock);
+			void calculateFinalGDD(IGradidoBlockchain* blockchain);
 
 		protected:
 			// TODO: use Pool for reducing memory allocation for google protobuf objects

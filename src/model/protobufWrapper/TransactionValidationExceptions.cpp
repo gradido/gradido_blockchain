@@ -184,5 +184,50 @@ namespace model {
 
 			return resultString;
 		}
+
+		// *********************************** Address Already Exist **********************************************************
+		AddressAlreadyExistException::AddressAlreadyExistException(
+			const char* what,
+			const std::string& addressHex,
+			proto::gradido::RegisterAddress_AddressType addressType
+		) noexcept
+			: TransactionValidationException(what), mAddressHex(addressHex), mAddressType(addressType)
+		{
+
+		}
+
+		std::string AddressAlreadyExistException::getFullString() const noexcept
+		{
+			std::string resultString;
+			auto addressTypeString = model::gradido::RegisterAddress::getAddressStringFromType(mAddressType);
+			size_t resultStringSize = strlen(what()) + addressTypeString.size() + mAddressHex.size() + 9 + 16 + 2;
+			resultString.reserve(resultStringSize);
+			resultString = what();
+			resultString += "address: " + mAddressHex;
+			resultString += ", address type: " + addressTypeString;
+
+			return resultString;
+
+		}
+
+		// *************************** Insufficient Balance Exception ************************************************
+		InsufficientBalanceException::InsufficientBalanceException(const char* what, mpfr_ptr needed, mpfr_ptr exist) noexcept
+			: TransactionValidationException(what)
+		{
+			TransactionBase::amountToString(&mNeeded, needed);
+			TransactionBase::amountToString(&mExist, exist);
+		}
+
+		std::string InsufficientBalanceException::getFullString() const noexcept
+		{
+			std::string resultString;
+			size_t resultSize = strlen(what()) + mNeeded.size() + mExist.size() + 2 + 10;
+			resultString.reserve(resultSize);
+			resultString = what();
+			resultString += ", needed: " + mNeeded;
+			resultString += ", exist: " + mExist;
+
+			return resultString;
+		}
 	}
 }

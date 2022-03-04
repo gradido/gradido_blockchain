@@ -8,6 +8,7 @@
 #include "gradido_blockchain/model/protobufWrapper/GradidoTransaction.h"
 
 #include "Poco/DateTime.h"
+#include "proto/gradido/RegisterAddress.pb.h"
 
 namespace model {
 	namespace gradido {
@@ -89,6 +90,28 @@ namespace model {
 			std::unique_ptr<model::gradido::GradidoTransaction> mPairingTransaction;
 		};
 
+		class GRADIDOBLOCKCHAIN_EXPORT AddressAlreadyExistException : public TransactionValidationException
+		{
+		public: 
+			explicit AddressAlreadyExistException(const char* what, const std::string& addressHex, proto::gradido::RegisterAddress_AddressType addressType) noexcept;
+
+			std::string getFullString() const noexcept;
+
+		protected:
+			std::string mAddressHex;
+			proto::gradido::RegisterAddress_AddressType mAddressType;
+		};
+
+		class GRADIDOBLOCKCHAIN_EXPORT InsufficientBalanceException : public TransactionValidationException
+		{
+		public:
+			explicit InsufficientBalanceException(const char* what, mpfr_ptr needed, mpfr_ptr exist) noexcept;
+			std::string getFullString() const noexcept;
+
+		protected:
+			std::string mNeeded;
+			std::string mExist;
+		};
 	}
 }
 

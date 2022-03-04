@@ -42,6 +42,7 @@ namespace model {
 
 			inline const std::string& getAmount() const { return mProtoCreation.recipient().amount(); }
 			MemoryBin* getRecipientPublicKey() const;
+			inline const std::string& getRecipientPublicKeyString() const { return mProtoCreation.recipient().pubkey(); }
 
 			std::string getTargetDateString() const;
 			inline Poco::DateTime getTargetDate() const { return DataTypeConverter::convertFromProtoTimestampSeconds(mProtoCreation.target_date()); }

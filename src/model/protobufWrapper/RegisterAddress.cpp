@@ -1,5 +1,7 @@
 #include "gradido_blockchain/model/protobufWrapper/RegisterAddress.h"
-#include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain/model/IGradidoBlockchain.h"
+#include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
+
 
 namespace model {
 	namespace gradido {
@@ -28,6 +30,31 @@ namespace model {
 			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
 
 			}
+
+			if ((level & TRANSACTION_VALIDATION_CONNECTED_GROUP) == TRANSACTION_VALIDATION_CONNECTED_GROUP) {
+				assert(blockchain);
+				
+				Poco::SharedPtr<model::TransactionEntry> lastTransaction;
+
+				std::string address;
+
+				switch (getAddressType()) {
+				case proto::gradido::RegisterAddress_AddressType_HUMAN:
+				case proto::gradido::RegisterAddress_AddressType_PROJECT: 
+					address = getUserPubkeyString(); 
+					break;
+				case proto::gradido::RegisterAddress_AddressType_SUBACCOUNT: 
+					address = getSubaccountPubkeyString(); 
+					break;
+				}
+				lastTransaction = blockchain->findLastTransactionForAddress(address);
+				if (!lastTransaction.isNull()) {
+					throw AddressAlreadyExistException("cannot register address because it already exist", DataTypeConverter::binToHex(address), getAddressType());
+				}
+				
+			}
+
+			// TODO: check if address wasn't already registered to this blockchain
 			return true;
 		}
 
@@ -37,15 +64,12 @@ namespace model {
 			std::vector<MemoryBin*> result;
 
 			auto userPubkeySize = mProtoRegisterAddress.user_pubkey().size();			
-			if (userPubkeySize) {
-				auto userPubkey = mm->getMemory(userPubkeySize);
-				memcpy(*userPubkey, mProtoRegisterAddress.user_pubkey().data(), userPubkeySize);
+			auto userPubkey = getUserPubkey();
+			if (userPubkey) {
 				result.push_back(userPubkey);
 			}
-			auto subaccountPubkeySize = mProtoRegisterAddress.subaccount_pubkey().size();
-			if (subaccountPubkeySize) {
-				auto subaccountPubkey = mm->getMemory(subaccountPubkeySize);
-				memcpy(*subaccountPubkey, mProtoRegisterAddress.subaccount_pubkey().data(), subaccountPubkeySize);
+			auto subaccountPubkey = getSubaccountPubkey();
+			if (subaccountPubkey) {
 				result.push_back(subaccountPubkey);
 			}
 			return result;
@@ -59,31 +83,19 @@ namespace model {
 		bool RegisterAddress::isBelongToUs(const TransactionBase* pairingTransaction) const
 		{
 			auto pair = dynamic_cast<const RegisterAddress*>(pairingTransaction);
-			auto mm = MemoryManager::getInstance();
-			bool belongToUs = true;
 
-			auto a = getUserPubkey();
-			auto b = pair->getUserPubkey();			
-			if (!a->isSame(b)) {
-				belongToUs = false;
+			// std::string::compare return 0 if strings identical else < 0 or > 0
+			if (getUserPubkeyString().compare(pair->getUserPubkeyString())) {
+				return false;
 			}
-			mm->releaseMemory(a); mm->releaseMemory(b);
-
-			a = getNameHash();
-			b = pair->getNameHash();
-			if (!a->isSame(b)) {
-				belongToUs = false;
+			if (getNameHashString().compare(pair->getNameHashString())) {
+				return false;
 			}
-			mm->releaseMemory(a); mm->releaseMemory(b);
-
-			a = getSubaccountPubkey();
-			b = pair->getSubaccountPubkey();
-			if (!a->isSame(b)) {
-				belongToUs = false;
+			if (getSubaccountPubkeyString().compare(pair->getUserPubkeyString())) {
+				return false;
 			}
-			mm->releaseMemory(a); mm->releaseMemory(b);
 			
-			return belongToUs;
+			return true;
 		}
 
 		MemoryBin* RegisterAddress::getUserPubkey() const
@@ -116,6 +128,8 @@ namespace model {
 
 			return type;
 		}
+
+		
 
 	}
 }

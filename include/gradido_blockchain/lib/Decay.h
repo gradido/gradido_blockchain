@@ -5,9 +5,9 @@
 
 #include "gradido_blockchain/export.h"
 
-extern mpfr_ptr gDecayFactor356Days;
-extern mpfr_ptr gDecayFactor366Days;
-extern mpfr_ptr gDecayFactorGregorianCalender;
+GRADIDOBLOCKCHAIN_EXPORT extern mpfr_ptr gDecayFactor356Days;
+GRADIDOBLOCKCHAIN_EXPORT extern mpfr_ptr gDecayFactor366Days;
+GRADIDOBLOCKCHAIN_EXPORT extern mpfr_ptr gDecayFactorGregorianCalender;
 GRADIDOBLOCKCHAIN_EXPORT extern const mpfr_rnd_t gDefaultRound;
 GRADIDOBLOCKCHAIN_EXPORT void initDefaultDecayFactors();
 GRADIDOBLOCKCHAIN_EXPORT void unloadDefaultDecayFactors();

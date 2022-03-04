@@ -223,39 +223,41 @@ namespace model {
 			return hash;
 		}
 
-		void GradidoBlock::calculateFinalGDD(Poco::SharedPtr<GradidoBlock> lastFinalBlock, std::vector<std::pair<mpfr_ptr, Poco::DateTime>> amountRetrievedSinceLastFinalBlock)
+		void GradidoBlock::calculateFinalGDD(IGradidoBlockchain* blockchain)
 		{
-			assert(!lastFinalBlock.isNull());
+			assert(blockchain);
 			std::unique_lock _lock(mWorkMutex);
+
 			// get coin color
 			// search for last transaction for this address with the same coin color
-			// must be done before this function call
 			// take last value + decay until this block
+
 			auto mm = MemoryManager::getInstance();
-			auto temp = mm->getMathMemory();
-			auto gdd = mm->getMathMemory();
-			
-			auto lastDate = lastFinalBlock->getReceived();
+			std::string address;
+			auto transactionBody = getGradidoTransaction()->getTransactionBody();
+			auto transactionType = transactionBody->getTransactionType();			
 
-			
-			//mpz_set_sll(gdd_cent, input.gradido);
-			//mpz_set_si(gdd_cent, lastFinalBlock->getFinalBalance());
-			mpfr_set_str(gdd, lastFinalBlock->getFinalBalance().data(), 10, gDefaultRound);
-
-			for (auto it = amountRetrievedSinceLastFinalBlock.begin(); it != amountRetrievedSinceLastFinalBlock.end(); it++) {
-				assert(it->second > lastDate);
-				calculateDecayFactorForDuration(temp, gDecayFactorGregorianCalender, Poco::Timespan(it->second - lastDate).totalSeconds());
-				calculateDecayFast(temp, gdd);
-				mpfr_add(gdd, gdd, it->first, gDefaultRound);
-				lastDate = it->second;
+			switch (transactionType) {
+			case model::gradido::TRANSACTION_NONE: throw std::runtime_error("transaction with type none is invalid");
+			case model::gradido::TRANSACTION_CREATION:
+				address = transactionBody->getCreationTransaction()->getRecipientPublicKeyString();
+				break;
+			case model::gradido::TRANSACTION_TRANSFER:
+			case model::gradido::TRANSACTION_DEFERRED_TRANSFER:
+				address = transactionBody->getTransferTransaction()->getSenderPublicKeyString();
+				break;
+			case model::gradido::TRANSACTION_GROUP_FRIENDS_UPDATE:
+			case model::gradido::TRANSACTION_GLOBAL_GROUP_ADD:
+				return;
+			case model::gradido::TRANSACTION_REGISTER_ADDRESS:
+				mProtoGradidoBlock->set_final_gdd("0");
+				return;
+			default: throw GradidoUnknownEnumException("unknown enum", "model::gradido:TransactionType", (int)transactionBody->getTransactionType());
 			}
-			assert(getReceived() > lastDate);
-			calculateDecayFactorForDuration(temp, gDecayFactorGregorianCalender, Poco::Timespan(getReceived() - lastDate).totalSeconds());
-			calculateDecayFast(temp, gdd);
-						
-			// add value from this block if it was a transfer or creation transaction
-			auto transactionBody = mGradidoTransaction->getTransactionBody();
-			auto transactionType = transactionBody->getTransactionType();
+
+			auto finalBalance = blockchain->calculateAddressBalance(address, transactionBody->getCoinColor(blockchain), getReceived());
+			auto temp = mm->getMathMemory();
+			// add value from this block if it was a transfer or creation transaction			
 
 			if (TRANSACTION_CREATION == transactionType) {
 				mpfr_set_str(temp, transactionBody->getCreationTransaction()->getAmount().data(), 10, gDefaultRound);
@@ -264,9 +266,9 @@ namespace model {
 				// if it is a transfer transaction this address must be the sender
 				mpfr_set_str(temp, transactionBody->getTransferTransaction()->getAmount().data(), 10, gDefaultRound);
 			}
-			mpfr_add(gdd, gdd, temp, gDefaultRound);
-			TransactionBase::amountToString(mProtoGradidoBlock->mutable_final_gdd(), gdd);
-			mm->releaseMathMemory(gdd);
+			mpfr_add(finalBalance, finalBalance, temp, gDefaultRound);
+			TransactionBase::amountToString(mProtoGradidoBlock->mutable_final_gdd(), finalBalance);
+			mm->releaseMathMemory(finalBalance);
 			mm->releaseMathMemory(temp);			
 		}
 

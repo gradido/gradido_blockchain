@@ -39,6 +39,8 @@ namespace model {
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 
 			const std::string& getAmount() const { return mProtoTransfer.sender().amount(); }
+			const std::string& getSenderPublicKeyString() const { return mProtoTransfer.sender().pubkey(); }
+			const std::string& getRecipientPublicKeyString() const { return mProtoTransfer.recipient(); }
 			MemoryBin* getSenderPublicKey() const;
 			MemoryBin* getRecipientPublicKey() const;
 			

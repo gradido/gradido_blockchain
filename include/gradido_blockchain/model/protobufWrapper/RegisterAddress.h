@@ -24,11 +24,17 @@ namespace model {
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 
 			MemoryBin* getUserPubkey() const;
-			proto::gradido::RegisterAddress_AddressType getAddressType() { return mProtoRegisterAddress.address_type(); }
+			inline const std::string& getUserPubkeyString() const { return mProtoRegisterAddress.user_pubkey(); }
+			proto::gradido::RegisterAddress_AddressType getAddressType() const { return mProtoRegisterAddress.address_type(); }
 			MemoryBin* getNameHash() const;
+			inline const std::string& getNameHashString() const { return mProtoRegisterAddress.name_hash(); }
 			MemoryBin* getSubaccountPubkey() const;
+			inline const std::string& getSubaccountPubkeyString() const { return mProtoRegisterAddress.subaccount_pubkey(); }
 
 			static proto::gradido::RegisterAddress_AddressType getAddressTypeFromString(const std::string& addressType);
+			inline static const std::string& getAddressStringFromType(proto::gradido::RegisterAddress_AddressType type) {
+				return RegisterAddress_AddressType_Name(type);
+			}
 
 		protected:
 			const proto::gradido::RegisterAddress& mProtoRegisterAddress;

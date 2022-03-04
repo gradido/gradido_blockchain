@@ -1,3 +1,4 @@
+#include "gradido_blockchain/model/IGradidoBlockchain.h"
 #include "gradido_blockchain/model/protobufWrapper/TransactionTransfer.h"
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 #include "gradido_blockchain/lib/Decay.h"
@@ -47,43 +48,63 @@ namespace model {
 			const
 		{
 			LOCK_RECURSIVE;
-			
-			auto sender = mProtoTransfer.sender();
-			auto recipient_pubkey = mProtoTransfer.recipient();
-			
-			//auto amount = sender.amount();
 			auto mm = MemoryManager::getInstance();
-			mpfr_ptr amount = mm->getMathMemory(); 
-			if (mpfr_set_str(amount, sender.amount().data(), 10, gDefaultRound)) {
+			// cleanup after itself
+			auto amount = MathMemory::create();
+			auto sender = mProtoTransfer.sender();
+			
+			if (mpfr_set_str(amount->getData(), sender.amount().data(), 10, gDefaultRound)) {
 				throw TransactionValidationInvalidInputException("amount cannot be parsed to a number", "amount", "string");
 			}
-			if (!sender.amount().size()) {
-				throw TransactionValidationInvalidInputException("amount is empty", "amount", "string");
-			}
-			else if (mpfr_cmp_si(amount, 0) < 0.0) {
-				throw TransactionValidationInvalidInputException("negative amount", "amount", "string");
-			}
-			mm->releaseMathMemory(amount);
-			if (recipient_pubkey.size() != crypto_sign_PUBLICKEYBYTES) {
-				throw TransactionValidationInvalidInputException("invalid size", "recipient", "public key");
-			}
-			if (sender.pubkey().size() != crypto_sign_PUBLICKEYBYTES) {
-				throw TransactionValidationInvalidInputException("invalid size", "sender", "public key");
-			}
-			if (0 == memcmp(sender.pubkey().data(), recipient_pubkey.data(), crypto_sign_PUBLICKEYBYTES)) {
-				throw TransactionValidationException("sender and recipient are the same");
-			}
-			auto empty = mm->getMemory(crypto_sign_PUBLICKEYBYTES);
-			memset(*empty, 0, crypto_sign_PUBLICKEYBYTES);
-			if (0 == memcmp(sender.pubkey().data(), *empty, crypto_sign_PUBLICKEYBYTES)) {
+
+			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) 
+			{
+				
+				auto recipient_pubkey = mProtoTransfer.recipient();
+				//auto amount = sender.amount();
+				
+				if (!sender.amount().size()) {
+					throw TransactionValidationInvalidInputException("amount is empty", "amount", "string");
+				}
+				else if (mpfr_cmp_si(amount->getData(), 0) < 0.0) {
+					throw TransactionValidationInvalidInputException("negative amount", "amount", "string");
+				}
+				
+				if (recipient_pubkey.size() != crypto_sign_PUBLICKEYBYTES) {
+					throw TransactionValidationInvalidInputException("invalid size", "recipient", "public key");
+				}
+				if (sender.pubkey().size() != crypto_sign_PUBLICKEYBYTES) {
+					throw TransactionValidationInvalidInputException("invalid size", "sender", "public key");
+				}
+				if (0 == memcmp(sender.pubkey().data(), recipient_pubkey.data(), crypto_sign_PUBLICKEYBYTES)) {
+					throw TransactionValidationException("sender and recipient are the same");
+				}
+				auto empty = mm->getMemory(crypto_sign_PUBLICKEYBYTES);
+				memset(*empty, 0, crypto_sign_PUBLICKEYBYTES);
+				if (0 == memcmp(sender.pubkey().data(), *empty, crypto_sign_PUBLICKEYBYTES)) {
+					mm->releaseMemory(empty);
+					throw TransactionValidationInvalidInputException("empty", "sender", "public key");
+				}
+				if (0 == memcmp(recipient_pubkey.data(), *empty, crypto_sign_PUBLICKEYBYTES)) {
+					mm->releaseMemory(empty);
+					throw TransactionValidationInvalidInputException("empty", "recipient", "public key");
+				}
 				mm->releaseMemory(empty);
-				throw TransactionValidationInvalidInputException("empty", "sender", "public key");
 			}
-			if (0 == memcmp(recipient_pubkey.data(), *empty, crypto_sign_PUBLICKEYBYTES)) {
-				mm->releaseMemory(empty);
-				throw TransactionValidationInvalidInputException("empty", "recipient", "public key");
+
+			if ((level & TRANSACTION_VALIDATION_SINGLE_PREVIOUS) == TRANSACTION_VALIDATION_SINGLE_PREVIOUS)
+			{
+				assert(blockchain);
+				assert(parentGradidoBlock);
+				auto finalBalanceTransaction = blockchain->calculateAddressBalance(getSenderPublicKeyString(), getCoinColor(), parentGradidoBlock->getReceived());
+				auto finalBalance = MathMemory::create();
+				mpfr_swap(finalBalanceTransaction, finalBalance->getData());
+				mm->releaseMathMemory(finalBalanceTransaction);
+				if (mpfr_cmp(amount->getData(), finalBalanceTransaction) < 0) {
+					throw InsufficientBalanceException("not enough Gradido Balance for send coins", amount->getData(), finalBalance->getData());
+				}
+				mm->releaseMathMemory(finalBalanceTransaction);
 			}
-			mm->releaseMemory(empty);
 			
 			return true;
 		}

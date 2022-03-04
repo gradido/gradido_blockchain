@@ -83,6 +83,19 @@ protected:
 	uint16_t mSize;
 };
 
+class MathMemory
+{
+public:
+	~MathMemory();
+
+	static std::unique_ptr<MathMemory> create();
+	mpfr_ptr getData() { return mData; }
+
+protected:
+	MathMemory();
+
+	mpfr_ptr mData;
+};
 
 // TODO: Add handling for mpfr pointer
 // TODO: Add handling for protobuf messages

@@ -57,6 +57,17 @@ protected:
 	std::string mEnumString;
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT GradidoUnknownEnumException : public GradidoBlockchainException
+{
+public:
+	explicit GradidoUnknownEnumException(const char* what, const char* enumName, int value) noexcept;
+	std::string getFullString() const;
+
+protected:
+	std::string mEnumName;
+	int mValue;
+};
+
 class GRADIDOBLOCKCHAIN_EXPORT GradidoInvalidBase64Exception : public GradidoBlockchainException
 {
 public:

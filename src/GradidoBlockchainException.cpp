@@ -99,6 +99,25 @@ std::string GradidoInvalidEnumException::getFullString() const
 	return resultString;
 }
 
+// ***************** it an enuam value is unknown by code ***************************
+GradidoUnknownEnumException::GradidoUnknownEnumException(const char* what, const char* enumName, int value) noexcept
+	: GradidoBlockchainException(what), mEnumName(enumName), mValue(value)
+{
+
+}
+
+std::string GradidoUnknownEnumException::getFullString() const
+{
+	std::string resultString;
+	auto valueString = std::to_string(mValue);
+	size_t resultSize = strlen(what()) + mEnumName.size() + valueString.size() + 2 + 13 + 9;
+	resultString.reserve(resultSize);
+	resultString = what();
+	resultString += ", enum name: " + mEnumName;
+	resultString += ", value: " + valueString;
+	return resultString;
+}
+
 // **************************** Invalid Base64 ****************************************
 GradidoInvalidBase64Exception::GradidoInvalidBase64Exception(const char* what, const std::string& base64, int lastValidCharacter) noexcept
 	: GradidoBlockchainException(what), mBase64(base64), mLastValidCharacter(lastValidCharacter)
