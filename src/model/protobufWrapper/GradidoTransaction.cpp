@@ -105,7 +105,7 @@ namespace model {
 						}
 					}
 					break;
-				default: throw std::runtime_error("unknown cross group type");
+				default: throw GradidoUnknownEnumException("unknown cross group type", "proto::gradido::TransactionBody_CrossGroupType", transactionBody->getCrossGroupType());
 				}
 				
 			}

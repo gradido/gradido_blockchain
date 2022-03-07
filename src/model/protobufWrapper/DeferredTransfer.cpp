@@ -1,5 +1,8 @@
 #include "gradido_blockchain/model/protobufWrapper/DeferredTransfer.h"
+#include "gradido_blockchain/model/protobufWrapper/GradidoBlock.h"
+#include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain/lib/Decay.h"
 
 namespace model {
 	namespace gradido {
@@ -15,6 +18,13 @@ namespace model {
 			const GradidoBlock* parentGradidoBlock/* = nullptr*/
 		) const
 		{
+			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
+				if (parentGradidoBlock) {
+					if (parentGradidoBlock->getReceived() >= getTimeoutAsPocoTimestamp()) {
+						throw TransactionValidationInvalidInputException("timeout is already in the past", "timeout", "timestamp");
+					}
+				}
+			}
 			return TransactionTransfer::validate(level, blockchain, parentGradidoBlock);
 		}
 

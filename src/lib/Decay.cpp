@@ -13,6 +13,7 @@ MPFR_RNDNA = -1 // round to nearest, with ties away from zero (mpfr_round)
 } mpfr_rnd_t;
 
 */
+// TODO: move to server config
 const mpfr_rnd_t gDefaultRound = MPFR_RNDN;
 
 mpfr_ptr gDecayFactor356Days = nullptr;

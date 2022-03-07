@@ -5,6 +5,7 @@
 #include "proto/gradido/GradidoTransfer.pb.h"
 
 #include "Poco/Timestamp.h"
+#include "Poco/DateTime.h"
 
 namespace model {
 	namespace gradido {
@@ -22,6 +23,7 @@ namespace model {
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 
 			Poco::Timestamp getTimeoutAsPocoTimestamp() const;
+			inline Poco::DateTime getTimeoutAsPocoDateTime() const { return Poco::DateTime(getTimeoutAsPocoTimestamp()); }
 		protected:
 			const proto::gradido::GradidoDeferredTransfer& mProtoDeferredTransfer;
 		};
