@@ -42,13 +42,13 @@ std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createTr
 
 std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createTransactionTransfer(
 	const MemoryBin* senderPubkey,
-	const std::string& amountGddCent,
+	const std::string& amountGdd,
 	uint32_t coinColor,
 	const MemoryBin* recipientPubkey
 )
 {
 	assert(recipientPubkey);
-	auto transferAmount = createTransferAmount(senderPubkey, amountGddCent, coinColor);
+	auto transferAmount = createTransferAmount(senderPubkey, amountGdd, coinColor);
 	return std::unique_ptr<model::gradido::GradidoTransaction>(new GradidoTransaction(TransactionBody::createTransactionTransfer(std::move(transferAmount), recipientPubkey)));
 }
 
