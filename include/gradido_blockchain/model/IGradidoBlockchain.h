@@ -13,7 +13,7 @@ namespace model {
 	{
 	public:
 		virtual std::vector<Poco::SharedPtr<TransactionEntry>> getAllTransactions(std::function<bool(model::TransactionEntry*)> filter = nullptr) = 0;
-		virtual Poco::SharedPtr<gradido::GradidoBlock> getLastTransaction() = 0;
+		virtual Poco::SharedPtr<gradido::GradidoBlock> getLastTransaction(std::function<bool(const gradido::GradidoBlock*)> filter = nullptr) = 0;
 		virtual mpfr_ptr calculateAddressBalance(const std::string& address, uint32_t coinColor, Poco::DateTime date) = 0;
 		virtual Poco::SharedPtr<TransactionEntry> getTransactionForId(uint64_t transactionId) = 0;
 		virtual Poco::SharedPtr<TransactionEntry> findLastTransactionForAddress(const std::string& address, uint32_t coinColor = 0) = 0;
