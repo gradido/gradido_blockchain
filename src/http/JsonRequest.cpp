@@ -3,11 +3,12 @@
 
 #include "Poco/Net/HTTPRequest.h"
 #include "Poco/Net/HTTPResponse.h"
+#include "Poco/Exception.h"
 
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
-#include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain/http/RequestExceptions.h"
 
 using namespace rapidjson;
 
@@ -70,23 +71,27 @@ std::string JsonRequest::POST(const char* path, const rapidjson::Document& paylo
 	request.setChunkedTransferEncoding(true);
 	request.setContentType("application/json");
 	request.add("Accept", "*/*");
-	std::ostream& request_stream = clientSession->sendRequest(request);
-
-	StringBuffer buffer;
-	Writer<StringBuffer> writer(buffer);
-	payload.Accept(writer);
-	request_stream << std::string(buffer.GetString(), buffer.GetSize());
-
-	Poco::Net::HTTPResponse response;
-	std::istream& response_stream = clientSession->receiveResponse(response);
-
-	// debugging answer
 
 	std::string responseString;
-	for (std::string line; std::getline(response_stream, line); ) {
-		responseString += line + "\n";
+	try {
+		std::ostream& request_stream = clientSession->sendRequest(request);
+
+		StringBuffer buffer;
+		Writer<StringBuffer> writer(buffer);
+		payload.Accept(writer);
+		request_stream << std::string(buffer.GetString(), buffer.GetSize());
+
+		Poco::Net::HTTPResponse response;
+		std::istream& response_stream = clientSession->receiveResponse(response);
+
+		for (std::string line; std::getline(response_stream, line); ) {
+			responseString += line + "\n";
+		}
 	}
-	
+	catch (Poco::Exception& ex) {
+		throw PocoNetException(ex, mRequestUri, path);
+	}
+
 	return responseString;
 }
 

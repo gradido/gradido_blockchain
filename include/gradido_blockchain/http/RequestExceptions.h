@@ -3,6 +3,7 @@
 
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "Poco/URI.h"
+#include "Poco/Exception.h"
 
 #include "rapidjson/error/error.h"
 #include "rapidjson/document.h"
@@ -68,8 +69,18 @@ protected:
 class GRADIDOBLOCKCHAIN_EXPORT HandleRequestException : public GradidoBlockchainException
 {
 public:
-	HandleRequestException(const char* what) noexcept;
+	explicit HandleRequestException(const char* what) noexcept;
 	std::string getFullString() const;
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT PocoNetException : public GradidoBlockchainException
+{
+public:
+	explicit PocoNetException(Poco::Exception& ex, const Poco::URI& uri, const char* query) noexcept;
+	std::string getFullString() const;
+protected:
+	std::string mQuery;
+	Poco::URI   mRequestUri;
 };
 
 

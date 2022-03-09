@@ -1,8 +1,10 @@
 #include "gradido_blockchain/http/HttpRequest.h"
+#include "gradido_blockchain/http/RequestExceptions.h"
 
 #include "Poco/Net/HTTPSClientSession.h"
 #include "Poco/Net/HTTPRequest.h"
 #include "Poco/Net/HTTPResponse.h"
+#include "Poco/Exception.h"
 
 #include "gradido_blockchain/http/ServerConfig.h"
 
@@ -55,15 +57,20 @@ std::string HttpRequest::GET(const char* pathAndQuery/* = nullptr*/, const char*
 	if (version) _version = version;
 	Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, pathAndQuery, _version);
 
-	request.setChunkedTransferEncoding(true);
-	std::ostream& request_stream = clientSession->sendRequest(request);
-
-	Poco::Net::HTTPResponse response;
-	std::istream& response_stream = clientSession->receiveResponse(response);
-
 	std::string responseString;
-	for (std::string line; std::getline(response_stream, line); ) {
-		responseString += line + "\n";
+	request.setChunkedTransferEncoding(true);
+	try {
+		std::ostream& request_stream = clientSession->sendRequest(request);
+
+		Poco::Net::HTTPResponse response;
+		std::istream& response_stream = clientSession->receiveResponse(response);
+
+		for (std::string line; std::getline(response_stream, line); ) {
+			responseString += line + "\n";
+		}
+	}
+	catch (Poco::Exception& ex) {
+		throw PocoNetException(ex, mRequestUri, pathAndQuery);
 	}
 
 	return responseString;

@@ -134,4 +134,24 @@ std::string HandleRequestException::getFullString() const
 {
 	return what();
 }
+
+// ********************** Poco Net Exception *******************************************
+PocoNetException::PocoNetException(Poco::Exception& ex, const Poco::URI& uri, const char* query) noexcept
+	: GradidoBlockchainException(ex.displayText().data()), mRequestUri(uri), mQuery(query)
+{
+
+}
+
+std::string PocoNetException::getFullString() const
+{
+	std::string resultString;
+	std::string host = mRequestUri.getHost();
+	size_t resultSize = 2 + 17 + strlen(what()) + 17 + host.size() + mQuery.size();
+	resultString.reserve(resultSize);
+
+	resultString = "Poco Exception: ";
+	resultString += what();
+	resultString += " by calling url: " + host + mQuery;
+	return resultString;
+}
 	

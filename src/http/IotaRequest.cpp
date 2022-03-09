@@ -1,5 +1,6 @@
 #include "gradido_blockchain/http/IotaRequest.h"
 #include "gradido_blockchain/http/IotaRequestExceptions.h"
+#include "gradido_blockchain/http/RequestExceptions.h"
 
 #include "gradido_blockchain/lib/Profiler.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
@@ -279,6 +280,12 @@ void IotaRequest::defaultExceptionHandler(Poco::Logger& errorLog, bool terminate
 			Poco::Util::ServerApplication::terminate();
 		}
 		
+	}
+	catch (PocoNetException& ex) {
+		errorLog.error("Poco Net Exception by calling Iota Request: %s", ex.getFullString());
+		if (terminate) {
+			Poco::Util::ServerApplication::terminate();
+		}
 	}
 	catch (Poco::Exception& ex) {
 		errorLog.error("Poco Exception by calling Iota Request: %s", ex.displayText());

@@ -16,15 +16,15 @@ MPFR_RNDNA = -1 // round to nearest, with ties away from zero (mpfr_round)
 // TODO: move to server config
 const mpfr_rnd_t gDefaultRound = MPFR_RNDN;
 
-mpfr_ptr gDecayFactor356Days = nullptr;
-mpfr_ptr gDecayFactor366Days = nullptr;
-mpfr_ptr gDecayFactorGregorianCalender = nullptr; 
+mpfr_t gDecayFactor356Days;
+mpfr_t gDecayFactor366Days;
+mpfr_t gDecayFactorGregorianCalender;
 
 void initDefaultDecayFactors()
 {
-	mpfr_init(gDecayFactor356Days);
+	mpfr_init2(gDecayFactor356Days, MAGIC_NUMBER_AMOUNT_PRECISION_BITS);
 	calculateDecayFactor(gDecayFactor356Days, 356);
-	mpfr_init(gDecayFactor366Days);
+	mpfr_init2(gDecayFactor366Days, MAGIC_NUMBER_AMOUNT_PRECISION_BITS);
 	calculateDecayFactor(gDecayFactor366Days, 366);
 
 	// calculate decay factor with Gregorian Calender
@@ -50,11 +50,8 @@ void initDefaultDecayFactors()
 void unloadDefaultDecayFactors()
 {
 	mpfr_clear(gDecayFactor356Days);
-	gDecayFactor356Days = nullptr;
 	mpfr_clear(gDecayFactor366Days);
-	gDecayFactor366Days = nullptr;
 	mpfr_clear(gDecayFactorGregorianCalender);
-	gDecayFactorGregorianCalender = nullptr;
 }
 
 void calculateDecayFactor(mpfr_ptr decay_factor, int days_per_year)
