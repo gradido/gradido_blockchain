@@ -281,6 +281,10 @@ namespace model {
 			if (!status.ok()) {
 				throw ProtobufJsonSerializationException("error parsing transaction body", *mProtoGradidoTransaction, status);
 			}
+			status = google::protobuf::util::MessageToJsonString(*mProtoGradidoTransaction, &json_message, options);
+			if (!status.ok()) {
+				throw ProtobufJsonSerializationException("error parsing transaction", *mProtoGradidoTransaction, status);
+			}
 			//\"bodyBytes\": \"MigKIC7Sihz14RbYNhVAa8V3FSIhwvd0pWVvZqDnVA91dtcbIgRnZGQx\"
 			int startBodyBytes = json_message.find("bodyBytes") + std::string("\"bodyBytes\": \"").size() - 2;
 			int endCur = json_message.find_first_of('\"', startBodyBytes + 2) + 1;
