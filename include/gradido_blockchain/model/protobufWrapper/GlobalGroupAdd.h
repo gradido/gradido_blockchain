@@ -14,11 +14,13 @@ namespace model {
 			GlobalGroupAdd(const proto::gradido::GlobalGroupAdd& protoGlobalGroupAdd);
 			~GlobalGroupAdd();
 
+			int prepare();
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
 				const GradidoBlock* parentGradidoBlock = nullptr
 			) const;
+			
 
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 

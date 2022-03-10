@@ -10,7 +10,7 @@
 namespace model {
 	namespace gradido {
 
-		Poco::RegularExpression g_RegExGroupName("^[a-z0-9_ -]{3,255}");
+		Poco::RegularExpression g_RegExGroupName("^[a-zA-Z0-9_ -]{3,255}$");
 
 		GlobalGroupAdd::GlobalGroupAdd(const proto::gradido::GlobalGroupAdd& protoGlobalGroupAdd)
 			: mProtoGlobalGroupAdd(protoGlobalGroupAdd)
@@ -23,6 +23,12 @@ namespace model {
 
 		}
 
+		int GlobalGroupAdd::prepare()
+		{
+			mMinSignatureCount = 1;
+			return 0;
+		}
+
 		bool GlobalGroupAdd::validate(
 			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
 			IGradidoBlockchain* blockchain/* = nullptr*/,
@@ -30,20 +36,22 @@ namespace model {
 			) const
 		{			
 			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
-				if (getGroupName().size() < 3) {
+				auto groupName = getGroupName();
+				if (groupName.size() < 3) {
 					throw TransactionValidationInvalidInputException("to short, at least 3", "group_name", "string");
 				}
-				if (getGroupName().size() > 255) {
+				if (groupName.size() > 255) {
 					throw TransactionValidationInvalidInputException("to long, max 255", "group_name", "string");
 				}
-				if (!g_RegExGroupName.match(getGroupName())) {
+				printf("group name: %s\n", groupName.data());
+				if (!g_RegExGroupName.match(groupName)) {
 					throw TransactionValidationInvalidInputException("invalid character, only ascii", "group_name", "string");
-
 				}
-				if (getGroupAlias().size() < 3) {
+				auto groupAlias = getGroupAlias();
+				if (groupAlias.size() < 3) {
 					throw TransactionValidationInvalidInputException("to short, at least 3", "group_alias", "string");
 				}
-				if (getGroupAlias().size() > 120) {
+				if (groupAlias.size() > 120) {
 					throw TransactionValidationInvalidInputException("to long, max 255", "group_alias", "string");
 				}
 				if (!isValidGroupAlias(getGroupAlias())) {

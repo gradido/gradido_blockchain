@@ -67,7 +67,7 @@ namespace model {
 			auto obj = new TransactionBody;
 			auto globalGroupAdd = obj->mProtoTransactionBody.mutable_global_group_add();
 			globalGroupAdd->set_group_name(groupName);
-			globalGroupAdd->set_group_name(groupAlias);
+			globalGroupAdd->set_group_alias(groupAlias);
 			globalGroupAdd->set_native_coin_color(nativeCoinColor);
 			obj->initSpecificTransaction();
 			return obj;

@@ -17,6 +17,7 @@ namespace model {
 			: mProtoGradidoTransaction(protoGradidoTransaction), mTransactionBody(nullptr)
 		{
 			mTransactionBody = TransactionBody::load(protoGradidoTransaction->body_bytes());
+			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
 		}
 
 		GradidoTransaction::GradidoTransaction(const std::string* serializedProtobuf)
@@ -26,6 +27,7 @@ namespace model {
 				throw ProtobufParseException(*serializedProtobuf);
 			}
 			mTransactionBody = TransactionBody::load(mProtoGradidoTransaction->body_bytes());
+			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
 		}
 
 		GradidoTransaction::GradidoTransaction(model::gradido::TransactionBody* body)
@@ -33,6 +35,7 @@ namespace model {
 			assert(body);
 			mProtoGradidoTransaction = new proto::gradido::GradidoTransaction;
 			mTransactionBody = body;
+			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
 		}
 
 		GradidoTransaction::~GradidoTransaction()
@@ -57,6 +60,11 @@ namespace model {
 				auto body_bytes = mProtoGradidoTransaction->body_bytes();
 				for (auto it = sig_map.sigpair().begin(); it != sig_map.sigpair().end(); it++)
 				{
+					if (it->pubkey().size() != KeyPairEd25519::getPublicKeySize()) {
+						throw TransactionValidationInvalidInputException(
+							"pubkey hasn't the correct size", "pubkey", "binary string 32"
+						);
+					}
 					KeyPairEd25519 key_pair((const unsigned char*)it->pubkey().data());
 					if (!key_pair.verify(body_bytes, it->signature())) {
 						throw TransactionValidationInvalidSignatureException(
@@ -156,7 +164,7 @@ namespace model {
 
 			auto sigPair = sigMap->add_sigpair();
 			auto pubkeyBytes = sigPair->mutable_pubkey();
-			*pubkeyBytes = std::string((const char*)pubkeyBin, crypto_sign_PUBLICKEYBYTES);
+			*pubkeyBytes = std::string((const char*)pubkeyBin->data(), crypto_sign_PUBLICKEYBYTES);
 
 			auto sigBytes = sigPair->mutable_signature();
 			*sigBytes = std::string((const char*)signatureBin->data(), crypto_sign_BYTES);
