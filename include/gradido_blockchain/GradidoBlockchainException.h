@@ -39,6 +39,7 @@ public:
 	explicit RapidjsonParseErrorException(const char* what, rapidjson::ParseErrorCode parseErrorCode, size_t parseErrorOffset) noexcept;
 
 	RapidjsonParseErrorException& setRawText(const std::string& rawText);
+	inline const std::string& getRawText() { return mRawText; }
 	std::string getFullString() const;
 
 protected:

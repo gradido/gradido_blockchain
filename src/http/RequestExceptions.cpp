@@ -63,6 +63,10 @@ bool RequestResponseInvalidJsonException::printToFile(const char* prefix, const 
 	return false;
 }
 
+bool RequestResponseInvalidJsonException::containRawHtmlClosingTag() const
+{
+	return (mRawText.find("</html>") != mRawText.npos);
+}
 
 // ************************** error in json request ***************************************
 RequestResponseErrorException::RequestResponseErrorException(const char* what, const Poco::URI& uri, const std::string& msg) noexcept

@@ -36,12 +36,11 @@ public:
 	//! used for debugging invalid json requests from server, especially from php based servers
 	//! \return true if file could write, else false
 	bool printToFile(const char* prefix, const char* ending = ".txt") const;
+	bool containRawHtmlClosingTag() const;
 
 protected:
 	std::string mRawText;
 };
-
-
 
 class GRADIDOBLOCKCHAIN_EXPORT RequestResponseErrorException : public RequestException
 {
