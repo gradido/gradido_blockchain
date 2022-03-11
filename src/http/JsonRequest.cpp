@@ -81,8 +81,6 @@ std::string JsonRequest::POST(const char* path, const rapidjson::Document& paylo
 		payload.Accept(writer);
 		request_stream << std::string(buffer.GetString(), buffer.GetSize());
 
-		printf("request: \n%s\n", buffer.GetString());
-
 		Poco::Net::HTTPResponse response;
 		std::istream& response_stream = clientSession->receiveResponse(response);
 
