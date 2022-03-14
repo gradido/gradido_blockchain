@@ -81,7 +81,7 @@ namespace model {
 					}
 				}
 			}
-			return false;
+			return true;
 		}
 
 		bool GlobalGroupAdd::isBelongToUs(const TransactionBase* pairingTransaction) const
