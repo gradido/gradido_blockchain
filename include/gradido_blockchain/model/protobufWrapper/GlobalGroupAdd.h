@@ -4,6 +4,7 @@
 #include "TransactionBase.h"
 #include "proto/gradido/GlobalGroupAdd.pb.h"
 
+#define GROUP_REGISTER_GROUP_ALIAS "GroupRegister"
 
 namespace model {
 	namespace gradido {

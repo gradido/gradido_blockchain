@@ -56,7 +56,9 @@ namespace model {
 				}
 				if (!isValidGroupAlias(getGroupAlias())) {
 					throw TransactionValidationInvalidInputException("invalid character, only ascii", "group_alias", "string");
-
+				}
+				if (groupAlias == GROUP_REGISTER_GROUP_ALIAS) {
+					throw TransactionValidationInvalidInputException("group alias is used from system", "group_alias", "string");
 				}
 			}
 
