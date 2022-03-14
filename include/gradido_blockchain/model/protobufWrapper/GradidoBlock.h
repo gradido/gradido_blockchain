@@ -34,9 +34,11 @@ namespace model {
 
 			inline void setTxHash(const MemoryBin* txHash) { mProtoGradidoBlock->set_allocated_running_hash(txHash->copyAsString().release()); }
 			// convert from proto timestamp seconds to poco DateTime
-			inline Poco::DateTime getReceived() const {
+			inline Poco::Timestamp getReceivedAsTimestamp() const {
 				return Poco::Timestamp(mProtoGradidoBlock->received().seconds() * Poco::Timestamp::resolution());
 			}
+			// return as seconds since Jan 01 1970
+			inline int64_t getReceived() const { return mProtoGradidoBlock->received().seconds(); }
 
 			std::unique_ptr<std::string> getSerialized();
 			//! \return MemoryBin containing message id binar, must be freed from caller

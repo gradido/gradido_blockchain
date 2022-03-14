@@ -20,7 +20,7 @@ namespace model {
 		{
 			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
 				if (parentGradidoBlock) {
-					if (parentGradidoBlock->getReceived() >= getTimeoutAsPocoTimestamp()) {
+					if (parentGradidoBlock->getReceivedAsTimestamp() >= getTimeoutAsPocoTimestamp()) {
 						throw TransactionValidationInvalidInputException("timeout is already in the past", "timeout", "timestamp");
 					}
 				}

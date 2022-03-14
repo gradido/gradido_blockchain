@@ -10,15 +10,16 @@ namespace model {
 		auto transaction = std::make_unique<gradido::GradidoBlock>(mSerializedTransaction.get());
 
 		mTransactionNr = transaction->getID();
-		mMonth = transaction->getReceived().month();
-		mYear = transaction->getReceived().year();
+		auto receivedDate = Poco::DateTime(transaction->getReceivedAsTimestamp());
+		mMonth = receivedDate.month();
+		mYear = receivedDate.year();
 		mCoinColor = transaction->getGradidoTransaction()->getTransactionBody()->getTransactionBase()->getCoinColor();
 	}
 
 	TransactionEntry::TransactionEntry(gradido::GradidoBlock* transaction)
 		: mTransactionNr(transaction->getID()), mSerializedTransaction(transaction->getSerialized())
 	{
-		auto received = transaction->getReceived();
+		auto received = Poco::DateTime(transaction->getReceivedAsTimestamp());
 		mMonth = received.month();
 		mYear = received.year();
 		auto transactionBase = transaction->getGradidoTransaction()->getTransactionBody()->getTransactionBase();
