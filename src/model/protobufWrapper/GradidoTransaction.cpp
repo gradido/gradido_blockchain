@@ -75,7 +75,7 @@ namespace model {
 				
 				// check for not allowed signatures
 				mTransactionBody->getTransactionBase()->checkRequiredSignatures(&sig_map);
-				return mTransactionBody->validate(level, blockchain, parentGradidoBlock);
+				mTransactionBody->validate(level, blockchain, parentGradidoBlock);
 			}
 			 
 			// must be implemented in gradido node server

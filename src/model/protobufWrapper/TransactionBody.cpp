@@ -240,37 +240,35 @@ namespace model {
 			const GradidoBlock* parentGradidoBlock/* = nullptr*/) const
 		{
 			LOCK_RECURSIVE;
-			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
-				if (getVersionNumber() != GRADIDO_PROTOCOL_VERSION) {
-					TransactionValidationInvalidInputException exception("wrong version", "version_number", "uint64");
-					exception.setTransactionBody(this);
-					throw exception;
-				}
-				// memo is only mandatory for transfer and creation transactions
-				if (isDeferredTransfer() || isTransfer() || isCreation()) {
-					if (getMemo().size() < 5 || getMemo().size() > 350) {
-						TransactionValidationInvalidInputException exception("not in expected range [5;350]", "memo", "string");
-						exception.setTransactionBody(this);
-						throw exception;
-					}
-				}
-				auto otherGroup = getOtherGroup();
-				if (otherGroup.size() && !TransactionBase::isValidGroupAlias(getOtherGroup())) {
-					TransactionValidationInvalidInputException exception("invalid character, only ascii", "other_group", "string");
-					exception.setTransactionBody(this);
-					throw exception;
-				}
-				if (isDeferredTransfer()) {
-					auto deferredTransfer = getDeferredTransfer();
-					auto timeout = deferredTransfer->getTimeoutAsPocoTimestamp();
-					if (getCreatedSeconds() >= timeout.epochTime()) {
-						TransactionValidationInvalidInputException exception("already reached", "timeout", "Timestamp");
-						exception.setTransactionBody(this);
-						throw exception;
-					}
-				}
-			}
+			
 			try {
+				if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
+					if (getVersionNumber() != GRADIDO_PROTOCOL_VERSION) {
+						throw TransactionValidationInvalidInputException("wrong version", "version_number", "uint64");
+					}
+					// memo is only mandatory for transfer and creation transactions
+					if (isDeferredTransfer() || isTransfer() || isCreation()) {
+						if (getMemo().size() < 5 || getMemo().size() > 350) {
+							throw TransactionValidationInvalidInputException("not in expected range [5;350]", "memo", "string");
+						}
+					}
+					auto otherGroup = getOtherGroup();
+					if (otherGroup.size() && !TransactionBase::isValidGroupAlias(getOtherGroup())) {
+						throw TransactionValidationInvalidInputException("invalid character, only ascii", "other_group", "string");
+					}
+					if (isDeferredTransfer()) {
+						auto deferredTransfer = getDeferredTransfer();
+						auto timeout = deferredTransfer->getTimeoutAsPocoTimestamp();
+						if (getCreatedSeconds() >= timeout.epochTime()) {
+							throw TransactionValidationInvalidInputException("already reached", "timeout", "Timestamp");
+						}
+					}
+					// check target date for creation transactions
+					if (isCreation()) {
+						getCreationTransaction()->validateTargetDate(getCreatedSeconds());
+					}
+				}
+
 				mTransactionSpecific->validate(level, blockchain);
 			}
 			catch (TransactionValidationException& ex) {

@@ -157,8 +157,14 @@ namespace model {
 					throw exception;
 				}
 				auto created = Poco::Timestamp(getGradidoTransaction()->getTransactionBody()->getCreatedSeconds() * Poco::Timestamp::resolution());
-				if (Poco::Timespan(getReceivedAsTimestamp() - created).totalMinutes() > MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION_IN_MINUTES) {
+				auto timespanBetweenCreatedAndReceivedSeconds = Poco::Timespan(getReceivedAsTimestamp() - created).totalSeconds();
+				if (timespanBetweenCreatedAndReceivedSeconds * 60 > MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION_IN_MINUTES) {
 					TransactionValidationInvalidInputException exception("timespan between created and received are more than 2 minutes", "received/iota milestone timestamp", "int64");
+					exception.setTransactionBody(getGradidoTransaction()->getTransactionBody());
+					throw exception;
+				}
+				if (timespanBetweenCreatedAndReceivedSeconds <= 0) {
+					TransactionValidationInvalidInputException exception("timespan between created and received are less than a second", "received/iota milestone timestamp", "int64");
 					exception.setTransactionBody(getGradidoTransaction()->getTransactionBody());
 					throw exception;
 				}
