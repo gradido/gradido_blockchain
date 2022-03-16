@@ -83,7 +83,7 @@ protected:
 	uint16_t mSize;
 };
 
-class MathMemory
+class GRADIDOBLOCKCHAIN_EXPORT MathMemory
 {
 public:
 	~MathMemory();

@@ -158,7 +158,7 @@ namespace model {
 				}
 				auto created = Poco::Timestamp(getGradidoTransaction()->getTransactionBody()->getCreatedSeconds() * Poco::Timestamp::resolution());
 				auto timespanBetweenCreatedAndReceivedSeconds = Poco::Timespan(getReceivedAsTimestamp() - created).totalSeconds();
-				if (timespanBetweenCreatedAndReceivedSeconds * 60 > MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION_IN_MINUTES) {
+				if (timespanBetweenCreatedAndReceivedSeconds / 60 > MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION_IN_MINUTES) {
 					TransactionValidationInvalidInputException exception("timespan between created and received are more than 2 minutes", "received/iota milestone timestamp", "int64");
 					exception.setTransactionBody(getGradidoTransaction()->getTransactionBody());
 					throw exception;
@@ -266,8 +266,8 @@ namespace model {
 				return;
 			default: throw GradidoUnknownEnumException("unknown enum", "model::gradido:TransactionType", (int)transactionBody->getTransactionType());
 			}
-
-			auto finalBalance = blockchain->calculateAddressBalance(address, transactionBody->getCoinColor(blockchain), getReceived());
+			
+			auto finalBalance = blockchain->calculateAddressBalance(address, transactionBody->getCoinColor(blockchain), getReceivedAsTimestamp());
 			auto temp = mm->getMathMemory();
 			// add value from this block if it was a transfer or creation transaction			
 
@@ -280,6 +280,7 @@ namespace model {
 			}
 			mpfr_add(finalBalance, finalBalance, temp, gDefaultRound);
 			TransactionBase::amountToString(mProtoGradidoBlock->mutable_final_gdd(), finalBalance);
+			printf("final gdd: %s\n", mProtoGradidoBlock->final_gdd().data());
 			mm->releaseMathMemory(finalBalance);
 			mm->releaseMathMemory(temp);			
 		}

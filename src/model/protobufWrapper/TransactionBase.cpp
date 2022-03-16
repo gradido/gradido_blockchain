@@ -153,20 +153,31 @@ namespace model {
 			mpfr_exp_t exp_temp;
 			auto str = mpfr_get_str(nullptr, &exp_temp, 10, 45, amount, gDefaultRound);
 			auto strLength = strlen(str);
+			// example: str = "100000000000000000000000000000000000000000000"
+			//     exp_temp = 4
+			// target       = 1000
 			int i = strLength - 1;
 			for (; i >= 0; i--) {
 				if (str[i] != '0') break;
 			}
 			if (exp_temp > 0) {
-				strPointer->reserve(i + 2);
-				memcpy(strPointer->data(), str, exp_temp);
-				strPointer->data()[exp_temp + 1] = '.';
-				memcpy(&strPointer->data()[exp_temp + 2], &str[exp_temp + 1], i - exp_temp);
+				if (exp_temp >= i) {
+					strPointer->reserve(exp_temp);
+					strPointer->append(str, exp_temp);
+				}
+				else {
+					strPointer->reserve(i + 2);
+					memcpy(strPointer->data(), str, exp_temp);
+					strPointer->append(str, exp_temp);
+					strPointer->push_back('.');
+					strPointer->append(&str[exp_temp + 1], i - exp_temp);
+				}
+				
 			}
 			else if (!exp_temp) {
 				strPointer->reserve(i + 3);
 				strPointer->assign("0.");
-				memcpy(&strPointer->data()[2], str, i);
+				strPointer->append(str, i);
 			}
 			else if (exp_temp < 0) {
 				mpfr_free_str(str);

@@ -100,7 +100,7 @@ namespace model {
 					throw TransactionValidationInvalidInputException("amount cannot be parsed to a number", "amount", "string");
 				}
 				
-				blockchain->calculateCreationSum(pubkey, targetDate.month(), targetDate.year(), parentGradidoBlock->getReceived(), sum);
+				blockchain->calculateCreationSum(pubkey, targetDate.month(), targetDate.year(), parentGradidoBlock->getReceivedAsTimestamp(), sum);
 				mpfr_add(sum, sum, amount, gDefaultRound);
 				
 				auto id = parentGradidoBlock->getID();

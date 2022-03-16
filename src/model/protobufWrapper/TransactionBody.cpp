@@ -269,7 +269,7 @@ namespace model {
 					}
 				}
 
-				mTransactionSpecific->validate(level, blockchain);
+				mTransactionSpecific->validate(level, blockchain, parentGradidoBlock);
 			}
 			catch (TransactionValidationException& ex) {
 				ex.setTransactionBody(this);
