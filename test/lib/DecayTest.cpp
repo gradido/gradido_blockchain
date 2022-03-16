@@ -1,6 +1,7 @@
 
 #include "gradido_blockchain/lib/Decay.h"
 #include "gradido_blockchain/MemoryManager.h"
+#include "gradido_blockchain/model/protobufWrapper/TransactionBase.h"
 #include "gtest/gtest.h"
 
 #include <chrono>
@@ -183,4 +184,46 @@ TEST(gradido_math, calculate_decay)
 
 	mpfr_clear(decay_factor);
 	mpfr_clear(gradido);
+}
+
+TEST(gradido_math, calculate_decay_fast_2)
+{
+	initDefaultDecayFactors();
+	auto mm = MemoryManager::getInstance();
+	auto gdd = mm->getMathMemory();
+	auto temp = MathMemory::create();
+
+	// 1000 GDD
+	// 2670 seconds decay (44,5 minutes)
+	mpfr_set_ui(gdd, 1000, gDefaultRound);
+	calculateDecayFactorForDuration(temp->getData(), gDecayFactorGregorianCalender, 2670);
+	calculateDecayFast(temp->getData(), gdd);
+	std::string resultString;
+	model::gradido::TransactionBase::amountToString(&resultString, gdd);
+	//printf("1000 GDD with 2670 seconds decay: %s\n", resultString.data());
+	EXPECT_EQ("999.94135527713249453449039356531419275843744", resultString);
+
+	// add 1000 GDD
+	mpfr_add_ui(gdd, gdd, 1000, gDefaultRound);
+
+	// 10720 seconds decay (2,97 hours)
+	calculateDecayFactorForDuration(temp->getData(), gDecayFactorGregorianCalender, 10720);
+	calculateDecayFast(temp->getData(), gdd);
+	resultString.clear();
+	model::gradido::TransactionBase::amountToString(&resultString, gdd);
+	//printf("1999.9413 GDD with 10720 seconds decay: %s\n", resultString.data());
+	EXPECT_EQ("1999.4704957862948680484657280548324050036547", resultString);
+
+	// 1000 GDD
+	// 1 Jahr decay
+	mpfr_set_ui(gdd, 1000, gDefaultRound);
+	mpfr_pow_ui(temp->getData(), gDecayFactorGregorianCalender, 365.2425 * 24.0 * 60.0 * 60.0, gDefaultRound);
+	//calculateDecayFactorForDuration(temp->getData(), gDecayFactorGregorianCalender, 365.2425 * 24.0 * 60.0 * 60.0);
+	calculateDecayFast(temp->getData(), gdd);
+	resultString.clear();
+	model::gradido::TransactionBase::amountToString(&resultString, gdd);
+	//printf("1000 GDD with 1 year decay: %s\n", resultString.data());
+	EXPECT_EQ("500.00001098247995545079709452124296541843265", resultString);
+
+	unloadDefaultDecayFactors();
 }

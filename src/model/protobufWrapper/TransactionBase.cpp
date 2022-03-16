@@ -167,10 +167,9 @@ namespace model {
 				}
 				else {
 					strPointer->reserve(i + 2);
-					memcpy(strPointer->data(), str, exp_temp);
 					strPointer->append(str, exp_temp);
 					strPointer->push_back('.');
-					strPointer->append(&str[exp_temp + 1], i - exp_temp);
+					strPointer->append(&str[exp_temp], i - exp_temp);
 				}
 				
 			}
