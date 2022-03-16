@@ -22,6 +22,7 @@ namespace model {
 			static Poco::SharedPtr<GradidoBlock> create(std::unique_ptr<GradidoTransaction> transaction, uint64_t id, int64_t received, const MemoryBin* messageId);
 
 			std::string toJson();
+			rapidjson::Value toJson(rapidjson::Document& baseDocument);
 			inline const GradidoTransaction* getGradidoTransaction() const { return mGradidoTransaction; }
 
 			bool validate(

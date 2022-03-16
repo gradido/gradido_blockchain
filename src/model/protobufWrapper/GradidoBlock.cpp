@@ -103,6 +103,15 @@ namespace model {
 			return json_message;
 		}
 
+		Value GradidoBlock::toJson(Document& baseDocument)
+		{
+			auto jsonString = toJson();
+			Document parsedJsonString;
+			parsedJsonString.Parse(jsonString.data());
+			auto alloc = baseDocument.GetAllocator();
+			return Value(parsedJsonString, alloc);
+		}
+
 		std::unique_ptr<std::string> GradidoBlock::getSerialized()
 		{
 			mProtoGradidoBlock->mutable_transaction()->set_allocated_body_bytes(mGradidoTransaction->getTransactionBody()->getBodyBytes().release());

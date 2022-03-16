@@ -364,7 +364,7 @@ namespace DataTypeConverter
 			{
 				if (it->value.IsString()) {
 					std::string name(it->name.GetString(), it->name.GetStringLength());
-					if ("amount" == name) continue;
+					if ("amount" == name || "finalGdd" == name) continue;
 				}
 				
 				count_replacements += replaceBase64WithHex(it->value, alloc);
