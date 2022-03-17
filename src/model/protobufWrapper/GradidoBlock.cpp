@@ -282,12 +282,13 @@ namespace model {
 
 			if (TRANSACTION_CREATION == transactionType) {
 				mpfr_set_str(temp, transactionBody->getCreationTransaction()->getAmount().data(), 10, gDefaultRound);
+				mpfr_add(finalBalance, finalBalance, temp, gDefaultRound);
 			}
 			else if (TRANSACTION_TRANSFER == transactionType || TRANSACTION_DEFERRED_TRANSFER == transactionType) {
 				// if it is a transfer transaction this address must be the sender
 				mpfr_set_str(temp, transactionBody->getTransferTransaction()->getAmount().data(), 10, gDefaultRound);
+				mpfr_sub(finalBalance, finalBalance, temp, gDefaultRound);
 			}
-			mpfr_add(finalBalance, finalBalance, temp, gDefaultRound);
 			TransactionBase::amountToString(mProtoGradidoBlock->mutable_final_gdd(), finalBalance);
 			printf("final gdd: %s\n", mProtoGradidoBlock->final_gdd().data());
 			mm->releaseMathMemory(finalBalance);

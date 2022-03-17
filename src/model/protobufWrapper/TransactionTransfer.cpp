@@ -96,11 +96,16 @@ namespace model {
 			{
 				assert(blockchain);
 				assert(parentGradidoBlock);
-				auto finalBalanceTransaction = blockchain->calculateAddressBalance(getSenderPublicKeyString(), getCoinColor(), parentGradidoBlock->getReceived());
+				auto finalBalanceTransaction = blockchain->calculateAddressBalance(getSenderPublicKeyString(), getCoinColor(), parentGradidoBlock->getReceivedAsTimestamp());
 				auto finalBalance = MathMemory::create();
 				mpfr_swap(finalBalanceTransaction, finalBalance->getData());
 				mm->releaseMathMemory(finalBalanceTransaction);
-				if (mpfr_cmp(amount->getData(), finalBalanceTransaction) < 0) {
+				std::string amountString, balanceString;
+				amountToString(&amountString, amount->getData());
+				amountToString(&balanceString, finalBalance->getData());
+				printf("amount: %s, balance: %s\n", amountString.data(), balanceString.data());
+				if (mpfr_cmp(amount->getData(), finalBalance->getData()) > 0) {
+					// if op1 > op2
 					throw InsufficientBalanceException("not enough Gradido Balance for send coins", amount->getData(), finalBalance->getData());
 				}
 				mm->releaseMathMemory(finalBalanceTransaction);

@@ -179,8 +179,10 @@ namespace model {
 				strPointer->append(str, i);
 			}
 			else if (exp_temp < 0) {
-				mpfr_free_str(str);
-				throw std::runtime_error("not implemented yet");
+				strPointer->reserve(i + 3 - exp_temp);
+				strPointer->assign("0.");
+				strPointer->append(-exp_temp, '0');
+				strPointer->append(str, i);
 			}
 
 			mpfr_free_str(str);

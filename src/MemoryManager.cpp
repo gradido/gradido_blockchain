@@ -229,11 +229,12 @@ mpfr_ptr MemoryManager::getMathMemory()
 		mathMemory = mMpfrPtrStack.top();
 		mMpfrPtrStack.pop();
 		mpfr_init2(mathMemory, MAGIC_NUMBER_AMOUNT_PRECISION_BITS);
-		mpfr_set_si(mathMemory, 0, gDefaultRound);
+		mpfr_set_ui(mathMemory, 0, gDefaultRound);
 		return mathMemory;
 	}
 	mathMemory = new mpfr_t;
 	mpfr_init2(mathMemory, MAGIC_NUMBER_AMOUNT_PRECISION_BITS);
+	mpfr_set_ui(mathMemory, 0, gDefaultRound);
 	return mathMemory;
 }
 void MemoryManager::releaseMathMemory(mpfr_ptr ptr)
