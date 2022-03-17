@@ -23,7 +23,7 @@ namespace model {
 			: mGradidoTransaction(nullptr)
 		{
 			mProtoGradidoBlock = new proto::gradido::GradidoBlock;
-			if (!mProtoGradidoBlock->ParseFromString(serializedGradidoBlock->data())) {
+			if (!mProtoGradidoBlock->ParseFromArray(serializedGradidoBlock->data(), serializedGradidoBlock->size())) {
 				throw ProtobufParseException(serializedGradidoBlock->data());
 			}
 			mGradidoTransaction = new GradidoTransaction(mProtoGradidoBlock->mutable_transaction());

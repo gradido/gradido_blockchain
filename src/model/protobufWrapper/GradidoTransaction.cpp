@@ -23,7 +23,7 @@ namespace model {
 		GradidoTransaction::GradidoTransaction(const std::string* serializedProtobuf)
 		{
 			mProtoGradidoTransaction = new proto::gradido::GradidoTransaction;
-			if (!mProtoGradidoTransaction->ParseFromString(*serializedProtobuf)) {
+			if (!mProtoGradidoTransaction->ParseFromArray(serializedProtobuf->data(), serializedProtobuf->size())) {
 				throw ProtobufParseException(*serializedProtobuf);
 			}
 			mTransactionBody = TransactionBody::load(mProtoGradidoTransaction->body_bytes());

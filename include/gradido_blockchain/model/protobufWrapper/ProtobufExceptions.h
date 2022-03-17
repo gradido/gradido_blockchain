@@ -30,6 +30,7 @@ class GRADIDOBLOCKCHAIN_EXPORT ProtobufParseException : public GradidoBlockchain
 public:
 	explicit ProtobufParseException(const std::string& serializedProtobuf) noexcept;
 	std::string getFullString() const noexcept;
+	std::string getSerializedAsBase64();
 
 protected:
 	std::string mSerializedProtobuf;

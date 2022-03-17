@@ -1,5 +1,6 @@
 #include "gradido_blockchain/model/protobufWrapper/ProtobufExceptions.h"
- 
+#include "gradido_blockchain/lib/DataTypeConverter.h" 
+
 ProtobufSerializationException::ProtobufSerializationException(const char* what, const google::protobuf::Message& message) noexcept
 	: GradidoBlockchainException(what), mMessage(message)
 {
@@ -50,4 +51,9 @@ std::string ProtobufParseException::getFullString() const noexcept
 	resultString = what();
 	resultString += ", string size: " + serializedProtobufSize;
 	return resultString;
+}
+
+std::string ProtobufParseException::getSerializedAsBase64()
+{
+	return DataTypeConverter::binToBase64(mSerializedProtobuf);
 }
