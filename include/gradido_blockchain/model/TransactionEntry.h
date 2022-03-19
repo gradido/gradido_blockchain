@@ -36,11 +36,11 @@ namespace model {
 		//! \brief operator for sorting by mTransactionNr in ascending order
 		bool operator < (const TransactionEntry& b) { return mTransactionNr < b.mTransactionNr; }		
 
-		inline uint64_t getTransactionNr() { return mTransactionNr; }
-		inline const std::string* getSerializedTransaction() { return mSerializedTransaction.get(); }
-		inline uint8_t getMonth() { return mMonth; }
-		inline uint16_t getYear() { return mYear; }
-		inline uint32_t getCoinColor() { return mCoinColor; }
+		inline uint64_t getTransactionNr() const { return mTransactionNr; }
+		inline const std::string* getSerializedTransaction() const { return mSerializedTransaction.get(); }
+		inline uint8_t getMonth() const { return mMonth; }
+		inline uint16_t getYear() const { return mYear; }
+		inline uint32_t getCoinColor() const { return mCoinColor; }
 
 	protected:
 
