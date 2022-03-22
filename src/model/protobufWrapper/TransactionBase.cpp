@@ -152,6 +152,9 @@ namespace model {
 		{
 			mpfr_exp_t exp_temp;
 			auto str = mpfr_get_str(nullptr, &exp_temp, 10, 45, amount, gDefaultRound);
+			if (amount->_mpfr_sign == -1 && exp_temp > 0) {
+				exp_temp++;
+			}
 			auto strLength = strlen(str);
 			// example: str = "100000000000000000000000000000000000000000000"
 			//     exp_temp = 4
@@ -160,7 +163,10 @@ namespace model {
 			for (; i >= 0; i--) {
 				if (str[i] != '0') break;
 			}
-			if (exp_temp > 0) {
+			if (i == -1) {
+				strPointer->assign("0");
+			}
+			else if (exp_temp > 0) {
 				if (exp_temp >= i) {
 					strPointer->reserve(exp_temp);
 					strPointer->append(str, exp_temp);
@@ -170,19 +176,36 @@ namespace model {
 					strPointer->append(str, exp_temp);
 					strPointer->push_back('.');
 					strPointer->append(&str[exp_temp], i - exp_temp);
-				}
-				
+				}	
 			}
 			else if (!exp_temp) {
-				strPointer->reserve(i + 3);
-				strPointer->assign("0.");
-				strPointer->append(str, i);
+				
+				if (amount->_mpfr_sign == -1) {
+					strPointer->reserve(i + 4);
+					strPointer->assign("-0.");
+					strPointer->append(&str[1], i-1);
+				}
+				else {
+					strPointer->reserve(i + 3);
+					strPointer->assign("0.");
+					strPointer->append(str, i);
+				}
 			}
 			else if (exp_temp < 0) {
 				strPointer->reserve(i + 3 - exp_temp);
-				strPointer->assign("0.");
+				if (amount->_mpfr_sign == -1) {
+					strPointer->assign("-0."); 
+				}
+				else {
+					strPointer->assign("0.");
+				}
 				strPointer->append(-exp_temp, '0');
-				strPointer->append(str, i);
+				if (amount->_mpfr_sign == -1) {
+					strPointer->append(&str[1], i-1);
+				}
+				else {
+					strPointer->append(str, i);
+				}
 			}
 
 			mpfr_free_str(str);
