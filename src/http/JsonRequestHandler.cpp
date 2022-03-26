@@ -89,15 +89,13 @@ void JsonRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Po
 	}
 
 	if (!rapid_json_result.IsNull()) {
-		// 3. Stringify the DOM
-		StringBuffer buffer;
-		StringBuffer debugBuffer;
-		Writer<StringBuffer> writer(buffer);
-		PrettyWriter<StringBuffer> debugWriter(debugBuffer);
-		rapid_json_result.Accept(writer);
-		rapid_json_result.Accept(debugWriter);
+		responseWithJson(rapid_json_result, response);
+		
+		//StringBuffer debugBuffer;
+		
+		//PrettyWriter<StringBuffer> debugWriter(debugBuffer);
+//		rapid_json_result.Accept(debugWriter);
 
-		responseStream << buffer.GetString() << std::endl;
 		//printf("%s\n", debugBuffer.GetString());
 	}
 	if (rapid_json_result.IsObject())
@@ -106,6 +104,18 @@ void JsonRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Po
 	}
 
 	//if (_compressResponse) _gzipStream.close();
+}
+
+void JsonRequestHandler::responseWithJson(const rapidjson::Document& json, Poco::Net::HTTPServerResponse& response)
+{
+	std::ostream& responseStream = response.send();
+	
+	StringBuffer buffer;
+	
+	Writer<StringBuffer> writer(buffer);
+	json.Accept(writer);
+
+	responseStream << buffer.GetString() << std::endl;
 }
 
 bool JsonRequestHandler::parseQueryParametersToRapidjson(const Poco::URI& uri, Document& rapidParams)
