@@ -40,7 +40,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 #FetchContent_MakeAvailable(googletest)
 
 add_executable(GradidoBlockchainTest ${TEST_SRC})
-target_link_libraries(GradidoBlockchainTest GradidoBlockchain gtest)
+target_link_libraries(GradidoBlockchainTest GradidoBlockchain libprotobuf gtest)
 
 IF(NOT BUILD_SHARED_LIBS) 
     IF(WIN32) 
