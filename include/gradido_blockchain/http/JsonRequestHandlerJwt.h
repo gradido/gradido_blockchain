@@ -6,6 +6,7 @@
 class JsonRequestHandlerJwt : public JsonRequestHandler
 {
 public:
+	JsonRequestHandlerJwt();
 	JsonRequestHandlerJwt(Poco::Net::IPAddress clientIp);
 
 	void handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);

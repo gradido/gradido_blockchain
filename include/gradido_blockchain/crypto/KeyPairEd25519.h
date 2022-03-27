@@ -68,8 +68,8 @@ public:
 	inline bool operator != (const unsigned char* b) const { return !isTheSame(b); }
 
 	inline bool hasPrivateKey() const { return mSodiumSecret != nullptr; }
-
-	//! \brief only way to get a private key.. encrypted
+	inline const MemoryBin* getPrivateKey() const { return mSodiumSecret; }
+	
 	MemoryBin* getCryptedPrivKey(const std::shared_ptr<SecretKeyCryptography> password) const;
 
 protected:	

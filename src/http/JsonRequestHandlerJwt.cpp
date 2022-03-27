@@ -16,6 +16,11 @@ JsonRequestHandlerJwt::JsonRequestHandlerJwt(Poco::Net::IPAddress clientIp)
 
 }
 
+JsonRequestHandlerJwt::JsonRequestHandlerJwt()
+{
+
+}
+
 void JsonRequestHandlerJwt::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	auto authorization = request.find("Authorization");
@@ -28,7 +33,9 @@ void JsonRequestHandlerJwt::handleRequest(Poco::Net::HTTPServerRequest& request,
 	}
 	auto jwtTokenString = authorization->second.substr(startBearer + 7);
 
-	Poco::JWT::Signer signer("0123456789ABCDEF0123456789ABCDEF");
-	Poco::JWT::Token token = signer.verify(jwtTokenString);
-
+	printf("jwtTokenString: %s\n", jwtTokenString.data());
+	//Poco::JWT::Signer signer("0123456789ABCDEF0123456789ABCDEF");
+	//Poco::JWT::Token token = signer.verify(jwtTokenString);
+	JsonRequestHandler::handleRequest(request, response);
+	
 }
