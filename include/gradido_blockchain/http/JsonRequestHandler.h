@@ -23,7 +23,8 @@ public:
 	void parseJsonWithErrorPrintFile(std::istream& request_stream, rapidjson::Document& rapidParams, const char* functionName = nullptr);
 	static bool parseQueryParametersToRapidjson(const Poco::URI& uri, rapidjson::Document& rapidParams);
 
-	void responseWithJson(const rapidjson::Document& json, Poco::Net::HTTPServerResponse& response);
+	void responseWithJson(const rapidjson::Document& json, Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
+	void responseOptions(Poco::Net::HTTPServerResponse& response);
 
 	static rapidjson::Document getIntParameter(const rapidjson::Document& params, const char* fieldName, int& iParameter);
 	static rapidjson::Document getUIntParameter(const rapidjson::Document& params, const char* fieldName, unsigned int& iParameter);

@@ -11,6 +11,7 @@ namespace CryptoConfig
 {
 	MemoryBin* g_CryptoAppSecret = nullptr;
 	MemoryBin* g_ServerCryptoKey = nullptr;
+	MemoryBin* g_SupportPublicKey = nullptr;
 
 	Mnemonic g_Mnemonic_WordLists[MNEMONIC_MAX];
 
