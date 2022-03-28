@@ -5,6 +5,7 @@
 #include "Poco/JWT/JWT.h"
 #include "Poco/JWT/Signer.h"
 #include "Poco/JWT/Token.h"
+#include "Poco/JSON/Stringifier.h"
 
 #include "rapidjson/writer.h"
 
@@ -56,4 +57,21 @@ void JsonRequestHandlerJwt::handleRequest(Poco::Net::HTTPServerRequest& request,
 	//Poco::JWT::Token token = signer.verify(jwtTokenString);
 	JsonRequestHandler::handleRequest(request, response);
 	
+}
+
+
+
+JwtTokenException::JwtTokenException(const char* what, const Poco::JWT::Token* jwtToken) noexcept
+	: GradidoBlockchainException(what), mJwtToken(jwtToken->toString())
+{
+
+}
+
+std::string JwtTokenException::getFullString() const
+{
+	std::string resultString(what());
+	std::stringstream ss;
+	Poco::JSON::Stringifier::stringify(mJwtToken.payload(), ss);
+	resultString += "jwt payload: " + ss.str();
+	return resultString;
 }
