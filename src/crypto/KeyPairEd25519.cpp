@@ -1,7 +1,6 @@
 
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 #include <assert.h>
-
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
 
@@ -13,6 +12,7 @@ KeyPairEd25519::KeyPairEd25519(MemoryBin* privateKey)
 	// read pubkey from private key, so we are sure it is the correct pubkey for the private key
 
 	crypto_sign_ed25519_sk_to_pk(mSodiumPublic, *privateKey);
+
 }
 
 KeyPairEd25519::KeyPairEd25519(const unsigned char* publicKey)
@@ -35,7 +35,7 @@ KeyPairEd25519::~KeyPairEd25519()
 	}
 }
 
-KeyPairEd25519* KeyPairEd25519::create(const std::shared_ptr<Passphrase> passphrase)
+std::unique_ptr<KeyPairEd25519> KeyPairEd25519::create(const std::shared_ptr<Passphrase> passphrase)
 {
 	//auto er = ErrorManager::getInstance();
 	auto mm = MemoryManager::getInstance();
@@ -88,14 +88,14 @@ KeyPairEd25519* KeyPairEd25519::create(const std::shared_ptr<Passphrase> passphr
 
 	//*/
 
-	KeyPairEd25519* key_pair = new KeyPairEd25519;
+	std::unique_ptr<KeyPairEd25519> key_pair(new KeyPairEd25519);
 	if (!key_pair->mSodiumSecret) {
 		key_pair->mSodiumSecret = mm->getMemory(crypto_sign_SECRETKEYBYTES);
 	}
 
 	crypto_sign_seed_keypair(key_pair->mSodiumPublic, *key_pair->mSodiumSecret, hash);
 	
-	return key_pair;
+	return std::move(key_pair);
 
 	// print hex for all keys for debugging
 	/*	printf("// ********** Keys ************* //\n");

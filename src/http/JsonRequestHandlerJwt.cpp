@@ -12,23 +12,19 @@
 using namespace rapidjson;
 
 JsonRequestHandlerJwt::JsonRequestHandlerJwt(Poco::Net::IPAddress clientIp)
-	: JsonRequestHandler(clientIp), mJWTToken(nullptr)
+	: JsonRequestHandler(clientIp)
 {
 
 }
 
 JsonRequestHandlerJwt::JsonRequestHandlerJwt()
-	: mJWTToken(nullptr)
 {
 
 }
 
 JsonRequestHandlerJwt::~JsonRequestHandlerJwt()
 {
-	if (mJWTToken) {
-		delete mJWTToken;
-		mJWTToken = nullptr;
-	}
+
 }
 
 void JsonRequestHandlerJwt::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
@@ -49,14 +45,9 @@ void JsonRequestHandlerJwt::handleRequest(Poco::Net::HTTPServerRequest& request,
 		responseWithJson(stateError("Authorization invalid format"), request, response);
 		return;
 	}
-	auto jwtTokenString = authorization->second.substr(startBearer + 7);
+	mSerializedJWTToken = authorization->second.substr(startBearer + 7);
 
-	mJWTToken = new Poco::JWT::Token(jwtTokenString);
-	printf("jwtTokenString: %s\n", jwtTokenString.data());
-	//Poco::JWT::Signer signer("0123456789ABCDEF0123456789ABCDEF");
-	//Poco::JWT::Token token = signer.verify(jwtTokenString);
-	JsonRequestHandler::handleRequest(request, response);
-	
+	JsonRequestHandler::handleRequest(request, response);	
 }
 
 
@@ -67,11 +58,17 @@ JwtTokenException::JwtTokenException(const char* what, const Poco::JWT::Token* j
 
 }
 
+JwtTokenException::JwtTokenException(const char* what, const std::string& serializedJwtToken) noexcept
+	: GradidoBlockchainException(what), mJwtToken(serializedJwtToken)
+{
+
+}
+
 std::string JwtTokenException::getFullString() const
 {
 	std::string resultString(what());
 	std::stringstream ss;
 	Poco::JSON::Stringifier::stringify(mJwtToken.payload(), ss);
-	resultString += "jwt payload: " + ss.str();
+	resultString += ", jwt payload: " + ss.str();
 	return resultString;
 }

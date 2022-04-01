@@ -13,6 +13,7 @@ class GRADIDOBLOCKCHAIN_EXPORT AuthenticatedEncryption
 {
 public:
 	AuthenticatedEncryption();
+	AuthenticatedEncryption(MemoryBin* privateKey);
 	AuthenticatedEncryption(const unsigned char pubkey[crypto_box_PUBLICKEYBYTES]);
 	~AuthenticatedEncryption();
 
@@ -29,6 +30,8 @@ public:
 	bool removePrecalculatedSharedSecret(int index);
 	
 	unsigned char mPubkey[crypto_box_PUBLICKEYBYTES];
+	inline const unsigned char* getPublicKey() const { return mPubkey; }
+	inline const MemoryBin* getPrivateKey() const { return mPrivkey; }
 protected:
 	
 	MemoryBin* mPrivkey;

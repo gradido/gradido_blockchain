@@ -15,16 +15,17 @@ public:
 
 	void handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response);
 
-	inline const Poco::JWT::Token* getJwtToken() { return mJWTToken; }
+	inline const std::string& getJwtToken() { return mSerializedJWTToken; }
 
 protected:
-	Poco::JWT::Token* mJWTToken;
+	std::string mSerializedJWTToken;
 };
 
 class JwtTokenException : public GradidoBlockchainException
 {
 public:
 	explicit JwtTokenException(const char* what, const Poco::JWT::Token* jwtToken) noexcept;
+	explicit JwtTokenException(const char* what, const std::string& serializedJwtToken) noexcept;
 
 	std::string getFullString() const;
 

@@ -7,6 +7,12 @@ AuthenticatedEncryption::AuthenticatedEncryption()
 	crypto_box_keypair(mPubkey, *mPrivkey);
 }
 
+AuthenticatedEncryption::AuthenticatedEncryption(MemoryBin* privateKey)
+	: mPrivkey(privateKey), mPrecalculatedSharedSecretLastIndex(0)
+{
+	crypto_scalarmult_base(mPubkey, *mPrivkey);
+}
+
 AuthenticatedEncryption::AuthenticatedEncryption(const unsigned char pubkey[crypto_box_PUBLICKEYBYTES])
 	: mPrivkey(nullptr), mPrecalculatedSharedSecretLastIndex(0)
 {
