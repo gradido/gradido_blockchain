@@ -78,6 +78,28 @@ namespace model {
 
 		};
 
+		class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationMissingSignException : public TransactionValidationException
+		{
+		public: 
+			explicit TransactionValidationMissingSignException(int currentSignCount, int requiredSignCount) noexcept;
+
+			std::string getFullString() const noexcept;
+
+		protected:
+			int mCurrentSignCount;
+			int mRequiredSignCount;
+		};
+
+
+		class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationRequiredSignMissingException : public TransactionValidationException
+		{
+		public:
+			explicit TransactionValidationRequiredSignMissingException(const std::vector<MemoryBin*>& missingPublicKeys) noexcept;
+
+		protected:
+			std::vector<std::string> mMissingPublicKeysHex;
+		};
+
 		class GRADIDOBLOCKCHAIN_EXPORT PairingTransactionNotMatchException : public TransactionValidationException
 		{
 		public:

@@ -16,6 +16,7 @@
 #include "SecretKeyCryptography.h"
 #include "Passphrase.h"
 #include "../lib/DataTypeConverter.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 
 class GRADIDOBLOCKCHAIN_EXPORT KeyPairEd25519
 {
@@ -40,6 +41,7 @@ public:
 	bool verify(const std::string& message, const std::string& signature) const;
 
 	inline const unsigned char* getPublicKey() const { return mSodiumPublic; }
+	MemoryBin* getPublicKeyCopy() const;
 	inline std::string getPublicKeyHex() const { return DataTypeConverter::binToHex(mSodiumPublic, getPublicKeySize()); }
 	const static size_t getPublicKeySize() { return crypto_sign_PUBLICKEYBYTES; }
 
@@ -90,6 +92,20 @@ private:
 	// 32 Byte
 	//! \brief ed25519 libsodium public key
 	unsigned char mSodiumPublic[crypto_sign_PUBLICKEYBYTES];
+};
+
+// *********************** Exceptions ****************************
+class Ed25519SignException : public GradidoBlockchainException
+{
+public:
+	explicit Ed25519SignException(const char* what, MemoryBin* pubkey, const std::string& message) noexcept;
+	explicit Ed25519SignException(const char* what, const unsigned char* pubkey, const std::string& message) noexcept;
+	~Ed25519SignException();
+	std::string getFullString() const;
+
+protected:
+	MemoryBin* mPubkey;
+	std::string mMessage;
 };
 
 #endif //__GRADIDO_LOGIN_SERVER_CRYPTO_ED25519_H

@@ -5,7 +5,6 @@
 
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 
-
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h"
 

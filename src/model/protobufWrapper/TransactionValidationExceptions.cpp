@@ -157,6 +157,37 @@ namespace model {
 			return result;
 		}
 
+		// ********************************* Missing Sign ************************************************************
+		TransactionValidationMissingSignException::TransactionValidationMissingSignException(int currentSignCount, int requiredSignCount) noexcept
+			: TransactionValidationException("missing sign"), mCurrentSignCount(currentSignCount), mRequiredSignCount(requiredSignCount)
+		{
+
+		}
+
+		std::string TransactionValidationMissingSignException::getFullString() const noexcept
+		{
+			size_t resultSize = 12; // missing sign
+			auto currentSignCountString = std::to_string(mCurrentSignCount);
+			auto requiredSignCountString = std::to_string(mRequiredSignCount);
+			resultSize += currentSignCountString.size() + requiredSignCountString.size() + 10 + 6 + 2;
+
+			std::string result;
+			result.reserve(resultSize);
+			result = what();
+			result += ", signed: " + currentSignCountString + " from " + requiredSignCountString;
+			return result;
+		}
+
+		// ******************************* Missing required sign *****************************************************
+		TransactionValidationRequiredSignMissingException::TransactionValidationRequiredSignMissingException(const std::vector<MemoryBin*>& missingPublicKeys) noexcept
+			: TransactionValidationException("missing required sign")
+		{
+			std::for_each(missingPublicKeys.begin(), missingPublicKeys.end(), [&](MemoryBin* pubkey) {
+				mMissingPublicKeysHex.push_back(DataTypeConverter::binToHex(pubkey));
+			});			
+		}
+
+
 		// ******************************** Invalid Pairing transaction **********************************************
 		PairingTransactionNotMatchException::PairingTransactionNotMatchException(const char* what, const std::string* serializedTransaction, const std::string* serializedPairingTransaction) noexcept
 			:TransactionValidationException(what) 

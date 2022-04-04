@@ -8,6 +8,7 @@ namespace SealedBoxes
 {
 	MemoryBin* encrypt(const AuthenticatedEncryption* keys, const std::string& message);
 	std::string decrypt(const AuthenticatedEncryption* keys, const MemoryBin* encryptedMessage);
+	std::string decrypt(const MemoryBin* privateKey, const MemoryBin* encryptedMessage);
 
 	class DecryptException : public GradidoBlockchainException
 	{
