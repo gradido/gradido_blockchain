@@ -17,6 +17,7 @@ using Poco::SharedPtr;
 
 namespace ServerConfig {
 	Context::Ptr g_SSL_Client_Context = nullptr;
+	AllowUnsecure g_AllowUnsecureFlags = NOT_UNSECURE;
 
 	bool initSSLClientContext(const char* cacertPath)
 	{
@@ -43,6 +44,25 @@ namespace ServerConfig {
 		SSLManager::instance().initializeClient(0, pCert, g_SSL_Client_Context);
 
 
+		return true;
+	}
+
+	bool readUnsecureFlags(const Poco::Util::LayeredConfiguration& cfg)
+	{
+		// unsecure flags
+		//g_AllowUnsecureFlags
+		if (cfg.getInt("unsecure.allow_passwort_via_json_request", 0) == 1) {
+			g_AllowUnsecureFlags = (AllowUnsecure)(g_AllowUnsecureFlags | UNSECURE_PASSWORD_REQUESTS);
+		}
+		if (cfg.getInt("unsecure.allow_auto_sign_transactions", 0) == 1) {
+			g_AllowUnsecureFlags = (AllowUnsecure)(g_AllowUnsecureFlags | UNSECURE_AUTO_SIGN_TRANSACTIONS);
+		}
+		if (cfg.getInt("unsecure.allow_cors_all", 0) == 1) {
+			g_AllowUnsecureFlags = (AllowUnsecure)(g_AllowUnsecureFlags | UNSECURE_CORS_ALL);
+		}
+		if (cfg.getInt("unsecure.allow_all_passwords", 0) == 1) {
+			g_AllowUnsecureFlags = (AllowUnsecure)(g_AllowUnsecureFlags | UNSECURE_ALLOW_ALL_PASSWORDS);
+		}
 		return true;
 	}
 

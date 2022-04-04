@@ -1,7 +1,6 @@
 
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 #include <assert.h>
-
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
 
@@ -13,6 +12,7 @@ KeyPairEd25519::KeyPairEd25519(MemoryBin* privateKey)
 	// read pubkey from private key, so we are sure it is the correct pubkey for the private key
 
 	crypto_sign_ed25519_sk_to_pk(mSodiumPublic, *privateKey);
+
 }
 
 KeyPairEd25519::KeyPairEd25519(const unsigned char* publicKey)
@@ -35,7 +35,7 @@ KeyPairEd25519::~KeyPairEd25519()
 	}
 }
 
-KeyPairEd25519* KeyPairEd25519::create(const std::shared_ptr<Passphrase> passphrase)
+std::unique_ptr<KeyPairEd25519> KeyPairEd25519::create(const std::shared_ptr<Passphrase> passphrase)
 {
 	//auto er = ErrorManager::getInstance();
 	auto mm = MemoryManager::getInstance();
@@ -88,14 +88,14 @@ KeyPairEd25519* KeyPairEd25519::create(const std::shared_ptr<Passphrase> passphr
 
 	//*/
 
-	KeyPairEd25519* key_pair = new KeyPairEd25519;
+	std::unique_ptr<KeyPairEd25519> key_pair(new KeyPairEd25519);
 	if (!key_pair->mSodiumSecret) {
 		key_pair->mSodiumSecret = mm->getMemory(crypto_sign_SECRETKEYBYTES);
 	}
 
 	crypto_sign_seed_keypair(key_pair->mSodiumPublic, *key_pair->mSodiumSecret, hash);
 	
-	return key_pair;
+	return std::move(key_pair);
 
 	// print hex for all keys for debugging
 	/*	printf("// ********** Keys ************* //\n");
@@ -118,13 +118,15 @@ MemoryBin* KeyPairEd25519::sign(const unsigned char* message, size_t messageSize
 	auto signBinBuffer = mm->getMemory(crypto_sign_BYTES);
 	unsigned long long actualSignLength = 0;
 
+	// TODO: Add Exceptions
 	if (crypto_sign_detached(*signBinBuffer, &actualSignLength, message, messageSize, *mSodiumSecret)) {
-		return nullptr;
+		mm->releaseMemory(signBinBuffer);
+		throw Ed25519SignException("cannot sign", getPublicKey(), std::string((const char*)message, messageSize));
 	}
 
 	if (crypto_sign_verify_detached(*signBinBuffer, message, messageSize, mSodiumPublic) != 0) {
-		// Incorrect signature! 
-		return nullptr;
+		mm->releaseMemory(signBinBuffer);
+		throw Ed25519SignException("sign verify failed", getPublicKey(), std::string((const char*)message, messageSize));
 	}
 
 	return signBinBuffer;
@@ -140,7 +142,12 @@ bool KeyPairEd25519::verify(const std::string& message, const std::string& signa
 	return true;
 }
 
-
+MemoryBin* KeyPairEd25519::getPublicKeyCopy() const
+{
+	auto pubkey = MemoryManager::getInstance()->getMemory(getPublicKeySize());
+	pubkey->copyFrom(mSodiumPublic);
+	return pubkey;
+}
 
 MemoryBin* KeyPairEd25519::getCryptedPrivKey(const std::shared_ptr<SecretKeyCryptography> password) const
 {
@@ -155,4 +162,33 @@ MemoryBin* KeyPairEd25519::getCryptedPrivKey(const std::shared_ptr<SecretKeyCryp
 		return nullptr;
 	}
 
+}
+
+// ********************** Exceptions *************************************
+Ed25519SignException::Ed25519SignException(const char* what, MemoryBin* pubkey, const std::string& message) noexcept
+	: GradidoBlockchainException(what), mPubkey(pubkey), mMessage(message)
+{
+
+}
+
+Ed25519SignException::Ed25519SignException(const char* what, const unsigned char* pubkey, const std::string& message) noexcept
+	: GradidoBlockchainException(what), mMessage(message)
+{
+	mPubkey = MemoryManager::getInstance()->getMemory(KeyPairEd25519::getPublicKeySize());
+	mPubkey->copyFrom(pubkey);
+}
+
+Ed25519SignException::~Ed25519SignException()
+{
+	if (mPubkey) {
+		MemoryManager::getInstance()->releaseMemory(mPubkey);
+	}
+}
+
+std::string Ed25519SignException::getFullString() const
+{
+	std::string mResult(what());
+	mResult += ", with pubkey: " + DataTypeConverter::binToHex(mPubkey);
+	mResult += ", with message: " + DataTypeConverter::binToHex(mMessage);
+	return mResult;
 }

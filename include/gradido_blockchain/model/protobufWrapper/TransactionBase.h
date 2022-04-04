@@ -73,9 +73,9 @@ namespace model {
 			//! \return true if all required signatures are found in signature pairs
 			bool checkRequiredSignatures(const proto::gradido::SignatureMap* sig_map) const;
 			//! \param pubkey pointer must point to valid unsigned char[KeyPairEd25519::getPublicKeySize()] array
-			bool isPublicKeyRequired(const unsigned char* pubkey);
+			bool isPublicKeyRequired(const unsigned char* pubkey) const;
 			//! \param pubkey pointer must point to valid unsigned char[KeyPairEd25519::getPublicKeySize()] array
-			bool isPublicKeyForbidden(const unsigned char* pubkey);
+			bool isPublicKeyForbidden(const unsigned char* pubkey) const;
 
 			inline uint32_t getMinSignatureCount() const { return mMinSignatureCount; }
 			void setMinSignatureCount(uint32_t minSignatureCount) { mMinSignatureCount = minSignatureCount; }

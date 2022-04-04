@@ -292,11 +292,7 @@ const Mnemonic* Passphrase::detectMnemonic(const std::string& passphrase, const 
 						std::string parameter_key_pair_hex = DataTypeConverter::pubkeyToHex(keyPair->getPublicKey());
 						printf("parameter: %s, generated: %s\n", parameter_key_pair_hex.data(), generated_key_pair_hex.data());
 #endif
-						delete key_pair;
 						continue;
-					}
-					else {
-						delete key_pair;
 					}
 				}
 			}

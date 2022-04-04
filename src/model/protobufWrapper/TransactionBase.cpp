@@ -50,7 +50,7 @@ namespace model {
 			
 			// not enough
 			if (mMinSignatureCount > sig_map->sigpair_size()) {
-				return false;
+				throw TransactionValidationMissingSignException(sig_map->sigpair_size(), mMinSignatureCount);
 			}
 			// enough
 			if (!mRequiredSignPublicKeys.size() && !mForbiddenSignPublicKeys.size()) {
@@ -58,28 +58,20 @@ namespace model {
 			}
 			// check if specific signatures can be found
 			
-			// prepare
-			std::vector<MemoryBin*> required_keys = mRequiredSignPublicKeys;
+			// prepare, make a copy from the vector, because entries will be removed from it
+			std::vector<MemoryBin*> required_keys = mRequiredSignPublicKeys;			
 			
-			bool forbidden_key_found = false;
 			for (auto it = sig_map->sigpair().begin(); it != sig_map->sigpair().end(); it++) 
 			{
 				auto pubkey_size = it->pubkey().size();
 				assert(pubkey_size == crypto_sign_PUBLICKEYBYTES);
 				
 				// check for forbidden key
-				if (!forbidden_key_found && mForbiddenSignPublicKeys.size()) 
-				{
-					for (auto it2 = mForbiddenSignPublicKeys.begin(); it2 != mForbiddenSignPublicKeys.end(); it2++) {
-						assert((*it2)->size() == crypto_sign_PUBLICKEYBYTES);
-						if (0 == memcmp((*it2)->data(), it->pubkey().data(), pubkey_size)) 
-						{
-							auto forbiddenKey = MemoryManager::getInstance()->getMemory(pubkey_size);
-							forbiddenKey->copyFrom(*it2);
+				if (isPublicKeyForbidden((const unsigned char*)it->pubkey().data())) {
+					auto forbiddenKey = MemoryManager::getInstance()->getMemory(pubkey_size);
+					forbiddenKey->copyFrom((const unsigned char*)it->pubkey().data());
 
-							throw TransactionValidationForbiddenSignException(forbiddenKey);
-						}
-					}
+					throw TransactionValidationForbiddenSignException(forbiddenKey);
 				}
 
 				// compare with required keys
@@ -98,11 +90,11 @@ namespace model {
 
 			// TODO: check that given pubkeys are registered for same group 
 
-			return false;
+			throw TransactionValidationRequiredSignMissingException(required_keys);
 			
 		}
 
-		bool TransactionBase::isPublicKeyRequired(const unsigned char* pubkey)
+		bool TransactionBase::isPublicKeyRequired(const unsigned char* pubkey) const
 		{
 			std::lock_guard<std::recursive_mutex> _lock(mWorkMutex);
 
@@ -114,7 +106,7 @@ namespace model {
 			return false;
 		}
 		
-		bool TransactionBase::isPublicKeyForbidden(const unsigned char* pubkey)
+		bool TransactionBase::isPublicKeyForbidden(const unsigned char* pubkey) const
 		{
 			std::lock_guard<std::recursive_mutex> _lock(mWorkMutex);
 			for (auto it = mForbiddenSignPublicKeys.begin(); it != mForbiddenSignPublicKeys.end(); it++) {

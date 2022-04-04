@@ -1,7 +1,6 @@
 #ifndef __GRADIDO_LOGIN_SERVER_CRYPTO_ED25519_H
 #define __GRADIDO_LOGIN_SERVER_CRYPTO_ED25519_H
 
-#include "IKeyPair.h"
 
 /*!
  * \author: Dario Rekowski
@@ -17,8 +16,9 @@
 #include "SecretKeyCryptography.h"
 #include "Passphrase.h"
 #include "../lib/DataTypeConverter.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 
-class GRADIDOBLOCKCHAIN_EXPORT KeyPairEd25519 : public IKeyPair
+class GRADIDOBLOCKCHAIN_EXPORT KeyPairEd25519
 {
 public:
 	//! \param privateKey: take ownership, release after object destruction
@@ -30,7 +30,7 @@ public:
 
 	//! \param passphrase must contain word indices
 	//! \return create KeyPairEd25519, caller muss call delete at return after finish
-	static KeyPairEd25519* create(const std::shared_ptr<Passphrase> passphrase);
+	static std::unique_ptr<KeyPairEd25519> create(const std::shared_ptr<Passphrase> passphrase);
 
 	//! \return caller take ownership of return value
 	MemoryBin* sign(const MemoryBin* message) const { return sign(message->data(), message->size()); }
@@ -41,6 +41,7 @@ public:
 	bool verify(const std::string& message, const std::string& signature) const;
 
 	inline const unsigned char* getPublicKey() const { return mSodiumPublic; }
+	MemoryBin* getPublicKeyCopy() const;
 	inline std::string getPublicKeyHex() const { return DataTypeConverter::binToHex(mSodiumPublic, getPublicKeySize()); }
 	const static size_t getPublicKeySize() { return crypto_sign_PUBLICKEYBYTES; }
 
@@ -68,8 +69,8 @@ public:
 	inline bool operator != (const unsigned char* b) const { return !isTheSame(b); }
 
 	inline bool hasPrivateKey() const { return mSodiumSecret != nullptr; }
-
-	//! \brief only way to get a private key.. encrypted
+	inline const MemoryBin* getPrivateKey() const { return mSodiumSecret; }
+	
 	MemoryBin* getCryptedPrivKey(const std::shared_ptr<SecretKeyCryptography> password) const;
 
 protected:	
@@ -91,6 +92,20 @@ private:
 	// 32 Byte
 	//! \brief ed25519 libsodium public key
 	unsigned char mSodiumPublic[crypto_sign_PUBLICKEYBYTES];
+};
+
+// *********************** Exceptions ****************************
+class Ed25519SignException : public GradidoBlockchainException
+{
+public:
+	explicit Ed25519SignException(const char* what, MemoryBin* pubkey, const std::string& message) noexcept;
+	explicit Ed25519SignException(const char* what, const unsigned char* pubkey, const std::string& message) noexcept;
+	~Ed25519SignException();
+	std::string getFullString() const;
+
+protected:
+	MemoryBin* mPubkey;
+	std::string mMessage;
 };
 
 #endif //__GRADIDO_LOGIN_SERVER_CRYPTO_ED25519_H

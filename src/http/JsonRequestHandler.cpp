@@ -5,7 +5,7 @@
 
 #include "Poco/DeflatingStream.h"
 
-//#include "ServerConfig.h"
+#include "gradido_blockchain/http/ServerConfig.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
 #include "rapidjson/writer.h"
@@ -34,19 +34,6 @@ JsonRequestHandler::JsonRequestHandler(Poco::Net::IPAddress clientIp)
 
 void JsonRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
-	response.setChunkedTransferEncoding(false);
-	response.setContentType("application/json");
-	/*if (ServerConfig::g_AllowUnsecureFlags & ServerConfig::UNSECURE_CORS_ALL) {
-		response.set("Access-Control-Allow-Origin", "*");
-		response.set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
-	}*/
-	//bool _compressResponse(request.hasToken("Accept-Encoding", "gzip"));
-	//if (_compressResponse) response.set("Content-Encoding", "gzip");
-
-	std::ostream& responseStream = response.send();
-	//Poco::DeflatingOutputStream _gzipStream(_responseStream, Poco::DeflatingStreamBuf::STREAM_GZIP, 1);
-	//std::ostream& responseStream = _compressResponse ? _gzipStream : _responseStream;
-
 	mClientIp = request.clientAddress().host();
 	
 	if (request.secure()) {
@@ -89,23 +76,42 @@ void JsonRequestHandler::handleRequest(Poco::Net::HTTPServerRequest& request, Po
 	}
 
 	if (!rapid_json_result.IsNull()) {
-		// 3. Stringify the DOM
-		StringBuffer buffer;
-		StringBuffer debugBuffer;
-		Writer<StringBuffer> writer(buffer);
-		PrettyWriter<StringBuffer> debugWriter(debugBuffer);
-		rapid_json_result.Accept(writer);
-		rapid_json_result.Accept(debugWriter);
+		responseWithJson(rapid_json_result, request, response);
+	}	
+}
 
-		responseStream << buffer.GetString() << std::endl;
-		//printf("%s\n", debugBuffer.GetString());
-	}
-	if (rapid_json_result.IsObject())
-	{
-		
+void JsonRequestHandler::responseWithJson(const rapidjson::Document& json, Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
+{
+	bool _compressResponse(request.hasToken("Accept-Encoding", "gzip"));
+
+	response.setChunkedTransferEncoding(false);
+	response.setContentType("application/json");	
+	if (ServerConfig::g_AllowUnsecureFlags & ServerConfig::UNSECURE_CORS_ALL) {
+		response.set("Access-Control-Allow-Origin", "*");
+		response.set("Access-Control-Allow-Headers", "Authorization, Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
 	}
 
-	//if (_compressResponse) _gzipStream.close();
+	if (_compressResponse) { response.set("Content-Encoding", "gzip"); }
+	std::ostream& _responseStream = response.send();
+	Poco::DeflatingOutputStream _gzipStream(_responseStream, Poco::DeflatingStreamBuf::STREAM_GZIP, 1);
+	std::ostream& responseStream = _compressResponse ? _gzipStream : _responseStream;
+	
+	StringBuffer buffer;
+	Writer<StringBuffer> writer(buffer);
+	json.Accept(writer);
+
+	responseStream << buffer.GetString() << std::endl;
+
+	if (_compressResponse) _gzipStream.close();
+}
+
+void JsonRequestHandler::responseOptions(Poco::Net::HTTPServerResponse& response)
+{
+	if (ServerConfig::g_AllowUnsecureFlags & ServerConfig::UNSECURE_CORS_ALL) {
+		response.set("Access-Control-Allow-Origin", "*");
+		response.set("Access-Control-Allow-Headers", "Authorization, Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
+	}
+	response.send();
 }
 
 bool JsonRequestHandler::parseQueryParametersToRapidjson(const Poco::URI& uri, Document& rapidParams)

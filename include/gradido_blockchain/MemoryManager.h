@@ -57,6 +57,7 @@ public:
 	int convertFromHex(const std::string& hex);
 	void copyFromProtoBytes(const std::string& bytes);
 	inline void copyFrom(MemoryBin* origin) { assert(mSize == origin->size()); memcpy(mData, *origin, mSize); }
+	inline void copyFrom(const unsigned char* origin) { memcpy(mData, origin, mSize); }
 
 	bool isSame(const MemoryBin* b) const;
 

@@ -33,8 +33,13 @@ SecretKeyCryptography::ResultType SecretKeyCryptography::createKey(const std::st
 		
 	auto mm = MemoryManager::getInstance();
 	auto app_secret = CryptoConfig::g_CryptoAppSecret;
-
-	assert(app_secret);
+	if (!app_secret) {
+		throw CryptoConfig::MissingKeyException("in SecretKeyCryptography::createKey key is missing", "cryptoAppSecret");
+	}
+	if (!CryptoConfig::g_ServerCryptoKey) {
+		throw CryptoConfig::MissingKeyException("in SecretKeyCryptography::createKey key is missing", "serverCryptoKey");
+	}
+	
 	Profiler timeUsed;
 	std::unique_lock<std::shared_mutex> _lock(mWorkingMutex);
 #ifndef _TEST_BUILD
