@@ -163,5 +163,5 @@ endif ()
 include(CTest)
 add_subdirectory("dependencies/protobuf/third_party/googletest")
 add_subdirectory(test)
-add_test(NAME GradidoBlockchainTest
-         COMMAND GradidoBlockchainTest)
+#add_test(NAME GradidoBlockchainTest
+ #        COMMAND GradidoBlockchainTest)
