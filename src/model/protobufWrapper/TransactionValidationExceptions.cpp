@@ -234,7 +234,7 @@ namespace model {
 			size_t resultStringSize = strlen(what()) + addressTypeString.size() + mAddressHex.size() + 9 + 16 + 2;
 			resultString.reserve(resultStringSize);
 			resultString = what();
-			resultString += "address: " + mAddressHex;
+			resultString += ", address: " + mAddressHex;
 			resultString += ", address type: " + addressTypeString;
 
 			return resultString;
