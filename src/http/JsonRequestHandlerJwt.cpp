@@ -30,7 +30,7 @@ JsonRequestHandlerJwt::~JsonRequestHandlerJwt()
 void JsonRequestHandlerJwt::handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response)
 {
 	auto method = request.getMethod();
-	printf("[JsonRequestHandlerJwt::handleRequest] method: %s\n", method.data());
+	//printf("[JsonRequestHandlerJwt::handleRequest] method: %s\n", method.data());
 	if (method == "OPTIONS") {
 		responseOptions(response);
 		return;
