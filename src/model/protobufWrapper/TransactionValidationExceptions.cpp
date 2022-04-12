@@ -109,8 +109,8 @@ namespace model {
 			}
 			result.reserve(pubkeyHex.size() + signatureHex.size() + bodyBytesBase64.size() + strlen(whatString) + staticTextSize);
 			result = whatString;
-			result += " with pubkey: " + pubkeyHex;
-			result += ", signature: " + signatureHex;
+			result += " with pubkey: " + pubkeyHex.substr(0, 64);
+			result += ", signature: " + signatureHex.substr(0, 64);
 			if (mBodyBytes.size()) {
 				result += ", body bytes: " + bodyBytesBase64;
 			}

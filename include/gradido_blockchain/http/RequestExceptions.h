@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_HTTP_REQUEST_EXCEPTION_H
 
 #include "gradido_blockchain/GradidoBlockchainException.h"
+#include "JsonRPCRequest.h"
 #include "Poco/URI.h"
 #include "Poco/Exception.h"
 
@@ -82,5 +83,14 @@ protected:
 	Poco::URI   mRequestUri;
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT JsonRPCException : public GradidoBlockchainException
+{
+public:
+	explicit JsonRPCException(const char* what, JsonRPCErrorCodes errorCode) noexcept;
+	std::string getFullString() const;
+
+protected:
+	JsonRPCErrorCodes mErrorCode;
+};
 
 #endif //__GRADIDO_BLOCKCHAIN_HTTP_REQUEST_EXCEPTION_H

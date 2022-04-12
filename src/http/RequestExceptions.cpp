@@ -159,3 +159,18 @@ std::string PocoNetException::getFullString() const
 	return resultString;
 }
 	
+
+// *********************** JSON RPC Request Exceptions *************************************
+JsonRPCException::JsonRPCException(const char* what, JsonRPCErrorCodes errorCode) noexcept
+	: GradidoBlockchainException(what), mErrorCode(errorCode)
+{
+
+}
+
+std::string JsonRPCException::getFullString() const
+{
+	std::string result(what());
+	result += ", errorCode: " + std::to_string(mErrorCode);
+	return result;
+}
+

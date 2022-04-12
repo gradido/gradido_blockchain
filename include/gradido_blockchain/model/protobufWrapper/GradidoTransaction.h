@@ -47,6 +47,7 @@ namespace model {
 			inline GradidoTransaction& setCreated(Poco::DateTime created) { mTransactionBody->setCreated(created); return *this; }
 			inline GradidoTransaction& setParentMessageId(const MemoryBin* parentMessageId) { mProtoGradidoTransaction->set_allocated_parent_message_id(parentMessageId->copyAsString().release()); return *this; }
 			inline GradidoTransaction& setApolloTransactionId(uint64_t apolloTransactionId) { mProtoGradidoTransaction->set_apollo_transaction_id(apolloTransactionId); return *this; }
+			void updateBodyBytes();
 
 			//! \return MemoryBin containing message id binar, must be freed from caller
 			MemoryBin* getParentMessageId() const;

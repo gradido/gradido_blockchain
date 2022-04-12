@@ -3,7 +3,7 @@
 #include "gradido_blockchain/http/JsonRequestHandler.h"
 #include "gradido_blockchain/http/RequestExceptions.h"
 
-#include "rapidjson/writer.h"
+#include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/pointer.h"
 
@@ -11,6 +11,12 @@ using namespace rapidjson;
 
 JsonRPCRequest::JsonRPCRequest(const std::string& serverHost, int serverPort)
 	: JsonRequest(Poco::URI(serverHost).getHost(), serverPort)
+{
+
+}
+
+JsonRPCRequest::JsonRPCRequest(const Poco::URI& serverHost)
+	: JsonRequest(serverHost)
 {
 
 }
@@ -44,6 +50,18 @@ Document JsonRPCRequest::request(const char* methodName, Value& params)
 
 	if (!jsonAnswear.IsObject()) {
 		throw RequestResponseInvalidJsonException(methodName, mRequestUri, responseString);
+	}
+
+	StringBuffer buffer;
+	PrettyWriter<StringBuffer> writer(buffer);
+	jsonAnswear.Accept(writer);
+	printf("answear: %s\n", buffer.GetString());
+	
+	if (jsonAnswear.FindMember("error") != jsonAnswear.MemberEnd()) {
+		throw JsonRPCException(
+			jsonAnswear["error"]["message"].GetString(),
+			static_cast<JsonRPCErrorCodes>(jsonAnswear["error"]["code"].GetInt())
+		);
 	}
 
 	std::string state;

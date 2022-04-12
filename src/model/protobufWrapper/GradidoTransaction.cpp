@@ -233,6 +233,11 @@ namespace model {
 			return result;
 		}
 
+		void GradidoTransaction::updateBodyBytes()
+		{
+			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
+		}
+
 		MemoryBin* GradidoTransaction::getParentMessageId() const
 		{
 			auto mm = MemoryManager::getInstance();
