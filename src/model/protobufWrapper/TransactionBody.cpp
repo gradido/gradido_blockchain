@@ -181,7 +181,6 @@ namespace model {
 
 			std::unique_ptr<std::string> result;
 			result.reset(resultString);
-			printf("[TransactionBody::getBodyBytes] %s\n", DataTypeConverter::binToBase64(*result.get()).data());
 			return result;
 		}
 
