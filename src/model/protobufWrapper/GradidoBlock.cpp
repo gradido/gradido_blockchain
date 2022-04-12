@@ -172,8 +172,8 @@ namespace model {
 					exception.setTransactionBody(getGradidoTransaction()->getTransactionBody());
 					throw exception;
 				}
-				if (timespanBetweenCreatedAndReceivedSeconds <= 0) {
-					TransactionValidationInvalidInputException exception("timespan between created and received are less than a second", "received/iota milestone timestamp", "int64");
+				if (timespanBetweenCreatedAndReceivedSeconds < 0) {
+					TransactionValidationInvalidInputException exception("timespan between created and received are negative", "iota milestone timestamp", std::to_string(getReceivedAsTimestamp().epochTime()).data());
 					exception.setTransactionBody(getGradidoTransaction()->getTransactionBody());
 					throw exception;
 				}

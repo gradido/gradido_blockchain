@@ -193,7 +193,7 @@ int8_t MemoryManager::getMemoryStackIndex(uint16_t size) noexcept
 MemoryBin* MemoryManager::getMemory(uint32_t size)
 {
 	assert(size == (uint32_t)((uint16_t)size));
-
+	assert(size > 0);
 	auto index = getMemoryStackIndex(size);
 	if (index < 0) {
 		return new MemoryBin(size);
