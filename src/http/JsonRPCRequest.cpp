@@ -51,12 +51,7 @@ Document JsonRPCRequest::request(const char* methodName, Value& params)
 	if (!jsonAnswear.IsObject()) {
 		throw RequestResponseInvalidJsonException(methodName, mRequestUri, responseString);
 	}
-
-	StringBuffer buffer;
-	PrettyWriter<StringBuffer> writer(buffer);
-	jsonAnswear.Accept(writer);
-	printf("answear: %s\n", buffer.GetString());
-	
+		
 	if (jsonAnswear.FindMember("error") != jsonAnswear.MemberEnd()) {
 		throw JsonRPCException(
 			jsonAnswear["error"]["message"].GetString(),
