@@ -170,6 +170,10 @@ namespace DataTypeConverter
 
 	std::unique_ptr<std::string> hexToBinString(const std::string& hexString)
 	{
+		assert(hexString.size());
+		if (hexString.size() % 2 != 0) {
+			throw InvalidHexException("invalid hex, size not divisible by two");
+		}
 		auto mm = MemoryManager::getInstance();
 		size_t hexSize = hexString.size();
 		size_t binSize = (hexSize) / 2;
@@ -179,7 +183,7 @@ namespace DataTypeConverter
 
 		if (0 != sodium_hex2bin((unsigned char*)binString->data(), binSize, hexString.data(), hexSize, nullptr, &resultBinSize, nullptr)) {
 			// TODO: throw InvalidHexException
-			return nullptr;
+			throw InvalidHexException("invalid hex");
 		}
 		return binString;
 	}
@@ -459,4 +463,18 @@ namespace DataTypeConverter
 
 		return false;
 	}
+
+	// Exceptions
+	InvalidHexException::InvalidHexException(const char* what) noexcept
+		: GradidoBlockchainException(what)
+	{
+
+	}
+
+	std::string InvalidHexException::getFullString() const
+	{
+		return std::string(what());
+	}
 }
+
+

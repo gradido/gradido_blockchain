@@ -100,6 +100,9 @@ namespace model {
 
 		MemoryBin* RegisterAddress::getUserPubkey() const
 		{
+			if (!mProtoRegisterAddress.user_pubkey().size()) {
+				return nullptr;
+			}
 			auto bin = MemoryManager::getInstance()->getMemory(mProtoRegisterAddress.user_pubkey().size());
 			bin->copyFromProtoBytes(mProtoRegisterAddress.user_pubkey());
 			return bin;
@@ -107,6 +110,9 @@ namespace model {
 
 		MemoryBin* RegisterAddress::getNameHash() const
 		{
+			if (!mProtoRegisterAddress.name_hash().size()) {
+				return nullptr;
+			}
 			auto bin = MemoryManager::getInstance()->getMemory(mProtoRegisterAddress.name_hash().size());
 			bin->copyFromProtoBytes(mProtoRegisterAddress.name_hash());
 			return bin;
@@ -114,6 +120,9 @@ namespace model {
 
 		MemoryBin* RegisterAddress::getSubaccountPubkey() const
 		{
+			if (!mProtoRegisterAddress.subaccount_pubkey().size()) {
+				return nullptr;
+			}
 			auto bin = MemoryManager::getInstance()->getMemory(mProtoRegisterAddress.subaccount_pubkey().size());
 			bin->copyFromProtoBytes(mProtoRegisterAddress.subaccount_pubkey());
 			return bin;

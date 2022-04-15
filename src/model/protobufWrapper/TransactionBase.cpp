@@ -151,6 +151,8 @@ namespace model {
 			// example: str = "100000000000000000000000000000000000000000000"
 			//     exp_temp = 4
 			// target       = 1000
+			// 0x0000020e41491570 "-000000000000000000000000000000000000000000000"
+
 			int i = strLength - 1;
 			for (; i >= 0; i--) {
 				if (str[i] != '0') break;
@@ -171,8 +173,10 @@ namespace model {
 				}	
 			}
 			else if (!exp_temp) {
-				
-				if (amount->_mpfr_sign == -1) {
+				if (i == 0) {
+					strPointer->assign("0");
+				}
+				else if (amount->_mpfr_sign == -1) {
 					strPointer->reserve(i + 4);
 					strPointer->assign("-0.");
 					strPointer->append(&str[1], i-1);

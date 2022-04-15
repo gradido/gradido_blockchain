@@ -193,7 +193,7 @@ int8_t MemoryManager::getMemoryStackIndex(uint16_t size) noexcept
 MemoryBin* MemoryManager::getMemory(uint32_t size)
 {
 	assert(size == (uint32_t)((uint16_t)size));
-
+	assert(size > 0);
 	auto index = getMemoryStackIndex(size);
 	if (index < 0) {
 		return new MemoryBin(size);
@@ -228,11 +228,10 @@ mpfr_ptr MemoryManager::getMathMemory()
 	if (mMpfrPtrStack.size()) {
 		mathMemory = mMpfrPtrStack.top();
 		mMpfrPtrStack.pop();
-		mpfr_init2(mathMemory, MAGIC_NUMBER_AMOUNT_PRECISION_BITS);
-		mpfr_set_ui(mathMemory, 0, gDefaultRound);
-		return mathMemory;
+	} else {
+		mathMemory = new mpfr_t;
 	}
-	mathMemory = new mpfr_t;
+	
 	mpfr_init2(mathMemory, MAGIC_NUMBER_AMOUNT_PRECISION_BITS);
 	mpfr_set_ui(mathMemory, 0, gDefaultRound);
 	return mathMemory;

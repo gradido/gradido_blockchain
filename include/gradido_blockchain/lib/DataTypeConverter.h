@@ -3,6 +3,7 @@
 
 #include <string>
 #include "gradido_blockchain/MemoryManager.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 
 #include "Poco/Timespan.h"
 #include "Poco/Nullable.h"
@@ -74,6 +75,15 @@ namespace DataTypeConverter {
 	GRADIDOBLOCKCHAIN_EXPORT std::string replaceNewLineWithBr(std::string& in);
 
 	GRADIDOBLOCKCHAIN_EXPORT bool PocoDynVarToRapidjsonValue(const Poco::Dynamic::Var& pocoVar, rapidjson::Value& rapidjsonValue, rapidjson::Document::AllocatorType& alloc);
+
+	class GRADIDOBLOCKCHAIN_EXPORT InvalidHexException : public GradidoBlockchainException
+	{
+	public:
+		explicit InvalidHexException(const char* what) noexcept;
+
+		std::string getFullString() const;
+	};
+
 };
 
 #endif // __GRADIDO_LOGIN_SERVER_LIB_DATA_TYPE_CONVERTER_H
