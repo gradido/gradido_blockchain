@@ -25,7 +25,9 @@ namespace model {
 
 			MemoryBin* getUserPubkey() const;
 			inline const std::string& getUserPubkeyString() const { return mProtoRegisterAddress.user_pubkey(); }
-			proto::gradido::RegisterAddress_AddressType getAddressType() const { return mProtoRegisterAddress.address_type(); }
+			inline proto::gradido::RegisterAddress_AddressType getAddressType() const { return mProtoRegisterAddress.address_type(); }
+			inline bool isSubaccount() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_SUBACCOUNT;}
+			inline bool isHuman() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_HUMAN; }
 			MemoryBin* getNameHash() const;
 			inline const std::string& getNameHashString() const { return mProtoRegisterAddress.name_hash(); }
 			MemoryBin* getSubaccountPubkey() const;

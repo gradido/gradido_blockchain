@@ -271,7 +271,13 @@ namespace model {
 			case model::gradido::TRANSACTION_GLOBAL_GROUP_ADD:
 				return;
 			case model::gradido::TRANSACTION_REGISTER_ADDRESS:
-				mProtoGradidoBlock->set_final_gdd("0");
+				if (getGradidoTransaction()->getTransactionBody()->isLocal()) {
+					mProtoGradidoBlock->set_final_gdd("0");
+				}
+				else {
+					// when moving user from one to another group
+					assert(false || "not implemented yet");
+				}
 				return;
 			default: throw GradidoUnknownEnumException("unknown enum", "model::gradido:TransactionType", (int)transactionBody->getTransactionType());
 			}

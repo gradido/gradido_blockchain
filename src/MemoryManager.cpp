@@ -228,11 +228,10 @@ mpfr_ptr MemoryManager::getMathMemory()
 	if (mMpfrPtrStack.size()) {
 		mathMemory = mMpfrPtrStack.top();
 		mMpfrPtrStack.pop();
-		mpfr_init2(mathMemory, MAGIC_NUMBER_AMOUNT_PRECISION_BITS);
-		mpfr_set_ui(mathMemory, 0, gDefaultRound);
-		return mathMemory;
+	} else {
+		mathMemory = new mpfr_t;
 	}
-	mathMemory = new mpfr_t;
+	
 	mpfr_init2(mathMemory, MAGIC_NUMBER_AMOUNT_PRECISION_BITS);
 	mpfr_set_ui(mathMemory, 0, gDefaultRound);
 	return mathMemory;
