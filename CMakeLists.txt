@@ -116,16 +116,14 @@ IF(WIN32)
 ENDIF()
 
 find_package(Sodium REQUIRED)
-IF(UNIX)
+IF(UNIX AND NOT TARGET Poco::Foundation)
 	SET(ENABLE_MONGODB OFF CACHE BOOL "" FORCE) 
 	SET(ENABLE_DATA_SQLITE OFF CACHE BOOL "" FORCE) 
 	SET(ENABLE_REDIS OFF CACHE BOOL "" FORCE)
 	SET(ENABLE_PAGECOMPILER_FILE2PAGE OFF CACHE BOOL "" FORCE)
 	# TODO check if parent has already added poco
 	add_subdirectory("dependencies/poco")
-
-	set(POCO_LIBS PocoFoundation PocoUtil PocoNet PocoNetSSL PocoData)
-
+	set(POCO_LIBS Poco::Foundation Poco::Util Poco::Net Poco::NetSSL)
 ENDIF()
 
 add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
