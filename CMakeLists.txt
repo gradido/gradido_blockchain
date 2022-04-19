@@ -1,6 +1,7 @@
 # Setup inspired from https://alexreinking.com/blog/building-a-dual-shared-and-static-library-with-cmake.html
 
 cmake_minimum_required(VERSION 3.18.2)
+cmake_policy(VERSION 3.18.2)
 project(GradidoBlockchain VERSION 1.0.0)
 #project(GradidoBlockchain C CXX)
 IF(WIN32)
@@ -19,10 +20,14 @@ endif ()
 
 
 ############################## find protobuf  #########################################
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # prevent problems with two libs including googletest 
 option(protobuf_BUILD_TESTS "Build tests" OFF)
 add_subdirectory(dependencies/protobuf/cmake)
+#INCLUDE(FindProtobuf)
+#find_package(Protobuf REQUIRED)
+#INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIR})
+#message("protobuf include: ${PROTOBUF_INCLUDE_DIR}")
 
 ############################## parse protobuf files ###################################
 
@@ -43,7 +48,7 @@ IF(WIN32)
 	ENDIF()
 ELSE()
 	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" )
-	MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${CMAKE_BINARY_DIR}/bin")
+	#MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${CMAKE_BINARY_DIR}/bin")
 ENDIF()
 
 #MESSAGE("current src: ${CMAKE_CURRENT_SOURCE_DIR}, binary: ${CMAKE_BINARY_DIR}")
@@ -54,7 +59,8 @@ FOREACH(proto ${DATAMODEL_GRADIDO_PROTOS})
    FILE(TO_NATIVE_PATH ${proto} proto_native)
    get_filename_component(proto_parsed ${proto} NAME_WLE)
    FILE(TO_NATIVE_PATH ${PROTOBINDING_PATH}/proto/gradido/${proto_parsed}.pb.h proto_parsed_native)
-   
+
+
    IF(${proto_native} IS_NEWER_THAN ${proto_parsed_native})
 		EXECUTE_PROCESS(
 			COMMAND 
@@ -73,7 +79,7 @@ FOREACH(proto ${DATAMODEL_GRADIDO_PROTOS})
    ENDIF()
 
 ENDFOREACH(proto)
-
+#message("Proto: ${PROTO_FILES}")
 ############################## bind source files ###################################
 
 FILE(GLOB TINF "dependencies/tinf/src/*.c" "dependencies/tinf/src/*.h")
@@ -89,6 +95,7 @@ SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${TINF} ${MAIN} ${HTTP}
 	${CRYPTO} ${MODEL} ${MODEL_PROTOBUF_WRAPPER} ${LIB_SRC} 
 	${PROTO_GRADIDO} 
+#	${PROTO_FILES}
 )
 
 if(MSVC)
@@ -126,11 +133,15 @@ IF(UNIX AND NOT TARGET Poco::Foundation)
 	set(POCO_LIBS Poco::Foundation Poco::Util Poco::Net Poco::NetSSL)
 ENDIF()
 
+#include("CMAKE/FindMPFR.cmake")
+find_package(MPFR REQUIRED)
+message(STATUS "MPFR Found: ${MPFR_FOUND}")
+
 add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
 if(BUILD_SHARED_LIBS) 
-	target_link_libraries(GradidoBlockchain libprotobuf)
+	target_link_libraries(GradidoBlockchain libprotobuf ${MPFR_LIBRARIES})
 	IF(WIN32) 
 		target_link_libraries(GradidoBlockchain ${CONAN_LIBS})
 	ELSE()
