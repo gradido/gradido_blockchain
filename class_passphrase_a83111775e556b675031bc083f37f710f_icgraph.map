@@ -1,9 +1,4 @@
 <map id="Passphrase::createWordIndices" name="Passphrase::createWordIndices">
-<area shape="rect" id="node1" title=" " alt="" coords="815,56,1037,83"/>
-<area shape="rect" id="node2" href="$class_passphrase.html#adf6c5ae85f6764f2b8b3b64cee0036de" title=" " alt="" coords="564,31,767,57"/>
-<area shape="rect" id="node7" href="$class_passphrase.html#af895aeeb6ec48b27b5ce1edea3d41142" title="transform passphrase into another language/mnemonic source" alt="" coords="582,81,749,108"/>
-<area shape="rect" id="node3" href="$class_passphrase.html#a86a1450283f05cab7649b9a83a5c4ffe" title="create clear passphrase from word indices from bitcoin word list (bip0039)" alt="" coords="265,5,516,32"/>
-<area shape="rect" id="node4" href="$class_passphrase.html#aa611b0d5827b9a0ab7d0626d0c1e5119" title=" " alt="" coords="303,56,479,83"/>
-<area shape="rect" id="node5" href="$class_passphrase.html#a85ff44978bd3b66d0133fb05dd6d1866" title=" " alt="" coords="39,31,183,57"/>
-<area shape="rect" id="node6" href="$class_passphrase.html#a3f9af321e86ac2504a9f5187f14b542f" title=" " alt="" coords="5,81,217,108"/>
+<area shape="rect" id="node1" title=" " alt="" coords="220,5,443,32"/>
+<area shape="rect" id="node2" href="$class_passphrase.html#af895aeeb6ec48b27b5ce1edea3d41142" title="transform passphrase into another language/mnemonic source" alt="" coords="5,5,172,32"/>
 </map>

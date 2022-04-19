@@ -1,6 +1,7 @@
 <map id="model::gradido::GradidoTransaction" name="model::gradido::GradidoTransaction">
-<area shape="rect" id="node1" title=" " alt="" coords="5,275,259,301"/>
-<area shape="rect" id="node2" href="$classmodel_1_1gradido_1_1_transaction_body.html" title=" " alt="" coords="15,185,249,212"/>
-<area shape="rect" id="node3" href="$class_uni_lib_1_1lib_1_1_multithread_container.html" title=" " alt="" coords="41,5,212,47"/>
-<area shape="rect" id="node4" href="$classmodel_1_1gradido_1_1_transaction_base.html" title=" " alt="" coords="148,96,383,123"/>
+<area shape="rect" id="node1" title="Contain the signature map for the Transaction and the serialized body." alt="" coords="5,260,259,287"/>
+<area shape="rect" id="node2" title=" " alt="" coords="21,171,200,197"/>
+<area shape="rect" id="node3" href="$classmodel_1_1gradido_1_1_transaction_body.html" title="Contain the actuall transaction details." alt="" coords="224,171,459,197"/>
+<area shape="rect" id="node4" href="$class_multithread_container.html" title=" " alt="" coords="228,5,388,32"/>
+<area shape="rect" id="node5" href="$classmodel_1_1gradido_1_1_transaction_base.html" title=" " alt="" coords="329,81,564,108"/>
 </map>

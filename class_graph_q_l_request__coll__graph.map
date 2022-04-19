@@ -1,0 +1,5 @@
+<map id="GraphQLRequest" name="GraphQLRequest">
+<area shape="rect" id="node1" title=" " alt="" coords="5,155,136,181"/>
+<area shape="rect" id="node2" href="$class_json_request.html" title=": Class for Json Requests to php server" alt="" coords="19,80,122,107"/>
+<area shape="rect" id="node3" href="$class_http_request.html" title=" " alt="" coords="19,5,122,32"/>
+</map>

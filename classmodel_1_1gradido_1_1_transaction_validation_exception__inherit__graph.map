@@ -1,8 +1,13 @@
 <map id="model::gradido::TransactionValidationException" name="model::gradido::TransactionValidationException">
-<area shape="rect" id="node1" title=" " alt="" coords="448,71,651,112"/>
-<area shape="rect" id="node4" href="$classmodel_1_1gradido_1_1_transaction_validation_forbidden_sign_exception.html" title=" " alt="" coords="706,5,949,47"/>
-<area shape="rect" id="node5" href="$classmodel_1_1gradido_1_1_transaction_validation_invalid_input_exception.html" title=" " alt="" coords="713,71,941,112"/>
-<area shape="rect" id="node6" href="$classmodel_1_1gradido_1_1_transaction_validation_invalid_signature_exception.html" title=" " alt="" coords="699,136,956,177"/>
-<area shape="rect" id="node2" href="$class_gradido_blockchain_exception.html" title=" " alt="" coords="192,78,400,105"/>
-<area shape="rect" id="node3" title=" " alt="" coords="5,78,144,105"/>
+<area shape="rect" id="node1" title=" " alt="" coords="448,235,651,276"/>
+<area shape="rect" id="node4" href="$classmodel_1_1gradido_1_1_address_already_exist_exception.html" title=" " alt="" coords="727,5,957,47"/>
+<area shape="rect" id="node5" href="$classmodel_1_1gradido_1_1_insufficient_balance_exception.html" title=" " alt="" coords="742,71,942,112"/>
+<area shape="rect" id="node6" href="$classmodel_1_1gradido_1_1_pairing_transaction_not_match_exception.html" title=" " alt="" coords="719,136,965,177"/>
+<area shape="rect" id="node7" href="$classmodel_1_1gradido_1_1_transaction_validation_forbidden_sign_exception.html" title=" " alt="" coords="721,201,963,243"/>
+<area shape="rect" id="node8" href="$classmodel_1_1gradido_1_1_transaction_validation_invalid_input_exception.html" title=" " alt="" coords="728,267,956,308"/>
+<area shape="rect" id="node9" href="$classmodel_1_1gradido_1_1_transaction_validation_invalid_signature_exception.html" title=" " alt="" coords="713,332,971,373"/>
+<area shape="rect" id="node10" href="$classmodel_1_1gradido_1_1_transaction_validation_missing_sign_exception.html" title=" " alt="" coords="727,397,957,439"/>
+<area shape="rect" id="node11" href="$classmodel_1_1gradido_1_1_transaction_validation_required_sign_missing_exception.html" title=" " alt="" coords="699,463,985,504"/>
+<area shape="rect" id="node2" href="$class_gradido_blockchain_exception.html" title=" " alt="" coords="192,242,400,269"/>
+<area shape="rect" id="node3" title=" " alt="" coords="5,242,144,269"/>
 </map>

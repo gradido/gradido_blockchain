@@ -1,4 +1,4 @@
 <map id="KeyPairEd25519::verify" name="KeyPairEd25519::verify">
 <area shape="rect" id="node1" title=" " alt="" coords="307,13,477,39"/>
-<area shape="rect" id="node2" href="$classmodel_1_1gradido_1_1_gradido_transaction.html#a4e58bef1d131df6a1c67fd125af8f347" title=" " alt="" coords="5,5,259,47"/>
+<area shape="rect" id="node2" href="$group___gradido-_protocol.html#ga42823b6ea4481b7b084d318e7ae54d5a" title="Check if Transaction is valid, calls validate from TransactionBody." alt="" coords="5,5,259,47"/>
 </map>

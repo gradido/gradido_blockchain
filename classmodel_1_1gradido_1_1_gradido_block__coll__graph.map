@@ -1,7 +1,8 @@
 <map id="model::gradido::GradidoBlock" name="model::gradido::GradidoBlock">
-<area shape="rect" id="node1" title=" " alt="" coords="5,364,220,391"/>
-<area shape="rect" id="node2" href="$class_uni_lib_1_1lib_1_1_multithread_container.html" title=" " alt="" coords="57,5,227,47"/>
-<area shape="rect" id="node4" href="$classmodel_1_1gradido_1_1_transaction_body.html" title=" " alt="" coords="138,185,373,212"/>
-<area shape="rect" id="node5" href="$classmodel_1_1gradido_1_1_transaction_base.html" title=" " alt="" coords="179,96,414,123"/>
-<area shape="rect" id="node3" href="$classmodel_1_1gradido_1_1_gradido_transaction.html" title=" " alt="" coords="129,275,382,301"/>
+<area shape="rect" id="node1" title="The Final Blockformat on Blockchain." alt="" coords="113,349,327,376"/>
+<area shape="rect" id="node2" href="$class_multithread_container.html" title=" " alt="" coords="5,5,165,32"/>
+<area shape="rect" id="node5" href="$classmodel_1_1gradido_1_1_transaction_body.html" title="Contain the actuall transaction details." alt="" coords="72,171,307,197"/>
+<area shape="rect" id="node6" href="$classmodel_1_1gradido_1_1_transaction_base.html" title=" " alt="" coords="123,81,357,108"/>
+<area shape="rect" id="node3" title=" " alt="" coords="331,171,509,197"/>
+<area shape="rect" id="node4" href="$classmodel_1_1gradido_1_1_gradido_transaction.html" title="Contain the signature map for the Transaction and the serialized body." alt="" coords="93,260,347,287"/>
 </map>
