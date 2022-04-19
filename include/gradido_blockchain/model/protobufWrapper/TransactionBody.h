@@ -101,6 +101,7 @@ namespace model {
 			TransactionBase* mTransactionSpecific;
 			TransactionType mTransactionType;
 		};
+		/*! @} End of Doxygen Groups*/
 	}
 }
 

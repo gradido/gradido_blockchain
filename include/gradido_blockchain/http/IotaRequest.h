@@ -21,8 +21,7 @@ namespace iota {
 	};
 }
 
-/*!
-	
+/*!		
 	@author einhornimmond
 
 	@brief different iota calls
@@ -30,9 +29,6 @@ namespace iota {
 	iota api endpoints:
 	https://docs.rs/iota-client/1.0.1/iota_client/client/struct.Client.html
 */
-
-// 
-
 class GRADIDOBLOCKCHAIN_EXPORT IotaRequest : public JsonRequest
 {
 public:
