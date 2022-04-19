@@ -2,12 +2,13 @@
 
 cmake_minimum_required(VERSION 3.18.2)
 cmake_policy(VERSION 3.18.2)
-project(GradidoBlockchain VERSION 1.0.0)
+project(GradidoBlockchain VERSION 2.0.0)
 #project(GradidoBlockchain C CXX)
 IF(WIN32)
 	set(CMAKE_CXX_FLAGS         "/EHsc /MP")
 ENDIF()
-SET(CMAKE_CXX_FLAGS "-std=c++17 -fPIC" )
+SET(CMAKE_CXX_FLAGS "-std=c++17")# -fPIC" )
+#add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -26,12 +27,15 @@ endif ()
 
 
 ############################## find protobuf  #########################################
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-# prevent problems with two libs including googletest 
-option(protobuf_BUILD_TESTS "Build tests" OFF)
+
 
 #message("binary dir: ${CMAKE_BINARY_DIR}")
-add_subdirectory(dependencies/protobuf/cmake)
+if(NOT TARGET protoc)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+	# prevent problems with two libs including googletest 
+	option(protobuf_BUILD_TESTS "Build tests" OFF)
+	add_subdirectory(dependencies/protobuf/cmake)
+endif()
 #INCLUDE(FindProtobuf)
 #find_package(Protobuf REQUIRED)
 #INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIR})
@@ -52,8 +56,8 @@ IF(WIN32)
 		find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" )		
 	ENDIF()
 ELSE()
-	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" )
-	#MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${CMAKE_BINARY_DIR}/bin")
+	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" "${PROJECT_SOURCE_DIR}/dependencies/protobuf/build" )
+	MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${PROJECT_SOURCE_DIR}/dependencies/gradido_blockchain/dependencies/protobuf/build")
 ENDIF()
 
 #MESSAGE("current src: ${CMAKE_CURRENT_SOURCE_DIR}, binary: ${CMAKE_BINARY_DIR}")
@@ -120,7 +124,7 @@ endif()
 include_directories(
 	"dependencies" 
 	"dependencies/tinf/src/" 
-	"dependencies/protobuf/src"
+	#"dependencies/protobuf/src"
 	"dependencies/rapidjson/include"
 	"include"
 )
