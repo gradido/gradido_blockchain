@@ -1,0 +1,12 @@
+<map id="Mnemonic::getWordIndex" name="Mnemonic::getWordIndex">
+<area shape="rect" id="node1" title=" " alt="" coords="1308,81,1496,108"/>
+<area shape="rect" id="node2" href="$class_passphrase.html#a83111775e556b675031bc083f37f710f" title=" " alt="" coords="815,56,1037,83"/>
+<area shape="rect" id="node9" href="$class_mnemonic.html#a31f096f234c957349efba8e4b1a8f784" title=" " alt="" coords="1085,107,1260,133"/>
+<area shape="rect" id="node3" href="$class_passphrase.html#adf6c5ae85f6764f2b8b3b64cee0036de" title=" " alt="" coords="564,5,767,32"/>
+<area shape="rect" id="node8" href="$class_passphrase.html#af895aeeb6ec48b27b5ce1edea3d41142" title="transform passphrase into another language/mnemonic source" alt="" coords="582,56,749,83"/>
+<area shape="rect" id="node4" href="$class_passphrase.html#a86a1450283f05cab7649b9a83a5c4ffe" title="create clear passphrase from word indices from bitcoin word list (bip0039)" alt="" coords="265,5,516,32"/>
+<area shape="rect" id="node5" href="$class_passphrase.html#aa611b0d5827b9a0ab7d0626d0c1e5119" title=" " alt="" coords="303,56,479,83"/>
+<area shape="rect" id="node6" href="$class_passphrase.html#a85ff44978bd3b66d0133fb05dd6d1866" title=" " alt="" coords="39,56,183,83"/>
+<area shape="rect" id="node7" href="$class_passphrase.html#a3f9af321e86ac2504a9f5187f14b542f" title=" " alt="" coords="5,107,217,133"/>
+<area shape="rect" id="node10" href="$class_passphrase.html#a96b7a9b39ebcc1288009df8861ccfd0f" title=" " alt="" coords="835,157,1017,184"/>
+</map>

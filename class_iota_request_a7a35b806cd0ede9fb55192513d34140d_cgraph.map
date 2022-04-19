@@ -1,0 +1,7 @@
+<map id="IotaRequest::getTips" name="IotaRequest::getTips">
+<area shape="rect" id="node1" title=" " alt="" coords="5,46,161,73"/>
+<area shape="rect" id="node2" href="$class_http_request.html#afa78d3cbf47c86c6773ed0c6dcab11c6" title=" " alt="" coords="245,17,383,43"/>
+<area shape="rect" id="node4" href="$class_json_request.html#af6f680e52f46e87d592afa446f830b41" title=" " alt="" coords="209,71,419,98"/>
+<area shape="rect" id="node3" href="$class_http_request.html#ac3219f48fbc84ebbab68b9f22b1a450b" title=" " alt="" coords="479,5,670,47"/>
+<area shape="rect" id="node5" href="$class_rapidjson_parse_error_exception.html#a4fe2735991a747f5c2a2f022f53e3e6b" title=" " alt="" coords="467,71,683,112"/>
+</map>

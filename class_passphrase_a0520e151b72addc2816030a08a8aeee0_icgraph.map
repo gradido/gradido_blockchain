@@ -1,0 +1,6 @@
+<map id="Passphrase::create" name="Passphrase::create">
+<area shape="rect" id="node1" title=" " alt="" coords="220,56,364,83"/>
+<area shape="rect" id="node2" href="$class_passphrase.html#a2bcfd0ab3889d4fc39d24fb6f710ac1b" title=" " alt="" coords="17,5,161,32"/>
+<area shape="rect" id="node3" href="$class_passphrase.html#a2bb5c291e84a5be867fd64eada4402b3" title="generate new passphrase with random" alt="" coords="8,56,169,83"/>
+<area shape="rect" id="node4" href="$class_passphrase.html#af895aeeb6ec48b27b5ce1edea3d41142" title="transform passphrase into another language/mnemonic source" alt="" coords="5,107,172,133"/>
+</map>
