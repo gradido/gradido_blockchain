@@ -1,4 +1,4 @@
-#include "gradido_blockchain/Crypto/AuthenticatedEncryption.h"
+#include "gradido_blockchain/crypto/AuthenticatedEncryption.h"
 
 AuthenticatedEncryption::AuthenticatedEncryption()
 	: mPrivkey(nullptr), mPrecalculatedSharedSecretLastIndex(0)

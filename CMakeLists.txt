@@ -7,6 +7,10 @@ project(GradidoBlockchain VERSION 1.0.0)
 IF(WIN32)
 	set(CMAKE_CXX_FLAGS         "/EHsc /MP")
 ENDIF()
+set(CMAKE_CXX_FLAGS "-fPIC")
+
+set(INSTALL_BINDIR "bin")
+set(INSTALL_PLUGINDIR "bin")
 
 if (NOT DEFINED CMAKE_CXX_VISIBILITY_PRESET AND
     NOT DEFINED CMAKE_VISIBILITY_INLINES_HIDDEN)
@@ -20,9 +24,11 @@ endif ()
 
 
 ############################## find protobuf  #########################################
-#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # prevent problems with two libs including googletest 
 option(protobuf_BUILD_TESTS "Build tests" OFF)
+
+#message("binary dir: ${CMAKE_BINARY_DIR}")
 add_subdirectory(dependencies/protobuf/cmake)
 #INCLUDE(FindProtobuf)
 #find_package(Protobuf REQUIRED)
@@ -48,7 +54,7 @@ IF(WIN32)
 	ENDIF()
 ELSE()
 	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" )
-	#MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${CMAKE_BINARY_DIR}/bin")
+	MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${CMAKE_BINARY_DIR}/bin")
 ENDIF()
 
 #MESSAGE("current src: ${CMAKE_CURRENT_SOURCE_DIR}, binary: ${CMAKE_BINARY_DIR}")
@@ -130,7 +136,7 @@ IF(UNIX AND NOT TARGET Poco::Foundation)
 	SET(ENABLE_PAGECOMPILER_FILE2PAGE OFF CACHE BOOL "" FORCE)
 	# TODO check if parent has already added poco
 	add_subdirectory("dependencies/poco")
-	set(POCO_LIBS Poco::Foundation Poco::Util Poco::Net Poco::NetSSL)
+	set(POCO_LIBS Poco::Foundation Poco::Util Poco::Net Poco::NetSSL Poco::JWT)
 ENDIF()
 
 #include("CMAKE/FindMPFR.cmake")
