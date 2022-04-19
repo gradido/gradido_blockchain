@@ -30,9 +30,6 @@ var NAVTREE =
       [ "Install for Windows", "index.html#autotoc_md2", null ]
     ] ],
     [ "Modules", "modules.html", "modules" ],
-    [ "Namespaces", "namespaces.html", [
-      [ "Namespace List", "namespaces.html", "namespaces_dup" ]
-    ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],
