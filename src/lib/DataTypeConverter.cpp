@@ -230,10 +230,6 @@ namespace DataTypeConverter
 		memset(*bin, 0, binSize);
 
 		size_t resultBinSize = 0;
-<<<<<<< HEAD:src/cpp/lib/DataTypeConverter.cpp
-
-=======
->>>>>>> cmake_lib:src/lib/DataTypeConverter.cpp
 		auto convertResult = sodium_base642bin(*bin, binSize, base64String->data(), encodedSize, nullptr, &resultBinSize, nullptr, variant);
 		if (0 != convertResult) {
 			mm->releaseMemory(bin);

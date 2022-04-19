@@ -112,4 +112,4 @@ public:
 		: InvalidTransactionTypeOnBlockchain(what, type) {}
 };
 
-#endif __GRADIDO_BLOCKCHAIN_EXCEPTION_H
+#endif //__GRADIDO_BLOCKCHAIN_EXCEPTION_H

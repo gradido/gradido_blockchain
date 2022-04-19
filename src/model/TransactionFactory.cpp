@@ -48,11 +48,7 @@ std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createTr
 )
 {
 	assert(recipientPubkey);
-<<<<<<< HEAD:src/cpp/model/TransactionFactory.cpp
-	auto transferAmount = createTransferAmount(senderPubkey, amountGddCent, coinColor);
-=======
 	auto transferAmount = createTransferAmount(senderPubkey, amountGdd, coinColor);
->>>>>>> cmake_lib:src/model/TransactionFactory.cpp
 	return std::unique_ptr<model::gradido::GradidoTransaction>(new GradidoTransaction(TransactionBody::createTransactionTransfer(std::move(transferAmount), recipientPubkey)));
 }
 
