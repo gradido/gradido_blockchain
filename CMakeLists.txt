@@ -46,28 +46,27 @@ include_directories(${PROTOBINDING_PATH})
 IF(WIN32)
 	set(PROTOC_BIN_PATH "${PROJECT_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}")
 	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${PROTOC_BIN_PATH}" )
-	IF(PROTOBUF_PROTOC_EXECUTABLE)
-		MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${PROTOC_BIN_PATH}")
-	ELSE()
-		find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" )
-		MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${CMAKE_BINARY_DIR}/bin")
+	IF(NOT PROTOBUF_PROTOC_EXECUTABLE)
+		find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" )		
 	ENDIF()
 ELSE()
 	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" )
-	MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${CMAKE_BINARY_DIR}/bin")
+	#MESSAGE("protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${CMAKE_BINARY_DIR}/bin")
 ENDIF()
 
 #MESSAGE("current src: ${CMAKE_CURRENT_SOURCE_DIR}, binary: ${CMAKE_BINARY_DIR}")
 #MESSAGE("project src:${PROJECT_SOURCE_DIR}, project bin: ${PROJECT_BINARY_DIR}")
 #MESSAGE("src: ${CMAKE_SOURCE_DIR}")
+IF(PROTOBUF_PROTOC_EXECUTABLE STREQUAL "PROTOBUF_PROTOC_EXECUTABLE-NOTFOUND" ) 
+  MESSAGE("!!!!!!\nplease call `make protoc` to build the protoc compiler and call again `cmake`\n!!!!!!")
+ELSE()
+	FOREACH(proto ${DATAMODEL_GRADIDO_PROTOS})
+	FILE(TO_NATIVE_PATH ${proto} proto_native)
+	get_filename_component(proto_parsed ${proto} NAME_WLE)
+	FILE(TO_NATIVE_PATH ${PROTOBINDING_PATH}/proto/gradido/${proto_parsed}.pb.h proto_parsed_native)
 
-FOREACH(proto ${DATAMODEL_GRADIDO_PROTOS})
-   FILE(TO_NATIVE_PATH ${proto} proto_native)
-   get_filename_component(proto_parsed ${proto} NAME_WLE)
-   FILE(TO_NATIVE_PATH ${PROTOBINDING_PATH}/proto/gradido/${proto_parsed}.pb.h proto_parsed_native)
 
-
-   IF(${proto_native} IS_NEWER_THAN ${proto_parsed_native})
+	IF(${proto_native} IS_NEWER_THAN ${proto_parsed_native})
 		EXECUTE_PROCESS(
 			COMMAND 
 			${PROTOBUF_PROTOC_EXECUTABLE} 
@@ -82,9 +81,10 @@ FOREACH(proto ${DATAMODEL_GRADIDO_PROTOS})
 		ELSE()
 			MESSAGE("Parsed: src/proto/gradido/${proto_parsed}.proto")
 		ENDIF()
-   ENDIF()
+	ENDIF()
 
-ENDFOREACH(proto)
+	ENDFOREACH(proto)
+ENDIF()
 #message("Proto: ${PROTO_FILES}")
 ############################## bind source files ###################################
 
