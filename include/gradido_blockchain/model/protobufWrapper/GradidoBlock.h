@@ -13,6 +13,17 @@
 
 namespace model {
 	namespace gradido {
+		/*!
+		 *  \addtogroup Gradido-Protocol
+ 		 *  @{
+ 		 */
+
+		//!  The Final Blockformat on Blockchain
+		/*!
+	  		The Format in which Gradido Transaction are saved on Blockchain from Gradido Node,
+		    also the native format in which Gradido Node returns Gradido Transactions.<br>
+			<a href="https://github.com/gradido/gradido_protocol/blob/master/gradido/GradidoBlock.proto" target="_blank">Protobuf: GradidoBlock</a>
+		*/
 		class GRADIDOBLOCKCHAIN_EXPORT GradidoBlock : public MultithreadContainer, public Poco::RefCountedObject
 		{
 		public:
@@ -21,10 +32,28 @@ namespace model {
 
 			static Poco::SharedPtr<GradidoBlock> create(std::unique_ptr<GradidoTransaction> transaction, uint64_t id, int64_t received, const MemoryBin* messageId);
 
+			//! make json string from GradidoBlock Protobuf Object
 			std::string toJson();
 			rapidjson::Value toJson(rapidjson::Document& baseDocument);
 			inline const GradidoTransaction* getGradidoTransaction() const { return mGradidoTransaction; }
 
+			//! Check if Transaction is valid, calls validate from GradidoTransaction
+			/*! Throw a exception derived from TransactionValidationException if some validation rule isn't met.<br><br>
+				<b>level = TRANSACTION_VALIDATION_SINGLE</b>
+				<ul>
+					<li>Check Gradido Block Protocol Version</li>
+					<li>Check if (iota) Message ID exist</li>
+					<li>Check that not more than 2 minutes has passed after created date from TransactionBody until received date (iota Milestone Timestamp)</li>
+					<li>Check that received date is older than created date from TransactionBody
+				</ul>
+				<b>level = TRANSACTION_VALIDATION_SINGLE_PREVIOUS, blockchain != nullptr</b>
+				<ul>
+					<li>Check that the transaction with id-1 exist</li>
+					<li>Check that received date from previous transaction is younger</li>
+					<li>Call calculateTxHash() with previous transaction and check that it is equal to stored txHash (runningHash)</li> 
+				</ul>
+				Call GradidoTransaction::validate()
+			*/
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
@@ -49,6 +78,7 @@ namespace model {
 			MemoryBin* getMessageId() const;
 			std::string getMessageIdHex() const;
 
+			//! calculate tx hash for this Gradido Block using last txHash as start
 			//! \return caller must free result
 			MemoryBin* calculateTxHash(const GradidoBlock* previousBlock) const;
 
@@ -63,6 +93,8 @@ namespace model {
 			GradidoTransaction* mGradidoTransaction;
 			GradidoBlock(std::unique_ptr<GradidoTransaction> transaction);
 		};
+
+		/*! @} End of Doxygen Groups*/
 	}
 }
 

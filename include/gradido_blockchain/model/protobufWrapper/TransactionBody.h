@@ -18,7 +18,16 @@
 
 namespace model {
 	namespace gradido {
+		/*!
+		 *  \addtogroup Gradido-Protocol
+ 		 *  @{
+ 		 */
 
+		//!  Contain the actuall transaction details.
+		/*!
+	  		
+			<a href="https://github.com/gradido/gradido_protocol/blob/master/gradido/TransactionBody.proto" target="_blank">Protobuf: TransactionBody</a>
+		*/
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionBody : public MultithreadContainer
 		{
 		public:

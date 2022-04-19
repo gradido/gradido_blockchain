@@ -14,6 +14,16 @@ namespace model {
 
 		class GradidoBlock;
 
+		/*!
+		 *  \addtogroup Gradido-Protocol
+ 		 *  @{
+ 		 */
+
+		//!  Contain the signature map for the Transaction and the serialized body
+		/*!
+	  		
+			<a href="https://github.com/gradido/gradido_protocol/blob/master/gradido/GradidoTransaction.proto" target="_blank">Protobuf: GradidoTransaction</a>
+		*/
 		class GRADIDOBLOCKCHAIN_EXPORT GradidoTransaction: public Poco::RefCountedObject
 		{
 			friend GradidoBlock;
@@ -26,6 +36,10 @@ namespace model {
 			inline const TransactionBody* getTransactionBody() const { return mTransactionBody; }
 			inline TransactionBody* getMutableTransactionBody() { return mTransactionBody; }
 			
+			//! Check if Transaction is valid, calls validate from TransactionBody
+			/*!
+				Details
+			*/
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
