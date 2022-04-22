@@ -22,7 +22,10 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Checkout doxygen style 
+      run: git submodule update --init -- ./doc/doxygen_awesome_css
         
     - name: Doxygen Action
       uses: einhornimmond/doxygen-plantuml-action@v2.0
