@@ -17,6 +17,7 @@
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -136,7 +137,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>updateToOutbound</b> 
 void&#160;</td><td class="memItemRight" valign="bottom"><b>updateToInbound</b> (const std::string &amp;otherGroup)</td></tr>
 <tr class="separator:affd8ca66f664bd6f8f4aad77118a3b2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abacf395a880937ecd64045d859a69028"><td class="memItemLeft" align="right" valign="top"><a id="abacf395a880937ecd64045d859a69028" name="abacf395a880937ecd64045d859a69028"></a>
-TransactionType&#160;</td><td class="memItemRight" valign="bottom"><b>getTransactionType</b> () const</td></tr>
+<a class="el" href="group__enums.html#ga63424b05ada401e320ed8c4473623a41">TransactionType</a>&#160;</td><td class="memItemRight" valign="bottom"><b>getTransactionType</b> () const</td></tr>
 <tr class="separator:abacf395a880937ecd64045d859a69028"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af7fe0d749ffbca6b3e0e8a8a11d5919d"><td class="memItemLeft" align="right" valign="top"><a id="af7fe0d749ffbca6b3e0e8a8a11d5919d" name="af7fe0d749ffbca6b3e0e8a8a11d5919d"></a>
 proto::gradido::TransactionBody_CrossGroupType&#160;</td><td class="memItemRight" valign="bottom"><b>getCrossGroupType</b> () const</td></tr>
@@ -187,7 +188,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>isOutbound</b> () con
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>isCross</b> () const</td></tr>
 <tr class="separator:a81d3389ed4410545acabd88d61b823c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b8b19c0ded764de1959998e293daacb"><td class="memItemLeft" align="right" valign="top"><a id="a3b8b19c0ded764de1959998e293daacb" name="a3b8b19c0ded764de1959998e293daacb"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>validate</b> (TransactionValidationLevel level=TRANSACTION_VALIDATION_SINGLE, <a class="el" href="classmodel_1_1_i_gradido_blockchain.html">IGradidoBlockchain</a> *blockchain=nullptr, const <a class="el" href="classmodel_1_1gradido_1_1_gradido_block.html">GradidoBlock</a> *parentGradidoBlock=nullptr) const</td></tr>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>validate</b> (<a class="el" href="group__enums.html#ga5a93fcdc94d643d95a6b670b2a924443">TransactionValidationLevel</a> level=TRANSACTION_VALIDATION_SINGLE, <a class="el" href="classmodel_1_1_i_gradido_blockchain.html">IGradidoBlockchain</a> *blockchain=nullptr, const <a class="el" href="classmodel_1_1gradido_1_1_gradido_block.html">GradidoBlock</a> *parentGradidoBlock=nullptr) const</td></tr>
 <tr class="separator:a3b8b19c0ded764de1959998e293daacb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a207c1507f4f4ca2de1171d88632d615d"><td class="memItemLeft" align="right" valign="top"><a id="a207c1507f4f4ca2de1171d88632d615d" name="a207c1507f4f4ca2de1171d88632d615d"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>isBelongToUs</b> (const <a class="el" href="classmodel_1_1gradido_1_1_transaction_body.html">TransactionBody</a> *pairingTransaction) const</td></tr>
@@ -254,7 +255,7 @@ static <a class="el" href="classmodel_1_1gradido_1_1_transaction_body.html">Tran
 static <a class="el" href="classmodel_1_1gradido_1_1_transaction_body.html">TransactionBody</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>createTransactionTransfer</b> (std::unique_ptr&lt; proto::gradido::TransferAmount &gt; transferAmount, const <a class="el" href="class_memory_bin.html">MemoryBin</a> *recipientPubkey)</td></tr>
 <tr class="separator:a42f744f50d4caae243f0fff812304f60"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4aa91b06f79cbfd6d10b5de40915909b"><td class="memItemLeft" align="right" valign="top"><a id="a4aa91b06f79cbfd6d10b5de40915909b" name="a4aa91b06f79cbfd6d10b5de40915909b"></a>
-static const char *&#160;</td><td class="memItemRight" valign="bottom"><b>transactionTypeToString</b> (TransactionType type)</td></tr>
+static const char *&#160;</td><td class="memItemRight" valign="bottom"><b>transactionTypeToString</b> (<a class="el" href="group__enums.html#ga63424b05ada401e320ed8c4473623a41">TransactionType</a> type)</td></tr>
 <tr class="separator:a4aa91b06f79cbfd6d10b5de40915909b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
@@ -272,7 +273,7 @@ proto::gradido::TransactionBody&#160;</td><td class="memItemRight" valign="botto
 <a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html">TransactionBase</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>mTransactionSpecific</b></td></tr>
 <tr class="separator:aaa4a6d1b02607b307e6b385288cb32e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a10ce608a3f3423b1dbba3aba9e6e3ab3"><td class="memItemLeft" align="right" valign="top"><a id="a10ce608a3f3423b1dbba3aba9e6e3ab3" name="a10ce608a3f3423b1dbba3aba9e6e3ab3"></a>
-TransactionType&#160;</td><td class="memItemRight" valign="bottom"><b>mTransactionType</b></td></tr>
+<a class="el" href="group__enums.html#ga63424b05ada401e320ed8c4473623a41">TransactionType</a>&#160;</td><td class="memItemRight" valign="bottom"><b>mTransactionType</b></td></tr>
 <tr class="separator:a10ce608a3f3423b1dbba3aba9e6e3ab3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_class_multithread_container"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_multithread_container')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_multithread_container.html">MultithreadContainer</a></td></tr>
 <tr class="memitem:a23dd55679f5fab6bf52a2b0303aa2575 inherit pro_attribs_class_multithread_container"><td class="memItemLeft" align="right" valign="top"><a id="a23dd55679f5fab6bf52a2b0303aa2575" name="a23dd55679f5fab6bf52a2b0303aa2575"></a>

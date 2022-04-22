@@ -17,6 +17,7 @@
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -121,7 +122,7 @@ Collaboration diagram for model::gradido::TransactionBase:</div>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:afa1f59c0726d85b0403ea56e7e9afaa7"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html#afa1f59c0726d85b0403ea56e7e9afaa7">prepare</a> ()</td></tr>
 <tr class="separator:afa1f59c0726d85b0403ea56e7e9afaa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a38a9bcc6d3820aa8df468202f9b2eee1"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html#a38a9bcc6d3820aa8df468202f9b2eee1">validate</a> (TransactionValidationLevel level=TRANSACTION_VALIDATION_SINGLE, <a class="el" href="classmodel_1_1_i_gradido_blockchain.html">IGradidoBlockchain</a> *blockchain=nullptr, const <a class="el" href="classmodel_1_1gradido_1_1_gradido_block.html">GradidoBlock</a> *parentGradidoBlock=nullptr) const =0</td></tr>
+<tr class="memitem:a38a9bcc6d3820aa8df468202f9b2eee1"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html#a38a9bcc6d3820aa8df468202f9b2eee1">validate</a> (<a class="el" href="group__enums.html#ga5a93fcdc94d643d95a6b670b2a924443">TransactionValidationLevel</a> level=TRANSACTION_VALIDATION_SINGLE, <a class="el" href="classmodel_1_1_i_gradido_blockchain.html">IGradidoBlockchain</a> *blockchain=nullptr, const <a class="el" href="classmodel_1_1gradido_1_1_gradido_block.html">GradidoBlock</a> *parentGradidoBlock=nullptr) const =0</td></tr>
 <tr class="separator:a38a9bcc6d3820aa8df468202f9b2eee1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d7cf89b80344abc70c8ccca32c0e08c"><td class="memItemLeft" align="right" valign="top">virtual std::vector&lt; <a class="el" href="class_memory_bin.html">MemoryBin</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html#a3d7cf89b80344abc70c8ccca32c0e08c">getInvolvedAddresses</a> () const =0</td></tr>
 <tr class="separator:a3d7cf89b80344abc70c8ccca32c0e08c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -163,7 +164,7 @@ Static Public Member Functions</h2></td></tr>
 static bool&#160;</td><td class="memItemRight" valign="bottom"><b>isValidGroupAlias</b> (const std::string &amp;groupAlias)</td></tr>
 <tr class="separator:ac7d0fee193d2a1fe811233fcf7b417c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aebe96027dc3c2e3477dd0365977d71f0"><td class="memItemLeft" align="right" valign="top"><a id="aebe96027dc3c2e3477dd0365977d71f0" name="aebe96027dc3c2e3477dd0365977d71f0"></a>
-static const char *&#160;</td><td class="memItemRight" valign="bottom"><b>getTransactionTypeString</b> (TransactionType type)</td></tr>
+static const char *&#160;</td><td class="memItemRight" valign="bottom"><b>getTransactionTypeString</b> (<a class="el" href="group__enums.html#ga63424b05ada401e320ed8c4473623a41">TransactionType</a> type)</td></tr>
 <tr class="separator:aebe96027dc3c2e3477dd0365977d71f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa5e428d42e0774f943c2a664a608791d"><td class="memItemLeft" align="right" valign="top"><a id="aa5e428d42e0774f943c2a664a608791d" name="aa5e428d42e0774f943c2a664a608791d"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>amountToString</b> (std::string *strPointer, mpfr_ptr amount)</td></tr>
@@ -324,7 +325,7 @@ std::recursive_mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mWork
         <tr>
           <td class="memname">virtual bool model::gradido::TransactionBase::validate </td>
           <td>(</td>
-          <td class="paramtype">TransactionValidationLevel&#160;</td>
+          <td class="paramtype"><a class="el" href="group__enums.html#ga5a93fcdc94d643d95a6b670b2a924443">TransactionValidationLevel</a>&#160;</td>
           <td class="paramname"><em>level</em> = <code>TRANSACTION_VALIDATION_SINGLE</code>, </td>
         </tr>
         <tr>

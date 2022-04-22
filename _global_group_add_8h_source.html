@@ -17,6 +17,7 @@
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -90,7 +91,7 @@ $(document).ready(function(){initNavTree('_global_group_add_8h_source.html','');
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#ifndef __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_GLOBAL_GROUP_ADD_H</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#define __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_GLOBAL_GROUP_ADD_H</span></div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span> </div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &quot;TransactionBase.h&quot;</span></div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &quot;<a class="code" href="_transaction_base_8h.html">TransactionBase.h</a>&quot;</span></div>
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &quot;proto/gradido/GlobalGroupAdd.pb.h&quot;</span></div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span> </div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#define GROUP_REGISTER_GROUP_ALIAS &quot;GroupRegister&quot;</span></div>
@@ -106,7 +107,7 @@ $(document).ready(function(){initNavTree('_global_group_add_8h_source.html','');
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span> </div>
 <div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>            <span class="keywordtype">int</span> prepare();</div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>            <span class="keywordtype">bool</span> validate(</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>                TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>                <a class="code hl_enumeration" href="group__enums.html#ga5a93fcdc94d643d95a6b670b2a924443">TransactionValidationLevel</a> level = <a class="code hl_enumvalue" href="group__enums.html#gga5a93fcdc94d643d95a6b670b2a924443a49f01ddec0f2d6ba82019c7bc21c6976">TRANSACTION_VALIDATION_SINGLE</a>,</div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>                <a class="code hl_class" href="classmodel_1_1_i_gradido_blockchain.html">IGradidoBlockchain</a>* blockchain = <span class="keyword">nullptr</span>,</div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>                <span class="keyword">const</span> <a class="code hl_class" href="classmodel_1_1gradido_1_1_gradido_block.html">GradidoBlock</a>* parentGradidoBlock = <span class="keyword">nullptr</span></div>
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>            ) <span class="keyword">const</span>;</div>
@@ -130,11 +131,14 @@ $(document).ready(function(){initNavTree('_global_group_add_8h_source.html','');
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="preprocessor">#endif </span><span class="comment">// __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_GLOBAL_GROUP_ADD_H</span></div>
+<div class="ttc" id="a_transaction_base_8h_html"><div class="ttname"><a href="_transaction_base_8h.html">TransactionBase.h</a></div><div class="ttdoc">: Interface for Transaction Objects</div></div>
 <div class="ttc" id="aclassmodel_1_1_i_gradido_blockchain_html"><div class="ttname"><a href="classmodel_1_1_i_gradido_blockchain.html">model::IGradidoBlockchain</a></div><div class="ttdef"><b>Definition:</b> IGradidoBlockchain.h:13</div></div>
 <div class="ttc" id="aclassmodel_1_1gradido_1_1_global_group_add_html"><div class="ttname"><a href="classmodel_1_1gradido_1_1_global_group_add.html">model::gradido::GlobalGroupAdd</a></div><div class="ttdef"><b>Definition:</b> GlobalGroupAdd.h:13</div></div>
 <div class="ttc" id="aclassmodel_1_1gradido_1_1_gradido_block_html"><div class="ttname"><a href="classmodel_1_1gradido_1_1_gradido_block.html">model::gradido::GradidoBlock</a></div><div class="ttdoc">The Final Blockformat on Blockchain.</div><div class="ttdef"><b>Definition:</b> GradidoBlock.h:28</div></div>
-<div class="ttc" id="aclassmodel_1_1gradido_1_1_transaction_base_html"><div class="ttname"><a href="classmodel_1_1gradido_1_1_transaction_base.html">model::gradido::TransactionBase</a></div><div class="ttdef"><b>Definition:</b> TransactionBase.h:57</div></div>
-<div class="ttc" id="anamespacemodel_html"><div class="ttname"><a href="namespacemodel.html">model</a></div><div class="ttdoc">: Interface for Transaction Objects</div><div class="ttdef"><b>Definition:</b> GradidoBlockchainException.h:90</div></div>
+<div class="ttc" id="aclassmodel_1_1gradido_1_1_transaction_base_html"><div class="ttname"><a href="classmodel_1_1gradido_1_1_transaction_base.html">model::gradido::TransactionBase</a></div><div class="ttdef"><b>Definition:</b> TransactionBase.h:85</div></div>
+<div class="ttc" id="agroup__enums_html_ga5a93fcdc94d643d95a6b670b2a924443"><div class="ttname"><a href="group__enums.html#ga5a93fcdc94d643d95a6b670b2a924443">model::gradido::TransactionValidationLevel</a></div><div class="ttdeci">TransactionValidationLevel</div><div class="ttdoc">Transaction Validation Level Enum.</div><div class="ttdef"><b>Definition:</b> TransactionBase.h:65</div></div>
+<div class="ttc" id="agroup__enums_html_gga5a93fcdc94d643d95a6b670b2a924443a49f01ddec0f2d6ba82019c7bc21c6976"><div class="ttname"><a href="group__enums.html#gga5a93fcdc94d643d95a6b670b2a924443a49f01ddec0f2d6ba82019c7bc21c6976">model::gradido::TRANSACTION_VALIDATION_SINGLE</a></div><div class="ttdeci">@ TRANSACTION_VALIDATION_SINGLE</div><div class="ttdoc">check only the transaction</div><div class="ttdef"><b>Definition:</b> TransactionBase.h:67</div></div>
+<div class="ttc" id="anamespacemodel_html"><div class="ttname"><a href="namespacemodel.html">model</a></div><div class="ttdoc">: Creation Transaction</div><div class="ttdef"><b>Definition:</b> GradidoBlockchainException.h:90</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
