@@ -16,7 +16,10 @@
 #include "gradido_blockchain/lib/MultithreadContainer.h"
 #include "gradido_blockchain/export.h"
 
-
+/*!
+	@file 
+	contain enum definitions
+ */
 
 namespace model {
 	class IGradidoBlockchain;
@@ -25,33 +28,58 @@ namespace model {
 
 		class GradidoTransaction;
 		class GradidoBlock;
-		
 
-		enum GRADIDOBLOCKCHAIN_EXPORT TransactionType: uint8_t {
-			TRANSACTION_NONE,
-			TRANSACTION_CREATION,
-			TRANSACTION_TRANSFER,
-			TRANSACTION_GROUP_FRIENDS_UPDATE,
-			TRANSACTION_REGISTER_ADDRESS,
-			TRANSACTION_GLOBAL_GROUP_ADD,
-			TRANSACTION_DEFERRED_TRANSFER
+		/*!
+		 *  \addtogroup enums
+ 		 *  @{
+ 		 */
+		/*! @enum model::gradido::TransactionType
+			enum for different transaction types
+		 */
+        /// Transaction Type Enum
+		enum  TransactionType: uint8_t {
+			//! Invalid or Empty Transaction
+			TRANSACTION_NONE, 
+			//! Creation Transaction, creates new Gradidos
+			TRANSACTION_CREATION, 
+			//! Transfer Transaction, move Gradidos from one account to another
+			TRANSACTION_TRANSFER, 
+			//! Group Friends Update Transaction, update relationship between groups
+			TRANSACTION_GROUP_FRIENDS_UPDATE, 
+			//! Register new address or sub address to group or move addres to another group
+			TRANSACTION_REGISTER_ADDRESS, 
+			//! Global Group Add Transaction, register a new group on global groups blockchain from gradido
+			TRANSACTION_GLOBAL_GROUP_ADD, 
+			//! Special Transfer Transaction with timeout used for Gradido Link
+			TRANSACTION_DEFERRED_TRANSFER 			
 		};
+	
 
-		enum GRADIDOBLOCKCHAIN_EXPORT TransactionValidationLevel {
-			// check only the transaction
+		// TODO: use enum class like here: https://wiggling-bits.net/using-enum-classes-as-type-safe-bitmasks/
+		/*! @enum model::gradido::TransactionValidationLevel
+			enum used as Bitmask for different transaction validation levels
+			so it is possible to validate with different levels at once.
+			The main difference between the levels are the needed data for that and the complexity 
+		 */
+		/// Transaction Validation Level Enum
+		enum TransactionValidationLevel {
+			//! check only the transaction
 			TRANSACTION_VALIDATION_SINGLE = 1,
-			// check also with previous transaction
+			//! check also with previous transaction
 			TRANSACTION_VALIDATION_SINGLE_PREVIOUS = 2,
-			// check all transaction from within date range
-			// by creation automatic the same month
+			/*! check all transaction from within date range
+			  by creation automatic the same month
+			*/
 			TRANSACTION_VALIDATION_DATE_RANGE = 4,
-			// check paired transaction on another group by cross group transactions
+			//! check paired transaction on another group by cross group transactions
 			TRANSACTION_VALIDATION_PAIRED = 8,
-			// check all transactions in the group which connected with this transaction address(es)
+			//! check all transactions in the group which connected with this transaction address(es)
 			TRANSACTION_VALIDATION_CONNECTED_GROUP = 16,
-			// check all transactions which connected with this transaction
-			TRANSACTION_VALIDATION_CONNECTED_BLOCKCHAIN = 32
+			//! check all transactions which connected with this transaction
+			TRANSACTION_VALIDATION_CONNECTED_BLOCKCHAIN = 32			
 		};
+
+		/*! @} End of Doxygen Groups*/		
 	
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionBase : public MultithreadContainer
 		{

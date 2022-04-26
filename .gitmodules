@@ -13,3 +13,6 @@
 [submodule "gradido_protocol"]
 	path = gradido_protocol
 	url = https://github.com/gradido/gradido_protocol.git
+[submodule "doc/doxygen-awesome-css"]
+	path = doc/doxygen_awesome_css
+	url = https://github.com/jothepro/doxygen-awesome-css.git
