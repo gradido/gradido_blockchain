@@ -3,6 +3,8 @@
 #include "rapidjson/error/en.h"
 
 #include <string>
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
 
 using namespace rapidjson;
 
@@ -80,6 +82,23 @@ std::string RapidjsonParseErrorException::getFullString() const
 		resultString += ", src: " + mRawText;
 	}
 	return resultString;
+}
+
+std::string RapidjsonParseErrorException::getDetails() const
+{
+	Document details(kObjectType);
+	auto alloc = details.GetAllocator();
+	details.AddMember("what", Value(what(), alloc), alloc);
+	details.AddMember("parseErrorCode", Value(GetParseError_En(mParseErrorCode), alloc), alloc);
+	details.AddMember("parseErrorPosition", mParseErrorOffset, alloc);
+	if (mRawText.size()) {
+		details.AddMember("src", Value(mRawText.data(), alloc), alloc);
+	}
+	StringBuffer buffer;
+	Writer<StringBuffer> writer(buffer);
+	details.Accept(writer);
+
+	return std::move(std::string(buffer.GetString()));
 }
 
 // *************************** Invalid Enum Exception *****************************

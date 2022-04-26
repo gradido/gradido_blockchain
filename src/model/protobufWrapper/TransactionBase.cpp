@@ -13,7 +13,7 @@
 namespace model {
 	namespace gradido {
 
-		Poco::RegularExpression g_RegExGroupAlias("^[a-z0-9-]{3,120}");
+		Poco::RegularExpression g_RegExGroupAlias("^[a-z0-9-]{3,120}$");
 
 		
 		bool TransactionBase::isValidGroupAlias(const std::string& groupAlias)

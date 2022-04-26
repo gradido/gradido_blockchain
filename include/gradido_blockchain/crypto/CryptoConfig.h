@@ -31,6 +31,7 @@ namespace CryptoConfig
 		explicit MissingKeyException(const char* what, const char* keyName) noexcept;		
 
 		std::string getFullString() const;
+		inline const std::string& getKeyName() const { return mKeyName; }
 
 	protected:
 		std::string mKeyName;

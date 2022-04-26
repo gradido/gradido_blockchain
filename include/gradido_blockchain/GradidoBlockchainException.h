@@ -41,6 +41,7 @@ public:
 	RapidjsonParseErrorException& setRawText(const std::string& rawText);
 	inline const std::string& getRawText() { return mRawText; }
 	std::string getFullString() const;
+	std::string getDetails() const;
 
 protected:
 	rapidjson::ParseErrorCode mParseErrorCode;

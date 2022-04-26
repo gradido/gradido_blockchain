@@ -28,7 +28,7 @@ namespace model {
 			inline TransactionType getTransactionType() { return mType; }
 
 			TransactionValidationException& setTransactionBody(const TransactionBody* transactionBody);
-			inline const char* getTransactionTypeString() { return TransactionBody::transactionTypeToString(mType); }
+			inline const char* getTransactionTypeString() const { return TransactionBody::transactionTypeToString(mType); }
 		protected:
 			std::string mTransactionMemo;
 			TransactionType mType;
@@ -39,6 +39,9 @@ namespace model {
 		public:
 			explicit TransactionValidationInvalidInputException(const char* what, const char* fieldname, const char* fieldType = nullptr) noexcept;
 			std::string getFullString() const noexcept;
+			//! mainly for return as details for json requests
+			//! \return a json string
+			std::string getDetails() const;
 
 			inline const std::string& getFieldName() const { return mFieldName; }
 			inline const std::string& getFieldType() const { return mFieldType; }

@@ -6,6 +6,11 @@
 
 #include "gradido_blockchain/model/protobufWrapper/GradidoTransaction.h"
 
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+
+using namespace rapidjson;
+
 namespace model {
 	namespace gradido {
 
@@ -47,6 +52,20 @@ namespace model {
 			result = whatString;
 			result += " with " + mFieldName + ": " + mFieldType;
 			return result;
+		}
+
+		std::string TransactionValidationInvalidInputException::getDetails() const
+		{
+			Document detailsObjs(kObjectType);
+			auto alloc = detailsObjs.GetAllocator();
+			detailsObjs.AddMember("what", Value(what(), alloc), alloc);
+			detailsObjs.AddMember("fieldName", Value(mFieldName.data(), alloc), alloc);
+			detailsObjs.AddMember("fieldType", Value(mFieldType.data(), alloc), alloc);
+			StringBuffer buffer;
+			Writer<StringBuffer> writer(buffer);
+			detailsObjs.Accept(writer);
+
+			return std::string(buffer.GetString());
 		}
 
 		//************* Invalid Signature *******************

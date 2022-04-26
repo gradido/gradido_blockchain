@@ -34,10 +34,10 @@ SecretKeyCryptography::ResultType SecretKeyCryptography::createKey(const std::st
 	auto mm = MemoryManager::getInstance();
 	auto app_secret = CryptoConfig::g_CryptoAppSecret;
 	if (!app_secret) {
-		throw CryptoConfig::MissingKeyException("in SecretKeyCryptography::createKey key is missing", "cryptoAppSecret");
+		throw CryptoConfig::MissingKeyException("in SecretKeyCryptography::createKey key is missing", "crypto.app_secret");
 	}
 	if (!CryptoConfig::g_ServerCryptoKey) {
-		throw CryptoConfig::MissingKeyException("in SecretKeyCryptography::createKey key is missing", "serverCryptoKey");
+		throw CryptoConfig::MissingKeyException("in SecretKeyCryptography::createKey key is missing", "crypto.server_key");
 	}
 	
 	Profiler timeUsed;

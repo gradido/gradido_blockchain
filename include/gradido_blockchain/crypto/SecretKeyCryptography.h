@@ -97,6 +97,11 @@ protected:
 	mutable std::shared_mutex mWorkingMutex;
 };
 
-
+class GRADIDOBLOCKCHAIN_EXPORT DecryptionFailedException : public GradidoBlockchainException
+{
+public: 
+	explicit DecryptionFailedException(const char* what) noexcept: GradidoBlockchainException(what) {}
+	std::string getFullString() const { return what(); }
+};
 
 #endif //__GRADIDO_LOGIN_SERVER_CRYPTO_SECRET_KEY_CRYPTOGRAPHY_H

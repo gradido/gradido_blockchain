@@ -22,6 +22,11 @@ std::string IotaRequestException::getFullString() const
 	return resultString;
 }
 
+std::string IotaRequestException::getDetails() const
+{
+	return "{\"url\":\"" + mUrl + "\", \"what\":\"" + what() + "\"}";
+}
+
 // *************************  Iota Post Request ************************
 
 IotaPostRequestException::IotaPostRequestException(const char* what, const std::string& url) noexcept
