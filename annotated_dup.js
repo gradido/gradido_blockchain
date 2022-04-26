@@ -26,7 +26,7 @@ var annotated_dup =
         [ "TransactionTransfer", "classmodel_1_1gradido_1_1_transaction_transfer.html", "classmodel_1_1gradido_1_1_transaction_transfer" ],
         [ "TransactionValidationException", "classmodel_1_1gradido_1_1_transaction_validation_exception.html", null ],
         [ "TransactionValidationForbiddenSignException", "classmodel_1_1gradido_1_1_transaction_validation_forbidden_sign_exception.html", null ],
-        [ "TransactionValidationInvalidInputException", "classmodel_1_1gradido_1_1_transaction_validation_invalid_input_exception.html", null ],
+        [ "TransactionValidationInvalidInputException", "classmodel_1_1gradido_1_1_transaction_validation_invalid_input_exception.html", "classmodel_1_1gradido_1_1_transaction_validation_invalid_input_exception" ],
         [ "TransactionValidationInvalidSignatureException", "classmodel_1_1gradido_1_1_transaction_validation_invalid_signature_exception.html", null ],
         [ "TransactionValidationMissingSignException", "classmodel_1_1gradido_1_1_transaction_validation_missing_sign_exception.html", null ],
         [ "TransactionValidationRequiredSignMissingException", "classmodel_1_1gradido_1_1_transaction_validation_required_sign_missing_exception.html", null ]
@@ -40,6 +40,7 @@ var annotated_dup =
     [ "AuthenticatedEncryption", "class_authenticated_encryption.html", "class_authenticated_encryption" ],
     [ "BlockchainOrderException", "class_blockchain_order_exception.html", null ],
     [ "CrossGroupTransactionBuilder", "class_cross_group_transaction_builder.html", null ],
+    [ "DecryptionFailedException", "class_decryption_failed_exception.html", null ],
     [ "DRHashList", "class_d_r_hash_list.html", null ],
     [ "DRHashListItem", "class_d_r_hash_list_item.html", null ],
     [ "DRMemoryList", "class_d_r_memory_list.html", null ],
