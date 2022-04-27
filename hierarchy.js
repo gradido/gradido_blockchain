@@ -76,11 +76,15 @@ var hierarchy =
         [ "MemoryManagerException", "class_memory_manager_exception.html", null ],
         [ "MnemonicException", "class_mnemonic_exception.html", null ],
         [ "MultithreadContainerLockTimeoutException", "class_multithread_container_lock_timeout_exception.html", null ],
+        [ "ParseStringToMpfrException", "class_parse_string_to_mpfr_exception.html", null ],
         [ "PassphraseEmptyWordSourceException", "class_passphrase_empty_word_source_exception.html", null ],
         [ "PocoNetException", "class_poco_net_exception.html", null ],
         [ "ProtobufParseException", "class_protobuf_parse_exception.html", null ],
         [ "ProtobufSerializationException", "class_protobuf_serialization_exception.html", [
           [ "ProtobufJsonSerializationException", "class_protobuf_json_serialization_exception.html", null ]
+        ] ],
+        [ "RapidjsonMissingMemberException", "class_rapidjson_missing_member_exception.html", [
+          [ "RapidjsonInvalidMemberException", "class_rapidjson_invalid_member_exception.html", null ]
         ] ],
         [ "RapidjsonParseErrorException", "class_rapidjson_parse_error_exception.html", null ],
         [ "RequestException", "class_request_exception.html", [
