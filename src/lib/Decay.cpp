@@ -92,3 +92,14 @@ void calculateDecay(const mpfr_ptr decay_factor, unsigned long seconds, mpfr_ptr
 	mpfr_mul(gradido, gradido, temp, gDefaultRound);
 	mm->releaseMathMemory(temp);
 }
+
+ParseStringToMpfrException::ParseStringToMpfrException(const char* what, const std::string& valueString) noexcept
+	: GradidoBlockchainException(what), mValueString(valueString)
+{
+
+}
+
+std::string ParseStringToMpfrException::getFullString() const
+{
+	return std::string(what()) + ", value string: " + mValueString;
+}

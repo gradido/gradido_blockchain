@@ -49,6 +49,25 @@ protected:
 	std::string				  mRawText;
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT RapidjsonMissingMemberException : public GradidoBlockchainException
+{
+public: 
+	explicit RapidjsonMissingMemberException(const char* what, const char* fieldName, const char* fieldType) noexcept;
+
+	std::string getFullString() const;
+protected:
+	std::string mFieldName;
+	std::string mFieldType;
+
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT RapidjsonInvalidMemberException : public RapidjsonMissingMemberException
+{
+public:
+	explicit RapidjsonInvalidMemberException(const char* what, const char* fieldName, const char* fieldType) noexcept :
+		RapidjsonMissingMemberException(what, fieldName, fieldType) {}
+};
+
 class GRADIDOBLOCKCHAIN_EXPORT GradidoInvalidEnumException : public GradidoBlockchainException
 {
 public:

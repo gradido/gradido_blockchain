@@ -101,6 +101,26 @@ std::string RapidjsonParseErrorException::getDetails() const
 	return std::move(std::string(buffer.GetString()));
 }
 
+// ************************** Missing Member in Rapidjson Object ********************
+RapidjsonMissingMemberException::RapidjsonMissingMemberException(const char* what, const char* fieldName, const char* fieldType) noexcept
+	: GradidoBlockchainException(what), mFieldName(fieldName), mFieldType(fieldType)
+{
+
+}
+
+std::string RapidjsonMissingMemberException::getFullString() const
+{
+	std::string result;
+	result = what();
+	if (mFieldName.size()) {
+		result += ", field name: " + mFieldName;
+	}
+	if (mFieldType.size()) {
+		result += ", field type: " + mFieldType;
+	}
+	return result;
+}
+
 // *************************** Invalid Enum Exception *****************************
 GradidoInvalidEnumException::GradidoInvalidEnumException(const char* what, const std::string& enumString) noexcept
 	: GradidoBlockchainException(what), mEnumString(enumString)

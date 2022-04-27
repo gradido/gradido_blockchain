@@ -66,9 +66,9 @@ namespace model {
 				if (!sender.amount().size()) {
 					throw TransactionValidationInvalidInputException("amount is empty", "amount", "string");
 				}
-				else if (mpfr_cmp_si(amount->getData(), 0) < 0.0) {
-					throw TransactionValidationInvalidInputException("negative amount", "amount", "string");
-				}
+				else if (mpfr_cmp_si(amount->getData(), 0) <= 0) {
+					throw TransactionValidationInvalidInputException("zero or negative amount", "amount", "string");
+				} 
 				
 				if (recipient_pubkey.size() != crypto_sign_PUBLICKEYBYTES) {
 					throw TransactionValidationInvalidInputException("invalid size", "recipient", "public key");

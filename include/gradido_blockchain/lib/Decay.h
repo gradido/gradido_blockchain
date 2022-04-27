@@ -4,6 +4,7 @@
 #include <mpfr.h>
 
 #include "gradido_blockchain/export.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 
 GRADIDOBLOCKCHAIN_EXPORT extern mpfr_t gDecayFactor356Days;
 GRADIDOBLOCKCHAIN_EXPORT extern mpfr_t gDecayFactor366Days;
@@ -59,6 +60,16 @@ GRADIDOBLOCKCHAIN_EXPORT void calculateDecayFast(mpfr_ptr decay_for_duration, mp
 
 GRADIDOBLOCKCHAIN_EXPORT void calculateDecay(const mpfr_ptr decay_factor, unsigned long seconds, mpfr_ptr gradido);
 
+class GRADIDOBLOCKCHAIN_EXPORT ParseStringToMpfrException : public GradidoBlockchainException
+{
+public:
+	explicit ParseStringToMpfrException(const char* what, const std::string& valueString) noexcept;
+
+	std::string getFullString() const;
+
+protected:
+	std::string mValueString;
+};
 
 
 #endif //_GRADIDO_MATH_H
