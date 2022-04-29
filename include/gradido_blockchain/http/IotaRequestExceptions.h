@@ -9,7 +9,7 @@ class GRADIDOBLOCKCHAIN_EXPORT IotaRequestException : public GradidoBlockchainEx
 public: 
 	explicit IotaRequestException(const char* what, const std::string& url) noexcept;
 	std::string getFullString() const;
-	std::string getDetails() const;
+	rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 protected:
 	std::string mUrl;
 

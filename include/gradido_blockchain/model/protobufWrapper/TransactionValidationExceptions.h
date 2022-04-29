@@ -40,8 +40,7 @@ namespace model {
 			explicit TransactionValidationInvalidInputException(const char* what, const char* fieldname, const char* fieldType = nullptr) noexcept;
 			std::string getFullString() const noexcept;
 			//! mainly for return as details for json requests
-			//! \return a json string
-			std::string getDetails() const;
+			rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 
 			inline const std::string& getFieldName() const { return mFieldName; }
 			inline const std::string& getFieldType() const { return mFieldType; }

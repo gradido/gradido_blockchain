@@ -164,6 +164,16 @@ Document JsonRequestHandler::stateError(const char* msg, std::string details)
 	return obj;
 }
 
+Document JsonRequestHandler::stateError(const char* msg, GradidoBlockchainException& ex)
+{
+	Document obj(kObjectType);
+	auto alloc = obj.GetAllocator();
+	obj.AddMember("state", "error", alloc);
+	obj.AddMember("msg", Value(msg, alloc), alloc);
+	obj.AddMember("details", ex.getDetails(alloc), alloc);
+	return obj;
+}
+
 
 Document JsonRequestHandler::stateSuccess()
 {

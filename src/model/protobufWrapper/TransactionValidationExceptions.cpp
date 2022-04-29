@@ -53,19 +53,13 @@ namespace model {
 			result += " with " + mFieldName + ": " + mFieldType;
 			return result;
 		}
-
-		std::string TransactionValidationInvalidInputException::getDetails() const
+	    Value TransactionValidationInvalidInputException::getDetails(Document::AllocatorType& alloc) const
 		{
-			Document detailsObjs(kObjectType);
-			auto alloc = detailsObjs.GetAllocator();
+			Value detailsObjs(kObjectType);
 			detailsObjs.AddMember("what", Value(what(), alloc), alloc);
 			detailsObjs.AddMember("fieldName", Value(mFieldName.data(), alloc), alloc);
 			detailsObjs.AddMember("fieldType", Value(mFieldType.data(), alloc), alloc);
-			StringBuffer buffer;
-			Writer<StringBuffer> writer(buffer);
-			detailsObjs.Accept(writer);
-
-			return std::string(buffer.GetString());
+			return std::move(detailsObjs);
 		}
 
 		//************* Invalid Signature *******************

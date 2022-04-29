@@ -22,9 +22,12 @@ std::string IotaRequestException::getFullString() const
 	return resultString;
 }
 
-std::string IotaRequestException::getDetails() const
+Value IotaRequestException::getDetails(Document::AllocatorType& alloc) const
 {
-	return "{\"url\":\"" + mUrl + "\", \"what\":\"" + what() + "\"}";
+	Value jsonDetails(kObjectType);
+	jsonDetails.AddMember("what", Value(what(), alloc), alloc);
+	jsonDetails.AddMember("url", Value(mUrl.data(), alloc), alloc);
+	return std::move(jsonDetails);
 }
 
 // *************************  Iota Post Request ************************

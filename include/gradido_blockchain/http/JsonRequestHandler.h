@@ -8,6 +8,7 @@
 #include "rapidjson/document.h"
 
 #include "gradido_blockchain/export.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 
 class GRADIDOBLOCKCHAIN_EXPORT JsonRequestHandler : public Poco::Net::HTTPRequestHandler
 {
@@ -38,6 +39,7 @@ public:
 
 
 	static rapidjson::Document stateError(const char* msg, std::string details = "");
+	static rapidjson::Document stateError(const char* msg, GradidoBlockchainException& ex);
 	static rapidjson::Document customStateError(const char* state, const char* msg, std::string details = "");
 	static rapidjson::Document stateSuccess();
 	static rapidjson::Document stateWarning(const char* msg, std::string details = "");

@@ -5,12 +5,15 @@
 #include "gradido_blockchain/export.h"
 #include "rapidjson/error/error.h"
 
+#include "rapidjson/document.h"
+
 class GRADIDOBLOCKCHAIN_EXPORT GradidoBlockchainException : public std::runtime_error
 {
 public:
 	explicit GradidoBlockchainException(const char* what) : std::runtime_error(what) {}
 	virtual ~GradidoBlockchainException() {};
 	virtual std::string getFullString() const = 0;
+	virtual rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const { return rapidjson::Value(rapidjson::kObjectType); }
 };
 
 class GRADIDOBLOCKCHAIN_EXPORT GradidoBlockchainTransactionNotFoundException : public GradidoBlockchainException
@@ -41,7 +44,7 @@ public:
 	RapidjsonParseErrorException& setRawText(const std::string& rawText);
 	inline const std::string& getRawText() { return mRawText; }
 	std::string getFullString() const;
-	std::string getDetails() const;
+	rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 
 protected:
 	rapidjson::ParseErrorCode mParseErrorCode;
