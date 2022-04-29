@@ -119,6 +119,14 @@ namespace model {
 				mm->releaseMathMemory(sum);
 				mm->releaseMathMemory(amount);
 			}
+
+			if ((level & TRANSACTION_VALIDATION_CONNECTED_GROUP) == TRANSACTION_VALIDATION_CONNECTED_GROUP) {
+				assert(blockchain);
+				auto addressType = blockchain->getAddressType(getRecipientPublicKeyString());
+				if (addressType != proto::gradido::RegisterAddress_AddressType_HUMAN) {
+					throw WrongAddressTypeException("wrong address type for creation", addressType);
+				}
+			}
 			
 			return true;
 		}

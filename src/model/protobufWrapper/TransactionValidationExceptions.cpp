@@ -273,5 +273,35 @@ namespace model {
 
 			return resultString;
 		}
+
+		// **************************** Wrong Address Type Exception ***********************************
+		WrongAddressTypeException::WrongAddressTypeException(
+			const char* what, 
+			proto::gradido::RegisterAddress_AddressType type
+		) noexcept
+			: TransactionValidationException(what), mType(type)
+		{
+
+		}
+		std::string WrongAddressTypeException::getFullString() const noexcept
+		{
+			std::string result;
+			auto addressTypeName = proto::gradido::RegisterAddress_AddressType_Name(mType);
+			size_t resultSize = strlen(what()) + addressTypeName.size() + 2 + 14;
+			result.reserve(resultSize);
+			result = what();
+			result += "address type: " + addressTypeName;
+			return result;
+		}
+
+		Value WrongAddressTypeException::getDetails(Document::AllocatorType& alloc) const
+		{
+			Value jsonDetails(kObjectType);
+			jsonDetails.AddMember("what", Value(what(), alloc), alloc);
+
+			auto addressTypeName = proto::gradido::RegisterAddress_AddressType_Name(mType);
+			jsonDetails.AddMember("addressType", Value(addressTypeName.data(), alloc), alloc);
+			return std::move(jsonDetails);
+		}
 	}
 }

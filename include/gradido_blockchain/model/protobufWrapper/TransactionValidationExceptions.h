@@ -136,6 +136,21 @@ namespace model {
 			std::string mNeeded;
 			std::string mExist;
 		};
+
+		class GRADIDOBLOCKCHAIN_EXPORT WrongAddressTypeException : public TransactionValidationException
+		{
+		public:
+			explicit WrongAddressTypeException(
+				const char* what, 
+				proto::gradido::RegisterAddress_AddressType type
+			) noexcept;
+
+			std::string getFullString() const noexcept;
+			rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
+		
+		protected:
+			proto::gradido::RegisterAddress_AddressType mType;
+		};
 	}
 }
 
