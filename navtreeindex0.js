@@ -178,6 +178,7 @@ var NAVTREEINDEX0 =
 "classmodel_1_1gradido_1_1_transaction_validation_invalid_signature_exception.html":[2,0,3,0,16],
 "classmodel_1_1gradido_1_1_transaction_validation_missing_sign_exception.html":[2,0,3,0,17],
 "classmodel_1_1gradido_1_1_transaction_validation_required_sign_missing_exception.html":[2,0,3,0,18],
+"classmodel_1_1gradido_1_1_wrong_address_type_exception.html":[2,0,3,0,19],
 "dir_14a7452d53324a20d4d0093d5a4b3bc5.html":[3,0,0,0,1],
 "dir_34979b4d233418f3fc26359b4a90b207.html":[3,0,0,0,3],
 "dir_7dd84796132205ab9e8fff2780a87aae.html":[3,0,0,0,2],

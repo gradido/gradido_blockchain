@@ -103,7 +103,8 @@ var hierarchy =
           [ "model::gradido::TransactionValidationInvalidInputException", "classmodel_1_1gradido_1_1_transaction_validation_invalid_input_exception.html", null ],
           [ "model::gradido::TransactionValidationInvalidSignatureException", "classmodel_1_1gradido_1_1_transaction_validation_invalid_signature_exception.html", null ],
           [ "model::gradido::TransactionValidationMissingSignException", "classmodel_1_1gradido_1_1_transaction_validation_missing_sign_exception.html", null ],
-          [ "model::gradido::TransactionValidationRequiredSignMissingException", "classmodel_1_1gradido_1_1_transaction_validation_required_sign_missing_exception.html", null ]
+          [ "model::gradido::TransactionValidationRequiredSignMissingException", "classmodel_1_1gradido_1_1_transaction_validation_required_sign_missing_exception.html", null ],
+          [ "model::gradido::WrongAddressTypeException", "classmodel_1_1gradido_1_1_wrong_address_type_exception.html", null ]
         ] ]
       ] ]
     ] ],

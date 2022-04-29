@@ -29,7 +29,8 @@ var annotated_dup =
         [ "TransactionValidationInvalidInputException", "classmodel_1_1gradido_1_1_transaction_validation_invalid_input_exception.html", "classmodel_1_1gradido_1_1_transaction_validation_invalid_input_exception" ],
         [ "TransactionValidationInvalidSignatureException", "classmodel_1_1gradido_1_1_transaction_validation_invalid_signature_exception.html", null ],
         [ "TransactionValidationMissingSignException", "classmodel_1_1gradido_1_1_transaction_validation_missing_sign_exception.html", null ],
-        [ "TransactionValidationRequiredSignMissingException", "classmodel_1_1gradido_1_1_transaction_validation_required_sign_missing_exception.html", null ]
+        [ "TransactionValidationRequiredSignMissingException", "classmodel_1_1gradido_1_1_transaction_validation_required_sign_missing_exception.html", null ],
+        [ "WrongAddressTypeException", "classmodel_1_1gradido_1_1_wrong_address_type_exception.html", null ]
       ] ],
       [ "IGradidoBlockchain", "classmodel_1_1_i_gradido_blockchain.html", null ],
       [ "TransactionEntry", "classmodel_1_1_transaction_entry.html", "classmodel_1_1_transaction_entry" ]
