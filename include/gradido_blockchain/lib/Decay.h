@@ -46,15 +46,11 @@ GRADIDOBLOCKCHAIN_EXPORT void calculateDecayFactor(mpfr_ptr decay_factor, int da
 GRADIDOBLOCKCHAIN_EXPORT void calculateDecayFactorForDuration(mpfr_ptr decay_for_duration, mpfr_ptr decay_factor, unsigned long seconds);
 
 //! \param decay_for_duration decay factor for specific duration, taken from ::calculateDecayFactorForDuration
-//! \param gradido_decimal gradido decimal, already as decimal < 1, for saving more accuracy for decay, contain updated value after function call
-//! \param gradido_cent as mpz, contain new, reduced value after function call
-//! \param temp only for storing between result, can reuse afterwards for another things
+//! \param gradido gradido decimal, contain updated value after function call
 //! \brief calculate decayed balance without memory allocation
 /*!
  * calculate decay with large precision: <br>
- * temp = (gradido_decimal + gradido_cent) * decay_for_duration <br>
- * gradido_cent = round(temp) <br>
- * gradido_decimal = temp - gradido_cent <br>
+ * temp = gradido * decay_for_duration <br>
  */
 GRADIDOBLOCKCHAIN_EXPORT void calculateDecayFast(mpfr_ptr decay_for_duration, mpfr_ptr gradido);
 
