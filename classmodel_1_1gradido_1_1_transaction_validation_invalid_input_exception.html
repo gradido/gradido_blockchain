@@ -122,8 +122,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aab39cfb41cfaaf3a8b3b4ada6b54db4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad2ac31f4f35bc65ee40883ff68a68115"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_transaction_validation_invalid_input_exception.html#ad2ac31f4f35bc65ee40883ff68a68115">getFullString</a> () const noexcept</td></tr>
 <tr class="separator:ad2ac31f4f35bc65ee40883ff68a68115"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3b6313cc912ccf6f59cac9b4bba60606"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_transaction_validation_invalid_input_exception.html#a3b6313cc912ccf6f59cac9b4bba60606">getDetails</a> () const</td></tr>
-<tr class="separator:a3b6313cc912ccf6f59cac9b4bba60606"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4474c62d4f9b8392066f4709d756fd42"><td class="memItemLeft" align="right" valign="top">rapidjson::Value&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_transaction_validation_invalid_input_exception.html#a4474c62d4f9b8392066f4709d756fd42">getDetails</a> (rapidjson::Document::AllocatorType &amp;alloc) const</td></tr>
+<tr class="memdesc:a4474c62d4f9b8392066f4709d756fd42"><td class="mdescLeft">&#160;</td><td class="mdescRight">mainly for return as details for json requests  <a href="classmodel_1_1gradido_1_1_transaction_validation_invalid_input_exception.html#a4474c62d4f9b8392066f4709d756fd42">More...</a><br /></td></tr>
+<tr class="separator:a4474c62d4f9b8392066f4709d756fd42"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a01e5afd2b4db54d867c1c6d1093b471d"><td class="memItemLeft" align="right" valign="top"><a id="a01e5afd2b4db54d867c1c6d1093b471d" name="a01e5afd2b4db54d867c1c6d1093b471d"></a>
 const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getFieldName</b> () const</td></tr>
 <tr class="separator:a01e5afd2b4db54d867c1c6d1093b471d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -174,21 +175,33 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>mTransactionMe
 <tr class="separator:a0577cfb469f7a6740eb9def848ba91cf inherit pro_attribs_classmodel_1_1gradido_1_1_transaction_validation_exception"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a3b6313cc912ccf6f59cac9b4bba60606" name="a3b6313cc912ccf6f59cac9b4bba60606"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3b6313cc912ccf6f59cac9b4bba60606">&#9670;&nbsp;</a></span>getDetails()</h2>
+<a id="a4474c62d4f9b8392066f4709d756fd42" name="a4474c62d4f9b8392066f4709d756fd42"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4474c62d4f9b8392066f4709d756fd42">&#9670;&nbsp;</a></span>getDetails()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::string model::gradido::TransactionValidationInvalidInputException::getDetails </td>
+          <td class="memname">Value model::gradido::TransactionValidationInvalidInputException::getDetails </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">rapidjson::Document::AllocatorType &amp;&#160;</td>
+          <td class="paramname"><em>alloc</em></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
-<p >mainly for return as details for json requests </p><dl class="section return"><dt>Returns</dt><dd>a json string </dd></dl>
+
+<p>mainly for return as details for json requests </p>
+
+<p>Reimplemented from <a class="el" href="class_gradido_blockchain_exception.html">GradidoBlockchainException</a>.</p>
 
 </div>
 </div>
