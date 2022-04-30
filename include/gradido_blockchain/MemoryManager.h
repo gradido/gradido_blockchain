@@ -56,8 +56,9 @@ public:
 	//!        -2 if hex is invalid
 	int convertFromHex(const std::string& hex);
 	void copyFromProtoBytes(const std::string& bytes);
-	inline void copyFrom(MemoryBin* origin) { assert(mSize == origin->size()); memcpy(mData, *origin, mSize); }
+	inline void copyFrom(const MemoryBin* origin) { assert(mSize == origin->size()); memcpy(mData, *origin, mSize); }
 	inline void copyFrom(const unsigned char* origin) { memcpy(mData, origin, mSize); }
+	MemoryBin* copy() const; 
 
 	bool isSame(const MemoryBin* b) const;
 

@@ -74,6 +74,13 @@ bool MemoryBin::isSame(const MemoryBin* b) const
 	return 0 == memcmp(data(), b->data(), size());
 }
 
+MemoryBin* MemoryBin::copy() const 
+{ 
+	auto result = MemoryManager::getInstance()->getMemory(mSize); 
+	result->copyFrom(this); 
+	return result; 
+}
+
 
 // *************************************************************
 
