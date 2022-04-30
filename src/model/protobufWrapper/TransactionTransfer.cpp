@@ -108,7 +108,6 @@ namespace model {
 					// if op1 > op2
 					throw InsufficientBalanceException("not enough Gradido Balance for send coins", amount->getData(), finalBalance->getData());
 				}
-				mm->releaseMathMemory(finalBalanceTransaction);
 			}
 			
 			return true;

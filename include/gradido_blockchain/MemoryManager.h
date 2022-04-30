@@ -15,6 +15,7 @@
 
 #include <list>
 #include <stack>
+#include <set>
 #include <assert.h>
 #include <mutex>
 #include <memory>
@@ -122,6 +123,7 @@ protected:
 	MemoryPageStack* mMemoryPageStacks[6];
 	std::mutex mMpfrMutex;
 	std::stack<mpfr_ptr> mMpfrPtrStack;
+	std::set<mpfr_ptr> mActiveMpfrs;
 };
 
 

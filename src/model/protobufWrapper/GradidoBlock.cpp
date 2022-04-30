@@ -230,7 +230,6 @@ namespace model {
 			crypto_generichash_init(&state, nullptr, 0, crypto_generichash_BYTES);
 			if (prevTxHash.size()) {
 				auto prexHashHex = DataTypeConverter::binToHex(prevTxHash);
-				printf("[GradidoBlock::calculateTxHash] calculate with prev tx hash: %s\n", prexHashHex.data());
 				crypto_generichash_update(&state, (const unsigned char*)prevTxHash.data(), prevTxHash.size());
 			}
 			crypto_generichash_update(&state, (const unsigned char*)transactionIdString.data(), transactionIdString.size());
@@ -296,7 +295,6 @@ namespace model {
 				mpfr_sub(finalBalance, finalBalance, temp, gDefaultRound);
 			}
 			TransactionBase::amountToString(mProtoGradidoBlock->mutable_final_gdd(), finalBalance);
-			printf("final gdd: %s\n", mProtoGradidoBlock->final_gdd().data());
 			mm->releaseMathMemory(finalBalance);
 			mm->releaseMathMemory(temp);			
 		}

@@ -148,6 +148,7 @@ namespace model {
 				exp_temp++;
 			}
 			auto strLength = strlen(str);
+			strPointer->clear();
 			// example: str = "100000000000000000000000000000000000000000000"
 			//     exp_temp = 4
 			// target       = 1000
@@ -203,7 +204,6 @@ namespace model {
 					strPointer->append(str, i);
 				}
 			}
-
 			mpfr_free_str(str);
 		}
 	}

@@ -1,5 +1,6 @@
 #include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/lib/Decay.h"
+#include "gradido_blockchain/model/protobufWrapper/TransactionBase.h"
 #include "sodium.h"
 #include <memory.h>
 #include <exception>
@@ -231,7 +232,9 @@ mpfr_ptr MemoryManager::getMathMemory()
 	} else {
 		mathMemory = new mpfr_t;
 	}
-	
+	if (!mActiveMpfrs.insert(mathMemory).second) {
+		assert(false && "[MemoryManager::getMathMemory] try to return mathe memory already in use");
+	}
 	mpfr_init2(mathMemory, MAGIC_NUMBER_AMOUNT_PRECISION_BITS);
 	mpfr_set_ui(mathMemory, 0, gDefaultRound);
 	return mathMemory;
@@ -245,6 +248,9 @@ void MemoryManager::releaseMathMemory(mpfr_ptr ptr)
 		throw MemoryManagerException("wrong precision", ptr->_mpfr_prec);
 	}
 	mMpfrPtrStack.push(ptr);
+	if (!mActiveMpfrs.erase(ptr)) {
+		assert(false && "[MemoryManager::getMathMemory] try to remove math memory already removed");
+	}
 }
 
 
