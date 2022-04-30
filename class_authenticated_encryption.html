@@ -106,15 +106,24 @@ Collaboration diagram for AuthenticatedEncryption:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a5e434d36b0c4d65b1b20095458d81551"><td class="memItemLeft" align="right" valign="top"><a id="a5e434d36b0c4d65b1b20095458d81551" name="a5e434d36b0c4d65b1b20095458d81551"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>AuthenticatedEncryption</b> (<a class="el" href="class_memory_bin.html">MemoryBin</a> *privateKey)</td></tr>
-<tr class="separator:a5e434d36b0c4d65b1b20095458d81551"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af2a4305d4e37755b874249b901aad79a"><td class="memItemLeft" align="right" valign="top"><a id="af2a4305d4e37755b874249b901aad79a" name="af2a4305d4e37755b874249b901aad79a"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>AuthenticatedEncryption</b> (const unsigned char pubkey[crypto_box_PUBLICKEYBYTES])</td></tr>
-<tr class="separator:af2a4305d4e37755b874249b901aad79a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c0df6d8ea68dd08365cbcf2b9592fc4"><td class="memItemLeft" align="right" valign="top"><a id="a5c0df6d8ea68dd08365cbcf2b9592fc4" name="a5c0df6d8ea68dd08365cbcf2b9592fc4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>AuthenticatedEncryption</b> (<a class="el" href="class_key_pair_ed25519.html">KeyPairEd25519</a> *ed25519KeyPair)</td></tr>
+<tr class="separator:a5c0df6d8ea68dd08365cbcf2b9592fc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a938eec6956a0158365a5d93eeea03f64"><td class="memItemLeft" align="right" valign="top"><a id="a938eec6956a0158365a5d93eeea03f64" name="a938eec6956a0158365a5d93eeea03f64"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>AuthenticatedEncryption</b> (<a class="el" href="class_memory_bin.html">MemoryBin</a> *privateKeyx25519)</td></tr>
+<tr class="separator:a938eec6956a0158365a5d93eeea03f64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ad6c0688fd91fccba67a7f54b651b31"><td class="memItemLeft" align="right" valign="top"><a id="a6ad6c0688fd91fccba67a7f54b651b31" name="a6ad6c0688fd91fccba67a7f54b651b31"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>AuthenticatedEncryption</b> (const unsigned char pubkeyx25519[crypto_scalarmult_curve25519_BYTES])</td></tr>
+<tr class="separator:a6ad6c0688fd91fccba67a7f54b651b31"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b0fefbc6612be3a084c9fe8a62c83a2"><td class="memItemLeft" align="right" valign="top"><a id="a5b0fefbc6612be3a084c9fe8a62c83a2" name="a5b0fefbc6612be3a084c9fe8a62c83a2"></a>
+<a class="el" href="class_memory_bin.html">MemoryBin</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>encrypt</b> (const unsigned char *message, size_t messageSize, <a class="el" href="class_authenticated_encryption.html">AuthenticatedEncryption</a> *recipiantKey)</td></tr>
+<tr class="separator:a5b0fefbc6612be3a084c9fe8a62c83a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af6a079a6bab6ce85a85388f6f44e4c64"><td class="memItemLeft" align="right" valign="top"><a id="af6a079a6bab6ce85a85388f6f44e4c64" name="af6a079a6bab6ce85a85388f6f44e4c64"></a>
 <a class="el" href="class_memory_bin.html">MemoryBin</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>encrypt</b> (<a class="el" href="class_memory_bin.html">MemoryBin</a> *message, <a class="el" href="class_authenticated_encryption.html">AuthenticatedEncryption</a> *recipiantKey)</td></tr>
 <tr class="separator:af6a079a6bab6ce85a85388f6f44e4c64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ed21fe364590e2e4db072935099d8ca"><td class="memItemLeft" align="right" valign="top"><a id="a7ed21fe364590e2e4db072935099d8ca" name="a7ed21fe364590e2e4db072935099d8ca"></a>
+<a class="el" href="class_memory_bin.html">MemoryBin</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>encrypt</b> (const std::string &amp;message, <a class="el" href="class_authenticated_encryption.html">AuthenticatedEncryption</a> *recipiantKey)</td></tr>
+<tr class="separator:a7ed21fe364590e2e4db072935099d8ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b062a26e00a85020f05f177bfc252f5"><td class="memItemLeft" align="right" valign="top"><a id="a4b062a26e00a85020f05f177bfc252f5" name="a4b062a26e00a85020f05f177bfc252f5"></a>
 <a class="el" href="class_memory_bin.html">MemoryBin</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>encrypt</b> (<a class="el" href="class_memory_bin.html">MemoryBin</a> *message, int precalculatedSharedSecretIndex)</td></tr>
 <tr class="separator:a4b062a26e00a85020f05f177bfc252f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -149,9 +158,9 @@ static size_t&#160;</td><td class="memItemRight" valign="bottom"><b>getPrivateKe
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a840941ec3a534e07f05511952459163a"><td class="memItemLeft" align="right" valign="top"><a id="a840941ec3a534e07f05511952459163a" name="a840941ec3a534e07f05511952459163a"></a>
-unsigned char&#160;</td><td class="memItemRight" valign="bottom"><b>mPubkey</b> [crypto_box_PUBLICKEYBYTES]</td></tr>
-<tr class="separator:a840941ec3a534e07f05511952459163a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a557a39ae531d6a20b6d4531df4c555cc"><td class="memItemLeft" align="right" valign="top"><a id="a557a39ae531d6a20b6d4531df4c555cc" name="a557a39ae531d6a20b6d4531df4c555cc"></a>
+unsigned char&#160;</td><td class="memItemRight" valign="bottom"><b>mPubkey</b> [crypto_scalarmult_curve25519_BYTES]</td></tr>
+<tr class="separator:a557a39ae531d6a20b6d4531df4c555cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
