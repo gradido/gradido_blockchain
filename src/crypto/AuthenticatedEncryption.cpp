@@ -1,22 +1,36 @@
 #include "gradido_blockchain/crypto/AuthenticatedEncryption.h"
+#include "gradido_blockchain/crypto/KeyPairEd25519.h"
 
 AuthenticatedEncryption::AuthenticatedEncryption()
 	: mPrivkey(nullptr), mPrecalculatedSharedSecretLastIndex(0)
 {
-	mPrivkey = MemoryManager::getInstance()->getMemory(crypto_box_SECRETKEYBYTES);
+	mPrivkey = MemoryManager::getInstance()->getMemory(crypto_scalarmult_curve25519_BYTES);
 	crypto_box_keypair(mPubkey, *mPrivkey);
 }
 
-AuthenticatedEncryption::AuthenticatedEncryption(MemoryBin* privateKey)
-	: mPrivkey(privateKey), mPrecalculatedSharedSecretLastIndex(0)
+AuthenticatedEncryption::AuthenticatedEncryption(KeyPairEd25519* ed25519KeyPair)
+	: mPrivkey(nullptr), mPrecalculatedSharedSecretLastIndex(0)
+{
+	if (ed25519KeyPair->getPrivateKey()) {
+		mPrivkey = MemoryManager::getInstance()->getMemory(crypto_scalarmult_curve25519_BYTES);
+		crypto_sign_ed25519_sk_to_curve25519(mPrivkey->data(), ed25519KeyPair->getPrivateKey()->data());
+		crypto_scalarmult_base(mPubkey, *mPrivkey);
+	}
+	else if (ed25519KeyPair->getPublicKey()) {
+		crypto_sign_ed25519_pk_to_curve25519(mPubkey, ed25519KeyPair->getPublicKey());
+	}
+}
+
+AuthenticatedEncryption::AuthenticatedEncryption(MemoryBin* privateKeyx25519)
+	: mPrivkey(privateKeyx25519), mPrecalculatedSharedSecretLastIndex(0)
 {
 	crypto_scalarmult_base(mPubkey, *mPrivkey);
 }
 
-AuthenticatedEncryption::AuthenticatedEncryption(const unsigned char pubkey[crypto_box_PUBLICKEYBYTES])
+AuthenticatedEncryption::AuthenticatedEncryption(const unsigned char pubkeyx25519[crypto_scalarmult_curve25519_BYTES])
 	: mPrivkey(nullptr), mPrecalculatedSharedSecretLastIndex(0)
 {
-	memcpy(mPubkey, pubkey, crypto_box_PUBLICKEYBYTES);
+	memcpy(mPubkey, pubkeyx25519, crypto_scalarmult_curve25519_BYTES);
 }
 
 AuthenticatedEncryption::~AuthenticatedEncryption()
@@ -34,15 +48,15 @@ AuthenticatedEncryption::~AuthenticatedEncryption()
 	mPrecalculatedSharedSecretsMutex.unlock();
 }
 
-MemoryBin* AuthenticatedEncryption::encrypt(MemoryBin* message, AuthenticatedEncryption* recipiantKey)
+MemoryBin* AuthenticatedEncryption::encrypt(const unsigned char* message, size_t messageSize, AuthenticatedEncryption* recipiantKey)
 {
 	if (!mPrivkey) return nullptr;
-	auto result = MemoryManager::getInstance()->getMemory(crypto_box_NONCEBYTES + crypto_box_MACBYTES + message->size());
+	auto result = MemoryManager::getInstance()->getMemory(crypto_box_NONCEBYTES + crypto_box_MACBYTES + messageSize);
 	randombytes_buf(*result, crypto_box_NONCEBYTES);
 	/*int crypto_box_easy(unsigned char* c, const unsigned char* m,
 		unsigned long long mlen, const unsigned char* n,
 		const unsigned char* pk, const unsigned char* sk);*/
-	crypto_box_easy(&result->data()[crypto_box_NONCEBYTES], message->data(), message->size(), *result, recipiantKey->mPubkey, *mPrivkey);
+	crypto_box_easy(&result->data()[crypto_box_NONCEBYTES], message, messageSize, *result, recipiantKey->mPubkey, *mPrivkey);
 	return result;
 }
 
