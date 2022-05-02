@@ -27,9 +27,9 @@ namespace model {
 			return {};
 		}
 
-		uint32_t GroupFriendsUpdate::getCoinColor() const
+		const std::string& GroupFriendsUpdate::getGroupId() const
 		{
-			return 0;
+			return "";
 		}
 
 		bool GroupFriendsUpdate::isBelongToUs(const TransactionBase* pairingTransaction) const

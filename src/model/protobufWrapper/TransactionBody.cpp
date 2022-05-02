@@ -62,16 +62,6 @@ namespace model {
 			initSpecificTransaction();
 		}
 
-		TransactionBody* TransactionBody::createGlobalGroupAdd(const std::string& groupName, const std::string& groupAlias, uint32_t nativeCoinColor)
-		{
-			auto obj = new TransactionBody;
-			auto globalGroupAdd = obj->mProtoTransactionBody.mutable_global_group_add();
-			globalGroupAdd->set_group_name(groupName);
-			globalGroupAdd->set_group_alias(groupAlias);
-			globalGroupAdd->set_native_coin_color(nativeCoinColor);
-			obj->initSpecificTransaction();
-			return obj;
-		}
 
 		TransactionBody* TransactionBody::createGroupFriendsUpdate(bool colorFusion)
 		{
@@ -151,11 +141,11 @@ namespace model {
 			return "<uninitalized>";
 		}
 
-		uint32_t TransactionBody::getCoinColor(const IGradidoBlockchain* blockchain) const
+		const std::string& TransactionBody::getGroupId(const IGradidoBlockchain* blockchain) const
 		{			
-			auto color = mTransactionSpecific->getCoinColor();
-			if (!color) {
-				color = blockchain->getGroupDefaultCoinColor();
+			const std::string& color = mTransactionSpecific->getGroupId();
+			if (!color.size()) {
+				return blockchain->getGroupId();
 			}
 			return color;
 		}
@@ -193,7 +183,6 @@ namespace model {
 			case TRANSACTION_TRANSFER: return "Transfer";
 			case TRANSACTION_GROUP_FRIENDS_UPDATE: return "Group Friends Update";
 			case TRANSACTION_REGISTER_ADDRESS: return "Register Address";
-			case TRANSACTION_GLOBAL_GROUP_ADD: return "Global Group Add";
 			case TRANSACTION_DEFERRED_TRANSFER: return "Deferred Transaction";
 			}
 			return "<unknown>";
@@ -202,11 +191,6 @@ namespace model {
 		const DeferredTransfer* TransactionBody::getDeferredTransfer() const
 		{
 			return dynamic_cast<DeferredTransfer*>(mTransactionSpecific);
-		}
-
-		const GlobalGroupAdd* TransactionBody::getGlobalGroupAdd() const
-		{
-			return dynamic_cast<GlobalGroupAdd*>(mTransactionSpecific);
 		}
 
 		const GroupFriendsUpdate* TransactionBody::getGroupFriendsUpdate() const
@@ -304,10 +288,6 @@ namespace model {
 			else if (mProtoTransactionBody.has_transfer()) {
 				mTransactionType = TRANSACTION_TRANSFER;
 				mTransactionSpecific = new model::gradido::TransactionTransfer(mProtoTransactionBody.transfer());
-			}
-			else if (mProtoTransactionBody.has_global_group_add()) {
-				mTransactionType = TRANSACTION_GLOBAL_GROUP_ADD;
-				mTransactionSpecific = new model::gradido::GlobalGroupAdd(mProtoTransactionBody.global_group_add());
 			}
 			else if (mProtoTransactionBody.has_group_friends_update()) {
 				mTransactionType = TRANSACTION_GROUP_FRIENDS_UPDATE;

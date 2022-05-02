@@ -31,7 +31,7 @@ namespace model {
 		TransactionEntry(gradido::GradidoBlock* transaction);
 
 		//! \brief init entry object without indices
-		TransactionEntry(uint64_t transactionNr, uint8_t month, uint16_t year, uint32_t coinColor);
+		TransactionEntry(uint64_t transactionNr, uint8_t month, uint16_t year, std::string groupId);
 
 		//! \brief operator for sorting by mTransactionNr in ascending order
 		bool operator < (const TransactionEntry& b) { return mTransactionNr < b.mTransactionNr; }		
@@ -40,7 +40,7 @@ namespace model {
 		inline const std::string* getSerializedTransaction() const { return mSerializedTransaction.get(); }
 		inline uint8_t getMonth() const { return mMonth; }
 		inline uint16_t getYear() const { return mYear; }
-		inline uint32_t getCoinColor() const { return mCoinColor; }
+		inline std::string getGroupId() const { return mGroupId; }
 
 	protected:
 
@@ -48,7 +48,7 @@ namespace model {
 		std::unique_ptr<std::string> mSerializedTransaction;
 		uint8_t mMonth;
 		uint16_t mYear;
-		uint32_t mCoinColor;
+		std::string mGroupId;
 		Poco::FastMutex mFastMutex;
 	};
 

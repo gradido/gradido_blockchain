@@ -172,9 +172,9 @@ namespace model {
 			return { recipientPubkey };
 		}
 
-		uint32_t TransactionCreation::getCoinColor() const
+		const std::string& TransactionCreation::getGroupId() const
 		{
-			return mProtoCreation.recipient().coin_color();
+			return mProtoCreation.recipient().group_id();
 		}
 
 		bool TransactionCreation::isBelongToUs(const TransactionBase* pairingTransaction) const
@@ -189,7 +189,7 @@ namespace model {
 				belongToUs = false;
 			}
 
-			if (getCoinColor() != pair->getCoinColor()) {
+			if (getGroupId() != pair->getGroupId()) {
 				belongToUs = false;
 			}
 

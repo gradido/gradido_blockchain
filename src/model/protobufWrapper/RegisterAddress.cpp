@@ -75,9 +75,9 @@ namespace model {
 			return result;
 		}
 
-		uint32_t RegisterAddress::getCoinColor() const
+		const std::string& RegisterAddress::getGroupId() const
 		{
-			return 0;
+			return "";
 		}
 
 		bool RegisterAddress::isBelongToUs(const TransactionBase* pairingTransaction) const

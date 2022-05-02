@@ -10,7 +10,6 @@ class GRADIDOBLOCKCHAIN_EXPORT TransactionFactory
 {
 public:
 	static std::unique_ptr<model::gradido::GradidoTransaction> createDeferredTransfer(std::unique_ptr<model::gradido::GradidoTransaction> transfer, Poco::Timestamp timeout);
-	static std::unique_ptr<model::gradido::GradidoTransaction> createGlobalGroupAdd(const std::string& groupName, const std::string& groupAlias, uint32_t nativeCoinColor);
 	static std::unique_ptr<model::gradido::GradidoTransaction> createGroupFriendsUpdate(bool colorFusion);
 	static std::unique_ptr<model::gradido::GradidoTransaction> createRegisterAddress(
 		const MemoryBin* userPubkey,
@@ -21,13 +20,13 @@ public:
 	static std::unique_ptr<model::gradido::GradidoTransaction> createTransactionCreation(
 		const MemoryBin* recipientPubkey,
 		const std::string& amountGddCent,
-		uint32_t coinColor,
+		std::string groupId,
 		Poco::DateTime targetDate
 	);
 	static std::unique_ptr<model::gradido::GradidoTransaction> createTransactionTransfer(
 		const MemoryBin* senderPubkey,
 		const std::string& amountGddCent,
-		uint32_t coinColor,
+		std::string groupId,
 		const MemoryBin* recipientPubkey
 	);
 	static Poco::SharedPtr<model::gradido::GradidoBlock> createGradidoBlock(
@@ -41,7 +40,7 @@ protected:
 	static std::unique_ptr<proto::gradido::TransferAmount> createTransferAmount(
 		const MemoryBin* recipientPubkey,
 		const std::string& amountGddCent,
-		uint32_t coinColor
+		std::string groupId
 	);
 };
 

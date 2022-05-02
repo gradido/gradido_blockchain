@@ -134,7 +134,6 @@ namespace model {
 			case TRANSACTION_TRANSFER: return "transfer";
 			case TRANSACTION_GROUP_FRIENDS_UPDATE: return "group friends update";
 			case TRANSACTION_REGISTER_ADDRESS: return "register address";
-			case TRANSACTION_GLOBAL_GROUP_ADD: return "global group add";
 			case TRANSACTION_DEFERRED_TRANSFER: return "deferred transfer";
 			default: return "<unknown>";
 			}

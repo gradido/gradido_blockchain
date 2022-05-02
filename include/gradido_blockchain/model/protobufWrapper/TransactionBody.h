@@ -4,7 +4,6 @@
 #include "proto/gradido/TransactionBody.pb.h"
 
 #include "DeferredTransfer.h"
-#include "GlobalGroupAdd.h"
 #include "GroupFriendsUpdate.h"
 #include "RegisterAddress.h"
 #include "TransactionCreation.h"
@@ -14,7 +13,7 @@
 
 #include "../../lib/MultithreadContainer.h"
 
-#define GRADIDO_PROTOCOL_VERSION 3
+#define GRADIDO_PROTOCOL_VERSION 3.1
 
 namespace model {
 	namespace gradido {
@@ -38,7 +37,6 @@ namespace model {
 
 			static TransactionBody* load(const std::string& protoMessageBin);
 			void upgradeToDeferredTransaction(Poco::Timestamp timeout);
-			static TransactionBody* createGlobalGroupAdd(const std::string& groupName, const std::string& groupAlias, uint32_t nativeCoinColor);
 			static TransactionBody* createGroupFriendsUpdate(bool colorFusion);
 			static TransactionBody* createRegisterAddress(
 				const MemoryBin* userPubkey,
@@ -60,10 +58,9 @@ namespace model {
 			std::string getMemo() const;
 			void setMemo(const std::string& memo);
 
-			uint32_t getCoinColor(const IGradidoBlockchain* blockchain) const;
+			const std::string& getGroupId(const IGradidoBlockchain* blockchain) const;
 
 			inline bool isDeferredTransfer() const { return mTransactionType == TRANSACTION_DEFERRED_TRANSFER; }
-			inline bool isGlobalGroupAdd() const { return mTransactionType == TRANSACTION_GLOBAL_GROUP_ADD; }
 			inline bool isGroupFriendsUpdate() const { return mTransactionType == TRANSACTION_GROUP_FRIENDS_UPDATE; }
 			inline bool isRegisterAddress() const { return mTransactionType == TRANSACTION_REGISTER_ADDRESS; }
 			inline bool isCreation() const { return mTransactionType == TRANSACTION_CREATION; }
@@ -85,7 +82,6 @@ namespace model {
 			const proto::gradido::TransactionBody* getBody() const { return &mProtoTransactionBody; }
 
 			const DeferredTransfer* getDeferredTransfer() const;
-			const GlobalGroupAdd* getGlobalGroupAdd() const;
 			const GroupFriendsUpdate* getGroupFriendsUpdate() const;
 			const RegisterAddress* getRegisterAddress() const;
 			const TransactionCreation* getCreationTransaction() const;
