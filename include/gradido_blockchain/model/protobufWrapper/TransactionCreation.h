@@ -37,7 +37,7 @@ namespace model {
 			bool validateTargetDate(uint64_t receivedSeconds) const;
 
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
-			const std::string& getGroupId() const;
+			const std::string& getCoinGroupId() const;
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 
 			inline const std::string& getAmount() const { return mProtoCreation.recipient().amount(); }

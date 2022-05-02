@@ -13,7 +13,7 @@ namespace model {
 		auto receivedDate = Poco::DateTime(transaction->getReceivedAsTimestamp());
 		mMonth = receivedDate.month();
 		mYear = receivedDate.year();
-		mGroupId = transaction->getGradidoTransaction()->getTransactionBody()->getTransactionBase()->getGroupId();
+		mGroupId = transaction->getGradidoTransaction()->getTransactionBody()->getTransactionBase()->getCoinGroupId();
 	}
 
 	TransactionEntry::TransactionEntry(gradido::GradidoBlock* transaction)
@@ -23,7 +23,7 @@ namespace model {
 		mMonth = received.month();
 		mYear = received.year();
 		auto transactionBase = transaction->getGradidoTransaction()->getTransactionBody()->getTransactionBase();
-		mGroupId = transactionBase->getGroupId();
+		mGroupId = transactionBase->getCoinGroupId();
 	}
 
 	TransactionEntry::TransactionEntry(uint64_t transactionNr, uint8_t month, uint16_t year, std::string groupId)

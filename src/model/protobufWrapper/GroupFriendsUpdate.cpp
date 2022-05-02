@@ -27,7 +27,7 @@ namespace model {
 			return {};
 		}
 
-		const std::string& GroupFriendsUpdate::getGroupId() const
+		const std::string& GroupFriendsUpdate::getCoinGroupId() const
 		{
 			return "";
 		}

@@ -96,7 +96,7 @@ namespace model {
 			{
 				assert(blockchain);
 				assert(parentGradidoBlock);
-				auto finalBalanceTransaction = blockchain->calculateAddressBalance(getSenderPublicKeyString(), getGroupId(), parentGradidoBlock->getReceivedAsTimestamp());
+				auto finalBalanceTransaction = blockchain->calculateAddressBalance(getSenderPublicKeyString(), getCoinGroupId(), parentGradidoBlock->getReceivedAsTimestamp());
 				auto finalBalance = MathMemory::create();
 				mpfr_swap(finalBalanceTransaction, finalBalance->getData());
 				mm->releaseMathMemory(finalBalanceTransaction);
@@ -126,7 +126,7 @@ namespace model {
 			return { senderPubkey, recipientPubkey };
 		}
 
-		const std::string& TransactionTransfer::getGroupId() const
+		const std::string& TransactionTransfer::getCoinGroupId() const
 		{
 			return mProtoTransfer.sender().group_id();
 		}
@@ -137,7 +137,7 @@ namespace model {
 			auto mm = MemoryManager::getInstance();
 			bool belongToUs = true;
 
-			if (getGroupId() != pair->getGroupId()) {
+			if (getCoinGroupId() != pair->getCoinGroupId()) {
 				belongToUs = false;
 			}
 			if (getAmount() != pair->getAmount()) {

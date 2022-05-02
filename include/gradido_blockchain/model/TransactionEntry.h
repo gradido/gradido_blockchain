@@ -40,7 +40,7 @@ namespace model {
 		inline const std::string* getSerializedTransaction() const { return mSerializedTransaction.get(); }
 		inline uint8_t getMonth() const { return mMonth; }
 		inline uint16_t getYear() const { return mYear; }
-		inline std::string getGroupId() const { return mGroupId; }
+		inline std::string getCoinGroupId() const { return mGroupId; }
 
 	protected:
 

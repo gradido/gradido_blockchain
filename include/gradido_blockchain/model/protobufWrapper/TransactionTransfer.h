@@ -35,7 +35,7 @@ namespace model {
 			) const;
 
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
-			const std::string& getGroupId() const;
+			const std::string& getCoinGroupId() const;
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 
 			const std::string& getAmount() const { return mProtoTransfer.sender().amount(); }

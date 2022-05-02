@@ -172,7 +172,7 @@ namespace model {
 			return { recipientPubkey };
 		}
 
-		const std::string& TransactionCreation::getGroupId() const
+		const std::string& TransactionCreation::getCoinGroupId() const
 		{
 			return mProtoCreation.recipient().group_id();
 		}
@@ -189,7 +189,7 @@ namespace model {
 				belongToUs = false;
 			}
 
-			if (getGroupId() != pair->getGroupId()) {
+			if (getCoinGroupId() != pair->getCoinGroupId()) {
 				belongToUs = false;
 			}
 
