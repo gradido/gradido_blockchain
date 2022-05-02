@@ -143,7 +143,7 @@ namespace model {
 
 		const std::string& TransactionBody::getGroupId(const IGradidoBlockchain* blockchain) const
 		{			
-			const std::string& color = mTransactionSpecific->getGroupId();
+			const std::string& color = mTransactionSpecific->getCoinGroupId();
 			if (!color.size()) {
 				return blockchain->getGroupId();
 			}

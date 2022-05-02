@@ -75,7 +75,7 @@ namespace model {
 			return result;
 		}
 
-		const std::string& RegisterAddress::getGroupId() const
+		const std::string& RegisterAddress::getCoinGroupId() const
 		{
 			return "";
 		}
