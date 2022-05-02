@@ -141,13 +141,13 @@ namespace model {
 			return "<uninitalized>";
 		}
 
-		const std::string& TransactionBody::getGroupId(const IGradidoBlockchain* blockchain) const
+		std::string TransactionBody::getGroupId(const IGradidoBlockchain* blockchain) const
 		{			
-			const std::string& color = mTransactionSpecific->getCoinGroupId();
+			std::string color = TransactionEntry::getCoinGroupId(this);
 			if (!color.size()) {
 				return blockchain->getGroupId();
 			}
-			return color;
+			return std::move(color);
 		}
 
 		void TransactionBody::setMemo(const std::string& memo)

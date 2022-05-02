@@ -75,11 +75,6 @@ namespace model {
 			return result;
 		}
 
-		const std::string& RegisterAddress::getCoinGroupId() const
-		{
-			return "";
-		}
-
 		bool RegisterAddress::isBelongToUs(const TransactionBase* pairingTransaction) const
 		{
 			auto pair = dynamic_cast<const RegisterAddress*>(pairingTransaction);
