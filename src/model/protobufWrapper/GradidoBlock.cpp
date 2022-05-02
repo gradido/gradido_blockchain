@@ -267,7 +267,6 @@ namespace model {
 				address = transactionBody->getTransferTransaction()->getSenderPublicKeyString();
 				break;
 			case model::gradido::TRANSACTION_GROUP_FRIENDS_UPDATE:
-			case model::gradido::TRANSACTION_GLOBAL_GROUP_ADD:
 				return;
 			case model::gradido::TRANSACTION_REGISTER_ADDRESS:
 				if (getGradidoTransaction()->getTransactionBody()->isLocal()) {
@@ -281,7 +280,7 @@ namespace model {
 			default: throw GradidoUnknownEnumException("unknown enum", "model::gradido:TransactionType", (int)transactionBody->getTransactionType());
 			}
 			
-			auto finalBalance = blockchain->calculateAddressBalance(address, transactionBody->getCoinColor(blockchain), getReceivedAsTimestamp());
+			auto finalBalance = blockchain->calculateAddressBalance(address, transactionBody->getGroupId(blockchain), getReceivedAsTimestamp());
 			auto temp = mm->getMathMemory();
 			// add value from this block if it was a transfer or creation transaction			
 

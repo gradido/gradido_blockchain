@@ -18,7 +18,7 @@ namespace model {
 				const GradidoBlock* parentGradidoBlock = nullptr
 				) const;
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
-			uint32_t getCoinColor() const;
+			const std::string& getGroupId() const;
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 
 			inline bool isColorFusion() const { return mProtoGroupFriendsUpdate.color_fusion(); }

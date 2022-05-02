@@ -59,7 +59,6 @@ namespace model {
 			inline GradidoTransaction& setMemo(const std::string& memo) { mTransactionBody->setMemo(memo); return *this; }
 			inline GradidoTransaction& setCreated(Poco::DateTime created) { mTransactionBody->setCreated(created); return *this; }
 			inline GradidoTransaction& setParentMessageId(const MemoryBin* parentMessageId) { mProtoGradidoTransaction->set_allocated_parent_message_id(parentMessageId->copyAsString().release()); return *this; }
-			inline GradidoTransaction& setApolloTransactionId(uint64_t apolloTransactionId) { mProtoGradidoTransaction->set_apollo_transaction_id(apolloTransactionId); return *this; }
 			/*! update body bytes into proto member
 				Serialize body bytes from TransactionBody member Variable and stuff it into proto::gradido::GradidoTransaction bodyBytes
 			*/
@@ -69,7 +68,6 @@ namespace model {
 				@return MemoryBin containing message id binar, must be freed from caller
 			*/
 			MemoryBin* getParentMessageId() const;
-			inline uint64_t getApolloTransactionId() { return mProtoGradidoTransaction->apollo_transaction_id(); }
 
 			std::unique_ptr<std::string> getSerialized();
 			std::unique_ptr<std::string> getSerializedConst() const;

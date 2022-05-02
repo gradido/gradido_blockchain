@@ -9,11 +9,6 @@ std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createDe
 	return transfer;	
 }
 
-std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createGlobalGroupAdd(const std::string& groupName, const std::string& groupAlias, uint32_t nativeCoinColor)
-{
-	return std::unique_ptr<model::gradido::GradidoTransaction>(new GradidoTransaction(TransactionBody::createGlobalGroupAdd(groupName, groupAlias, nativeCoinColor)));
-}
-
 std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createGroupFriendsUpdate(bool colorFusion)
 {
 	return std::unique_ptr<model::gradido::GradidoTransaction>(new GradidoTransaction(TransactionBody::createGroupFriendsUpdate(colorFusion)));
@@ -32,23 +27,23 @@ std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createRe
 std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createTransactionCreation(
 	const MemoryBin* recipientPubkey,
 	const std::string& amountGddCent,
-	uint32_t coinColor,
+	std::string groupId,
 	Poco::DateTime targetDate
 )
 {
-	auto transferAmount = createTransferAmount(recipientPubkey, amountGddCent, coinColor);
+	auto transferAmount = createTransferAmount(recipientPubkey, amountGddCent, groupId);
 	return std::unique_ptr<model::gradido::GradidoTransaction>(new GradidoTransaction(TransactionBody::createTransactionCreation(std::move(transferAmount), targetDate)));
 }
 
 std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createTransactionTransfer(
 	const MemoryBin* senderPubkey,
 	const std::string& amountGdd,
-	uint32_t coinColor,
+	std::string groupId,
 	const MemoryBin* recipientPubkey
 )
 {
 	assert(recipientPubkey);
-	auto transferAmount = createTransferAmount(senderPubkey, amountGdd, coinColor);
+	auto transferAmount = createTransferAmount(senderPubkey, amountGdd, groupId);
 	return std::unique_ptr<model::gradido::GradidoTransaction>(new GradidoTransaction(TransactionBody::createTransactionTransfer(std::move(transferAmount), recipientPubkey)));
 }
 
@@ -65,14 +60,14 @@ Poco::SharedPtr<model::gradido::GradidoBlock> TransactionFactory::createGradidoB
 std::unique_ptr<proto::gradido::TransferAmount> TransactionFactory::createTransferAmount(
 	const MemoryBin* recipientPubkey,
 	const std::string& amountGddCent,
-	uint32_t coinColor
+	std::string groupId
 )
 {
 	assert(recipientPubkey);
 	auto transferAmount = std::unique_ptr<proto::gradido::TransferAmount>(new proto::gradido::TransferAmount);
 	transferAmount->set_allocated_pubkey(recipientPubkey->copyAsString().release());
 	transferAmount->set_amount(amountGddCent);
-	transferAmount->set_coin_color(coinColor);
+	transferAmount->set_group_id(groupId);
 	return transferAmount;
 }
 
