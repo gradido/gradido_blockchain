@@ -20,7 +20,6 @@ namespace model {
 				const GradidoBlock* parentGradidoBlock = nullptr
 			) const;
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
-			const std::string& getCoinGroupId() const;
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 
 			MemoryBin* getUserPubkey() const;

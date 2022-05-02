@@ -27,11 +27,6 @@ namespace model {
 			return {};
 		}
 
-		const std::string& GroupFriendsUpdate::getCoinGroupId() const
-		{
-			return "";
-		}
-
 		bool GroupFriendsUpdate::isBelongToUs(const TransactionBase* pairingTransaction) const
 		{
 			auto pair = dynamic_cast<const GroupFriendsUpdate*>(pairingTransaction);

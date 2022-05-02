@@ -58,7 +58,7 @@ namespace model {
 			std::string getMemo() const;
 			void setMemo(const std::string& memo);
 
-			const std::string& getGroupId(const IGradidoBlockchain* blockchain) const;
+			std::string getGroupId(const IGradidoBlockchain* blockchain) const;
 
 			inline bool isDeferredTransfer() const { return mTransactionType == TRANSACTION_DEFERRED_TRANSFER; }
 			inline bool isGroupFriendsUpdate() const { return mTransactionType == TRANSACTION_GROUP_FRIENDS_UPDATE; }

@@ -42,8 +42,9 @@ namespace model {
 		inline uint16_t getYear() const { return mYear; }
 		inline std::string getCoinGroupId() const { return mGroupId; }
 
-	protected:
+		static std::string getCoinGroupId(const gradido::TransactionBody* body);
 
+	protected:
 		uint64_t mTransactionNr;
 		std::unique_ptr<std::string> mSerializedTransaction;
 		uint8_t mMonth;
