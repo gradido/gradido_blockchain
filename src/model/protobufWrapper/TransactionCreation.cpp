@@ -86,6 +86,15 @@ namespace model {
 				}
 			}
 
+			if (blockchain) {
+				if (getCoinGroupId() == blockchain->getGroupId()) {
+					throw TransactionValidationInvalidInputException(
+						"coinGroupId shouldn't be set if it is the same as blockchain group alias",
+						"coinGroupId", "string or UUID"
+					);
+				}
+			}
+
 			if ((level & TRANSACTION_VALIDATION_DATE_RANGE) == TRANSACTION_VALIDATION_DATE_RANGE) 
 			{
 				Poco::DateTime targetDate = Poco::Timestamp(mProtoCreation.target_date().seconds() * Poco::Timestamp::resolution());
