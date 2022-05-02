@@ -6,7 +6,7 @@
 
 #include "Poco/SharedPtr.h"
 
-#define GRADIDO_BLOCK_PROTOCOL_VERSION 3
+#define GRADIDO_BLOCK_PROTOCOL_VERSION "3.1"
 // MAGIC NUMBER: max allowed Timespan between creation date of transaction and receiving date (iota milestone timestamp) 
 // taken 2 minutes from hedera but maybe the time isn't enough if gradido is more used
 #define MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION_IN_MINUTES 2
