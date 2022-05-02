@@ -280,7 +280,7 @@ namespace model {
 			default: throw GradidoUnknownEnumException("unknown enum", "model::gradido:TransactionType", (int)transactionBody->getTransactionType());
 			}
 			
-			auto finalBalance = blockchain->calculateAddressBalance(address, transactionBody->getGroupId(blockchain), getReceivedAsTimestamp());
+			auto finalBalance = blockchain->calculateAddressBalance(address, TransactionEntry::getCoinGroupId(transactionBody), getReceivedAsTimestamp());
 			auto temp = mm->getMathMemory();
 			// add value from this block if it was a transfer or creation transaction			
 
