@@ -92,6 +92,15 @@ namespace model {
 				mm->releaseMemory(empty);
 			}
 
+			if (blockchain) {
+				if (getCoinGroupId() == blockchain->getGroupId()) {
+					throw TransactionValidationInvalidInputException(
+						"coinGroupId shouldn't be set if it is the same as blockchain group alias", 
+						"coinGroupId", "string or UUID"
+					);
+				}
+			}
+
 			if ((level & TRANSACTION_VALIDATION_SINGLE_PREVIOUS) == TRANSACTION_VALIDATION_SINGLE_PREVIOUS)
 			{
 				assert(blockchain);
@@ -103,7 +112,7 @@ namespace model {
 				std::string amountString, balanceString;
 				amountToString(&amountString, amount->getData());
 				amountToString(&balanceString, finalBalance->getData());
-				printf("amount: %s, balance: %s\n", amountString.data(), balanceString.data());
+				//printf("amount: %s, balance: %s\n", amountString.data(), balanceString.data());
 				if (mpfr_cmp(amount->getData(), finalBalance->getData()) > 0) {
 					// if op1 > op2
 					throw InsufficientBalanceException("not enough Gradido Balance for send coins", amount->getData(), finalBalance->getData());
