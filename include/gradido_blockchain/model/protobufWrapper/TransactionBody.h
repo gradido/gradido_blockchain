@@ -13,7 +13,7 @@
 
 #include "../../lib/MultithreadContainer.h"
 
-#define GRADIDO_PROTOCOL_VERSION 3.1
+#define GRADIDO_PROTOCOL_VERSION "3.2"
 
 namespace model {
 	namespace gradido {
@@ -52,7 +52,7 @@ namespace model {
 
 			inline TransactionType getTransactionType() const { return mTransactionType; }
 			inline proto::gradido::TransactionBody_CrossGroupType getCrossGroupType() const { return mProtoTransactionBody.type(); }
-			inline uint64_t getVersionNumber() const { return mProtoTransactionBody.version_number(); }
+			inline const std::string& getVersionNumber() const { return mProtoTransactionBody.version_number(); }
 			inline const std::string& getOtherGroup() const { return mProtoTransactionBody.other_group(); }
 			static const char* transactionTypeToString(TransactionType type);
 			std::string getMemo() const;
