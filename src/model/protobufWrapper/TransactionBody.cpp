@@ -36,6 +36,11 @@ namespace model {
 			DataTypeConverter::convertToProtoTimestampSeconds(created.timestamp(), protoCreated);
 		}
 
+		uint32_t TransactionBody::getCreatedSeconds() const
+		{
+			return mProtoTransactionBody.created().seconds();
+		}
+
 		TransactionBody* TransactionBody::load(const std::string& protoMessageBin)
 		{
 			auto obj = new TransactionBody;
@@ -130,6 +135,22 @@ namespace model {
 			mProtoTransactionBody.set_type(proto::gradido::TransactionBody_CrossGroupType_INBOUND);
 		}
 
+		proto::gradido::TransactionBody_CrossGroupType TransactionBody::getCrossGroupType() const
+		{
+			// cannot inline, because this doens't work in dll build
+			return mProtoTransactionBody.type();
+		}
+		const std::string& TransactionBody::getVersionNumber() const
+		{
+			// cannot inline, because this doens't work in dll build
+			return mProtoTransactionBody.version_number();
+		}
+		const std::string& TransactionBody::getOtherGroup() const
+		{
+			// cannot inline, because this doens't work in dll build
+			return mProtoTransactionBody.other_group();
+		}
+
 		std::string TransactionBody::getMemo() const
 		{
 			LOCK_RECURSIVE;
@@ -142,7 +163,7 @@ namespace model {
 		}
 
 		std::string TransactionBody::getGroupId(const IGradidoBlockchain* blockchain) const
-		{			
+		{
 			std::string color = TransactionEntry::getCoinGroupId(this);
 			if (!color.size()) {
 				return blockchain->getGroupId();
@@ -160,7 +181,7 @@ namespace model {
 		{
 			LOCK_RECURSIVE;
 			assert(mProtoTransactionBody.IsInitialized());
-			
+
 			auto size = mProtoTransactionBody.ByteSizeLong();
 			//auto bodyBytesSize = MemoryManager::getInstance()->getFreeMemory(mProtoCreation.ByteSizeLong());
 			std::string* resultString(new std::string(size, 0));
@@ -217,14 +238,14 @@ namespace model {
 		{
 			return mTransactionSpecific;
 		}
-		
+
 		bool TransactionBody::validate(
 			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
 			IGradidoBlockchain* blockchain/* = nullptr*/,
 			const GradidoBlock* parentGradidoBlock/* = nullptr*/) const
 		{
 			LOCK_RECURSIVE;
-			
+
 			try {
 				if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
 					if (getVersionNumber() != GRADIDO_PROTOCOL_VERSION) {
@@ -304,7 +325,7 @@ namespace model {
 			mTransactionSpecific->prepare();
 		}
 
-		
+
 
 	}
 }

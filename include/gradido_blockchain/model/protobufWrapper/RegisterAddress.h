@@ -23,19 +23,17 @@ namespace model {
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 
 			MemoryBin* getUserPubkey() const;
-			inline const std::string& getUserPubkeyString() const { return mProtoRegisterAddress.user_pubkey(); }
-			inline proto::gradido::RegisterAddress_AddressType getAddressType() const { return mProtoRegisterAddress.address_type(); }
+			const std::string& getUserPubkeyString() const;
+			proto::gradido::RegisterAddress_AddressType getAddressType() const;
 			inline bool isSubaccount() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_SUBACCOUNT;}
 			inline bool isHuman() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_HUMAN; }
 			MemoryBin* getNameHash() const;
-			inline const std::string& getNameHashString() const { return mProtoRegisterAddress.name_hash(); }
+			const std::string& getNameHashString() const;
 			MemoryBin* getSubaccountPubkey() const;
-			inline const std::string& getSubaccountPubkeyString() const { return mProtoRegisterAddress.subaccount_pubkey(); }
+			const std::string& getSubaccountPubkeyString() const;
 
 			static proto::gradido::RegisterAddress_AddressType getAddressTypeFromString(const std::string& addressType);
-			inline static const std::string& getAddressStringFromType(proto::gradido::RegisterAddress_AddressType type) {
-				return RegisterAddress_AddressType_Name(type);
-			}
+			static const std::string& getAddressStringFromType(proto::gradido::RegisterAddress_AddressType type);
 
 		protected:
 			const proto::gradido::RegisterAddress& mProtoRegisterAddress;

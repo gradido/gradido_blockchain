@@ -19,7 +19,7 @@ namespace model {
 
 		TransactionTransfer::~TransactionTransfer()
 		{
-			
+
 		}
 
 		int TransactionTransfer::prepare()
@@ -42,7 +42,7 @@ namespace model {
 		}
 
 		bool TransactionTransfer::validate(
-			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/, 
+			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
 			IGradidoBlockchain* blockchain/* = nullptr*/,
 			const GradidoBlock* parentGradidoBlock/* = nullptr*/)
 			const
@@ -52,24 +52,24 @@ namespace model {
 			// cleanup after itself
 			auto amount = MathMemory::create();
 			auto sender = mProtoTransfer.sender();
-			
+
 			if (mpfr_set_str(amount->getData(), sender.amount().data(), 10, gDefaultRound)) {
 				throw TransactionValidationInvalidInputException("amount cannot be parsed to a number", "amount", "string");
 			}
 
-			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) 
+			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE)
 			{
-				
+
 				auto recipient_pubkey = mProtoTransfer.recipient();
 				//auto amount = sender.amount();
-				
+
 				if (!sender.amount().size()) {
 					throw TransactionValidationInvalidInputException("amount is empty", "amount", "string");
 				}
 				else if (mpfr_cmp_si(amount->getData(), 0) <= 0) {
 					throw TransactionValidationInvalidInputException("zero or negative amount", "amount", "string");
-				} 
-				
+				}
+
 				if (recipient_pubkey.size() != crypto_sign_PUBLICKEYBYTES) {
 					throw TransactionValidationInvalidInputException("invalid size", "recipient", "public key");
 				}
@@ -95,7 +95,7 @@ namespace model {
 			if (blockchain) {
 				if (getCoinGroupId() == blockchain->getGroupId()) {
 					throw TransactionValidationInvalidInputException(
-						"coinGroupId shouldn't be set if it is the same as blockchain group alias", 
+						"coinGroupId shouldn't be set if it is the same as blockchain group alias",
 						"coinGroupId", "string or UUID"
 					);
 				}
@@ -118,7 +118,7 @@ namespace model {
 					throw InsufficientBalanceException("not enough Gradido Balance for send coins", amount->getData(), finalBalance->getData());
 				}
 			}
-			
+
 			return true;
 		}
 
@@ -137,6 +137,7 @@ namespace model {
 
 		const std::string& TransactionTransfer::getCoinGroupId() const
 		{
+			// cannot inline, because this doens't work in dll build
 			return mProtoTransfer.sender().group_id();
 		}
 
@@ -166,6 +167,22 @@ namespace model {
 			}
 			mm->releaseMemory(recipientPubkey); mm->releaseMemory(recipientPubkeyPair);
 			return belongToUs;
+		}
+
+		const std::string& TransactionTransfer::getAmount() const
+		{
+			// cannot inline, because this doens't work in dll build
+			return mProtoTransfer.sender().amount();
+		}
+		const std::string& TransactionTransfer::getSenderPublicKeyString() const
+		{
+			// cannot inline, because this doens't work in dll build
+			return mProtoTransfer.sender().pubkey();
+		}
+		const std::string& TransactionTransfer::getRecipientPublicKeyString() const
+		{
+			// cannot inline, because this doens't work in dll build
+			return mProtoTransfer.recipient();
 		}
 
 		MemoryBin* TransactionTransfer::getSenderPublicKey() const
