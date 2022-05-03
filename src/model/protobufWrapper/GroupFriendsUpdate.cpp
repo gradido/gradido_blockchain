@@ -32,6 +32,10 @@ namespace model {
 			auto pair = dynamic_cast<const GroupFriendsUpdate*>(pairingTransaction);
 			return isColorFusion() == pair->isColorFusion();
 		}
+		bool GroupFriendsUpdate::isColorFusion() const
+		{
+			return mProtoGroupFriendsUpdate.color_fusion();
+		}
 
 	}
 }

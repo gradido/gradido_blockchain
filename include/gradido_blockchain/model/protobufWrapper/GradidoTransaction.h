@@ -8,7 +8,7 @@
 class TransactionFactory;
 class CrossGroupTransactionBuilder;
 
-namespace model {	
+namespace model {
 
 	namespace gradido {
 
@@ -21,7 +21,7 @@ namespace model {
 
 		//!  Contain the signature map for the Transaction and the serialized body
 		/*!
-	  		
+
 			<a href="https://github.com/gradido/gradido_protocol/blob/master/gradido/GradidoTransaction.proto" target="_blank">Protobuf: GradidoTransaction</a>
 		*/
 		class GRADIDOBLOCKCHAIN_EXPORT GradidoTransaction: public Poco::RefCountedObject
@@ -35,7 +35,7 @@ namespace model {
 
 			inline const TransactionBody* getTransactionBody() const { return mTransactionBody; }
 			inline TransactionBody* getMutableTransactionBody() { return mTransactionBody; }
-			
+
 			/*! Check if Transaction is valid, calls validate from TransactionBody
 				Details
 			*/
@@ -58,7 +58,7 @@ namespace model {
 
 			inline GradidoTransaction& setMemo(const std::string& memo) { mTransactionBody->setMemo(memo); return *this; }
 			inline GradidoTransaction& setCreated(Poco::DateTime created) { mTransactionBody->setCreated(created); return *this; }
-			inline GradidoTransaction& setParentMessageId(const MemoryBin* parentMessageId) { mProtoGradidoTransaction->set_allocated_parent_message_id(parentMessageId->copyAsString().release()); return *this; }
+			GradidoTransaction& setParentMessageId(const MemoryBin* parentMessageId);
 			/*! update body bytes into proto member
 				Serialize body bytes from TransactionBody member Variable and stuff it into proto::gradido::GradidoTransaction bodyBytes
 			*/

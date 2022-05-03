@@ -51,7 +51,7 @@ namespace model {
 			IGradidoBlockchain* otherBlockchain/* = nullptr*/
 		) const
 		{
-			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) 
+			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE)
 			{
 				auto sig_map = mProtoGradidoTransaction->sig_map();
 
@@ -71,25 +71,25 @@ namespace model {
 						);
 					}
 				}
-				
+
 				// check for not allowed signatures
 				mTransactionBody->getTransactionBase()->checkRequiredSignatures(&sig_map);
 				mTransactionBody->validate(level, blockchain, parentGradidoBlock);
 			}
-			 
+
 			// must be implemented in gradido node server
 			if ((level & TRANSACTION_VALIDATION_PAIRED) == TRANSACTION_VALIDATION_PAIRED)
 			{
 				assert(otherBlockchain);
-				
+
 				auto transactionBody = getTransactionBody();
 				auto mm = MemoryManager::getInstance();
 				Poco::SharedPtr<TransactionEntry> pairTransactionEntry;
 				switch (transactionBody->getCrossGroupType()) {
 				case proto::gradido::TransactionBody_CrossGroupType_LOCAL: break; // no cross grouü
-				case proto::gradido::TransactionBody_CrossGroupType_INBOUND: 
+				case proto::gradido::TransactionBody_CrossGroupType_INBOUND:
 					// happen before inbound, can only be checked after both transactions are written to blockchain
-				case proto::gradido::TransactionBody_CrossGroupType_OUTBOUND: 
+				case proto::gradido::TransactionBody_CrossGroupType_OUTBOUND:
 				case proto::gradido::TransactionBody_CrossGroupType_CROSS:
 					if (!mProtoGradidoTransaction->parent_message_id().size()) {
 						throw TransactionValidationInvalidInputException("parent message id not set for outbound", "parent message id", "binary");
@@ -105,8 +105,8 @@ namespace model {
 						auto pairingTransaction = pairingGradidoBlock->getGradidoTransaction();
 						if (!isBelongToUs(pairingTransaction)) {
 							throw PairingTransactionNotMatchException(
-								"pairing transaction not matching", 
-								getSerializedConst().get(), 
+								"pairing transaction not matching",
+								getSerializedConst().get(),
 								pairingTransaction->getSerializedConst().get()
 							);
 						}
@@ -114,9 +114,9 @@ namespace model {
 					break;
 				default: throw GradidoUnknownEnumException("unknown cross group type", "proto::gradido::TransactionBody_CrossGroupType", transactionBody->getCrossGroupType());
 				}
-				
+
 			}
-			
+
 			return true;
 		}
 
@@ -146,8 +146,8 @@ namespace model {
 		bool GradidoTransaction::addSign(const MemoryBin* pubkeyBin, const MemoryBin* signatureBin)
 		{
 			std::unique_ptr<std::string> bodyBytes;
-			
-			bodyBytes = mTransactionBody->getBodyBytes();	
+
+			bodyBytes = mTransactionBody->getBodyBytes();
 			auto sigMap = mProtoGradidoTransaction->mutable_sig_map();
 
 			// check if pubkey already exist
@@ -168,7 +168,7 @@ namespace model {
 			auto sigBytes = sigPair->mutable_signature();
 			*sigBytes = std::string((const char*)signatureBin->data(), crypto_sign_BYTES);
 			return sigMap->sigpair_size() >= mTransactionBody->getTransactionBase()->getMinSignatureCount();
-			
+
 		}
 
 		std::vector<std::pair<MemoryBin*, MemoryBin*>> GradidoTransaction::getPublicKeySignaturePairs(bool withPublicKey, bool withSignatures, bool onlyFirst/* = true*/) const
@@ -204,7 +204,7 @@ namespace model {
 		std::vector<MemoryBin*> GradidoTransaction::getPublicKeysfromSignatureMap(bool onlyFirst/* = true*/) const
 		{
 			auto publicSignatures = getPublicKeySignaturePairs(true, false, onlyFirst);
-			
+
 			std::vector<MemoryBin*> result;
 			if (!onlyFirst) {
 				result.reserve(publicSignatures.size());
@@ -213,7 +213,7 @@ namespace model {
 				result.push_back(publicSignatures[i].first);
 				if (onlyFirst) break;
 			}
-			
+
 			return result;
 		}
 
@@ -231,6 +231,14 @@ namespace model {
 			}
 
 			return result;
+		}
+
+		GradidoTransaction& GradidoTransaction::setParentMessageId(const MemoryBin* parentMessageId)
+		{
+			mProtoGradidoTransaction->set_allocated_parent_message_id(
+				parentMessageId->copyAsString().release()
+			);
+			return *this;
 		}
 
 		void GradidoTransaction::updateBodyBytes()
