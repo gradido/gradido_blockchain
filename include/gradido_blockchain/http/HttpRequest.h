@@ -18,6 +18,8 @@ public:
 	HttpRequest(const Poco::URI& requestUri);
 	virtual ~HttpRequest() {}
 
+	inline const Poco::URI& getRequestUri() const { return mRequestUri; }
+
 protected:
 	virtual Poco::SharedPtr<Poco::Net::HTTPClientSession> createClientSession();
 	std::string GET(const char* pathAndQuery = nullptr, const char* version = nullptr);
