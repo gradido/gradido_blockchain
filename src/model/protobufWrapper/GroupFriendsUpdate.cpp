@@ -27,15 +27,14 @@ namespace model {
 			return {};
 		}
 
-		uint32_t GroupFriendsUpdate::getCoinColor() const
-		{
-			return 0;
-		}
-
 		bool GroupFriendsUpdate::isBelongToUs(const TransactionBase* pairingTransaction) const
 		{
 			auto pair = dynamic_cast<const GroupFriendsUpdate*>(pairingTransaction);
 			return isColorFusion() == pair->isColorFusion();
+		}
+		bool GroupFriendsUpdate::isColorFusion() const
+		{
+			return mProtoGroupFriendsUpdate.color_fusion();
 		}
 
 	}

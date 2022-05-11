@@ -37,7 +37,7 @@ namespace model {
 			if (receiverPublic.size() != crypto_sign_PUBLICKEYBYTES) {
 				throw TransactionValidationInvalidInputException("invalid size", "pubkey", "public key");
 			}
-	
+
 			//
 			mMinSignatureCount = 1;
 			auto mm = MemoryManager::getInstance();
@@ -57,14 +57,19 @@ namespace model {
 			return Poco::DateTimeFormatter::format(pocoStamp, "%d. %b %y");
 		}
 
+		Poco::DateTime TransactionCreation::getTargetDate() const
+		{
+			return DataTypeConverter::convertFromProtoTimestampSeconds(mProtoCreation.target_date());
+		}
+
 		bool TransactionCreation::validate(
-			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/, 
+			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
 			IGradidoBlockchain* blockchain/* = nullptr*/,
 			const GradidoBlock* parentGradidoBlock/* = nullptr*/
 		) const
 		{
 			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
-				auto mm = MemoryManager::getInstance();				
+				auto mm = MemoryManager::getInstance();
 				mpfr_ptr amount = mm->getMathMemory();
 				if (mpfr_set_str(amount, mProtoCreation.recipient().amount().data(), 10, gDefaultRound)) {
 					throw TransactionValidationInvalidInputException("amount cannot be parsed to a number", "amount", "string");
@@ -86,12 +91,21 @@ namespace model {
 				}
 			}
 
-			if ((level & TRANSACTION_VALIDATION_DATE_RANGE) == TRANSACTION_VALIDATION_DATE_RANGE) 
+			if (blockchain) {
+				if (getCoinGroupId() == blockchain->getGroupId()) {
+					throw TransactionValidationInvalidInputException(
+						"coinGroupId shouldn't be set if it is the same as blockchain group alias",
+						"coinGroupId", "string or UUID"
+					);
+				}
+			}
+
+			if ((level & TRANSACTION_VALIDATION_DATE_RANGE) == TRANSACTION_VALIDATION_DATE_RANGE)
 			{
 				Poco::DateTime targetDate = Poco::Timestamp(mProtoCreation.target_date().seconds() * Poco::Timestamp::resolution());
 				assert(blockchain);
 				assert(parentGradidoBlock);
-					
+
 				auto pubkey = mProtoCreation.recipient().pubkey();
 				auto mm = MemoryManager::getInstance();
 				auto amount = mm->getMathMemory();
@@ -99,10 +113,10 @@ namespace model {
 				if (mpfr_set_str(amount, mProtoCreation.recipient().amount().data(), 10, gDefaultRound)) {
 					throw TransactionValidationInvalidInputException("amount cannot be parsed to a number", "amount", "string");
 				}
-				
+
 				blockchain->calculateCreationSum(pubkey, targetDate.month(), targetDate.year(), parentGradidoBlock->getReceivedAsTimestamp(), sum);
 				mpfr_add(sum, sum, amount, gDefaultRound);
-				
+
 				auto id = parentGradidoBlock->getID();
 				int lastId = 0;
 				if (blockchain->getLastTransaction()) {
@@ -127,7 +141,7 @@ namespace model {
 					throw WrongAddressTypeException("wrong address type for creation", addressType);
 				}
 			}
-			
+
 			return true;
 		}
 
@@ -172,9 +186,10 @@ namespace model {
 			return { recipientPubkey };
 		}
 
-		uint32_t TransactionCreation::getCoinColor() const
+		const std::string& TransactionCreation::getCoinGroupId() const
 		{
-			return mProtoCreation.recipient().coin_color();
+			// cannot inline, because this doens't work in dll build
+			return mProtoCreation.recipient().group_id();
 		}
 
 		bool TransactionCreation::isBelongToUs(const TransactionBase* pairingTransaction) const
@@ -189,7 +204,7 @@ namespace model {
 				belongToUs = false;
 			}
 
-			if (getCoinColor() != pair->getCoinColor()) {
+			if (getCoinGroupId() != pair->getCoinGroupId()) {
 				belongToUs = false;
 			}
 
@@ -202,12 +217,24 @@ namespace model {
 			return belongToUs;
 		}
 
+		const std::string& TransactionCreation::getAmount() const
+		{
+			// cannot inline, because this doens't work in dll build
+			return mProtoCreation.recipient().amount();
+		}
+
 
 		MemoryBin* TransactionCreation::getRecipientPublicKey() const
 		{
 			auto bin = MemoryManager::getInstance()->getMemory(mProtoCreation.recipient().pubkey().size());
 			bin->copyFromProtoBytes(mProtoCreation.recipient().pubkey());
 			return bin;
+		}
+
+		const std::string& TransactionCreation::getRecipientPublicKeyString() const
+		{
+			// cannot inline, because this doens't work in dll build
+			return mProtoCreation.recipient().pubkey();
 		}
 
 	}

@@ -23,7 +23,7 @@ namespace model {
 		}
 
 		bool RegisterAddress::validate(
-			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/, 
+			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
 			IGradidoBlockchain* blockchain/* = nullptr*/,
 			const GradidoBlock* parentGradidoBlock/* = nullptr*/) const
 		{
@@ -33,37 +33,37 @@ namespace model {
 
 			if ((level & TRANSACTION_VALIDATION_CONNECTED_GROUP) == TRANSACTION_VALIDATION_CONNECTED_GROUP) {
 				assert(blockchain);
-				
+
 				Poco::SharedPtr<model::TransactionEntry> lastTransaction;
 
 				std::string address;
 
 				switch (getAddressType()) {
 				case proto::gradido::RegisterAddress_AddressType_HUMAN:
-				case proto::gradido::RegisterAddress_AddressType_PROJECT: 
-					address = getUserPubkeyString(); 
+				case proto::gradido::RegisterAddress_AddressType_PROJECT:
+					address = getUserPubkeyString();
 					break;
-				case proto::gradido::RegisterAddress_AddressType_SUBACCOUNT: 
-					address = getSubaccountPubkeyString(); 
+				case proto::gradido::RegisterAddress_AddressType_SUBACCOUNT:
+					address = getSubaccountPubkeyString();
 					break;
 				}
 				lastTransaction = blockchain->findLastTransactionForAddress(address);
 				if (!lastTransaction.isNull()) {
 					throw AddressAlreadyExistException("cannot register address because it already exist", DataTypeConverter::binToHex(address), getAddressType());
 				}
-				
+
 			}
 
 			// TODO: check if address wasn't already registered to this blockchain
 			return true;
 		}
 
-		std::vector<MemoryBin*> RegisterAddress::getInvolvedAddresses() const 
+		std::vector<MemoryBin*> RegisterAddress::getInvolvedAddresses() const
 		{
 			auto mm = MemoryManager::getInstance();
 			std::vector<MemoryBin*> result;
 
-			auto userPubkeySize = mProtoRegisterAddress.user_pubkey().size();			
+			auto userPubkeySize = mProtoRegisterAddress.user_pubkey().size();
 			auto userPubkey = getUserPubkey();
 			if (userPubkey) {
 				result.push_back(userPubkey);
@@ -73,11 +73,6 @@ namespace model {
 				result.push_back(subaccountPubkey);
 			}
 			return result;
-		}
-
-		uint32_t RegisterAddress::getCoinColor() const
-		{
-			return 0;
 		}
 
 		bool RegisterAddress::isBelongToUs(const TransactionBase* pairingTransaction) const
@@ -94,8 +89,20 @@ namespace model {
 			if (getSubaccountPubkeyString().compare(pair->getUserPubkeyString())) {
 				return false;
 			}
-			
+
 			return true;
+		}
+
+		const std::string& RegisterAddress::getUserPubkeyString() const
+		{
+			// cannot inline, because this doens't work in dll build
+			return mProtoRegisterAddress.user_pubkey();
+		}
+
+		proto::gradido::RegisterAddress_AddressType RegisterAddress::getAddressType() const
+		{
+			// cannot inline, because this doens't work in dll build
+			return mProtoRegisterAddress.address_type();
 		}
 
 		MemoryBin* RegisterAddress::getUserPubkey() const
@@ -118,6 +125,13 @@ namespace model {
 			return bin;
 		}
 
+		const std::string& RegisterAddress::getNameHashString() const
+		{
+			// cannot inline, because this doens't work in dll build
+			return mProtoRegisterAddress.name_hash();
+		}
+
+
 		MemoryBin* RegisterAddress::getSubaccountPubkey() const
 		{
 			if (!mProtoRegisterAddress.subaccount_pubkey().size()) {
@@ -128,7 +142,13 @@ namespace model {
 			return bin;
 		}
 
-		proto::gradido::RegisterAddress_AddressType RegisterAddress::getAddressTypeFromString(const std::string& addressType) 
+		const std::string& RegisterAddress::getSubaccountPubkeyString() const
+		{
+			// cannot inline, because this doens't work in dll build
+			return mProtoRegisterAddress.subaccount_pubkey();
+		}
+
+		proto::gradido::RegisterAddress_AddressType RegisterAddress::getAddressTypeFromString(const std::string& addressType)
 		{
 			proto::gradido::RegisterAddress_AddressType type;
 			if (!proto::gradido::RegisterAddress_AddressType_Parse(addressType, &type)) {
@@ -137,8 +157,13 @@ namespace model {
 
 			return type;
 		}
+		const std::string& RegisterAddress::getAddressStringFromType(proto::gradido::RegisterAddress_AddressType type)
+		{
+			// cannot inline, because this doens't work in dll build
+			return RegisterAddress_AddressType_Name(type);
+		}
 
-		
+
 
 	}
 }

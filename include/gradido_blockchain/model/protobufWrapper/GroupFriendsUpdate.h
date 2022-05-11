@@ -13,15 +13,14 @@ namespace model {
 			~GroupFriendsUpdate();
 
 			bool validate(
-				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, 
+				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
 				const GradidoBlock* parentGradidoBlock = nullptr
 				) const;
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
-			uint32_t getCoinColor() const;
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 
-			inline bool isColorFusion() const { return mProtoGroupFriendsUpdate.color_fusion(); }
+			bool isColorFusion() const;
 		protected:
 			const proto::gradido::GroupFriendsUpdate& mProtoGroupFriendsUpdate;
 		};

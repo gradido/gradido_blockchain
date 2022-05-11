@@ -4,7 +4,6 @@
 #include "proto/gradido/TransactionBody.pb.h"
 
 #include "DeferredTransfer.h"
-#include "GlobalGroupAdd.h"
 #include "GroupFriendsUpdate.h"
 #include "RegisterAddress.h"
 #include "TransactionCreation.h"
@@ -14,7 +13,7 @@
 
 #include "../../lib/MultithreadContainer.h"
 
-#define GRADIDO_PROTOCOL_VERSION 3
+#define GRADIDO_PROTOCOL_VERSION "3.2"
 
 namespace model {
 	namespace gradido {
@@ -25,7 +24,7 @@ namespace model {
 
 		//!  Contain the actuall transaction details.
 		/*!
-	  		
+
 			<a href="https://github.com/gradido/gradido_protocol/blob/master/gradido/TransactionBody.proto" target="_blank">Protobuf: TransactionBody</a>
 		*/
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionBody : public MultithreadContainer
@@ -34,11 +33,10 @@ namespace model {
 			virtual ~TransactionBody();
 
 			void setCreated(Poco::DateTime created);
-			inline uint32_t getCreatedSeconds() const { return mProtoTransactionBody.created().seconds(); }
+			uint32_t getCreatedSeconds() const;
 
 			static TransactionBody* load(const std::string& protoMessageBin);
 			void upgradeToDeferredTransaction(Poco::Timestamp timeout);
-			static TransactionBody* createGlobalGroupAdd(const std::string& groupName, const std::string& groupAlias, uint32_t nativeCoinColor);
 			static TransactionBody* createGroupFriendsUpdate(bool colorFusion);
 			static TransactionBody* createRegisterAddress(
 				const MemoryBin* userPubkey,
@@ -53,29 +51,28 @@ namespace model {
 			void updateToInbound(const std::string& otherGroup);
 
 			inline TransactionType getTransactionType() const { return mTransactionType; }
-			inline proto::gradido::TransactionBody_CrossGroupType getCrossGroupType() const { return mProtoTransactionBody.type(); }
-			inline uint64_t getVersionNumber() const { return mProtoTransactionBody.version_number(); }
-			inline const std::string& getOtherGroup() const { return mProtoTransactionBody.other_group(); }
+			proto::gradido::TransactionBody_CrossGroupType getCrossGroupType() const;
+			const std::string& getVersionNumber() const;
+			const std::string& getOtherGroup() const;
 			static const char* transactionTypeToString(TransactionType type);
 			std::string getMemo() const;
 			void setMemo(const std::string& memo);
 
-			uint32_t getCoinColor(const IGradidoBlockchain* blockchain) const;
+			std::string getGroupId(const IGradidoBlockchain* blockchain) const;
 
 			inline bool isDeferredTransfer() const { return mTransactionType == TRANSACTION_DEFERRED_TRANSFER; }
-			inline bool isGlobalGroupAdd() const { return mTransactionType == TRANSACTION_GLOBAL_GROUP_ADD; }
 			inline bool isGroupFriendsUpdate() const { return mTransactionType == TRANSACTION_GROUP_FRIENDS_UPDATE; }
 			inline bool isRegisterAddress() const { return mTransactionType == TRANSACTION_REGISTER_ADDRESS; }
 			inline bool isCreation() const { return mTransactionType == TRANSACTION_CREATION; }
-			inline bool isTransfer() const  { return mTransactionType == TRANSACTION_TRANSFER; }		
+			inline bool isTransfer() const  { return mTransactionType == TRANSACTION_TRANSFER; }
 			// cross group types
-			inline bool isLocal() const { return mProtoTransactionBody.type() == proto::gradido::TransactionBody_CrossGroupType_LOCAL; }
-			inline bool isInbound() const { return mProtoTransactionBody.type() == proto::gradido::TransactionBody_CrossGroupType_INBOUND; }
-			inline bool isOutbound() const { return mProtoTransactionBody.type() == proto::gradido::TransactionBody_CrossGroupType_OUTBOUND; }
-			inline bool isCross() const { return mProtoTransactionBody.type() == proto::gradido::TransactionBody_CrossGroupType_CROSS; }
+			inline bool isLocal() const { return getCrossGroupType() == proto::gradido::TransactionBody_CrossGroupType_LOCAL; }
+			inline bool isInbound() const { return getCrossGroupType() == proto::gradido::TransactionBody_CrossGroupType_INBOUND; }
+			inline bool isOutbound() const { return getCrossGroupType() == proto::gradido::TransactionBody_CrossGroupType_OUTBOUND; }
+			inline bool isCross() const { return getCrossGroupType() == proto::gradido::TransactionBody_CrossGroupType_CROSS; }
 
 			bool validate(
-				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, 
+				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
 				const GradidoBlock* parentGradidoBlock = nullptr
 				) const;
@@ -85,7 +82,6 @@ namespace model {
 			const proto::gradido::TransactionBody* getBody() const { return &mProtoTransactionBody; }
 
 			const DeferredTransfer* getDeferredTransfer() const;
-			const GlobalGroupAdd* getGlobalGroupAdd() const;
 			const GroupFriendsUpdate* getGroupFriendsUpdate() const;
 			const RegisterAddress* getRegisterAddress() const;
 			const TransactionCreation* getCreationTransaction() const;

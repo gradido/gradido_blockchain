@@ -35,17 +35,17 @@ namespace model {
 			) const;
 
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
-			uint32_t getCoinColor() const;
+			const std::string& getCoinGroupId() const;
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 
-			const std::string& getAmount() const { return mProtoTransfer.sender().amount(); }
-			const std::string& getSenderPublicKeyString() const { return mProtoTransfer.sender().pubkey(); }
-			const std::string& getRecipientPublicKeyString() const { return mProtoTransfer.recipient(); }
+			const std::string& getAmount() const;
+			const std::string& getSenderPublicKeyString() const;
+			const std::string& getRecipientPublicKeyString() const;
 			MemoryBin* getSenderPublicKey() const;
 			MemoryBin* getRecipientPublicKey() const;
-			
+
 		protected:
-			const proto::gradido::GradidoTransfer& mProtoTransfer;			
+			const proto::gradido::GradidoTransfer& mProtoTransfer;
 		};
 	}
 }

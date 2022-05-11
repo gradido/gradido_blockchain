@@ -48,8 +48,6 @@ namespace model {
 			TRANSACTION_GROUP_FRIENDS_UPDATE, 
 			//! Register new address or sub address to group or move addres to another group
 			TRANSACTION_REGISTER_ADDRESS, 
-			//! Global Group Add Transaction, register a new group on global groups blockchain from gradido
-			TRANSACTION_GLOBAL_GROUP_ADD, 
 			//! Special Transfer Transaction with timeout used for Gradido Link
 			TRANSACTION_DEFERRED_TRANSFER 			
 		};
@@ -95,7 +93,6 @@ namespace model {
 				) const = 0;
 			//! \return caller need to clean up memory bins
 			virtual std::vector<MemoryBin*> getInvolvedAddresses() const = 0;
-			virtual uint32_t getCoinColor() const = 0;
 			virtual bool isBelongToUs(const TransactionBase* pairingTransaction) const = 0;
 	
 			//! \return true if all required signatures are found in signature pairs

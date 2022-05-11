@@ -13,7 +13,7 @@ namespace model {
 		auto receivedDate = Poco::DateTime(transaction->getReceivedAsTimestamp());
 		mMonth = receivedDate.month();
 		mYear = receivedDate.year();
-		mCoinColor = transaction->getGradidoTransaction()->getTransactionBody()->getTransactionBase()->getCoinColor();
+		mGroupId = getCoinGroupId(transaction->getGradidoTransaction()->getTransactionBody());
 	}
 
 	TransactionEntry::TransactionEntry(gradido::GradidoBlock* transaction)
@@ -22,13 +22,23 @@ namespace model {
 		auto received = Poco::DateTime(transaction->getReceivedAsTimestamp());
 		mMonth = received.month();
 		mYear = received.year();
-		auto transactionBase = transaction->getGradidoTransaction()->getTransactionBody()->getTransactionBase();
-		mCoinColor = transactionBase->getCoinColor();
+		mGroupId = getCoinGroupId(transaction->getGradidoTransaction()->getTransactionBody());
 	}
 
-	TransactionEntry::TransactionEntry(uint64_t transactionNr, uint8_t month, uint16_t year, uint32_t coinColor)
-		: mTransactionNr(transactionNr), mMonth(month), mYear(year), mCoinColor(coinColor)
+	TransactionEntry::TransactionEntry(uint64_t transactionNr, uint8_t month, uint16_t year, std::string groupId)
+		: mTransactionNr(transactionNr), mMonth(month), mYear(year), mGroupId(groupId)
 	{
 
+	}
+
+	std::string TransactionEntry::getCoinGroupId(const gradido::TransactionBody* body)
+	{
+		if (body->isTransfer() || body->isDeferredTransfer()) {
+			return body->getTransferTransaction()->getCoinGroupId();
+		}
+		else if (body->isCreation()) {
+			return body->getCreationTransaction()->getCoinGroupId();
+		}
+		return std::move("");
 	}
 }

@@ -29,7 +29,7 @@ namespace model {
 			//! TODO: check created sum in the last 3 month if 1.000 per month isn't exceed
 			//! maybe ask node server and hope the answer came fast
 			bool validate(
-				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, 
+				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
 				const GradidoBlock* parentGradidoBlock = nullptr
 			) const;
@@ -37,15 +37,15 @@ namespace model {
 			bool validateTargetDate(uint64_t receivedSeconds) const;
 
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
-			uint32_t getCoinColor() const;
+			const std::string& getCoinGroupId() const;
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 
-			inline const std::string& getAmount() const { return mProtoCreation.recipient().amount(); }
+			const std::string& getAmount() const;
 			MemoryBin* getRecipientPublicKey() const;
-			inline const std::string& getRecipientPublicKeyString() const { return mProtoCreation.recipient().pubkey(); }
+			const std::string& getRecipientPublicKeyString() const;
 
 			std::string getTargetDateString() const;
-			inline Poco::DateTime getTargetDate() const { return DataTypeConverter::convertFromProtoTimestampSeconds(mProtoCreation.target_date()); }
+			Poco::DateTime getTargetDate() const;
 
 		protected:
 			const proto::gradido::GradidoCreation& mProtoCreation;

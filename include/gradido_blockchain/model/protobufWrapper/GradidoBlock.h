@@ -6,8 +6,8 @@
 
 #include "Poco/SharedPtr.h"
 
-#define GRADIDO_BLOCK_PROTOCOL_VERSION 3
-// MAGIC NUMBER: max allowed Timespan between creation date of transaction and receiving date (iota milestone timestamp) 
+#define GRADIDO_BLOCK_PROTOCOL_VERSION "3.1"
+// MAGIC NUMBER: max allowed Timespan between creation date of transaction and receiving date (iota milestone timestamp)
 // taken 2 minutes from hedera but maybe the time isn't enough if gradido is more used
 #define MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION_IN_MINUTES 2
 
@@ -50,7 +50,7 @@ namespace model {
 				<ul>
 					<li>Check that the transaction with id-1 exist</li>
 					<li>Check that received date from previous transaction is younger</li>
-					<li>Call calculateTxHash() with previous transaction and check that it is equal to stored txHash (runningHash)</li> 
+					<li>Call calculateTxHash() with previous transaction and check that it is equal to stored txHash (runningHash)</li>
 				</ul>
 				Call GradidoTransaction::validate()
 			*/
@@ -59,19 +59,17 @@ namespace model {
 				IGradidoBlockchain* blockchain = nullptr,
 				IGradidoBlockchain* otherBlockchain = nullptr
 			) const;
-			
-			// proto member variable accessors
-			inline uint64_t getID() const { return mProtoGradidoBlock->id(); }
-			inline const std::string& getTxHash() const { return mProtoGradidoBlock->running_hash(); }
-			inline const std::string& getFinalBalance() const { return mProtoGradidoBlock->final_gdd(); }
 
-			inline void setTxHash(const MemoryBin* txHash) { mProtoGradidoBlock->set_allocated_running_hash(txHash->copyAsString().release()); }
+			// proto member variable accessors
+			uint64_t getID() const;
+			const std::string& getTxHash() const;
+			const std::string& getFinalBalance() const;
+
+			void setTxHash(const MemoryBin* txHash);
 			// convert from proto timestamp seconds to poco DateTime
-			inline Poco::Timestamp getReceivedAsTimestamp() const {
-				return Poco::Timestamp(mProtoGradidoBlock->received().seconds() * Poco::Timestamp::resolution());
-			}
+			inline Poco::Timestamp getReceivedAsTimestamp() const { return Poco::Timestamp(getReceived() * Poco::Timestamp::resolution());}
 			// return as seconds since Jan 01 1970
-			inline int64_t getReceived() const { return mProtoGradidoBlock->received().seconds(); }
+			int64_t getReceived() const;
 
 			std::unique_ptr<std::string> getSerialized();
 			//! \return MemoryBin containing message id binar, must be freed from caller
@@ -83,7 +81,7 @@ namespace model {
 			MemoryBin* calculateTxHash(const GradidoBlock* previousBlock) const;
 
 			//! \brief calculate final gdd for this transaction and set value into proto structure
-			//! 
+			//!
 			//! for transfer transaction, it is the final balance from sender
 			void calculateFinalGDD(IGradidoBlockchain* blockchain);
 

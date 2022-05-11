@@ -18,7 +18,7 @@ using namespace rapidjson;
 
 namespace model {
 	namespace gradido {
-		
+
 		GradidoBlock::GradidoBlock(const std::string* serializedGradidoBlock)
 			: mGradidoTransaction(nullptr)
 		{
@@ -75,7 +75,7 @@ namespace model {
 			proto::gradido::TransactionBody body;
 			body.ParseFromString(mProtoGradidoBlock->transaction().body_bytes());
 			status = google::protobuf::util::MessageToJsonString(body, &json_message_body, options);
-			if (!status.ok()) {				
+			if (!status.ok()) {
 				throw ProtobufJsonSerializationException("error parsing transaction body", *mProtoGradidoBlock, status);
 			}
 			//\"bodyBytes\": \"MigKIC7Sihz14RbYNhVAa8V3FSIhwvd0pWVvZqDnVA91dtcbIgRnZGQx\"
@@ -84,7 +84,7 @@ namespace model {
 			json_message.replace(startBodyBytes, endCur - startBodyBytes, json_message_body);
 			//printf("json: %s\n", json_message.data());
 
-			
+
 			Document parsed_json;
 			parsed_json.Parse(json_message.data(), json_message.size());
 			if (parsed_json.HasParseError()) {
@@ -110,6 +110,29 @@ namespace model {
 			parsedJsonString.Parse(jsonString.data());
 			auto alloc = baseDocument.GetAllocator();
 			return Value(parsedJsonString, alloc);
+		}
+
+		uint64_t GradidoBlock::getID() const
+		{
+			return mProtoGradidoBlock->id();
+		}
+		const std::string& GradidoBlock::getTxHash() const
+		{
+			return mProtoGradidoBlock->running_hash();
+		}
+		const std::string& GradidoBlock::getFinalBalance() const
+		{
+			return mProtoGradidoBlock->final_gdd();
+		}
+
+		void GradidoBlock::setTxHash(const MemoryBin* txHash)
+		{
+			mProtoGradidoBlock->set_allocated_running_hash(txHash->copyAsString().release());
+		}
+
+		int64_t GradidoBlock::getReceived() const
+		{
+			return mProtoGradidoBlock->received().seconds();
 		}
 
 		std::unique_ptr<std::string> GradidoBlock::getSerialized()
@@ -140,7 +163,7 @@ namespace model {
 			return result;
 		}
 
-		std::string GradidoBlock::getMessageIdHex() const 
+		std::string GradidoBlock::getMessageIdHex() const
 		{
 			return DataTypeConverter::binToHex(
 				(const unsigned char*)mProtoGradidoBlock->message_id().data(),
@@ -189,7 +212,7 @@ namespace model {
 					}
 					auto previousGradidoBlock = std::make_unique<GradidoBlock>(previousBlock->getSerializedTransaction());
 					if (previousGradidoBlock->getReceived() > getReceived()) {
-						throw BlockchainOrderException("previous transaction is younger");						
+						throw BlockchainOrderException("previous transaction is younger");
 					}
 					auto mm = MemoryManager::getInstance();
 					auto txHash = calculateTxHash(previousGradidoBlock.get());
@@ -218,11 +241,11 @@ namespace model {
 			std::string receivedString;
 
 			//yyyy-MM-dd HH:mm:ss
-			
+
 			Poco::DateTime received(Poco::Timestamp(mProtoGradidoBlock->received().seconds() * Poco::Timestamp::resolution()));
 			receivedString = Poco::DateTimeFormatter::format(received, "%Y-%m-%d %H:%M:%S");
 			std::string signatureMapString = mProtoGradidoBlock->transaction().sig_map().SerializeAsString();
-			
+
 			auto hash = mm->getMemory(crypto_generichash_BYTES);
 
 			// Sodium use for the generichash function BLAKE2b today (11.11.2019), mabye change in the future
@@ -255,7 +278,7 @@ namespace model {
 			auto mm = MemoryManager::getInstance();
 			std::string address;
 			auto transactionBody = getGradidoTransaction()->getTransactionBody();
-			auto transactionType = transactionBody->getTransactionType();			
+			auto transactionType = transactionBody->getTransactionType();
 
 			switch (transactionType) {
 			case model::gradido::TRANSACTION_NONE: throw std::runtime_error("transaction with type none is invalid");
@@ -267,7 +290,6 @@ namespace model {
 				address = transactionBody->getTransferTransaction()->getSenderPublicKeyString();
 				break;
 			case model::gradido::TRANSACTION_GROUP_FRIENDS_UPDATE:
-			case model::gradido::TRANSACTION_GLOBAL_GROUP_ADD:
 				return;
 			case model::gradido::TRANSACTION_REGISTER_ADDRESS:
 				if (getGradidoTransaction()->getTransactionBody()->isLocal()) {
@@ -280,10 +302,10 @@ namespace model {
 				return;
 			default: throw GradidoUnknownEnumException("unknown enum", "model::gradido:TransactionType", (int)transactionBody->getTransactionType());
 			}
-			
-			auto finalBalance = blockchain->calculateAddressBalance(address, transactionBody->getCoinColor(blockchain), getReceivedAsTimestamp());
+
+			auto finalBalance = blockchain->calculateAddressBalance(address, TransactionEntry::getCoinGroupId(transactionBody), getReceivedAsTimestamp());
 			auto temp = mm->getMathMemory();
-			// add value from this block if it was a transfer or creation transaction			
+			// add value from this block if it was a transfer or creation transaction
 
 			if (TRANSACTION_CREATION == transactionType) {
 				mpfr_set_str(temp, transactionBody->getCreationTransaction()->getAmount().data(), 10, gDefaultRound);
@@ -296,7 +318,7 @@ namespace model {
 			}
 			TransactionBase::amountToString(mProtoGradidoBlock->mutable_final_gdd(), finalBalance);
 			mm->releaseMathMemory(finalBalance);
-			mm->releaseMathMemory(temp);			
+			mm->releaseMathMemory(temp);
 		}
 
 	}

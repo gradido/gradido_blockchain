@@ -14,13 +14,13 @@ namespace model {
 	public:
 		virtual std::vector<Poco::SharedPtr<TransactionEntry>> getAllTransactions(std::function<bool(model::TransactionEntry*)> filter = nullptr) = 0;
 		virtual Poco::SharedPtr<gradido::GradidoBlock> getLastTransaction(std::function<bool(const gradido::GradidoBlock*)> filter = nullptr) = 0;
-		virtual mpfr_ptr calculateAddressBalance(const std::string& address, uint32_t coinColor, Poco::DateTime date) = 0;
+		virtual mpfr_ptr calculateAddressBalance(const std::string& address, const std::string& groupId, Poco::DateTime date) = 0;
 		virtual proto::gradido::RegisterAddress_AddressType getAddressType(const std::string& address) = 0;
 		virtual Poco::SharedPtr<TransactionEntry> getTransactionForId(uint64_t transactionId) = 0;
-		virtual Poco::SharedPtr<TransactionEntry> findLastTransactionForAddress(const std::string& address, uint32_t coinColor = 0) = 0;
+		virtual Poco::SharedPtr<TransactionEntry> findLastTransactionForAddress(const std::string& address, const std::string& groupId = "") = 0;
 		virtual Poco::SharedPtr<TransactionEntry> findByMessageId(const MemoryBin* messageId, bool cachedOnly = true) = 0;
 		virtual void calculateCreationSum(const std::string& address, int month, int year, Poco::DateTime received, mpfr_ptr sum) = 0;
-		virtual uint32_t getGroupDefaultCoinColor() const = 0;
+		virtual const std::string& getGroupId() const = 0;
 
 	protected:
 	};
