@@ -1,6 +1,7 @@
 #include "gradido_blockchain/http/IotaRequest.h"
 #include "gradido_blockchain/http/IotaRequestExceptions.h"
 #include "gradido_blockchain/http/RequestExceptions.h"
+#include "gradido_blockchain/http/ServerConfig.h"
 
 #include "gradido_blockchain/lib/Profiler.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
@@ -17,6 +18,7 @@
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/pointer.h"
 
+#include "iota_rust_clib.h"
 
 
 using namespace rapidjson;
@@ -62,6 +64,11 @@ std::vector<std::string> IotaRequest::getTips()
 
 std::string IotaRequest::sendMessage(const std::string& indexHex, const std::string& messageHex)
 {	
+	if (ServerConfig::g_IotaLocalPow) {
+		auto index = DataTypeConverter::hexToBinString(indexHex.substr(0, indexHex.size()-1));
+		auto message = DataTypeConverter::hexToBinString(messageHex.substr(0, messageHex.size()-1));
+		return sendMessageViaRustIotaClient(*index, *message);
+	}
 	auto tips = getTips();
 	if (!tips.size()) {
 		throw IotaRequestException("no tips", mRequestUri.getPath() + "tips");
@@ -293,4 +300,32 @@ void IotaRequest::defaultExceptionHandler(Poco::Logger& errorLog, bool terminate
 			Poco::Util::ServerApplication::terminate();
 		}
 	}
+}
+
+std::string IotaRequest::sendMessageViaRustIotaClient(const std::string& index, const std::string& message)
+{
+	std::string iotaUrl;
+	if (mRequestUri.getPort() == 443) {
+		iotaUrl = "https://";
+	}
+	else {
+		iotaUrl = "http://";
+	}
+	iotaUrl += mRequestUri.getHost() + ":" + std::to_string(mRequestUri.getPort());
+	auto result = iota_send_indiced_transaction(iotaUrl.data(), index.data(), message.data());
+	std::string resultJsonString = result;
+	Document resultJson;
+	resultJson.Parse(result);
+	free_rust_string(result);
+
+	// analyse result
+	auto stateIt = resultJson.FindMember("state");
+	if (stateIt == resultJson.MemberEnd()) {
+		throw IotaRequestException("state in response missing", iotaUrl);
+	}
+	std::string stateString = stateIt->value.GetString();
+	if (stateString != "success") {
+		throw IotaRequestException(resultJson["msg"].GetString(), iotaUrl);
+	}
+	return std::move(std::string(resultJson["message_id"].GetString()));
 }

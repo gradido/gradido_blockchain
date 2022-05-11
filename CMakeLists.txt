@@ -52,7 +52,9 @@ FILE(GLOB DATAMODEL_GRADIDO_PROTOS "${GRADIDO_PROTO_MODEL_PATH}/proto/gradido/*.
 include_directories(${PROTOBINDING_PATH})
 IF(WIN32)
 	set(PROTOC_BIN_PATH "${PROJECT_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}")
-	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${PROTOC_BIN_PATH}" )
+	message("protoc path: ${PROTOC_BIN_PATH}")
+	message("cmake build type: ${CMAKE_BUILD_TYPE}")
+	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${PROTOC_BIN_PATH}" "${PROJECT_BINARY_DIR}/bin/Debug" "${PROJECT_BINARY_DIR}/bin/Release")
 	IF(NOT PROTOBUF_PROTOC_EXECUTABLE)
 		find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" )		
 	ENDIF()
@@ -125,9 +127,10 @@ endif()
 include_directories(
 	"dependencies" 
 	"dependencies/tinf/src/" 
-	#"dependencies/protobuf/src"
+	"dependencies/protobuf/src"
 	"dependencies/rapidjson/include"
 	"include"
+	"iota_rust_clib/include"
 )
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 IF(WIN32)
@@ -150,15 +153,26 @@ ENDIF()
 find_package(MPFR REQUIRED)
 message(STATUS "MPFR Found: ${MPFR_FOUND}")
 
+############################# add rust and iota.rs ####################
+# https://webdevolutions.blob.core.windows.net/blog/pdf/insider-series-using-rust-code-in-a-cc-project-with-cmake.pdf
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+enable_language(Rust)
+include(CMakeCargo)
+add_subdirectory(iota_rust_clib)
+
+######################################################################
+
 add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
 if(BUILD_SHARED_LIBS) 
 	target_link_libraries(GradidoBlockchain libprotobuf ${MPFR_LIBRARIES})
 	IF(WIN32) 
-		target_link_libraries(GradidoBlockchain ${CONAN_LIBS})
+		# needed for windows if linking to a rust lib
+		find_library(IOTA_RUST_C_LIB iota_rust_clib.dll.lib PATHS "build/iota_rust_clib/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}" REQUIRED)
+		target_link_libraries(GradidoBlockchain ${CONAN_LIBS} ${IOTA_RUST_C_LIB} ws2_32 userenv)
 	ELSE()
-		target_link_libraries(GradidoBlockchain ${POCO_LIBS} sodium)
+		target_link_libraries(GradidoBlockchain ${POCO_LIBS} sodium iota_rust_clib)
 	ENDIF()
 endif()
 set_target_properties(GradidoBlockchain PROPERTIES
@@ -183,7 +197,7 @@ endif ()
 
 # add test
 include(CTest)
-add_subdirectory("dependencies/protobuf/third_party/googletest")
+#add_subdirectory("dependencies/protobuf/third_party/googletest")
 add_subdirectory(test)
 #add_test(NAME GradidoBlockchainTest
  #        COMMAND GradidoBlockchainTest)

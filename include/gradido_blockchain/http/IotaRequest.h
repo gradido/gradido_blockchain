@@ -57,6 +57,8 @@ protected:
 	// Iota get parent message ids for own message
 	std::vector<std::string> getTips();
 
+	std::string sendMessageViaRustIotaClient(const std::string& index, const std::string& message);
+
 };
 
 #endif //__GRADIDO_LOGIN_SERVER_IOTA_REQUEST
