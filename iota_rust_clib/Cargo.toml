@@ -1,0 +1,16 @@
+[package]
+name = "iota_rust_clib"
+version = "0.1.0"
+edition = "2021"
+authors = ["einhornimmond <info@einhornimmond.de>"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+iota-client = "1.1.1"
+iota-crypto = { version = "=0.9.1", default-features = false }
+serde = "1.0.137"
+serde_json = "1.0"
+# asynchronous runtime
+tokio = { version = "1.12.0", features = ["full"] }
