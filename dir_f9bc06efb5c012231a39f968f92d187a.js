@@ -1,7 +1,6 @@
 var dir_f9bc06efb5c012231a39f968f92d187a =
 [
     [ "DeferredTransfer.h", "_deferred_transfer_8h_source.html", null ],
-    [ "GlobalGroupAdd.h", "_global_group_add_8h_source.html", null ],
     [ "GradidoBlock.h", "_gradido_block_8h_source.html", null ],
     [ "GradidoTransaction.h", "_gradido_transaction_8h_source.html", null ],
     [ "GroupFriendsUpdate.h", "_group_friends_update_8h_source.html", null ],

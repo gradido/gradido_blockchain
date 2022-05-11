@@ -13,7 +13,6 @@ var annotated_dup =
       [ "gradido", null, [
         [ "AddressAlreadyExistException", "classmodel_1_1gradido_1_1_address_already_exist_exception.html", null ],
         [ "DeferredTransfer", "classmodel_1_1gradido_1_1_deferred_transfer.html", null ],
-        [ "GlobalGroupAdd", "classmodel_1_1gradido_1_1_global_group_add.html", "classmodel_1_1gradido_1_1_global_group_add" ],
         [ "GradidoBlock", "classmodel_1_1gradido_1_1_gradido_block.html", "classmodel_1_1gradido_1_1_gradido_block" ],
         [ "GradidoTransaction", "classmodel_1_1gradido_1_1_gradido_transaction.html", "classmodel_1_1gradido_1_1_gradido_transaction" ],
         [ "GroupFriendsUpdate", "classmodel_1_1gradido_1_1_group_friends_update.html", "classmodel_1_1gradido_1_1_group_friends_update" ],

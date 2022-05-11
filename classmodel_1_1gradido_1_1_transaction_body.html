@@ -142,9 +142,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>updateToInbound</b> (
 <tr class="memitem:af7fe0d749ffbca6b3e0e8a8a11d5919d"><td class="memItemLeft" align="right" valign="top"><a id="af7fe0d749ffbca6b3e0e8a8a11d5919d" name="af7fe0d749ffbca6b3e0e8a8a11d5919d"></a>
 proto::gradido::TransactionBody_CrossGroupType&#160;</td><td class="memItemRight" valign="bottom"><b>getCrossGroupType</b> () const</td></tr>
 <tr class="separator:af7fe0d749ffbca6b3e0e8a8a11d5919d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1f07f97d860a601f91c4d35afa00fe0e"><td class="memItemLeft" align="right" valign="top"><a id="a1f07f97d860a601f91c4d35afa00fe0e" name="a1f07f97d860a601f91c4d35afa00fe0e"></a>
-uint64_t&#160;</td><td class="memItemRight" valign="bottom"><b>getVersionNumber</b> () const</td></tr>
-<tr class="separator:a1f07f97d860a601f91c4d35afa00fe0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2afd95d6eb695e53f154f55f6b04de01"><td class="memItemLeft" align="right" valign="top"><a id="a2afd95d6eb695e53f154f55f6b04de01" name="a2afd95d6eb695e53f154f55f6b04de01"></a>
+const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getVersionNumber</b> () const</td></tr>
+<tr class="separator:a2afd95d6eb695e53f154f55f6b04de01"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a568ae035ef634552d6047c889c4e228e"><td class="memItemLeft" align="right" valign="top"><a id="a568ae035ef634552d6047c889c4e228e" name="a568ae035ef634552d6047c889c4e228e"></a>
 const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getOtherGroup</b> () const</td></tr>
 <tr class="separator:a568ae035ef634552d6047c889c4e228e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -154,15 +154,12 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>getMemo</b> ()
 <tr class="memitem:a18fc441c9c467219df3d2dfebd21a371"><td class="memItemLeft" align="right" valign="top"><a id="a18fc441c9c467219df3d2dfebd21a371" name="a18fc441c9c467219df3d2dfebd21a371"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setMemo</b> (const std::string &amp;memo)</td></tr>
 <tr class="separator:a18fc441c9c467219df3d2dfebd21a371"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af95abd29d85898ef4cfc03f37abbb042"><td class="memItemLeft" align="right" valign="top"><a id="af95abd29d85898ef4cfc03f37abbb042" name="af95abd29d85898ef4cfc03f37abbb042"></a>
-uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>getCoinColor</b> (const <a class="el" href="classmodel_1_1_i_gradido_blockchain.html">IGradidoBlockchain</a> *blockchain) const</td></tr>
-<tr class="separator:af95abd29d85898ef4cfc03f37abbb042"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf88efab972b05d4fb406e8bfc6a4c93"><td class="memItemLeft" align="right" valign="top"><a id="abf88efab972b05d4fb406e8bfc6a4c93" name="abf88efab972b05d4fb406e8bfc6a4c93"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>getGroupId</b> (const <a class="el" href="classmodel_1_1_i_gradido_blockchain.html">IGradidoBlockchain</a> *blockchain) const</td></tr>
+<tr class="separator:abf88efab972b05d4fb406e8bfc6a4c93"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e490a3e621029f1770364582252bd23"><td class="memItemLeft" align="right" valign="top"><a id="a9e490a3e621029f1770364582252bd23" name="a9e490a3e621029f1770364582252bd23"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>isDeferredTransfer</b> () const</td></tr>
 <tr class="separator:a9e490a3e621029f1770364582252bd23"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a96ba165d803dec60a864946977712efb"><td class="memItemLeft" align="right" valign="top"><a id="a96ba165d803dec60a864946977712efb" name="a96ba165d803dec60a864946977712efb"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>isGlobalGroupAdd</b> () const</td></tr>
-<tr class="separator:a96ba165d803dec60a864946977712efb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a79df437065dc500dced6536b81dc8980"><td class="memItemLeft" align="right" valign="top"><a id="a79df437065dc500dced6536b81dc8980" name="a79df437065dc500dced6536b81dc8980"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>isGroupFriendsUpdate</b> () const</td></tr>
 <tr class="separator:a79df437065dc500dced6536b81dc8980"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -202,9 +199,6 @@ const proto::gradido::TransactionBody *&#160;</td><td class="memItemRight" valig
 <tr class="memitem:aa438c1902a3f7116a831e0db89685cff"><td class="memItemLeft" align="right" valign="top"><a id="aa438c1902a3f7116a831e0db89685cff" name="aa438c1902a3f7116a831e0db89685cff"></a>
 const <a class="el" href="classmodel_1_1gradido_1_1_deferred_transfer.html">DeferredTransfer</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>getDeferredTransfer</b> () const</td></tr>
 <tr class="separator:aa438c1902a3f7116a831e0db89685cff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a55e36c9180e29b598733db3255020919"><td class="memItemLeft" align="right" valign="top"><a id="a55e36c9180e29b598733db3255020919" name="a55e36c9180e29b598733db3255020919"></a>
-const <a class="el" href="classmodel_1_1gradido_1_1_global_group_add.html">GlobalGroupAdd</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>getGlobalGroupAdd</b> () const</td></tr>
-<tr class="separator:a55e36c9180e29b598733db3255020919"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a32d128cef774e9d36d68eaddb6f005a1"><td class="memItemLeft" align="right" valign="top"><a id="a32d128cef774e9d36d68eaddb6f005a1" name="a32d128cef774e9d36d68eaddb6f005a1"></a>
 const <a class="el" href="classmodel_1_1gradido_1_1_group_friends_update.html">GroupFriendsUpdate</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>getGroupFriendsUpdate</b> () const</td></tr>
 <tr class="separator:a32d128cef774e9d36d68eaddb6f005a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -239,9 +233,6 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a7f1e8ee15825f0581ff86e2cc7989bf8"><td class="memItemLeft" align="right" valign="top"><a id="a7f1e8ee15825f0581ff86e2cc7989bf8" name="a7f1e8ee15825f0581ff86e2cc7989bf8"></a>
 static <a class="el" href="classmodel_1_1gradido_1_1_transaction_body.html">TransactionBody</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>load</b> (const std::string &amp;protoMessageBin)</td></tr>
 <tr class="separator:a7f1e8ee15825f0581ff86e2cc7989bf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4897f5904f7bde9c009e7d8d6acb5bb3"><td class="memItemLeft" align="right" valign="top"><a id="a4897f5904f7bde9c009e7d8d6acb5bb3" name="a4897f5904f7bde9c009e7d8d6acb5bb3"></a>
-static <a class="el" href="classmodel_1_1gradido_1_1_transaction_body.html">TransactionBody</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>createGlobalGroupAdd</b> (const std::string &amp;groupName, const std::string &amp;groupAlias, uint32_t nativeCoinColor)</td></tr>
-<tr class="separator:a4897f5904f7bde9c009e7d8d6acb5bb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac738a962abedf16315aa78444be24846"><td class="memItemLeft" align="right" valign="top"><a id="ac738a962abedf16315aa78444be24846" name="ac738a962abedf16315aa78444be24846"></a>
 static <a class="el" href="classmodel_1_1gradido_1_1_transaction_body.html">TransactionBody</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>createGroupFriendsUpdate</b> (bool colorFusion)</td></tr>
 <tr class="separator:ac738a962abedf16315aa78444be24846"><td class="memSeparator" colspan="2">&#160;</td></tr>

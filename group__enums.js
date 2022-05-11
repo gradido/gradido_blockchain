@@ -6,7 +6,6 @@ var group__enums =
       [ "model::gradido::TRANSACTION_TRANSFER", "group__enums.html#gga63424b05ada401e320ed8c4473623a41a3c755b89c3b6bfba5f24eee128b35503", null ],
       [ "model::gradido::TRANSACTION_GROUP_FRIENDS_UPDATE", "group__enums.html#gga63424b05ada401e320ed8c4473623a41a77e8ad86b3d2b7c8b2ede367d8248de0", null ],
       [ "model::gradido::TRANSACTION_REGISTER_ADDRESS", "group__enums.html#gga63424b05ada401e320ed8c4473623a41ad4b904f6a035b1bd125bd550c0a9140b", null ],
-      [ "model::gradido::TRANSACTION_GLOBAL_GROUP_ADD", "group__enums.html#gga63424b05ada401e320ed8c4473623a41af3ea8029f42e3a3a5d853e91699c4220", null ],
       [ "model::gradido::TRANSACTION_DEFERRED_TRANSFER", "group__enums.html#gga63424b05ada401e320ed8c4473623a41a0573bb0067ed10c3ff945b3b1ff9da26", null ]
     ] ],
     [ "model::gradido::TransactionValidationLevel", "group__enums.html#ga5a93fcdc94d643d95a6b670b2a924443", [

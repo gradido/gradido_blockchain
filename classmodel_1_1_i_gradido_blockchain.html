@@ -100,27 +100,27 @@ virtual std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_t
 <tr class="memitem:aa21f68c906eb5a6c17521d3c002bf171"><td class="memItemLeft" align="right" valign="top"><a id="aa21f68c906eb5a6c17521d3c002bf171" name="aa21f68c906eb5a6c17521d3c002bf171"></a>
 virtual Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1gradido_1_1_gradido_block.html">gradido::GradidoBlock</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getLastTransaction</b> (std::function&lt; bool(const <a class="el" href="classmodel_1_1gradido_1_1_gradido_block.html">gradido::GradidoBlock</a> *)&gt; filter=nullptr)=0</td></tr>
 <tr class="separator:aa21f68c906eb5a6c17521d3c002bf171"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a62c7abc6fe425a72f2b8cccab7a2c95a"><td class="memItemLeft" align="right" valign="top"><a id="a62c7abc6fe425a72f2b8cccab7a2c95a" name="a62c7abc6fe425a72f2b8cccab7a2c95a"></a>
-virtual mpfr_ptr&#160;</td><td class="memItemRight" valign="bottom"><b>calculateAddressBalance</b> (const std::string &amp;address, uint32_t coinColor, Poco::DateTime date)=0</td></tr>
-<tr class="separator:a62c7abc6fe425a72f2b8cccab7a2c95a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ef4330a041920515ccd6c720af8d187"><td class="memItemLeft" align="right" valign="top"><a id="a8ef4330a041920515ccd6c720af8d187" name="a8ef4330a041920515ccd6c720af8d187"></a>
+virtual mpfr_ptr&#160;</td><td class="memItemRight" valign="bottom"><b>calculateAddressBalance</b> (const std::string &amp;address, const std::string &amp;groupId, Poco::DateTime date)=0</td></tr>
+<tr class="separator:a8ef4330a041920515ccd6c720af8d187"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abadeaa06c7877758d59d4144314c5ba1"><td class="memItemLeft" align="right" valign="top"><a id="abadeaa06c7877758d59d4144314c5ba1" name="abadeaa06c7877758d59d4144314c5ba1"></a>
 virtual proto::gradido::RegisterAddress_AddressType&#160;</td><td class="memItemRight" valign="bottom"><b>getAddressType</b> (const std::string &amp;address)=0</td></tr>
 <tr class="separator:abadeaa06c7877758d59d4144314c5ba1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4909a4e8b87ba51d7f02cef1a2b965bd"><td class="memItemLeft" align="right" valign="top"><a id="a4909a4e8b87ba51d7f02cef1a2b965bd" name="a4909a4e8b87ba51d7f02cef1a2b965bd"></a>
 virtual Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getTransactionForId</b> (uint64_t transactionId)=0</td></tr>
 <tr class="separator:a4909a4e8b87ba51d7f02cef1a2b965bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a30cc75c731caf5759e444598b57d0d36"><td class="memItemLeft" align="right" valign="top"><a id="a30cc75c731caf5759e444598b57d0d36" name="a30cc75c731caf5759e444598b57d0d36"></a>
-virtual Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>findLastTransactionForAddress</b> (const std::string &amp;address, uint32_t coinColor=0)=0</td></tr>
-<tr class="separator:a30cc75c731caf5759e444598b57d0d36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc0563592ca0abf767f005b839a22883"><td class="memItemLeft" align="right" valign="top"><a id="afc0563592ca0abf767f005b839a22883" name="afc0563592ca0abf767f005b839a22883"></a>
+virtual Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>findLastTransactionForAddress</b> (const std::string &amp;address, const std::string &amp;groupId=&quot;&quot;)=0</td></tr>
+<tr class="separator:afc0563592ca0abf767f005b839a22883"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d1860a1f3c98ba6e1982506b1538c55"><td class="memItemLeft" align="right" valign="top"><a id="a6d1860a1f3c98ba6e1982506b1538c55" name="a6d1860a1f3c98ba6e1982506b1538c55"></a>
 virtual Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>findByMessageId</b> (const <a class="el" href="class_memory_bin.html">MemoryBin</a> *messageId, bool cachedOnly=true)=0</td></tr>
 <tr class="separator:a6d1860a1f3c98ba6e1982506b1538c55"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8bc1ee55ae828889705d0cb50f7a0f22"><td class="memItemLeft" align="right" valign="top"><a id="a8bc1ee55ae828889705d0cb50f7a0f22" name="a8bc1ee55ae828889705d0cb50f7a0f22"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>calculateCreationSum</b> (const std::string &amp;address, int month, int year, Poco::DateTime received, mpfr_ptr sum)=0</td></tr>
 <tr class="separator:a8bc1ee55ae828889705d0cb50f7a0f22"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abfa5dbd62e08f00fa4746bac6cc0b3d4"><td class="memItemLeft" align="right" valign="top"><a id="abfa5dbd62e08f00fa4746bac6cc0b3d4" name="abfa5dbd62e08f00fa4746bac6cc0b3d4"></a>
-virtual uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>getGroupDefaultCoinColor</b> () const =0</td></tr>
-<tr class="separator:abfa5dbd62e08f00fa4746bac6cc0b3d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a442bde370237984949cc2b5345eb458d"><td class="memItemLeft" align="right" valign="top"><a id="a442bde370237984949cc2b5345eb458d" name="a442bde370237984949cc2b5345eb458d"></a>
+virtual const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getGroupId</b> () const =0</td></tr>
+<tr class="separator:a442bde370237984949cc2b5345eb458d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>include/gradido_blockchain/model/<a class="el" href="_i_gradido_blockchain_8h_source.html">IGradidoBlockchain.h</a></li>

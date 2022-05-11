@@ -96,8 +96,8 @@ $(document).ready(function(){initNavTree('_gradido_block_8h_source.html',''); in
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span> </div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &quot;Poco/SharedPtr.h&quot;</span></div>
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#define GRADIDO_BLOCK_PROTOCOL_VERSION 3</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment">// MAGIC NUMBER: max allowed Timespan between creation date of transaction and receiving date (iota milestone timestamp) </span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#define GRADIDO_BLOCK_PROTOCOL_VERSION &quot;3.1&quot;</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment">// MAGIC NUMBER: max allowed Timespan between creation date of transaction and receiving date (iota milestone timestamp)</span></div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="comment">// taken 2 minutes from hedera but maybe the time isn&#39;t enough if gradido is more used</span></div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#define MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION_IN_MINUTES 2</span></div>
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span> </div>
@@ -122,46 +122,44 @@ $(document).ready(function(){initNavTree('_gradido_block_8h_source.html',''); in
 <div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>                <a class="code hl_class" href="classmodel_1_1_i_gradido_blockchain.html">IGradidoBlockchain</a>* blockchain = <span class="keyword">nullptr</span>,</div>
 <div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>                <a class="code hl_class" href="classmodel_1_1_i_gradido_blockchain.html">IGradidoBlockchain</a>* otherBlockchain = <span class="keyword">nullptr</span></div>
 <div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>            ) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>            </div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
 <div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>            <span class="comment">// proto member variable accessors</span></div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>            <span class="keyword">inline</span> uint64_t getID()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> mProtoGradidoBlock-&gt;id(); }</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>            <span class="keyword">inline</span> <span class="keyword">const</span> std::string&amp; getTxHash()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> mProtoGradidoBlock-&gt;running_hash(); }</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>            <span class="keyword">inline</span> <span class="keyword">const</span> std::string&amp; getFinalBalance()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> mProtoGradidoBlock-&gt;final_gdd(); }</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>            uint64_t getID() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>            <span class="keyword">const</span> std::string&amp; getTxHash() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>            <span class="keyword">const</span> std::string&amp; getFinalBalance() <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>            <span class="keyword">inline</span> <span class="keywordtype">void</span> setTxHash(<span class="keyword">const</span> <a class="code hl_class" href="class_memory_bin.html">MemoryBin</a>* txHash) { mProtoGradidoBlock-&gt;set_allocated_running_hash(txHash-&gt;copyAsString().release()); }</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>            <span class="keywordtype">void</span> setTxHash(<span class="keyword">const</span> <a class="code hl_class" href="class_memory_bin.html">MemoryBin</a>* txHash);</div>
 <div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>            <span class="comment">// convert from proto timestamp seconds to poco DateTime</span></div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>            <span class="keyword">inline</span> Poco::Timestamp getReceivedAsTimestamp()<span class="keyword"> const </span>{</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>                <span class="keywordflow">return</span> Poco::Timestamp(mProtoGradidoBlock-&gt;received().seconds() * Poco::Timestamp::resolution());</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>            }</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>            <span class="comment">// return as seconds since Jan 01 1970</span></div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>            <span class="keyword">inline</span> int64_t getReceived()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> mProtoGradidoBlock-&gt;received().seconds(); }</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span> </div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>            std::unique_ptr&lt;std::string&gt; getSerialized();</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>            <a class="code hl_class" href="class_memory_bin.html">MemoryBin</a>* getMessageId() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>            std::string getMessageIdHex() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>            <a class="code hl_class" href="class_memory_bin.html">MemoryBin</a>* calculateTxHash(<span class="keyword">const</span> <a class="code hl_class" href="classmodel_1_1gradido_1_1_gradido_block.html">GradidoBlock</a>* previousBlock) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>            <span class="keywordtype">void</span> calculateFinalGDD(<a class="code hl_class" href="classmodel_1_1_i_gradido_blockchain.html">IGradidoBlockchain</a>* blockchain);</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>        <span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>            <span class="comment">// TODO: use Pool for reducing memory allocation for google protobuf objects</span></div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>            proto::gradido::GradidoBlock* mProtoGradidoBlock;</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>            <a class="code hl_class" href="classmodel_1_1gradido_1_1_gradido_transaction.html">GradidoTransaction</a>* mGradidoTransaction;</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>            <a class="code hl_class" href="classmodel_1_1gradido_1_1_gradido_block.html">GradidoBlock</a>(std::unique_ptr&lt;GradidoTransaction&gt; transaction);</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>        };</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    }</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>}</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span> </div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span><span class="preprocessor">#endif </span><span class="comment">//__GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_GRADIDO_BLOCK</span></div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>            <span class="keyword">inline</span> Poco::Timestamp getReceivedAsTimestamp()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> Poco::Timestamp(getReceived() * Poco::Timestamp::resolution());}</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>            <span class="comment">// return as seconds since Jan 01 1970</span></div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>            int64_t getReceived() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>            std::unique_ptr&lt;std::string&gt; getSerialized();</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>            <a class="code hl_class" href="class_memory_bin.html">MemoryBin</a>* getMessageId() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>            std::string getMessageIdHex() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>            <a class="code hl_class" href="class_memory_bin.html">MemoryBin</a>* calculateTxHash(<span class="keyword">const</span> <a class="code hl_class" href="classmodel_1_1gradido_1_1_gradido_block.html">GradidoBlock</a>* previousBlock) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>            <span class="keywordtype">void</span> calculateFinalGDD(<a class="code hl_class" href="classmodel_1_1_i_gradido_blockchain.html">IGradidoBlockchain</a>* blockchain);</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>        <span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>            <span class="comment">// TODO: use Pool for reducing memory allocation for google protobuf objects</span></div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>            proto::gradido::GradidoBlock* mProtoGradidoBlock;</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>            <a class="code hl_class" href="classmodel_1_1gradido_1_1_gradido_transaction.html">GradidoTransaction</a>* mGradidoTransaction;</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>            <a class="code hl_class" href="classmodel_1_1gradido_1_1_gradido_block.html">GradidoBlock</a>(std::unique_ptr&lt;GradidoTransaction&gt; transaction);</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>        };</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span> </div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    }</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>}</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span> </div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span><span class="preprocessor">#endif </span><span class="comment">//__GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_GRADIDO_BLOCK</span></div>
 <div class="ttc" id="aclass_memory_bin_html"><div class="ttname"><a href="class_memory_bin.html">MemoryBin</a></div><div class="ttdef"><b>Definition:</b> MemoryManager.h:35</div></div>
 <div class="ttc" id="aclass_multithread_container_html"><div class="ttname"><a href="class_multithread_container.html">MultithreadContainer</a></div><div class="ttdef"><b>Definition:</b> MultithreadContainer.h:41</div></div>
 <div class="ttc" id="aclassmodel_1_1_i_gradido_blockchain_html"><div class="ttname"><a href="classmodel_1_1_i_gradido_blockchain.html">model::IGradidoBlockchain</a></div><div class="ttdef"><b>Definition:</b> IGradidoBlockchain.h:13</div></div>
 <div class="ttc" id="aclassmodel_1_1gradido_1_1_gradido_block_html"><div class="ttname"><a href="classmodel_1_1gradido_1_1_gradido_block.html">model::gradido::GradidoBlock</a></div><div class="ttdoc">The Final Blockformat on Blockchain.</div><div class="ttdef"><b>Definition:</b> GradidoBlock.h:28</div></div>
 <div class="ttc" id="aclassmodel_1_1gradido_1_1_gradido_transaction_html"><div class="ttname"><a href="classmodel_1_1gradido_1_1_gradido_transaction.html">model::gradido::GradidoTransaction</a></div><div class="ttdoc">Contain the signature map for the Transaction and the serialized body.</div><div class="ttdef"><b>Definition:</b> GradidoTransaction.h:28</div></div>
-<div class="ttc" id="agroup__enums_html_ga5a93fcdc94d643d95a6b670b2a924443"><div class="ttname"><a href="group__enums.html#ga5a93fcdc94d643d95a6b670b2a924443">model::gradido::TransactionValidationLevel</a></div><div class="ttdeci">TransactionValidationLevel</div><div class="ttdoc">Transaction Validation Level Enum.</div><div class="ttdef"><b>Definition:</b> TransactionBase.h:65</div></div>
-<div class="ttc" id="agroup__enums_html_gga5a93fcdc94d643d95a6b670b2a924443a49f01ddec0f2d6ba82019c7bc21c6976"><div class="ttname"><a href="group__enums.html#gga5a93fcdc94d643d95a6b670b2a924443a49f01ddec0f2d6ba82019c7bc21c6976">model::gradido::TRANSACTION_VALIDATION_SINGLE</a></div><div class="ttdeci">@ TRANSACTION_VALIDATION_SINGLE</div><div class="ttdoc">check only the transaction</div><div class="ttdef"><b>Definition:</b> TransactionBase.h:67</div></div>
+<div class="ttc" id="agroup__enums_html_ga5a93fcdc94d643d95a6b670b2a924443"><div class="ttname"><a href="group__enums.html#ga5a93fcdc94d643d95a6b670b2a924443">model::gradido::TransactionValidationLevel</a></div><div class="ttdeci">TransactionValidationLevel</div><div class="ttdoc">Transaction Validation Level Enum.</div><div class="ttdef"><b>Definition:</b> TransactionBase.h:63</div></div>
+<div class="ttc" id="agroup__enums_html_gga5a93fcdc94d643d95a6b670b2a924443a49f01ddec0f2d6ba82019c7bc21c6976"><div class="ttname"><a href="group__enums.html#gga5a93fcdc94d643d95a6b670b2a924443a49f01ddec0f2d6ba82019c7bc21c6976">model::gradido::TRANSACTION_VALIDATION_SINGLE</a></div><div class="ttdeci">@ TRANSACTION_VALIDATION_SINGLE</div><div class="ttdoc">check only the transaction</div><div class="ttdef"><b>Definition:</b> TransactionBase.h:65</div></div>
 <div class="ttc" id="anamespacemodel_html"><div class="ttname"><a href="namespacemodel.html">model</a></div><div class="ttdoc">: Creation Transaction</div><div class="ttdef"><b>Definition:</b> GradidoBlockchainException.h:113</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->

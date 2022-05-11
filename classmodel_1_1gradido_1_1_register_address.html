@@ -125,8 +125,6 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aeeeac1c1c9d8fde8eaccd960dc953df1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abf98b586ef860e01dc78bd741910d148"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="class_memory_bin.html">MemoryBin</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_register_address.html#abf98b586ef860e01dc78bd741910d148">getInvolvedAddresses</a> () const</td></tr>
 <tr class="separator:abf98b586ef860e01dc78bd741910d148"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae729c4c231fae2da037121806dd7d8f6"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_register_address.html#ae729c4c231fae2da037121806dd7d8f6">getCoinColor</a> () const</td></tr>
-<tr class="separator:ae729c4c231fae2da037121806dd7d8f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:addf74fd3c75198d9e6c5650b183ee0b1"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_register_address.html#addf74fd3c75198d9e6c5650b183ee0b1">isBelongToUs</a> (const <a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html">TransactionBase</a> *pairingTransaction) const</td></tr>
 <tr class="separator:addf74fd3c75198d9e6c5650b183ee0b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae2ff30fcbca9237c056b0d367ddade34"><td class="memItemLeft" align="right" valign="top"><a id="ae2ff30fcbca9237c056b0d367ddade34" name="ae2ff30fcbca9237c056b0d367ddade34"></a>
@@ -188,9 +186,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a129252351def55da3f34604249ca29b0"><td class="memItemLeft" align="right" valign="top"><a id="a129252351def55da3f34604249ca29b0" name="a129252351def55da3f34604249ca29b0"></a>
 static proto::gradido::RegisterAddress_AddressType&#160;</td><td class="memItemRight" valign="bottom"><b>getAddressTypeFromString</b> (const std::string &amp;addressType)</td></tr>
 <tr class="separator:a129252351def55da3f34604249ca29b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f1b570db50fd99eb18945435ad1fc35"><td class="memItemLeft" align="right" valign="top"><a id="a8f1b570db50fd99eb18945435ad1fc35" name="a8f1b570db50fd99eb18945435ad1fc35"></a>
+<tr class="memitem:a1232ccdb1fe23cb2f161b916b1db487c"><td class="memItemLeft" align="right" valign="top"><a id="a1232ccdb1fe23cb2f161b916b1db487c" name="a1232ccdb1fe23cb2f161b916b1db487c"></a>
 static const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getAddressStringFromType</b> (proto::gradido::RegisterAddress_AddressType type)</td></tr>
-<tr class="separator:a8f1b570db50fd99eb18945435ad1fc35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a1232ccdb1fe23cb2f161b916b1db487c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_static_methods_classmodel_1_1gradido_1_1_transaction_base"><td colspan="2" onclick="javascript:toggleInherit('pub_static_methods_classmodel_1_1gradido_1_1_transaction_base')"><img src="closed.png" alt="-"/>&#160;Static Public Member Functions inherited from <a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html">model::gradido::TransactionBase</a></td></tr>
 <tr class="memitem:ac7d0fee193d2a1fe811233fcf7b417c2 inherit pub_static_methods_classmodel_1_1gradido_1_1_transaction_base"><td class="memItemLeft" align="right" valign="top"><a id="ac7d0fee193d2a1fe811233fcf7b417c2" name="ac7d0fee193d2a1fe811233fcf7b417c2"></a>
 static bool&#160;</td><td class="memItemRight" valign="bottom"><b>isValidGroupAlias</b> (const std::string &amp;groupAlias)</td></tr>
@@ -226,33 +224,6 @@ std::recursive_mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mWork
 <tr class="separator:a23dd55679f5fab6bf52a2b0303aa2575 inherit pro_attribs_class_multithread_container"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="ae729c4c231fae2da037121806dd7d8f6" name="ae729c4c231fae2da037121806dd7d8f6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae729c4c231fae2da037121806dd7d8f6">&#9670;&nbsp;</a></span>getCoinColor()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">uint32_t model::gradido::RegisterAddress::getCoinColor </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Implements <a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html">model::gradido::TransactionBase</a>.</p>
-
-</div>
-</div>
 <a id="abf98b586ef860e01dc78bd741910d148" name="abf98b586ef860e01dc78bd741910d148"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abf98b586ef860e01dc78bd741910d148">&#9670;&nbsp;</a></span>getInvolvedAddresses()</h2>
 

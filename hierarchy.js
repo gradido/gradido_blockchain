@@ -32,7 +32,6 @@ var hierarchy =
       [ "MultithreadQueue< ResourceType >", "class_multithread_queue.html", null ],
       [ "model::gradido::GradidoBlock", "classmodel_1_1gradido_1_1_gradido_block.html", null ],
       [ "model::gradido::TransactionBase", "classmodel_1_1gradido_1_1_transaction_base.html", [
-        [ "model::gradido::GlobalGroupAdd", "classmodel_1_1gradido_1_1_global_group_add.html", null ],
         [ "model::gradido::GroupFriendsUpdate", "classmodel_1_1gradido_1_1_group_friends_update.html", null ],
         [ "model::gradido::RegisterAddress", "classmodel_1_1gradido_1_1_register_address.html", null ],
         [ "model::gradido::TransactionCreation", "classmodel_1_1gradido_1_1_transaction_creation.html", null ],

@@ -87,6 +87,7 @@ $(document).ready(function(){initNavTree('classmodel_1_1_transaction_entry.html'
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classmodel_1_1_transaction_entry-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">model::TransactionEntry Class Reference</div></div>
@@ -107,10 +108,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:add0301c3b627b243cc79c435d38fe934"><td class="memItemLeft" align="right" valign="top"><a id="add0301c3b627b243cc79c435d38fe934" name="add0301c3b627b243cc79c435d38fe934"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>TransactionEntry</b> (<a class="el" href="classmodel_1_1gradido_1_1_gradido_block.html">gradido::GradidoBlock</a> *transaction)</td></tr>
 <tr class="separator:add0301c3b627b243cc79c435d38fe934"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7ba798c66070d6bc85a1f5f3b6acfbf2"><td class="memItemLeft" align="right" valign="top"><a id="a7ba798c66070d6bc85a1f5f3b6acfbf2" name="a7ba798c66070d6bc85a1f5f3b6acfbf2"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>TransactionEntry</b> (uint64_t transactionNr, uint8_t month, uint16_t year, uint32_t coinColor)</td></tr>
-<tr class="memdesc:a7ba798c66070d6bc85a1f5f3b6acfbf2"><td class="mdescLeft">&#160;</td><td class="mdescRight">init entry object without indices <br /></td></tr>
-<tr class="separator:a7ba798c66070d6bc85a1f5f3b6acfbf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77157ad85866bbe42fc8e7270f6de720"><td class="memItemLeft" align="right" valign="top"><a id="a77157ad85866bbe42fc8e7270f6de720" name="a77157ad85866bbe42fc8e7270f6de720"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TransactionEntry</b> (uint64_t transactionNr, uint8_t month, uint16_t year, std::string groupId)</td></tr>
+<tr class="memdesc:a77157ad85866bbe42fc8e7270f6de720"><td class="mdescLeft">&#160;</td><td class="mdescRight">init entry object without indices <br /></td></tr>
+<tr class="separator:a77157ad85866bbe42fc8e7270f6de720"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeb00c6d48e385cac4e1b2c95ba93e1b4"><td class="memItemLeft" align="right" valign="top"><a id="aeb00c6d48e385cac4e1b2c95ba93e1b4" name="aeb00c6d48e385cac4e1b2c95ba93e1b4"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;</b> (const <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &amp;b)</td></tr>
 <tr class="memdesc:aeb00c6d48e385cac4e1b2c95ba93e1b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">operator for sorting by mTransactionNr in ascending order <br /></td></tr>
@@ -127,9 +128,15 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>getMonth</b> () co
 <tr class="memitem:a7bea685dd32ee1a5af9089f9658521e0"><td class="memItemLeft" align="right" valign="top"><a id="a7bea685dd32ee1a5af9089f9658521e0" name="a7bea685dd32ee1a5af9089f9658521e0"></a>
 uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>getYear</b> () const</td></tr>
 <tr class="separator:a7bea685dd32ee1a5af9089f9658521e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a29b9863dac9cfcb3d31ded3c2a162faf"><td class="memItemLeft" align="right" valign="top"><a id="a29b9863dac9cfcb3d31ded3c2a162faf" name="a29b9863dac9cfcb3d31ded3c2a162faf"></a>
-uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>getCoinColor</b> () const</td></tr>
-<tr class="separator:a29b9863dac9cfcb3d31ded3c2a162faf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc19eb9191aba976b29917fec0063c55"><td class="memItemLeft" align="right" valign="top"><a id="afc19eb9191aba976b29917fec0063c55" name="afc19eb9191aba976b29917fec0063c55"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>getCoinGroupId</b> () const</td></tr>
+<tr class="separator:afc19eb9191aba976b29917fec0063c55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a36093e49e4bf6df344015b8348578b95"><td class="memItemLeft" align="right" valign="top"><a id="a36093e49e4bf6df344015b8348578b95" name="a36093e49e4bf6df344015b8348578b95"></a>
+static std::string&#160;</td><td class="memItemRight" valign="bottom"><b>getCoinGroupId</b> (const <a class="el" href="classmodel_1_1gradido_1_1_transaction_body.html">gradido::TransactionBody</a> *body)</td></tr>
+<tr class="separator:a36093e49e4bf6df344015b8348578b95"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -145,9 +152,9 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>mMonth</b></td></t
 <tr class="memitem:aafbbc7b4efdacffd77ae00021aec0072"><td class="memItemLeft" align="right" valign="top"><a id="aafbbc7b4efdacffd77ae00021aec0072" name="aafbbc7b4efdacffd77ae00021aec0072"></a>
 uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>mYear</b></td></tr>
 <tr class="separator:aafbbc7b4efdacffd77ae00021aec0072"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3d6a8f4af951d0a863550650a94333c5"><td class="memItemLeft" align="right" valign="top"><a id="a3d6a8f4af951d0a863550650a94333c5" name="a3d6a8f4af951d0a863550650a94333c5"></a>
-uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>mCoinColor</b></td></tr>
-<tr class="separator:a3d6a8f4af951d0a863550650a94333c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91c2e00d2e6d27e2b36f2ab333dd6647"><td class="memItemLeft" align="right" valign="top"><a id="a91c2e00d2e6d27e2b36f2ab333dd6647" name="a91c2e00d2e6d27e2b36f2ab333dd6647"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>mGroupId</b></td></tr>
+<tr class="separator:a91c2e00d2e6d27e2b36f2ab333dd6647"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb35758c30b2b1e040c8ad17a73facb6"><td class="memItemLeft" align="right" valign="top"><a id="acb35758c30b2b1e040c8ad17a73facb6" name="acb35758c30b2b1e040c8ad17a73facb6"></a>
 Poco::FastMutex&#160;</td><td class="memItemRight" valign="bottom"><b>mFastMutex</b></td></tr>
 <tr class="separator:acb35758c30b2b1e040c8ad17a73facb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
