@@ -65,8 +65,8 @@ std::vector<std::string> IotaRequest::getTips()
 std::string IotaRequest::sendMessage(const std::string& indexHex, const std::string& messageHex)
 {	
 	if (ServerConfig::g_IotaLocalPow) {
-		auto index = DataTypeConverter::hexToBinString(indexHex);
-		auto message = DataTypeConverter::hexToBinString(messageHex);
+		auto index = DataTypeConverter::hexToBinString(indexHex.substr(0, indexHex.size()-1));
+		auto message = DataTypeConverter::hexToBinString(messageHex.substr(0, messageHex.size()-1));
 		return sendMessageViaRustIotaClient(*index, *message);
 	}
 	auto tips = getTips();
@@ -323,9 +323,9 @@ std::string IotaRequest::sendMessageViaRustIotaClient(const std::string& index, 
 	if (stateIt == resultJson.MemberEnd()) {
 		throw IotaRequestException("state in response missing", iotaUrl);
 	}
-	auto stateString = stateIt->value.GetString();
+	std::string stateString = stateIt->value.GetString();
 	if (stateString != "success") {
 		throw IotaRequestException(resultJson["msg"].GetString(), iotaUrl);
 	}
-	return std::move(std::string(resultJson["messageId"].GetString()));
+	return std::move(std::string(resultJson["message_id"].GetString()));
 }
