@@ -159,6 +159,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 enable_language(Rust)
 include(CMakeCargo)
 add_subdirectory(iota_rust_clib)
+
 ######################################################################
 
 add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
@@ -173,6 +174,10 @@ if(BUILD_SHARED_LIBS)
 	ELSE()
 		target_link_libraries(GradidoBlockchain ${POCO_LIBS} sodium iota_rust_clib)
 	ENDIF()
+else()
+	include(CMakeBundleStaticLibs)
+	bundle_static_library(GradidoBlockchain GradidoBlockchainBundled)
+	bundle_static_library(iota_rust_clib GradidoBlockchainBundled)
 endif()
 set_target_properties(GradidoBlockchain PROPERTIES
                       VERSION ${GradidoBlockchain_VERSION}
