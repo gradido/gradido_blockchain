@@ -169,8 +169,12 @@ if(BUILD_SHARED_LIBS)
 	target_link_libraries(GradidoBlockchain libprotobuf ${MPFR_LIBRARIES})
 	IF(WIN32) 
 		# needed for windows if linking to a rust lib
-		find_library(IOTA_RUST_C_LIB iota_rust_clib.dll.lib PATHS "build/iota_rust_clib/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}" REQUIRED)
-		target_link_libraries(GradidoBlockchain ${CONAN_LIBS} ${IOTA_RUST_C_LIB} ws2_32 userenv)
+		find_library(IOTA_RUST_C_LIB iota_rust_clib.dll.lib PATHS 
+			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
+			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/debug"
+			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/release"
+		)
+		target_link_libraries(GradidoBlockchain ${CONAN_LIBS} ${IOTA_RUST_C_LIB}  ws2_32 userenv) #${IOTA_RUST_C_LIB}
 	ELSE()
 		target_link_libraries(GradidoBlockchain ${POCO_LIBS} sodium iota_rust_clib)
 	ENDIF()

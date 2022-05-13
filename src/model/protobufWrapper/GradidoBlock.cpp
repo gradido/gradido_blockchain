@@ -53,7 +53,9 @@ namespace model {
 			proto->set_id(id);
 			proto->mutable_received()->set_seconds(received);
 			proto->set_version_number(GRADIDO_BLOCK_PROTOCOL_VERSION);
-			proto->set_allocated_message_id(messageId->copyAsString().release());
+			if (messageId) {
+				proto->set_allocated_message_id(messageId->copyAsString().release());
+			}
 			return gradidoBlock;
 		}
 
@@ -165,6 +167,7 @@ namespace model {
 
 		std::string GradidoBlock::getMessageIdHex() const
 		{
+			if (!mProtoGradidoBlock->message_id().size()) return "";
 			return DataTypeConverter::binToHex(
 				(const unsigned char*)mProtoGradidoBlock->message_id().data(),
 				mProtoGradidoBlock->message_id().size()
@@ -182,9 +185,9 @@ namespace model {
 					TransactionValidationInvalidInputException exception("wrong version in gradido block", "version_number", "uint64");
 					exception.setTransactionBody(getGradidoTransaction()->getTransactionBody());
 					throw exception;
-				}
-				if (!mProtoGradidoBlock->message_id().size()) {
-					TransactionValidationInvalidInputException exception("empty", "message_id", "binary");
+				}	// with iota it is a BLAKE2b-256 hash with 256 Bits or 32 Bytes
+				if (mProtoGradidoBlock->message_id().size() && mProtoGradidoBlock->message_id().size() != 32) {
+					TransactionValidationInvalidInputException exception("wrong size", "message_id", "binary");
 					exception.setTransactionBody(getGradidoTransaction()->getTransactionBody());
 					throw exception;
 				}
