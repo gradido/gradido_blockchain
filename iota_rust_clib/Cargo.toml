@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["einhornimmond <info@einhornimmond.de>"]
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
 iota-client = "1.1.1"
