@@ -132,7 +132,7 @@ include_directories(
 	"include"
 	"iota_rust_clib/include"
 )
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 IF(WIN32)
 	include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 	conan_basic_setup()
@@ -155,7 +155,7 @@ message(STATUS "MPFR Found: ${MPFR_FOUND}")
 
 ############################# add rust and iota.rs ####################
 # https://webdevolutions.blob.core.windows.net/blog/pdf/insider-series-using-rust-code-in-a-cc-project-with-cmake.pdf
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/")
 enable_language(Rust)
 include(CMakeCargo)
 add_subdirectory(iota_rust_clib)
