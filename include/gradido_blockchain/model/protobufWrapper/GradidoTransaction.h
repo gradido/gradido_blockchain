@@ -50,7 +50,7 @@ namespace model {
 
 			bool addSign(const MemoryBin* pubkeyBin, const MemoryBin* signatureBin);
 
-			int getSignCount() const { return mProtoGradidoTransaction->sig_map().sigpair_size(); }
+			int getSignCount() const;
 			// caller must release MemoryBin afterwards
 			inline std::vector<std::pair<MemoryBin*, MemoryBin*>> getPublicKeySignaturePairs(bool onlyFirst = true) const { return getPublicKeySignaturePairs(true, true, onlyFirst); }
 			std::vector<MemoryBin*> getPublicKeysfromSignatureMap(bool onlyFirst = true) const;

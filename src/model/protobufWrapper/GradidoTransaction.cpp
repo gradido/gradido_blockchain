@@ -171,6 +171,11 @@ namespace model {
 
 		}
 
+		int GradidoTransaction::getSignCount() const
+		{
+			return mProtoGradidoTransaction->sig_map().sigpair_size();
+		}
+
 		std::vector<std::pair<MemoryBin*, MemoryBin*>> GradidoTransaction::getPublicKeySignaturePairs(bool withPublicKey, bool withSignatures, bool onlyFirst/* = true*/) const
 		{
 			auto mm = MemoryManager::getInstance();

@@ -5,7 +5,7 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "Poco/JWT/Token.h"
 
-class JsonRequestHandlerJwt : public JsonRequestHandler
+class GRADIDOBLOCKCHAIN_EXPORT JsonRequestHandlerJwt : public JsonRequestHandler
 {
 public:
 	JsonRequestHandlerJwt();
@@ -21,7 +21,7 @@ protected:
 	std::string mSerializedJWTToken;
 };
 
-class JwtTokenException : public GradidoBlockchainException
+class GRADIDOBLOCKCHAIN_EXPORT JwtTokenException : public GradidoBlockchainException
 {
 public:
 	explicit JwtTokenException(const char* what, const Poco::JWT::Token* jwtToken) noexcept;
