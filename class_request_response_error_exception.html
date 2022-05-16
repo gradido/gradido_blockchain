@@ -121,6 +121,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ae1cea8040838780e94753c9ca59c57f3"><td class="memItemLeft" align="right" valign="top"><a id="ae1cea8040838780e94753c9ca59c57f3" name="ae1cea8040838780e94753c9ca59c57f3"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>RequestResponseErrorException</b> (const char *what, const Poco::URI &amp;uri, const std::string &amp;msg) noexcept</td></tr>
 <tr class="separator:ae1cea8040838780e94753c9ca59c57f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f69fd96d6baf2dc89e943ff69304d1d"><td class="memItemLeft" align="right" valign="top">rapidjson::Value&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_request_response_error_exception.html#a0f69fd96d6baf2dc89e943ff69304d1d">getDetails</a> (rapidjson::Document::AllocatorType &amp;alloc) const</td></tr>
+<tr class="separator:a0f69fd96d6baf2dc89e943ff69304d1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa5e0afd77f1ad9bc8138ea958c6e46a3"><td class="memItemLeft" align="right" valign="top"><a id="aa5e0afd77f1ad9bc8138ea958c6e46a3" name="aa5e0afd77f1ad9bc8138ea958c6e46a3"></a>
 <a class="el" href="class_request_response_error_exception.html">RequestResponseErrorException</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>setDetails</b> (const std::string &amp;details)</td></tr>
 <tr class="separator:aa5e0afd77f1ad9bc8138ea958c6e46a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -137,8 +139,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af9110768204fa5e4fee1f3bc99235540 inherit pub_methods_class_gradido_blockchain_exception"><td class="memItemLeft" align="right" valign="top"><a id="af9110768204fa5e4fee1f3bc99235540" name="af9110768204fa5e4fee1f3bc99235540"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>GradidoBlockchainException</b> (const char *what)</td></tr>
 <tr class="separator:af9110768204fa5e4fee1f3bc99235540 inherit pub_methods_class_gradido_blockchain_exception"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab5ede0734e16cb1b98f430ba1900768e inherit pub_methods_class_gradido_blockchain_exception"><td class="memItemLeft" align="right" valign="top">virtual rapidjson::Value&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_gradido_blockchain_exception.html#ab5ede0734e16cb1b98f430ba1900768e">getDetails</a> (rapidjson::Document::AllocatorType &amp;alloc) const</td></tr>
-<tr class="separator:ab5ede0734e16cb1b98f430ba1900768e inherit pub_methods_class_gradido_blockchain_exception"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -154,6 +154,34 @@ Poco::URI&#160;</td><td class="memItemRight" valign="bottom"><b>mUri</b></td></t
 <tr class="separator:a241d4c5ffd8443664cb3b8ebb2d5f204 inherit pro_attribs_class_request_exception"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a0f69fd96d6baf2dc89e943ff69304d1d" name="a0f69fd96d6baf2dc89e943ff69304d1d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0f69fd96d6baf2dc89e943ff69304d1d">&#9670;&nbsp;</a></span>getDetails()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Value RequestResponseErrorException::getDetails </td>
+          <td>(</td>
+          <td class="paramtype">rapidjson::Document::AllocatorType &amp;&#160;</td>
+          <td class="paramname"><em>alloc</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reimplemented from <a class="el" href="class_gradido_blockchain_exception.html">GradidoBlockchainException</a>.</p>
+
+</div>
+</div>
 <a id="acd66e343d2e7c07bffee66528141bc26" name="acd66e343d2e7c07bffee66528141bc26"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acd66e343d2e7c07bffee66528141bc26">&#9670;&nbsp;</a></span>getFullString()</h2>
 
