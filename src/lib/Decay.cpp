@@ -1,6 +1,9 @@
 #include "gradido_blockchain/lib/Decay.h"
 
 #include "gradido_blockchain/MemoryManager.h"
+#include "Poco/DateTimeParser.h"
+#include "Poco/DateTimeFormat.h"
+#include "Poco/DateTimeFormatter.h"
 /*
 typedef enum {
 MPFR_RNDN=0,  // round to nearest, with ties to even
@@ -19,6 +22,7 @@ const mpfr_rnd_t gDefaultRound = MPFR_RNDN;
 mpfr_t gDecayFactor356Days;
 mpfr_t gDecayFactor366Days;
 mpfr_t gDecayFactorGregorianCalender;
+Poco::Timestamp DECAY_START_TIME; 
 
 void initDefaultDecayFactors()
 {
@@ -45,6 +49,15 @@ void initDefaultDecayFactors()
 	mpfr_exp(gDecayFactorGregorianCalender, gDecayFactorGregorianCalender, MPFR_RNDZ);
 
 	mpfr_clear(temp);
+
+	std::string decayStartTimeString = "2021-05-13 17:46:31";
+	int timezoneDifferential = Poco::DateTimeFormatter::UTC; // + GMT 0
+	DECAY_START_TIME = Poco::DateTimeParser::parse(
+		Poco::DateTimeFormat::SORTABLE_FORMAT,
+		decayStartTimeString,
+		timezoneDifferential 
+	).timestamp(); 
+
 }
 
 void unloadDefaultDecayFactors()
@@ -76,6 +89,25 @@ void calculateDecayFactor(mpfr_ptr decay_factor, int days_per_year)
 void calculateDecayFactorForDuration(mpfr_ptr decay_for_duration, mpfr_ptr decay_factor, unsigned long seconds)
 {
 	mpfr_pow_ui(decay_for_duration, decay_factor, seconds, gDefaultRound);
+}
+
+//max(a,b) (((a) > (b)) ? (a) : (b))
+
+void calculateDecayFactorForDuration(
+	mpfr_ptr decay_for_duration, mpfr_ptr decay_factor,
+	Poco::Timestamp startTime, Poco::Timestamp endTime
+)
+{
+	assert(endTime > startTime);
+	Poco::Timestamp start = startTime > DECAY_START_TIME ? startTime : DECAY_START_TIME;
+	Poco::Timestamp end = endTime > DECAY_START_TIME ? endTime : DECAY_START_TIME;
+	if (start == end) {
+		// no decay
+		mpfr_set_ui(decay_for_duration, 1, gDefaultRound);
+	}
+	else {
+		mpfr_pow_ui(decay_for_duration, decay_factor, Poco::Timespan(end - start).totalSeconds(), gDefaultRound);
+	}
 }
 
 void calculateDecayFast(mpfr_ptr decay_for_duration, mpfr_ptr gradido)
