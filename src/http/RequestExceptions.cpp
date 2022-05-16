@@ -97,6 +97,18 @@ std::string RequestResponseErrorException::getFullString() const
 	return resultString;
 }
 
+Value RequestResponseErrorException::getDetails(Document::AllocatorType& alloc) const
+{
+	Value result(kObjectType);
+	result.AddMember("what", Value(what(), alloc), alloc);
+	result.AddMember("uri", Value(mUri.toString().data(), alloc), alloc);
+	result.AddMember("msg", Value(mErrorMessage.data(), alloc), alloc);
+	if (mErrorDetails.size()) {
+		result.AddMember("details", Value(mErrorDetails.data(), alloc), alloc);
+	}
+	return result;
+}
+
 // ******************* CakePHP Exception *****************************************
 RequestResponseCakePHPException::RequestResponseCakePHPException(const char* what, const Poco::URI& uri, const std::string& msg) noexcept
 	: RequestResponseErrorException(what, uri, msg)

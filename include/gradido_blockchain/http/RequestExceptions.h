@@ -48,6 +48,7 @@ class GRADIDOBLOCKCHAIN_EXPORT RequestResponseErrorException : public RequestExc
 public:
 	explicit RequestResponseErrorException(const char* what, const Poco::URI& uri, const std::string& msg) noexcept;
 
+	rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 	RequestResponseErrorException& setDetails(const std::string& details);
 	std::string getFullString() const;
 
