@@ -4,9 +4,9 @@
 
 /*!
  * \author: Dario Rekowski
- * 
+ *
  * \date: 2020-06-04
- * 
+ *
  * \brief: Key Pairs class for ed25519 keys, used for default gradido transactions
  * TODO: add verify method
 */
@@ -37,7 +37,7 @@ public:
 	inline MemoryBin* sign(const std::string& bodyBytes) const { return sign((const unsigned char*)bodyBytes.data(), bodyBytes.size()); }
 	MemoryBin* sign(const unsigned char* message, size_t messageSize) const;
 
-	//! \return true if signature is valid 
+	//! \return true if signature is valid
 	bool verify(const std::string& message, const std::string& signature) const;
 
 	inline const unsigned char* getPublicKey() const { return mSodiumPublic; }
@@ -49,7 +49,7 @@ public:
 		return 0 == sodium_memcmp(mSodiumPublic, b.mSodiumPublic, crypto_sign_PUBLICKEYBYTES);
 	}
 	inline bool isTheSame(const unsigned char* pubkey) const {
-		if (!pubkey) 
+		if (!pubkey)
 			return false;
 		return 0 == sodium_memcmp(mSodiumPublic, pubkey, crypto_sign_PUBLICKEYBYTES);
 	}
@@ -70,22 +70,22 @@ public:
 
 	inline bool hasPrivateKey() const { return mSodiumSecret != nullptr; }
 	inline const MemoryBin* getPrivateKey() const { return mSodiumSecret; }
-	
+
 	MemoryBin* getCryptedPrivKey(const std::shared_ptr<SecretKeyCryptography> password) const;
 
-protected:	
-	
+protected:
+
 	KeyPairEd25519();
 
 
 private:
 	// 64 Byte
 	//! \brief ed25519 libsodium private key
-	//! 
+	//!
 	//! Why it is a pointer and the public is an array?
 	//! Because MemoryBin should be replaced by a memory obfuscation class which make it harder to steal the private key from computer memory
 	//! And because private key can be nullptr for example to verify a signed message
-	
+
 	//! TODO: replace MemoryBin by a memory obfuscation class which make it hard to steal the private key from memory
 	MemoryBin* mSodiumSecret;
 
@@ -95,7 +95,7 @@ private:
 };
 
 // *********************** Exceptions ****************************
-class Ed25519SignException : public GradidoBlockchainException
+class GRADIDOBLOCKCHAIN_EXPORT Ed25519SignException : public GradidoBlockchainException
 {
 public:
 	explicit Ed25519SignException(const char* what, MemoryBin* pubkey, const std::string& message) noexcept;
