@@ -79,7 +79,7 @@ dependencies = [
  "bee-ternary",
  "bytemuck",
  "digest",
- "hex",
+ "hex 0.4.3",
  "iota-crypto",
  "serde",
  "thiserror",
@@ -104,7 +104,7 @@ checksum = "7f9afa75c1deba0a7271e7038f6301dfcde6fcc6c165ef34807bb5edf4011acf"
 dependencies = [
  "bee-ledger",
  "bee-message",
- "hex",
+ "hex 0.4.3",
  "serde",
  "serde_json",
  "thiserror",
@@ -252,7 +252,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0a128b76af6dd4b427e34a6fd43dc78dbfe73672ec41ff615a2414c1a0ad0409"
 dependencies = [
  "curve25519-dalek",
- "hex",
+ "hex 0.4.3",
  "rand_core",
  "sha2",
  "thiserror",
@@ -439,6 +439,12 @@ dependencies = [
 
 [[package]]
 name = "hex"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "805026a5d0141ffc30abb3be3173848ad46a1b1664fe632428479619a3644d77"
+
+[[package]]
+name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
@@ -563,7 +569,7 @@ dependencies = [
  "futures-sink",
  "futures-task",
  "futures-util",
- "hex",
+ "hex 0.4.3",
  "iota-crypto",
  "log",
  "num_cpus",
@@ -600,6 +606,7 @@ dependencies = [
 name = "iota_rust_clib"
 version = "0.1.0"
 dependencies = [
+ "hex 0.3.2",
  "iota-client",
  "iota-crypto",
  "serde",
