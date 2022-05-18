@@ -7,6 +7,7 @@ var hierarchy =
     [ "DRStaticHashList", "class_d_r_static_hash_list.html", [
       [ "DRHashList", "class_d_r_hash_list.html", null ]
     ] ],
+    [ "model::TransactionsManager::GroupTransactions", "structmodel_1_1_transactions_manager_1_1_group_transactions.html", null ],
     [ "Mnemonic::HashCollisionWords", "struct_mnemonic_1_1_hash_collision_words.html", null ],
     [ "HttpRequest", "class_http_request.html", [
       [ "JsonRequest", "class_json_request.html", [
@@ -30,6 +31,7 @@ var hierarchy =
     [ "MultithreadContainer", "class_multithread_container.html", [
       [ "MemoryPageStack", "class_memory_page_stack.html", null ],
       [ "MultithreadQueue< ResourceType >", "class_multithread_queue.html", null ],
+      [ "model::TransactionsManager", "classmodel_1_1_transactions_manager.html", null ],
       [ "model::gradido::GradidoBlock", "classmodel_1_1gradido_1_1_gradido_block.html", null ],
       [ "model::gradido::TransactionBase", "classmodel_1_1gradido_1_1_transaction_base.html", [
         [ "model::gradido::GroupFriendsUpdate", "classmodel_1_1gradido_1_1_group_friends_update.html", null ],

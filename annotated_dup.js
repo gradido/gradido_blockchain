@@ -32,7 +32,8 @@ var annotated_dup =
         [ "WrongAddressTypeException", "classmodel_1_1gradido_1_1_wrong_address_type_exception.html", null ]
       ] ],
       [ "IGradidoBlockchain", "classmodel_1_1_i_gradido_blockchain.html", null ],
-      [ "TransactionEntry", "classmodel_1_1_transaction_entry.html", "classmodel_1_1_transaction_entry" ]
+      [ "TransactionEntry", "classmodel_1_1_transaction_entry.html", "classmodel_1_1_transaction_entry" ],
+      [ "TransactionsManager", "classmodel_1_1_transactions_manager.html", "classmodel_1_1_transactions_manager" ]
     ] ],
     [ "SealedBoxes", null, [
       [ "DecryptException", "class_sealed_boxes_1_1_decrypt_exception.html", null ]

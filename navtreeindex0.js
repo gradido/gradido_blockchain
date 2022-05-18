@@ -43,6 +43,7 @@ var NAVTREEINDEX0 =
 "_transaction_factory_8h_source.html":[3,0,0,0,3,4],
 "_transaction_transfer_8h_source.html":[3,0,0,0,3,0,9],
 "_transaction_validation_exceptions_8h_source.html":[3,0,0,0,3,0,10],
+"_transactions_manager_8h_source.html":[3,0,0,0,3,5],
 "annotated.html":[2,0],
 "class_authenticated_encryption.html":[2,0,5],
 "class_authenticated_encryption.html#ab91b5dbdbebe8882780734d7da5e4bf4":[2,0,5,0],
@@ -134,6 +135,8 @@ var NAVTREEINDEX0 =
 "classmodel_1_1_transaction_entry.html#a6229e4482960a4469c65a1711162c01c":[2,0,3,2,0],
 "classmodel_1_1_transaction_entry.html#a77157ad85866bbe42fc8e7270f6de720":[2,0,3,2,1],
 "classmodel_1_1_transaction_entry.html#aeb00c6d48e385cac4e1b2c95ba93e1b4":[2,0,3,2,2],
+"classmodel_1_1_transactions_manager.html":[2,0,3,3],
+"classmodel_1_1_transactions_manager.html#a32fdce7b5b01001a22b3c4c1743612cb":[2,0,3,3,1],
 "classmodel_1_1gradido_1_1_address_already_exist_exception.html":[2,0,3,0,0],
 "classmodel_1_1gradido_1_1_deferred_transfer.html":[2,0,3,0,1],
 "classmodel_1_1gradido_1_1_gradido_block.html":[1,0,0],
@@ -185,6 +188,7 @@ var NAVTREEINDEX0 =
 "files.html":[3,0],
 "functions.html":[2,3,0],
 "functions_func.html":[2,3,1],
+"functions_vars.html":[2,3,2],
 "group___gradido-_protocol.html":[1,0],
 "group__enums.html":[1,1],
 "group__enums.html#ga5a93fcdc94d643d95a6b670b2a924443":[1,1,1],
@@ -213,5 +217,8 @@ var NAVTREEINDEX0 =
 "modules.html":[1],
 "pages.html":[],
 "struct_mnemonic_1_1_hash_collision_words.html":[2,0,41,0],
-"structiota_1_1_node_info.html":[2,0,2,0]
+"structiota_1_1_node_info.html":[2,0,2,0],
+"structmodel_1_1_transactions_manager_1_1_group_transactions.html":[2,0,3,3,0],
+"structmodel_1_1_transactions_manager_1_1_group_transactions.html#abf0be1c38e6a0889d9a57823478ffafb":[2,0,3,3,0,0],
+"structmodel_1_1_transactions_manager_1_1_group_transactions.html#ac4a99ae76eb14336859f1a3081cfddc0":[2,0,3,3,0,1]
 };

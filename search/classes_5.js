@@ -9,5 +9,6 @@ var searchData=
   ['gradidotransaction_6',['GradidoTransaction',['../classmodel_1_1gradido_1_1_gradido_transaction.html',1,'model::gradido']]],
   ['gradidounknownenumexception_7',['GradidoUnknownEnumException',['../class_gradido_unknown_enum_exception.html',1,'']]],
   ['graphqlrequest_8',['GraphQLRequest',['../class_graph_q_l_request.html',1,'']]],
-  ['groupfriendsupdate_9',['GroupFriendsUpdate',['../classmodel_1_1gradido_1_1_group_friends_update.html',1,'model::gradido']]]
+  ['groupfriendsupdate_9',['GroupFriendsUpdate',['../classmodel_1_1gradido_1_1_group_friends_update.html',1,'model::gradido']]],
+  ['grouptransactions_10',['GroupTransactions',['../structmodel_1_1_transactions_manager_1_1_group_transactions.html',1,'model::TransactionsManager']]]
 ];
