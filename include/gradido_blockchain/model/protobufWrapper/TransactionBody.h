@@ -88,6 +88,8 @@ namespace model {
 			const TransactionTransfer* getTransferTransaction() const;
 
 			const TransactionBase* getTransactionBase() const;
+
+			std::string toDebugString() const;
 		protected:
 			TransactionBody();
 

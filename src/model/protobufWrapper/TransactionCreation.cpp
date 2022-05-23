@@ -237,6 +237,15 @@ namespace model {
 			return mProtoCreation.recipient().pubkey();
 		}
 
+		std::string TransactionCreation::toDebugString() const
+		{
+			std::string result;
+			auto targetDateString = Poco::DateTimeFormatter::format(getTargetDate(), Poco::DateTimeFormat::SORTABLE_FORMAT);
+			result += "creation: " + getAmount() + " GDD, target: " + targetDateString + "\n";
+			result += "to:   " + DataTypeConverter::binToHex(getRecipientPublicKeyString()) + "\n";
+			return std::move(result);
+		}
+
 	}
 }
 

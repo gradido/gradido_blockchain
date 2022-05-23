@@ -197,5 +197,14 @@ namespace model {
 			bin->copyFromProtoBytes(mProtoTransfer.recipient());
 			return bin;
 		}
+		std::string TransactionTransfer::toDebugString() const
+		{
+			std::string result;
+			result += "transfer: " + getAmount() + " GDD\n";
+			result += "from: " + DataTypeConverter::binToHex(getSenderPublicKeyString()) + "\n";
+			result += "to:   " + DataTypeConverter::binToHex(getRecipientPublicKeyString()) + "\n";
+			return std::move(result);
+		}
+
 	}
 }

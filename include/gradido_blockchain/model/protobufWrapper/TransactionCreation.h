@@ -47,6 +47,8 @@ namespace model {
 			std::string getTargetDateString() const;
 			Poco::DateTime getTargetDate() const;
 
+			std::string toDebugString() const;
+
 		protected:
 			const proto::gradido::GradidoCreation& mProtoCreation;
 		};

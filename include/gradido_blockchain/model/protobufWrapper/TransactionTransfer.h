@@ -44,6 +44,8 @@ namespace model {
 			MemoryBin* getSenderPublicKey() const;
 			MemoryBin* getRecipientPublicKey() const;
 
+			std::string toDebugString() const;
+
 		protected:
 			const proto::gradido::GradidoTransfer& mProtoTransfer;
 		};

@@ -108,7 +108,7 @@ namespace model {
 			static bool isValidGroupAlias(const std::string& groupAlias);
 			static const char* getTransactionTypeString(TransactionType type);
 			static void amountToString(std::string* strPointer, mpfr_ptr amount);
-			
+			virtual std::string toDebugString() const { return ""; }
 
 		protected:
 			uint32_t mMinSignatureCount;
