@@ -136,7 +136,9 @@ var NAVTREEINDEX0 =
 "classmodel_1_1_transaction_entry.html#a77157ad85866bbe42fc8e7270f6de720":[2,0,3,2,1],
 "classmodel_1_1_transaction_entry.html#aeb00c6d48e385cac4e1b2c95ba93e1b4":[2,0,3,2,2],
 "classmodel_1_1_transactions_manager.html":[2,0,3,3],
-"classmodel_1_1_transactions_manager.html#a32fdce7b5b01001a22b3c4c1743612cb":[2,0,3,3,1],
+"classmodel_1_1_transactions_manager.html#a32fdce7b5b01001a22b3c4c1743612cb":[2,0,3,3,4],
+"classmodel_1_1_transactions_manager_1_1_account_in_group_not_found_exception.html":[2,0,3,3,0],
+"classmodel_1_1_transactions_manager_1_1_group_not_found_exception.html":[2,0,3,3,1],
 "classmodel_1_1gradido_1_1_address_already_exist_exception.html":[2,0,3,0,0],
 "classmodel_1_1gradido_1_1_deferred_transfer.html":[2,0,3,0,1],
 "classmodel_1_1gradido_1_1_gradido_block.html":[1,0,0],
@@ -218,7 +220,8 @@ var NAVTREEINDEX0 =
 "pages.html":[],
 "struct_mnemonic_1_1_hash_collision_words.html":[2,0,41,0],
 "structiota_1_1_node_info.html":[2,0,2,0],
-"structmodel_1_1_transactions_manager_1_1_group_transactions.html":[2,0,3,3,0],
-"structmodel_1_1_transactions_manager_1_1_group_transactions.html#abf0be1c38e6a0889d9a57823478ffafb":[2,0,3,3,0,0],
-"structmodel_1_1_transactions_manager_1_1_group_transactions.html#ac4a99ae76eb14336859f1a3081cfddc0":[2,0,3,3,0,1]
+"structmodel_1_1_transactions_manager_1_1_group_transactions.html":[2,0,3,3,2],
+"structmodel_1_1_transactions_manager_1_1_group_transactions.html#abf0be1c38e6a0889d9a57823478ffafb":[2,0,3,3,2,0],
+"structmodel_1_1_transactions_manager_1_1_group_transactions.html#ad61e5ee3932faa91f8885612d7d55c6f":[2,0,3,3,2,1],
+"structmodel_1_1_transactions_manager_1_1_user_balance.html":[2,0,3,3,3]
 };

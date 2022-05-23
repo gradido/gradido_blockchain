@@ -96,6 +96,8 @@ var hierarchy =
           [ "RequestResponseInvalidJsonException", "class_request_response_invalid_json_exception.html", null ]
         ] ],
         [ "SealedBoxes::DecryptException", "class_sealed_boxes_1_1_decrypt_exception.html", null ],
+        [ "model::TransactionsManager::AccountInGroupNotFoundException", "classmodel_1_1_transactions_manager_1_1_account_in_group_not_found_exception.html", null ],
+        [ "model::TransactionsManager::GroupNotFoundException", "classmodel_1_1_transactions_manager_1_1_group_not_found_exception.html", null ],
         [ "model::gradido::TransactionValidationException", "classmodel_1_1gradido_1_1_transaction_validation_exception.html", [
           [ "model::gradido::AddressAlreadyExistException", "classmodel_1_1gradido_1_1_address_already_exist_exception.html", null ],
           [ "model::gradido::InsufficientBalanceException", "classmodel_1_1gradido_1_1_insufficient_balance_exception.html", null ],
@@ -111,5 +113,6 @@ var hierarchy =
     ] ],
     [ "SecretKeyCryptography", "class_secret_key_cryptography.html", null ],
     [ "model::TransactionEntry", "classmodel_1_1_transaction_entry.html", null ],
-    [ "TransactionFactory", "class_transaction_factory.html", null ]
+    [ "TransactionFactory", "class_transaction_factory.html", null ],
+    [ "model::TransactionsManager::UserBalance", "structmodel_1_1_transactions_manager_1_1_user_balance.html", null ]
 ];

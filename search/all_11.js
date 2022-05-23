@@ -20,7 +20,7 @@ var searchData=
   ['transactionentry_17',['TransactionEntry',['../classmodel_1_1_transaction_entry.html',1,'model::TransactionEntry'],['../classmodel_1_1_transaction_entry.html#a6229e4482960a4469c65a1711162c01c',1,'model::TransactionEntry::TransactionEntry(std::unique_ptr&lt; std::string &gt; _serializedTransaction)'],['../classmodel_1_1_transaction_entry.html#a77157ad85866bbe42fc8e7270f6de720',1,'model::TransactionEntry::TransactionEntry(uint64_t transactionNr, uint8_t month, uint16_t year, std::string groupId)']]],
   ['transactionfactory_18',['TransactionFactory',['../class_transaction_factory.html',1,'']]],
   ['transactionsbyid_19',['transactionsById',['../structmodel_1_1_transactions_manager_1_1_group_transactions.html#abf0be1c38e6a0889d9a57823478ffafb',1,'model::TransactionsManager::GroupTransactions']]],
-  ['transactionsbypubkey_20',['transactionsByPubkey',['../structmodel_1_1_transactions_manager_1_1_group_transactions.html#ac4a99ae76eb14336859f1a3081cfddc0',1,'model::TransactionsManager::GroupTransactions']]],
+  ['transactionsbypubkey_20',['transactionsByPubkey',['../structmodel_1_1_transactions_manager_1_1_group_transactions.html#ad61e5ee3932faa91f8885612d7d55c6f',1,'model::TransactionsManager::GroupTransactions']]],
   ['transactionsmanager_21',['TransactionsManager',['../classmodel_1_1_transactions_manager.html',1,'model']]],
   ['transactiontransfer_22',['TransactionTransfer',['../classmodel_1_1gradido_1_1_transaction_transfer.html',1,'model::gradido']]],
   ['transactiontype_23',['TransactionType',['../group__enums.html#ga63424b05ada401e320ed8c4473623a41',1,'model::gradido']]],
