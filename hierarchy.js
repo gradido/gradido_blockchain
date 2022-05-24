@@ -98,6 +98,7 @@ var hierarchy =
         [ "SealedBoxes::DecryptException", "class_sealed_boxes_1_1_decrypt_exception.html", null ],
         [ "model::TransactionsManager::AccountInGroupNotFoundException", "classmodel_1_1_transactions_manager_1_1_account_in_group_not_found_exception.html", null ],
         [ "model::TransactionsManager::GroupNotFoundException", "classmodel_1_1_transactions_manager_1_1_group_not_found_exception.html", null ],
+        [ "model::TransactionsManager::MissingTransactionNrException", "classmodel_1_1_transactions_manager_1_1_missing_transaction_nr_exception.html", null ],
         [ "model::gradido::TransactionValidationException", "classmodel_1_1gradido_1_1_transaction_validation_exception.html", [
           [ "model::gradido::AddressAlreadyExistException", "classmodel_1_1gradido_1_1_address_already_exist_exception.html", null ],
           [ "model::gradido::InsufficientBalanceException", "classmodel_1_1gradido_1_1_insufficient_balance_exception.html", null ],

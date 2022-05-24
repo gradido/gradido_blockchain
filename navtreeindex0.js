@@ -136,9 +136,10 @@ var NAVTREEINDEX0 =
 "classmodel_1_1_transaction_entry.html#a77157ad85866bbe42fc8e7270f6de720":[2,0,3,2,1],
 "classmodel_1_1_transaction_entry.html#aeb00c6d48e385cac4e1b2c95ba93e1b4":[2,0,3,2,2],
 "classmodel_1_1_transactions_manager.html":[2,0,3,3],
-"classmodel_1_1_transactions_manager.html#a32fdce7b5b01001a22b3c4c1743612cb":[2,0,3,3,4],
+"classmodel_1_1_transactions_manager.html#a32fdce7b5b01001a22b3c4c1743612cb":[2,0,3,3,5],
 "classmodel_1_1_transactions_manager_1_1_account_in_group_not_found_exception.html":[2,0,3,3,0],
 "classmodel_1_1_transactions_manager_1_1_group_not_found_exception.html":[2,0,3,3,1],
+"classmodel_1_1_transactions_manager_1_1_missing_transaction_nr_exception.html":[2,0,3,3,3],
 "classmodel_1_1gradido_1_1_address_already_exist_exception.html":[2,0,3,0,0],
 "classmodel_1_1gradido_1_1_deferred_transfer.html":[2,0,3,0,1],
 "classmodel_1_1gradido_1_1_gradido_block.html":[1,0,0],
@@ -208,8 +209,8 @@ var NAVTREEINDEX0 =
 "group__enums.html#gga63424b05ada401e320ed8c4473623a41ad4b904f6a035b1bd125bd550c0a9140b":[1,1,0,4],
 "group__enums.html#gga63424b05ada401e320ed8c4473623a41ae8b37c8c0f68019baef843c1fe486bef":[1,1,0,1],
 "hierarchy.html":[2,2],
-"index.html":[0],
 "index.html":[],
+"index.html":[0],
 "index.html#autotoc_md1":[0,0],
 "index.html#autotoc_md2":[0,1],
 "mnemonic_8h_source.html":[3,0,0,0,0,3],
@@ -223,5 +224,5 @@ var NAVTREEINDEX0 =
 "structmodel_1_1_transactions_manager_1_1_group_transactions.html":[2,0,3,3,2],
 "structmodel_1_1_transactions_manager_1_1_group_transactions.html#abf0be1c38e6a0889d9a57823478ffafb":[2,0,3,3,2,0],
 "structmodel_1_1_transactions_manager_1_1_group_transactions.html#ad61e5ee3932faa91f8885612d7d55c6f":[2,0,3,3,2,1],
-"structmodel_1_1_transactions_manager_1_1_user_balance.html":[2,0,3,3,3]
+"structmodel_1_1_transactions_manager_1_1_user_balance.html":[2,0,3,3,4]
 };

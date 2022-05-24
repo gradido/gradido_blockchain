@@ -6,9 +6,10 @@ var searchData=
   ['memorymanagerexception_3',['MemoryManagerException',['../class_memory_manager_exception.html',1,'']]],
   ['memorypagestack_4',['MemoryPageStack',['../class_memory_page_stack.html',1,'']]],
   ['missingkeyexception_5',['MissingKeyException',['../class_crypto_config_1_1_missing_key_exception.html',1,'CryptoConfig']]],
-  ['mnemonic_6',['Mnemonic',['../class_mnemonic.html',1,'']]],
-  ['mnemonicexception_7',['MnemonicException',['../class_mnemonic_exception.html',1,'']]],
-  ['multithreadcontainer_8',['MultithreadContainer',['../class_multithread_container.html',1,'']]],
-  ['multithreadcontainerlocktimeoutexception_9',['MultithreadContainerLockTimeoutException',['../class_multithread_container_lock_timeout_exception.html',1,'']]],
-  ['multithreadqueue_10',['MultithreadQueue',['../class_multithread_queue.html',1,'']]]
+  ['missingtransactionnrexception_6',['MissingTransactionNrException',['../classmodel_1_1_transactions_manager_1_1_missing_transaction_nr_exception.html',1,'model::TransactionsManager']]],
+  ['mnemonic_7',['Mnemonic',['../class_mnemonic.html',1,'']]],
+  ['mnemonicexception_8',['MnemonicException',['../class_mnemonic_exception.html',1,'']]],
+  ['multithreadcontainer_9',['MultithreadContainer',['../class_multithread_container.html',1,'']]],
+  ['multithreadcontainerlocktimeoutexception_10',['MultithreadContainerLockTimeoutException',['../class_multithread_container_lock_timeout_exception.html',1,'']]],
+  ['multithreadqueue_11',['MultithreadQueue',['../class_multithread_queue.html',1,'']]]
 ];
