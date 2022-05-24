@@ -23,7 +23,14 @@ namespace model {
 		{
 			mProtoGradidoTransaction = new proto::gradido::GradidoTransaction;
 			if (!mProtoGradidoTransaction->ParseFromArray(serializedProtobuf->data(), serializedProtobuf->size())) {
-				throw ProtobufParseException(*serializedProtobuf);
+				if (!mProtoGradidoTransaction->ParsePartialFromArray(serializedProtobuf->data(), serializedProtobuf->size())) {
+					throw ProtobufParseException(*serializedProtobuf);
+				}
+				else {
+					printf("only partial error\n");
+					throw ProtobufParseException(*serializedProtobuf);
+				}
+				
 			}
 			mTransactionBody = TransactionBody::load(mProtoGradidoTransaction->body_bytes());
 			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
