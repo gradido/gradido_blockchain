@@ -162,11 +162,8 @@ namespace model {
 			}
 
 			auto sigPair = sigMap->add_sigpair();
-			auto pubkeyBytes = sigPair->mutable_pubkey();
-			*pubkeyBytes = std::string((const char*)pubkeyBin->data(), crypto_sign_PUBLICKEYBYTES);
-
-			auto sigBytes = sigPair->mutable_signature();
-			*sigBytes = std::string((const char*)signatureBin->data(), crypto_sign_BYTES);
+			sigPair->mutable_pubkey()->assign((const char*)pubkeyBin->data(), crypto_sign_PUBLICKEYBYTES);
+			sigPair->mutable_signature()->assign((const char*)signatureBin->data(), crypto_sign_BYTES);
 			return sigMap->sigpair_size() >= mTransactionBody->getTransactionBase()->getMinSignatureCount();
 
 		}

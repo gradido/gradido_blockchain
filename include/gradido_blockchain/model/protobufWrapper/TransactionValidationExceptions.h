@@ -52,31 +52,38 @@ namespace model {
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationInvalidSignatureException : public TransactionValidationException
 		{
 		public:
-			explicit TransactionValidationInvalidSignatureException(const char* what, MemoryBin* pubkey, MemoryBin* signature, const std::string& bodyBytes = "") noexcept;
 			explicit TransactionValidationInvalidSignatureException(
 				const char* what, const std::string& pubkey, const std::string& signature, const std::string& bodyBytes = "") noexcept;
 			~TransactionValidationInvalidSignatureException();
 
 			std::string getFullString() const noexcept;
-			inline const MemoryBin* getPubkey() const { return mPubkey; }
-			inline const MemoryBin* getSignature() const { return mSignature; }
+			rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
+
+			inline const std::string& getPubkey() const { return mPubkey; }
+			inline const std::string& getSignature() const { return mSignature; }
 			inline const std::string& getBodyBytes() const { return mBodyBytes; }
 
 		protected:
-			MemoryBin* mPubkey;
-			MemoryBin* mSignature;
+			std::string getPubkeyHex() const noexcept;
+			std::string getSignatureHex() const noexcept;
+			std::string getBodyBytesBase64() const noexcept;
+
+			std::string mPubkey;
+			std::string mSignature;
 			std::string mBodyBytes;
 		};
 
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationForbiddenSignException : public TransactionValidationException
 		{
 		public: 
-			explicit TransactionValidationForbiddenSignException(MemoryBin* forbiddenPubkey) noexcept;
+			explicit TransactionValidationForbiddenSignException(const std::string& forbiddenPubkey) noexcept;
 			~TransactionValidationForbiddenSignException();
 
 			std::string getFullString() const noexcept;
+			rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 		protected:
-			MemoryBin* mForbiddenPubkey;
+			std::string getForbiddenPubkeyHex() const noexcept;
+			std::string mForbiddenPubkey;
 
 		};
 
@@ -86,7 +93,7 @@ namespace model {
 			explicit TransactionValidationMissingSignException(int currentSignCount, int requiredSignCount) noexcept;
 
 			std::string getFullString() const noexcept;
-
+			rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 		protected:
 			int mCurrentSignCount;
 			int mRequiredSignCount;
@@ -120,6 +127,7 @@ namespace model {
 			explicit AddressAlreadyExistException(const char* what, const std::string& addressHex, proto::gradido::RegisterAddress_AddressType addressType) noexcept;
 
 			std::string getFullString() const noexcept;
+			rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 
 		protected:
 			std::string mAddressHex;
@@ -131,6 +139,7 @@ namespace model {
 		public:
 			explicit InsufficientBalanceException(const char* what, mpfr_ptr needed, mpfr_ptr exist) noexcept;
 			std::string getFullString() const noexcept;
+			rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 
 		protected:
 			std::string mNeeded;

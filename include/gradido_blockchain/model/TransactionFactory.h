@@ -20,7 +20,6 @@ public:
 	static std::unique_ptr<model::gradido::GradidoTransaction> createTransactionCreation(
 		const MemoryBin* recipientPubkey,
 		const std::string& amountGddCent,
-		std::string groupId,
 		Poco::DateTime targetDate
 	);
 	static std::unique_ptr<model::gradido::GradidoTransaction> createTransactionTransfer(

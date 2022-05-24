@@ -9,7 +9,13 @@ namespace model {
 
 	TransactionsManager::TransactionsManager()
 	{
-
+		std::string decayStartTimeString = "2021-05-13 17:46:31";
+		int timezoneDifferential = Poco::DateTimeFormatter::UTC; // + GMT 0
+		mDecayStartTime = Poco::DateTimeParser::parse(
+			Poco::DateTimeFormat::SORTABLE_FORMAT,
+			decayStartTimeString,
+			timezoneDifferential
+		);
 	}
 
 	TransactionsManager::~TransactionsManager()
@@ -34,6 +40,7 @@ namespace model {
 			groupTransactionsIt = result.first;
 		}
 		auto sharedTransaction = std::shared_ptr<model::gradido::GradidoTransaction>(transaction.release());
+
 		groupTransactionsIt->second.transactionsById.insert({ id, sharedTransaction });
 		auto involvedAddresses = sharedTransaction->getTransactionBody()->getTransactionBase()->getInvolvedAddresses();
 		for (auto it = involvedAddresses.begin(); it != involvedAddresses.end(); it++) {
@@ -217,6 +224,20 @@ namespace model {
 		return std::move(result);
 	}
 
+	TransactionsManager::MissingTransactionNrException::MissingTransactionNrException(const char* what, uint64_t lastTransactionNr, uint64_t nextTransactionNr) noexcept
+		: GradidoBlockchainException(what), mLastTransactionNr(lastTransactionNr), mNextTransactionNr(nextTransactionNr)
+	{
+
+	}
+
+	std::string TransactionsManager::MissingTransactionNrException::getFullString() const
+	{
+		std::string result = what();
+		result += ", hole between transaction nr: " + std::to_string(mLastTransactionNr);
+		result += " and transaction nr: " + std::to_string(mNextTransactionNr);
+		return result;
+	}
+
 	TransactionsManager::TransactionList TransactionsManager::getSortedTransactionsForUser(const std::string& groupAlias, const std::string& pubkeyHex)
 	{
 		auto it = mAllTransactions.find(groupAlias);
@@ -237,6 +258,38 @@ namespace model {
 		return std::move(resultList);
 	}
 
-	
+	TransactionsManager::TransactionList TransactionsManager::getSortedTransactions(const std::string& groupAlias)
+	{
+		auto itGroup = mAllTransactions.find(groupAlias);
+		if (itGroup == mAllTransactions.end()) {
+			throw GroupNotFoundException("[TransactionsManager::getSortedTransactionsForUser]", groupAlias);
+		}
+		TransactionList resultList;
+		auto transactionsById = &itGroup->second.transactionsById;
+		int transactionNrModificator = 0;
+		for (auto it = transactionsById->begin(); it != transactionsById->end(); it++) {
+
+			if (resultList.size() + 1 + transactionNrModificator != it->first) {
+				// check if hole is at the place of decay start block
+				if (resultList.back()->getTransactionBody()->getCreated() < mDecayStartTime &&
+					mDecayStartTime < it->second->getTransactionBody()->getCreated()
+				) {
+					transactionNrModificator++;
+				}
+				else {
+					auto prevTime = resultList.back()->getTransactionBody()->getCreated();
+					auto nextTime = it->second->getTransactionBody()->getCreated();
+					printf("prev time: %s\ndecay start block time: %s\nnext time: %s\n",
+						Poco::DateTimeFormatter::format(prevTime, Poco::DateTimeFormat::SORTABLE_FORMAT).data(),
+						Poco::DateTimeFormatter::format(mDecayStartTime, Poco::DateTimeFormat::SORTABLE_FORMAT).data(),
+						Poco::DateTimeFormatter::format(nextTime, Poco::DateTimeFormat::SORTABLE_FORMAT).data()
+					);
+					throw MissingTransactionNrException("hole found", resultList.size(), it->first);
+				}
+			}
+			resultList.push_back(it->second);			
+		}
+		return std::move(resultList);
+	}
 
 }

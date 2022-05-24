@@ -18,6 +18,8 @@ namespace model {
 	class TransactionsManager : protected MultithreadContainer
 	{
 	public:
+		typedef std::list<std::shared_ptr<model::gradido::GradidoTransaction>> TransactionList;
+
 		static TransactionsManager* getInstance();
 		~TransactionsManager();
 
@@ -35,6 +37,10 @@ namespace model {
 		UserBalance calculateUserBalanceUntil(const std::string& groupAlias, const std::string& pubkeyHex, Poco::DateTime date);
 		std::string getUserTransactionsDebugString(const std::string& groupAlias, const std::string& pubkeyHex);
 		std::list<UserBalance> calculateFinalUserBalances(const std::string& groupAlias, Poco::DateTime date);
+
+		TransactionList getSortedTransactionsForUser(const std::string& groupAlias, const std::string& pubkeyHex);
+		// get all transactions from a group sorted by id
+		TransactionList getSortedTransactions(const std::string& groupAlias);
 
 		class GroupNotFoundException : public GradidoBlockchainException
 		{
@@ -56,11 +62,21 @@ namespace model {
 			std::string mPubkeyHex;
 		};
 
+		class MissingTransactionNrException : public GradidoBlockchainException
+		{
+		public:
+			explicit MissingTransactionNrException(const char* what, uint64_t lastTransactionNr, uint64_t nextTransactionNr) noexcept;
+			std::string getFullString() const;
+
+		protected:
+			uint64_t mLastTransactionNr;
+			uint64_t mNextTransactionNr;
+		};
+
 	protected:
 		TransactionsManager();
-		typedef std::list<std::shared_ptr<model::gradido::GradidoTransaction>> TransactionList;
-		TransactionList getSortedTransactionsForUser(const std::string& groupAlias, const std::string& pubkeyHex);
 		
+		Poco::DateTime mDecayStartTime;
 
 		// TODO: maybe we need a move constructor and to block copy constructor
 		struct GroupTransactions
