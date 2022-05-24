@@ -81,6 +81,32 @@ RequestResponseErrorException& RequestResponseErrorException::setDetails(const s
 	return *this;
 }
 
+RequestResponseErrorException& RequestResponseErrorException::setDetails(const rapidjson::Value& details)
+{
+	if (details.IsString()) {
+		if (details.GetStringLength()) {
+			mErrorDetails = std::string(details.GetString(), details.GetStringLength());
+		}
+	}
+	else if (details.IsArray()) {
+		mErrorDetails = "";
+		for (auto it = details.Begin(); it != details.End(); it++) {
+			mErrorDetails += it->GetString();
+			mErrorDetails += "\n";
+		}
+	}
+	else if (details.IsObject()) {
+		mErrorDetails = "";
+		for (auto it = details.MemberBegin(); it != details.MemberEnd(); it++) {
+			mErrorDetails += it->name.GetString();
+			mErrorDetails += " = ";
+			mErrorDetails += it->value.GetString();
+			mErrorDetails += "\n";
+		}
+	}
+	return *this;
+}
+
 std::string RequestResponseErrorException::getFullString() const
 {
 	auto resultString = RequestException::getFullString();

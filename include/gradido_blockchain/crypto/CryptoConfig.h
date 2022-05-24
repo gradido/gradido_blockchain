@@ -25,10 +25,10 @@ namespace CryptoConfig
 	GRADIDOBLOCKCHAIN_EXPORT bool loadCryptoKeys(const Poco::Util::LayeredConfiguration& cfg);
 	GRADIDOBLOCKCHAIN_EXPORT void unload();
 
-	class MissingKeyException : GradidoBlockchainException
+	class GRADIDOBLOCKCHAIN_EXPORT MissingKeyException : GradidoBlockchainException
 	{
 	public:
-		explicit MissingKeyException(const char* what, const char* keyName) noexcept;		
+		explicit MissingKeyException(const char* what, const char* keyName) noexcept;
 
 		std::string getFullString() const;
 		inline const std::string& getKeyName() const { return mKeyName; }

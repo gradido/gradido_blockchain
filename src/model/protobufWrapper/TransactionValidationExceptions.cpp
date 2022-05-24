@@ -65,57 +65,24 @@ namespace model {
 		//************* Invalid Signature *******************
 
 		TransactionValidationInvalidSignatureException::TransactionValidationInvalidSignatureException(
-			const char* what, MemoryBin* pubkey, MemoryBin* signature, const std::string& bodyBytes/* = ""*/
+			const char* what, const std::string& pubkey, const std::string& signature, const std::string& bodyBytes/* = ""*/
 		) noexcept
 			: TransactionValidationException(what), mPubkey(pubkey), mSignature(signature), mBodyBytes(bodyBytes)
 		{
-
-		}
-
-		TransactionValidationInvalidSignatureException::TransactionValidationInvalidSignatureException(
-			const char* what, const std::string& pubkey, const std::string& signature, const std::string& bodyBytes/* = ""*/
-		) noexcept
-			: TransactionValidationException(what), mPubkey(nullptr), mSignature(nullptr), mBodyBytes(bodyBytes)
-		{
-			auto mm = MemoryManager::getInstance();
-			mPubkey = mm->getMemory(pubkey.size());
-			mSignature = mm->getMemory(signature.size());
-			
-			mPubkey->copyFromProtoBytes(pubkey);
-			mSignature->copyFromProtoBytes(signature);
 		}
 
 		TransactionValidationInvalidSignatureException::~TransactionValidationInvalidSignatureException()
 		{
-			auto mm = MemoryManager::getInstance();
-			mm->releaseMemory(mPubkey);
-			mm->releaseMemory(mSignature);
 		}
 
 		std::string TransactionValidationInvalidSignatureException::getFullString() const noexcept
 		{
-			std::string pubkeyHex;
-			std::string signatureHex;
-			std::string bodyBytesBase64;
+			std::string pubkeyHex = getPubkeyHex();
+			std::string signatureHex = getSignatureHex();
+			std::string bodyBytesBase64 = getBodyBytesBase64();
 			auto whatString = what();
 			std::string result;
-			if (mPubkey) {
-				try {
-					pubkeyHex = DataTypeConverter::binToHex(mPubkey);
-				}
-				catch (...) {}
-			}
-			if (mSignature) {
-				try {
-					signatureHex = DataTypeConverter::binToHex(mSignature);
-				}
-				catch (...) {}
-			}
-			if (mBodyBytes.size()) {
-				try {
-					bodyBytesBase64 = DataTypeConverter::binToBase64(mBodyBytes);
-				} catch(...) {}
-			}
+			
 			size_t staticTextSize = 29;
 			if (mBodyBytes.size()) {
 				staticTextSize += 14;
@@ -130,28 +97,60 @@ namespace model {
 			return result;
 		}
 
-		// ************* Forbidden Sign *******************
-		TransactionValidationForbiddenSignException::TransactionValidationForbiddenSignException(MemoryBin* forbiddenPubkey) noexcept
-			: TransactionValidationException("Forbidden Sign")
+		Value TransactionValidationInvalidSignatureException::getDetails(Document::AllocatorType& alloc) const
 		{
-			mForbiddenPubkey = forbiddenPubkey;
+			Value detailsObjs(kObjectType);
+			detailsObjs.AddMember("what", Value(what(), alloc), alloc);
+			detailsObjs.AddMember("pubkey", Value(getPubkeyHex().data(), alloc), alloc);
+			detailsObjs.AddMember("signature", Value(getSignatureHex().data(), alloc), alloc);
+			detailsObjs.AddMember("bodyBytes", Value(getBodyBytesBase64().data(), alloc), alloc);
+			return std::move(detailsObjs);
+		}
+
+		std::string TransactionValidationInvalidSignatureException::getPubkeyHex() const noexcept
+		{
+			if (mPubkey.size()) {
+				try {
+					return std::move(DataTypeConverter::binToHex(mPubkey));
+				}
+				catch (...) {}
+			}
+			return "";
+		}
+		std::string TransactionValidationInvalidSignatureException::getSignatureHex() const noexcept
+		{
+			if (mSignature.size()) {
+				try {
+					return std::move(DataTypeConverter::binToHex(mSignature));
+				}
+				catch (...) {}
+			}
+			return "";
+		}
+		std::string TransactionValidationInvalidSignatureException::getBodyBytesBase64() const noexcept
+		{
+			if (mBodyBytes.size()) {
+				try {
+					return std::move(DataTypeConverter::binToBase64(mBodyBytes));
+				}
+				catch (...) {}
+			}
+			return "";
+		}
+
+		// ************* Forbidden Sign *******************
+		TransactionValidationForbiddenSignException::TransactionValidationForbiddenSignException(const std::string& forbiddenPubkey) noexcept
+			: TransactionValidationException("Forbidden Sign"), mForbiddenPubkey(forbiddenPubkey)
+		{
 		}
 		TransactionValidationForbiddenSignException::~TransactionValidationForbiddenSignException()
 		{
-			if (mForbiddenPubkey) {
-				MemoryManager::getInstance()->releaseMemory(mForbiddenPubkey);
-			}
+
 		}
 
 		std::string TransactionValidationForbiddenSignException::getFullString() const noexcept
 		{
-			std::string forbiddenPubkeyHex;
-			if (mForbiddenPubkey) {
-				try {
-					forbiddenPubkeyHex = DataTypeConverter::binToHex(mForbiddenPubkey);
-				}
-				catch (...) {}
-			}
+			std::string forbiddenPubkeyHex = getForbiddenPubkeyHex();
 			size_t resultSize = 0;
 			if (mTransactionMemo.size()) {
 				resultSize += mTransactionMemo.size() + 25;
@@ -168,6 +167,26 @@ namespace model {
 				result += ", this forbidden pubkey was used for signing: " + forbiddenPubkeyHex;
 			}
 			return result;
+		}
+
+		Value TransactionValidationForbiddenSignException::getDetails(Document::AllocatorType& alloc) const
+		{
+			Value detailsObjs(kObjectType);
+			detailsObjs.AddMember("what", Value(what(), alloc), alloc);
+			detailsObjs.AddMember("forbiddenPubkey", Value(getForbiddenPubkeyHex().data(), alloc), alloc);
+			detailsObjs.AddMember("memo", Value(mTransactionMemo.data(), alloc), alloc);
+			return std::move(detailsObjs);
+		}
+
+		std::string TransactionValidationForbiddenSignException::getForbiddenPubkeyHex() const noexcept
+		{
+			if (mForbiddenPubkey.size()) {
+				try {
+					return std::move(DataTypeConverter::binToHex(mForbiddenPubkey));
+				}
+				catch (...) {}
+			}
+			return "";
 		}
 
 		// ********************************* Missing Sign ************************************************************
@@ -189,6 +208,15 @@ namespace model {
 			result = what();
 			result += ", signed: " + currentSignCountString + " from " + requiredSignCountString;
 			return result;
+		}
+
+		Value TransactionValidationMissingSignException::getDetails(Document::AllocatorType& alloc) const
+		{
+			Value detailsObjs(kObjectType);
+			detailsObjs.AddMember("what", Value(what(), alloc), alloc);
+			detailsObjs.AddMember("currentSignCount", mCurrentSignCount, alloc);
+			detailsObjs.AddMember("requiredSignCount", mRequiredSignCount, alloc);
+			return std::move(detailsObjs);
 		}
 
 		// ******************************* Missing required sign *****************************************************
@@ -229,6 +257,7 @@ namespace model {
 			return resultString;
 		}
 
+
 		// *********************************** Address Already Exist **********************************************************
 		AddressAlreadyExistException::AddressAlreadyExistException(
 			const char* what,
@@ -254,6 +283,15 @@ namespace model {
 
 		}
 
+		Value AddressAlreadyExistException::getDetails(Document::AllocatorType& alloc) const
+		{
+			Value detailsObjs(kObjectType);
+			detailsObjs.AddMember("what", Value(what(), alloc), alloc);
+			detailsObjs.AddMember("addressType", Value(model::gradido::RegisterAddress::getAddressStringFromType(mAddressType).data(), alloc), alloc);
+			detailsObjs.AddMember("address", Value(mAddressHex.data(), alloc), alloc);
+			return std::move(detailsObjs);
+		}
+
 		// *************************** Insufficient Balance Exception ************************************************
 		InsufficientBalanceException::InsufficientBalanceException(const char* what, mpfr_ptr needed, mpfr_ptr exist) noexcept
 			: TransactionValidationException(what)
@@ -272,6 +310,15 @@ namespace model {
 			resultString += ", exist: " + mExist;
 
 			return resultString;
+		}
+
+		Value InsufficientBalanceException::getDetails(Document::AllocatorType& alloc) const
+		{
+			Value detailsObjs(kObjectType);
+			detailsObjs.AddMember("what", Value(what(), alloc), alloc);
+			detailsObjs.AddMember("needed", Value(mNeeded.data(), alloc), alloc);
+			detailsObjs.AddMember("exist", Value(mExist.data(), alloc), alloc);
+			return std::move(detailsObjs);
 		}
 
 		// **************************** Wrong Address Type Exception ***********************************

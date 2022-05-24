@@ -50,6 +50,7 @@ public:
 
 	rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 	RequestResponseErrorException& setDetails(const std::string& details);
+	RequestResponseErrorException& setDetails(const rapidjson::Value& details);
 	std::string getFullString() const;
 
 protected:

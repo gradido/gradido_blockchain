@@ -27,11 +27,10 @@ std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createRe
 std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createTransactionCreation(
 	const MemoryBin* recipientPubkey,
 	const std::string& amountGddCent,
-	std::string groupId,
 	Poco::DateTime targetDate
 )
 {
-	auto transferAmount = createTransferAmount(recipientPubkey, amountGddCent, groupId);
+	auto transferAmount = createTransferAmount(recipientPubkey, amountGddCent, "");
 	return std::unique_ptr<model::gradido::GradidoTransaction>(new GradidoTransaction(TransactionBody::createTransactionCreation(std::move(transferAmount), targetDate)));
 }
 

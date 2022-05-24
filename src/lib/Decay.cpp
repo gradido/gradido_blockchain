@@ -24,8 +24,11 @@ mpfr_t gDecayFactor366Days;
 mpfr_t gDecayFactorGregorianCalender;
 Poco::Timestamp DECAY_START_TIME; 
 
+bool gInited = false;
+
 void initDefaultDecayFactors()
 {
+	gInited = true;
 	mpfr_init2(gDecayFactor356Days, MAGIC_NUMBER_AMOUNT_PRECISION_BITS);
 	calculateDecayFactor(gDecayFactor356Days, 356);
 	mpfr_init2(gDecayFactor366Days, MAGIC_NUMBER_AMOUNT_PRECISION_BITS);
@@ -50,14 +53,14 @@ void initDefaultDecayFactors()
 
 	mpfr_clear(temp);
 
-	std::string decayStartTimeString = "2021-05-13 17:46:31";
+	std::string decayStartTimeString = "2021-05-13 19:46:31";
 	int timezoneDifferential = Poco::DateTimeFormatter::UTC; // + GMT 0
 	DECAY_START_TIME = Poco::DateTimeParser::parse(
 		Poco::DateTimeFormat::SORTABLE_FORMAT,
 		decayStartTimeString,
 		timezoneDifferential 
 	).timestamp(); 
-
+	
 }
 
 void unloadDefaultDecayFactors()
@@ -65,10 +68,12 @@ void unloadDefaultDecayFactors()
 	mpfr_clear(gDecayFactor356Days);
 	mpfr_clear(gDecayFactor366Days);
 	mpfr_clear(gDecayFactorGregorianCalender);
+	gInited = false;
 }
 
 void calculateDecayFactor(mpfr_ptr decay_factor, int days_per_year)
 {
+	assert(gInited && "Decay lib not initalized");
 	mpfr_t temp;
 	mpfr_init2(temp, decay_factor->_mpfr_prec);
 	// (lg Kn - lg K0) / seconds in year
@@ -88,6 +93,7 @@ void calculateDecayFactor(mpfr_ptr decay_factor, int days_per_year)
 
 void calculateDecayFactorForDuration(mpfr_ptr decay_for_duration, mpfr_ptr decay_factor, unsigned long seconds)
 {
+	assert(gInited && "Decay lib not initalized");
 	mpfr_pow_ui(decay_for_duration, decay_factor, seconds, gDefaultRound);
 }
 
@@ -99,6 +105,7 @@ void calculateDecayFactorForDuration(
 )
 {
 	assert(endTime > startTime);
+	assert(gInited && "Decay lib not initalized");
 	Poco::Timestamp start = startTime > DECAY_START_TIME ? startTime : DECAY_START_TIME;
 	Poco::Timestamp end = endTime > DECAY_START_TIME ? endTime : DECAY_START_TIME;
 	if (start == end) {
@@ -106,18 +113,21 @@ void calculateDecayFactorForDuration(
 		mpfr_set_ui(decay_for_duration, 1, gDefaultRound);
 	}
 	else {
+		auto duration = Poco::Timespan(end - start).totalSeconds();
 		mpfr_pow_ui(decay_for_duration, decay_factor, Poco::Timespan(end - start).totalSeconds(), gDefaultRound);
 	}
 }
 
 void calculateDecayFast(mpfr_ptr decay_for_duration, mpfr_ptr gradido)
 {
+	assert(gInited && "Decay lib not initalized");
 	// gradido * decay 
 	mpfr_mul(gradido, gradido, decay_for_duration, gDefaultRound);
 }
 
 void calculateDecay(const mpfr_ptr decay_factor, unsigned long seconds, mpfr_ptr gradido)
 {
+	assert(gInited && "Decay lib not initalized");
 	auto mm = MemoryManager::getInstance();
 	auto temp = mm->getMathMemory();
 	mpfr_pow_ui(temp, decay_factor, seconds, gDefaultRound);

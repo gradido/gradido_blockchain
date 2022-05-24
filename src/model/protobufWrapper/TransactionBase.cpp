@@ -68,10 +68,7 @@ namespace model {
 				
 				// check for forbidden key
 				if (isPublicKeyForbidden((const unsigned char*)it->pubkey().data())) {
-					auto forbiddenKey = MemoryManager::getInstance()->getMemory(pubkey_size);
-					forbiddenKey->copyFrom((const unsigned char*)it->pubkey().data());
-
-					throw TransactionValidationForbiddenSignException(forbiddenKey);
+					throw TransactionValidationForbiddenSignException(it->pubkey());
 				}
 
 				// compare with required keys

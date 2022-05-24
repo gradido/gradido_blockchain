@@ -5,9 +5,10 @@ edition = "2021"
 authors = ["einhornimmond <info@einhornimmond.de>"]
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
+hex = "0.3.1"
 iota-client = "1.1.1"
 iota-crypto = { version = "=0.9.1", default-features = false }
 serde = "1.0.137"

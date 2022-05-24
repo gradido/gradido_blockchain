@@ -26,7 +26,7 @@ fn my_string_safe(s: *const c_char) -> String {
 }
 
 
-pub async fn send_message(iota_url: String, index: String, message: String) -> Result<String, Error>
+pub async fn send_message(iota_url: String, index: String, message_str: String) -> Result<String, Error>
 {
     let iota = Client::builder()
         .with_node(&iota_url)?
@@ -34,10 +34,17 @@ pub async fn send_message(iota_url: String, index: String, message: String) -> R
         .finish()
         .await?;
     
+    let message_bin_result = hex::decode(message_str);
+    let message_bin = match message_bin_result {
+        Ok(message) => message,
+        Err(error) => panic!("Problem decode message from hex: {:?}", error),
+    };
+    
     let message = iota
         .message()
         .with_index(&index)
-        .with_data(message.as_bytes().to_vec())
+        //.with_data(hex::decode(message_str)?.as_bytes().to_vec())
+        .with_data(message_bin.to_vec())
         .finish()
         .await?;
 

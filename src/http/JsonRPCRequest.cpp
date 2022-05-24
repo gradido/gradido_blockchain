@@ -70,13 +70,10 @@ Document JsonRPCRequest::request(const char* methodName, Value& params)
 	if (msg.GetStringLength()) {
 		errorMsg = msg.GetString();
 	}
-	Value& details = Pointer("/result/details").GetWithDefault(jsonAnswear, "");
-	if (details.GetStringLength()) {
-		detailsString = details.GetString();
-	}
+	
 	if (state == "error") {
 		RequestResponseErrorException exception("node server return error", mRequestUri, errorMsg);
-		throw exception.setDetails(detailsString);
+		throw exception.setDetails(Pointer("/result/details").GetWithDefault(jsonAnswear, ""));
 	}
 	else if (state == "success") {
 		/*for (auto it = result->begin(); it != result->end(); it++) {

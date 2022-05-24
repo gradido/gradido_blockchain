@@ -299,6 +299,16 @@ namespace model {
 			return getTransactionBase()->isBelongToUs(pairingTransaction->getTransactionBase());
 		}
 
+		std::string TransactionBody::toDebugString() const
+		{
+			std::string result;
+			Poco::DateTime createdDate = Poco::Timestamp(getCreatedSeconds() * Poco::Timestamp::resolution());
+			auto createdDateString = Poco::DateTimeFormatter::format(createdDate, Poco::DateTimeFormat::SORTABLE_FORMAT);
+			result = "created: " + createdDateString + "\n";
+			result += getTransactionBase()->toDebugString();
+			return std::move(result);
+		}
+
 		void TransactionBody::initSpecificTransaction()
 		{
 			// check Type

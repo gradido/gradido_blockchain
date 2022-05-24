@@ -34,6 +34,7 @@ namespace model {
 
 			void setCreated(Poco::DateTime created);
 			uint32_t getCreatedSeconds() const;
+			inline Poco::DateTime getCreated() const { return Poco::Timestamp(getCreatedSeconds() * Poco::Timestamp::resolution()); }
 
 			static TransactionBody* load(const std::string& protoMessageBin);
 			void upgradeToDeferredTransaction(Poco::Timestamp timeout);
@@ -88,6 +89,8 @@ namespace model {
 			const TransactionTransfer* getTransferTransaction() const;
 
 			const TransactionBase* getTransactionBase() const;
+
+			std::string toDebugString() const;
 		protected:
 			TransactionBody();
 
