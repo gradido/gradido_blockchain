@@ -98,10 +98,10 @@ Public Attributes</h2></td></tr>
 std::map&lt; std::string, TransactionList &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>transactionsByPubkey</b></td></tr>
 <tr class="memdesc:ad61e5ee3932faa91f8885612d7d55c6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">key is pubkey hex <br /></td></tr>
 <tr class="separator:ad61e5ee3932faa91f8885612d7d55c6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf0be1c38e6a0889d9a57823478ffafb"><td class="memItemLeft" align="right" valign="top"><a id="abf0be1c38e6a0889d9a57823478ffafb" name="abf0be1c38e6a0889d9a57823478ffafb"></a>
-std::map&lt; uint64_t, std::shared_ptr&lt; <a class="el" href="classmodel_1_1gradido_1_1_gradido_transaction.html">model::gradido::GradidoTransaction</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>transactionsById</b></td></tr>
-<tr class="memdesc:abf0be1c38e6a0889d9a57823478ffafb"><td class="mdescLeft">&#160;</td><td class="mdescRight">key is transaction nr or id <br /></td></tr>
-<tr class="separator:abf0be1c38e6a0889d9a57823478ffafb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af346f28c137999e1dfb39919bc8344ca"><td class="memItemLeft" align="right" valign="top"><a id="af346f28c137999e1dfb39919bc8344ca" name="af346f28c137999e1dfb39919bc8344ca"></a>
+std::multimap&lt; Poco::DateTime, std::shared_ptr&lt; <a class="el" href="classmodel_1_1gradido_1_1_gradido_transaction.html">model::gradido::GradidoTransaction</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>transactionsByReceived</b></td></tr>
+<tr class="memdesc:af346f28c137999e1dfb39919bc8344ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">key is transaction received date <br /></td></tr>
+<tr class="separator:af346f28c137999e1dfb39919bc8344ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/gradido_blockchain/model/<a class="el" href="_transactions_manager_8h_source.html">TransactionsManager.h</a></li>
