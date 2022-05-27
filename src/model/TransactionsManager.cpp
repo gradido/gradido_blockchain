@@ -29,7 +29,7 @@ namespace model {
 		return &one;
 	}
 
-	void TransactionsManager::pushGradidoTransaction(const std::string& groupAlias, uint64_t id, std::unique_ptr<model::gradido::GradidoTransaction> transaction)
+	void TransactionsManager::pushGradidoTransaction(const std::string& groupAlias, std::unique_ptr<model::gradido::GradidoTransaction> transaction)
 	{
 		std::scoped_lock<std::recursive_mutex> _lock(mWorkMutex);
 		auto mm = MemoryManager::getInstance();
@@ -40,8 +40,10 @@ namespace model {
 			groupTransactionsIt = result.first;
 		}
 		auto sharedTransaction = std::shared_ptr<model::gradido::GradidoTransaction>(transaction.release());
-
-		groupTransactionsIt->second.transactionsById.insert({ id, sharedTransaction });
+		groupTransactionsIt->second.transactionsByReceived.insert({ 
+			sharedTransaction->getTransactionBody()->getCreated(), 
+			sharedTransaction 
+		});
 		auto involvedAddresses = sharedTransaction->getTransactionBody()->getTransactionBase()->getInvolvedAddresses();
 		for (auto it = involvedAddresses.begin(); it != involvedAddresses.end(); it++) {
 			auto pubkeyHex = (*it)->convertToHex().get()->substr(0,64);
@@ -265,28 +267,9 @@ namespace model {
 			throw GroupNotFoundException("[TransactionsManager::getSortedTransactionsForUser]", groupAlias);
 		}
 		TransactionList resultList;
-		auto transactionsById = &itGroup->second.transactionsById;
-		int transactionNrModificator = 0;
-		for (auto it = transactionsById->begin(); it != transactionsById->end(); it++) {
 
-			if (resultList.size() + 1 + transactionNrModificator != it->first) {
-				// check if hole is at the place of decay start block
-				if (resultList.back()->getTransactionBody()->getCreated() < mDecayStartTime &&
-					mDecayStartTime < it->second->getTransactionBody()->getCreated()
-				) {
-					transactionNrModificator++;
-				}
-				else {
-					auto prevTime = resultList.back()->getTransactionBody()->getCreated();
-					auto nextTime = it->second->getTransactionBody()->getCreated();
-					printf("prev time: %s\ndecay start block time: %s\nnext time: %s\n",
-						Poco::DateTimeFormatter::format(prevTime, Poco::DateTimeFormat::SORTABLE_FORMAT).data(),
-						Poco::DateTimeFormatter::format(mDecayStartTime, Poco::DateTimeFormat::SORTABLE_FORMAT).data(),
-						Poco::DateTimeFormatter::format(nextTime, Poco::DateTimeFormat::SORTABLE_FORMAT).data()
-					);
-					throw MissingTransactionNrException("hole found", resultList.size(), it->first);
-				}
-			}
+		auto transactionsByReceived = &itGroup->second.transactionsByReceived;
+		for (auto it = transactionsByReceived->begin(); it != transactionsByReceived->end(); it++) {
 			resultList.push_back(it->second);			
 		}
 		return std::move(resultList);

@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_TRANSACTIONS_MANAGER_H
 
 #include <unordered_map>
+#include <map>
 #include "../lib/MultithreadContainer.h"
 #include "protobufWrapper/GradidoTransaction.h"
 
@@ -23,7 +24,7 @@ namespace model {
 		static TransactionsManager* getInstance();
 		~TransactionsManager();
 
-		void pushGradidoTransaction(const std::string& groupAlias, uint64_t id, std::unique_ptr<model::gradido::GradidoTransaction> transaction);
+		void pushGradidoTransaction(const std::string& groupAlias, std::unique_ptr<model::gradido::GradidoTransaction> transaction);
 		
 		struct UserBalance
 		{
@@ -83,8 +84,8 @@ namespace model {
 		{
 			//! key is pubkey hex
 			std::map<std::string, TransactionList> transactionsByPubkey;
-			//! key is transaction nr or id
-			std::map<uint64_t, std::shared_ptr<model::gradido::GradidoTransaction>> transactionsById;
+			//! key is transaction received date
+			std::multimap<Poco::DateTime, std::shared_ptr<model::gradido::GradidoTransaction>> transactionsByReceived;
 		};
 		//! contain all transactions
 		//! first key is group alias

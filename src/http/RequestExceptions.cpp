@@ -99,7 +99,7 @@ RequestResponseErrorException& RequestResponseErrorException::setDetails(const r
 		mErrorDetails = "";
 		for (auto it = details.MemberBegin(); it != details.MemberEnd(); it++) {
 			mErrorDetails += it->name.GetString();
-			mErrorDetails += " = ";
+			mErrorDetails += ": ";
 			mErrorDetails += it->value.GetString();
 			mErrorDetails += "\n";
 		}
