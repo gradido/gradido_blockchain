@@ -12,8 +12,6 @@
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h"
 
-
-
 using namespace rapidjson;
 
 namespace model {
@@ -305,8 +303,14 @@ namespace model {
 				return;
 			default: throw GradidoUnknownEnumException("unknown enum", "model::gradido:TransactionType", (int)transactionBody->getTransactionType());
 			}
-
-			auto finalBalance = blockchain->calculateAddressBalance(address, TransactionEntry::getCoinGroupId(transactionBody), getReceivedAsTimestamp());
+			mpfr_ptr finalBalance;
+			try {
+				finalBalance = blockchain->calculateAddressBalance(address, TransactionEntry::getCoinGroupId(transactionBody), getReceivedAsTimestamp());
+			}
+			catch (Poco::NullPointerException& ex) {
+				printf("Poco Null Pointer exception by calling calculateAddressBalance\n");
+				throw;
+			}
 			auto temp = mm->getMathMemory();
 			// add value from this block if it was a transfer or creation transaction
 

@@ -321,6 +321,48 @@ namespace model {
 			return std::move(detailsObjs);
 		}
 
+		// **************************** Invalid Creation Exception *************************************
+		InvalidCreationException::InvalidCreationException(
+			const char* what,
+			int targetMonth, int targetYear,
+			const std::string& newCreationAmount,
+			const std::string& alreadyCreatedBalance
+		) noexcept
+			: TransactionValidationException(what), mTargetMonth(targetMonth), mTargetYear(targetYear),
+			mNewCreationAmount(newCreationAmount), mAlreadyCreatedBalance(alreadyCreatedBalance)
+		{
+
+		}
+
+		std::string InvalidCreationException::getFullString() const noexcept
+		{
+			std::string result;
+			auto targetDate = std::to_string(mTargetMonth) + " " + std::to_string(mTargetYear);
+			size_t resultSize = strlen(what()) + 2 + targetDate.size() + 15;
+			resultSize += mNewCreationAmount.size() + 21;
+			resultSize += mAlreadyCreatedBalance.size() + 45;
+			
+			result.reserve(resultSize);
+			result = what();
+			result += ", target date: " + targetDate;
+			result += ", try to create: " + mNewCreationAmount + " GDD";
+			result += ", for this target already created: " + mAlreadyCreatedBalance + " GDD";
+
+			return std::move(result);
+		}
+
+
+		Value InvalidCreationException::getDetails(Document::AllocatorType& alloc) const
+		{
+			Value detailsObjs(kObjectType);
+			detailsObjs.AddMember("what", Value(what(), alloc), alloc);
+			detailsObjs.AddMember("targetMonth", mTargetMonth, alloc);
+			detailsObjs.AddMember("targetYear", mTargetYear, alloc);
+			detailsObjs.AddMember("newCreationAmount", Value(mNewCreationAmount.data(), alloc), alloc);
+			detailsObjs.AddMember("alreadyCreatedBalance", Value(mAlreadyCreatedBalance.data(), alloc), alloc);
+			return std::move(detailsObjs);
+		}
+
 		// **************************** Wrong Address Type Exception ***********************************
 		WrongAddressTypeException::WrongAddressTypeException(
 			const char* what, 

@@ -146,6 +146,25 @@ namespace model {
 			std::string mExist;
 		};
 
+		class GRADIDOBLOCKCHAIN_EXPORT InvalidCreationException : public TransactionValidationException
+		{
+		public:
+			explicit InvalidCreationException(
+				const char* what,
+				int targetMonth, int targetYear,
+				const std::string& newCreationAmount,
+				const std::string& alreadyCreatedBalance
+			) noexcept;
+			std::string getFullString() const noexcept;
+			rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
+
+		protected:
+			int mTargetMonth;
+			int mTargetYear;
+			std::string mNewCreationAmount;
+			std::string mAlreadyCreatedBalance;
+		};
+
 		class GRADIDOBLOCKCHAIN_EXPORT WrongAddressTypeException : public TransactionValidationException
 		{
 		public:

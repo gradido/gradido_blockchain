@@ -128,7 +128,16 @@ namespace model {
 				}
 				// TODO: replace with variable, state transaction for group
 				if (mpfr_cmp_si(sum, 1000) > 0) {
-					throw TransactionValidationInvalidInputException("creation more than 1.000 GDD per month not allowed", "amount");
+					//throw TransactionValidationInvalidInputException("creation more than 1.000 GDD per month not allowed", "amount");
+					mpfr_sub(sum, sum, amount, gDefaultRound);
+					std::string alreadyCreatedSum;
+					TransactionBase::amountToString(&alreadyCreatedSum, sum);
+					throw InvalidCreationException(
+						"creation more than 1.000 GDD per month not allowed",
+						targetDate.month(), targetDate.year(),
+						mProtoCreation.recipient().amount(), 
+						alreadyCreatedSum
+					);
 				}
 				mm->releaseMathMemory(sum);
 				mm->releaseMathMemory(amount);
