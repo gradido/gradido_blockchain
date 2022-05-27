@@ -102,6 +102,7 @@ var hierarchy =
         [ "model::gradido::TransactionValidationException", "classmodel_1_1gradido_1_1_transaction_validation_exception.html", [
           [ "model::gradido::AddressAlreadyExistException", "classmodel_1_1gradido_1_1_address_already_exist_exception.html", null ],
           [ "model::gradido::InsufficientBalanceException", "classmodel_1_1gradido_1_1_insufficient_balance_exception.html", null ],
+          [ "model::gradido::InvalidCreationException", "classmodel_1_1gradido_1_1_invalid_creation_exception.html", null ],
           [ "model::gradido::PairingTransactionNotMatchException", "classmodel_1_1gradido_1_1_pairing_transaction_not_match_exception.html", null ],
           [ "model::gradido::TransactionValidationForbiddenSignException", "classmodel_1_1gradido_1_1_transaction_validation_forbidden_sign_exception.html", null ],
           [ "model::gradido::TransactionValidationInvalidInputException", "classmodel_1_1gradido_1_1_transaction_validation_invalid_input_exception.html", null ],

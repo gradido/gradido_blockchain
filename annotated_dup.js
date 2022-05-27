@@ -17,6 +17,7 @@ var annotated_dup =
         [ "GradidoTransaction", "classmodel_1_1gradido_1_1_gradido_transaction.html", "classmodel_1_1gradido_1_1_gradido_transaction" ],
         [ "GroupFriendsUpdate", "classmodel_1_1gradido_1_1_group_friends_update.html", "classmodel_1_1gradido_1_1_group_friends_update" ],
         [ "InsufficientBalanceException", "classmodel_1_1gradido_1_1_insufficient_balance_exception.html", null ],
+        [ "InvalidCreationException", "classmodel_1_1gradido_1_1_invalid_creation_exception.html", null ],
         [ "PairingTransactionNotMatchException", "classmodel_1_1gradido_1_1_pairing_transaction_not_match_exception.html", null ],
         [ "RegisterAddress", "classmodel_1_1gradido_1_1_register_address.html", "classmodel_1_1gradido_1_1_register_address" ],
         [ "TransactionBase", "classmodel_1_1gradido_1_1_transaction_base.html", "classmodel_1_1gradido_1_1_transaction_base" ],
