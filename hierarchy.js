@@ -46,6 +46,7 @@ var hierarchy =
     [ "iota::NodeInfo", "structiota_1_1_node_info.html", null ],
     [ "Passphrase", "class_passphrase.html", null ],
     [ "Profiler", "class_profiler.html", null ],
+    [ "ProtobufArenaMemory", "class_protobuf_arena_memory.html", null ],
     [ "std::queue", null, [
       [ "MultithreadQueue< ResourceType >", "class_multithread_queue.html", null ]
     ] ],

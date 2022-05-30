@@ -187,6 +187,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>isOutbound</b> () con
 <tr class="memitem:a81d3389ed4410545acabd88d61b823c3"><td class="memItemLeft" align="right" valign="top"><a id="a81d3389ed4410545acabd88d61b823c3" name="a81d3389ed4410545acabd88d61b823c3"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>isCross</b> () const</td></tr>
 <tr class="separator:a81d3389ed4410545acabd88d61b823c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abfe057d80b6b0fd012b392be32d0855c"><td class="memItemLeft" align="right" valign="top"><a id="abfe057d80b6b0fd012b392be32d0855c" name="abfe057d80b6b0fd012b392be32d0855c"></a>
+std::shared_ptr&lt; <a class="el" href="class_protobuf_arena_memory.html">ProtobufArenaMemory</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getProtobufArena</b> ()</td></tr>
+<tr class="separator:abfe057d80b6b0fd012b392be32d0855c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b8b19c0ded764de1959998e293daacb"><td class="memItemLeft" align="right" valign="top"><a id="a3b8b19c0ded764de1959998e293daacb" name="a3b8b19c0ded764de1959998e293daacb"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>validate</b> (<a class="el" href="group__enums.html#ga5a93fcdc94d643d95a6b670b2a924443">TransactionValidationLevel</a> level=TRANSACTION_VALIDATION_SINGLE, <a class="el" href="classmodel_1_1_i_gradido_blockchain.html">IGradidoBlockchain</a> *blockchain=nullptr, const <a class="el" href="classmodel_1_1gradido_1_1_gradido_block.html">GradidoBlock</a> *parentGradidoBlock=nullptr) const</td></tr>
 <tr class="separator:a3b8b19c0ded764de1959998e293daacb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -236,9 +239,9 @@ const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>ge
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a7f1e8ee15825f0581ff86e2cc7989bf8"><td class="memItemLeft" align="right" valign="top"><a id="a7f1e8ee15825f0581ff86e2cc7989bf8" name="a7f1e8ee15825f0581ff86e2cc7989bf8"></a>
-static <a class="el" href="classmodel_1_1gradido_1_1_transaction_body.html">TransactionBody</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>load</b> (const std::string &amp;protoMessageBin)</td></tr>
-<tr class="separator:a7f1e8ee15825f0581ff86e2cc7989bf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af713106f026058613eb534542147cdbc"><td class="memItemLeft" align="right" valign="top"><a id="af713106f026058613eb534542147cdbc" name="af713106f026058613eb534542147cdbc"></a>
+static <a class="el" href="classmodel_1_1gradido_1_1_transaction_body.html">TransactionBody</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>load</b> (const std::string &amp;protoMessageBin, std::shared_ptr&lt; <a class="el" href="class_protobuf_arena_memory.html">ProtobufArenaMemory</a> &gt; arenaMemory)</td></tr>
+<tr class="separator:af713106f026058613eb534542147cdbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac738a962abedf16315aa78444be24846"><td class="memItemLeft" align="right" valign="top"><a id="ac738a962abedf16315aa78444be24846" name="ac738a962abedf16315aa78444be24846"></a>
 static <a class="el" href="classmodel_1_1gradido_1_1_transaction_body.html">TransactionBody</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>createGroupFriendsUpdate</b> (bool colorFusion)</td></tr>
 <tr class="separator:ac738a962abedf16315aa78444be24846"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -257,21 +260,27 @@ static const char *&#160;</td><td class="memItemRight" valign="bottom"><b>transa
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
+<tr class="memitem:a81292d61737b4dd46d47441b00251465"><td class="memItemLeft" align="right" valign="top"><a id="a81292d61737b4dd46d47441b00251465" name="a81292d61737b4dd46d47441b00251465"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>TransactionBody</b> (std::shared_ptr&lt; <a class="el" href="class_protobuf_arena_memory.html">ProtobufArenaMemory</a> &gt; arenaMemory)</td></tr>
+<tr class="separator:a81292d61737b4dd46d47441b00251465"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af81d60736b2b0e39e207a50b720aeac2"><td class="memItemLeft" align="right" valign="top"><a id="af81d60736b2b0e39e207a50b720aeac2" name="af81d60736b2b0e39e207a50b720aeac2"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>initSpecificTransaction</b> ()</td></tr>
 <tr class="separator:af81d60736b2b0e39e207a50b720aeac2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:a3c46cd76ee4aed5c08d6e7ca6ba1a12f"><td class="memItemLeft" align="right" valign="top"><a id="a3c46cd76ee4aed5c08d6e7ca6ba1a12f" name="a3c46cd76ee4aed5c08d6e7ca6ba1a12f"></a>
-proto::gradido::TransactionBody&#160;</td><td class="memItemRight" valign="bottom"><b>mProtoTransactionBody</b></td></tr>
-<tr class="separator:a3c46cd76ee4aed5c08d6e7ca6ba1a12f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afab23e4d85d87453050583f43e7e5556"><td class="memItemLeft" align="right" valign="top"><a id="afab23e4d85d87453050583f43e7e5556" name="afab23e4d85d87453050583f43e7e5556"></a>
+proto::gradido::TransactionBody *&#160;</td><td class="memItemRight" valign="bottom"><b>mProtoTransactionBody</b></td></tr>
+<tr class="separator:afab23e4d85d87453050583f43e7e5556"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaa4a6d1b02607b307e6b385288cb32e3"><td class="memItemLeft" align="right" valign="top"><a id="aaa4a6d1b02607b307e6b385288cb32e3" name="aaa4a6d1b02607b307e6b385288cb32e3"></a>
 <a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html">TransactionBase</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>mTransactionSpecific</b></td></tr>
 <tr class="separator:aaa4a6d1b02607b307e6b385288cb32e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a10ce608a3f3423b1dbba3aba9e6e3ab3"><td class="memItemLeft" align="right" valign="top"><a id="a10ce608a3f3423b1dbba3aba9e6e3ab3" name="a10ce608a3f3423b1dbba3aba9e6e3ab3"></a>
 <a class="el" href="group__enums.html#ga63424b05ada401e320ed8c4473623a41">TransactionType</a>&#160;</td><td class="memItemRight" valign="bottom"><b>mTransactionType</b></td></tr>
 <tr class="separator:a10ce608a3f3423b1dbba3aba9e6e3ab3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a502d1ec1a104ca49d4aa54359a024311"><td class="memItemLeft" align="right" valign="top"><a id="a502d1ec1a104ca49d4aa54359a024311" name="a502d1ec1a104ca49d4aa54359a024311"></a>
+std::shared_ptr&lt; <a class="el" href="class_protobuf_arena_memory.html">ProtobufArenaMemory</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>mProtobufArenaMemory</b></td></tr>
+<tr class="separator:a502d1ec1a104ca49d4aa54359a024311"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_class_multithread_container"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_multithread_container')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_multithread_container.html">MultithreadContainer</a></td></tr>
 <tr class="memitem:a23dd55679f5fab6bf52a2b0303aa2575 inherit pro_attribs_class_multithread_container"><td class="memItemLeft" align="right" valign="top"><a id="a23dd55679f5fab6bf52a2b0303aa2575" name="a23dd55679f5fab6bf52a2b0303aa2575"></a>
 std::recursive_mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mWorkMutex</b></td></tr>

@@ -142,18 +142,22 @@ $(document).ready(function(){initNavTree('_gradido_block_8h_source.html',''); in
 <div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
 <div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>            <span class="keywordtype">void</span> calculateFinalGDD(<a class="code hl_class" href="classmodel_1_1_i_gradido_blockchain.html">IGradidoBlockchain</a>* blockchain);</div>
 <div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>        <span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>            <span class="comment">// TODO: use Pool for reducing memory allocation for google protobuf objects</span></div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>            proto::gradido::GradidoBlock* mProtoGradidoBlock;</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>            <a class="code hl_class" href="classmodel_1_1gradido_1_1_gradido_transaction.html">GradidoTransaction</a>* mGradidoTransaction;</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>            <a class="code hl_class" href="classmodel_1_1gradido_1_1_gradido_block.html">GradidoBlock</a>(std::unique_ptr&lt;GradidoTransaction&gt; transaction);</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>        };</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span> </div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    }</div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>}</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>            <span class="keyword">inline</span> std::shared_ptr&lt;ProtobufArenaMemory&gt; getProtobufArena() { <span class="keywordflow">return</span> mProtobufArenaMemory; }</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>        <span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>            <a class="code hl_class" href="classmodel_1_1gradido_1_1_gradido_block.html">GradidoBlock</a>(std::unique_ptr&lt;GradidoTransaction&gt; transaction);</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span> </div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>            proto::gradido::GradidoBlock* mProtoGradidoBlock;</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>            <a class="code hl_class" href="classmodel_1_1gradido_1_1_gradido_transaction.html">GradidoTransaction</a>* mGradidoTransaction;</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>            std::shared_ptr&lt;ProtobufArenaMemory&gt; mProtobufArenaMemory;      </div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>            </div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>        };</div>
 <div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span> </div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span><span class="preprocessor">#endif </span><span class="comment">//__GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_GRADIDO_BLOCK</span></div>
-<div class="ttc" id="aclass_memory_bin_html"><div class="ttname"><a href="class_memory_bin.html">MemoryBin</a></div><div class="ttdef"><b>Definition:</b> MemoryManager.h:35</div></div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>    }</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>}</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span> </div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span><span class="preprocessor">#endif </span><span class="comment">//__GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_GRADIDO_BLOCK</span></div>
+<div class="ttc" id="aclass_memory_bin_html"><div class="ttname"><a href="class_memory_bin.html">MemoryBin</a></div><div class="ttdef"><b>Definition:</b> MemoryManager.h:40</div></div>
 <div class="ttc" id="aclass_multithread_container_html"><div class="ttname"><a href="class_multithread_container.html">MultithreadContainer</a></div><div class="ttdef"><b>Definition:</b> MultithreadContainer.h:41</div></div>
 <div class="ttc" id="aclassmodel_1_1_i_gradido_blockchain_html"><div class="ttname"><a href="classmodel_1_1_i_gradido_blockchain.html">model::IGradidoBlockchain</a></div><div class="ttdef"><b>Definition:</b> IGradidoBlockchain.h:13</div></div>
 <div class="ttc" id="aclassmodel_1_1gradido_1_1_gradido_block_html"><div class="ttname"><a href="classmodel_1_1gradido_1_1_gradido_block.html">model::gradido::GradidoBlock</a></div><div class="ttdoc">The Final Blockformat on Blockchain.</div><div class="ttdef"><b>Definition:</b> GradidoBlock.h:28</div></div>

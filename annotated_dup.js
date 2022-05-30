@@ -85,6 +85,7 @@ var annotated_dup =
     [ "PassphraseEmptyWordSourceException", "class_passphrase_empty_word_source_exception.html", null ],
     [ "PocoNetException", "class_poco_net_exception.html", null ],
     [ "Profiler", "class_profiler.html", null ],
+    [ "ProtobufArenaMemory", "class_protobuf_arena_memory.html", null ],
     [ "ProtobufJsonSerializationException", "class_protobuf_json_serialization_exception.html", null ],
     [ "ProtobufParseException", "class_protobuf_parse_exception.html", null ],
     [ "ProtobufSerializationException", "class_protobuf_serialization_exception.html", null ],

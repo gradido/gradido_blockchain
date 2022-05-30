@@ -122,9 +122,9 @@ Collaboration diagram for model::gradido::GradidoTransaction:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aeb338272e1f31f455e438e0704edfae6"><td class="memItemLeft" align="right" valign="top"><a id="aeb338272e1f31f455e438e0704edfae6" name="aeb338272e1f31f455e438e0704edfae6"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>GradidoTransaction</b> (proto::gradido::GradidoTransaction *protoGradidoTransaction)</td></tr>
-<tr class="separator:aeb338272e1f31f455e438e0704edfae6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7664bb07a02a52c87fd34dd86ec5ac6"><td class="memItemLeft" align="right" valign="top"><a id="aa7664bb07a02a52c87fd34dd86ec5ac6" name="aa7664bb07a02a52c87fd34dd86ec5ac6"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>GradidoTransaction</b> (proto::gradido::GradidoTransaction *protoGradidoTransaction, std::shared_ptr&lt; <a class="el" href="class_protobuf_arena_memory.html">ProtobufArenaMemory</a> &gt; arenaMemory)</td></tr>
+<tr class="separator:aa7664bb07a02a52c87fd34dd86ec5ac6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a659344df8f3f96ac815061339ac8729a"><td class="memItemLeft" align="right" valign="top"><a id="a659344df8f3f96ac815061339ac8729a" name="a659344df8f3f96ac815061339ac8729a"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>GradidoTransaction</b> (const std::string *serializedProtobuf)</td></tr>
 <tr class="separator:a659344df8f3f96ac815061339ac8729a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -179,6 +179,9 @@ std::unique_ptr&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="
 <tr class="memitem:a80c1931999142bc1ff1f326f480754ab"><td class="memItemLeft" align="right" valign="top"><a id="a80c1931999142bc1ff1f326f480754ab" name="a80c1931999142bc1ff1f326f480754ab"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>toJson</b> () const</td></tr>
 <tr class="separator:a80c1931999142bc1ff1f326f480754ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae84e78d3b9e425df45b346ce6ed4f439"><td class="memItemLeft" align="right" valign="top"><a id="ae84e78d3b9e425df45b346ce6ed4f439" name="ae84e78d3b9e425df45b346ce6ed4f439"></a>
+std::shared_ptr&lt; <a class="el" href="class_protobuf_arena_memory.html">ProtobufArenaMemory</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getProtobufArena</b> ()</td></tr>
+<tr class="separator:ae84e78d3b9e425df45b346ce6ed4f439"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -197,6 +200,9 @@ proto::gradido::GradidoTransaction *&#160;</td><td class="memItemRight" valign="
 <tr class="memitem:a01dd1a102018122434142afab2af5ab2"><td class="memItemLeft" align="right" valign="top"><a id="a01dd1a102018122434142afab2af5ab2" name="a01dd1a102018122434142afab2af5ab2"></a>
 <a class="el" href="classmodel_1_1gradido_1_1_transaction_body.html">TransactionBody</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>mTransactionBody</b></td></tr>
 <tr class="separator:a01dd1a102018122434142afab2af5ab2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3118bc22c647a97d0d0be65955ca7111"><td class="memItemLeft" align="right" valign="top"><a id="a3118bc22c647a97d0d0be65955ca7111" name="a3118bc22c647a97d0d0be65955ca7111"></a>
+std::shared_ptr&lt; <a class="el" href="class_protobuf_arena_memory.html">ProtobufArenaMemory</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>mProtobufArenaMemory</b></td></tr>
+<tr class="separator:a3118bc22c647a97d0d0be65955ca7111"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Contain the signature map for the Transaction and the serialized body. </p>
