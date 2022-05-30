@@ -33,7 +33,7 @@ namespace model {
 		GradidoBlock::GradidoBlock(std::unique_ptr<GradidoTransaction> transaction)
 			: mGradidoTransaction(transaction.release())
 		{
-			mProtobufArenaMemory = transaction->getProtobufArena();
+			mProtobufArenaMemory = mGradidoTransaction->getProtobufArena();
 			mProtoGradidoBlock = google::protobuf::Arena::CreateMessage<proto::gradido::GradidoBlock>(*mProtobufArenaMemory);
 			auto gradidoTransactionProto = mGradidoTransaction->getProto();
 			mProtoGradidoBlock->unsafe_arena_set_allocated_transaction(mGradidoTransaction->getProto());
