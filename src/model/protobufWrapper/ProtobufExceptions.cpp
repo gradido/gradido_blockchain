@@ -1,13 +1,13 @@
 #include "gradido_blockchain/model/protobufWrapper/ProtobufExceptions.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h" 
 
-ProtobufSerializationException::ProtobufSerializationException(const char* what, const google::protobuf::Message& message) noexcept
+ProtobufSerializationException::ProtobufSerializationException(const char* what, const google::protobuf::Message* message) noexcept
 	: GradidoBlockchainException(what), mMessage(message)
 {
 
 }
 
-ProtobufSerializationException::ProtobufSerializationException(const google::protobuf::Message& message) noexcept
+ProtobufSerializationException::ProtobufSerializationException(const google::protobuf::Message* message) noexcept
 	: GradidoBlockchainException("Protobuf Serialization Exception"), mMessage(message)
 {
 
@@ -19,7 +19,7 @@ std::string ProtobufSerializationException::getFullString() const noexcept
 
 // ****************** Protobuf serialize to json exception **************
 ProtobufJsonSerializationException::ProtobufJsonSerializationException(const char* what, const google::protobuf::Message& message, google::protobuf::util::status_internal::Status status) noexcept
-	: ProtobufSerializationException(what, message), mStatus(status)
+	: ProtobufSerializationException(what, &message), mStatus(status)
 {
 
 }

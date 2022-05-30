@@ -12,6 +12,11 @@
 #define GRADIDO_LOGIN_SERVER_SINGLETON_MANAGER_MEMORY_MANAGER_H
 
 #include "gradido_blockchain/lib/MultithreadContainer.h"
+#include <google/protobuf/arena.h>
+
+#include "proto/gradido/GradidoBlock.pb.h"
+#include "proto/gradido/GradidoTransaction.pb.h"
+#include "proto/gradido/TransactionBody.pb.h"
 
 #include <list>
 #include <stack>
@@ -100,11 +105,24 @@ protected:
 	mpfr_ptr mData;
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT ProtobufArenaMemory
+{
+public: 
+	~ProtobufArenaMemory();
+	inline operator google::protobuf::Arena* () { return mArena; }
+	static std::shared_ptr<ProtobufArenaMemory> create();
+protected:
+	ProtobufArenaMemory();
+
+	google::protobuf::Arena* mArena;
+};
+
 // TODO: Add handling for mpfr pointer
 // TODO: Add handling for protobuf messages
 
 class GRADIDOBLOCKCHAIN_EXPORT MemoryManager
 {
+	friend class ProtobufArenaMemory;
 public:
 	~MemoryManager();
 
@@ -118,13 +136,21 @@ public:
 
 protected:
 
+	google::protobuf::Arena* getProtobufArenaMemory();
+	void releaseMemory(google::protobuf::Arena* memory);
+
 	int8_t getMemoryStackIndex(uint16_t size) noexcept;
 
 	MemoryManager();
 	MemoryPageStack* mMemoryPageStacks[6];
+
 	std::mutex mMpfrMutex;
 	std::stack<mpfr_ptr> mMpfrPtrStack;
 	std::set<mpfr_ptr> mActiveMpfrs;
+
+	std::mutex mProtobufArenaMutex;
+	std::stack<google::protobuf::Arena*> mProtobufArenaStack;
+	std::set<google::protobuf::Arena*> mActiveProtobufArenas;
 };
 
 

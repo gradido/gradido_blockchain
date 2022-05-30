@@ -36,7 +36,7 @@ namespace model {
 			uint32_t getCreatedSeconds() const;
 			inline Poco::DateTime getCreated() const { return Poco::Timestamp(getCreatedSeconds() * Poco::Timestamp::resolution()); }
 
-			static TransactionBody* load(const std::string& protoMessageBin);
+			static TransactionBody* load(const std::string& protoMessageBin, std::shared_ptr<ProtobufArenaMemory> arenaMemory);
 			void upgradeToDeferredTransaction(Poco::Timestamp timeout);
 			static TransactionBody* createGroupFriendsUpdate(bool colorFusion);
 			static TransactionBody* createRegisterAddress(
@@ -72,6 +72,8 @@ namespace model {
 			inline bool isOutbound() const { return getCrossGroupType() == proto::gradido::TransactionBody_CrossGroupType_OUTBOUND; }
 			inline bool isCross() const { return getCrossGroupType() == proto::gradido::TransactionBody_CrossGroupType_CROSS; }
 
+			inline std::shared_ptr<ProtobufArenaMemory> getProtobufArena() { return mProtobufArenaMemory; }
+
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
@@ -80,7 +82,7 @@ namespace model {
 			bool isBelongToUs(const TransactionBody* pairingTransaction) const;
 
 			std::unique_ptr<std::string> getBodyBytes() const;
-			const proto::gradido::TransactionBody* getBody() const { return &mProtoTransactionBody; }
+			const proto::gradido::TransactionBody* getBody() const { return mProtoTransactionBody; }
 
 			const DeferredTransfer* getDeferredTransfer() const;
 			const GroupFriendsUpdate* getGroupFriendsUpdate() const;
@@ -93,12 +95,13 @@ namespace model {
 			std::string toDebugString() const;
 		protected:
 			TransactionBody();
+			TransactionBody(std::shared_ptr<ProtobufArenaMemory> arenaMemory);
 
 			void initSpecificTransaction();
-			// TODO: use Pool for reducing memory allocation for google protobuf objects
-			proto::gradido::TransactionBody mProtoTransactionBody;
+			proto::gradido::TransactionBody* mProtoTransactionBody;
 			TransactionBase* mTransactionSpecific;
 			TransactionType mTransactionType;
+			std::shared_ptr<ProtobufArenaMemory> mProtobufArenaMemory;
 		};
 		/*! @} End of Doxygen Groups*/
 	}

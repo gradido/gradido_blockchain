@@ -12,16 +12,18 @@ using namespace rapidjson;
 
 namespace model {
 	namespace gradido {
-		GradidoTransaction::GradidoTransaction(proto::gradido::GradidoTransaction* protoGradidoTransaction)
-			: mProtoGradidoTransaction(protoGradidoTransaction), mTransactionBody(nullptr)
+		GradidoTransaction::GradidoTransaction(proto::gradido::GradidoTransaction* protoGradidoTransaction, std::shared_ptr<ProtobufArenaMemory> arenaMemory)
+			: mProtoGradidoTransaction(protoGradidoTransaction), mTransactionBody(nullptr), mProtobufArenaMemory(arenaMemory)
 		{
-			mTransactionBody = TransactionBody::load(protoGradidoTransaction->body_bytes());
+			mTransactionBody = TransactionBody::load(protoGradidoTransaction->body_bytes(), arenaMemory);
 			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
 		}
 
 		GradidoTransaction::GradidoTransaction(const std::string* serializedProtobuf)
+			: mProtoGradidoTransaction(nullptr)
 		{
-			mProtoGradidoTransaction = new proto::gradido::GradidoTransaction;
+			mProtobufArenaMemory = ProtobufArenaMemory::create();
+			mProtoGradidoTransaction = google::protobuf::Arena::CreateMessage<proto::gradido::GradidoTransaction>(*mProtobufArenaMemory);
 			if (!mProtoGradidoTransaction->ParseFromArray(serializedProtobuf->data(), serializedProtobuf->size())) {
 				if (!mProtoGradidoTransaction->ParsePartialFromArray(serializedProtobuf->data(), serializedProtobuf->size())) {
 					throw ProtobufParseException(*serializedProtobuf);
@@ -29,18 +31,19 @@ namespace model {
 				else {
 					printf("only partial error\n");
 					throw ProtobufParseException(*serializedProtobuf);
-				}
-				
+				}				
 			}
-			mTransactionBody = TransactionBody::load(mProtoGradidoTransaction->body_bytes());
+			mTransactionBody = TransactionBody::load(mProtoGradidoTransaction->body_bytes(), mProtobufArenaMemory);
 			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
 		}
 
 		GradidoTransaction::GradidoTransaction(model::gradido::TransactionBody* body)
+			: mProtoGradidoTransaction(nullptr)
 		{
 			assert(body);
-			mProtoGradidoTransaction = new proto::gradido::GradidoTransaction;
 			mTransactionBody = body;
+			mProtobufArenaMemory = body->getProtobufArena();
+			mProtoGradidoTransaction = google::protobuf::Arena::CreateMessage<proto::gradido::GradidoTransaction>(*mProtobufArenaMemory);
 			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
 		}
 
@@ -49,6 +52,8 @@ namespace model {
 			if (mTransactionBody) {
 				delete mTransactionBody;
 			}
+			mTransactionBody = nullptr;		
+			mProtoGradidoTransaction = nullptr;
 		}
 
 		bool GradidoTransaction::validate(
@@ -275,7 +280,7 @@ namespace model {
 			std::string* resultString(new std::string(size, 0));
 			if (!mProtoGradidoTransaction->SerializeToString(resultString)) {
 				//addError(new Error("TransactionCreation::getBodyBytes", "error serializing string"));
-				throw ProtobufSerializationException(*mProtoGradidoTransaction);
+				throw ProtobufSerializationException(mProtoGradidoTransaction);
 			}
 			std::unique_ptr<std::string> result;
 			result.reset(resultString);
@@ -289,7 +294,7 @@ namespace model {
 			std::string* resultString(new std::string(size, 0));
 			if (!mProtoGradidoTransaction->SerializeToString(resultString)) {
 				//addError(new Error("TransactionCreation::getBodyBytes", "error serializing string"));
-				throw ProtobufSerializationException(*mProtoGradidoTransaction);
+				throw ProtobufSerializationException(mProtoGradidoTransaction);
 			}
 			std::unique_ptr<std::string> result;
 			result.reset(resultString);

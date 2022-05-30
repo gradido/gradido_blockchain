@@ -10,18 +10,25 @@ namespace model {
 	namespace gradido {
 
 		TransactionBody::TransactionBody()
-			: mTransactionSpecific(nullptr), mTransactionType(TRANSACTION_NONE)
+			: TransactionBody(ProtobufArenaMemory::create())
 		{
-			auto created = mProtoTransactionBody.mutable_created();
+		}
+
+		TransactionBody::TransactionBody(std::shared_ptr<ProtobufArenaMemory> arenaMemory)
+			: mProtoTransactionBody(google::protobuf::Arena::CreateMessage<proto::gradido::TransactionBody>(*arenaMemory)),
+		      mTransactionSpecific(nullptr), mTransactionType(TRANSACTION_NONE), mProtobufArenaMemory(arenaMemory)
+		{
+			auto created = mProtoTransactionBody->mutable_created();
 			DataTypeConverter::convertToProtoTimestampSeconds(Poco::Timestamp(), created);
-			mProtoTransactionBody.set_type(proto::gradido::TransactionBody_CrossGroupType_LOCAL);
-			mProtoTransactionBody.set_version_number(GRADIDO_PROTOCOL_VERSION);
+			mProtoTransactionBody->set_type(proto::gradido::TransactionBody_CrossGroupType_LOCAL);
+			mProtoTransactionBody->set_version_number(GRADIDO_PROTOCOL_VERSION);
 		}
 
 		TransactionBody::~TransactionBody()
 		{
 			LOCK_RECURSIVE;
 			lock("TransactionBody::~TransactionBody");
+			mProtoTransactionBody = nullptr;
 			if (mTransactionSpecific) {
 				delete mTransactionSpecific;
 				mTransactionSpecific = nullptr;
@@ -32,20 +39,20 @@ namespace model {
 		void TransactionBody::setCreated(Poco::DateTime created)
 		{
 			LOCK_RECURSIVE;
-			auto protoCreated = mProtoTransactionBody.mutable_created();
+			auto protoCreated = mProtoTransactionBody->mutable_created();
 			DataTypeConverter::convertToProtoTimestampSeconds(created.timestamp(), protoCreated);
 		}
 
 		uint32_t TransactionBody::getCreatedSeconds() const
 		{
-			return mProtoTransactionBody.created().seconds();
+			return mProtoTransactionBody->created().seconds();
 		}
 
-		TransactionBody* TransactionBody::load(const std::string& protoMessageBin)
+		TransactionBody* TransactionBody::load(const std::string& protoMessageBin, std::shared_ptr<ProtobufArenaMemory> arenaMemory)
 		{
-			auto obj = new TransactionBody;
+			auto obj = new TransactionBody(arenaMemory);
 
-			if (!obj->mProtoTransactionBody.ParseFromString(protoMessageBin)) {
+			if (!obj->mProtoTransactionBody->ParseFromString(protoMessageBin)) {
 				delete obj;
 				throw ProtobufParseException(protoMessageBin);
 			}
@@ -56,13 +63,13 @@ namespace model {
 		void TransactionBody::upgradeToDeferredTransaction(Poco::Timestamp timeout)
 		{
 			LOCK_RECURSIVE;
-			assert(mProtoTransactionBody.has_transfer());
+			assert(mProtoTransactionBody->has_transfer());
 			delete mTransactionSpecific;
-			auto transfer = mProtoTransactionBody.mutable_transfer();
-			auto deferredTransfer = mProtoTransactionBody.mutable_deferred_transfer();
+			auto transfer = mProtoTransactionBody->mutable_transfer();
+			auto deferredTransfer = mProtoTransactionBody->mutable_deferred_transfer();
 			// move transfer object to deferred transfer
 			deferredTransfer->mutable_transfer()->Swap(transfer);
-			assert(!mProtoTransactionBody.has_transfer());
+			assert(!mProtoTransactionBody->has_transfer());
 			DataTypeConverter::convertToProtoTimestamp(timeout, deferredTransfer->mutable_timeout());
 			initSpecificTransaction();
 		}
@@ -71,7 +78,7 @@ namespace model {
 		TransactionBody* TransactionBody::createGroupFriendsUpdate(bool colorFusion)
 		{
 			auto obj = new TransactionBody;
-			auto groupFriendsUpdate = obj->mProtoTransactionBody.mutable_group_friends_update();
+			auto groupFriendsUpdate = obj->mProtoTransactionBody->mutable_group_friends_update();
 			groupFriendsUpdate->set_color_fusion(colorFusion);
 			obj->initSpecificTransaction();
 			return obj;
@@ -85,7 +92,7 @@ namespace model {
 		)
 		{
 			auto obj = new TransactionBody;
-			auto registerAddress = obj->mProtoTransactionBody.mutable_register_address();
+			auto registerAddress = obj->mProtoTransactionBody->mutable_register_address();
 			if (userPubkey) {
 				registerAddress->set_allocated_user_pubkey(userPubkey->copyAsString().release());
 			}
@@ -103,7 +110,7 @@ namespace model {
 		TransactionBody* TransactionBody::createTransactionCreation(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, Poco::DateTime targetDate)
 		{
 			auto obj = new TransactionBody;
-			auto creation = obj->mProtoTransactionBody.mutable_creation();
+			auto creation = obj->mProtoTransactionBody->mutable_creation();
 			creation->set_allocated_recipient(transferAmount.release());
 			auto protoTargetDate = creation->mutable_target_date();
 			DataTypeConverter::convertToProtoTimestampSeconds(targetDate.timestamp(), protoTargetDate);
@@ -114,7 +121,7 @@ namespace model {
 		TransactionBody* TransactionBody::createTransactionTransfer(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, const MemoryBin* recipientPubkey)
 		{
 			auto obj = new TransactionBody;
-			auto transfer = obj->mProtoTransactionBody.mutable_transfer();
+			auto transfer = obj->mProtoTransactionBody->mutable_transfer();
 			transfer->set_allocated_sender(transferAmount.release());
 			transfer->set_allocated_recipient(recipientPubkey->copyAsString().release());
 			obj->initSpecificTransaction();
@@ -124,38 +131,38 @@ namespace model {
 		void TransactionBody::updateToOutbound(const std::string& otherGroup)
 		{
 			LOCK_RECURSIVE;
-			mProtoTransactionBody.set_other_group(otherGroup);
-			mProtoTransactionBody.set_type(proto::gradido::TransactionBody_CrossGroupType_OUTBOUND);
+			mProtoTransactionBody->set_other_group(otherGroup);
+			mProtoTransactionBody->set_type(proto::gradido::TransactionBody_CrossGroupType_OUTBOUND);
 		}
 
 		void TransactionBody::updateToInbound(const std::string& otherGroup)
 		{
 			LOCK_RECURSIVE;
-			mProtoTransactionBody.set_other_group(otherGroup);
-			mProtoTransactionBody.set_type(proto::gradido::TransactionBody_CrossGroupType_INBOUND);
+			mProtoTransactionBody->set_other_group(otherGroup);
+			mProtoTransactionBody->set_type(proto::gradido::TransactionBody_CrossGroupType_INBOUND);
 		}
 
 		proto::gradido::TransactionBody_CrossGroupType TransactionBody::getCrossGroupType() const
 		{
 			// cannot inline, because this doens't work in dll build
-			return mProtoTransactionBody.type();
+			return mProtoTransactionBody->type();
 		}
 		const std::string& TransactionBody::getVersionNumber() const
 		{
 			// cannot inline, because this doens't work in dll build
-			return mProtoTransactionBody.version_number();
+			return mProtoTransactionBody->version_number();
 		}
 		const std::string& TransactionBody::getOtherGroup() const
 		{
 			// cannot inline, because this doens't work in dll build
-			return mProtoTransactionBody.other_group();
+			return mProtoTransactionBody->other_group();
 		}
 
 		std::string TransactionBody::getMemo() const
 		{
 			LOCK_RECURSIVE;
-			if (mProtoTransactionBody.IsInitialized()) {
-				std::string result(mProtoTransactionBody.memo());
+			if (mProtoTransactionBody->IsInitialized()) {
+				std::string result(mProtoTransactionBody->memo());
 
 				return result;
 			}
@@ -174,18 +181,18 @@ namespace model {
 		void TransactionBody::setMemo(const std::string& memo)
 		{
 			LOCK_RECURSIVE;
-			mProtoTransactionBody.set_memo(memo);
+			mProtoTransactionBody->set_memo(memo);
 		}
 
 		std::unique_ptr<std::string> TransactionBody::getBodyBytes() const
 		{
 			LOCK_RECURSIVE;
-			assert(mProtoTransactionBody.IsInitialized());
+			assert(mProtoTransactionBody->IsInitialized());
 
-			auto size = mProtoTransactionBody.ByteSizeLong();
+			auto size = mProtoTransactionBody->ByteSizeLong();
 			//auto bodyBytesSize = MemoryManager::getInstance()->getFreeMemory(mProtoCreation.ByteSizeLong());
 			std::string* resultString(new std::string(size, 0));
-			if (!mProtoTransactionBody.SerializeToString(resultString)) {
+			if (!mProtoTransactionBody->SerializeToString(resultString)) {
 				//addError(new Error("TransactionCreation::getBodyBytes", "error serializing string"));
 				throw ProtobufSerializationException(mProtoTransactionBody);
 			}
@@ -312,25 +319,25 @@ namespace model {
 		void TransactionBody::initSpecificTransaction()
 		{
 			// check Type
-			if (mProtoTransactionBody.has_creation()) {
+			if (mProtoTransactionBody->has_creation()) {
 				mTransactionType = TRANSACTION_CREATION;
-				mTransactionSpecific = new model::gradido::TransactionCreation(mProtoTransactionBody.creation());
+				mTransactionSpecific = new model::gradido::TransactionCreation(mProtoTransactionBody->creation());
 			}
-			else if (mProtoTransactionBody.has_transfer()) {
+			else if (mProtoTransactionBody->has_transfer()) {
 				mTransactionType = TRANSACTION_TRANSFER;
-				mTransactionSpecific = new model::gradido::TransactionTransfer(mProtoTransactionBody.transfer());
+				mTransactionSpecific = new model::gradido::TransactionTransfer(mProtoTransactionBody->transfer());
 			}
-			else if (mProtoTransactionBody.has_group_friends_update()) {
+			else if (mProtoTransactionBody->has_group_friends_update()) {
 				mTransactionType = TRANSACTION_GROUP_FRIENDS_UPDATE;
-				mTransactionSpecific = new model::gradido::GroupFriendsUpdate(mProtoTransactionBody.group_friends_update());
+				mTransactionSpecific = new model::gradido::GroupFriendsUpdate(mProtoTransactionBody->group_friends_update());
 			}
-			else if (mProtoTransactionBody.has_register_address()) {
+			else if (mProtoTransactionBody->has_register_address()) {
 				mTransactionType = TRANSACTION_REGISTER_ADDRESS;
-				mTransactionSpecific = new model::gradido::RegisterAddress(mProtoTransactionBody.register_address());
+				mTransactionSpecific = new model::gradido::RegisterAddress(mProtoTransactionBody->register_address());
 			}
-			else if (mProtoTransactionBody.has_deferred_transfer()) {
+			else if (mProtoTransactionBody->has_deferred_transfer()) {
 				mTransactionType = TRANSACTION_DEFERRED_TRANSFER;
-				mTransactionSpecific = new model::gradido::DeferredTransfer(mProtoTransactionBody.deferred_transfer());
+				mTransactionSpecific = new model::gradido::DeferredTransfer(mProtoTransactionBody->deferred_transfer());
 			}
 			mTransactionSpecific->prepare();
 		}

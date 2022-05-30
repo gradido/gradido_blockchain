@@ -85,11 +85,15 @@ namespace model {
 			//! for transfer transaction, it is the final balance from sender
 			void calculateFinalGDD(IGradidoBlockchain* blockchain);
 
+			inline std::shared_ptr<ProtobufArenaMemory> getProtobufArena() { return mProtobufArenaMemory; }
+
 		protected:
-			// TODO: use Pool for reducing memory allocation for google protobuf objects
+			GradidoBlock(std::unique_ptr<GradidoTransaction> transaction);
+
 			proto::gradido::GradidoBlock* mProtoGradidoBlock;
 			GradidoTransaction* mGradidoTransaction;
-			GradidoBlock(std::unique_ptr<GradidoTransaction> transaction);
+			std::shared_ptr<ProtobufArenaMemory> mProtobufArenaMemory;		
+			
 		};
 
 		/*! @} End of Doxygen Groups*/

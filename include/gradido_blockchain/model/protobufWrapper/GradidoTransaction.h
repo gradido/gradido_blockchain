@@ -28,7 +28,7 @@ namespace model {
 		{
 			friend GradidoBlock;
 		public:
-			GradidoTransaction(proto::gradido::GradidoTransaction* protoGradidoTransaction);
+			GradidoTransaction(proto::gradido::GradidoTransaction* protoGradidoTransaction, std::shared_ptr<ProtobufArenaMemory> arenaMemory);
 			GradidoTransaction(const std::string* serializedProtobuf);
 			GradidoTransaction(model::gradido::TransactionBody* body);
 			~GradidoTransaction();
@@ -73,11 +73,14 @@ namespace model {
 			std::unique_ptr<std::string> getSerializedConst() const;
 			std::string toJson() const;
 
+			inline std::shared_ptr<ProtobufArenaMemory> getProtobufArena() { return mProtobufArenaMemory; }
+
 		protected:
 			std::vector<std::pair<MemoryBin*, MemoryBin*>> getPublicKeySignaturePairs(bool withPublicKey, bool withSignatures, bool onlyFirst = true) const;
 			inline proto::gradido::GradidoTransaction* getProto() { return mProtoGradidoTransaction; }
 			proto::gradido::GradidoTransaction* mProtoGradidoTransaction;
 			TransactionBody* mTransactionBody;
+			std::shared_ptr<ProtobufArenaMemory> mProtobufArenaMemory;
 		};
 		/*! @} End of Doxygen Groups*/
 	}

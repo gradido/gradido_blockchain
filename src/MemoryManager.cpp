@@ -1,6 +1,8 @@
 #include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/lib/Decay.h"
 #include "gradido_blockchain/model/protobufWrapper/TransactionBase.h"
+
+
 #include "sodium.h"
 #include <memory.h>
 #include <exception>
@@ -147,6 +149,23 @@ std::unique_ptr<MathMemory> MathMemory::create()
 	return std::move(std::unique_ptr<MathMemory>(new MathMemory));
 }
 
+// ******************** google protobuf arena memory ********************************
+ProtobufArenaMemory::ProtobufArenaMemory()
+	: mArena(nullptr)
+{
+	mArena = MemoryManager::getInstance()->getProtobufArenaMemory();
+}
+
+ProtobufArenaMemory::~ProtobufArenaMemory()
+{
+	MemoryManager::getInstance()->releaseMemory(mArena);
+	mArena = nullptr;
+}
+
+std::shared_ptr<ProtobufArenaMemory> ProtobufArenaMemory::create()
+{
+	return std::shared_ptr<ProtobufArenaMemory>(new ProtobufArenaMemory);
+}
 
 // ***********************************************************************************
 
@@ -172,12 +191,22 @@ MemoryManager::~MemoryManager()
 	for (int i = 0; i < 5; i++) {
 		delete mMemoryPageStacks[i];
 	}
-	std::scoped_lock<std::mutex> _lock(mMpfrMutex);
-	while (mMpfrPtrStack.size() > 0) {
-		mpfr_ptr mathMemory = mMpfrPtrStack.top();
-		mMpfrPtrStack.pop();
-		mpfr_clear(mathMemory);
-		delete mathMemory;
+	{
+		std::scoped_lock<std::mutex> _lock(mMpfrMutex);
+		while (mMpfrPtrStack.size() > 0) {
+			mpfr_ptr mathMemory = mMpfrPtrStack.top();
+			mMpfrPtrStack.pop();
+			mpfr_clear(mathMemory);
+			delete mathMemory;
+		}
+	}
+	{
+		std::scoped_lock _lock(mProtobufArenaMutex);
+		while (mProtobufArenaStack.size() > 0) {
+			auto arena = mProtobufArenaStack.top();
+			mProtobufArenaStack.pop();
+			delete arena;
+		}
 	}
 }
 
@@ -257,6 +286,35 @@ void MemoryManager::releaseMathMemory(mpfr_ptr ptr)
 	mMpfrPtrStack.push(ptr);
 	if (!mActiveMpfrs.erase(ptr)) {
 		assert(false && "[MemoryManager::getMathMemory] try to remove math memory already removed");
+	}
+}
+
+google::protobuf::Arena* MemoryManager::getProtobufArenaMemory()
+{
+	std::scoped_lock _lock(mProtobufArenaMutex);
+	google::protobuf::Arena* arena;
+
+	if (mProtobufArenaStack.size()) {
+		arena = mProtobufArenaStack.top();
+		mProtobufArenaStack.pop();
+	}
+	else {
+		arena = new google::protobuf::Arena;
+	}
+	if (!mActiveProtobufArenas.insert(arena).second) {
+		assert(false && "[MemoryManager::getProtobufArenaMemory] try to return mathe memory already in use");
+	}
+
+	return arena;
+}
+void MemoryManager::releaseMemory(google::protobuf::Arena* memory)
+{
+	if (!memory) return;
+	std::scoped_lock _lock(mProtobufArenaMutex);
+
+	mProtobufArenaStack.push(memory);
+	if (!mActiveProtobufArenas.erase(memory)) {
+		assert(false && "[MemoryManager::releaseMemory] try to remove protobuf arena memory already removed");
 	}
 }
 

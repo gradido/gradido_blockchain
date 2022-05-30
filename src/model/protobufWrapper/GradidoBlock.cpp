@@ -3,6 +3,7 @@
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 #include "gradido_blockchain/model/IGradidoBlockchain.h"
 
+
 #include <google/protobuf/util/json_util.h>
 #include "proto/gradido/TransactionBody.pb.h"
 
@@ -20,28 +21,29 @@ namespace model {
 		GradidoBlock::GradidoBlock(const std::string* serializedGradidoBlock)
 			: mGradidoTransaction(nullptr)
 		{
-			mProtoGradidoBlock = new proto::gradido::GradidoBlock;
+			mProtobufArenaMemory = ProtobufArenaMemory::create();
+			mProtoGradidoBlock = google::protobuf::Arena::CreateMessage<proto::gradido::GradidoBlock>(*mProtobufArenaMemory);
+
 			if (!mProtoGradidoBlock->ParseFromArray(serializedGradidoBlock->data(), serializedGradidoBlock->size())) {
 				throw ProtobufParseException(serializedGradidoBlock->data());
 			}
-			mGradidoTransaction = new GradidoTransaction(mProtoGradidoBlock->mutable_transaction());
+			mGradidoTransaction = new GradidoTransaction(mProtoGradidoBlock->mutable_transaction(), mProtobufArenaMemory);
 		}
 
 		GradidoBlock::GradidoBlock(std::unique_ptr<GradidoTransaction> transaction)
 			: mGradidoTransaction(transaction.release())
 		{
-			mProtoGradidoBlock = new proto::gradido::GradidoBlock;
-			mProtoGradidoBlock->set_allocated_transaction(mGradidoTransaction->getProto());
+			mProtobufArenaMemory = transaction->getProtobufArena();
+			mProtoGradidoBlock = google::protobuf::Arena::CreateMessage<proto::gradido::GradidoBlock>(*mProtobufArenaMemory);
+			auto gradidoTransactionProto = mGradidoTransaction->getProto();
+			mProtoGradidoBlock->unsafe_arena_set_allocated_transaction(mGradidoTransaction->getProto());
 		}
 
 		GradidoBlock::~GradidoBlock()
 		{
-			if (mGradidoTransaction) {
-				delete mGradidoTransaction;
-			}
-			if (mProtoGradidoBlock) {
-				delete mProtoGradidoBlock;
-			}
+			// proto memory will be released automatic with arena memory
+			mGradidoTransaction = nullptr;
+			mProtoGradidoBlock = nullptr;
 		}
 
 		Poco::SharedPtr<GradidoBlock> GradidoBlock::create(std::unique_ptr<GradidoTransaction> transaction, uint64_t id, int64_t received, const MemoryBin* messageId)
@@ -145,7 +147,7 @@ namespace model {
 			std::string* resultString(new std::string(size, 0));
 			if (!mProtoGradidoBlock->SerializeToString(resultString)) {
 				//addError(new Error("TransactionCreation::getBodyBytes", "error serializing string"));
-				throw ProtobufSerializationException(*mProtoGradidoBlock);
+				throw ProtobufSerializationException(mProtoGradidoBlock);
 			}
 			std::unique_ptr<std::string> result;
 			result.reset(resultString);

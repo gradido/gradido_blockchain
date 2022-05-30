@@ -8,11 +8,11 @@
 class GRADIDOBLOCKCHAIN_EXPORT ProtobufSerializationException : public GradidoBlockchainException
 {
 public:
-	explicit ProtobufSerializationException(const char* what, const google::protobuf::Message& message) noexcept;
-	explicit ProtobufSerializationException(const google::protobuf::Message& message) noexcept;
+	explicit ProtobufSerializationException(const char* what, const google::protobuf::Message* message) noexcept;
+	explicit ProtobufSerializationException(const google::protobuf::Message* message) noexcept;
 	std::string getFullString() const noexcept;
 protected:
-	const google::protobuf::Message& mMessage;
+	const google::protobuf::Message* mMessage;
 	
 };
 
