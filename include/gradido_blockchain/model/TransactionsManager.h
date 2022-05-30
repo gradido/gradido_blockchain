@@ -16,7 +16,7 @@ namespace model {
 		Not optimized for unlimited transactions, mostly used for testing, debugging and performance tests
 	*/
 
-	class TransactionsManager : protected MultithreadContainer
+	class GRADIDOBLOCKCHAIN_EXPORT TransactionsManager : protected MultithreadContainer
 	{
 	public:
 		typedef std::list<std::shared_ptr<model::gradido::GradidoTransaction>> TransactionList;
