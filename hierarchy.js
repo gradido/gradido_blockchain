@@ -22,7 +22,9 @@ var hierarchy =
         [ "JsonRequestHandlerJwt", "class_json_request_handler_jwt.html", null ]
       ] ]
     ] ],
-    [ "model::IGradidoBlockchain", "classmodel_1_1_i_gradido_blockchain.html", null ],
+    [ "model::IGradidoBlockchain", "classmodel_1_1_i_gradido_blockchain.html", [
+      [ "model::TransactionsManagerBlockchain", "classmodel_1_1_transactions_manager_blockchain.html", null ]
+    ] ],
     [ "KeyPairEd25519", "class_key_pair_ed25519.html", null ],
     [ "MathMemory", "class_math_memory.html", null ],
     [ "MemoryBin", "class_memory_bin.html", null ],

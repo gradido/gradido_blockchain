@@ -34,7 +34,8 @@ var annotated_dup =
       ] ],
       [ "IGradidoBlockchain", "classmodel_1_1_i_gradido_blockchain.html", null ],
       [ "TransactionEntry", "classmodel_1_1_transaction_entry.html", "classmodel_1_1_transaction_entry" ],
-      [ "TransactionsManager", "classmodel_1_1_transactions_manager.html", "classmodel_1_1_transactions_manager" ]
+      [ "TransactionsManager", "classmodel_1_1_transactions_manager.html", "classmodel_1_1_transactions_manager" ],
+      [ "TransactionsManagerBlockchain", "classmodel_1_1_transactions_manager_blockchain.html", null ]
     ] ],
     [ "SealedBoxes", null, [
       [ "DecryptException", "class_sealed_boxes_1_1_decrypt_exception.html", null ]

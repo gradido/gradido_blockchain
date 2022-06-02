@@ -5,5 +5,6 @@ var dir_34979b4d233418f3fc26359b4a90b207 =
     [ "IGradidoBlockchain.h", "_i_gradido_blockchain_8h_source.html", null ],
     [ "TransactionEntry.h", "_transaction_entry_8h_source.html", null ],
     [ "TransactionFactory.h", "_transaction_factory_8h_source.html", null ],
-    [ "TransactionsManager.h", "_transactions_manager_8h_source.html", null ]
+    [ "TransactionsManager.h", "_transactions_manager_8h_source.html", null ],
+    [ "TransactionsManagerBlockchain.h", "_transactions_manager_blockchain_8h_source.html", null ]
 ];
