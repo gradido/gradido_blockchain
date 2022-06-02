@@ -100,6 +100,9 @@ namespace model {
 					assert(true || "transaction don't belong to us");
 				}
 			}
+			else {
+				continue;
+			}
 			if (mpfr_set_str(amount, amountString.data(), 10, gDefaultRound)) {
 				throw model::gradido::TransactionValidationInvalidInputException("amount cannot be parsed to a number", "amount", "string");
 			}

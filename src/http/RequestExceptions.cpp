@@ -100,7 +100,12 @@ RequestResponseErrorException& RequestResponseErrorException::setDetails(const r
 		for (auto it = details.MemberBegin(); it != details.MemberEnd(); it++) {
 			mErrorDetails += it->name.GetString();
 			mErrorDetails += ": ";
-			mErrorDetails += it->value.GetString();
+			if (it->value.IsString()) {
+				mErrorDetails += it->value.GetString();
+			}
+			else {
+				mErrorDetails += "<not a string>";
+			}
 			mErrorDetails += "\n";
 		}
 	}

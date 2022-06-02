@@ -142,7 +142,7 @@ namespace model {
 				mm->releaseMathMemory(sum);
 				mm->releaseMathMemory(amount);
 			}
-
+			// TODO: check if signer belongs to blockchain
 			if ((level & TRANSACTION_VALIDATION_CONNECTED_GROUP) == TRANSACTION_VALIDATION_CONNECTED_GROUP) {
 				assert(blockchain);
 				auto addressType = blockchain->getAddressType(getRecipientPublicKeyString());
