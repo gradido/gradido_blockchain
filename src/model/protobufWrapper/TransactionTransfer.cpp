@@ -105,7 +105,8 @@ namespace model {
 			{
 				assert(blockchain);
 				assert(parentGradidoBlock);
-				auto finalBalanceTransaction = blockchain->calculateAddressBalance(getSenderPublicKeyString(), getCoinGroupId(), parentGradidoBlock->getReceivedAsTimestamp());
+				Poco::DateTime receivedDate = parentGradidoBlock->getReceivedAsTimestamp() - Poco::Timespan(1, 0);
+				auto finalBalanceTransaction = blockchain->calculateAddressBalance(getSenderPublicKeyString(), getCoinGroupId(), receivedDate);
 				auto finalBalance = MathMemory::create();
 				mpfr_swap(finalBalanceTransaction, finalBalance->getData());
 				mm->releaseMathMemory(finalBalanceTransaction);
