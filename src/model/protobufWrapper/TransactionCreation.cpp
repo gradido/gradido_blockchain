@@ -158,11 +158,17 @@ namespace model {
 		{
 			auto target_date = Poco::DateTime(DataTypeConverter::convertFromProtoTimestampSeconds(mProtoCreation.target_date()));
 			auto received = Poco::DateTime(Poco::Timestamp(receivedSeconds * Poco::Timestamp::resolution()));
+			
+			auto targetDateReceivedDistanceMonth = getTargetDateReceivedDistanceMonth(received);
 			//  2021-09-01 02:00:00 | 2021-12-04 01:22:14
 			if (target_date.year() == received.year())
 			{
-				if (target_date.month() + 2 < received.month()) {
-					throw TransactionValidationInvalidInputException("year is the same, target date month is more than 2 month in past", "target_date", "date time");
+				if (target_date.month() + targetDateReceivedDistanceMonth < received.month()) {
+					std::string errorMessage = 
+						"year is the same, target date month is more than " 
+						+ std::to_string(targetDateReceivedDistanceMonth)
+						+ " month in past";
+					throw TransactionValidationInvalidInputException(errorMessage.data(), "target_date", "date time");
 				}
 				if (target_date.month() > received.month()) {
 					throw TransactionValidationInvalidInputException("year is the same, target date month is in future", "target_date", "date time");
@@ -179,8 +185,12 @@ namespace model {
 			else
 			{
 				// target_date.year +1 == now.year
-				if (target_date.month() + 2 < received.month() + 12) {
-					throw TransactionValidationInvalidInputException("target date is more than 2 month in past", "target_date", "date time");
+				if (target_date.month() + targetDateReceivedDistanceMonth < received.month() + 12) {
+					std::string errorMessage =
+						"target date month is more than "
+						+ std::to_string(targetDateReceivedDistanceMonth)
+						+ " month in past";
+					throw TransactionValidationInvalidInputException(errorMessage.data(), "target_date", "date time");
 				}
 			}
 			return true;
@@ -253,6 +263,19 @@ namespace model {
 			result += "creation: " + getAmount() + " GDD, target: " + targetDateString + "\n";
 			result += "to:   " + DataTypeConverter::binToHex(getRecipientPublicKeyString()) + "\n";
 			return std::move(result);
+		}
+
+		int TransactionCreation::getTargetDateReceivedDistanceMonth(Poco::DateTime received)
+		{
+			int targetDateReceivedDistanceMonth = 2;
+			// extra rule from the beginning and testing phase to keep transactions from beginning valid
+			// allow 3 month distance between created and target date between this dates
+			// 1585551913 = Mon Mar 30 2020 07:05:13 GMT+0000
+			// 1641681224 = Sat Jan 08 2022 22:33:44 GMT+0000
+			if (received.timestamp() > 1585551915 * Poco::Timestamp::resolution() && received.timestamp() < 1641681224 * Poco::Timestamp::resolution()) {
+				targetDateReceivedDistanceMonth = 3;
+			}
+			return targetDateReceivedDistanceMonth;
 		}
 
 	}

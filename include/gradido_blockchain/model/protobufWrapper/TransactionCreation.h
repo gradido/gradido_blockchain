@@ -49,6 +49,8 @@ namespace model {
 
 			std::string toDebugString() const;
 
+			static int getTargetDateReceivedDistanceMonth(Poco::DateTime received);
+
 		protected:
 			const proto::gradido::GradidoCreation& mProtoCreation;
 		};
