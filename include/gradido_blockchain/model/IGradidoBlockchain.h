@@ -46,7 +46,6 @@ namespace model {
 		//! \brief Find transactions of account from a specific month.
 		//! \param address User account public key.
 		virtual std::vector<Poco::SharedPtr<model::TransactionEntry>> findTransactions(const std::string& address, int month, int year) = 0;
-		virtual void calculateCreationSum(const std::string& address, int month, int year, Poco::DateTime received, mpfr_ptr sum) = 0;
 		virtual const std::string& getGroupId() const = 0;
 
 	protected:
