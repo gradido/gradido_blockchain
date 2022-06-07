@@ -44,6 +44,7 @@ namespace model {
 			sharedTransaction->getTransactionBody()->getCreated(), 
 			sharedTransaction 
 		});
+		groupTransactionsIt->second.dirty = true;
 		auto involvedAddresses = sharedTransaction->getTransactionBody()->getTransactionBase()->getInvolvedAddresses();
 		for (auto it = involvedAddresses.begin(); it != involvedAddresses.end(); it++) {
 			auto pubkeyHex = (*it)->convertToHex().get()->substr(0,64);
@@ -265,16 +266,21 @@ namespace model {
 
 	TransactionsManager::TransactionList TransactionsManager::getSortedTransactions(const std::string& groupAlias)
 	{
+		std::scoped_lock _lock(mWorkMutex);
 		auto itGroup = mAllTransactions.find(groupAlias);
 		if (itGroup == mAllTransactions.end()) {
 			throw GroupNotFoundException("[TransactionsManager::getSortedTransactionsForUser]", groupAlias);
 		}
-		TransactionList resultList;
-
+		
 		auto transactionsByReceived = &itGroup->second.transactionsByReceived;
-		for (auto it = transactionsByReceived->begin(); it != transactionsByReceived->end(); it++) {
-			resultList.push_back(it->second);			
+		if (itGroup->second.dirty) {
+			itGroup->second.sortedTransactions.clear();
+			for (auto it = transactionsByReceived->begin(); it != transactionsByReceived->end(); it++) {
+				itGroup->second.sortedTransactions.push_back(it->second);
+			}
+			itGroup->second.dirty = false;
 		}
+		TransactionList resultList(itGroup->second.sortedTransactions);
 		return std::move(resultList);
 	}
 

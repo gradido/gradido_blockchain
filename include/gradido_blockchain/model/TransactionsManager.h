@@ -82,10 +82,14 @@ namespace model {
 		// TODO: maybe we need a move constructor and to block copy constructor
 		struct GroupTransactions
 		{
+			GroupTransactions() : dirty(true) {}
 			//! key is pubkey hex
 			std::map<std::string, TransactionList> transactionsByPubkey;
 			//! key is transaction received date
 			std::multimap<Poco::DateTime, std::shared_ptr<model::gradido::GradidoTransaction>> transactionsByReceived;
+			// cache of sorted transactions because traversing multimap shows on profiling as relatively slow
+			bool dirty;
+			TransactionList sortedTransactions;
 		};
 		//! contain all transactions
 		//! first key is group alias
