@@ -13,6 +13,7 @@ namespace model {
 	{
 	public:
 		TransactionsManagerBlockchain(const std::string& groupAlias);
+		~TransactionsManagerBlockchain();
 
 		//! \param startTransactionNr only used on ascending order
 		std::vector<Poco::SharedPtr<TransactionEntry>> searchTransactions(

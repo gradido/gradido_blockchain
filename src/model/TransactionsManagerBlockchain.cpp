@@ -9,6 +9,11 @@ namespace model {
 
 	}
 
+	TransactionsManagerBlockchain::~TransactionsManagerBlockchain()
+	{
+
+	}
+
 	std::vector<Poco::SharedPtr<TransactionEntry>> TransactionsManagerBlockchain::searchTransactions(
 		uint64_t startTransactionNr/* = 0*/,
 		std::function<FilterResult(model::TransactionEntry*)> filter/* = nullptr*/,
