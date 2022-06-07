@@ -41,8 +41,11 @@ namespace model {
 
 		GradidoBlock::~GradidoBlock()
 		{
+			if (mGradidoTransaction) {
+				delete mGradidoTransaction;
+				mGradidoTransaction = nullptr;
+			}
 			// proto memory will be released automatic with arena memory
-			mGradidoTransaction = nullptr;
 			mProtoGradidoBlock = nullptr;
 		}
 

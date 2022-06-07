@@ -300,9 +300,10 @@ google::protobuf::Arena* MemoryManager::getProtobufArenaMemory()
 	}
 	else {
 		arena = new google::protobuf::Arena;
+		//printf("new arena memory, active: %d\n", mActiveProtobufArenas.size());
 	}
 	if (!mActiveProtobufArenas.insert(arena).second) {
-		assert(false && "[MemoryManager::getProtobufArenaMemory] try to return mathe memory already in use");
+		assert(false && "[MemoryManager::getProtobufArenaMemory] try to return protobuf memory already in use");
 	}
 
 	return arena;
@@ -316,6 +317,7 @@ void MemoryManager::releaseMemory(google::protobuf::Arena* memory)
 	if (!mActiveProtobufArenas.erase(memory)) {
 		assert(false && "[MemoryManager::releaseMemory] try to remove protobuf arena memory already removed");
 	}
+	printf("release arena memory, active: %d\n", mActiveProtobufArenas.size());
 }
 
 
