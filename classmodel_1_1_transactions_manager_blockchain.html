@@ -87,6 +87,7 @@ $(document).ready(function(){initNavTree('classmodel_1_1_transactions_manager_bl
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classmodel_1_1_transactions_manager_blockchain-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">model::TransactionsManagerBlockchain Class Reference</div></div>
@@ -121,8 +122,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a3ed72b1ecee371e7fb8363535aa76014"><td class="memItemLeft" align="right" valign="top"><a id="a3ed72b1ecee371e7fb8363535aa76014" name="a3ed72b1ecee371e7fb8363535aa76014"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>TransactionsManagerBlockchain</b> (const std::string &amp;groupAlias)</td></tr>
 <tr class="separator:a3ed72b1ecee371e7fb8363535aa76014"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a34677484cc0b28c2ba073d8b6eacfa96"><td class="memItemLeft" align="right" valign="top">std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_transactions_manager_blockchain.html#a34677484cc0b28c2ba073d8b6eacfa96">getAllTransactions</a> (std::function&lt; bool(<a class="el" href="classmodel_1_1_transaction_entry.html">model::TransactionEntry</a> *)&gt; filter=nullptr)</td></tr>
-<tr class="separator:a34677484cc0b28c2ba073d8b6eacfa96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a937dfd48698696995b92f12446057b55"><td class="memItemLeft" align="right" valign="top">std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_transactions_manager_blockchain.html#a937dfd48698696995b92f12446057b55">searchTransactions</a> (uint64_t startTransactionNr=0, std::function&lt; <a class="el" href="classmodel_1_1_i_gradido_blockchain.html#af20b4dbd5c36c385c2b3dd98053ff9a8">FilterResult</a>(<a class="el" href="classmodel_1_1_transaction_entry.html">model::TransactionEntry</a> *)&gt; filter=nullptr, <a class="el" href="classmodel_1_1_i_gradido_blockchain.html#ac7fe3ddbc6c0d1d3d704c1474de7d305">SearchDirection</a> order=<a class="el" href="classmodel_1_1_i_gradido_blockchain.html#ac7fe3ddbc6c0d1d3d704c1474de7d305ac6e421eaad140c1bc1a39980502df80c">SearchDirection::ASC</a>)</td></tr>
+<tr class="separator:a937dfd48698696995b92f12446057b55"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5525ea32ea1988b944d6a991154db402"><td class="memItemLeft" align="right" valign="top">Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1gradido_1_1_gradido_block.html">gradido::GradidoBlock</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_transactions_manager_blockchain.html#a5525ea32ea1988b944d6a991154db402">getLastTransaction</a> (std::function&lt; bool(const <a class="el" href="classmodel_1_1gradido_1_1_gradido_block.html">gradido::GradidoBlock</a> *)&gt; filter=nullptr)</td></tr>
 <tr class="separator:a5525ea32ea1988b944d6a991154db402"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab55ec8132206945893085675159c40da"><td class="memItemLeft" align="right" valign="top">mpfr_ptr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_transactions_manager_blockchain.html#ab55ec8132206945893085675159c40da">calculateAddressBalance</a> (const std::string &amp;address, const std::string &amp;groupId, Poco::DateTime date)</td></tr>
@@ -135,13 +136,15 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a97077ee85d19cd65e82e73b7d5b73a48"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a554df3a23d17c39f80d5bef771bd99aa"><td class="memItemLeft" align="right" valign="top">Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_transactions_manager_blockchain.html#a554df3a23d17c39f80d5bef771bd99aa">findByMessageId</a> (const <a class="el" href="class_memory_bin.html">MemoryBin</a> *messageId, bool cachedOnly=true)</td></tr>
 <tr class="separator:a554df3a23d17c39f80d5bef771bd99aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7baf7bb80754941f56e41751eeff9eaa"><td class="memItemLeft" align="right" valign="top">std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">model::TransactionEntry</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_transactions_manager_blockchain.html#a7baf7bb80754941f56e41751eeff9eaa">findTransactions</a> (const std::string &amp;address, int month, int year)</td></tr>
+<tr class="memdesc:a7baf7bb80754941f56e41751eeff9eaa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find transactions of account from a specific month.  <a href="classmodel_1_1_transactions_manager_blockchain.html#a7baf7bb80754941f56e41751eeff9eaa">More...</a><br /></td></tr>
+<tr class="separator:a7baf7bb80754941f56e41751eeff9eaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a860c76b39e1281adbfcf6d2fa8ec0393"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_transactions_manager_blockchain.html#a860c76b39e1281adbfcf6d2fa8ec0393">calculateCreationSum</a> (const std::string &amp;address, int month, int year, Poco::DateTime received, mpfr_ptr sum)</td></tr>
 <tr class="separator:a860c76b39e1281adbfcf6d2fa8ec0393"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a791da7872ddcdf72b719cbf2a6dc05f3"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_transactions_manager_blockchain.html#a791da7872ddcdf72b719cbf2a6dc05f3">getGroupId</a> () const</td></tr>
 <tr class="separator:a791da7872ddcdf72b719cbf2a6dc05f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab2032f879be423213304dd55d2ea1b6d"><td class="memItemLeft" align="right" valign="top"><a id="ab2032f879be423213304dd55d2ea1b6d" name="ab2032f879be423213304dd55d2ea1b6d"></a>
-virtual std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getAllTransactions</b> (std::function&lt; bool(<a class="el" href="classmodel_1_1_transaction_entry.html">model::TransactionEntry</a> *)&gt; filter=nullptr)=0</td></tr>
-<tr class="separator:ab2032f879be423213304dd55d2ea1b6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86e2093111b2aeb6aa8c71cf8518f96f"><td class="memItemLeft" align="right" valign="top">virtual std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_i_gradido_blockchain.html#a86e2093111b2aeb6aa8c71cf8518f96f">searchTransactions</a> (uint64_t startTransactionNr=0, std::function&lt; <a class="el" href="classmodel_1_1_i_gradido_blockchain.html#af20b4dbd5c36c385c2b3dd98053ff9a8">FilterResult</a>(<a class="el" href="classmodel_1_1_transaction_entry.html">model::TransactionEntry</a> *)&gt; filter=nullptr, <a class="el" href="classmodel_1_1_i_gradido_blockchain.html#ac7fe3ddbc6c0d1d3d704c1474de7d305">SearchDirection</a> order=<a class="el" href="classmodel_1_1_i_gradido_blockchain.html#ac7fe3ddbc6c0d1d3d704c1474de7d305ac6e421eaad140c1bc1a39980502df80c">SearchDirection::ASC</a>)=0</td></tr>
+<tr class="separator:a86e2093111b2aeb6aa8c71cf8518f96f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa21f68c906eb5a6c17521d3c002bf171"><td class="memItemLeft" align="right" valign="top"><a id="aa21f68c906eb5a6c17521d3c002bf171" name="aa21f68c906eb5a6c17521d3c002bf171"></a>
 virtual Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1gradido_1_1_gradido_block.html">gradido::GradidoBlock</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getLastTransaction</b> (std::function&lt; bool(const <a class="el" href="classmodel_1_1gradido_1_1_gradido_block.html">gradido::GradidoBlock</a> *)&gt; filter=nullptr)=0</td></tr>
 <tr class="separator:aa21f68c906eb5a6c17521d3c002bf171"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -160,6 +163,9 @@ virtual Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry
 <tr class="memitem:a6d1860a1f3c98ba6e1982506b1538c55"><td class="memItemLeft" align="right" valign="top"><a id="a6d1860a1f3c98ba6e1982506b1538c55" name="a6d1860a1f3c98ba6e1982506b1538c55"></a>
 virtual Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>findByMessageId</b> (const <a class="el" href="class_memory_bin.html">MemoryBin</a> *messageId, bool cachedOnly=true)=0</td></tr>
 <tr class="separator:a6d1860a1f3c98ba6e1982506b1538c55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59296be26401bdde5e773ffbc35ddef9"><td class="memItemLeft" align="right" valign="top">virtual std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">model::TransactionEntry</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_i_gradido_blockchain.html#a59296be26401bdde5e773ffbc35ddef9">findTransactions</a> (const std::string &amp;address, int month, int year)=0</td></tr>
+<tr class="memdesc:a59296be26401bdde5e773ffbc35ddef9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find transactions of account from a specific month.  <a href="classmodel_1_1_i_gradido_blockchain.html#a59296be26401bdde5e773ffbc35ddef9">More...</a><br /></td></tr>
+<tr class="separator:a59296be26401bdde5e773ffbc35ddef9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8bc1ee55ae828889705d0cb50f7a0f22"><td class="memItemLeft" align="right" valign="top"><a id="a8bc1ee55ae828889705d0cb50f7a0f22" name="a8bc1ee55ae828889705d0cb50f7a0f22"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>calculateCreationSum</b> (const std::string &amp;address, int month, int year, Poco::DateTime received, mpfr_ptr sum)=0</td></tr>
 <tr class="separator:a8bc1ee55ae828889705d0cb50f7a0f22"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -167,11 +173,30 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>calculateCrea
 virtual const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getGroupId</b> () const =0</td></tr>
 <tr class="separator:a442bde370237984949cc2b5345eb458d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-methods" name="pro-static-methods"></a>
+Static Protected Member Functions</h2></td></tr>
+<tr class="memitem:a8ffc5920bd4ad640cfb978f773dde5eb"><td class="memItemLeft" align="right" valign="top"><a id="a8ffc5920bd4ad640cfb978f773dde5eb" name="a8ffc5920bd4ad640cfb978f773dde5eb"></a>
+static Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1gradido_1_1_gradido_block.html">model::gradido::GradidoBlock</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>createBlockFromTransaction</b> (std::shared_ptr&lt; <a class="el" href="classmodel_1_1gradido_1_1_gradido_transaction.html">model::gradido::GradidoTransaction</a> &gt; transaction, uint64_t transactionNr)</td></tr>
+<tr class="separator:a8ffc5920bd4ad640cfb978f773dde5eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:a7be31ebb02b3816293e87a99393c3d98"><td class="memItemLeft" align="right" valign="top"><a id="a7be31ebb02b3816293e87a99393c3d98" name="a7be31ebb02b3816293e87a99393c3d98"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>mGroupAlias</b></td></tr>
 <tr class="separator:a7be31ebb02b3816293e87a99393c3d98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="inherited" name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pub_types_classmodel_1_1_i_gradido_blockchain"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classmodel_1_1_i_gradido_blockchain')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classmodel_1_1_i_gradido_blockchain.html">model::IGradidoBlockchain</a></td></tr>
+<tr class="memitem:af20b4dbd5c36c385c2b3dd98053ff9a8 inherit pub_types_classmodel_1_1_i_gradido_blockchain"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_i_gradido_blockchain.html#af20b4dbd5c36c385c2b3dd98053ff9a8">FilterResult</a> : uint8_t { <a class="el" href="classmodel_1_1_i_gradido_blockchain.html#af20b4dbd5c36c385c2b3dd98053ff9a8a7dc33953b23388ad93a4db20e33d26e4">USE</a> = 1
+, <a class="el" href="classmodel_1_1_i_gradido_blockchain.html#af20b4dbd5c36c385c2b3dd98053ff9a8a152bb1f283844ecaab86a72e4877052c">DISMISS</a> = 2
+, <a class="el" href="classmodel_1_1_i_gradido_blockchain.html#af20b4dbd5c36c385c2b3dd98053ff9a8a615a46af313786fc4e349f34118be111">STOP</a> = 4
+ }</td></tr>
+<tr class="separator:af20b4dbd5c36c385c2b3dd98053ff9a8 inherit pub_types_classmodel_1_1_i_gradido_blockchain"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac7fe3ddbc6c0d1d3d704c1474de7d305 inherit pub_types_classmodel_1_1_i_gradido_blockchain"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_i_gradido_blockchain.html#ac7fe3ddbc6c0d1d3d704c1474de7d305">SearchDirection</a> : uint8_t { <a class="el" href="classmodel_1_1_i_gradido_blockchain.html#ac7fe3ddbc6c0d1d3d704c1474de7d305ac6e421eaad140c1bc1a39980502df80c">ASC</a>
+, <a class="el" href="classmodel_1_1_i_gradido_blockchain.html#ac7fe3ddbc6c0d1d3d704c1474de7d305a65a6d757dbb571ccc3af9706e9a5f607">DESC</a>
+ }</td></tr>
+<tr class="separator:ac7fe3ddbc6c0d1d3d704c1474de7d305 inherit pub_types_classmodel_1_1_i_gradido_blockchain"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >helper class for using transactions manager as blockchain in transactions validation </p>
@@ -354,6 +379,58 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>mGroupAlias</b
 
 </div>
 </div>
+<a id="a7baf7bb80754941f56e41751eeff9eaa" name="a7baf7bb80754941f56e41751eeff9eaa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7baf7bb80754941f56e41751eeff9eaa">&#9670;&nbsp;</a></span>findTransactions()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">model::TransactionEntry</a> &gt; &gt; model::TransactionsManagerBlockchain::findTransactions </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>address</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>month</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>year</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Find transactions of account from a specific month. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">address</td><td>User account public key. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implements <a class="el" href="classmodel_1_1_i_gradido_blockchain.html#a59296be26401bdde5e773ffbc35ddef9">model::IGradidoBlockchain</a>.</p>
+
+</div>
+</div>
 <a id="a4ad3afc45d07f026c69f30d9e08fa3e0" name="a4ad3afc45d07f026c69f30d9e08fa3e0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4ad3afc45d07f026c69f30d9e08fa3e0">&#9670;&nbsp;</a></span>getAddressType()</h2>
 
@@ -368,34 +445,6 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>mGroupAlias</b
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
           <td class="paramname"><em>address</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Implements <a class="el" href="classmodel_1_1_i_gradido_blockchain.html">model::IGradidoBlockchain</a>.</p>
-
-</div>
-</div>
-<a id="a34677484cc0b28c2ba073d8b6eacfa96" name="a34677484cc0b28c2ba073d8b6eacfa96"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a34677484cc0b28c2ba073d8b6eacfa96">&#9670;&nbsp;</a></span>getAllTransactions()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt; &gt; model::TransactionsManagerBlockchain::getAllTransactions </td>
-          <td>(</td>
-          <td class="paramtype">std::function&lt; bool(<a class="el" href="classmodel_1_1_transaction_entry.html">model::TransactionEntry</a> *)&gt;&#160;</td>
-          <td class="paramname"><em>filter</em> = <code>nullptr</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -488,6 +537,56 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>mGroupAlias</b
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Implements <a class="el" href="classmodel_1_1_i_gradido_blockchain.html">model::IGradidoBlockchain</a>.</p>
+
+</div>
+</div>
+<a id="a937dfd48698696995b92f12446057b55" name="a937dfd48698696995b92f12446057b55"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a937dfd48698696995b92f12446057b55">&#9670;&nbsp;</a></span>searchTransactions()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt; &gt; model::TransactionsManagerBlockchain::searchTransactions </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>startTransactionNr</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::function&lt; <a class="el" href="classmodel_1_1_i_gradido_blockchain.html#af20b4dbd5c36c385c2b3dd98053ff9a8">FilterResult</a>(<a class="el" href="classmodel_1_1_transaction_entry.html">model::TransactionEntry</a> *)&gt;&#160;</td>
+          <td class="paramname"><em>filter</em> = <code>nullptr</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classmodel_1_1_i_gradido_blockchain.html#ac7fe3ddbc6c0d1d3d704c1474de7d305">SearchDirection</a>&#160;</td>
+          <td class="paramname"><em>order</em> = <code><a class="el" href="classmodel_1_1_i_gradido_blockchain.html#ac7fe3ddbc6c0d1d3d704c1474de7d305ac6e421eaad140c1bc1a39980502df80c">SearchDirection::ASC</a></code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">startTransactionNr</td><td>only used on ascending order </td></tr>
+  </table>
+  </dd>
+</dl>
 
 <p>Implements <a class="el" href="classmodel_1_1_i_gradido_blockchain.html">model::IGradidoBlockchain</a>.</p>
 

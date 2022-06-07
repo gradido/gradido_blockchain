@@ -5,8 +5,10 @@ var searchData=
   ['decryptionfailedexception_2',['DecryptionFailedException',['../class_decryption_failed_exception.html',1,'']]],
   ['defaultexceptionhandler_3',['defaultExceptionHandler',['../class_iota_request.html#a69413a8df5b8bc36ec31e7ae416b7ae3',1,'IotaRequest']]],
   ['deferredtransfer_4',['DeferredTransfer',['../classmodel_1_1gradido_1_1_deferred_transfer.html',1,'model::gradido']]],
-  ['drhashlist_5',['DRHashList',['../class_d_r_hash_list.html',1,'']]],
-  ['drhashlistitem_6',['DRHashListItem',['../class_d_r_hash_list_item.html',1,'']]],
-  ['drmemorylist_7',['DRMemoryList',['../class_d_r_memory_list.html',1,'']]],
-  ['drstatichashlist_8',['DRStaticHashList',['../class_d_r_static_hash_list.html',1,'']]]
+  ['desc_5',['DESC',['../classmodel_1_1_i_gradido_blockchain.html#ac7fe3ddbc6c0d1d3d704c1474de7d305a65a6d757dbb571ccc3af9706e9a5f607',1,'model::IGradidoBlockchain']]],
+  ['dismiss_6',['DISMISS',['../classmodel_1_1_i_gradido_blockchain.html#af20b4dbd5c36c385c2b3dd98053ff9a8a152bb1f283844ecaab86a72e4877052c',1,'model::IGradidoBlockchain']]],
+  ['drhashlist_7',['DRHashList',['../class_d_r_hash_list.html',1,'']]],
+  ['drhashlistitem_8',['DRHashListItem',['../class_d_r_hash_list_item.html',1,'']]],
+  ['drmemorylist_9',['DRMemoryList',['../class_d_r_memory_list.html',1,'']]],
+  ['drstatichashlist_10',['DRStaticHashList',['../class_d_r_static_hash_list.html',1,'']]]
 ];

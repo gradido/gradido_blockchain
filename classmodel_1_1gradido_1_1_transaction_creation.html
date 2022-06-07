@@ -128,6 +128,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>validateTargetDate</b
 <tr class="separator:a983822122667cf07b791b4efdd91c0dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af83441d805c38a2a0a161564dbfb4e73"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="class_memory_bin.html">MemoryBin</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_transaction_creation.html#af83441d805c38a2a0a161564dbfb4e73">getInvolvedAddresses</a> () const</td></tr>
 <tr class="separator:af83441d805c38a2a0a161564dbfb4e73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c01951dd1a0ae004ed7585fb8f3d91e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_transaction_creation.html#a3c01951dd1a0ae004ed7585fb8f3d91e">isInvolved</a> (const std::string pubkeyString) const</td></tr>
+<tr class="separator:a3c01951dd1a0ae004ed7585fb8f3d91e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0afbf56e45d553ba1afa812ccce6cf0e"><td class="memItemLeft" align="right" valign="top"><a id="a0afbf56e45d553ba1afa812ccce6cf0e" name="a0afbf56e45d553ba1afa812ccce6cf0e"></a>
 const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getCoinGroupId</b> () const</td></tr>
 <tr class="separator:a0afbf56e45d553ba1afa812ccce6cf0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -157,6 +159,9 @@ Poco::DateTime&#160;</td><td class="memItemRight" valign="bottom"><b>getTargetDa
 <tr class="separator:a38a9bcc6d3820aa8df468202f9b2eee1 inherit pub_methods_classmodel_1_1gradido_1_1_transaction_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d7cf89b80344abc70c8ccca32c0e08c inherit pub_methods_classmodel_1_1gradido_1_1_transaction_base"><td class="memItemLeft" align="right" valign="top">virtual std::vector&lt; <a class="el" href="class_memory_bin.html">MemoryBin</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html#a3d7cf89b80344abc70c8ccca32c0e08c">getInvolvedAddresses</a> () const =0</td></tr>
 <tr class="separator:a3d7cf89b80344abc70c8ccca32c0e08c inherit pub_methods_classmodel_1_1gradido_1_1_transaction_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af76d9697a569deb83036ce13cc0b2913 inherit pub_methods_classmodel_1_1gradido_1_1_transaction_base"><td class="memItemLeft" align="right" valign="top"><a id="af76d9697a569deb83036ce13cc0b2913" name="af76d9697a569deb83036ce13cc0b2913"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>isInvolved</b> (const std::string pubkeyString) const =0</td></tr>
+<tr class="separator:af76d9697a569deb83036ce13cc0b2913 inherit pub_methods_classmodel_1_1gradido_1_1_transaction_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2c1bb041a141aded140bba57da7e63ca inherit pub_methods_classmodel_1_1gradido_1_1_transaction_base"><td class="memItemLeft" align="right" valign="top"><a id="a2c1bb041a141aded140bba57da7e63ca" name="a2c1bb041a141aded140bba57da7e63ca"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>isBelongToUs</b> (const <a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html">TransactionBase</a> *pairingTransaction) const =0</td></tr>
 <tr class="separator:a2c1bb041a141aded140bba57da7e63ca inherit pub_methods_classmodel_1_1gradido_1_1_transaction_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -191,6 +196,12 @@ const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>ge
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
+<tr class="memitem:ade1c16957a9eb7866708c43fa9fdaad7"><td class="memItemLeft" align="right" valign="top"><a id="ade1c16957a9eb7866708c43fa9fdaad7" name="ade1c16957a9eb7866708c43fa9fdaad7"></a>
+static mpfr_ptr&#160;</td><td class="memItemRight" valign="bottom"><b>calculateCreationSum</b> (const std::string &amp;address, int month, int year, Poco::DateTime received, <a class="el" href="classmodel_1_1_i_gradido_blockchain.html">IGradidoBlockchain</a> *blockchain)</td></tr>
+<tr class="separator:ade1c16957a9eb7866708c43fa9fdaad7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a22f3c31bb5f9795fb514e6d8b6cd7f"><td class="memItemLeft" align="right" valign="top"><a id="a9a22f3c31bb5f9795fb514e6d8b6cd7f" name="a9a22f3c31bb5f9795fb514e6d8b6cd7f"></a>
+static mpfr_ptr&#160;</td><td class="memItemRight" valign="bottom"><b>calculateCreationSumLegacy</b> (const std::string &amp;address, Poco::DateTime received, <a class="el" href="classmodel_1_1_i_gradido_blockchain.html">IGradidoBlockchain</a> *blockchain)</td></tr>
+<tr class="separator:a9a22f3c31bb5f9795fb514e6d8b6cd7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c2a66a638d863edfac6b769ff150d09"><td class="memItemLeft" align="right" valign="top"><a id="a1c2a66a638d863edfac6b769ff150d09" name="a1c2a66a638d863edfac6b769ff150d09"></a>
 static int&#160;</td><td class="memItemRight" valign="bottom"><b>getTargetDateReceivedDistanceMonth</b> (Poco::DateTime received)</td></tr>
 <tr class="separator:a1c2a66a638d863edfac6b769ff150d09"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -271,6 +282,34 @@ std::recursive_mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mWork
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html">TransactionBase</a> *&#160;</td>
           <td class="paramname"><em>pairingTransaction</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Implements <a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html">model::gradido::TransactionBase</a>.</p>
+
+</div>
+</div>
+<a id="a3c01951dd1a0ae004ed7585fb8f3d91e" name="a3c01951dd1a0ae004ed7585fb8f3d91e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c01951dd1a0ae004ed7585fb8f3d91e">&#9670;&nbsp;</a></span>isInvolved()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool model::gradido::TransactionCreation::isInvolved </td>
+          <td>(</td>
+          <td class="paramtype">const std::string&#160;</td>
+          <td class="paramname"><em>pubkeyString</em></td><td>)</td>
           <td> const</td>
         </tr>
       </table>

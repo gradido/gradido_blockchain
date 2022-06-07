@@ -32,10 +32,11 @@ var annotated_dup =
         [ "TransactionValidationRequiredSignMissingException", "classmodel_1_1gradido_1_1_transaction_validation_required_sign_missing_exception.html", null ],
         [ "WrongAddressTypeException", "classmodel_1_1gradido_1_1_wrong_address_type_exception.html", null ]
       ] ],
-      [ "IGradidoBlockchain", "classmodel_1_1_i_gradido_blockchain.html", null ],
+      [ "IGradidoBlockchain", "classmodel_1_1_i_gradido_blockchain.html", "classmodel_1_1_i_gradido_blockchain" ],
       [ "TransactionEntry", "classmodel_1_1_transaction_entry.html", "classmodel_1_1_transaction_entry" ],
+      [ "TransactionsCountException", "classmodel_1_1_transactions_count_exception.html", null ],
       [ "TransactionsManager", "classmodel_1_1_transactions_manager.html", "classmodel_1_1_transactions_manager" ],
-      [ "TransactionsManagerBlockchain", "classmodel_1_1_transactions_manager_blockchain.html", null ]
+      [ "TransactionsManagerBlockchain", "classmodel_1_1_transactions_manager_blockchain.html", "classmodel_1_1_transactions_manager_blockchain" ]
     ] ],
     [ "SealedBoxes", null, [
       [ "DecryptException", "class_sealed_boxes_1_1_decrypt_exception.html", null ]

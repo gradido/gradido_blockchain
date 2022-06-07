@@ -6,8 +6,8 @@ var indexSectionsWithContent =
   3: "t",
   4: "cdfgikopstuv",
   5: "mt",
-  6: "t",
-  7: "t",
+  6: "fst",
+  7: "adstu",
   8: "eg",
   9: "g"
 };

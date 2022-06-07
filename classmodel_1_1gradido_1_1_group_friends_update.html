@@ -122,6 +122,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aaf78fadfa02e983704e3c560d398de63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a24886711163d95e12b8e745629f9d2d1"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="class_memory_bin.html">MemoryBin</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_group_friends_update.html#a24886711163d95e12b8e745629f9d2d1">getInvolvedAddresses</a> () const</td></tr>
 <tr class="separator:a24886711163d95e12b8e745629f9d2d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b0d7e3b2282bf1ca0e156707d79c75a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_group_friends_update.html#a3b0d7e3b2282bf1ca0e156707d79c75a">isInvolved</a> (const std::string pubkeyString) const</td></tr>
+<tr class="separator:a3b0d7e3b2282bf1ca0e156707d79c75a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab973ab986096058e96605f3a2b13e388"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_group_friends_update.html#ab973ab986096058e96605f3a2b13e388">isBelongToUs</a> (const <a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html">TransactionBase</a> *pairingTransaction) const</td></tr>
 <tr class="separator:ab973ab986096058e96605f3a2b13e388"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf189ba10429fb87dd028d6363f747ba"><td class="memItemLeft" align="right" valign="top"><a id="adf189ba10429fb87dd028d6363f747ba" name="adf189ba10429fb87dd028d6363f747ba"></a>
@@ -134,6 +136,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>isColorFusion</b> () 
 <tr class="separator:a38a9bcc6d3820aa8df468202f9b2eee1 inherit pub_methods_classmodel_1_1gradido_1_1_transaction_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d7cf89b80344abc70c8ccca32c0e08c inherit pub_methods_classmodel_1_1gradido_1_1_transaction_base"><td class="memItemLeft" align="right" valign="top">virtual std::vector&lt; <a class="el" href="class_memory_bin.html">MemoryBin</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html#a3d7cf89b80344abc70c8ccca32c0e08c">getInvolvedAddresses</a> () const =0</td></tr>
 <tr class="separator:a3d7cf89b80344abc70c8ccca32c0e08c inherit pub_methods_classmodel_1_1gradido_1_1_transaction_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af76d9697a569deb83036ce13cc0b2913 inherit pub_methods_classmodel_1_1gradido_1_1_transaction_base"><td class="memItemLeft" align="right" valign="top"><a id="af76d9697a569deb83036ce13cc0b2913" name="af76d9697a569deb83036ce13cc0b2913"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>isInvolved</b> (const std::string pubkeyString) const =0</td></tr>
+<tr class="separator:af76d9697a569deb83036ce13cc0b2913 inherit pub_methods_classmodel_1_1gradido_1_1_transaction_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2c1bb041a141aded140bba57da7e63ca inherit pub_methods_classmodel_1_1gradido_1_1_transaction_base"><td class="memItemLeft" align="right" valign="top"><a id="a2c1bb041a141aded140bba57da7e63ca" name="a2c1bb041a141aded140bba57da7e63ca"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>isBelongToUs</b> (const <a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html">TransactionBase</a> *pairingTransaction) const =0</td></tr>
 <tr class="separator:a2c1bb041a141aded140bba57da7e63ca inherit pub_methods_classmodel_1_1gradido_1_1_transaction_base"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -245,6 +250,34 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>amountToString
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html">TransactionBase</a> *&#160;</td>
           <td class="paramname"><em>pairingTransaction</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Implements <a class="el" href="classmodel_1_1gradido_1_1_transaction_base.html">model::gradido::TransactionBase</a>.</p>
+
+</div>
+</div>
+<a id="a3b0d7e3b2282bf1ca0e156707d79c75a" name="a3b0d7e3b2282bf1ca0e156707d79c75a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b0d7e3b2282bf1ca0e156707d79c75a">&#9670;&nbsp;</a></span>isInvolved()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool model::gradido::GroupFriendsUpdate::isInvolved </td>
+          <td>(</td>
+          <td class="paramtype">const std::string&#160;</td>
+          <td class="paramname"><em>pubkeyString</em></td><td>)</td>
           <td> const</td>
         </tr>
       </table>

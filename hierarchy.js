@@ -99,6 +99,7 @@ var hierarchy =
           [ "RequestResponseInvalidJsonException", "class_request_response_invalid_json_exception.html", null ]
         ] ],
         [ "SealedBoxes::DecryptException", "class_sealed_boxes_1_1_decrypt_exception.html", null ],
+        [ "model::TransactionsCountException", "classmodel_1_1_transactions_count_exception.html", null ],
         [ "model::TransactionsManager::AccountInGroupNotFoundException", "classmodel_1_1_transactions_manager_1_1_account_in_group_not_found_exception.html", null ],
         [ "model::TransactionsManager::GroupNotFoundException", "classmodel_1_1_transactions_manager_1_1_group_not_found_exception.html", null ],
         [ "model::TransactionsManager::MissingTransactionNrException", "classmodel_1_1_transactions_manager_1_1_missing_transaction_nr_exception.html", null ],
