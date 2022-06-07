@@ -35,8 +35,22 @@ namespace model {
 			) const;
 
 			bool validateTargetDate(uint64_t receivedSeconds) const;
+			static mpfr_ptr calculateCreationSum(
+				const std::string& address,
+				int month,
+				int year, 
+				Poco::DateTime received,
+				IGradidoBlockchain* blockchain
+			);
+			// use only for transactions before 2019-12-17 14:06:14!
+			static mpfr_ptr calculateCreationSumLegacy(
+				const std::string& address,
+				Poco::DateTime received,
+				IGradidoBlockchain* blockchain
+			);
 
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
+			bool isInvolved(const std::string pubkeyString) const;
 			const std::string& getCoinGroupId() const;
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 

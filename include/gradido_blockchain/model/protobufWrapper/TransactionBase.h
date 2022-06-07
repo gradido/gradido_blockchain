@@ -93,6 +93,7 @@ namespace model {
 				) const = 0;
 			//! \return caller need to clean up memory bins
 			virtual std::vector<MemoryBin*> getInvolvedAddresses() const = 0;
+			virtual bool isInvolved(const std::string pubkeyString) const = 0;
 			virtual bool isBelongToUs(const TransactionBase* pairingTransaction) const = 0;
 	
 			//! \return true if all required signatures are found in signature pairs

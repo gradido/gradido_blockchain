@@ -26,6 +26,10 @@ namespace model {
 		{
 			return {};
 		}
+		bool GroupFriendsUpdate::isInvolved(const std::string pubkeyString) const
+		{
+			return false;
+		}
 
 		bool GroupFriendsUpdate::isBelongToUs(const TransactionBase* pairingTransaction) const
 		{

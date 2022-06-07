@@ -109,12 +109,18 @@ namespace model {
 				auto pubkey = mProtoCreation.recipient().pubkey();
 				auto mm = MemoryManager::getInstance();
 				auto amount = mm->getMathMemory();
-				mpfr_ptr sum = mm->getMathMemory();
 				if (mpfr_set_str(amount, mProtoCreation.recipient().amount().data(), 10, gDefaultRound)) {
 					throw TransactionValidationInvalidInputException("amount cannot be parsed to a number", "amount", "string");
 				}
-
-				blockchain->calculateCreationSum(pubkey, targetDate.month(), targetDate.year(), parentGradidoBlock->getReceivedAsTimestamp(), sum);
+				mpfr_ptr sum;
+				auto received = parentGradidoBlock->getReceivedAsTimestamp();
+				bool legacyTargetDateAlgo = targetDate.timestamp() == received;
+				if (legacyTargetDateAlgo) {
+					sum = calculateCreationSumLegacy(pubkey, received, blockchain);
+				}
+				else {
+					sum = calculateCreationSum(pubkey, targetDate.month(), targetDate.year(), parentGradidoBlock->getReceivedAsTimestamp(), blockchain);
+				}
 				mpfr_add(sum, sum, amount, gDefaultRound);
 
 				auto id = parentGradidoBlock->getID();
@@ -127,13 +133,18 @@ namespace model {
 					mpfr_sub(sum, sum, amount, gDefaultRound);
 				}
 				// TODO: replace with variable, state transaction for group
-				if (mpfr_cmp_si(sum, 1000) > 0) {
+				if (!legacyTargetDateAlgo && mpfr_cmp_si(sum, 1000) > 0 ||
+					legacyTargetDateAlgo && mpfr_cmp_si(sum, 3000) > 0) {
 					//throw TransactionValidationInvalidInputException("creation more than 1.000 GDD per month not allowed", "amount");
 					mpfr_sub(sum, sum, amount, gDefaultRound);
 					std::string alreadyCreatedSum;
 					TransactionBase::amountToString(&alreadyCreatedSum, sum);
+					std::string errorMessage = "creation more than 1.000 GDD per month not allowed";
+					if (legacyTargetDateAlgo) {
+						errorMessage = "creation more than 3.000 GDD in 3 month not allowed";
+					}
 					throw InvalidCreationException(
-						"creation more than 1.000 GDD per month not allowed",
+						errorMessage.data(),
 						targetDate.month(), targetDate.year(),
 						mProtoCreation.recipient().amount(), 
 						alreadyCreatedSum
@@ -196,6 +207,98 @@ namespace model {
 			return true;
 		}
 
+		mpfr_ptr TransactionCreation::calculateCreationSum(
+			const std::string& address,
+			int month,
+			int year,
+			Poco::DateTime received,
+			IGradidoBlockchain* blockchain
+		)
+		{
+			assert(blockchain);
+			std::vector<Poco::SharedPtr<model::TransactionEntry>> allTransactions;
+			// received = max
+			// received - 2 month = min
+			auto monthDiff = model::gradido::TransactionCreation::getTargetDateReceivedDistanceMonth(received);
+			Poco::DateTime searchDate = received;
+			auto mm = MemoryManager::getInstance();
+			for (int i = 0; i < monthDiff + 1; i++) {
+				auto transactions = blockchain->findTransactions(address, searchDate.month(), searchDate.year());
+				// https://stackoverflow.com/questions/201718/concatenating-two-stdvectors
+				allTransactions.insert(
+					allTransactions.end(),
+					std::make_move_iterator(transactions.begin()),
+					std::make_move_iterator(transactions.end())
+				);
+				searchDate -= Poco::Timespan(Poco::DateTime::daysOfMonth(searchDate.year(), searchDate.month()), 0, 0, 0, 0);
+			}
+			//printf("[Group::calculateCreationSum] from group: %s\n", mGroupAlias.data());
+			auto amount = mm->getMathMemory();
+			auto sum = mm->getMathMemory();
+			for (auto it = allTransactions.begin(); it != allTransactions.end(); it++) {
+				auto gradidoBlock = std::make_unique<model::gradido::GradidoBlock>((*it)->getSerializedTransaction());
+				auto body = gradidoBlock->getGradidoTransaction()->getTransactionBody();
+				if (body->getTransactionType() == model::gradido::TRANSACTION_CREATION) {
+					auto creation = body->getCreationTransaction();
+					auto targetDate = creation->getTargetDate();
+					if (targetDate.month() != month || targetDate.year() != year) {
+						continue;
+					}
+					//printf("added from transaction: %d \n", gradidoBlock->getID());
+					mpfr_set_str(amount, creation->getAmount().data(), 10, gDefaultRound);
+					mpfr_add(sum, sum, amount, gDefaultRound);
+				}
+			}
+			mm->releaseMathMemory(amount);
+			return sum;
+		}
+
+		mpfr_ptr TransactionCreation::calculateCreationSumLegacy(
+			const std::string& address,
+			Poco::DateTime received,
+			IGradidoBlockchain* blockchain
+		)
+		{
+			assert(blockchain);
+			// check that is is indeed an old transaction from before 2020-05-03 11:00:07
+			auto fixed = 1588496407 * Poco::Timestamp::resolution();
+			auto receivedT = received.timestamp();
+			bool smallerThan = receivedT < fixed;
+			assert(received.timestamp() < 1588496407 * Poco::Timestamp::resolution());
+			std::vector<Poco::SharedPtr<model::TransactionEntry>> allTransactions;
+			// received = max
+			// received - 2 month = min
+			//auto monthDiff = model::gradido::TransactionCreation::getTargetDateReceivedDistanceMonth(received);
+			int monthDiff = 2;
+			Poco::DateTime searchDate = received;
+			auto mm = MemoryManager::getInstance();
+			for (int i = 0; i < monthDiff + 1; i++) {
+				auto transactions = blockchain->findTransactions(address, searchDate.month(), searchDate.year());
+				// https://stackoverflow.com/questions/201718/concatenating-two-stdvectors
+				allTransactions.insert(
+					allTransactions.end(),
+					std::make_move_iterator(transactions.begin()),
+					std::make_move_iterator(transactions.end())
+				);
+				searchDate -= Poco::Timespan(Poco::DateTime::daysOfMonth(searchDate.year(), searchDate.month()), 0, 0, 0, 0);
+			}
+			//printf("[Group::calculateCreationSum] from group: %s\n", mGroupAlias.data());
+			auto amount = mm->getMathMemory();
+			auto sum = mm->getMathMemory();
+			for (auto it = allTransactions.begin(); it != allTransactions.end(); it++) {
+				auto gradidoBlock = std::make_unique<model::gradido::GradidoBlock>((*it)->getSerializedTransaction());
+				auto body = gradidoBlock->getGradidoTransaction()->getTransactionBody();
+				if (body->getTransactionType() == model::gradido::TRANSACTION_CREATION) {
+					auto creation = body->getCreationTransaction();
+					//printf("added from transaction: %d \n", gradidoBlock->getID());
+					mpfr_set_str(amount, creation->getAmount().data(), 10, gDefaultRound);
+					mpfr_add(sum, sum, amount, gDefaultRound);
+				}
+			}
+			mm->releaseMathMemory(amount);
+			return sum;
+		}
+
 		std::vector<MemoryBin*> TransactionCreation::getInvolvedAddresses() const
 		{
 			auto mm = MemoryManager::getInstance();
@@ -203,6 +306,10 @@ namespace model {
 			auto recipientPubkey = mm->getMemory(recipientPubkeySize);
 			memcpy(*recipientPubkey, mProtoCreation.recipient().pubkey().data(), recipientPubkeySize);
 			return { recipientPubkey };
+		}
+		bool TransactionCreation::isInvolved(const std::string pubkeyString) const
+		{
+			return mProtoCreation.recipient().pubkey() == pubkeyString;
 		}
 
 		const std::string& TransactionCreation::getCoinGroupId() const

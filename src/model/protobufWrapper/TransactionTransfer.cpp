@@ -136,6 +136,14 @@ namespace model {
 			return { senderPubkey, recipientPubkey };
 		}
 
+		bool TransactionTransfer::isInvolved(const std::string pubkeyString) const
+		{
+			return
+				mProtoTransfer.sender().pubkey() == pubkeyString ||
+				mProtoTransfer.recipient() == pubkeyString
+				;
+		}
+
 		const std::string& TransactionTransfer::getCoinGroupId() const
 		{
 			// cannot inline, because this doens't work in dll build

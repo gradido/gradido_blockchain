@@ -35,6 +35,7 @@ namespace model {
 			) const;
 
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
+			bool isInvolved(const std::string pubkeyString) const;
 			const std::string& getCoinGroupId() const;
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 

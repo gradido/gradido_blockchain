@@ -74,6 +74,13 @@ namespace model {
 			}
 			return result;
 		}
+		bool RegisterAddress::isInvolved(const std::string pubkeyString) const
+		{
+			return 
+				mProtoRegisterAddress.user_pubkey() == pubkeyString ||
+				mProtoRegisterAddress.subaccount_pubkey() == pubkeyString
+				;
+		}
 
 		bool RegisterAddress::isBelongToUs(const TransactionBase* pairingTransaction) const
 		{
