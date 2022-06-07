@@ -9,7 +9,7 @@ namespace model {
 		@date 02.06.2022
 		@brief helper class for using transactions manager as blockchain in transactions validation
 	*/
-	class TransactionsManagerBlockchain: public IGradidoBlockchain
+	class GRADIDOBLOCKCHAIN_EXPORT TransactionsManagerBlockchain: public IGradidoBlockchain
 	{
 	public:
 		TransactionsManagerBlockchain(const std::string& groupAlias);
