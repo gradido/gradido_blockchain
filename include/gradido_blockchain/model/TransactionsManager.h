@@ -41,7 +41,7 @@ namespace model {
 
 		TransactionList getSortedTransactionsForUser(const std::string& groupAlias, const std::string& pubkeyHex);
 		// get all transactions from a group sorted by id
-		TransactionList getSortedTransactions(const std::string& groupAlias);
+		const TransactionList& getSortedTransactions(const std::string& groupAlias);
 
 		class GroupNotFoundException : public GradidoBlockchainException
 		{

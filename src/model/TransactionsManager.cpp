@@ -264,7 +264,7 @@ namespace model {
 		return std::move(resultList);
 	}
 
-	TransactionsManager::TransactionList TransactionsManager::getSortedTransactions(const std::string& groupAlias)
+	const TransactionsManager::TransactionList& TransactionsManager::getSortedTransactions(const std::string& groupAlias)
 	{
 		std::scoped_lock _lock(mWorkMutex);
 		auto itGroup = mAllTransactions.find(groupAlias);
@@ -280,8 +280,9 @@ namespace model {
 			}
 			itGroup->second.dirty = false;
 		}
-		TransactionList resultList(itGroup->second.sortedTransactions);
-		return std::move(resultList);
+		return itGroup->second.sortedTransactions;
+		//TransactionList resultList(itGroup->second.sortedTransactions);
+		//return std::move(resultList);
 	}
 
 }

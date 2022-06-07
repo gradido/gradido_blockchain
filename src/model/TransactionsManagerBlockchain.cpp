@@ -21,7 +21,7 @@ namespace model {
 	)
 	{
 		auto tm = TransactionsManager::getInstance();
-		auto transactions = tm->getSortedTransactions(mGroupAlias);
+		const auto& transactions = tm->getSortedTransactions(mGroupAlias);
 		std::vector<Poco::SharedPtr<TransactionEntry>> result;
 		uint64_t transactionNr = 1;
 		if (startTransactionNr > transactions.size()) {
@@ -72,7 +72,7 @@ namespace model {
 	Poco::SharedPtr<gradido::GradidoBlock> TransactionsManagerBlockchain::getLastTransaction(std::function<bool(const gradido::GradidoBlock*)> filter /*= nullptr*/)
 	{
 		auto tm = TransactionsManager::getInstance();
-		auto transactions = tm->getSortedTransactions(mGroupAlias);
+		const auto& transactions = tm->getSortedTransactions(mGroupAlias);
 		auto lastTransaction = transactions.back();
 		return createBlockFromTransaction(lastTransaction, transactions.size());
 	}
