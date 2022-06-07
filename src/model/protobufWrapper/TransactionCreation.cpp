@@ -261,10 +261,10 @@ namespace model {
 		{
 			assert(blockchain);
 			// check that is is indeed an old transaction from before 2020-05-03 11:00:07
-			auto fixed = 1588496407 * Poco::Timestamp::resolution();
+			auto fixed = 1588503607 * Poco::Timestamp::resolution();
 			auto receivedT = received.timestamp();
 			bool smallerThan = receivedT < fixed;
-			assert(received.timestamp() < 1588496407 * Poco::Timestamp::resolution());
+			assert(received.timestamp() < 1588503607 * Poco::Timestamp::resolution());
 			std::vector<Poco::SharedPtr<model::TransactionEntry>> allTransactions;
 			// received = max
 			// received - 2 month = min
