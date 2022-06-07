@@ -103,8 +103,11 @@ RequestResponseErrorException& RequestResponseErrorException::setDetails(const r
 			if (it->value.IsString()) {
 				mErrorDetails += it->value.GetString();
 			}
+			else if (it->value.IsInt()) {
+				mErrorDetails += std::to_string(it->value.GetInt());
+			}
 			else {
-				mErrorDetails += "<not a string>";
+				mErrorDetails += "<not a string or int>";
 			}
 			mErrorDetails += "\n";
 		}

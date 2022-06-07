@@ -114,11 +114,13 @@ namespace model {
 				}
 				mpfr_ptr sum;
 				auto received = parentGradidoBlock->getReceivedAsTimestamp();
-				bool legacyTargetDateAlgo = targetDate.timestamp() == received;
-				if (legacyTargetDateAlgo) {
+				auto creationMaxAlgo = getCorrectCreationMaxAlgo(received);
+				auto targetCreationMaxAlgo = getCorrectCreationMaxAlgo(targetDate);
+				
+				if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo) {
 					sum = calculateCreationSumLegacy(pubkey, received, blockchain);
 				}
-				else {
+				else if(CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo) {
 					sum = calculateCreationSum(pubkey, targetDate.month(), targetDate.year(), parentGradidoBlock->getReceivedAsTimestamp(), blockchain);
 				}
 				mpfr_add(sum, sum, amount, gDefaultRound);
@@ -132,15 +134,50 @@ namespace model {
 					// this transaction was already added to blockchain and therefor also added in calculateCreationSum
 					mpfr_sub(sum, sum, amount, gDefaultRound);
 				}
+				// first max creation check algo
+				if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo && mpfr_cmp_si(sum, 3000) > 0) {
+					mpfr_sub(sum, sum, amount, gDefaultRound);
+					std::string alreadyCreatedSum;
+					TransactionBase::amountToString(&alreadyCreatedSum, sum);
+					throw InvalidCreationException(
+						"creation more than 3.000 GDD in 3 month not allowed",
+						targetDate.month(), targetDate.year(),
+						mProtoCreation.recipient().amount(),
+						alreadyCreatedSum
+					);
+				}
+				// first and second max creation check algo together (transitional phase)
+				/*else if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo &&
+						 CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == targetCreationMaxAlgo) {
+					auto sum2 = calculateCreationSumLegacy(pubkey, targetDate, blockchain);
+					std::string temp;
+					TransactionBase::amountToString(&temp, sum2);
+					//printf("")
+					mm->releaseMathMemory(sum2);
+
+				}*/
+				// second max creation check algo 
+				else if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo && mpfr_cmp_si(sum, 1000) > 0) {
+					mpfr_sub(sum, sum, amount, gDefaultRound);
+					std::string alreadyCreatedSum;
+					TransactionBase::amountToString(&alreadyCreatedSum, sum);
+					throw InvalidCreationException(
+						"creation more than 1.000 GDD per month not allowed",
+						targetDate.month(), targetDate.year(),
+						mProtoCreation.recipient().amount(),
+						alreadyCreatedSum
+					);
+				}
+
 				// TODO: replace with variable, state transaction for group
-				if (!legacyTargetDateAlgo && mpfr_cmp_si(sum, 1000) > 0 ||
-					legacyTargetDateAlgo && mpfr_cmp_si(sum, 3000) > 0) {
+				if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo && mpfr_cmp_si(sum, 1000) > 0 ||
+					CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo && mpfr_cmp_si(sum, 3000) > 0) {
 					//throw TransactionValidationInvalidInputException("creation more than 1.000 GDD per month not allowed", "amount");
 					mpfr_sub(sum, sum, amount, gDefaultRound);
 					std::string alreadyCreatedSum;
 					TransactionBase::amountToString(&alreadyCreatedSum, sum);
 					std::string errorMessage = "creation more than 1.000 GDD per month not allowed";
-					if (legacyTargetDateAlgo) {
+					if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo) {
 						errorMessage = "creation more than 3.000 GDD in 3 month not allowed";
 					}
 					throw InvalidCreationException(
@@ -261,10 +298,8 @@ namespace model {
 		{
 			assert(blockchain);
 			// check that is is indeed an old transaction from before Sun May 03 2020 11:00:08 GMT+0000
-			auto fixed = 1588503608 * Poco::Timestamp::resolution();
-			auto receivedT = received.timestamp();
-			bool smallerThan = receivedT < fixed;
-			assert(received.timestamp() < 1588503608 * Poco::Timestamp::resolution());
+			auto algo = getCorrectCreationMaxAlgo(received);
+			assert(CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == algo);
 			std::vector<Poco::SharedPtr<model::TransactionEntry>> allTransactions;
 			// received = max
 			// received - 2 month = min
@@ -383,6 +418,14 @@ namespace model {
 				targetDateReceivedDistanceMonth = 3;
 			}
 			return targetDateReceivedDistanceMonth;
+		}
+
+		TransactionCreation::CreationMaxAlgoVersion TransactionCreation::getCorrectCreationMaxAlgo(Poco::DateTime date)
+		{
+			if (date.timestamp() < 1588503608 * Poco::Timestamp::resolution()) {
+				return CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD;
+			}
+			return CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE;
 		}
 
 	}

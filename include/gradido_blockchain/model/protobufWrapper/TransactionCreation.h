@@ -65,6 +65,12 @@ namespace model {
 
 			static int getTargetDateReceivedDistanceMonth(Poco::DateTime received);
 
+			enum class CreationMaxAlgoVersion : short
+			{
+				v01_THREE_MONTHS_3000_GDD,
+				v02_ONE_MONTH_1000_GDD_TARGET_DATE
+			};
+			static CreationMaxAlgoVersion getCorrectCreationMaxAlgo(Poco::DateTime date);
 		protected:
 			const proto::gradido::GradidoCreation& mProtoCreation;
 		};
