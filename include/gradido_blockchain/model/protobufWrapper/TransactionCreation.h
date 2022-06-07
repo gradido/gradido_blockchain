@@ -42,7 +42,7 @@ namespace model {
 				Poco::DateTime received,
 				IGradidoBlockchain* blockchain
 			);
-			// use only for transactions before 2019-12-17 14:06:14!
+			// use only for transactions before Sun May 03 2020 11:00:08 GMT+0000!
 			static mpfr_ptr calculateCreationSumLegacy(
 				const std::string& address,
 				Poco::DateTime received,

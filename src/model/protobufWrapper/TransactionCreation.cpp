@@ -260,7 +260,7 @@ namespace model {
 		)
 		{
 			assert(blockchain);
-			// check that is is indeed an old transaction from before 2020-05-03 11:00:07
+			// check that is is indeed an old transaction from before Sun May 03 2020 11:00:08 GMT+0000
 			auto fixed = 1588503608 * Poco::Timestamp::resolution();
 			auto receivedT = received.timestamp();
 			bool smallerThan = receivedT < fixed;
