@@ -139,7 +139,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7baf7bb80754941f56e41751eeff9eaa"><td class="memItemLeft" align="right" valign="top">std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">model::TransactionEntry</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_transactions_manager_blockchain.html#a7baf7bb80754941f56e41751eeff9eaa">findTransactions</a> (const std::string &amp;address, int month, int year)</td></tr>
 <tr class="memdesc:a7baf7bb80754941f56e41751eeff9eaa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find transactions of account from a specific month.  <a href="classmodel_1_1_transactions_manager_blockchain.html#a7baf7bb80754941f56e41751eeff9eaa">More...</a><br /></td></tr>
 <tr class="separator:a7baf7bb80754941f56e41751eeff9eaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a860c76b39e1281adbfcf6d2fa8ec0393"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_transactions_manager_blockchain.html#a860c76b39e1281adbfcf6d2fa8ec0393">calculateCreationSum</a> (const std::string &amp;address, int month, int year, Poco::DateTime received, mpfr_ptr sum)</td></tr>
+<tr class="memitem:a860c76b39e1281adbfcf6d2fa8ec0393"><td class="memItemLeft" align="right" valign="top"><a id="a860c76b39e1281adbfcf6d2fa8ec0393" name="a860c76b39e1281adbfcf6d2fa8ec0393"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>calculateCreationSum</b> (const std::string &amp;address, int month, int year, Poco::DateTime received, mpfr_ptr sum)</td></tr>
 <tr class="separator:a860c76b39e1281adbfcf6d2fa8ec0393"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a791da7872ddcdf72b719cbf2a6dc05f3"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_transactions_manager_blockchain.html#a791da7872ddcdf72b719cbf2a6dc05f3">getGroupId</a> () const</td></tr>
 <tr class="separator:a791da7872ddcdf72b719cbf2a6dc05f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -166,9 +167,6 @@ virtual Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry
 <tr class="memitem:a59296be26401bdde5e773ffbc35ddef9"><td class="memItemLeft" align="right" valign="top">virtual std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">model::TransactionEntry</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_i_gradido_blockchain.html#a59296be26401bdde5e773ffbc35ddef9">findTransactions</a> (const std::string &amp;address, int month, int year)=0</td></tr>
 <tr class="memdesc:a59296be26401bdde5e773ffbc35ddef9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find transactions of account from a specific month.  <a href="classmodel_1_1_i_gradido_blockchain.html#a59296be26401bdde5e773ffbc35ddef9">More...</a><br /></td></tr>
 <tr class="separator:a59296be26401bdde5e773ffbc35ddef9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8bc1ee55ae828889705d0cb50f7a0f22"><td class="memItemLeft" align="right" valign="top"><a id="a8bc1ee55ae828889705d0cb50f7a0f22" name="a8bc1ee55ae828889705d0cb50f7a0f22"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>calculateCreationSum</b> (const std::string &amp;address, int month, int year, Poco::DateTime received, mpfr_ptr sum)=0</td></tr>
-<tr class="separator:a8bc1ee55ae828889705d0cb50f7a0f22"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a442bde370237984949cc2b5345eb458d"><td class="memItemLeft" align="right" valign="top"><a id="a442bde370237984949cc2b5345eb458d" name="a442bde370237984949cc2b5345eb458d"></a>
 virtual const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getGroupId</b> () const =0</td></tr>
 <tr class="separator:a442bde370237984949cc2b5345eb458d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -229,62 +227,6 @@ Additional Inherited Members</h2></td></tr>
           <td></td>
           <td class="paramtype">Poco::DateTime&#160;</td>
           <td class="paramname"><em>date</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Implements <a class="el" href="classmodel_1_1_i_gradido_blockchain.html">model::IGradidoBlockchain</a>.</p>
-
-</div>
-</div>
-<a id="a860c76b39e1281adbfcf6d2fa8ec0393" name="a860c76b39e1281adbfcf6d2fa8ec0393"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a860c76b39e1281adbfcf6d2fa8ec0393">&#9670;&nbsp;</a></span>calculateCreationSum()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void model::TransactionsManagerBlockchain::calculateCreationSum </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>address</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>month</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>year</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">Poco::DateTime&#160;</td>
-          <td class="paramname"><em>received</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">mpfr_ptr&#160;</td>
-          <td class="paramname"><em>sum</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
