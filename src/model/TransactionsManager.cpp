@@ -23,6 +23,11 @@ namespace model {
 
 	}
 
+	void TransactionsManager::clear()
+	{
+		mAllTransactions.clear();
+	}
+
 	TransactionsManager* TransactionsManager::getInstance()
 	{
 		static TransactionsManager one;

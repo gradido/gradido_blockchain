@@ -43,11 +43,11 @@ namespace model {
 					result.push_back(transactionEntry);
 				}
 				if (FilterResult::STOP == (filterTransactionResult & FilterResult::STOP)) {
-					return result;
+					return std::move(result);
 				}
 				transactionNr++;
 			}
-			return result;
+			return std::move(result);
 		}
 		else if (SearchDirection::DESC == order) {
 			transactionNr = transactions.size();
@@ -62,11 +62,12 @@ namespace model {
 					result.push_back(transactionEntry);
 				}
 				if (FilterResult::STOP == (filterTransactionResult & FilterResult::STOP)) {
-					return result;
+					return std::move(result);
 				}
 				transactionNr--;
 			}
 		}
+		return std::move(result);
 	}
 
 	Poco::SharedPtr<gradido::GradidoBlock> TransactionsManagerBlockchain::getLastTransaction(std::function<bool(const gradido::GradidoBlock*)> filter /*= nullptr*/)
@@ -116,7 +117,7 @@ namespace model {
 	std::vector<Poco::SharedPtr<model::TransactionEntry>> TransactionsManagerBlockchain::findTransactions(const std::string& address, int month, int year)
 	{
 		//model::TransactionEntry*
-		return searchTransactions(0, [&](model::TransactionEntry* entry) -> FilterResult {
+		return std::move(searchTransactions(0, [&](model::TransactionEntry* entry) -> FilterResult {
 			if (entry->getMonth() == month && entry->getYear() == year) {
 				model::gradido::GradidoBlock block(entry->getSerializedTransaction());
 				auto body = block.getGradidoTransaction()->getTransactionBody();
@@ -129,7 +130,7 @@ namespace model {
 			}			
 			if (entry->getYear() < year) return FilterResult::STOP;
 			if (entry->getYear() == year && entry->getMonth() < month) return FilterResult::STOP;
-		}, SearchDirection::DESC);
+		}, SearchDirection::DESC));
 	}
 	void TransactionsManagerBlockchain::calculateCreationSum(const std::string& address, int month, int year, Poco::DateTime received, mpfr_ptr sum)
 	{

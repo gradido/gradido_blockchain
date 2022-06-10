@@ -127,8 +127,9 @@ namespace model {
 
 				auto id = parentGradidoBlock->getID();
 				int lastId = 0;
-				if (blockchain->getLastTransaction()) {
-					lastId = blockchain->getLastTransaction()->getID();
+				auto lastTransaction = blockchain->getLastTransaction();
+				if (!lastTransaction.isNull()) {
+					lastId = lastTransaction->getID();
 				}
 				if (id <= lastId) {
 					// this transaction was already added to blockchain and therefor also added in calculateCreationSum

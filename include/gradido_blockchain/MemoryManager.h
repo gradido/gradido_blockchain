@@ -86,6 +86,8 @@ public:
 	MemoryBin* getMemory();
 	void releaseMemory(MemoryBin* memory);
 
+	void clear();
+
 protected:
 	std::stack<MemoryBin*> mMemoryBinStack;
 	uint16_t mSize;
@@ -133,6 +135,10 @@ public:
 
 	mpfr_ptr getMathMemory();
 	void releaseMathMemory(mpfr_ptr ptr);
+
+	void clearProtobufMemory();
+	void clearMathMemory();
+	void clearMemory();
 
 protected:
 

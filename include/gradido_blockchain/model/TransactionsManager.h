@@ -24,6 +24,9 @@ namespace model {
 		static TransactionsManager* getInstance();
 		~TransactionsManager();
 
+
+		void clear();
+
 		void pushGradidoTransaction(const std::string& groupAlias, std::unique_ptr<model::gradido::GradidoTransaction> transaction);
 		
 		struct UserBalance
@@ -83,6 +86,14 @@ namespace model {
 		struct GroupTransactions
 		{
 			GroupTransactions() : dirty(true) {}
+			~GroupTransactions() {
+				sortedTransactions.clear();
+				transactionsByReceived.clear();
+				for (auto it = transactionsByPubkey.begin(); it != transactionsByPubkey.end(); it++) {
+					it->second.clear();
+				}
+				transactionsByPubkey.clear();
+			}
 			//! key is pubkey hex
 			std::map<std::string, TransactionList> transactionsByPubkey;
 			//! key is transaction received date

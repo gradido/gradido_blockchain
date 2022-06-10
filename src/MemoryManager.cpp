@@ -132,6 +132,17 @@ void MemoryPageStack::releaseMemory(MemoryBin* memory)
 	mMemoryBinStack.push(memory);
 }
 
+void MemoryPageStack::clear()
+{
+	lock();
+	while (mMemoryBinStack.size() > 0) {
+		MemoryBin* memoryBin = mMemoryBinStack.top();
+		mMemoryBinStack.pop();
+		delete memoryBin;
+	}
+	mSize = 0;
+	unlock();
+}
 
 // ***************** Mathe Memory *************************************************
 MathMemory::MathMemory()
@@ -286,6 +297,34 @@ void MemoryManager::releaseMathMemory(mpfr_ptr ptr)
 	mMpfrPtrStack.push(ptr);
 	if (!mActiveMpfrs.erase(ptr)) {
 		assert(false && "[MemoryManager::getMathMemory] try to remove math memory already removed");
+	}
+}
+
+void MemoryManager::clearProtobufMemory()
+{
+	std::scoped_lock _lock(mProtobufArenaMutex);
+	while (mProtobufArenaStack.size() > 0) {
+		auto arena = mProtobufArenaStack.top();
+		mProtobufArenaStack.pop();
+		delete arena;
+	}
+}
+
+void MemoryManager::clearMathMemory()
+{
+	std::scoped_lock<std::mutex> _lock(mMpfrMutex);
+	while (mMpfrPtrStack.size() > 0) {
+		mpfr_ptr mathMemory = mMpfrPtrStack.top();
+		mMpfrPtrStack.pop();
+		mpfr_clear(mathMemory);
+		delete mathMemory;
+	}
+}
+
+void MemoryManager::clearMemory()
+{
+	for (int i = 0; i < 6; i++) {
+		mMemoryPageStacks[i]->clear();
 	}
 }
 
