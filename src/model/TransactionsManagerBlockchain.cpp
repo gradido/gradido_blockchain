@@ -83,7 +83,7 @@ namespace model {
 		auto mm = MemoryManager::getInstance();
 		auto addressHex = DataTypeConverter::binToHex(address).substr(0, 64);
 		auto balance = tm->calculateUserBalanceUntil(mGroupAlias, addressHex, date);
-		
+
 		auto gdd = mm->getMathMemory();
 		mpfr_set_str(gdd, balance.balance.data(), 10, gDefaultRound);
 
@@ -116,28 +116,34 @@ namespace model {
 	}
 	std::vector<Poco::SharedPtr<model::TransactionEntry>> TransactionsManagerBlockchain::findTransactions(const std::string& address, int month, int year)
 	{
-		//model::TransactionEntry*
-		return std::move(searchTransactions(0, [&](model::TransactionEntry* entry) -> FilterResult {
-			if (entry->getMonth() == month && entry->getYear() == year) {
-				model::gradido::GradidoBlock block(entry->getSerializedTransaction());
-				auto body = block.getGradidoTransaction()->getTransactionBody();
-				if (body->getTransactionBase()->isInvolved(address)) {
-					return FilterResult::USE;
-				}
-				else {
-					return FilterResult::DISMISS;
-				}
-			}			
-			if (entry->getYear() < year) return FilterResult::STOP;
-			if (entry->getYear() == year && entry->getMonth() < month) return FilterResult::STOP;
-		}, SearchDirection::DESC));
+		auto tm = TransactionsManager::getInstance();
+		auto addressHex = DataTypeConverter::binToHex(address).substr(0, 64);
+		auto transactions = tm->getSortedTransactionsForUser(mGroupAlias, addressHex);
+
+		std::vector<Poco::SharedPtr<model::TransactionEntry>> result;
+
+		// TODO: is not current transaction nr, needs update for later use!
+		int transactionNr = transactions.size();
+		for (auto it = transactions.rbegin(); it != transactions.rend(); it++) {
+			auto body = (*it)->getTransactionBody();
+			auto received = body->getCreated();
+			if (received.month() == month && received.year() == year) {
+				auto gradidoBlock = createBlockFromTransaction(*it, transactionNr);
+				Poco::SharedPtr<model::TransactionEntry> transactionEntry = new TransactionEntry(gradidoBlock.get());
+				result.push_back(transactionEntry);
+			}
+			transactionNr--;
+			if (received.year() < year) break;
+			if (received.year() == year && received.month() < month) break;
+		}
+		return std::move(result);
 	}
 	void TransactionsManagerBlockchain::calculateCreationSum(const std::string& address, int month, int year, Poco::DateTime received, mpfr_ptr sum)
 	{
 		auto tm = TransactionsManager::getInstance();
 		auto addressHex = DataTypeConverter::binToHex(address).substr(0, 64);
 		auto transactions = tm->getSortedTransactionsForUser(mGroupAlias, addressHex);
-				
+
 		auto mm = MemoryManager::getInstance();
 		//printf("[Group::calculateCreationSum] from group: %s\n", mGroupAlias.data());
 		auto amount = mm->getMathMemory();
