@@ -18,6 +18,9 @@ namespace model {
 			: mProtoTransactionBody(google::protobuf::Arena::CreateMessage<proto::gradido::TransactionBody>(*arenaMemory)),
 		      mTransactionSpecific(nullptr), mTransactionType(TRANSACTION_NONE), mProtobufArenaMemory(arenaMemory)
 		{
+			if (arenaMemory->getUsedSpace() > 7168) {
+				int zahl = 1;
+			}
 			auto created = mProtoTransactionBody->mutable_created();
 			DataTypeConverter::convertToProtoTimestampSeconds(Poco::Timestamp(), created);
 			mProtoTransactionBody->set_type(proto::gradido::TransactionBody_CrossGroupType_LOCAL);
@@ -34,6 +37,7 @@ namespace model {
 				mTransactionSpecific = nullptr;
 			}
 			unlock();
+			printf("[~TransactionBody]\n");
 		}
 
 		void TransactionBody::setCreated(Poco::DateTime created)

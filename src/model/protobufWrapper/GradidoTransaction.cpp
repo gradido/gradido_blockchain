@@ -13,14 +13,17 @@ using namespace rapidjson;
 namespace model {
 	namespace gradido {
 		GradidoTransaction::GradidoTransaction(proto::gradido::GradidoTransaction* protoGradidoTransaction, std::shared_ptr<ProtobufArenaMemory> arenaMemory)
-			: mProtoGradidoTransaction(protoGradidoTransaction), mTransactionBody(nullptr), mProtobufArenaMemory(arenaMemory)
+			: mProtoGradidoTransaction(protoGradidoTransaction), mTransactionBody(nullptr), mProtobufArenaMemory(arenaMemory), mBodyDirty(false)
 		{
+			if (arenaMemory->getUsedSpace() > 7168) {
+				int zahl = 1;
+			}
 			mTransactionBody = TransactionBody::load(protoGradidoTransaction->body_bytes(), arenaMemory);
 			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
 		}
 
 		GradidoTransaction::GradidoTransaction(const std::string* serializedProtobuf)
-			: mProtoGradidoTransaction(nullptr)
+			: mProtoGradidoTransaction(nullptr), mBodyDirty(false)
 		{
 			mProtobufArenaMemory = ProtobufArenaMemory::create();
 			mProtoGradidoTransaction = google::protobuf::Arena::CreateMessage<proto::gradido::GradidoTransaction>(*mProtobufArenaMemory);
@@ -38,10 +41,13 @@ namespace model {
 		}
 
 		GradidoTransaction::GradidoTransaction(model::gradido::TransactionBody* body)
-			: mProtoGradidoTransaction(nullptr)
+			: mProtoGradidoTransaction(nullptr), mBodyDirty(false)
 		{
 			assert(body);
 			mTransactionBody = body;
+			if (body->getProtobufArena()->getUsedSpace() > 7168) {
+				int zahl = 1;
+			}
 			mProtobufArenaMemory = body->getProtobufArena();
 			mProtoGradidoTransaction = google::protobuf::Arena::CreateMessage<proto::gradido::GradidoTransaction>(*mProtobufArenaMemory);
 			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
@@ -49,11 +55,16 @@ namespace model {
 
 		GradidoTransaction::~GradidoTransaction()
 		{
+			if (mProtobufArenaMemory->getUsedSpace() > 7168) {
+				int zahl = 0;
+				printf("big transaction: %s\n", toJson(false).data());
+			}
 			if (mTransactionBody) {
 				delete mTransactionBody;
 			}
 			mTransactionBody = nullptr;		
 			mProtoGradidoTransaction = nullptr;
+			printf("[~GradidoTransaction]\n");
 		}
 
 		bool GradidoTransaction::validate(
@@ -176,6 +187,12 @@ namespace model {
 			auto sigPair = sigMap->add_sigpair();
 			sigPair->mutable_pubkey()->assign((const char*)pubkeyBin->data(), crypto_sign_PUBLICKEYBYTES);
 			sigPair->mutable_signature()->assign((const char*)signatureBin->data(), crypto_sign_BYTES);
+
+			if (mProtobufArenaMemory->getUsedSpace() > 7168)
+			{
+				int zahl = 1;
+			}
+
 			return sigMap->sigpair_size() >= mTransactionBody->getTransactionBase()->getMinSignatureCount();
 
 		}
@@ -257,7 +274,14 @@ namespace model {
 
 		void GradidoTransaction::updateBodyBytes()
 		{
-			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
+			if (mBodyDirty) {
+				mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
+				mBodyDirty = false;
+			}
+			if (mProtobufArenaMemory->getUsedSpace() > 7168)
+			{
+				int zahl = 1;
+			}
 		}
 
 		MemoryBin* GradidoTransaction::getParentMessageId() const
@@ -273,8 +297,18 @@ namespace model {
 
 		std::unique_ptr<std::string> GradidoTransaction::getSerialized()
 		{
-			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
-
+			auto usedSpaceBefore = mProtobufArenaMemory->getUsedSpace();
+			auto allocatedSpaceBefore = mProtobufArenaMemory->getAllocatedSpace();
+			updateBodyBytes();
+			if (allocatedSpaceBefore > 7168)
+			{
+				auto usedSpace = mProtobufArenaMemory->getUsedSpace();
+				auto diff = usedSpace - usedSpaceBefore;
+				auto allocatedSpace = mProtobufArenaMemory->getAllocatedSpace();
+				auto diffAllocated = allocatedSpace - allocatedSpaceBefore;
+				int zahl = 1;
+			}
+			
 			auto size = mProtoGradidoTransaction->ByteSizeLong();
 			//auto bodyBytesSize = MemoryManager::getInstance()->getFreeMemory(mProtoCreation.ByteSizeLong());
 			std::string* resultString(new std::string(size, 0));
@@ -301,7 +335,7 @@ namespace model {
 			return result;
 		}
 
-		std::string GradidoTransaction::toJson() const
+		std::string GradidoTransaction::toJson(bool replaceBase64WithHex/* = true*/) const
 		{
 			std::string json_message = "";
 			std::string json_message_body = "";
@@ -325,19 +359,20 @@ namespace model {
 			json_message.replace(startBodyBytes, endCur - startBodyBytes, json_message_body);
 			//printf("json: %s\n", json_message.data());
 
+			if (replaceBase64WithHex) {
+				Document parsed_json;
+				parsed_json.Parse(json_message.data(), json_message.size());
+				if (parsed_json.HasParseError()) {
+					throw RapidjsonParseErrorException("error parsing json", parsed_json.GetParseError(), parsed_json.GetErrorOffset());
+				}
+				else {
+					if (DataTypeConverter::replaceBase64WithHex(parsed_json, parsed_json.GetAllocator())) {
+						StringBuffer buffer;
+						PrettyWriter<StringBuffer> writer(buffer);
+						parsed_json.Accept(writer);
 
-			Document parsed_json;
-			parsed_json.Parse(json_message.data(), json_message.size());
-			if (parsed_json.HasParseError()) {
-				throw RapidjsonParseErrorException("error parsing json", parsed_json.GetParseError(), parsed_json.GetErrorOffset());
-			}
-			else {
-				if (DataTypeConverter::replaceBase64WithHex(parsed_json, parsed_json.GetAllocator())) {
-					StringBuffer buffer;
-					PrettyWriter<StringBuffer> writer(buffer);
-					parsed_json.Accept(writer);
-
-					json_message = std::string(buffer.GetString(), buffer.GetLength());
+						json_message = std::string(buffer.GetString(), buffer.GetLength());
+					}
 				}
 			}
 

@@ -33,6 +33,9 @@ namespace model {
 		GradidoBlock::GradidoBlock(std::unique_ptr<GradidoTransaction> transaction)
 			: mGradidoTransaction(transaction.release())
 		{
+			if (mGradidoTransaction->getProtobufArena()->getUsedSpace() > 7168) {
+				int zahl = 1;
+			}
 			mProtobufArenaMemory = mGradidoTransaction->getProtobufArena();
 			mProtoGradidoBlock = google::protobuf::Arena::CreateMessage<proto::gradido::GradidoBlock>(*mProtobufArenaMemory);
 			auto gradidoTransactionProto = mGradidoTransaction->getProto();
@@ -47,6 +50,7 @@ namespace model {
 			}
 			// proto memory will be released automatic with arena memory
 			mProtoGradidoBlock = nullptr;
+			printf("[~GradidoBlock]\n");
 		}
 
 		Poco::SharedPtr<GradidoBlock> GradidoBlock::create(std::unique_ptr<GradidoTransaction> transaction, uint64_t id, int64_t received, const MemoryBin* messageId)

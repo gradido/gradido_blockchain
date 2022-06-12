@@ -28,6 +28,7 @@ namespace model {
 		void clear();
 
 		void pushGradidoTransaction(const std::string& groupAlias, std::unique_ptr<model::gradido::GradidoTransaction> transaction);
+		void removeGradidoTransaction(const std::string& groupAlias, std::shared_ptr<model::gradido::GradidoTransaction> transaction);
 		
 		struct UserBalance
 		{
@@ -44,7 +45,7 @@ namespace model {
 
 		TransactionList getSortedTransactionsForUser(const std::string& groupAlias, const std::string& pubkeyHex);
 		// get all transactions from a group sorted by id
-		const TransactionList& getSortedTransactions(const std::string& groupAlias);
+		const TransactionList* getSortedTransactions(const std::string& groupAlias);
 
 		class GroupNotFoundException : public GradidoBlockchainException
 		{

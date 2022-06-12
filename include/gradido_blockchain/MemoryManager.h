@@ -113,6 +113,8 @@ public:
 	~ProtobufArenaMemory();
 	inline operator google::protobuf::Arena* () { return mArena; }
 	static std::shared_ptr<ProtobufArenaMemory> create();
+	inline uint64_t getUsedSpace() const { return mArena->SpaceUsed(); }
+	inline uint64_t getAllocatedSpace() const { return mArena->SpaceAllocated(); }
 protected:
 	ProtobufArenaMemory();
 

@@ -21,18 +21,18 @@ namespace model {
 	)
 	{
 		auto tm = TransactionsManager::getInstance();
-		const auto& transactions = tm->getSortedTransactions(mGroupAlias);
+		auto transactions = tm->getSortedTransactions(mGroupAlias);
 		std::vector<Poco::SharedPtr<TransactionEntry>> result;
 		uint64_t transactionNr = 1;
-		if (startTransactionNr > transactions.size()) {
-			throw TransactionsCountException("not enough transactions in blockchain", startTransactionNr, transactions.size());
+		if (startTransactionNr > transactions->size()) {
+			throw TransactionsCountException("not enough transactions in blockchain", startTransactionNr, transactions->size());
 		}
 
 		if (SearchDirection::ASC == order) {
-			auto it = transactions.begin();
+			auto it = transactions->begin();
 			std::advance(it, startTransactionNr-1);
 			transactionNr = startTransactionNr;
-			for (; it != transactions.end(); ++it) {
+			for (; it != transactions->end(); ++it) {
 				auto gradidoBlock = createBlockFromTransaction(*it, transactionNr);
 				Poco::SharedPtr<model::TransactionEntry> transactionEntry = new TransactionEntry(gradidoBlock.get());
 				FilterResult filterTransactionResult = FilterResult::USE;
@@ -50,8 +50,8 @@ namespace model {
 			return std::move(result);
 		}
 		else if (SearchDirection::DESC == order) {
-			transactionNr = transactions.size();
-			for (auto it = transactions.rbegin(); it != transactions.rend(); ++it) {
+			transactionNr = transactions->size();
+			for (auto it = transactions->rbegin(); it != transactions->rend(); ++it) {
 				auto gradidoBlock = createBlockFromTransaction(*it, transactionNr);
 				Poco::SharedPtr<model::TransactionEntry> transactionEntry = new TransactionEntry(gradidoBlock.get());
 				FilterResult filterTransactionResult = FilterResult::USE;
@@ -73,9 +73,9 @@ namespace model {
 	Poco::SharedPtr<gradido::GradidoBlock> TransactionsManagerBlockchain::getLastTransaction(std::function<bool(const gradido::GradidoBlock*)> filter /*= nullptr*/)
 	{
 		auto tm = TransactionsManager::getInstance();
-		const auto& transactions = tm->getSortedTransactions(mGroupAlias);
-		auto lastTransaction = transactions.back();
-		return createBlockFromTransaction(lastTransaction, transactions.size());
+		auto transactions = tm->getSortedTransactions(mGroupAlias);
+		auto lastTransaction = transactions->back();
+		return createBlockFromTransaction(lastTransaction, transactions->size());
 	}
 	mpfr_ptr TransactionsManagerBlockchain::calculateAddressBalance(const std::string& address, const std::string& groupId, Poco::DateTime date)
 	{

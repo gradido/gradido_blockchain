@@ -339,9 +339,9 @@ google::protobuf::Arena* MemoryManager::getProtobufArenaMemory()
 	}
 	else {
 		google::protobuf::ArenaOptions options;
-		options.start_block_size = 1792;
+		options.start_block_size = 3584;
 		arena = new google::protobuf::Arena(options);
-		//printf("new arena memory, active: %d\n", mActiveProtobufArenas.size());
+		printf("new arena memory, active: %d\n", mActiveProtobufArenas.size());
 	}
 	if (!mActiveProtobufArenas.insert(arena).second) {
 		assert(false && "[MemoryManager::getProtobufArenaMemory] try to return protobuf memory already in use");
@@ -353,13 +353,25 @@ void MemoryManager::releaseMemory(google::protobuf::Arena* memory)
 {
 	if (!memory) return;
 	std::scoped_lock _lock(mProtobufArenaMutex);
-
-	mProtobufArenaStack.push(memory);
+		
 	if (!mActiveProtobufArenas.erase(memory)) {
 		assert(false && "[MemoryManager::releaseMemory] try to remove protobuf arena memory already removed");
 	}
-	auto usedSpace = memory->Reset();
-	//printf("release protobuf arena used size: %d\n", usedSpace);
+	
+	if (memory->SpaceAllocated() > 1000) {
+		printf("delete protobuf arena space allocated: %d, still active: %d\n", memory->SpaceAllocated(), mActiveProtobufArenas.size());
+		delete memory;
+	}
+	else {
+		mProtobufArenaStack.push(memory);
+		auto usedSpaceBefore = memory->SpaceUsed();
+		auto usedSpace = memory->Reset();
+		if (usedSpace > 7168) {
+			int zahl = 1;
+		}
+		printf("release protobuf arena used size: %d, still active: %d\n", usedSpace, mActiveProtobufArenas.size());
+	}
+	
 }
 
 

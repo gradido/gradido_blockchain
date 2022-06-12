@@ -44,6 +44,7 @@ namespace model {
 			auto result = mAllTransactions.insert({ groupAlias, GroupTransactions() });
 			groupTransactionsIt = result.first;
 		}
+		groupTransactionsIt->second.dirty = true;
 		auto sharedTransaction = std::shared_ptr<model::gradido::GradidoTransaction>(transaction.release());
 		groupTransactionsIt->second.transactionsByReceived.insert({ 
 			sharedTransaction->getTransactionBody()->getCreated(), 
@@ -66,6 +67,48 @@ namespace model {
 			//groupTransactionsIt->second.transactionsByPubkey.insert({})
 		}
 		involvedAddresses.clear();
+	}
+
+	void TransactionsManager::removeGradidoTransaction(const std::string& groupAlias, std::shared_ptr<model::gradido::GradidoTransaction> transaction)
+	{
+		std::scoped_lock<std::recursive_mutex> _lock(mWorkMutex);
+		auto mm = MemoryManager::getInstance();
+
+		auto groupTransactionsIt = mAllTransactions.find(groupAlias);
+		if (groupTransactionsIt == mAllTransactions.end()) {
+			throw GroupNotFoundException("[TransactionsManager::removeGradidoTransaction]", groupAlias);
+		}
+		auto byReceivedIt = groupTransactionsIt->second.transactionsByReceived.equal_range(transaction->getTransactionBody()->getCreated());
+		auto transactionBodyBytes = transaction->getTransactionBody()->getBodyBytes();
+		for (auto it = byReceivedIt.first; it != byReceivedIt.second; ++it)
+		{
+			auto bodyBytes = it->second->getTransactionBody()->getBodyBytes();
+			// 0 means equal
+			if (transactionBodyBytes->compare(*bodyBytes) == 0) {
+				it = groupTransactionsIt->second.transactionsByReceived.erase(it);
+				if (it == byReceivedIt.second) {
+					break;
+				}
+				//break;
+			}
+		}
+		auto involvedAddresses = transaction->getTransactionBody()->getTransactionBase()->getInvolvedAddresses();
+		for (auto iit = involvedAddresses.begin(); iit != involvedAddresses.end(); iit++) {
+			auto pubkeyHex = DataTypeConverter::binToHex(*iit);
+			mm->releaseMemory(*iit);
+			auto byPubkey = groupTransactionsIt->second.transactionsByPubkey.find(pubkeyHex.substr(0, 64));
+			for (auto it = byPubkey->second.begin(); it != byPubkey->second.end(); it++) {
+				auto bodyBytes = (*it)->getTransactionBody()->getBodyBytes();
+				if (transactionBodyBytes->compare(*bodyBytes) == 0) {
+					it = byPubkey->second.erase(it);
+					if (it == byPubkey->second.end()) {
+						break;
+					}
+				}
+			}
+		}
+		groupTransactionsIt->second.dirty = true;
+		
 	}
 
 	TransactionsManager::UserBalance TransactionsManager::calculateUserBalanceUntil(const std::string& groupAlias, const std::string& pubkeyHex, Poco::DateTime date)
@@ -269,7 +312,7 @@ namespace model {
 		return std::move(resultList);
 	}
 
-	const TransactionsManager::TransactionList& TransactionsManager::getSortedTransactions(const std::string& groupAlias)
+	const TransactionsManager::TransactionList* TransactionsManager::getSortedTransactions(const std::string& groupAlias)
 	{
 		std::scoped_lock _lock(mWorkMutex);
 		auto itGroup = mAllTransactions.find(groupAlias);
@@ -285,7 +328,7 @@ namespace model {
 			}
 			itGroup->second.dirty = false;
 		}
-		return itGroup->second.sortedTransactions;
+		return &itGroup->second.sortedTransactions;
 		//TransactionList resultList(itGroup->second.sortedTransactions);
 		//return std::move(resultList);
 	}
