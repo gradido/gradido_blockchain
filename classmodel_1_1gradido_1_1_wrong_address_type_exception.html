@@ -117,9 +117,9 @@ Collaboration diagram for model::gradido::WrongAddressTypeException:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:adceb1a63f679dda72df15113bb5a6e04"><td class="memItemLeft" align="right" valign="top"><a id="adceb1a63f679dda72df15113bb5a6e04" name="adceb1a63f679dda72df15113bb5a6e04"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>WrongAddressTypeException</b> (const char *what, proto::gradido::RegisterAddress_AddressType type) noexcept</td></tr>
-<tr class="separator:adceb1a63f679dda72df15113bb5a6e04"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe90f8208eb165c0ee14af850491d9e4"><td class="memItemLeft" align="right" valign="top"><a id="abe90f8208eb165c0ee14af850491d9e4" name="abe90f8208eb165c0ee14af850491d9e4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>WrongAddressTypeException</b> (const char *what, proto::gradido::RegisterAddress_AddressType type, const std::string &amp;pubkeyString) noexcept</td></tr>
+<tr class="separator:abe90f8208eb165c0ee14af850491d9e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a440475e5b7837b7042f29e492896a3c1"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_wrong_address_type_exception.html#a440475e5b7837b7042f29e492896a3c1">getFullString</a> () const noexcept</td></tr>
 <tr class="separator:a440475e5b7837b7042f29e492896a3c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa750e20c0f9ffec70fea64fee763d0cc"><td class="memItemLeft" align="right" valign="top">rapidjson::Value&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1gradido_1_1_wrong_address_type_exception.html#aa750e20c0f9ffec70fea64fee763d0cc">getDetails</a> (rapidjson::Document::AllocatorType &amp;alloc) const</td></tr>
@@ -163,6 +163,9 @@ Protected Attributes</h2></td></tr>
 <tr class="memitem:affac7f67258b3d317ec8c923ad06b585"><td class="memItemLeft" align="right" valign="top"><a id="affac7f67258b3d317ec8c923ad06b585" name="affac7f67258b3d317ec8c923ad06b585"></a>
 proto::gradido::RegisterAddress_AddressType&#160;</td><td class="memItemRight" valign="bottom"><b>mType</b></td></tr>
 <tr class="separator:affac7f67258b3d317ec8c923ad06b585"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae28475cca709c47e1a28b901db6654fb"><td class="memItemLeft" align="right" valign="top"><a id="ae28475cca709c47e1a28b901db6654fb" name="ae28475cca709c47e1a28b901db6654fb"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>mPubkey</b></td></tr>
+<tr class="separator:ae28475cca709c47e1a28b901db6654fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classmodel_1_1gradido_1_1_transaction_validation_exception"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classmodel_1_1gradido_1_1_transaction_validation_exception')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classmodel_1_1gradido_1_1_transaction_validation_exception.html">model::gradido::TransactionValidationException</a></td></tr>
 <tr class="memitem:a58c0c20873850335fe89c157f3ec5cf7 inherit pro_attribs_classmodel_1_1gradido_1_1_transaction_validation_exception"><td class="memItemLeft" align="right" valign="top"><a id="a58c0c20873850335fe89c157f3ec5cf7" name="a58c0c20873850335fe89c157f3ec5cf7"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>mTransactionMemo</b></td></tr>
