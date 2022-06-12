@@ -176,9 +176,9 @@ std::unique_ptr&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="
 <tr class="memitem:a6d28a9eea5547752c47a6907cdb35db9"><td class="memItemLeft" align="right" valign="top"><a id="a6d28a9eea5547752c47a6907cdb35db9" name="a6d28a9eea5547752c47a6907cdb35db9"></a>
 std::unique_ptr&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getSerializedConst</b> () const</td></tr>
 <tr class="separator:a6d28a9eea5547752c47a6907cdb35db9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a80c1931999142bc1ff1f326f480754ab"><td class="memItemLeft" align="right" valign="top"><a id="a80c1931999142bc1ff1f326f480754ab" name="a80c1931999142bc1ff1f326f480754ab"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>toJson</b> () const</td></tr>
-<tr class="separator:a80c1931999142bc1ff1f326f480754ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62bb201fcc9087b4b9ee72b4b46ea574"><td class="memItemLeft" align="right" valign="top"><a id="a62bb201fcc9087b4b9ee72b4b46ea574" name="a62bb201fcc9087b4b9ee72b4b46ea574"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>toJson</b> (bool replaceBase64WithHex=true) const</td></tr>
+<tr class="separator:a62bb201fcc9087b4b9ee72b4b46ea574"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae84e78d3b9e425df45b346ce6ed4f439"><td class="memItemLeft" align="right" valign="top"><a id="ae84e78d3b9e425df45b346ce6ed4f439" name="ae84e78d3b9e425df45b346ce6ed4f439"></a>
 std::shared_ptr&lt; <a class="el" href="class_protobuf_arena_memory.html">ProtobufArenaMemory</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getProtobufArena</b> ()</td></tr>
 <tr class="separator:ae84e78d3b9e425df45b346ce6ed4f439"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -203,6 +203,10 @@ proto::gradido::GradidoTransaction *&#160;</td><td class="memItemRight" valign="
 <tr class="memitem:a3118bc22c647a97d0d0be65955ca7111"><td class="memItemLeft" align="right" valign="top"><a id="a3118bc22c647a97d0d0be65955ca7111" name="a3118bc22c647a97d0d0be65955ca7111"></a>
 std::shared_ptr&lt; <a class="el" href="class_protobuf_arena_memory.html">ProtobufArenaMemory</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>mProtobufArenaMemory</b></td></tr>
 <tr class="separator:a3118bc22c647a97d0d0be65955ca7111"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58aa28346c5ee07c13659b6193474cde"><td class="memItemLeft" align="right" valign="top"><a id="a58aa28346c5ee07c13659b6193474cde" name="a58aa28346c5ee07c13659b6193474cde"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>mBodyDirty</b></td></tr>
+<tr class="memdesc:a58aa28346c5ee07c13659b6193474cde"><td class="mdescLeft">&#160;</td><td class="mdescRight">set to true if body was changed <br /></td></tr>
+<tr class="separator:a58aa28346c5ee07c13659b6193474cde"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Contain the signature map for the Transaction and the serialized body. </p>
