@@ -75,7 +75,7 @@ namespace model {
 
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationForbiddenSignException : public TransactionValidationException
 		{
-		public: 
+		public:
 			explicit TransactionValidationForbiddenSignException(const std::string& forbiddenPubkey) noexcept;
 			~TransactionValidationForbiddenSignException();
 
@@ -89,7 +89,7 @@ namespace model {
 
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationMissingSignException : public TransactionValidationException
 		{
-		public: 
+		public:
 			explicit TransactionValidationMissingSignException(int currentSignCount, int requiredSignCount) noexcept;
 
 			std::string getFullString() const noexcept;
@@ -123,7 +123,7 @@ namespace model {
 
 		class GRADIDOBLOCKCHAIN_EXPORT AddressAlreadyExistException : public TransactionValidationException
 		{
-		public: 
+		public:
 			explicit AddressAlreadyExistException(const char* what, const std::string& addressHex, proto::gradido::RegisterAddress_AddressType addressType) noexcept;
 
 			std::string getFullString() const noexcept;
@@ -169,15 +169,17 @@ namespace model {
 		{
 		public:
 			explicit WrongAddressTypeException(
-				const char* what, 
-				proto::gradido::RegisterAddress_AddressType type
+				const char* what,
+				proto::gradido::RegisterAddress_AddressType type,
+				const std::string& pubkeyString
 			) noexcept;
 
 			std::string getFullString() const noexcept;
 			rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
-		
+
 		protected:
 			proto::gradido::RegisterAddress_AddressType mType;
+			std::string mPubkey;
 		};
 	}
 }

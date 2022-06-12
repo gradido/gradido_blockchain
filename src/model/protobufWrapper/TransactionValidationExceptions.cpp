@@ -82,7 +82,7 @@ namespace model {
 			std::string bodyBytesBase64 = getBodyBytesBase64();
 			auto whatString = what();
 			std::string result;
-			
+
 			size_t staticTextSize = 29;
 			if (mBodyBytes.size()) {
 				staticTextSize += 14;
@@ -225,13 +225,13 @@ namespace model {
 		{
 			std::for_each(missingPublicKeys.begin(), missingPublicKeys.end(), [&](MemoryBin* pubkey) {
 				mMissingPublicKeysHex.push_back(DataTypeConverter::binToHex(pubkey));
-			});			
+			});
 		}
 
 
 		// ******************************** Invalid Pairing transaction **********************************************
 		PairingTransactionNotMatchException::PairingTransactionNotMatchException(const char* what, const std::string* serializedTransaction, const std::string* serializedPairingTransaction) noexcept
-			:TransactionValidationException(what) 
+			:TransactionValidationException(what)
 		{
 			try {
 				mTransaction = std::make_unique<model::gradido::GradidoTransaction>(serializedTransaction);
@@ -341,7 +341,7 @@ namespace model {
 			size_t resultSize = strlen(what()) + 2 + targetDate.size() + 15;
 			resultSize += mNewCreationAmount.size() + 21;
 			resultSize += mAlreadyCreatedBalance.size() + 45;
-			
+
 			result.reserve(resultSize);
 			result = what();
 			result += ", target date: " + targetDate;
@@ -365,10 +365,11 @@ namespace model {
 
 		// **************************** Wrong Address Type Exception ***********************************
 		WrongAddressTypeException::WrongAddressTypeException(
-			const char* what, 
-			proto::gradido::RegisterAddress_AddressType type
+			const char* what,
+			proto::gradido::RegisterAddress_AddressType type,
+			const std::string& pubkeyString
 		) noexcept
-			: TransactionValidationException(what), mType(type)
+			: TransactionValidationException(what), mType(type), mPubkey(pubkeyString)
 		{
 
 		}
@@ -376,10 +377,13 @@ namespace model {
 		{
 			std::string result;
 			auto addressTypeName = proto::gradido::RegisterAddress_AddressType_Name(mType);
-			size_t resultSize = strlen(what()) + addressTypeName.size() + 2 + 14;
+			auto pubkeyHex = DataTypeConverter::binToHex(mPubkey);
+			size_t resultSize = strlen(what()) + addressTypeName.size() + 2 + 14 + 10 + pubkeyHex.size();
 			result.reserve(resultSize);
 			result = what();
 			result += "address type: " + addressTypeName;
+			result += ", pubkey: " + pubkeyHex;
+
 			return result;
 		}
 

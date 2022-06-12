@@ -116,7 +116,7 @@ namespace model {
 				auto received = parentGradidoBlock->getReceivedAsTimestamp();
 				auto creationMaxAlgo = getCorrectCreationMaxAlgo(received);
 				auto targetCreationMaxAlgo = getCorrectCreationMaxAlgo(targetDate);
-				
+
 				if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo) {
 					sum = calculateCreationSumLegacy(pubkey, received, blockchain);
 				}
@@ -156,7 +156,7 @@ namespace model {
 					mm->releaseMathMemory(sum2);
 
 				}*/
-				// second max creation check algo 
+				// second max creation check algo
 				else if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo && mpfr_cmp_si(sum, 1000) > 0) {
 					mpfr_sub(sum, sum, amount, gDefaultRound);
 					std::string alreadyCreatedSum;
@@ -183,7 +183,7 @@ namespace model {
 					throw InvalidCreationException(
 						errorMessage.data(),
 						targetDate.month(), targetDate.year(),
-						mProtoCreation.recipient().amount(), 
+						mProtoCreation.recipient().amount(),
 						alreadyCreatedSum
 					);
 				}
@@ -195,7 +195,7 @@ namespace model {
 				assert(blockchain);
 				auto addressType = blockchain->getAddressType(getRecipientPublicKeyString());
 				if (addressType != proto::gradido::RegisterAddress_AddressType_HUMAN) {
-					throw WrongAddressTypeException("wrong address type for creation", addressType);
+					throw WrongAddressTypeException("wrong address type for creation", addressType, getRecipientPublicKeyString());
 				}
 			}
 
@@ -206,14 +206,14 @@ namespace model {
 		{
 			auto target_date = Poco::DateTime(DataTypeConverter::convertFromProtoTimestampSeconds(mProtoCreation.target_date()));
 			auto received = Poco::DateTime(Poco::Timestamp(receivedSeconds * Poco::Timestamp::resolution()));
-			
+
 			auto targetDateReceivedDistanceMonth = getTargetDateReceivedDistanceMonth(received);
 			//  2021-09-01 02:00:00 | 2021-12-04 01:22:14
 			if (target_date.year() == received.year())
 			{
 				if (target_date.month() + targetDateReceivedDistanceMonth < received.month()) {
-					std::string errorMessage = 
-						"year is the same, target date month is more than " 
+					std::string errorMessage =
+						"year is the same, target date month is more than "
 						+ std::to_string(targetDateReceivedDistanceMonth)
 						+ " month in past";
 					throw TransactionValidationInvalidInputException(errorMessage.data(), "target_date", "date time");
