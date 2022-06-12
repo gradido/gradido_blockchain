@@ -15,9 +15,6 @@ namespace model {
 		GradidoTransaction::GradidoTransaction(proto::gradido::GradidoTransaction* protoGradidoTransaction, std::shared_ptr<ProtobufArenaMemory> arenaMemory)
 			: mProtoGradidoTransaction(protoGradidoTransaction), mTransactionBody(nullptr), mProtobufArenaMemory(arenaMemory), mBodyDirty(false)
 		{
-			if (arenaMemory->getUsedSpace() > 7168) {
-				int zahl = 1;
-			}
 			mTransactionBody = TransactionBody::load(protoGradidoTransaction->body_bytes(), arenaMemory);
 			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
 		}
@@ -34,7 +31,7 @@ namespace model {
 				else {
 					printf("only partial error\n");
 					throw ProtobufParseException(*serializedProtobuf);
-				}				
+				}
 			}
 			mTransactionBody = TransactionBody::load(mProtoGradidoTransaction->body_bytes(), mProtobufArenaMemory);
 			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
@@ -45,9 +42,6 @@ namespace model {
 		{
 			assert(body);
 			mTransactionBody = body;
-			if (body->getProtobufArena()->getUsedSpace() > 7168) {
-				int zahl = 1;
-			}
 			mProtobufArenaMemory = body->getProtobufArena();
 			mProtoGradidoTransaction = google::protobuf::Arena::CreateMessage<proto::gradido::GradidoTransaction>(*mProtobufArenaMemory);
 			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
@@ -55,16 +49,11 @@ namespace model {
 
 		GradidoTransaction::~GradidoTransaction()
 		{
-			if (mProtobufArenaMemory->getUsedSpace() > 7168) {
-				int zahl = 0;
-				printf("big transaction: %s\n", toJson(false).data());
-			}
 			if (mTransactionBody) {
 				delete mTransactionBody;
 			}
-			mTransactionBody = nullptr;		
+			mTransactionBody = nullptr;
 			mProtoGradidoTransaction = nullptr;
-			printf("[~GradidoTransaction]\n");
 		}
 
 		bool GradidoTransaction::validate(
@@ -187,14 +176,7 @@ namespace model {
 			auto sigPair = sigMap->add_sigpair();
 			sigPair->mutable_pubkey()->assign((const char*)pubkeyBin->data(), crypto_sign_PUBLICKEYBYTES);
 			sigPair->mutable_signature()->assign((const char*)signatureBin->data(), crypto_sign_BYTES);
-
-			if (mProtobufArenaMemory->getUsedSpace() > 7168)
-			{
-				int zahl = 1;
-			}
-
 			return sigMap->sigpair_size() >= mTransactionBody->getTransactionBase()->getMinSignatureCount();
-
 		}
 
 		int GradidoTransaction::getSignCount() const
@@ -278,10 +260,6 @@ namespace model {
 				mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
 				mBodyDirty = false;
 			}
-			if (mProtobufArenaMemory->getUsedSpace() > 7168)
-			{
-				int zahl = 1;
-			}
 		}
 
 		MemoryBin* GradidoTransaction::getParentMessageId() const
@@ -297,18 +275,7 @@ namespace model {
 
 		std::unique_ptr<std::string> GradidoTransaction::getSerialized()
 		{
-			auto usedSpaceBefore = mProtobufArenaMemory->getUsedSpace();
-			auto allocatedSpaceBefore = mProtobufArenaMemory->getAllocatedSpace();
 			updateBodyBytes();
-			if (allocatedSpaceBefore > 7168)
-			{
-				auto usedSpace = mProtobufArenaMemory->getUsedSpace();
-				auto diff = usedSpace - usedSpaceBefore;
-				auto allocatedSpace = mProtobufArenaMemory->getAllocatedSpace();
-				auto diffAllocated = allocatedSpace - allocatedSpaceBefore;
-				int zahl = 1;
-			}
-			
 			auto size = mProtoGradidoTransaction->ByteSizeLong();
 			//auto bodyBytesSize = MemoryManager::getInstance()->getFreeMemory(mProtoCreation.ByteSizeLong());
 			std::string* resultString(new std::string(size, 0));

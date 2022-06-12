@@ -6,7 +6,7 @@
 #include "sodium.h"
 #include <memory.h>
 #include <exception>
-#include <string> 
+#include <string>
 
 #define _DEFAULT_PAGE_SIZE 10
 
@@ -27,7 +27,7 @@ MemoryBin::~MemoryBin()
 std::unique_ptr<std::string> MemoryBin::convertToHex() const
 {
 	auto mm = MemoryManager::getInstance();
-	
+
 	uint32_t hexSize = mSize * 2 + 1;
 	auto hexMem = mm->getMemory(hexSize);
 	//char* hexString = (char*)malloc(hexSize);
@@ -77,11 +77,11 @@ bool MemoryBin::isSame(const MemoryBin* b) const
 	return 0 == memcmp(data(), b->data(), size());
 }
 
-MemoryBin* MemoryBin::copy() const 
-{ 
-	auto result = MemoryManager::getInstance()->getMemory(mSize); 
-	result->copyFrom(this); 
-	return result; 
+MemoryBin* MemoryBin::copy() const
+{
+	auto result = MemoryManager::getInstance()->getMemory(mSize);
+	result->copyFrom(this);
+	return result;
 }
 
 
@@ -100,7 +100,7 @@ MemoryPageStack::~MemoryPageStack()
 		MemoryBin* memoryBin = mMemoryBinStack.top();
 		mMemoryBinStack.pop();
 		delete memoryBin;
-		
+
 	}
 	mSize = 0;
 	unlock();
@@ -109,7 +109,7 @@ MemoryPageStack::~MemoryPageStack()
 MemoryBin* MemoryPageStack::getMemory()
 {
 	std::scoped_lock<std::recursive_mutex> _lock(mWorkMutex);
-	
+
 	if (!mSize) {
 		return nullptr;
 	}
@@ -118,14 +118,14 @@ MemoryBin* MemoryPageStack::getMemory()
 	}
 	MemoryBin* memoryBin = mMemoryBinStack.top();
 	mMemoryBinStack.pop();
-	
+
 	return memoryBin;
 }
 void MemoryPageStack::releaseMemory(MemoryBin* memory)
 {
 	if (!memory) return;
 	std::scoped_lock<std::recursive_mutex> _lock(mWorkMutex);
-	
+
 	if (memory->size() != mSize) {
 		throw MemoryManagerException("MemoryPageStack::releaseMemory wrong memory page stack", memory->size());
 	}
@@ -193,7 +193,7 @@ MemoryManager::MemoryManager()
 	mMemoryPageStacks[1] = new MemoryPageStack(64); // privkey
 	mMemoryPageStacks[2] = new MemoryPageStack(65); // pubkey hex
 	mMemoryPageStacks[3] = new MemoryPageStack(96); // privkey encrypted
-	mMemoryPageStacks[4] = new MemoryPageStack(161); // privkey hex 
+	mMemoryPageStacks[4] = new MemoryPageStack(161); // privkey hex
 	mMemoryPageStacks[5] = new MemoryPageStack(48); // word indices
 }
 
@@ -290,7 +290,7 @@ void MemoryManager::releaseMathMemory(mpfr_ptr ptr)
 {
 	if (!ptr) return;
 	std::scoped_lock<std::mutex> _lock(mMpfrMutex);
-	
+
 	if (ptr->_mpfr_prec != MAGIC_NUMBER_AMOUNT_PRECISION_BITS) {
 		throw MemoryManagerException("wrong precision", ptr->_mpfr_prec);
 	}
@@ -341,7 +341,7 @@ google::protobuf::Arena* MemoryManager::getProtobufArenaMemory()
 		google::protobuf::ArenaOptions options;
 		options.start_block_size = 3584;
 		arena = new google::protobuf::Arena(options);
-		printf("new arena memory, active: %d\n", mActiveProtobufArenas.size());
+		//printf("new arena memory, active: %d\n", mActiveProtobufArenas.size());
 	}
 	if (!mActiveProtobufArenas.insert(arena).second) {
 		assert(false && "[MemoryManager::getProtobufArenaMemory] try to return protobuf memory already in use");
@@ -353,12 +353,12 @@ void MemoryManager::releaseMemory(google::protobuf::Arena* memory)
 {
 	if (!memory) return;
 	std::scoped_lock _lock(mProtobufArenaMutex);
-		
+
 	if (!mActiveProtobufArenas.erase(memory)) {
 		assert(false && "[MemoryManager::releaseMemory] try to remove protobuf arena memory already removed");
 	}
-	
-	if (memory->SpaceAllocated() > 1000) {
+
+	if (memory->SpaceAllocated() > 7168) {
 		printf("delete protobuf arena space allocated: %d, still active: %d\n", memory->SpaceAllocated(), mActiveProtobufArenas.size());
 		delete memory;
 	}
@@ -369,9 +369,9 @@ void MemoryManager::releaseMemory(google::protobuf::Arena* memory)
 		if (usedSpace > 7168) {
 			int zahl = 1;
 		}
-		printf("release protobuf arena used size: %d, still active: %d\n", usedSpace, mActiveProtobufArenas.size());
+		//printf("release protobuf arena used size: %d, still active: %d\n", usedSpace, mActiveProtobufArenas.size());
 	}
-	
+
 }
 
 
