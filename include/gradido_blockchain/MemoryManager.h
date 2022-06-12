@@ -86,6 +86,8 @@ public:
 	MemoryBin* getMemory();
 	void releaseMemory(MemoryBin* memory);
 
+	void clear();
+
 protected:
 	std::stack<MemoryBin*> mMemoryBinStack;
 	uint16_t mSize;
@@ -111,6 +113,8 @@ public:
 	~ProtobufArenaMemory();
 	inline operator google::protobuf::Arena* () { return mArena; }
 	static std::shared_ptr<ProtobufArenaMemory> create();
+	inline uint64_t getUsedSpace() const { return mArena->SpaceUsed(); }
+	inline uint64_t getAllocatedSpace() const { return mArena->SpaceAllocated(); }
 protected:
 	ProtobufArenaMemory();
 
@@ -133,6 +137,10 @@ public:
 
 	mpfr_ptr getMathMemory();
 	void releaseMathMemory(mpfr_ptr ptr);
+
+	void clearProtobufMemory();
+	void clearMathMemory();
+	void clearMemory();
 
 protected:
 

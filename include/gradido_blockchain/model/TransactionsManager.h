@@ -24,7 +24,11 @@ namespace model {
 		static TransactionsManager* getInstance();
 		~TransactionsManager();
 
+
+		void clear();
+
 		void pushGradidoTransaction(const std::string& groupAlias, std::unique_ptr<model::gradido::GradidoTransaction> transaction);
+		void removeGradidoTransaction(const std::string& groupAlias, std::shared_ptr<model::gradido::GradidoTransaction> transaction);
 		
 		struct UserBalance
 		{
@@ -41,7 +45,7 @@ namespace model {
 
 		TransactionList getSortedTransactionsForUser(const std::string& groupAlias, const std::string& pubkeyHex);
 		// get all transactions from a group sorted by id
-		const TransactionList& getSortedTransactions(const std::string& groupAlias);
+		const TransactionList* getSortedTransactions(const std::string& groupAlias);
 
 		class GroupNotFoundException : public GradidoBlockchainException
 		{
@@ -83,6 +87,14 @@ namespace model {
 		struct GroupTransactions
 		{
 			GroupTransactions() : dirty(true) {}
+			~GroupTransactions() {
+				sortedTransactions.clear();
+				transactionsByReceived.clear();
+				for (auto it = transactionsByPubkey.begin(); it != transactionsByPubkey.end(); it++) {
+					it->second.clear();
+				}
+				transactionsByPubkey.clear();
+			}
 			//! key is pubkey hex
 			std::map<std::string, TransactionList> transactionsByPubkey;
 			//! key is transaction received date

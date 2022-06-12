@@ -7,7 +7,6 @@
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 #include "gradido_blockchain/model/protobufWrapper/GradidoBlock.h"
 #include "gradido_blockchain/model/IGradidoBlockchain.h"
-
 #include <sodium.h>
 
 
@@ -127,8 +126,9 @@ namespace model {
 
 				auto id = parentGradidoBlock->getID();
 				int lastId = 0;
-				if (blockchain->getLastTransaction()) {
-					lastId = blockchain->getLastTransaction()->getID();
+				auto lastTransaction = blockchain->getLastTransaction();
+				if (!lastTransaction.isNull()) {
+					lastId = lastTransaction->getID();
 				}
 				if (id <= lastId) {
 					// this transaction was already added to blockchain and therefor also added in calculateCreationSum
@@ -170,7 +170,7 @@ namespace model {
 				}
 
 				// TODO: replace with variable, state transaction for group
-				if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo && mpfr_cmp_si(sum, 1000) > 0 ||
+				/*if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo && mpfr_cmp_si(sum, 1000) > 0 ||
 					CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo && mpfr_cmp_si(sum, 3000) > 0) {
 					//throw TransactionValidationInvalidInputException("creation more than 1.000 GDD per month not allowed", "amount");
 					mpfr_sub(sum, sum, amount, gDefaultRound);
@@ -186,7 +186,7 @@ namespace model {
 						mProtoCreation.recipient().amount(),
 						alreadyCreatedSum
 					);
-				}
+				}*/
 				mm->releaseMathMemory(sum);
 				mm->releaseMathMemory(amount);
 			}

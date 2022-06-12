@@ -13,14 +13,14 @@ using namespace rapidjson;
 namespace model {
 	namespace gradido {
 		GradidoTransaction::GradidoTransaction(proto::gradido::GradidoTransaction* protoGradidoTransaction, std::shared_ptr<ProtobufArenaMemory> arenaMemory)
-			: mProtoGradidoTransaction(protoGradidoTransaction), mTransactionBody(nullptr), mProtobufArenaMemory(arenaMemory)
+			: mProtoGradidoTransaction(protoGradidoTransaction), mTransactionBody(nullptr), mProtobufArenaMemory(arenaMemory), mBodyDirty(false)
 		{
 			mTransactionBody = TransactionBody::load(protoGradidoTransaction->body_bytes(), arenaMemory);
 			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
 		}
 
 		GradidoTransaction::GradidoTransaction(const std::string* serializedProtobuf)
-			: mProtoGradidoTransaction(nullptr)
+			: mProtoGradidoTransaction(nullptr), mBodyDirty(false)
 		{
 			mProtobufArenaMemory = ProtobufArenaMemory::create();
 			mProtoGradidoTransaction = google::protobuf::Arena::CreateMessage<proto::gradido::GradidoTransaction>(*mProtobufArenaMemory);
@@ -31,14 +31,14 @@ namespace model {
 				else {
 					printf("only partial error\n");
 					throw ProtobufParseException(*serializedProtobuf);
-				}				
+				}
 			}
 			mTransactionBody = TransactionBody::load(mProtoGradidoTransaction->body_bytes(), mProtobufArenaMemory);
 			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
 		}
 
 		GradidoTransaction::GradidoTransaction(model::gradido::TransactionBody* body)
-			: mProtoGradidoTransaction(nullptr)
+			: mProtoGradidoTransaction(nullptr), mBodyDirty(false)
 		{
 			assert(body);
 			mTransactionBody = body;
@@ -52,7 +52,7 @@ namespace model {
 			if (mTransactionBody) {
 				delete mTransactionBody;
 			}
-			mTransactionBody = nullptr;		
+			mTransactionBody = nullptr;
 			mProtoGradidoTransaction = nullptr;
 		}
 
@@ -177,7 +177,6 @@ namespace model {
 			sigPair->mutable_pubkey()->assign((const char*)pubkeyBin->data(), crypto_sign_PUBLICKEYBYTES);
 			sigPair->mutable_signature()->assign((const char*)signatureBin->data(), crypto_sign_BYTES);
 			return sigMap->sigpair_size() >= mTransactionBody->getTransactionBase()->getMinSignatureCount();
-
 		}
 
 		int GradidoTransaction::getSignCount() const
@@ -257,7 +256,10 @@ namespace model {
 
 		void GradidoTransaction::updateBodyBytes()
 		{
-			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
+			if (mBodyDirty) {
+				mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
+				mBodyDirty = false;
+			}
 		}
 
 		MemoryBin* GradidoTransaction::getParentMessageId() const
@@ -273,8 +275,7 @@ namespace model {
 
 		std::unique_ptr<std::string> GradidoTransaction::getSerialized()
 		{
-			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
-
+			updateBodyBytes();
 			auto size = mProtoGradidoTransaction->ByteSizeLong();
 			//auto bodyBytesSize = MemoryManager::getInstance()->getFreeMemory(mProtoCreation.ByteSizeLong());
 			std::string* resultString(new std::string(size, 0));
@@ -301,7 +302,7 @@ namespace model {
 			return result;
 		}
 
-		std::string GradidoTransaction::toJson() const
+		std::string GradidoTransaction::toJson(bool replaceBase64WithHex/* = true*/) const
 		{
 			std::string json_message = "";
 			std::string json_message_body = "";
@@ -325,19 +326,20 @@ namespace model {
 			json_message.replace(startBodyBytes, endCur - startBodyBytes, json_message_body);
 			//printf("json: %s\n", json_message.data());
 
+			if (replaceBase64WithHex) {
+				Document parsed_json;
+				parsed_json.Parse(json_message.data(), json_message.size());
+				if (parsed_json.HasParseError()) {
+					throw RapidjsonParseErrorException("error parsing json", parsed_json.GetParseError(), parsed_json.GetErrorOffset());
+				}
+				else {
+					if (DataTypeConverter::replaceBase64WithHex(parsed_json, parsed_json.GetAllocator())) {
+						StringBuffer buffer;
+						PrettyWriter<StringBuffer> writer(buffer);
+						parsed_json.Accept(writer);
 
-			Document parsed_json;
-			parsed_json.Parse(json_message.data(), json_message.size());
-			if (parsed_json.HasParseError()) {
-				throw RapidjsonParseErrorException("error parsing json", parsed_json.GetParseError(), parsed_json.GetErrorOffset());
-			}
-			else {
-				if (DataTypeConverter::replaceBase64WithHex(parsed_json, parsed_json.GetAllocator())) {
-					StringBuffer buffer;
-					PrettyWriter<StringBuffer> writer(buffer);
-					parsed_json.Accept(writer);
-
-					json_message = std::string(buffer.GetString(), buffer.GetLength());
+						json_message = std::string(buffer.GetString(), buffer.GetLength());
+					}
 				}
 			}
 

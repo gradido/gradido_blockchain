@@ -34,7 +34,7 @@ namespace model {
 			~GradidoTransaction();
 
 			inline const TransactionBody* getTransactionBody() const { return mTransactionBody; }
-			inline TransactionBody* getMutableTransactionBody() { return mTransactionBody; }
+			inline TransactionBody* getMutableTransactionBody() { mBodyDirty = true; return mTransactionBody; }
 
 			/*! Check if Transaction is valid, calls validate from TransactionBody
 				Details
@@ -56,8 +56,8 @@ namespace model {
 			std::vector<MemoryBin*> getPublicKeysfromSignatureMap(bool onlyFirst = true) const;
 			std::vector<MemoryBin*> getSignaturesfromSignatureMap(bool onlyFirst = true) const;
 
-			inline GradidoTransaction& setMemo(const std::string& memo) { mTransactionBody->setMemo(memo); return *this; }
-			inline GradidoTransaction& setCreated(Poco::DateTime created) { mTransactionBody->setCreated(created); return *this; }
+			inline GradidoTransaction& setMemo(const std::string& memo) { mBodyDirty = true; mTransactionBody->setMemo(memo); return *this; }
+			inline GradidoTransaction& setCreated(Poco::DateTime created) { mBodyDirty = true; mTransactionBody->setCreated(created); return *this; }
 			GradidoTransaction& setParentMessageId(const MemoryBin* parentMessageId);
 			/*! update body bytes into proto member
 				Serialize body bytes from TransactionBody member Variable and stuff it into proto::gradido::GradidoTransaction bodyBytes
@@ -71,7 +71,7 @@ namespace model {
 
 			std::unique_ptr<std::string> getSerialized();
 			std::unique_ptr<std::string> getSerializedConst() const;
-			std::string toJson() const;
+			std::string toJson(bool replaceBase64WithHex = true) const;
 
 			inline std::shared_ptr<ProtobufArenaMemory> getProtobufArena() { return mProtobufArenaMemory; }
 
@@ -81,6 +81,8 @@ namespace model {
 			proto::gradido::GradidoTransaction* mProtoGradidoTransaction;
 			TransactionBody* mTransactionBody;
 			std::shared_ptr<ProtobufArenaMemory> mProtobufArenaMemory;
+			//! set to true if body was changed 
+			bool mBodyDirty;
 		};
 		/*! @} End of Doxygen Groups*/
 	}
