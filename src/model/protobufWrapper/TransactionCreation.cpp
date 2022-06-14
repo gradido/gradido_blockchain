@@ -117,10 +117,20 @@ namespace model {
 				auto targetCreationMaxAlgo = getCorrectCreationMaxAlgo(targetDate);
 
 				if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo) {
-					sum = calculateCreationSumLegacy(pubkey, received, blockchain);
+					try {
+						sum = calculateCreationSumLegacy(pubkey, received, blockchain);
+					} catch (Poco::NullPointerException& ex) {
+						std::clog << "poco null pointer exception by calling calculateCreationSumLegacy" << std::endl;
+						throw;
+					}
 				}
 				else if(CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo) {
-					sum = calculateCreationSum(pubkey, targetDate.month(), targetDate.year(), parentGradidoBlock->getReceivedAsTimestamp(), blockchain);
+					try {
+						sum = calculateCreationSum(pubkey, targetDate.month(), targetDate.year(), parentGradidoBlock->getReceivedAsTimestamp(), blockchain);
+					} catch (Poco::NullPointerException& ex) {
+						std::clog << "poco null pointer exception by calling calculateCreationSum" << std::endl;
+						throw;
+					}
 				}
 				mpfr_add(sum, sum, amount, gDefaultRound);
 
@@ -260,30 +270,44 @@ namespace model {
 			Poco::DateTime searchDate = received;
 			auto mm = MemoryManager::getInstance();
 			for (int i = 0; i < monthDiff + 1; i++) {
-				auto transactions = blockchain->findTransactions(address, searchDate.month(), searchDate.year());
-				// https://stackoverflow.com/questions/201718/concatenating-two-stdvectors
-				allTransactions.insert(
-					allTransactions.end(),
-					std::make_move_iterator(transactions.begin()),
-					std::make_move_iterator(transactions.end())
-				);
-				searchDate -= Poco::Timespan(Poco::DateTime::daysOfMonth(searchDate.year(), searchDate.month()), 0, 0, 0, 0);
+				try {
+					auto transactions = blockchain->findTransactions(address, searchDate.month(), searchDate.year());
+					if(transactions.size()) {
+					// https://stackoverflow.com/questions/201718/concatenating-two-stdvectors
+						allTransactions.insert(
+							allTransactions.end(),
+							std::make_move_iterator(transactions.begin()),
+							std::make_move_iterator(transactions.end())
+						);
+					}
+					searchDate -= Poco::Timespan(Poco::DateTime::daysOfMonth(searchDate.year(), searchDate.month()), 0, 0, 0, 0);
+				} catch(Poco::NullPointerException& ex) {
+					std::clog << "exception in calculateCreationSum by calling findTransactions" << std::endl;
+					throw;
+				}
 			}
 			//printf("[Group::calculateCreationSum] from group: %s\n", mGroupAlias.data());
 			auto amount = mm->getMathMemory();
 			auto sum = mm->getMathMemory();
 			for (auto it = allTransactions.begin(); it != allTransactions.end(); it++) {
-				auto gradidoBlock = std::make_unique<model::gradido::GradidoBlock>((*it)->getSerializedTransaction());
-				auto body = gradidoBlock->getGradidoTransaction()->getTransactionBody();
-				if (body->getTransactionType() == model::gradido::TRANSACTION_CREATION) {
-					auto creation = body->getCreationTransaction();
-					auto targetDate = creation->getTargetDate();
-					if (targetDate.month() != month || targetDate.year() != year) {
-						continue;
+				try {
+					auto gradidoBlock = std::make_unique<model::gradido::GradidoBlock>((*it)->getSerializedTransaction());
+					auto body = gradidoBlock->getGradidoTransaction()->getTransactionBody();
+					if (body->getTransactionType() == model::gradido::TRANSACTION_CREATION) {
+						auto creation = body->getCreationTransaction();
+						auto targetDate = creation->getTargetDate();
+						if (targetDate.month() != month || targetDate.year() != year) {
+							continue;
+						}
+						//printf("added from transaction: %d \n", gradidoBlock->getID());
+						mpfr_set_str(amount, creation->getAmount().data(), 10, gDefaultRound);
+						mpfr_add(sum, sum, amount, gDefaultRound);
 					}
-					//printf("added from transaction: %d \n", gradidoBlock->getID());
-					mpfr_set_str(amount, creation->getAmount().data(), 10, gDefaultRound);
-					mpfr_add(sum, sum, amount, gDefaultRound);
+				} catch(Poco::NullPointerException& ex) {
+					std::clog << "poco null pointer exception in calculateCreationSum" 
+							  << ", serialized size: " << (*it)->getSerializedTransaction()->size()
+					          << std::endl;
+					throw;
 				}
 			}
 			mm->releaseMathMemory(amount);

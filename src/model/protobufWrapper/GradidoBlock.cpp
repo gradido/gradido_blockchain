@@ -21,6 +21,7 @@ namespace model {
 		GradidoBlock::GradidoBlock(const std::string* serializedGradidoBlock)
 			: mGradidoTransaction(nullptr)
 		{
+			assert(serializedGradidoBlock);
 			mProtobufArenaMemory = ProtobufArenaMemory::create();
 			mProtoGradidoBlock = google::protobuf::Arena::CreateMessage<proto::gradido::GradidoBlock>(*mProtobufArenaMemory);
 
@@ -33,6 +34,7 @@ namespace model {
 		GradidoBlock::GradidoBlock(std::unique_ptr<GradidoTransaction> transaction)
 			: mGradidoTransaction(transaction.release())
 		{
+			assert(mGradidoTransaction);
 			mProtobufArenaMemory = mGradidoTransaction->getProtobufArena();
 			mProtoGradidoBlock = google::protobuf::Arena::CreateMessage<proto::gradido::GradidoBlock>(*mProtobufArenaMemory);
 			auto gradidoTransactionProto = mGradidoTransaction->getProto();

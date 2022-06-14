@@ -359,7 +359,7 @@ void MemoryManager::releaseMemory(google::protobuf::Arena* memory)
 	}
 
 	if (memory->SpaceAllocated() > 7168) {
-		printf("delete protobuf arena space allocated: %d, still active: %d\n", memory->SpaceAllocated(), mActiveProtobufArenas.size());
+		//printf("delete protobuf arena space allocated: %d, still active: %d\n", memory->SpaceAllocated(), mActiveProtobufArenas.size());
 		delete memory;
 	}
 	else {
