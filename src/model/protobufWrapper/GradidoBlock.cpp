@@ -185,6 +185,7 @@ namespace model {
 			IGradidoBlockchain* otherBlockchain /*= nullptr*/
 		) const
 		{
+			auto created = Poco::Timestamp(getGradidoTransaction()->getTransactionBody()->getCreatedSeconds() * Poco::Timestamp::resolution());
 			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
 				if (mProtoGradidoBlock->version_number() != GRADIDO_BLOCK_PROTOCOL_VERSION) {
 					TransactionValidationInvalidInputException exception("wrong version in gradido block", "version_number", "uint64");
@@ -196,14 +197,8 @@ namespace model {
 					exception.setTransactionBody(getGradidoTransaction()->getTransactionBody());
 					throw exception;
 				}
-				auto created = Poco::Timestamp(getGradidoTransaction()->getTransactionBody()->getCreatedSeconds() * Poco::Timestamp::resolution());
-				auto timespanBetweenCreatedAndReceivedSeconds = Poco::Timespan(getReceivedAsTimestamp() - created).totalSeconds();
-				if (timespanBetweenCreatedAndReceivedSeconds / 60 > MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION_IN_MINUTES) {
-					TransactionValidationInvalidInputException exception("timespan between created and received are more than 2 minutes", "received/iota milestone timestamp", "int64");
-					exception.setTransactionBody(getGradidoTransaction()->getTransactionBody());
-					throw exception;
-				}
-				if (timespanBetweenCreatedAndReceivedSeconds < 0) {
+				
+				if (Poco::Timespan(getReceivedAsTimestamp() - created).totalSeconds() < 0) {
 					TransactionValidationInvalidInputException exception("timespan between created and received are negative", "iota milestone timestamp", std::to_string(getReceivedAsTimestamp().epochTime()).data());
 					exception.setTransactionBody(getGradidoTransaction()->getTransactionBody());
 					throw exception;
@@ -221,6 +216,15 @@ namespace model {
 					auto previousGradidoBlock = std::make_unique<GradidoBlock>(previousBlock->getSerializedTransaction());
 					if (previousGradidoBlock->getReceived() > getReceived()) {
 						throw BlockchainOrderException("previous transaction is younger");
+					}
+					auto previousCreated = Poco::Timestamp(previousGradidoBlock->getGradidoTransaction()->getTransactionBody()->getCreatedSeconds() * Poco::Timestamp::resolution());
+					if (previousCreated > created) {
+						auto timespanBetweenCreatedAndReceivedSeconds = Poco::Timespan(getReceivedAsTimestamp() - created).totalSeconds();
+						if (timespanBetweenCreatedAndReceivedSeconds / 60 > MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION_IN_MINUTES) {
+							TransactionValidationInvalidInputException exception("timespan between created and received are more than 2 minutes", "received/iota milestone timestamp", "int64");
+							exception.setTransactionBody(getGradidoTransaction()->getTransactionBody());
+							throw exception;
+						}
 					}
 					auto mm = MemoryManager::getInstance();
 					auto txHash = calculateTxHash(previousGradidoBlock.get());
