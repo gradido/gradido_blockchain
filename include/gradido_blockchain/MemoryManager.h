@@ -90,7 +90,7 @@ public:
 
 protected:
 	std::stack<MemoryBin*> mMemoryBinStack;
-	uint16_t mSize;
+	const uint16_t mSize;
 };
 
 class GRADIDOBLOCKCHAIN_EXPORT MathMemory

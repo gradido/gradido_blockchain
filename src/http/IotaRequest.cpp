@@ -67,7 +67,7 @@ std::string IotaRequest::sendMessage(const std::string& indexHex, const std::str
 	if (ServerConfig::g_IotaLocalPow) {
 		auto index = DataTypeConverter::hexToBinString(indexHex.substr(0, indexHex.size()-1));
 		//auto message = DataTypeConverter::hexToBinString(messageHex.substr(0, messageHex.size()-1));
-		printf("message hex: %s\n", messageHex.data());
+		//printf("message hex: %s\n", messageHex.data());
 		return sendMessageViaRustIotaClient(*index, messageHex);
 	}
 	auto tips = getTips();

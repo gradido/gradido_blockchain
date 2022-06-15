@@ -41,6 +41,7 @@ namespace model {
 			mMinSignatureCount = 1;
 			auto mm = MemoryManager::getInstance();
 			auto pubkey_copy = mm->getMemory(crypto_sign_PUBLICKEYBYTES);
+			assert(pubkey_copy);
 			memcpy(*pubkey_copy, receiverPublic.data(), crypto_sign_PUBLICKEYBYTES);
 			mForbiddenSignPublicKeys.push_back(pubkey_copy);
 

@@ -90,6 +90,7 @@ class GRADIDOBLOCKCHAIN_EXPORT JsonRPCException : public GradidoBlockchainExcept
 public:
 	explicit JsonRPCException(const char* what, JsonRPCErrorCodes errorCode) noexcept;
 	std::string getFullString() const;
+	inline JsonRPCErrorCodes getErrorCode() const { return mErrorCode; }
 
 protected:
 	JsonRPCErrorCodes mErrorCode;
