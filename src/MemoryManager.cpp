@@ -102,7 +102,6 @@ MemoryPageStack::~MemoryPageStack()
 		delete memoryBin;
 
 	}
-	mSize = 0;
 	unlock();
 }
 
@@ -140,7 +139,6 @@ void MemoryPageStack::clear()
 		mMemoryBinStack.pop();
 		delete memoryBin;
 	}
-	mSize = 0;
 	unlock();
 }
 
