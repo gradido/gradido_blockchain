@@ -177,12 +177,13 @@ $(document).ready(function(){initNavTree('_request_exceptions_8h_source.html',''
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span><span class="keyword">public</span>:</div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    <span class="keyword">explicit</span> <a class="code hl_class" href="class_json_r_p_c_exception.html">JsonRPCException</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* what, JsonRPCErrorCodes errorCode) <span class="keyword">noexcept</span>;</div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    std::string getFullString() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span> </div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    JsonRPCErrorCodes mErrorCode;</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>};</div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span> </div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span><span class="preprocessor">#endif </span><span class="comment">//__GRADIDO_BLOCKCHAIN_HTTP_REQUEST_EXCEPTION_H</span></div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <span class="keyword">inline</span> JsonRPCErrorCodes getErrorCode()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> mErrorCode; }</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span> </div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    JsonRPCErrorCodes mErrorCode;</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>};</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span> </div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span><span class="preprocessor">#endif </span><span class="comment">//__GRADIDO_BLOCKCHAIN_HTTP_REQUEST_EXCEPTION_H</span></div>
 <div class="ttc" id="aclass_gradido_blockchain_exception_html"><div class="ttname"><a href="class_gradido_blockchain_exception.html">GradidoBlockchainException</a></div><div class="ttdef"><b>Definition:</b> GradidoBlockchainException.h:11</div></div>
 <div class="ttc" id="aclass_handle_request_exception_html"><div class="ttname"><a href="class_handle_request_exception.html">HandleRequestException</a></div><div class="ttdef"><b>Definition:</b> RequestExceptions.h:72</div></div>
 <div class="ttc" id="aclass_json_r_p_c_exception_html"><div class="ttname"><a href="class_json_r_p_c_exception.html">JsonRPCException</a></div><div class="ttdef"><b>Definition:</b> RequestExceptions.h:89</div></div>
