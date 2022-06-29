@@ -268,15 +268,20 @@ const Mnemonic* Passphrase::detectMnemonic(const std::string& passphrase, const 
 	for (int i = 0; i < CryptoConfig::Mnemonic_Types::MNEMONIC_MAX; i++) {
 		Mnemonic& m = CryptoConfig::g_Mnemonic_WordLists[i];
 		bool existAll = true;
+		int count = 0;
 		for (auto it = results.begin(); it != results.end(); it++) {
+			if (count >= PHRASE_WORD_COUNT) break;
 			if (*it == "\0" || *it == "" || it->size() < 3) continue;
 			if (!m.isWordExist(*it)) {
 				existAll = false;
-				//printf("couldn't find word: %s\n", (*it).data());
+				if (i == CryptoConfig::Mnemonic_Types::MNEMONIC_BIP0039_SORTED_ORDER) {
+					printf("couldn't find word: %s\n", (*it).data());
+				}
 				last_words_not_found[i] = (*it);
 				// leave inner for-loop
 				break;
 			}
+			count++;
 		}
 		if (existAll) {
 			if (keyPair) {
