@@ -437,9 +437,9 @@ namespace model {
 			int targetDateReceivedDistanceMonth = 2;
 			// extra rule from the beginning and testing phase to keep transactions from beginning valid
 			// allow 3 month distance between created and target date between this dates
-			// 1585551913 = Mon Mar 30 2020 07:05:13 GMT+0000
+			// 1585544394 = Mon Mar 30 2020 04:59:54 GMT+0000
 			// 1641681224 = Sat Jan 08 2022 22:33:44 GMT+0000
-			if (received.timestamp() > 1585551915 * Poco::Timestamp::resolution() && received.timestamp() < 1641681224 * Poco::Timestamp::resolution()) {
+			if (received.timestamp() > 1585544394 * Poco::Timestamp::resolution() && received.timestamp() < 1641681224 * Poco::Timestamp::resolution()) {
 				targetDateReceivedDistanceMonth = 3;
 			}
 			return targetDateReceivedDistanceMonth;

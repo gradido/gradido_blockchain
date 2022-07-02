@@ -260,8 +260,8 @@ namespace model {
 					}
 					// memo is only mandatory for transfer and creation transactions
 					if (isDeferredTransfer() || isTransfer() || isCreation()) {
-						if (getMemo().size() < 5 || getMemo().size() > 350) {
-							throw TransactionValidationInvalidInputException("not in expected range [5;350]", "memo", "string");
+						if (getMemo().size() < 5 || getMemo().size() > 450) {
+							throw TransactionValidationInvalidInputException("not in expected range [5;450]", "memo", "string");
 						}
 					}
 					auto otherGroup = getOtherGroup();
