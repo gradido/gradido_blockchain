@@ -72,6 +72,9 @@ namespace model {
 
 	Poco::SharedPtr<gradido::GradidoBlock> TransactionsManagerBlockchain::getLastTransaction(std::function<bool(const gradido::GradidoBlock*)> filter /*= nullptr*/)
 	{
+		if (filter) {
+			throw std::runtime_error("[TransactionsManagerBlockchain::getLastTransaction] not implemented with filter yet");
+		}
 		auto tm = TransactionsManager::getInstance();
 		auto transactions = tm->getSortedTransactions(mGroupAlias);
 		auto lastTransaction = transactions->back();
@@ -108,7 +111,19 @@ namespace model {
 	}
 	Poco::SharedPtr<TransactionEntry> TransactionsManagerBlockchain::findLastTransactionForAddress(const std::string& address, const std::string& groupId /*= ""*/)
 	{
-		throw std::runtime_error("not implemented yet");
+		auto tm = TransactionsManager::getInstance();
+		auto pubkeyHex = DataTypeConverter::binToHex(address);
+		try {
+			auto transactions = tm->getSortedTransactionsForUser(mGroupAlias, pubkeyHex);
+			auto lastTransaction = transactions.back();
+			auto gradidoBlock = createBlockFromTransaction(lastTransaction, transactions.size());
+			Poco::SharedPtr<model::TransactionEntry> transactionEntry = new TransactionEntry(gradidoBlock.get());
+			return transactionEntry;
+		}
+		// not ideal, because exceptions should not be thrown in regular program operation
+		catch (TransactionsManager::AccountInGroupNotFoundException& ex) {
+			return nullptr;
+		}
 	}
 	Poco::SharedPtr<TransactionEntry> TransactionsManagerBlockchain::findByMessageId(const MemoryBin* messageId, bool cachedOnly/* = true*/)
 	{
