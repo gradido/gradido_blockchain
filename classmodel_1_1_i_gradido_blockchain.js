@@ -9,5 +9,6 @@ var classmodel_1_1_i_gradido_blockchain =
       [ "ASC", "classmodel_1_1_i_gradido_blockchain.html#ac7fe3ddbc6c0d1d3d704c1474de7d305ac6e421eaad140c1bc1a39980502df80c", null ],
       [ "DESC", "classmodel_1_1_i_gradido_blockchain.html#ac7fe3ddbc6c0d1d3d704c1474de7d305a65a6d757dbb571ccc3af9706e9a5f607", null ]
     ] ],
+    [ "findTransactions", "classmodel_1_1_i_gradido_blockchain.html#a477e7003f33570f4439a06b001176fa3", null ],
     [ "findTransactions", "classmodel_1_1_i_gradido_blockchain.html#a59296be26401bdde5e773ffbc35ddef9", null ]
 ];

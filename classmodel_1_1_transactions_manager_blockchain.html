@@ -136,6 +136,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a97077ee85d19cd65e82e73b7d5b73a48"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a554df3a23d17c39f80d5bef771bd99aa"><td class="memItemLeft" align="right" valign="top">Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_transactions_manager_blockchain.html#a554df3a23d17c39f80d5bef771bd99aa">findByMessageId</a> (const <a class="el" href="class_memory_bin.html">MemoryBin</a> *messageId, bool cachedOnly=true)</td></tr>
 <tr class="separator:a554df3a23d17c39f80d5bef771bd99aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae3ac8194d9fb3a36a65251ab4e48289"><td class="memItemLeft" align="right" valign="top">std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_transactions_manager_blockchain.html#aae3ac8194d9fb3a36a65251ab4e48289">findTransactions</a> (const std::string &amp;address)</td></tr>
+<tr class="memdesc:aae3ac8194d9fb3a36a65251ab4e48289"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find every transaction belonging to address account in memory or block chain, expensive.  <a href="classmodel_1_1_transactions_manager_blockchain.html#aae3ac8194d9fb3a36a65251ab4e48289">More...</a><br /></td></tr>
+<tr class="separator:aae3ac8194d9fb3a36a65251ab4e48289"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7baf7bb80754941f56e41751eeff9eaa"><td class="memItemLeft" align="right" valign="top">std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">model::TransactionEntry</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_transactions_manager_blockchain.html#a7baf7bb80754941f56e41751eeff9eaa">findTransactions</a> (const std::string &amp;address, int month, int year)</td></tr>
 <tr class="memdesc:a7baf7bb80754941f56e41751eeff9eaa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find transactions of account from a specific month.  <a href="classmodel_1_1_transactions_manager_blockchain.html#a7baf7bb80754941f56e41751eeff9eaa">More...</a><br /></td></tr>
 <tr class="separator:a7baf7bb80754941f56e41751eeff9eaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -164,6 +167,9 @@ virtual Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry
 <tr class="memitem:a6d1860a1f3c98ba6e1982506b1538c55"><td class="memItemLeft" align="right" valign="top"><a id="a6d1860a1f3c98ba6e1982506b1538c55" name="a6d1860a1f3c98ba6e1982506b1538c55"></a>
 virtual Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>findByMessageId</b> (const <a class="el" href="class_memory_bin.html">MemoryBin</a> *messageId, bool cachedOnly=true)=0</td></tr>
 <tr class="separator:a6d1860a1f3c98ba6e1982506b1538c55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a477e7003f33570f4439a06b001176fa3"><td class="memItemLeft" align="right" valign="top">virtual std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_i_gradido_blockchain.html#a477e7003f33570f4439a06b001176fa3">findTransactions</a> (const std::string &amp;address)=0</td></tr>
+<tr class="memdesc:a477e7003f33570f4439a06b001176fa3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find every transaction belonging to address account in memory or block chain, expensive.  <a href="classmodel_1_1_i_gradido_blockchain.html#a477e7003f33570f4439a06b001176fa3">More...</a><br /></td></tr>
+<tr class="separator:a477e7003f33570f4439a06b001176fa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a59296be26401bdde5e773ffbc35ddef9"><td class="memItemLeft" align="right" valign="top">virtual std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">model::TransactionEntry</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmodel_1_1_i_gradido_blockchain.html#a59296be26401bdde5e773ffbc35ddef9">findTransactions</a> (const std::string &amp;address, int month, int year)=0</td></tr>
 <tr class="memdesc:a59296be26401bdde5e773ffbc35ddef9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find transactions of account from a specific month.  <a href="classmodel_1_1_i_gradido_blockchain.html#a59296be26401bdde5e773ffbc35ddef9">More...</a><br /></td></tr>
 <tr class="separator:a59296be26401bdde5e773ffbc35ddef9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -321,8 +327,44 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
+<a id="aae3ac8194d9fb3a36a65251ab4e48289" name="aae3ac8194d9fb3a36a65251ab4e48289"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aae3ac8194d9fb3a36a65251ab4e48289">&#9670;&nbsp;</a></span>findTransactions() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; Poco::SharedPtr&lt; <a class="el" href="classmodel_1_1_transaction_entry.html">TransactionEntry</a> &gt; &gt; model::TransactionsManagerBlockchain::findTransactions </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>address</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Find every transaction belonging to address account in memory or block chain, expensive. </p>
+<p >Use with care, can need some time and return huge amount of data. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">address</td><td>Address = user account public key. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implements <a class="el" href="classmodel_1_1_i_gradido_blockchain.html#a477e7003f33570f4439a06b001176fa3">model::IGradidoBlockchain</a>.</p>
+
+</div>
+</div>
 <a id="a7baf7bb80754941f56e41751eeff9eaa" name="a7baf7bb80754941f56e41751eeff9eaa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7baf7bb80754941f56e41751eeff9eaa">&#9670;&nbsp;</a></span>findTransactions()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a7baf7bb80754941f56e41751eeff9eaa">&#9670;&nbsp;</a></span>findTransactions() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
