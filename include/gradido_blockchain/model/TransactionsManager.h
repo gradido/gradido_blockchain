@@ -16,15 +16,13 @@ namespace model {
 		Not optimized for unlimited transactions, mostly used for testing, debugging and performance tests
 	*/
 
-	class GRADIDOBLOCKCHAIN_EXPORT TransactionsManager : protected MultithreadContainer
+	class GRADIDOBLOCKCHAIN_EXPORT TransactionsManager final: protected MultithreadContainer
 	{
 	public:
 		typedef std::list<std::shared_ptr<model::gradido::GradidoTransaction>> TransactionList;
 
 		static TransactionsManager* getInstance();
-		~TransactionsManager();
-
-
+		
 		void clear();
 
 		void pushGradidoTransaction(const std::string& groupAlias, std::unique_ptr<model::gradido::GradidoTransaction> transaction);
@@ -79,7 +77,7 @@ namespace model {
 		};
 
 	protected:
-		TransactionsManager();
+		
 		
 		Poco::DateTime mDecayStartTime;
 
@@ -107,6 +105,15 @@ namespace model {
 		//! first key is group alias
 		//! second key is account address (pubkey in hex)
 		std::unordered_map<std::string, GroupTransactions> mAllTransactions;
+
+	private: 
+		TransactionsManager();
+		~TransactionsManager();
+
+		/* Explicitly disallow copying. */
+		TransactionsManager(const TransactionsManager&) = delete;
+		TransactionsManager& operator= (const TransactionsManager&) = delete;
+		
 	};
 
 }

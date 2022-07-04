@@ -20,7 +20,7 @@ namespace model {
 
 	TransactionsManager::~TransactionsManager()
 	{
-
+		printf("[TransactionsManager::~TransactionsManager]\n");
 	}
 
 	void TransactionsManager::clear()
