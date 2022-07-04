@@ -119,6 +119,19 @@ namespace model {
 					throw InsufficientBalanceException("not enough Gradido Balance for send coins", amount->getData(), finalBalance->getData());
 				}
 			}
+			if ((level & TRANSACTION_VALIDATION_CONNECTED_GROUP) == TRANSACTION_VALIDATION_CONNECTED_GROUP) {
+				assert(blockchain);
+				// check if sender address was registered
+				auto senderAddressType = blockchain->getAddressType(getSenderPublicKeyString());
+				if (proto::gradido::RegisterAddress_AddressType::RegisterAddress_AddressType_NONE == senderAddressType) {
+					throw WrongAddressTypeException("sender address not registered", senderAddressType, getSenderPublicKeyString());
+				}
+				// check if recipient address was registered
+				auto recipientAddressType = blockchain->getAddressType(getRecipientPublicKeyString());
+				if (proto::gradido::RegisterAddress_AddressType::RegisterAddress_AddressType_NONE == recipientAddressType) {
+					throw WrongAddressTypeException("recipient address not registered", recipientAddressType, getRecipientPublicKeyString());
+				}
+			}
 
 			return true;
 		}

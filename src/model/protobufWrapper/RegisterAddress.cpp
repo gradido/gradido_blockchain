@@ -2,7 +2,6 @@
 #include "gradido_blockchain/model/IGradidoBlockchain.h"
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 
-
 namespace model {
 	namespace gradido {
 		RegisterAddress::RegisterAddress(const proto::gradido::RegisterAddress& registerAddress)

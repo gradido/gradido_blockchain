@@ -114,6 +114,10 @@ namespace model {
 	{
 		throw std::runtime_error("not implemented yet");
 	}
+	std::vector<Poco::SharedPtr<TransactionEntry>> TransactionsManagerBlockchain::findTransactions(const std::string& address)
+	{
+		throw std::runtime_error("not implemented yet");
+	}
 	std::vector<Poco::SharedPtr<model::TransactionEntry>> TransactionsManagerBlockchain::findTransactions(const std::string& address, int month, int year)
 	{
 		auto tm = TransactionsManager::getInstance();
