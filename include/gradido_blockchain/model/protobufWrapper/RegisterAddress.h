@@ -36,6 +36,8 @@ namespace model {
 			static proto::gradido::RegisterAddress_AddressType getAddressTypeFromString(const std::string& addressType);
 			static const std::string& getAddressStringFromType(proto::gradido::RegisterAddress_AddressType type);
 
+			std::string toDebugString() const;
+
 		protected:
 			const proto::gradido::RegisterAddress& mProtoRegisterAddress;
 		};

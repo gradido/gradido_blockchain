@@ -169,6 +169,12 @@ namespace model {
 			return RegisterAddress_AddressType_Name(type);
 		}
 
+		std::string RegisterAddress::toDebugString() const 
+		{
+			std::string result;
+			result += "register address\n";
+			return std::move(result);
+		}
 
 
 	}

@@ -46,12 +46,16 @@ namespace model {
 		}
 		groupTransactionsIt->second.dirty = true;
 		auto sharedTransaction = std::shared_ptr<model::gradido::GradidoTransaction>(transaction.release());
+		auto transactionBody = sharedTransaction->getTransactionBody();
 		groupTransactionsIt->second.transactionsByReceived.insert({ 
-			sharedTransaction->getTransactionBody()->getCreated(), 
+			transactionBody->getCreated(),
 			sharedTransaction 
 		});
 		groupTransactionsIt->second.dirty = true;
-		auto involvedAddresses = sharedTransaction->getTransactionBody()->getTransactionBase()->getInvolvedAddresses();
+		auto involvedAddresses = transactionBody->getTransactionBase()->getInvolvedAddresses();
+		if (transactionBody->isTransfer() && involvedAddresses.size() != 2) {
+			throw std::exception("transfer transaction hasn't two involved addresses");
+		}
 		for (auto it = involvedAddresses.begin(); it != involvedAddresses.end(); it++) {
 			auto pubkeyHex = (*it)->convertToHex().get()->substr(0,64);
 			mm->releaseMemory(*it);
@@ -219,6 +223,8 @@ namespace model {
 				if (senderPubkeyHex == pubkeyHex) {
 					subtract = true;
 				}
+			}
+			else if (transactionBody->isRegisterAddress()) {
 			}
 			mpfr_set_str(amount, amountString.data(), 10, gDefaultRound);
 			if (subtract) {

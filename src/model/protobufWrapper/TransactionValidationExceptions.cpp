@@ -381,7 +381,7 @@ namespace model {
 			size_t resultSize = strlen(what()) + addressTypeName.size() + 2 + 14 + 10 + pubkeyHex.size();
 			result.reserve(resultSize);
 			result = what();
-			result += "address type: " + addressTypeName;
+			result += ", address type: " + addressTypeName;
 			result += ", pubkey: " + pubkeyHex;
 
 			return result;
