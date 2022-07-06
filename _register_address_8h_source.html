@@ -126,13 +126,15 @@ $(document).ready(function(){initNavTree('_register_address_8h_source.html','');
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>            <span class="keyword">static</span> proto::gradido::RegisterAddress_AddressType getAddressTypeFromString(<span class="keyword">const</span> std::string&amp; addressType);</div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>            <span class="keyword">static</span> <span class="keyword">const</span> std::string&amp; getAddressStringFromType(proto::gradido::RegisterAddress_AddressType type);</div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>        <span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>            <span class="keyword">const</span> proto::gradido::RegisterAddress&amp; mProtoRegisterAddress;</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>        };</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    }</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>}</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="preprocessor">#endif </span><span class="comment">//__GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_REGISTER_ADDRESS_H</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>            std::string toDebugString() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>        <span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>            <span class="keyword">const</span> proto::gradido::RegisterAddress&amp; mProtoRegisterAddress;</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>        };</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    }</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>}</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="preprocessor">#endif </span><span class="comment">//__GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_REGISTER_ADDRESS_H</span></div>
 <div class="ttc" id="a_transaction_base_8h_html"><div class="ttname"><a href="_transaction_base_8h.html">TransactionBase.h</a></div><div class="ttdoc">: Interface for Transaction Objects</div></div>
 <div class="ttc" id="aclass_memory_bin_html"><div class="ttname"><a href="class_memory_bin.html">MemoryBin</a></div><div class="ttdef"><b>Definition:</b> MemoryManager.h:40</div></div>
 <div class="ttc" id="aclassmodel_1_1_i_gradido_blockchain_html"><div class="ttname"><a href="classmodel_1_1_i_gradido_blockchain.html">model::IGradidoBlockchain</a></div><div class="ttdef"><b>Definition:</b> IGradidoBlockchain.h:13</div></div>
