@@ -170,6 +170,11 @@ namespace model {
 			return result;
 		}
 
+		const std::string GradidoBlock::getMessageIdString() const
+		{
+			return mProtoGradidoBlock->message_id();
+		}
+
 		std::string GradidoBlock::getMessageIdHex() const
 		{
 			if (!mProtoGradidoBlock->message_id().size()) return "";

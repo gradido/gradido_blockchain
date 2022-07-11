@@ -74,6 +74,7 @@ namespace model {
 			std::unique_ptr<std::string> getSerialized();
 			//! \return MemoryBin containing message id binar, must be freed from caller
 			MemoryBin* getMessageId() const;
+			const std::string getMessageIdString() const;
 			std::string getMessageIdHex() const;
 
 			//! calculate tx hash for this Gradido Block using last txHash as start
