@@ -139,7 +139,7 @@ namespace model {
 		void TransactionBase::amountToString(std::string* strPointer, mpfr_ptr amount)
 		{
 			mpfr_exp_t exp_temp;
-			auto str = mpfr_get_str(nullptr, &exp_temp, 10, 45, amount, gDefaultRound);
+			auto str = mpfr_get_str(nullptr, &exp_temp, 10, 40, amount, gDefaultRound);
 			if (amount->_mpfr_sign == -1 && exp_temp > 0) {
 				exp_temp++;
 			}

@@ -17,7 +17,7 @@ MPFR_RNDNA = -1 // round to nearest, with ties away from zero (mpfr_round)
 
 */
 // TODO: move to server config
-const mpfr_rnd_t gDefaultRound = MPFR_RNDN;
+const mpfr_rnd_t gDefaultRound = MPFR_RNDA;
 
 mpfr_t gDecayFactor356Days;
 mpfr_t gDecayFactor366Days;
@@ -52,8 +52,11 @@ void initDefaultDecayFactors()
 	mpfr_exp(gDecayFactorGregorianCalender, gDecayFactorGregorianCalender, MPFR_RNDZ);
 
 	mpfr_clear(temp);
+	// set decay factor manuell to the same value like the apollo server use it
+	std::string apolloDecayValueString = "0.99999997803504048973201202316767079413460520837376";
+	mpfr_set_str(gDecayFactorGregorianCalender, apolloDecayValueString.data(), 10, MPFR_RNDZ);
 
-	std::string decayStartTimeString = "2021-05-13 19:46:31";
+	std::string decayStartTimeString = "2021-05-13 17:46:31";
 	int timezoneDifferential = Poco::DateTimeFormatter::UTC; // + GMT 0
 	DECAY_START_TIME = Poco::DateTimeParser::parse(
 		Poco::DateTimeFormat::SORTABLE_FORMAT,
