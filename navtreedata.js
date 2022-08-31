@@ -49,7 +49,8 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"_authenticated_encryption_8h_source.html"
+"_authenticated_encryption_8h_source.html",
+"structmodel_1_1_transactions_manager_1_1_group_transactions.html#af346f28c137999e1dfb39919bc8344ca"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

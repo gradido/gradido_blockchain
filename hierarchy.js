@@ -2,6 +2,10 @@ var hierarchy =
 [
     [ "AuthenticatedEncryption", "class_authenticated_encryption.html", null ],
     [ "CrossGroupTransactionBuilder", "class_cross_group_transaction_builder.html", null ],
+    [ "Decimal", "class_decimal.html", [
+      [ "CachedDecimal", "class_cached_decimal.html", null ],
+      [ "DecayDecimal", "class_decay_decimal.html", null ]
+    ] ],
     [ "DRHashListItem", "class_d_r_hash_list_item.html", null ],
     [ "DRMemoryList< FLDataType >", "class_d_r_memory_list.html", null ],
     [ "DRStaticHashList", "class_d_r_static_hash_list.html", [
@@ -80,6 +84,7 @@ var hierarchy =
         [ "MemoryManagerException", "class_memory_manager_exception.html", null ],
         [ "MnemonicException", "class_mnemonic_exception.html", null ],
         [ "MultithreadContainerLockTimeoutException", "class_multithread_container_lock_timeout_exception.html", null ],
+        [ "ParseDecimalStringException", "class_parse_decimal_string_exception.html", null ],
         [ "ParseStringToMpfrException", "class_parse_string_to_mpfr_exception.html", null ],
         [ "PassphraseEmptyWordSourceException", "class_passphrase_empty_word_source_exception.html", null ],
         [ "PocoNetException", "class_poco_net_exception.html", null ],

@@ -1,0 +1,4 @@
+<map id="CachedDecimal" name="CachedDecimal">
+<area shape="rect" id="node1" title="cache string representation of decimal" alt="" coords="5,80,129,107"/>
+<area shape="rect" id="node2" href="$class_decimal.html" title="Container for mpfr values, for easy convertion between string and mpfr." alt="" coords="29,5,105,32"/>
+</map>
