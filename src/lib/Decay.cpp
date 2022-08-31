@@ -53,8 +53,9 @@ void initDefaultDecayFactors()
 
 	mpfr_clear(temp);
 	// set decay factor manuell to the same value like the apollo server use it
-	std::string apolloDecayValueString = "0.99999997803504048973201202316767079413460520837376";
-	mpfr_set_str(gDecayFactorGregorianCalender, apolloDecayValueString.data(), 10, MPFR_RNDZ);
+	//std::string apolloDecayValueString = "0.99999997803504048973201202316767079413460520837376";
+	//std::string apolloDecayValueString = "0.9999999780350404897320120"; 
+	//mpfr_set_str(gDecayFactorGregorianCalender, apolloDecayValueString.data(), 10, MPFR_RNDZ);
 
 	std::string decayStartTimeString = "2021-05-13 17:46:31";
 	int timezoneDifferential = Poco::DateTimeFormatter::UTC; // + GMT 0
@@ -68,6 +69,7 @@ void initDefaultDecayFactors()
 
 void unloadDefaultDecayFactors()
 {
+	if (!gInited) return;
 	mpfr_clear(gDecayFactor356Days);
 	mpfr_clear(gDecayFactor366Days);
 	mpfr_clear(gDecayFactorGregorianCalender);
@@ -107,18 +109,25 @@ void calculateDecayFactorForDuration(
 	Poco::Timestamp startTime, Poco::Timestamp endTime
 )
 {
-	assert(endTime > startTime);
 	assert(gInited && "Decay lib not initalized");
-	Poco::Timestamp start = startTime > DECAY_START_TIME ? startTime : DECAY_START_TIME;
-	Poco::Timestamp end = endTime > DECAY_START_TIME ? endTime : DECAY_START_TIME;
-	if (start == end) {
+	auto duration = calculateDecayDurationSeconds(startTime, endTime).totalSeconds();
+	if (!duration) {
 		// no decay
 		mpfr_set_ui(decay_for_duration, 1, gDefaultRound);
 	}
 	else {
-		auto duration = Poco::Timespan(end - start).totalSeconds();
-		mpfr_pow_ui(decay_for_duration, decay_factor, Poco::Timespan(end - start).totalSeconds(), gDefaultRound);
+		mpfr_pow_ui(decay_for_duration, decay_factor, duration, gDefaultRound);
 	}
+}
+
+
+Poco::Timespan calculateDecayDurationSeconds(Poco::Timestamp startTime, Poco::Timestamp endTime)
+{
+	assert(endTime > startTime);
+	Poco::Timestamp start = startTime > DECAY_START_TIME ? startTime : DECAY_START_TIME;
+	Poco::Timestamp end = endTime > DECAY_START_TIME ? endTime : DECAY_START_TIME;
+	if (start == end) return 0;
+	return end - start;
 }
 
 void calculateDecayFast(mpfr_ptr decay_for_duration, mpfr_ptr gradido)

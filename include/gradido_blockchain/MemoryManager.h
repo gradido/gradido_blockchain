@@ -29,7 +29,7 @@
 #define MEMORY_MANAGER_PAGE_SIZE 10
 
 // MAGIC NUMBER: Define how many bits are used for amount calculation
-#define MAGIC_NUMBER_AMOUNT_PRECISION_BITS 256
+#define MAGIC_NUMBER_AMOUNT_PRECISION_BITS 128
 
 class MemoryPageStack;
 class MemoryManager;
@@ -100,6 +100,7 @@ public:
 
 	static std::unique_ptr<MathMemory> create();
 	mpfr_ptr getData() { return mData; }
+	inline operator mpfr_ptr() { return mData; }
 
 protected:
 	MathMemory();

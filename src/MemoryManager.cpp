@@ -100,7 +100,6 @@ MemoryPageStack::~MemoryPageStack()
 		MemoryBin* memoryBin = mMemoryBinStack.top();
 		mMemoryBinStack.pop();
 		delete memoryBin;
-
 	}
 	unlock();
 }
@@ -199,6 +198,7 @@ MemoryManager::~MemoryManager()
 {
 	for (int i = 0; i < 5; i++) {
 		delete mMemoryPageStacks[i];
+		mMemoryPageStacks[i] = nullptr;
 	}
 	{
 		std::scoped_lock<std::mutex> _lock(mMpfrMutex);
@@ -241,10 +241,12 @@ MemoryBin* MemoryManager::getMemory(uint32_t size)
 	assert(size == (uint32_t)((uint16_t)size));
 	assert(size > 0);
 	auto index = getMemoryStackIndex(size);
+	
 	if (index < 0) {
 		return new MemoryBin(size);
 	}
 	else {
+		assert(mMemoryPageStacks[index]);
 		return mMemoryPageStacks[index]->getMemory();
 	}
 	return nullptr;
@@ -254,7 +256,7 @@ void MemoryManager::releaseMemory(MemoryBin* memory) noexcept
 {
 	if (!memory) return;
 	auto index = getMemoryStackIndex(memory->size());
-	if (index < 0) {
+	if (index < 0 || !mMemoryPageStacks[index]) {
 		delete memory;
 	}
 	else {
