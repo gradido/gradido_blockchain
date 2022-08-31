@@ -15,7 +15,7 @@ public:
 	static inline Decimal calculateDecayFactor(Poco::Timestamp startTime, Poco::Timestamp endTime) {
 		return calculateDecayFactor(calculateDecayDurationSeconds(startTime, endTime));
 	}
-
+	
 	virtual void applyDecay(Poco::Timespan duration);
 	inline void applyDecay(Poco::Timestamp startTime, Poco::Timestamp endTime) {
 		applyDecay(calculateDecayDurationSeconds(startTime, endTime));

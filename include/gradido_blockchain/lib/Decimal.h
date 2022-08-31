@@ -75,6 +75,12 @@ inline Decimal operator/(Decimal lhs, const Decimal& rhs)
 	return std::move(result);
 }
 
+inline Decimal operator ^(unsigned long lhs, const Decimal& rhs) {
+	Decimal result;
+	mpfr_ui_pow(result, lhs, rhs, gDefaultRound);
+	return std::move(result);
+}
+
 inline bool operator==(const Decimal& lhs, const Decimal& rhs) { return mpfr_cmp(lhs, rhs) == 0; }
 inline bool operator!=(const Decimal& lhs, const Decimal& rhs) { return !operator==(lhs, rhs); }
 
