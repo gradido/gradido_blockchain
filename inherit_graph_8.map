@@ -1,3 +1,4 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$class_key_pair_ed25519.html" title=": Key Pairs class for ed25519 keys, used for default gradido transactions TODO: add verify method" alt="" coords="5,5,132,32"/>
+<area shape="rect" id="node1" href="$class_key_pair_ed25519.html" title=" " alt="" coords="5,5,132,32"/>
+<area shape="rect" id="node2" href="$class_key_pair_ed25519_ex.html" title=": Key Pairs class for ed25519 extended keys, mainly used for derivation" alt="" coords="180,5,323,32"/>
 </map>

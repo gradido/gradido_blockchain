@@ -105,7 +105,7 @@ $(document).ready(function(){initNavTree('_decay_decimal_8h_source.html',''); in
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    <span class="keyword">static</span> <span class="keyword">inline</span> <a class="code hl_class" href="class_decimal.html">Decimal</a> calculateDecayFactor(Poco::Timestamp startTime, Poco::Timestamp endTime) {</div>
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>        <span class="keywordflow">return</span> calculateDecayFactor(calculateDecayDurationSeconds(startTime, endTime));</div>
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    }</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    </div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> applyDecay(Poco::Timespan duration);</div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    <span class="keyword">inline</span> <span class="keywordtype">void</span> applyDecay(Poco::Timestamp startTime, Poco::Timestamp endTime) {</div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>        applyDecay(calculateDecayDurationSeconds(startTime, endTime));</div>

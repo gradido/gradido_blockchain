@@ -29,7 +29,9 @@ var hierarchy =
     [ "model::IGradidoBlockchain", "classmodel_1_1_i_gradido_blockchain.html", [
       [ "model::TransactionsManagerBlockchain", "classmodel_1_1_transactions_manager_blockchain.html", null ]
     ] ],
-    [ "KeyPairEd25519", "class_key_pair_ed25519.html", null ],
+    [ "KeyPairEd25519", "class_key_pair_ed25519.html", [
+      [ "KeyPairEd25519Ex", "class_key_pair_ed25519_ex.html", null ]
+    ] ],
     [ "MathMemory", "class_math_memory.html", null ],
     [ "MemoryBin", "class_memory_bin.html", null ],
     [ "MemoryManager", "class_memory_manager.html", null ],
@@ -66,6 +68,7 @@ var hierarchy =
         [ "CryptoConfig::MissingKeyException", "class_crypto_config_1_1_missing_key_exception.html", null ],
         [ "DataTypeConverter::InvalidHexException", "class_data_type_converter_1_1_invalid_hex_exception.html", null ],
         [ "DecryptionFailedException", "class_decryption_failed_exception.html", null ],
+        [ "Ed25519DeriveException", "class_ed25519_derive_exception.html", null ],
         [ "Ed25519SignException", "class_ed25519_sign_exception.html", null ],
         [ "GradidoBlockchainTransactionAlreadyExistException", "class_gradido_blockchain_transaction_already_exist_exception.html", null ],
         [ "GradidoBlockchainTransactionNotFoundException", "class_gradido_blockchain_transaction_not_found_exception.html", null ],

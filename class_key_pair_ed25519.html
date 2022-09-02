@@ -92,19 +92,26 @@ $(document).ready(function(){initNavTree('class_key_pair_ed25519.html',''); init
   <div class="headertitle"><div class="title">KeyPairEd25519 Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
-
-<p>: Key Pairs class for ed25519 keys, used for default gradido transactions TODO: add verify method  
- <a href="class_key_pair_ed25519.html#details">More...</a></p>
-
-<p><code>#include &lt;<a class="el" href="_key_pair_ed25519_8h_source.html">KeyPairEd25519.h</a>&gt;</code></p>
+<div class="dynheader">
+Inheritance diagram for KeyPairEd25519:</div>
+<div class="dyncontent">
+<div class="center"><img src="class_key_pair_ed25519__inherit__graph.png" border="0" usemap="#a_key_pair_ed25519_inherit__map" alt="Inheritance graph"/></div>
+<map name="a_key_pair_ed25519_inherit__map" id="a_key_pair_ed25519_inherit__map">
+<area shape="rect" title=" " alt="" coords="13,5,140,32"/>
+<area shape="rect" href="class_key_pair_ed25519_ex.html" title=": Key Pairs class for ed25519 extended keys, mainly used for derivation" alt="" coords="5,80,148,107"/>
+</map>
+<center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a813233e90602282ae943a40de3e16d01"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_pair_ed25519.html#a813233e90602282ae943a40de3e16d01">KeyPairEd25519</a> (<a class="el" href="class_memory_bin.html">MemoryBin</a> *privateKey)</td></tr>
-<tr class="separator:a813233e90602282ae943a40de3e16d01"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adeb748dcdcb935b4d06725669be341e0"><td class="memItemLeft" align="right" valign="top"><a id="adeb748dcdcb935b4d06725669be341e0" name="adeb748dcdcb935b4d06725669be341e0"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>KeyPairEd25519</b> (const unsigned char *publicKey)</td></tr>
-<tr class="separator:adeb748dcdcb935b4d06725669be341e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6bb407268dc34273a02b8e3e1f4c698f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_pair_ed25519.html#a6bb407268dc34273a02b8e3e1f4c698f">KeyPairEd25519</a> (<a class="el" href="class_memory_bin.html">MemoryBin</a> *privateKey, <a class="el" href="class_memory_bin.html">MemoryBin</a> *chainCode=nullptr)</td></tr>
+<tr class="separator:a6bb407268dc34273a02b8e3e1f4c698f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45c6832638d1e0ff28e772686b2b547a"><td class="memItemLeft" align="right" valign="top"><a id="a45c6832638d1e0ff28e772686b2b547a" name="a45c6832638d1e0ff28e772686b2b547a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KeyPairEd25519</b> (const unsigned char *publicKey, <a class="el" href="class_memory_bin.html">MemoryBin</a> *chainCode=nullptr)</td></tr>
+<tr class="separator:a45c6832638d1e0ff28e772686b2b547a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f8509fd7de6ee25beaf828580fc6cc9"><td class="memItemLeft" align="right" valign="top"><a id="a5f8509fd7de6ee25beaf828580fc6cc9" name="a5f8509fd7de6ee25beaf828580fc6cc9"></a>
+<a class="el" href="class_key_pair_ed25519_ex.html">KeyPairEd25519Ex</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>deriveChild</b> (Poco::UInt32 index)</td></tr>
+<tr class="separator:a5f8509fd7de6ee25beaf828580fc6cc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b02c3df480cc943a3fccced4fecd1b8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_memory_bin.html">MemoryBin</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_pair_ed25519.html#a3b02c3df480cc943a3fccced4fecd1b8">sign</a> (const <a class="el" href="class_memory_bin.html">MemoryBin</a> *message) const</td></tr>
 <tr class="separator:a3b02c3df480cc943a3fccced4fecd1b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeae6589e86eb766b17c75e2367d9e1f2"><td class="memItemLeft" align="right" valign="top"><a id="aeae6589e86eb766b17c75e2367d9e1f2" name="aeae6589e86eb766b17c75e2367d9e1f2"></a>
@@ -115,15 +122,24 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:afdda9cabe7a784f790797e708c41f35b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a507ecc0cc31ddb6b628ccef5f24994e7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_pair_ed25519.html#a507ecc0cc31ddb6b628ccef5f24994e7">verify</a> (const std::string &amp;message, const std::string &amp;signature) const</td></tr>
 <tr class="separator:a507ecc0cc31ddb6b628ccef5f24994e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82a8081253ce1b946da196f801da4157"><td class="memItemLeft" align="right" valign="top"><a id="a82a8081253ce1b946da196f801da4157" name="a82a8081253ce1b946da196f801da4157"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>is3rdHighestBitClear</b> () const</td></tr>
+<tr class="separator:a82a8081253ce1b946da196f801da4157"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae04e186f547d18e8974e2446372e8980"><td class="memItemLeft" align="right" valign="top"><a id="ae04e186f547d18e8974e2446372e8980" name="ae04e186f547d18e8974e2446372e8980"></a>
 const unsigned char *&#160;</td><td class="memItemRight" valign="bottom"><b>getPublicKey</b> () const</td></tr>
 <tr class="separator:ae04e186f547d18e8974e2446372e8980"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad8a96283b8ea3b5a5fdde2d3f673abd7"><td class="memItemLeft" align="right" valign="top"><a id="ad8a96283b8ea3b5a5fdde2d3f673abd7" name="ad8a96283b8ea3b5a5fdde2d3f673abd7"></a>
+<a class="el" href="class_memory_bin.html">MemoryBin</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>getChainCode</b> () const</td></tr>
+<tr class="separator:ad8a96283b8ea3b5a5fdde2d3f673abd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e63f541efc5db6d4ed0a8a2ac5cf7a6"><td class="memItemLeft" align="right" valign="top"><a id="a4e63f541efc5db6d4ed0a8a2ac5cf7a6" name="a4e63f541efc5db6d4ed0a8a2ac5cf7a6"></a>
 <a class="el" href="class_memory_bin.html">MemoryBin</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>getPublicKeyCopy</b> () const</td></tr>
 <tr class="separator:a4e63f541efc5db6d4ed0a8a2ac5cf7a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7e6aa7bcbb86b681d4c39aeb047a963d"><td class="memItemLeft" align="right" valign="top"><a id="a7e6aa7bcbb86b681d4c39aeb047a963d" name="a7e6aa7bcbb86b681d4c39aeb047a963d"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>getPublicKeyHex</b> () const</td></tr>
 <tr class="separator:a7e6aa7bcbb86b681d4c39aeb047a963d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43468119cab104c7c7a6790e8f098e05"><td class="memItemLeft" align="right" valign="top"><a id="a43468119cab104c7c7a6790e8f098e05" name="a43468119cab104c7c7a6790e8f098e05"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>getChainCodeHex</b> () const</td></tr>
+<tr class="separator:a43468119cab104c7c7a6790e8f098e05"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a00c498075d41ad4d14d5fb3341f711aa"><td class="memItemLeft" align="right" valign="top"><a id="a00c498075d41ad4d14d5fb3341f711aa" name="a00c498075d41ad4d14d5fb3341f711aa"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>isTheSame</b> (const <a class="el" href="class_key_pair_ed25519.html">KeyPairEd25519</a> &amp;b) const</td></tr>
 <tr class="separator:a00c498075d41ad4d14d5fb3341f711aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -158,17 +174,16 @@ const <a class="el" href="class_memory_bin.html">MemoryBin</a> *&#160;</td><td c
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:adbf559ed7546131b77c43be2ec01b43b"><td class="memItemLeft" align="right" valign="top">static std::unique_ptr&lt; <a class="el" href="class_key_pair_ed25519.html">KeyPairEd25519</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_key_pair_ed25519.html#adbf559ed7546131b77c43be2ec01b43b">create</a> (const std::shared_ptr&lt; <a class="el" href="class_passphrase.html">Passphrase</a> &gt; passphrase)</td></tr>
 <tr class="separator:adbf559ed7546131b77c43be2ec01b43b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4801741860891b99714e013a17812a16"><td class="memItemLeft" align="right" valign="top"><a id="a4801741860891b99714e013a17812a16" name="a4801741860891b99714e013a17812a16"></a>
+static DerivationType&#160;</td><td class="memItemRight" valign="bottom"><b>getDerivationType</b> (Poco::UInt32 index)</td></tr>
+<tr class="separator:a4801741860891b99714e013a17812a16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3475383e5f8ba94d92a0b1ece576d2bb"><td class="memItemLeft" align="right" valign="top"><a id="a3475383e5f8ba94d92a0b1ece576d2bb" name="a3475383e5f8ba94d92a0b1ece576d2bb"></a>
 static const size_t&#160;</td><td class="memItemRight" valign="bottom"><b>getPublicKeySize</b> ()</td></tr>
 <tr class="separator:a3475383e5f8ba94d92a0b1ece576d2bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >: Key Pairs class for ed25519 keys, used for default gradido transactions TODO: add verify method </p>
-<dl class="section author"><dt>Author</dt><dd>: Dario Rekowski</dd></dl>
-<dl class="section date"><dt>Date</dt><dd>: 2020-06-04 </dd></dl>
-</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a813233e90602282ae943a40de3e16d01" name="a813233e90602282ae943a40de3e16d01"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a813233e90602282ae943a40de3e16d01">&#9670;&nbsp;</a></span>KeyPairEd25519()</h2>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a6bb407268dc34273a02b8e3e1f4c698f" name="a6bb407268dc34273a02b8e3e1f4c698f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6bb407268dc34273a02b8e3e1f4c698f">&#9670;&nbsp;</a></span>KeyPairEd25519()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -177,8 +192,18 @@ static const size_t&#160;</td><td class="memItemRight" valign="bottom"><b>getPub
           <td class="memname">KeyPairEd25519::KeyPairEd25519 </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="class_memory_bin.html">MemoryBin</a> *&#160;</td>
-          <td class="paramname"><em>privateKey</em></td><td>)</td>
+          <td class="paramname"><em>privateKey</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="class_memory_bin.html">MemoryBin</a> *&#160;</td>
+          <td class="paramname"><em>chainCode</em> = <code>nullptr</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -192,16 +217,16 @@ static const size_t&#160;</td><td class="memItemRight" valign="bottom"><b>getPub
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="class_key_pair_ed25519_a813233e90602282ae943a40de3e16d01_cgraph.png" border="0" usemap="#aclass_key_pair_ed25519_a813233e90602282ae943a40de3e16d01_cgraph" alt=""/></div>
-<map name="aclass_key_pair_ed25519_a813233e90602282ae943a40de3e16d01_cgraph" id="aclass_key_pair_ed25519_a813233e90602282ae943a40de3e16d01_cgraph">
+<div class="center"><img src="class_key_pair_ed25519_a6bb407268dc34273a02b8e3e1f4c698f_cgraph.png" border="0" usemap="#aclass_key_pair_ed25519_a6bb407268dc34273a02b8e3e1f4c698f_cgraph" alt=""/></div>
+<map name="aclass_key_pair_ed25519_a6bb407268dc34273a02b8e3e1f4c698f_cgraph" id="aclass_key_pair_ed25519_a6bb407268dc34273a02b8e3e1f4c698f_cgraph">
 <area shape="rect" title=" " alt="" coords="5,29,244,56"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="class_key_pair_ed25519_a813233e90602282ae943a40de3e16d01_icgraph.png" border="0" usemap="#aclass_key_pair_ed25519_a813233e90602282ae943a40de3e16d01_icgraph" alt=""/></div>
-<map name="aclass_key_pair_ed25519_a813233e90602282ae943a40de3e16d01_icgraph" id="aclass_key_pair_ed25519_a813233e90602282ae943a40de3e16d01_icgraph">
+<div class="center"><img src="class_key_pair_ed25519_a6bb407268dc34273a02b8e3e1f4c698f_icgraph.png" border="0" usemap="#aclass_key_pair_ed25519_a6bb407268dc34273a02b8e3e1f4c698f_icgraph" alt=""/></div>
+<map name="aclass_key_pair_ed25519_a6bb407268dc34273a02b8e3e1f4c698f_icgraph" id="aclass_key_pair_ed25519_a6bb407268dc34273a02b8e3e1f4c698f_icgraph">
 <area shape="rect" title=" " alt="" coords="5,29,244,56"/>
 </map>
 </div>
@@ -238,7 +263,7 @@ Here is the caller graph for this function:</div>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>create <a class="el" href="class_key_pair_ed25519.html" title=": Key Pairs class for ed25519 keys, used for default gradido transactions TODO: add verify method">KeyPairEd25519</a>, caller muss call delete at return after finish </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>create <a class="el" href="class_key_pair_ed25519.html">KeyPairEd25519</a>, caller muss call delete at return after finish </dd></dl>
 
 </div>
 </div>
