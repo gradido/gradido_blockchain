@@ -131,6 +131,7 @@ include_directories(
 	"dependencies/rapidjson/include"
 	"include"
 	"iota_rust_clib/include"
+	"dependencies/ed25519_bip32_c_interface/include"
 )
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 IF(WIN32)
@@ -160,6 +161,7 @@ message(STATUS "MPFR Found: ${MPFR_FOUND}")
 enable_language(Rust)
 include(CMakeCargo)
 add_subdirectory(iota_rust_clib)
+add_subdirectory(dependencies/ed25519_bip32_c_interface)
 
 ######################################################################
 
@@ -175,9 +177,14 @@ if(BUILD_SHARED_LIBS)
 			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/debug"
 			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/release"
 		)
-		target_link_libraries(GradidoBlockchain ${CONAN_LIBS} ${IOTA_RUST_C_LIB}  ws2_32 userenv) #${IOTA_RUST_C_LIB}
+		find_library(ED25519_BIP32_RUST_C_LIB ed25519_bip32_c_interface.dll.lib PATHS 
+			"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
+			"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/debug"
+			"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/release"
+		)		
+		target_link_libraries(GradidoBlockchain ${CONAN_LIBS} ${IOTA_RUST_C_LIB} ${ED25519_BIP32_RUST_C_LIB}  ws2_32 userenv)
 	ELSE()
-		target_link_libraries(GradidoBlockchain ${POCO_LIBS} sodium iota_rust_clib)
+		target_link_libraries(GradidoBlockchain ${POCO_LIBS} sodium iota_rust_clib ed25519_bip32_c_interface)
 	ENDIF()
 endif()
 set_target_properties(GradidoBlockchain PROPERTIES

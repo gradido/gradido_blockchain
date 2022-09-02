@@ -10,13 +10,15 @@ include_directories(
 
 # collect source code files
 FILE(GLOB TEST_MAIN "*.cpp" "*.h")
+FILE(GLOB TEST_CRYPTO "crypto/*.cpp" "crypto/*.h")
 FILE(GLOB TEST_LIB "lib/*.cpp" "lib/*.h")
 
-SET(TEST_SRC ${TEST_MAIN} ${TEST_LIB})
+SET(TEST_SRC ${TEST_MAIN} ${TEST_LIB} ${TEST_CRYPTO})
 
 if(MSVC)
 	# src
 	source_group("lib" FILES ${TEST_LIB})
+    source_group("crypto" FILES ${TEST_CRYPTO})
 endif()
 
 IF(WIN32)
@@ -41,6 +43,17 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 add_executable(GradidoBlockchainTest ${TEST_SRC})
 target_link_libraries(GradidoBlockchainTest GradidoBlockchain libprotobuf gmock)
+IF(WIN32)    
+    find_library(ED25519_BIP32_RUST_C_LIB ed25519_bip32_c_interface.dll.lib PATHS 
+		"${PROJECT_BINARY_DIR}/../dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
+		"${PROJECT_BINARY_DIR}/../dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/debug"
+		"${PROJECT_BINARY_DIR}/../dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/release"
+	REQUIRED)	
+    
+    target_link_libraries(GradidoBlockchainTest ${ED25519_BIP32_RUST_C_LIB})
+ELSE()
+    target_link_libraries(GradidoBlockchainTest ed25519_bip32_c_interface)
+ENDIF()
 
 IF(NOT BUILD_SHARED_LIBS) 
     IF(WIN32) 
