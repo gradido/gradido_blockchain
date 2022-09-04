@@ -33,6 +33,7 @@ public:
 
 	inline void reset() { mpfr_set_ui(mDecimal, 0, gDefaultRound); }
 	inline operator const mpfr_ptr() const { return mDecimal; }
+	inline operator const mpfr_srcptr() const { return mDecimal; }
 	inline Decimal& operator+=(const Decimal& rhs) { mpfr_add(mDecimal, mDecimal, rhs, gDefaultRound); return *this; }
 	inline Decimal& operator-=(const Decimal& rhs) { mpfr_sub(mDecimal, mDecimal, rhs, gDefaultRound); return *this; }
 	inline Decimal& operator*=(const Decimal& rhs) { mpfr_mul(mDecimal, mDecimal, rhs, gDefaultRound); return *this; }

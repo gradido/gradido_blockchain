@@ -5,21 +5,12 @@ DecayDecimal::~DecayDecimal()
 
 }
 
-Decimal DecayDecimal::calculateDecayFactor(Poco::Timespan duration)
-{
-	auto durationSeconds = duration.totalSeconds();
-	if (!durationSeconds) {
-		return 1;
-	}
-	else {
-		Decimal decayForDuration;
-		mpfr_pow_ui(decayForDuration, gDecayFactorGregorianCalender, durationSeconds, gDefaultRound);
-		return std::move(decayForDuration);
-	}
-}
 
 void DecayDecimal::applyDecay(Poco::Timespan duration)
 {
-	auto decay = calculateDecayFactor(duration);
-	(*this) *= decay;
+	Decimal durationSeconds(duration.totalSeconds());
+	Decimal secondsPerYear(MAGIC_NUMBER_GREGORIAN_CALENDER_SECONDS_PER_YEAR);
+	Decimal timeFactor = (durationSeconds / secondsPerYear);
+	timeFactor = 2 ^ timeFactor;
+	(*this) /= timeFactor;
 }

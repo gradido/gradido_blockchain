@@ -4,21 +4,21 @@
 #include "Decimal.h"
 #include "Decay.h"
 
+#define MAGIC_NUMBER_GREGORIAN_CALENDER_SECONDS_PER_YEAR 31556952
+
 class DecayDecimal : public Decimal
 {
 public:
 	// inherit constructors
 	using Decimal::Decimal;
 	virtual ~DecayDecimal();
-
-	static Decimal calculateDecayFactor(Poco::Timespan duration);
-	static inline Decimal calculateDecayFactor(Poco::Timestamp startTime, Poco::Timestamp endTime) {
-		return calculateDecayFactor(calculateDecayDurationSeconds(startTime, endTime));
-	}
 	
 	virtual void applyDecay(Poco::Timespan duration);
 	inline void applyDecay(Poco::Timestamp startTime, Poco::Timestamp endTime) {
 		applyDecay(calculateDecayDurationSeconds(startTime, endTime));
+	}
+	inline void applyDecay(Poco::DateTime startTime, Poco::DateTime endTime) {
+		applyDecay(calculateDecayDurationSeconds(startTime.timestamp(), endTime.timestamp()));
 	}
 
 };

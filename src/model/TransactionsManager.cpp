@@ -1,7 +1,7 @@
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 #include "gradido_blockchain/model/TransactionsManager.h"
 #include "gradido_blockchain/MemoryManager.h"
-#include "gradido_blockchain/lib/Decay.h"
+#include "gradido_blockchain/lib/DecayDecimal.h"
 
 #include <algorithm>
 
@@ -119,9 +119,8 @@ namespace model {
 	{
 		auto transactions = getSortedTransactionsForUser(groupAlias, pubkeyHex);
 		auto mm = MemoryManager::getInstance();
-		auto balance = mm->getMathMemory();
-		auto amount = mm->getMathMemory();
-		auto decayForDuration = mm->getMathMemory();
+		DecayDecimal balance;
+		DecayDecimal amount;
 		auto pubkeyBinString = DataTypeConverter::hexToBinString(pubkeyHex.substr(0, 64));
 
 		Poco::DateTime now;
@@ -131,8 +130,7 @@ namespace model {
 			Poco::DateTime localDate = Poco::Timestamp((Poco::UInt64)transactionBody->getCreatedSeconds() * Poco::Timestamp::resolution());
 			if (localDate > date) break;
 			if (localDate > lastBalanceDate && lastBalanceDate != now) {
-				calculateDecayFactorForDuration(decayForDuration, gDecayFactorGregorianCalender, lastBalanceDate, localDate);
-				calculateDecayFast(decayForDuration, balance);
+				balance.applyDecay(lastBalanceDate, localDate);
 			}
 			std::string amountString;
 			bool subtract = false;
@@ -156,26 +154,20 @@ namespace model {
 			else {
 				continue;
 			}
-			if (mpfr_set_str(amount, amountString.data(), 10, gDefaultRound)) {
-				throw model::gradido::TransactionValidationInvalidInputException("amount cannot be parsed to a number", "amount", "string");
-			}
-			if (!subtract) {
-				mpfr_add(balance, balance, amount, gDefaultRound);
+			amount = amountString;
+			if (!subtract) { 
+				balance += amount;
 			}
 			else {
-				mpfr_sub(balance, balance, amount, gDefaultRound);
+				balance -= amount;
 			}
 			lastBalanceDate = localDate;
 		}
 		if (date > lastBalanceDate && lastBalanceDate != now) {
-			calculateDecayFactorForDuration(decayForDuration, gDecayFactorGregorianCalender, lastBalanceDate, date);
-			calculateDecayFast(decayForDuration, balance);
+			balance.applyDecay(lastBalanceDate, date);
 		}
 		std::string balanceString;
 		model::gradido::TransactionBase::amountToString(&balanceString, balance);
-		mm->releaseMathMemory(balance);
-		mm->releaseMathMemory(decayForDuration);
-		mm->releaseMathMemory(amount);
 		return UserBalance(pubkeyHex, balanceString, date);
 	}
 
