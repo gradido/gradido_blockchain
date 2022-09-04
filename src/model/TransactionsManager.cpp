@@ -47,14 +47,14 @@ namespace model {
 		groupTransactionsIt->second.dirty = true;
 		auto sharedTransaction = std::shared_ptr<model::gradido::GradidoTransaction>(transaction.release());
 		auto transactionBody = sharedTransaction->getTransactionBody();
-		groupTransactionsIt->second.transactionsByReceived.insert({ 
+		groupTransactionsIt->second.transactionsByReceived.insert({
 			transactionBody->getCreated(),
-			sharedTransaction 
+			sharedTransaction
 		});
 		groupTransactionsIt->second.dirty = true;
 		auto involvedAddresses = transactionBody->getTransactionBase()->getInvolvedAddresses();
 		if (transactionBody->isTransfer() && involvedAddresses.size() != 2) {
-			throw std::exception("transfer transaction hasn't two involved addresses");
+			throw std::runtime_error("transfer transaction hasn't two involved addresses");
 		}
 		for (auto it = involvedAddresses.begin(); it != involvedAddresses.end(); it++) {
 			auto pubkeyHex = (*it)->convertToHex().get()->substr(0,64);
@@ -112,7 +112,7 @@ namespace model {
 			}
 		}
 		groupTransactionsIt->second.dirty = true;
-		
+
 	}
 
 	TransactionsManager::UserBalance TransactionsManager::calculateUserBalanceUntil(const std::string& groupAlias, const std::string& pubkeyHex, Poco::DateTime date)
@@ -155,7 +155,7 @@ namespace model {
 				continue;
 			}
 			amount = amountString;
-			if (!subtract) { 
+			if (!subtract) {
 				balance += amount;
 			}
 			else {
@@ -230,7 +230,7 @@ namespace model {
 			result += "balance: " + balanceString + " GDD\n";
 			result += "\n";
 			lastBalanceDate = createdDate;
-		}		
+		}
 		result.erase(std::remove(result.begin(), result.end(), '\0'), result.end());
 		mm->releaseMathMemory(balance);
 		mm->releaseMathMemory(amount);
@@ -317,7 +317,7 @@ namespace model {
 		if (itGroup == mAllTransactions.end()) {
 			throw GroupNotFoundException("[TransactionsManager::getSortedTransactionsForUser]", groupAlias);
 		}
-		
+
 		auto transactionsByReceived = &itGroup->second.transactionsByReceived;
 		if (itGroup->second.dirty) {
 			itGroup->second.sortedTransactions.clear();

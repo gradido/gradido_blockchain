@@ -34,7 +34,7 @@ endif ()
 if(NOT TARGET protoc)
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 	# prevent problems with two libs including googletest 
-	option(protobuf_BUILD_TESTS "Build tests" OFF)
+	option(protobuf_BUILD_TESTS "Build tests" ON)
 	add_subdirectory(dependencies/protobuf/cmake)
 endif()
 #INCLUDE(FindProtobuf)

@@ -4,9 +4,11 @@ project(GradidoBlockchainTest)
 # GoogleTest requires at least C++11
 set(CMAKE_CXX_STANDARD 11)
 
-include_directories(
-	"../dependencies/protobuf/third_party/googletest/googletest/include"
-)
+IF(WIN32)
+    include_directories(
+        "../dependencies/protobuf/third_party/googletest/googletest/include"
+    )
+endif()
 
 # collect source code files
 FILE(GLOB TEST_MAIN "*.cpp" "*.h")
@@ -52,7 +54,7 @@ IF(WIN32)
     
     target_link_libraries(GradidoBlockchainTest ${ED25519_BIP32_RUST_C_LIB})
 ELSE()
-    target_link_libraries(GradidoBlockchainTest ed25519_bip32_c_interface)
+    target_link_libraries(GradidoBlockchainTest ed25519_bip32_c_interface gtest)
 ENDIF()
 
 IF(NOT BUILD_SHARED_LIBS) 
