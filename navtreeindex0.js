@@ -241,13 +241,13 @@ var NAVTREEINDEX0 =
 "group__enums.html#gga63424b05ada401e320ed8c4473623a41ad4b904f6a035b1bd125bd550c0a9140b":[1,1,0,4],
 "group__enums.html#gga63424b05ada401e320ed8c4473623a41ae8b37c8c0f68019baef843c1fe486bef":[1,1,0,1],
 "hierarchy.html":[2,2],
-"index.html":[0],
 "index.html":[],
+"index.html":[0],
 "index.html#autotoc_md1":[0,0],
 "index.html#autotoc_md2":[0,1],
+"index.html#autotoc_md3":[0,1,0],
 "mnemonic_8h_source.html":[3,0,0,0,0,4],
 "mnemonic__bip0039_8h_source.html":[3,0,0,0,0,5],
 "mnemonic__german2_8h_source.html":[3,0,0,0,0,7],
-"mnemonic__german_8h_source.html":[3,0,0,0,0,6],
-"modules.html":[1]
+"mnemonic__german_8h_source.html":[3,0,0,0,0,6]
 };

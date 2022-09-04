@@ -27,7 +27,9 @@ var NAVTREE =
   [ "Gradido Blockchain Lib", "index.html", [
     [ "Gradido Blockchain", "index.html", [
       [ "Install for Linux", "index.html#autotoc_md1", null ],
-      [ "Install for Windows", "index.html#autotoc_md2", null ]
+      [ "Needed for test", "index.html#autotoc_md2", [
+        [ "Install for Windows", "index.html#autotoc_md3", null ]
+      ] ]
     ] ],
     [ "Modules", "modules.html", "modules" ],
     [ "Classes", "annotated.html", [
@@ -50,7 +52,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "_authenticated_encryption_8h_source.html",
-"pages.html"
+"modules.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
