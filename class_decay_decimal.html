@@ -87,7 +87,6 @@ $(document).ready(function(){initNavTree('class_decay_decimal.html',''); initRes
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="class_decay_decimal-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">DecayDecimal Class Reference</div></div>
 </div><!--header-->
@@ -119,6 +118,9 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>applyDecay</b
 <tr class="memitem:a1d4cc6136de0c1b0da836a5f38d842f5"><td class="memItemLeft" align="right" valign="top"><a id="a1d4cc6136de0c1b0da836a5f38d842f5" name="a1d4cc6136de0c1b0da836a5f38d842f5"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>applyDecay</b> (Poco::Timestamp startTime, Poco::Timestamp endTime)</td></tr>
 <tr class="separator:a1d4cc6136de0c1b0da836a5f38d842f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa90676043123948820125a34d4a7f336"><td class="memItemLeft" align="right" valign="top"><a id="aa90676043123948820125a34d4a7f336" name="aa90676043123948820125a34d4a7f336"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>applyDecay</b> (Poco::DateTime startTime, Poco::DateTime endTime)</td></tr>
+<tr class="separator:aa90676043123948820125a34d4a7f336"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4eb311753379a77d4597a0aa4bcb4681"><td class="memItemLeft" align="right" valign="top"><a id="a4eb311753379a77d4597a0aa4bcb4681" name="a4eb311753379a77d4597a0aa4bcb4681"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Decimal</b> (const std::string &amp;decimalString)</td></tr>
 <tr class="memdesc:a4eb311753379a77d4597a0aa4bcb4681"><td class="mdescLeft">&#160;</td><td class="mdescRight">throw <a class="el" href="class_parse_decimal_string_exception.html">ParseDecimalStringException</a> if mpfr_set_str cannot parse the string to a number <br /></td></tr>
@@ -173,6 +175,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>reset</b> ()</td></tr
 <tr class="memitem:a2b2d549d4986afb3b3d760536e7efc87 inherit pub_methods_class_decimal"><td class="memItemLeft" align="right" valign="top"><a id="a2b2d549d4986afb3b3d760536e7efc87" name="a2b2d549d4986afb3b3d760536e7efc87"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>operator const mpfr_ptr</b> () const</td></tr>
 <tr class="separator:a2b2d549d4986afb3b3d760536e7efc87 inherit pub_methods_class_decimal"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88e69af76e0c481c57fa58ebfcb5b739 inherit pub_methods_class_decimal"><td class="memItemLeft" align="right" valign="top"><a id="a88e69af76e0c481c57fa58ebfcb5b739" name="a88e69af76e0c481c57fa58ebfcb5b739"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>operator const mpfr_srcptr</b> () const</td></tr>
+<tr class="separator:a88e69af76e0c481c57fa58ebfcb5b739 inherit pub_methods_class_decimal"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa09f6501e90afef140863fa61b16332f inherit pub_methods_class_decimal"><td class="memItemLeft" align="right" valign="top"><a id="aa09f6501e90afef140863fa61b16332f" name="aa09f6501e90afef140863fa61b16332f"></a>
 <a class="el" href="class_decimal.html">Decimal</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator+=</b> (const <a class="el" href="class_decimal.html">Decimal</a> &amp;rhs)</td></tr>
 <tr class="separator:aa09f6501e90afef140863fa61b16332f inherit pub_methods_class_decimal"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -194,15 +199,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>reset</b> ()</td></tr
 <tr class="memitem:a83d1cfbac910318bd50061a9f2561432 inherit pub_methods_class_decimal"><td class="memItemLeft" align="right" valign="top"><a id="a83d1cfbac910318bd50061a9f2561432" name="a83d1cfbac910318bd50061a9f2561432"></a>
 <a class="el" href="class_decimal.html">Decimal</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="class_decimal.html">Decimal</a> &amp;b)</td></tr>
 <tr class="separator:a83d1cfbac910318bd50061a9f2561432 inherit pub_methods_class_decimal"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
-Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a1c8a98f0be77dab64f86134f0e2d2b8e"><td class="memItemLeft" align="right" valign="top"><a id="a1c8a98f0be77dab64f86134f0e2d2b8e" name="a1c8a98f0be77dab64f86134f0e2d2b8e"></a>
-static <a class="el" href="class_decimal.html">Decimal</a>&#160;</td><td class="memItemRight" valign="bottom"><b>calculateDecayFactor</b> (Poco::Timespan duration)</td></tr>
-<tr class="separator:a1c8a98f0be77dab64f86134f0e2d2b8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac3d2505bedfd017798ab934ba492d692"><td class="memItemLeft" align="right" valign="top"><a id="ac3d2505bedfd017798ab934ba492d692" name="ac3d2505bedfd017798ab934ba492d692"></a>
-static <a class="el" href="class_decimal.html">Decimal</a>&#160;</td><td class="memItemRight" valign="bottom"><b>calculateDecayFactor</b> (Poco::Timestamp startTime, Poco::Timestamp endTime)</td></tr>
-<tr class="separator:ac3d2505bedfd017798ab934ba492d692"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="inherited" name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
