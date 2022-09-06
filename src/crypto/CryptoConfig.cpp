@@ -50,7 +50,7 @@ namespace CryptoConfig
 		return true;
 	}
 
-	bool loadCryptoKeys(const Poco::Util::LayeredConfiguration& cfg)
+	bool loadCryptoKeys(const MapEnvironmentToConfig& cfg)
 	{
 		// app secret for encrypt user private keys
 		// TODO: encrypt with server admin key
