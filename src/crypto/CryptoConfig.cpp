@@ -68,7 +68,7 @@ namespace CryptoConfig
 			}
 		}
 
-		auto supportPublicKey = cfg.getString("crypto.server_admin_public");
+		auto supportPublicKey = cfg.getString("crypto.server_admin_public", "");
 		if ("" != supportPublicKey) {
 			g_SupportPublicKey = DataTypeConverter::hexToBin(supportPublicKey);
 			if (!g_SupportPublicKey || g_SupportPublicKey->size() != KeyPairEd25519::getPublicKeySize()) {
