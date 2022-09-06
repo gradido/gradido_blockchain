@@ -2,6 +2,8 @@
 # Uploaded to hub.docker.com with the tag: 
 # gradido/cpp_dependencies:gcc9-debug-1.0 for debug build 
 # Update tag when dependencies are added or removed
+# gradido/cpp_dependencies:gcc9-release-1.0 
+# docker build -f ./Dockerfiles/Dockerfile.dependencies -t gradido/cpp_dependencies:gcc9-release-1.0 --build-arg BUILD_TYPE=Release .
 
 # Control Build Type with ARG BUILD_TYPE
 # Valid values do you find here: https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html
