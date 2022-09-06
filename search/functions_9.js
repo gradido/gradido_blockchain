@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['tojson_0',['toJson',['../classmodel_1_1gradido_1_1_gradido_block.html#a806e098e7f19aaa52c8d71157c16d5db',1,'model::gradido::GradidoBlock']]],
-  ['transactionentry_1',['TransactionEntry',['../classmodel_1_1_transaction_entry.html#a6229e4482960a4469c65a1711162c01c',1,'model::TransactionEntry::TransactionEntry(std::unique_ptr&lt; std::string &gt; _serializedTransaction)'],['../classmodel_1_1_transaction_entry.html#a77157ad85866bbe42fc8e7270f6de720',1,'model::TransactionEntry::TransactionEntry(uint64_t transactionNr, uint8_t month, uint16_t year, std::string groupId)']]],
-  ['transform_2',['transform',['../class_passphrase.html#af895aeeb6ec48b27b5ce1edea3d41142',1,'Passphrase']]]
+  ['searchtransactions_0',['searchTransactions',['../classmodel_1_1_transactions_manager_blockchain.html#a937dfd48698696995b92f12446057b55',1,'model::TransactionsManagerBlockchain']]],
+  ['secretkeycryptography_1',['SecretKeyCryptography',['../class_secret_key_cryptography.html#a12e896fd174654c6c88a138c1c3bff71',1,'SecretKeyCryptography::SecretKeyCryptography()'],['../class_secret_key_cryptography.html#a2deb531eceaa77d9f6bdb454b0cd0008',1,'SecretKeyCryptography::SecretKeyCryptography(unsigned long long opslimit, size_t memlimit, int algo)']]],
+  ['sendmessage_2',['sendMessage',['../class_iota_request.html#af4ab89bb1ce2fa816e38de61df78166c',1,'IotaRequest']]],
+  ['sign_3',['sign',['../class_key_pair_ed25519.html#a3b02c3df480cc943a3fccced4fecd1b8',1,'KeyPairEd25519::sign()'],['../class_key_pair_ed25519_ex.html#ad48ab69b6d953f1e7f2fe564f3977846',1,'KeyPairEd25519Ex::sign()']]]
 ];

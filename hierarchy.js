@@ -32,6 +32,9 @@ var hierarchy =
     [ "KeyPairEd25519", "class_key_pair_ed25519.html", [
       [ "KeyPairEd25519Ex", "class_key_pair_ed25519_ex.html", null ]
     ] ],
+    [ "Poco::Util::LayeredConfiguration", null, [
+      [ "MapEnvironmentToConfig", "class_map_environment_to_config.html", null ]
+    ] ],
     [ "MathMemory", "class_math_memory.html", null ],
     [ "MemoryBin", "class_memory_bin.html", null ],
     [ "MemoryManager", "class_memory_manager.html", null ],
@@ -64,6 +67,7 @@ var hierarchy =
     ] ],
     [ "std::runtime_error", null, [
       [ "GradidoBlockchainException", "class_gradido_blockchain_exception.html", [
+        [ "AuthenticatedEncryptionException", "class_authenticated_encryption_exception.html", null ],
         [ "BlockchainOrderException", "class_blockchain_order_exception.html", null ],
         [ "CryptoConfig::MissingKeyException", "class_crypto_config_1_1_missing_key_exception.html", null ],
         [ "DataTypeConverter::InvalidHexException", "class_data_type_converter_1_1_invalid_hex_exception.html", null ],

@@ -95,7 +95,7 @@ $(document).ready(function(){initNavTree('_crypto_config_8h_source.html',''); in
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &quot;gradido_blockchain/GradidoBlockchainException.h&quot;</span></div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &quot;mnemonic.h&quot;</span></div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &quot;Poco/Util/LayeredConfiguration.h&quot;</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &quot;gradido_blockchain/lib/MapEnvironmentToConfig.h&quot;</span></div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">namespace </span>CryptoConfig</div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>{</div>
@@ -112,7 +112,7 @@ $(document).ready(function(){initNavTree('_crypto_config_8h_source.html',''); in
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    GRADIDOBLOCKCHAIN_EXPORT <span class="keyword">extern</span> <a class="code hl_class" href="class_mnemonic.html">Mnemonic</a> g_Mnemonic_WordLists[MNEMONIC_MAX];</div>
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    GRADIDOBLOCKCHAIN_EXPORT <span class="keywordtype">bool</span> loadMnemonicWordLists();</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    GRADIDOBLOCKCHAIN_EXPORT <span class="keywordtype">bool</span> loadCryptoKeys(<span class="keyword">const</span> Poco::Util::LayeredConfiguration&amp; cfg);</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    GRADIDOBLOCKCHAIN_EXPORT <span class="keywordtype">bool</span> loadCryptoKeys(<span class="keyword">const</span> <a class="code hl_class" href="class_map_environment_to_config.html">MapEnvironmentToConfig</a>&amp; cfg);</div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    GRADIDOBLOCKCHAIN_EXPORT <span class="keywordtype">void</span> unload();</div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="class_crypto_config_1_1_missing_key_exception.html">   28</a></span>    <span class="keyword">class </span>GRADIDOBLOCKCHAIN_EXPORT <a class="code hl_class" href="class_crypto_config_1_1_missing_key_exception.html">MissingKeyException</a> : <a class="code hl_class" href="class_gradido_blockchain_exception.html">GradidoBlockchainException</a></div>
@@ -132,6 +132,7 @@ $(document).ready(function(){initNavTree('_crypto_config_8h_source.html',''); in
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#endif </span><span class="comment">//__GRADIDO_BLOCKCHAIN_LIB_CRYPTO_CONFIG_</span></div>
 <div class="ttc" id="aclass_crypto_config_1_1_missing_key_exception_html"><div class="ttname"><a href="class_crypto_config_1_1_missing_key_exception.html">CryptoConfig::MissingKeyException</a></div><div class="ttdef"><b>Definition:</b> CryptoConfig.h:29</div></div>
 <div class="ttc" id="aclass_gradido_blockchain_exception_html"><div class="ttname"><a href="class_gradido_blockchain_exception.html">GradidoBlockchainException</a></div><div class="ttdef"><b>Definition:</b> GradidoBlockchainException.h:11</div></div>
+<div class="ttc" id="aclass_map_environment_to_config_html"><div class="ttname"><a href="class_map_environment_to_config.html">MapEnvironmentToConfig</a></div><div class="ttdoc">Use Environment Variables if config option wasn't found in properties file.</div><div class="ttdef"><b>Definition:</b> MapEnvironmentToConfig.h:24</div></div>
 <div class="ttc" id="aclass_memory_bin_html"><div class="ttname"><a href="class_memory_bin.html">MemoryBin</a></div><div class="ttdef"><b>Definition:</b> MemoryManager.h:40</div></div>
 <div class="ttc" id="aclass_mnemonic_html"><div class="ttname"><a href="class_mnemonic.html">Mnemonic</a></div><div class="ttdef"><b>Definition:</b> mnemonic.h:27</div></div>
 </div><!-- fragment --></div><!-- contents -->

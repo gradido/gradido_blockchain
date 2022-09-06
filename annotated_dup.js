@@ -42,6 +42,7 @@ var annotated_dup =
       [ "DecryptException", "class_sealed_boxes_1_1_decrypt_exception.html", null ]
     ] ],
     [ "AuthenticatedEncryption", "class_authenticated_encryption.html", "class_authenticated_encryption" ],
+    [ "AuthenticatedEncryptionException", "class_authenticated_encryption_exception.html", null ],
     [ "BlockchainOrderException", "class_blockchain_order_exception.html", null ],
     [ "CachedDecimal", "class_cached_decimal.html", null ],
     [ "CrossGroupTransactionBuilder", "class_cross_group_transaction_builder.html", null ],
@@ -77,6 +78,7 @@ var annotated_dup =
     [ "JwtTokenException", "class_jwt_token_exception.html", null ],
     [ "KeyPairEd25519", "class_key_pair_ed25519.html", "class_key_pair_ed25519" ],
     [ "KeyPairEd25519Ex", "class_key_pair_ed25519_ex.html", "class_key_pair_ed25519_ex" ],
+    [ "MapEnvironmentToConfig", "class_map_environment_to_config.html", "class_map_environment_to_config" ],
     [ "MathMemory", "class_math_memory.html", null ],
     [ "MemoryBin", "class_memory_bin.html", "class_memory_bin" ],
     [ "MemoryManager", "class_memory_manager.html", null ],

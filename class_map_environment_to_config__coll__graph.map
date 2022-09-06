@@ -1,0 +1,4 @@
+<map id="MapEnvironmentToConfig" name="MapEnvironmentToConfig">
+<area shape="rect" id="node1" title="Use Environment Variables if config option wasn&#39;t found in properties file." alt="" coords="27,80,215,107"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,5,236,32"/>
+</map>
