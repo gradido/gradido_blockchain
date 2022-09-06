@@ -56,15 +56,18 @@ MemoryBin* AuthenticatedEncryption::encrypt(const unsigned char* message, size_t
 	/*int crypto_box_easy(unsigned char* c, const unsigned char* m,
 		unsigned long long mlen, const unsigned char* n,
 		const unsigned char* pk, const unsigned char* sk);*/
-	crypto_box_easy(&result->data()[crypto_box_NONCEBYTES], message, messageSize, *result, recipiantKey->mPubkey, *mPrivkey);
+	if (crypto_box_easy(&result->data()[crypto_box_NONCEBYTES], message, messageSize, *result, recipiantKey->mPubkey, *mPrivkey)) {
+		throw AuthenticatedEncryptionException("error by encrypt message");
+	}
 	return result;
 }
 
-MemoryBin* AuthenticatedEncryption::encrypt(MemoryBin* message, int precalculatedSharedSecretIndex)
+MemoryBin* AuthenticatedEncryption::encrypt(const MemoryBin* message, int precalculatedSharedSecretIndex)
 {
 	if (!mPrivkey) return nullptr;
 	auto mm = MemoryManager::getInstance();
 	auto result = mm->getMemory(crypto_box_NONCEBYTES + crypto_box_MACBYTES + message->size());
+	int function_result = -1;
 	randombytes_buf(*result, crypto_box_NONCEBYTES);
 
 	mPrecalculatedSharedSecretsMutex.lock();
@@ -73,10 +76,14 @@ MemoryBin* AuthenticatedEncryption::encrypt(MemoryBin* message, int precalculate
 		/*int crypto_box_easy_afternm(unsigned char* c, const unsigned char* m,
 		unsigned long long mlen, const unsigned char* n,
 		const unsigned char* k);*/
-		crypto_box_easy_afternm(&result->data()[crypto_box_NONCEBYTES], message->data(),
-			message->size(), *result, 
+		function_result = crypto_box_easy_afternm(&result->data()[crypto_box_NONCEBYTES], message->data(),
+			message->size(), *result,
 			*(sharedSecret->second));
 	} else {
+		mm->releaseMemory(result);
+		result = nullptr;
+	}
+	if (function_result) {
 		mm->releaseMemory(result);
 		result = nullptr;
 	}
@@ -85,7 +92,7 @@ MemoryBin* AuthenticatedEncryption::encrypt(MemoryBin* message, int precalculate
 	return result;
 }
 
-MemoryBin* AuthenticatedEncryption::decrypt(MemoryBin* encryptedMessage, AuthenticatedEncryption* senderKey)
+MemoryBin* AuthenticatedEncryption::decrypt(const MemoryBin* encryptedMessage, AuthenticatedEncryption* senderKey)
 {
 	if (!mPrivkey) return nullptr;
 	auto mm = MemoryManager::getInstance();
@@ -104,7 +111,7 @@ MemoryBin* AuthenticatedEncryption::decrypt(MemoryBin* encryptedMessage, Authent
 	return result;
 }
 
-MemoryBin* AuthenticatedEncryption::decrypt(MemoryBin* encryptedMessage, int precalculatedSharedSecretIndex)
+MemoryBin* AuthenticatedEncryption::decrypt(const MemoryBin* encryptedMessage, int precalculatedSharedSecretIndex)
 {
 	if (!mPrivkey) return nullptr;
 	auto mm = MemoryManager::getInstance();
