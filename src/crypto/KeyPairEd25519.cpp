@@ -12,6 +12,9 @@ KeyPairEd25519::KeyPairEd25519(MemoryBin* privateKey, MemoryBin* chainCode/* = n
 	//memcpy(mSodiumPublic, publicKey, crypto_sign_PUBLICKEYBYTES);
 	// read pubkey from private key, so we are sure it is the correct pubkey for the private key
 
+	if(!privateKey || privateKey->size() != crypto_sign_SECRETKEYBYTES) {
+		throw Ed25519InvalidKeyException("invalid private key", privateKey, crypto_sign_SECRETKEYBYTES);
+	}
 	crypto_sign_ed25519_sk_to_pk(mSodiumPublic, *privateKey);
 
 }
@@ -196,6 +199,14 @@ bool KeyPairEd25519::verify(const std::string& message, const std::string& signa
 	}
 	return true;
 }
+bool KeyPairEd25519::verify(const MemoryBin* message, const MemoryBin* signature) const
+{
+	if(!message || !signature) return false;
+	if(crypto_sign_verify_detached(signature->data(), message->data(), message->size(), mSodiumPublic) != 0) {
+		return false;
+	}
+	return true;
+}
 
 bool KeyPairEd25519::is3rdHighestBitClear() const
 {
@@ -255,6 +266,8 @@ std::string Ed25519SignException::getFullString() const
 	return mResult;
 }
 
+// -----------------------------------------------------------------------------------------
+
 Ed25519DeriveException::Ed25519DeriveException(const char* what, MemoryBin* pubkey) noexcept
 	: GradidoBlockchainException(what), mPubkey(pubkey)
 {
@@ -265,6 +278,7 @@ Ed25519DeriveException::~Ed25519DeriveException()
 {
 	if (mPubkey) {
 		MemoryManager::getInstance()->releaseMemory(mPubkey);
+		mPubkey = nullptr;
 	}
 }
 
@@ -272,5 +286,32 @@ std::string Ed25519DeriveException::getFullString() const
 {
 	std::string mResult(what());
 	mResult += ", with pubkey: " + DataTypeConverter::binToHex(mPubkey);
+	return mResult;
+}
+
+// ------------------------------------------------------------------------------------------------
+Ed25519InvalidKeyException::Ed25519InvalidKeyException(const char* what, MemoryBin* invalidKey, size_t expectedKeySize /* = 0 */) noexcept
+: GradidoBlockchainException(what), mKey(invalidKey), mExpectedKeySize(expectedKeySize)
+{
+
+}
+
+Ed25519InvalidKeyException::~Ed25519InvalidKeyException()
+{
+	if(mKey) {
+		MemoryManager::getInstance()->releaseMemory(mKey);
+		mKey = nullptr;
+	}
+}
+
+std::string Ed25519InvalidKeyException::getFullString() const
+{
+	std::string mResult(what());
+	if(mKey && mKey->size() > 0) {
+	 	mResult += ", with pubkey: " + DataTypeConverter::binToHex(mKey);
+	}
+	if(mExpectedKeySize) {
+		mResult += ", expected key size: " + std::to_string(mExpectedKeySize);
+	}
 	return mResult;
 }

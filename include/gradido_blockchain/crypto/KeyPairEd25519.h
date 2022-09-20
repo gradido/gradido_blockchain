@@ -48,6 +48,7 @@ public:
 
 	//! \return true if signature is valid
 	bool verify(const std::string& message, const std::string& signature) const;
+	bool verify(const MemoryBin* message, const MemoryBin* signature) const;
 	virtual bool is3rdHighestBitClear() const;
 
 	inline const unsigned char* getPublicKey() const { return mSodiumPublic; }
@@ -130,6 +131,19 @@ public:
 
 protected:
 	MemoryBin* mPubkey;
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT Ed25519InvalidKeyException: public GradidoBlockchainException
+{
+public:
+	//! \param invalidKey move key and free up memory on exception deconstruct
+	explicit Ed25519InvalidKeyException(const char* what, MemoryBin* invalidKey, size_t expectedKeySize = 0) noexcept;
+	~Ed25519InvalidKeyException();
+	std::string getFullString() const;
+
+protected:
+	MemoryBin* mKey;
+	size_t mExpectedKeySize;
 };
 
 #endif //__GRADIDO_LOGIN_SERVER_CRYPTO_ED25519_H
