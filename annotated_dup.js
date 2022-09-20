@@ -54,6 +54,7 @@ var annotated_dup =
     [ "DRMemoryList", "class_d_r_memory_list.html", null ],
     [ "DRStaticHashList", "class_d_r_static_hash_list.html", null ],
     [ "Ed25519DeriveException", "class_ed25519_derive_exception.html", null ],
+    [ "Ed25519InvalidKeyException", "class_ed25519_invalid_key_exception.html", "class_ed25519_invalid_key_exception" ],
     [ "Ed25519SignException", "class_ed25519_sign_exception.html", null ],
     [ "GradidoBlockchainException", "class_gradido_blockchain_exception.html", null ],
     [ "GradidoBlockchainTransactionAlreadyExistException", "class_gradido_blockchain_transaction_already_exist_exception.html", null ],

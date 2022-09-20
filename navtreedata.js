@@ -52,7 +52,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "_authenticated_encryption_8h_source.html",
-"index.html#autotoc_md2"
+"index.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

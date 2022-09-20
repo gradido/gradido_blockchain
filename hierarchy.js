@@ -73,6 +73,7 @@ var hierarchy =
         [ "DataTypeConverter::InvalidHexException", "class_data_type_converter_1_1_invalid_hex_exception.html", null ],
         [ "DecryptionFailedException", "class_decryption_failed_exception.html", null ],
         [ "Ed25519DeriveException", "class_ed25519_derive_exception.html", null ],
+        [ "Ed25519InvalidKeyException", "class_ed25519_invalid_key_exception.html", null ],
         [ "Ed25519SignException", "class_ed25519_sign_exception.html", null ],
         [ "GradidoBlockchainTransactionAlreadyExistException", "class_gradido_blockchain_transaction_already_exist_exception.html", null ],
         [ "GradidoBlockchainTransactionNotFoundException", "class_gradido_blockchain_transaction_not_found_exception.html", null ],
