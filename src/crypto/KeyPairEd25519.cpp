@@ -267,6 +267,33 @@ std::string Ed25519SignException::getFullString() const
 }
 
 // -----------------------------------------------------------------------------------------
+Ed25519VerifyException::Ed25519VerifyException(const char* what, std::string messageString, std::string signatureHex) noexcept
+: GradidoBlockchainException(what), mMessageString(messageString), mSignatureHex(signatureHex)
+{
+
+}
+
+std::string Ed25519VerifyException::getFullString() const 
+{
+	std::string result = what();
+	if(mMessageString.size()) {
+		result += ", message: " + mMessageString;
+	}
+	if(mSignatureHex.size()) {
+		result += ", signature: " + mSignatureHex;
+	}
+	return std::move(result);
+}
+
+rapidjson::Value Ed25519VerifyException::getDetails(rapidjson::Document::AllocatorType& alloc) const 
+{ 
+	rapidjson::Value result(rapidjson::kObjectType);
+	result.AddMember("message", rapidjson::Value(mMessageString.data(), alloc), alloc);
+	result.AddMember("signature", rapidjson::Value(mSignatureHex.data(), alloc), alloc);
+	return result;
+}
+
+// -----------------------------------------------------------------------------------------
 
 Ed25519DeriveException::Ed25519DeriveException(const char* what, MemoryBin* pubkey) noexcept
 	: GradidoBlockchainException(what), mPubkey(pubkey)

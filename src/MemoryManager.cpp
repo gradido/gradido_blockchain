@@ -40,6 +40,22 @@ std::unique_ptr<std::string> MemoryBin::convertToHex() const
 	return hex;
 }
 
+std::string MemoryBin::convertToHexString() const
+{
+	auto mm = MemoryManager::getInstance();
+
+	uint32_t hexSize = mSize * 2 + 1;
+	auto hexMem = mm->getMemory(hexSize);
+	//char* hexString = (char*)malloc(hexSize);
+	memset(*hexMem, 0, hexSize);
+	sodium_bin2hex(*hexMem, hexSize, mData, mSize);
+	std::string hex((const char*)hexMem->data(), hexMem->size());
+	//	free(hexString);
+	mm->releaseMemory(hexMem);
+
+	return std::move(hex);
+}
+
 std::unique_ptr<std::string> MemoryBin::copyAsString() const
 {
 	return std::unique_ptr<std::string>(new std::string((const char*)mData, mSize));

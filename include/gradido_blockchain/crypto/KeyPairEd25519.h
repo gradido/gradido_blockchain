@@ -122,6 +122,18 @@ protected:
 	std::string mMessage;
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT Ed25519VerifyException: public GradidoBlockchainException
+{
+public:
+	explicit Ed25519VerifyException(const char* what, std::string messageString, std::string signatureHex) noexcept;
+	std::string getFullString() const;
+	rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
+
+protected:
+	std::string mMessageString;
+	std::string mSignatureHex;
+};
+
 class GRADIDOBLOCKCHAIN_EXPORT Ed25519DeriveException : public GradidoBlockchainException
 {
 public:
