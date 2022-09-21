@@ -56,6 +56,7 @@ var annotated_dup =
     [ "Ed25519DeriveException", "class_ed25519_derive_exception.html", null ],
     [ "Ed25519InvalidKeyException", "class_ed25519_invalid_key_exception.html", "class_ed25519_invalid_key_exception" ],
     [ "Ed25519SignException", "class_ed25519_sign_exception.html", null ],
+    [ "Ed25519VerifyException", "class_ed25519_verify_exception.html", null ],
     [ "GradidoBlockchainException", "class_gradido_blockchain_exception.html", null ],
     [ "GradidoBlockchainTransactionAlreadyExistException", "class_gradido_blockchain_transaction_already_exist_exception.html", null ],
     [ "GradidoBlockchainTransactionNotFoundException", "class_gradido_blockchain_transaction_not_found_exception.html", null ],

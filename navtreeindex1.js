@@ -1,5 +1,6 @@
 var NAVTREEINDEX1 =
 {
+"index.html":[],
 "index.html":[0],
 "index.html#autotoc_md1":[0,0],
 "index.html#autotoc_md2":[0,1],
@@ -10,7 +11,7 @@ var NAVTREEINDEX1 =
 "mnemonic__german_8h_source.html":[3,0,0,0,0,6],
 "modules.html":[1],
 "pages.html":[],
-"struct_mnemonic_1_1_hash_collision_words.html":[2,0,49,0],
+"struct_mnemonic_1_1_hash_collision_words.html":[2,0,50,0],
 "structiota_1_1_node_info.html":[2,0,2,0],
 "structmodel_1_1_transactions_manager_1_1_group_transactions.html":[2,0,3,4,2],
 "structmodel_1_1_transactions_manager_1_1_group_transactions.html#ad61e5ee3932faa91f8885612d7d55c6f":[2,0,3,4,2,0],
