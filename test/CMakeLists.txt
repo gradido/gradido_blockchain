@@ -50,7 +50,7 @@ IF(WIN32)
 		"${PROJECT_BINARY_DIR}/../dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
 		"${PROJECT_BINARY_DIR}/../dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/debug"
 		"${PROJECT_BINARY_DIR}/../dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/release"
-	REQUIRED)	
+	)	
     
     target_link_libraries(GradidoBlockchainTest ${ED25519_BIP32_RUST_C_LIB})
 ELSE()

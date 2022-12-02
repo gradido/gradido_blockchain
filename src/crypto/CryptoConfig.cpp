@@ -107,7 +107,7 @@ namespace CryptoConfig
 	std::string MissingKeyException::getFullString() const 
 	{
 		auto result = std::string(what());
-		result += ", key name: %s";
+		result += ", key name: " + mKeyName;
 		return result;
 	}
 
