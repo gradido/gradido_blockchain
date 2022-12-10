@@ -52,7 +52,11 @@ IF(WIN32)
 		"${PROJECT_BINARY_DIR}/../dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/release"
 	)	
     
-    target_link_libraries(GradidoBlockchainTest ${ED25519_BIP32_RUST_C_LIB})
+    IF(ED25519_BIP32_RUST_C_LIB STREQUAL "ED25519_BIP32_RUST_C_LIB-NOTFOUND" ) 
+        message("!!!!!!\nplease build target ed25519_bip32_c_interface_target and call again `cmake`\n!!!!!!")
+    ELSE()
+        target_link_libraries(GradidoBlockchainTest ${ED25519_BIP32_RUST_C_LIB})
+    ENDIF()
 ELSE()
     target_link_libraries(GradidoBlockchainTest ed25519_bip32_c_interface gtest)
 ENDIF()
