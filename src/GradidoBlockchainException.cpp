@@ -200,3 +200,17 @@ std::string InvalidTransactionTypeOnBlockchain::getFullString() const
 	resultString += transactionTypeString;
 	return resultString;
 }
+
+// ****************************** Null Pointer Exception **********************************************
+GradidoNullPointerException::GradidoNullPointerException(const char* what, const char* typeName, const char* functionName) noexcept
+	: GradidoBlockchainException(what), mTypeName(typeName), mFunctionName(functionName)
+{
+
+}
+
+std::string GradidoNullPointerException::getFullString() const
+{
+	std::string resulString = what();
+	resulString += ", type name: " + mTypeName + ", function name: " + mFunctionName;
+	return resulString;
+}

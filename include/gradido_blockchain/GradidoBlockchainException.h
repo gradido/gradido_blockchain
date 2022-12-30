@@ -135,4 +135,16 @@ public:
 		: InvalidTransactionTypeOnBlockchain(what, type) {}
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT GradidoNullPointerException : public GradidoBlockchainException
+{
+public: 
+	explicit GradidoNullPointerException(const char* what, const char* typeName, const char* functionName) noexcept;
+	std::string getFullString() const;
+
+protected:
+	std::string mTypeName;
+	std::string mFunctionName;
+
+};
+
 #endif //__GRADIDO_BLOCKCHAIN_EXCEPTION_H
