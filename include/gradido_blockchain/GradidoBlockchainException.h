@@ -92,6 +92,13 @@ protected:
 	int mValue;
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT GradidoUnhandledEnum : public GradidoUnknownEnumException
+{
+public:
+	explicit GradidoUnhandledEnum(const char* what, const char* enumName, int value) noexcept
+		: GradidoUnknownEnumException(what, enumName, value) {}
+};
+
 class GRADIDOBLOCKCHAIN_EXPORT GradidoInvalidBase64Exception : public GradidoBlockchainException
 {
 public:

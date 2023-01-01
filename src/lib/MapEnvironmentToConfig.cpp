@@ -4,7 +4,7 @@
 MapEnvironmentToConfig::MapEnvironmentToConfig(Poco::Util::LayeredConfiguration& parent)
 	: mParent(parent)
 {
-
+	add(&mParent);
 }
 
 std::string MapEnvironmentToConfig::getString(const std::string& key, const std::string& defaultValue) const
