@@ -187,8 +187,20 @@ if(BUILD_SHARED_LIBS)
 			"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
 			"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/debug"
 			"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/release"
-		)		
-		target_link_libraries(GradidoBlockchain ${CONAN_LIBS} ${IOTA_RUST_C_LIB} ${ED25519_BIP32_RUST_C_LIB}  ws2_32 userenv)
+		)
+		IF(ED25519_BIP32_RUST_C_LIB STREQUAL "ED25519_BIP32_RUST_C_LIB-NOTFOUND" ) 
+        	message("!!!!!!\nplease build target ed25519_bip32_c_interface_target and call again `cmake`\n!!!!!!")
+		ELSE()
+			target_link_libraries(GradidoBlockchain ${ED25519_BIP32_RUST_C_LIB})
+		ENDIF()
+
+		IF(IOTA_RUST_C_LIB STREQUAL "IOTA_RUST_C_LIB-NOTFOUND" ) 
+        	message("!!!!!!\nplease build target iota_rust_clib_target and call again `cmake`\n!!!!!!")
+		ELSE()
+			target_link_libraries(GradidoBlockchain ${IOTA_RUST_C_LIB})
+		ENDIF()
+    
+		target_link_libraries(GradidoBlockchain ${CONAN_LIBS} ws2_32 userenv)
 	ELSE()
 		target_link_libraries(GradidoBlockchain ${POCO_LIBS} sodium iota_rust_clib ed25519_bip32_c_interface)
 	ENDIF()
