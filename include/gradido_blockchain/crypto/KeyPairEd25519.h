@@ -158,4 +158,15 @@ protected:
 	size_t mExpectedKeySize;
 };
 
+
+class GRADIDOBLOCKCHAIN_EXPORT ED25519InvalidPrivateKeyForPublicKey : public GradidoBlockchainException
+{
+public:
+	explicit ED25519InvalidPrivateKeyForPublicKey(const char* what, std::string publicKey) noexcept;
+	std::string getFullString() const;
+
+protected:
+	std::string mPublicKey;
+};
+
 #endif //__GRADIDO_LOGIN_SERVER_CRYPTO_ED25519_H

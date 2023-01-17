@@ -342,3 +342,17 @@ std::string Ed25519InvalidKeyException::getFullString() const
 	}
 	return mResult;
 }
+
+// ------------------------------------------------------------------------------------------------
+
+ED25519InvalidPrivateKeyForPublicKey::ED25519InvalidPrivateKeyForPublicKey(const char* what, std::string publicKey) noexcept
+	: GradidoBlockchainException(what), mPublicKey(publicKey)
+{
+
+}
+std::string ED25519InvalidPrivateKeyForPublicKey::getFullString() const
+{
+	std::string result = what();
+	result += ", public key: " + mPublicKey;
+	return result;
+}
