@@ -50,7 +50,7 @@ namespace CryptoConfig
 		return true;
 	}
 
-	bool loadCryptoKeys(const Poco::Util::LayeredConfiguration& cfg)
+	bool loadCryptoKeys(const MapEnvironmentToConfig& cfg)
 	{
 		// app secret for encrypt user private keys
 		// TODO: encrypt with server admin key
@@ -68,7 +68,7 @@ namespace CryptoConfig
 			}
 		}
 
-		auto supportPublicKey = cfg.getString("crypto.server_admin_public");
+		auto supportPublicKey = cfg.getString("crypto.server_admin_public", "");
 		if ("" != supportPublicKey) {
 			g_SupportPublicKey = DataTypeConverter::hexToBin(supportPublicKey);
 			if (!g_SupportPublicKey || g_SupportPublicKey->size() != KeyPairEd25519::getPublicKeySize()) {
@@ -107,7 +107,7 @@ namespace CryptoConfig
 	std::string MissingKeyException::getFullString() const 
 	{
 		auto result = std::string(what());
-		result += ", key name: %s";
+		result += ", key name: " + mKeyName;
 		return result;
 	}
 

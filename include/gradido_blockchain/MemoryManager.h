@@ -29,7 +29,7 @@
 #define MEMORY_MANAGER_PAGE_SIZE 10
 
 // MAGIC NUMBER: Define how many bits are used for amount calculation
-#define MAGIC_NUMBER_AMOUNT_PRECISION_BITS 256
+#define MAGIC_NUMBER_AMOUNT_PRECISION_BITS 128
 
 class MemoryPageStack;
 class MemoryManager;
@@ -56,6 +56,7 @@ public:
 	inline unsigned char* data(size_t startIndex) { assert(startIndex < mSize); return &mData[startIndex]; }
 	inline const unsigned char* data(size_t startIndex) const { assert(startIndex < mSize); return &mData[startIndex]; }
 	std::unique_ptr<std::string> convertToHex() const;
+	std::string convertToHexString() const;
 	std::unique_ptr<std::string> copyAsString() const;
 	//! \return 0 if ok
 	//!        -1 if bin is to small
@@ -100,6 +101,7 @@ public:
 
 	static std::unique_ptr<MathMemory> create();
 	mpfr_ptr getData() { return mData; }
+	inline operator mpfr_ptr() { return mData; }
 
 protected:
 	MathMemory();

@@ -16,3 +16,6 @@
 [submodule "doc/doxygen-awesome-css"]
 	path = doc/doxygen_awesome_css
 	url = https://github.com/jothepro/doxygen-awesome-css.git
+[submodule "dependencies/ed25519_bip32_c_interface"]
+	path = dependencies/ed25519_bip32_c_interface
+	url = https://github.com/gradido/ed25519_bip32_c_interface.git

@@ -1,5 +1,103 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-<tagfile>
+<tagfile doxygen_version="1.9.1" doxygen_gitid="ef9b20ac7f8a8621fcfc299f8bd0b80422390f4b">
+  <compound kind="file">
+    <name>TransactionBase.h</name>
+    <path>F:/Gradido/gradido_blockchain_connector/dependencies/gradido_blockchain/include/gradido_blockchain/model/protobufWrapper/</path>
+    <filename>_transaction_base_8h.html</filename>
+    <class kind="class">model::gradido::TransactionBase</class>
+    <namespace>model</namespace>
+    <member kind="enumeration">
+      <type></type>
+      <name>TransactionType</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>ga63424b05ada401e320ed8c4473623a41</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_NONE</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga63424b05ada401e320ed8c4473623a41a7f6ce8cb9a8a22c017268a7a69f4fe07</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_CREATION</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga63424b05ada401e320ed8c4473623a41ae8b37c8c0f68019baef843c1fe486bef</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_TRANSFER</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga63424b05ada401e320ed8c4473623a41a3c755b89c3b6bfba5f24eee128b35503</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_GROUP_FRIENDS_UPDATE</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga63424b05ada401e320ed8c4473623a41a77e8ad86b3d2b7c8b2ede367d8248de0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_REGISTER_ADDRESS</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga63424b05ada401e320ed8c4473623a41ad4b904f6a035b1bd125bd550c0a9140b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_DEFERRED_TRANSFER</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga63424b05ada401e320ed8c4473623a41a0573bb0067ed10c3ff945b3b1ff9da26</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>TransactionValidationLevel</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>ga5a93fcdc94d643d95a6b670b2a924443</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_VALIDATION_SINGLE</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga5a93fcdc94d643d95a6b670b2a924443a49f01ddec0f2d6ba82019c7bc21c6976</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_VALIDATION_SINGLE_PREVIOUS</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga5a93fcdc94d643d95a6b670b2a924443a3594e89dac1b1dbe256275a645d6ccf9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_VALIDATION_DATE_RANGE</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga5a93fcdc94d643d95a6b670b2a924443a04a15f9be4057756e66c28ad993a53c0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_VALIDATION_PAIRED</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga5a93fcdc94d643d95a6b670b2a924443a3ec32906ce798a445ffc3e0137275edd</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_VALIDATION_CONNECTED_GROUP</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga5a93fcdc94d643d95a6b670b2a924443abf0fa3ca4cf18c8c5700e314f003f95b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_VALIDATION_CONNECTED_BLOCKCHAIN</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga5a93fcdc94d643d95a6b670b2a924443a7ef43701d438775acf61a357284ad290</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="class">
+    <name>model::TransactionsManager::AccountInGroupNotFoundException</name>
+    <filename>classmodel_1_1_transactions_manager_1_1_account_in_group_not_found_exception.html</filename>
+    <base>GradidoBlockchainException</base>
+  </compound>
   <compound kind="class">
     <name>model::gradido::AddressAlreadyExistException</name>
     <filename>classmodel_1_1gradido_1_1_address_already_exist_exception.html</filename>
@@ -22,12 +120,45 @@
     <base>GradidoBlockchainException</base>
   </compound>
   <compound kind="class">
+    <name>CachedDecimal</name>
+    <filename>class_cached_decimal.html</filename>
+    <base>Decimal</base>
+  </compound>
+  <compound kind="class">
     <name>CrossGroupTransactionBuilder</name>
     <filename>class_cross_group_transaction_builder.html</filename>
   </compound>
   <compound kind="class">
+    <name>DecayDecimal</name>
+    <filename>class_decay_decimal.html</filename>
+    <base>Decimal</base>
+    <member kind="function">
+      <type></type>
+      <name>Decimal</name>
+      <anchorfile>class_decay_decimal.html</anchorfile>
+      <anchor>a4eb311753379a77d4597a0aa4bcb4681</anchor>
+      <arglist>(const std::string &amp;decimalString)</arglist>
+    </member>
+  </compound>
+  <compound kind="class">
+    <name>Decimal</name>
+    <filename>class_decimal.html</filename>
+    <member kind="function">
+      <type></type>
+      <name>Decimal</name>
+      <anchorfile>class_decimal.html</anchorfile>
+      <anchor>a4eb311753379a77d4597a0aa4bcb4681</anchor>
+      <arglist>(const std::string &amp;decimalString)</arglist>
+    </member>
+  </compound>
+  <compound kind="class">
     <name>SealedBoxes::DecryptException</name>
     <filename>class_sealed_boxes_1_1_decrypt_exception.html</filename>
+    <base>GradidoBlockchainException</base>
+  </compound>
+  <compound kind="class">
+    <name>DecryptionFailedException</name>
+    <filename>class_decryption_failed_exception.html</filename>
     <base>GradidoBlockchainException</base>
   </compound>
   <compound kind="class">
@@ -54,28 +185,14 @@
     <filename>class_d_r_static_hash_list.html</filename>
   </compound>
   <compound kind="class">
-    <name>Ed25519SignException</name>
-    <filename>class_ed25519_sign_exception.html</filename>
+    <name>Ed25519DeriveException</name>
+    <filename>class_ed25519_derive_exception.html</filename>
     <base>GradidoBlockchainException</base>
   </compound>
   <compound kind="class">
-    <name>model::gradido::GlobalGroupAdd</name>
-    <filename>classmodel_1_1gradido_1_1_global_group_add.html</filename>
-    <base>model::gradido::TransactionBase</base>
-    <member kind="function">
-      <type>int</type>
-      <name>prepare</name>
-      <anchorfile>classmodel_1_1gradido_1_1_global_group_add.html</anchorfile>
-      <anchor>ae9f4823ab45013857d6330edca030944</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>std::vector&lt; MemoryBin * &gt;</type>
-      <name>getInvolvedAddresses</name>
-      <anchorfile>classmodel_1_1gradido_1_1_global_group_add.html</anchorfile>
-      <anchor>a38d81728c7976bad17ba3b9635963806</anchor>
-      <arglist>() const</arglist>
-    </member>
+    <name>Ed25519SignException</name>
+    <filename>class_ed25519_sign_exception.html</filename>
+    <base>GradidoBlockchainException</base>
   </compound>
   <compound kind="class">
     <name>model::gradido::GradidoBlock</name>
@@ -165,6 +282,13 @@
       <anchor>acd8f6c9b697653f10ba274698f728020</anchor>
       <arglist>() const</arglist>
     </member>
+    <member kind="variable" protection="protected">
+      <type>bool</type>
+      <name>mBodyDirty</name>
+      <anchorfile>classmodel_1_1gradido_1_1_gradido_transaction.html</anchorfile>
+      <anchor>a58aa28346c5ee07c13659b6193474cde</anchor>
+      <arglist></arglist>
+    </member>
   </compound>
   <compound kind="class">
     <name>GradidoUnknownEnumException</name>
@@ -189,6 +313,29 @@
     </member>
   </compound>
   <compound kind="class">
+    <name>model::TransactionsManager::GroupNotFoundException</name>
+    <filename>classmodel_1_1_transactions_manager_1_1_group_not_found_exception.html</filename>
+    <base>GradidoBlockchainException</base>
+  </compound>
+  <compound kind="struct">
+    <name>model::TransactionsManager::GroupTransactions</name>
+    <filename>structmodel_1_1_transactions_manager_1_1_group_transactions.html</filename>
+    <member kind="variable">
+      <type>std::map&lt; std::string, TransactionList &gt;</type>
+      <name>transactionsByPubkey</name>
+      <anchorfile>structmodel_1_1_transactions_manager_1_1_group_transactions.html</anchorfile>
+      <anchor>ad61e5ee3932faa91f8885612d7d55c6f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>std::multimap&lt; Poco::DateTime, std::shared_ptr&lt; model::gradido::GradidoTransaction &gt; &gt;</type>
+      <name>transactionsByReceived</name>
+      <anchorfile>structmodel_1_1_transactions_manager_1_1_group_transactions.html</anchorfile>
+      <anchor>af346f28c137999e1dfb39919bc8344ca</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="class">
     <name>HandleRequestException</name>
     <filename>class_handle_request_exception.html</filename>
     <base>GradidoBlockchainException</base>
@@ -204,10 +351,48 @@
   <compound kind="class">
     <name>model::IGradidoBlockchain</name>
     <filename>classmodel_1_1_i_gradido_blockchain.html</filename>
+    <member kind="enumeration">
+      <type></type>
+      <name>FilterResult</name>
+      <anchorfile>classmodel_1_1_i_gradido_blockchain.html</anchorfile>
+      <anchor>af20b4dbd5c36c385c2b3dd98053ff9a8</anchor>
+      <arglist></arglist>
+      <enumvalue file="classmodel_1_1_i_gradido_blockchain.html" anchor="af20b4dbd5c36c385c2b3dd98053ff9a8a7dc33953b23388ad93a4db20e33d26e4">USE</enumvalue>
+      <enumvalue file="classmodel_1_1_i_gradido_blockchain.html" anchor="af20b4dbd5c36c385c2b3dd98053ff9a8a152bb1f283844ecaab86a72e4877052c">DISMISS</enumvalue>
+      <enumvalue file="classmodel_1_1_i_gradido_blockchain.html" anchor="af20b4dbd5c36c385c2b3dd98053ff9a8a615a46af313786fc4e349f34118be111">STOP</enumvalue>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>SearchDirection</name>
+      <anchorfile>classmodel_1_1_i_gradido_blockchain.html</anchorfile>
+      <anchor>ac7fe3ddbc6c0d1d3d704c1474de7d305</anchor>
+      <arglist></arglist>
+      <enumvalue file="classmodel_1_1_i_gradido_blockchain.html" anchor="ac7fe3ddbc6c0d1d3d704c1474de7d305ac6e421eaad140c1bc1a39980502df80c">ASC</enumvalue>
+      <enumvalue file="classmodel_1_1_i_gradido_blockchain.html" anchor="ac7fe3ddbc6c0d1d3d704c1474de7d305a65a6d757dbb571ccc3af9706e9a5f607">DESC</enumvalue>
+    </member>
+    <member kind="function" virtualness="pure">
+      <type>virtual std::vector&lt; Poco::SharedPtr&lt; TransactionEntry &gt; &gt;</type>
+      <name>findTransactions</name>
+      <anchorfile>classmodel_1_1_i_gradido_blockchain.html</anchorfile>
+      <anchor>a4832861b1a95c2295c700b5a54edcedf</anchor>
+      <arglist>(const std::string &amp;address)=0</arglist>
+    </member>
+    <member kind="function" virtualness="pure">
+      <type>virtual std::vector&lt; Poco::SharedPtr&lt; model::TransactionEntry &gt; &gt;</type>
+      <name>findTransactions</name>
+      <anchorfile>classmodel_1_1_i_gradido_blockchain.html</anchorfile>
+      <anchor>af752c87f3f532bda650906119b456493</anchor>
+      <arglist>(const std::string &amp;address, int month, int year)=0</arglist>
+    </member>
   </compound>
   <compound kind="class">
     <name>model::gradido::InsufficientBalanceException</name>
     <filename>classmodel_1_1gradido_1_1_insufficient_balance_exception.html</filename>
+    <base>model::gradido::TransactionValidationException</base>
+  </compound>
+  <compound kind="class">
+    <name>model::gradido::InvalidCreationException</name>
+    <filename>classmodel_1_1gradido_1_1_invalid_creation_exception.html</filename>
     <base>model::gradido::TransactionValidationException</base>
   </compound>
   <compound kind="class">
@@ -316,8 +501,8 @@
       <type></type>
       <name>KeyPairEd25519</name>
       <anchorfile>class_key_pair_ed25519.html</anchorfile>
-      <anchor>a813233e90602282ae943a40de3e16d01</anchor>
-      <arglist>(MemoryBin *privateKey)</arglist>
+      <anchor>a6bb407268dc34273a02b8e3e1f4c698f</anchor>
+      <arglist>(MemoryBin *privateKey, MemoryBin *chainCode=nullptr)</arglist>
     </member>
     <member kind="function">
       <type>MemoryBin *</type>
@@ -346,6 +531,50 @@
       <anchorfile>class_key_pair_ed25519.html</anchorfile>
       <anchor>adbf559ed7546131b77c43be2ec01b43b</anchor>
       <arglist>(const std::shared_ptr&lt; Passphrase &gt; passphrase)</arglist>
+    </member>
+  </compound>
+  <compound kind="class">
+    <name>KeyPairEd25519Ex</name>
+    <filename>class_key_pair_ed25519_ex.html</filename>
+    <base>KeyPairEd25519</base>
+    <member kind="function">
+      <type></type>
+      <name>KeyPairEd25519Ex</name>
+      <anchorfile>class_key_pair_ed25519_ex.html</anchorfile>
+      <anchor>afed20aa2252d3af3c000e0aff450b913</anchor>
+      <arglist>(MemoryBin *privateKeyEx, MemoryBin *chainCode, int derivationIndex)</arglist>
+    </member>
+    <member kind="function">
+      <type>MemoryBin *</type>
+      <name>sign</name>
+      <anchorfile>class_key_pair_ed25519_ex.html</anchorfile>
+      <anchor>ad48ab69b6d953f1e7f2fe564f3977846</anchor>
+      <arglist>(const unsigned char *message, size_t messageSize) const</arglist>
+    </member>
+  </compound>
+  <compound kind="class">
+    <name>MapEnvironmentToConfig</name>
+    <filename>class_map_environment_to_config.html</filename>
+    <member kind="function">
+      <type>std::string</type>
+      <name>getString</name>
+      <anchorfile>class_map_environment_to_config.html</anchorfile>
+      <anchor>a4d606ace986ed95c358f25900d3a9c74</anchor>
+      <arglist>(const std::string &amp;key, const std::string &amp;defaultValue) const</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>getInt</name>
+      <anchorfile>class_map_environment_to_config.html</anchorfile>
+      <anchor>a9e7333ade24a8c6fbfa8aabc251a1999</anchor>
+      <arglist>(const std::string &amp;key, int defaultValue) const</arglist>
+    </member>
+    <member kind="function" protection="protected">
+      <type>std::string</type>
+      <name>mapKey</name>
+      <anchorfile>class_map_environment_to_config.html</anchorfile>
+      <anchor>a838bd8945b92ebfdccba3c867d8b3e4f</anchor>
+      <arglist>(const std::string &amp;key) const</arglist>
     </member>
   </compound>
   <compound kind="class">
@@ -381,6 +610,11 @@
     <name>CryptoConfig::MissingKeyException</name>
     <filename>class_crypto_config_1_1_missing_key_exception.html</filename>
     <base protection="private">GradidoBlockchainException</base>
+  </compound>
+  <compound kind="class">
+    <name>model::TransactionsManager::MissingTransactionNrException</name>
+    <filename>classmodel_1_1_transactions_manager_1_1_missing_transaction_nr_exception.html</filename>
+    <base>GradidoBlockchainException</base>
   </compound>
   <compound kind="class">
     <name>Mnemonic</name>
@@ -422,6 +656,16 @@
     <name>model::gradido::PairingTransactionNotMatchException</name>
     <filename>classmodel_1_1gradido_1_1_pairing_transaction_not_match_exception.html</filename>
     <base>model::gradido::TransactionValidationException</base>
+  </compound>
+  <compound kind="class">
+    <name>ParseDecimalStringException</name>
+    <filename>class_parse_decimal_string_exception.html</filename>
+    <base>GradidoBlockchainException</base>
+  </compound>
+  <compound kind="class">
+    <name>ParseStringToMpfrException</name>
+    <filename>class_parse_string_to_mpfr_exception.html</filename>
+    <base>GradidoBlockchainException</base>
   </compound>
   <compound kind="class">
     <name>Passphrase</name>
@@ -491,6 +735,10 @@
     <filename>class_profiler.html</filename>
   </compound>
   <compound kind="class">
+    <name>ProtobufArenaMemory</name>
+    <filename>class_protobuf_arena_memory.html</filename>
+  </compound>
+  <compound kind="class">
     <name>ProtobufJsonSerializationException</name>
     <filename>class_protobuf_json_serialization_exception.html</filename>
     <base>ProtobufSerializationException</base>
@@ -503,6 +751,16 @@
   <compound kind="class">
     <name>ProtobufSerializationException</name>
     <filename>class_protobuf_serialization_exception.html</filename>
+    <base>GradidoBlockchainException</base>
+  </compound>
+  <compound kind="class">
+    <name>RapidjsonInvalidMemberException</name>
+    <filename>class_rapidjson_invalid_member_exception.html</filename>
+    <base>RapidjsonMissingMemberException</base>
+  </compound>
+  <compound kind="class">
+    <name>RapidjsonMissingMemberException</name>
+    <filename>class_rapidjson_missing_member_exception.html</filename>
     <base>GradidoBlockchainException</base>
   </compound>
   <compound kind="class">
@@ -685,8 +943,8 @@
       <type></type>
       <name>TransactionEntry</name>
       <anchorfile>classmodel_1_1_transaction_entry.html</anchorfile>
-      <anchor>a7ba798c66070d6bc85a1f5f3b6acfbf2</anchor>
-      <arglist>(uint64_t transactionNr, uint8_t month, uint16_t year, uint32_t coinColor)</arglist>
+      <anchor>a77157ad85866bbe42fc8e7270f6de720</anchor>
+      <arglist>(uint64_t transactionNr, uint8_t month, uint16_t year, std::string groupId)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
@@ -699,6 +957,54 @@
   <compound kind="class">
     <name>TransactionFactory</name>
     <filename>class_transaction_factory.html</filename>
+  </compound>
+  <compound kind="class">
+    <name>model::TransactionsCountException</name>
+    <filename>classmodel_1_1_transactions_count_exception.html</filename>
+    <base>GradidoBlockchainException</base>
+  </compound>
+  <compound kind="class">
+    <name>model::TransactionsManager</name>
+    <filename>classmodel_1_1_transactions_manager.html</filename>
+    <base protection="protected">MultithreadContainer</base>
+    <class kind="class">model::TransactionsManager::AccountInGroupNotFoundException</class>
+    <class kind="class">model::TransactionsManager::GroupNotFoundException</class>
+    <class kind="struct">model::TransactionsManager::GroupTransactions</class>
+    <class kind="class">model::TransactionsManager::MissingTransactionNrException</class>
+    <class kind="struct">model::TransactionsManager::UserBalance</class>
+    <member kind="variable" protection="protected">
+      <type>std::unordered_map&lt; std::string, GroupTransactions &gt;</type>
+      <name>mAllTransactions</name>
+      <anchorfile>classmodel_1_1_transactions_manager.html</anchorfile>
+      <anchor>a32fdce7b5b01001a22b3c4c1743612cb</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="class">
+    <name>model::TransactionsManagerBlockchain</name>
+    <filename>classmodel_1_1_transactions_manager_blockchain.html</filename>
+    <base>model::IGradidoBlockchain</base>
+    <member kind="function">
+      <type>std::vector&lt; Poco::SharedPtr&lt; TransactionEntry &gt; &gt;</type>
+      <name>searchTransactions</name>
+      <anchorfile>classmodel_1_1_transactions_manager_blockchain.html</anchorfile>
+      <anchor>a937dfd48698696995b92f12446057b55</anchor>
+      <arglist>(uint64_t startTransactionNr=0, std::function&lt; FilterResult(model::TransactionEntry *)&gt; filter=nullptr, SearchDirection order=SearchDirection::ASC)</arglist>
+    </member>
+    <member kind="function">
+      <type>std::vector&lt; Poco::SharedPtr&lt; TransactionEntry &gt; &gt;</type>
+      <name>findTransactions</name>
+      <anchorfile>classmodel_1_1_transactions_manager_blockchain.html</anchorfile>
+      <anchor>aae3ac8194d9fb3a36a65251ab4e48289</anchor>
+      <arglist>(const std::string &amp;address)</arglist>
+    </member>
+    <member kind="function">
+      <type>std::vector&lt; Poco::SharedPtr&lt; model::TransactionEntry &gt; &gt;</type>
+      <name>findTransactions</name>
+      <anchorfile>classmodel_1_1_transactions_manager_blockchain.html</anchorfile>
+      <anchor>a7baf7bb80754941f56e41751eeff9eaa</anchor>
+      <arglist>(const std::string &amp;address, int month, int year)</arglist>
+    </member>
   </compound>
   <compound kind="class">
     <name>model::gradido::TransactionTransfer</name>
@@ -733,6 +1039,13 @@
     <name>model::gradido::TransactionValidationInvalidInputException</name>
     <filename>classmodel_1_1gradido_1_1_transaction_validation_invalid_input_exception.html</filename>
     <base>model::gradido::TransactionValidationException</base>
+    <member kind="function">
+      <type>rapidjson::Value</type>
+      <name>getDetails</name>
+      <anchorfile>classmodel_1_1gradido_1_1_transaction_validation_invalid_input_exception.html</anchorfile>
+      <anchor>a4474c62d4f9b8392066f4709d756fd42</anchor>
+      <arglist>(rapidjson::Document::AllocatorType &amp;alloc) const</arglist>
+    </member>
   </compound>
   <compound kind="class">
     <name>model::gradido::TransactionValidationInvalidSignatureException</name>
@@ -749,11 +1062,23 @@
     <filename>classmodel_1_1gradido_1_1_transaction_validation_required_sign_missing_exception.html</filename>
     <base>model::gradido::TransactionValidationException</base>
   </compound>
+  <compound kind="struct">
+    <name>model::TransactionsManager::UserBalance</name>
+    <filename>structmodel_1_1_transactions_manager_1_1_user_balance.html</filename>
+  </compound>
+  <compound kind="class">
+    <name>model::gradido::WrongAddressTypeException</name>
+    <filename>classmodel_1_1gradido_1_1_wrong_address_type_exception.html</filename>
+    <base>model::gradido::TransactionValidationException</base>
+  </compound>
   <compound kind="namespace">
     <name>model</name>
     <filename>namespacemodel.html</filename>
     <class kind="class">model::IGradidoBlockchain</class>
     <class kind="class">model::TransactionEntry</class>
+    <class kind="class">model::TransactionsManager</class>
+    <class kind="class">model::TransactionsManagerBlockchain</class>
+    <class kind="class">model::TransactionsCountException</class>
   </compound>
   <compound kind="group">
     <name>Gradido-Protocol</name>
@@ -763,9 +1088,101 @@
     <class kind="class">model::gradido::GradidoTransaction</class>
     <class kind="class">model::gradido::TransactionBody</class>
   </compound>
+  <compound kind="group">
+    <name>enums</name>
+    <title>Enums</title>
+    <filename>group__enums.html</filename>
+    <member kind="enumeration">
+      <type></type>
+      <name>TransactionType</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>ga63424b05ada401e320ed8c4473623a41</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_NONE</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga63424b05ada401e320ed8c4473623a41a7f6ce8cb9a8a22c017268a7a69f4fe07</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_CREATION</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga63424b05ada401e320ed8c4473623a41ae8b37c8c0f68019baef843c1fe486bef</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_TRANSFER</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga63424b05ada401e320ed8c4473623a41a3c755b89c3b6bfba5f24eee128b35503</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_GROUP_FRIENDS_UPDATE</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga63424b05ada401e320ed8c4473623a41a77e8ad86b3d2b7c8b2ede367d8248de0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_REGISTER_ADDRESS</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga63424b05ada401e320ed8c4473623a41ad4b904f6a035b1bd125bd550c0a9140b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_DEFERRED_TRANSFER</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga63424b05ada401e320ed8c4473623a41a0573bb0067ed10c3ff945b3b1ff9da26</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>TransactionValidationLevel</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>ga5a93fcdc94d643d95a6b670b2a924443</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_VALIDATION_SINGLE</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga5a93fcdc94d643d95a6b670b2a924443a49f01ddec0f2d6ba82019c7bc21c6976</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_VALIDATION_SINGLE_PREVIOUS</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga5a93fcdc94d643d95a6b670b2a924443a3594e89dac1b1dbe256275a645d6ccf9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_VALIDATION_DATE_RANGE</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga5a93fcdc94d643d95a6b670b2a924443a04a15f9be4057756e66c28ad993a53c0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_VALIDATION_PAIRED</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga5a93fcdc94d643d95a6b670b2a924443a3ec32906ce798a445ffc3e0137275edd</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_VALIDATION_CONNECTED_GROUP</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga5a93fcdc94d643d95a6b670b2a924443abf0fa3ca4cf18c8c5700e314f003f95b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>TRANSACTION_VALIDATION_CONNECTED_BLOCKCHAIN</name>
+      <anchorfile>group__enums.html</anchorfile>
+      <anchor>gga5a93fcdc94d643d95a6b670b2a924443a7ef43701d438775acf61a357284ad290</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
   <compound kind="page">
     <name>index</name>
     <title>Gradido Blockchain</title>
-    <filename>index</filename>
+    <filename>index.html</filename>
+    <docanchor file="index.html">md_README</docanchor>
   </compound>
 </tagfile>

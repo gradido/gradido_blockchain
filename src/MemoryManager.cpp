@@ -40,6 +40,22 @@ std::unique_ptr<std::string> MemoryBin::convertToHex() const
 	return hex;
 }
 
+std::string MemoryBin::convertToHexString() const
+{
+	auto mm = MemoryManager::getInstance();
+
+	uint32_t hexSize = mSize * 2 + 1;
+	auto hexMem = mm->getMemory(hexSize);
+	//char* hexString = (char*)malloc(hexSize);
+	memset(*hexMem, 0, hexSize);
+	sodium_bin2hex(*hexMem, hexSize, mData, mSize);
+	std::string hex((const char*)hexMem->data(), hexMem->size());
+	//	free(hexString);
+	mm->releaseMemory(hexMem);
+
+	return std::move(hex);
+}
+
 std::unique_ptr<std::string> MemoryBin::copyAsString() const
 {
 	return std::unique_ptr<std::string>(new std::string((const char*)mData, mSize));
@@ -100,7 +116,6 @@ MemoryPageStack::~MemoryPageStack()
 		MemoryBin* memoryBin = mMemoryBinStack.top();
 		mMemoryBinStack.pop();
 		delete memoryBin;
-
 	}
 	unlock();
 }
@@ -199,6 +214,7 @@ MemoryManager::~MemoryManager()
 {
 	for (int i = 0; i < 5; i++) {
 		delete mMemoryPageStacks[i];
+		mMemoryPageStacks[i] = nullptr;
 	}
 	{
 		std::scoped_lock<std::mutex> _lock(mMpfrMutex);
@@ -241,10 +257,12 @@ MemoryBin* MemoryManager::getMemory(uint32_t size)
 	assert(size == (uint32_t)((uint16_t)size));
 	assert(size > 0);
 	auto index = getMemoryStackIndex(size);
+	
 	if (index < 0) {
 		return new MemoryBin(size);
 	}
 	else {
+		assert(mMemoryPageStacks[index]);
 		return mMemoryPageStacks[index]->getMemory();
 	}
 	return nullptr;
@@ -254,7 +272,7 @@ void MemoryManager::releaseMemory(MemoryBin* memory) noexcept
 {
 	if (!memory) return;
 	auto index = getMemoryStackIndex(memory->size());
-	if (index < 0) {
+	if (index < 0 || !mMemoryPageStacks[index]) {
 		delete memory;
 	}
 	else {

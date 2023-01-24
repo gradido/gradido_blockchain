@@ -56,6 +56,7 @@ namespace model {
 			const std::string& getVersionNumber() const;
 			const std::string& getOtherGroup() const;
 			static const char* transactionTypeToString(TransactionType type);
+			inline const char* getTransactionTypeString() const { return transactionTypeToString(mTransactionType);}
 			std::string getMemo() const;
 			void setMemo(const std::string& memo);
 

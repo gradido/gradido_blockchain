@@ -3,6 +3,7 @@
 
 #include "sodium.h"
 #include "gradido_blockchain/MemoryManager.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 #include "rapidjson/document.h"
 
 #include "Poco/Mutex.h"
@@ -28,9 +29,9 @@ public:
 		return encrypt((const unsigned char*)message.data(), message.size(), recipiantKey);
 	}
 
-	MemoryBin* encrypt(MemoryBin* message, int precalculatedSharedSecretIndex);
-	MemoryBin* decrypt(MemoryBin* encryptedMessage, AuthenticatedEncryption* senderKey);
-	MemoryBin* decrypt(MemoryBin* encryptedMessage, int precalculatedSharedSecretIndex);
+	MemoryBin* encrypt(const MemoryBin* message, int precalculatedSharedSecretIndex);
+	MemoryBin* decrypt(const MemoryBin* encryptedMessage, AuthenticatedEncryption* senderKey);
+	MemoryBin* decrypt(const MemoryBin* encryptedMessage, int precalculatedSharedSecretIndex);
 
 	static size_t getPublicKeySize() { return crypto_scalarmult_curve25519_BYTES; }
 	static size_t getPrivateKeySize() { return crypto_scalarmult_curve25519_BYTES; }
@@ -49,6 +50,15 @@ protected:
 	Poco::FastMutex mPrecalculatedSharedSecretsMutex;
 	std::map<int, MemoryBin*> mPrecalculatedSharedSecrets;
 	int mPrecalculatedSharedSecretLastIndex;
+};
+
+class AuthenticatedEncryptionException : public GradidoBlockchainException
+{
+public:
+	explicit AuthenticatedEncryptionException(const char* message) noexcept : GradidoBlockchainException(message) {}
+	std::string getFullString() const {
+		return what();
+	}
 };
 
 

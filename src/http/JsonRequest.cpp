@@ -44,6 +44,14 @@ Document JsonRequest::postRequest(const char* path, Value& payload)
 	return responseJson;
 }
 
+Document JsonRequest::getRequest(const char* path)
+{
+	auto responseString = GET(path);
+	auto responseJson = parseResponse(responseString);
+	return responseJson;
+
+}
+
 rapidjson::Document JsonRequest::postRequest(rapidjson::Value& payload)
 {
 	auto alloc = mJsonDocument.GetAllocator();
