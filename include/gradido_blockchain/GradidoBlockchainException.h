@@ -92,6 +92,13 @@ protected:
 	int mValue;
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT GradidoUnhandledEnum : public GradidoUnknownEnumException
+{
+public:
+	explicit GradidoUnhandledEnum(const char* what, const char* enumName, int value) noexcept
+		: GradidoUnknownEnumException(what, enumName, value) {}
+};
+
 class GRADIDOBLOCKCHAIN_EXPORT GradidoInvalidBase64Exception : public GradidoBlockchainException
 {
 public:
@@ -133,6 +140,18 @@ class GRADIDOBLOCKCHAIN_EXPORT InvalidCrossGroupTransaction : public InvalidTran
 public:
 	explicit InvalidCrossGroupTransaction(const char* what, model::gradido::TransactionType type) noexcept
 		: InvalidTransactionTypeOnBlockchain(what, type) {}
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT GradidoNullPointerException : public GradidoBlockchainException
+{
+public: 
+	explicit GradidoNullPointerException(const char* what, const char* typeName, const char* functionName) noexcept;
+	std::string getFullString() const;
+
+protected:
+	std::string mTypeName;
+	std::string mFunctionName;
+
 };
 
 #endif //__GRADIDO_BLOCKCHAIN_EXCEPTION_H

@@ -22,6 +22,7 @@ public:
 	virtual ~JsonRequest();
 
 	rapidjson::Document postRequest(const char* path, rapidjson::Value& payload);
+	rapidjson::Document getRequest(const char* path);
 	//! \brief take path from mRequestURI
 	rapidjson::Document postRequest(rapidjson::Value& payload);
 

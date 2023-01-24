@@ -30,6 +30,7 @@ namespace DataTypeConverter {
 	GRADIDOBLOCKCHAIN_EXPORT NumberParseState strToInt(const std::string& input, unsigned long long& result);
 #endif
 	GRADIDOBLOCKCHAIN_EXPORT NumberParseState strToInt(const std::string& input, Poco::UInt64& result);
+	GRADIDOBLOCKCHAIN_EXPORT uint64_t strToInt(const std::string& input);
 	GRADIDOBLOCKCHAIN_EXPORT NumberParseState strToDouble(const std::string& input, double& result);
 
 	GRADIDOBLOCKCHAIN_EXPORT MemoryBin* hexToBin(const std::string& hexString);
@@ -61,7 +62,7 @@ namespace DataTypeConverter {
 
 	GRADIDOBLOCKCHAIN_EXPORT const char* numberParseStateToString(NumberParseState state);
 
-
+	GRADIDOBLOCKCHAIN_EXPORT std::string timespanToString(const Poco::Timespan pocoTimespan);
 	GRADIDOBLOCKCHAIN_EXPORT Poco::Timestamp convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp);
 	GRADIDOBLOCKCHAIN_EXPORT void convertToProtoTimestamp(const Poco::Timestamp pocoTimestamp, proto::gradido::Timestamp* protoTimestamp);
 	GRADIDOBLOCKCHAIN_EXPORT Poco::Timestamp convertFromProtoTimestampSeconds(const proto::gradido::TimestampSeconds& timestampSeconds);
@@ -84,6 +85,15 @@ namespace DataTypeConverter {
 		std::string getFullString() const;
 	};
 
+	class GRADIDOBLOCKCHAIN_EXPORT ParseNumberException : public GradidoBlockchainException 
+	{
+	public:
+		explicit ParseNumberException(const char* what, NumberParseState parseState) noexcept;
+
+		std::string getFullString() const;
+	protected:
+		NumberParseState mParseState;
+	};
 };
 
 #endif // __GRADIDO_LOGIN_SERVER_LIB_DATA_TYPE_CONVERTER_H

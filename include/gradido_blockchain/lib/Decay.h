@@ -62,6 +62,13 @@ GRADIDOBLOCKCHAIN_EXPORT void calculateDecayFactorForDuration(
 	Poco::Timestamp startTime, Poco::Timestamp endTime
 );
 
+GRADIDOBLOCKCHAIN_EXPORT void calculateDecayFactorForDuration(
+	mpfr_ptr decay_for_duration, mpfr_ptr decay_factor,
+	unsigned long durationSeconds
+);
+
+GRADIDOBLOCKCHAIN_EXPORT Poco::Timespan calculateDecayDurationSeconds(Poco::Timestamp startTime, Poco::Timestamp endTime);
+
 inline void calculateDecayFactorForDuration(
 	mpfr_ptr decay_for_duration, mpfr_ptr decay_factor,
 	Poco::DateTime startTime, Poco::DateTime endTime

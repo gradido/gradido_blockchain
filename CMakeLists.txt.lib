@@ -51,16 +51,10 @@ file(MAKE_DIRECTORY ${PROTOBINDING_PATH}/proto/gradido)
 FILE(GLOB DATAMODEL_GRADIDO_PROTOS "${GRADIDO_PROTO_MODEL_PATH}/proto/gradido/*.proto")
 include_directories(${PROTOBINDING_PATH})
 IF(WIN32)
-	set(BUILD_TYPE ${CMAKE_BUILD_TYPE})
-	IF(BUILD_TYPE STREQUAL "" OR NOT BUILD_TYPE)
-		set(BUILD_TYPE "Debug")
-	ENDIF()
-	set(PROTOC_BIN_PATH "${PROJECT_BINARY_DIR}/bin/${BUILD_TYPE}")
-	set(PROTOC_BIN_PATH2 "${CMAKE_BINARY_DIR}/bin/${BUILD_TYPE}")
-	message("protoc path: ${PROTOC_BIN_PATH2}")
+	set(PROTOC_BIN_PATH "${PROJECT_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}")
+	message("protoc path: ${PROTOC_BIN_PATH}")
 	message("cmake build type: ${CMAKE_BUILD_TYPE}")
-	message("build type: ${BUILD_TYPE}")
-	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${PROTOC_BIN_PATH}" "${PROTOC_BIN_PATH2}" "${PROJECT_BINARY_DIR}/bin/Debug" "${PROJECT_BINARY_DIR}/bin/Release")
+	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${PROTOC_BIN_PATH}" "${PROJECT_BINARY_DIR}/bin/Debug" "${PROJECT_BINARY_DIR}/bin/Release")
 	IF(NOT PROTOBUF_PROTOC_EXECUTABLE)
 		find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" )		
 	ENDIF()
@@ -133,7 +127,6 @@ endif()
 include_directories(
 	"dependencies" 
 	"dependencies/tinf/src/" 
-	"dependencies/protobuf/src"
 	"dependencies/rapidjson/include"
 	"include"
 	"iota_rust_clib/include"
@@ -146,18 +139,22 @@ IF(WIN32)
 ENDIF()
 
 find_package(Sodium REQUIRED)
-IF(UNIX AND NOT TARGET Poco::Foundation)
-	SET(ENABLE_MONGODB OFF CACHE BOOL "" FORCE) 
-	SET(ENABLE_DATA_SQLITE OFF CACHE BOOL "" FORCE) 
-	SET(ENABLE_REDIS OFF CACHE BOOL "" FORCE)
-	SET(ENABLE_JWT ON CACHE BOOL "" FORCE)
-	SET(ENABLE_PAGECOMPILER_FILE2PAGE OFF CACHE BOOL "" FORCE)
-	# TODO check if parent has already added poco
-	add_subdirectory("dependencies/poco")
-	set(POCO_LIBS Poco::Foundation Poco::Util Poco::Net Poco::NetSSL Poco::JWT)
-ENDIF()
+#IF(CMAKE_BUILD_TYPE MATCHES Debug)    
+#	find_library(POCO_FOUNDATION_LIB PocoFoundationd PATHS ${BUILD_LIB_PATH} REQUIRED)
+#	find_library(POCO_UTIL_LIB PocoUtild PATHS ${BUILD_LIB_PATH} REQUIRED)
+#	find_library(POCO_NET_SSL_LIB PocoNetSSLd PATHS ${BUILD_LIB_PATH} REQUIRED)
+#	find_library(POCO_NET_LIB PocoNetd PATHS ${BUILD_LIB_PATH} REQUIRED)
+#	message("use Poco Debug libs")
+#ELSE()
+#	find_library(POCO_FOUNDATION_LIB PocoFoundation PATHS ${BUILD_LIB_PATH} REQUIRED)
+#	find_library(POCO_UTIL_LIB PocoUtil PATHS ${BUILD_LIB_PATH} REQUIRED)
+#	find_library(POCO_NET_SSL_LIB PocoNetSSL PATHS ${BUILD_LIB_PATH} REQUIRED)
+#	find_library(POCO_NET_LIB PocoNet PATHS ${BUILD_LIB_PATH} REQUIRED)
+#	message("use Poco Release libs")
+#ENDIF()
 
-#include("CMAKE/FindMPFR.cmake")
+#set(POCO_LIBS ${POCO_FOUNDATION_LIB} ${POCO_UTIL_LIB} ${POCO_NET_SSL_LIB} ${POCO_NET_LIB})
+
 find_package(MPFR REQUIRED)
 message(STATUS "MPFR Found: ${MPFR_FOUND}")
 
@@ -176,34 +173,7 @@ add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
 if(BUILD_SHARED_LIBS) 
 	target_link_libraries(GradidoBlockchain libprotobuf ${MPFR_LIBRARIES})
-	IF(WIN32) 
-		# needed for windows if linking to a rust lib
-		find_library(IOTA_RUST_C_LIB iota_rust_clib.dll.lib PATHS 
-			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
-			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/debug"
-			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/release"
-		)
-		find_library(ED25519_BIP32_RUST_C_LIB ed25519_bip32_c_interface.dll.lib PATHS 
-			"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
-			"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/debug"
-			"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/release"
-		)
-		IF(ED25519_BIP32_RUST_C_LIB STREQUAL "ED25519_BIP32_RUST_C_LIB-NOTFOUND" ) 
-        	message("!!!!!!\nplease build target ed25519_bip32_c_interface_target and call again `cmake`\n!!!!!!")
-		ELSE()
-			target_link_libraries(GradidoBlockchain ${ED25519_BIP32_RUST_C_LIB})
-		ENDIF()
-
-		IF(IOTA_RUST_C_LIB STREQUAL "IOTA_RUST_C_LIB-NOTFOUND" ) 
-        	message("!!!!!!\nplease build target iota_rust_clib_target and call again `cmake`\n!!!!!!")
-		ELSE()
-			target_link_libraries(GradidoBlockchain ${IOTA_RUST_C_LIB})
-		ENDIF()
-    
-		target_link_libraries(GradidoBlockchain ${CONAN_LIBS} ws2_32 userenv)
-	ELSE()
-		target_link_libraries(GradidoBlockchain ${POCO_LIBS} sodium iota_rust_clib ed25519_bip32_c_interface)
-	ENDIF()
+	target_link_libraries(GradidoBlockchain ${POCO_LIBS} sodium iota_rust_clib ed25519_bip32_c_interface)
 endif()
 set_target_properties(GradidoBlockchain PROPERTIES
                       VERSION ${GradidoBlockchain_VERSION}

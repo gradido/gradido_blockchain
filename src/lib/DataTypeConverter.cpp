@@ -83,6 +83,25 @@ namespace DataTypeConverter
 		}
 	}
 
+	uint64_t strToInt(const std::string& input)
+	{
+		try {
+			return stoull(input);
+		}
+		catch (const std::invalid_argument& ia)
+		{
+			throw ParseNumberException(ia.what(), NUMBER_PARSE_INVALID_ARGUMENT);
+		}
+		catch (const std::out_of_range& oor)
+		{
+			throw ParseNumberException(oor.what(), NUMBER_PARSE_OUT_OF_RANGE);
+		}
+		catch (const std::logic_error& ler)
+		{
+			throw ParseNumberException(ler.what(), NUMBER_PARSE_LOGIC_ERROR);
+		}
+	}
+
 	NumberParseState strToDouble(const std::string& input, double& result)
 	{
 		auto comma_position = input.find(',');
@@ -334,6 +353,24 @@ namespace DataTypeConverter
 		return hexString;
 	}
 
+	std::string timespanToString(const Poco::Timespan pocoTimespan)
+	{
+		std::string fmt;
+		if (pocoTimespan.days()) {
+			fmt = "%d days ";
+		}
+		if (pocoTimespan.hours()) {
+			fmt += "%H hours ";
+		} 
+		if (pocoTimespan.minutes()) {
+			fmt += "%M minutes ";
+		} 
+		if (pocoTimespan.seconds()) {
+			fmt += "%S seconds ";
+		}
+		return Poco::DateTimeFormatter::format(pocoTimespan, fmt);
+	}
+
 	Poco::Timestamp convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp)
 	{
 		// microseconds
@@ -474,6 +511,20 @@ namespace DataTypeConverter
 	std::string InvalidHexException::getFullString() const
 	{
 		return std::string(what());
+	}
+
+	ParseNumberException::ParseNumberException(const char* what, NumberParseState parseState) noexcept
+		: GradidoBlockchainException(what), mParseState(parseState)
+	{
+
+	}
+
+	std::string ParseNumberException::getFullString() const
+	{
+		std::string result = numberParseStateToString(mParseState);
+		result += ": ";
+		result += what();
+		return std::move(result);
 	}
 }
 

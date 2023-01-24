@@ -5,7 +5,7 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "mnemonic.h"
 
-#include "Poco/Util/LayeredConfiguration.h"
+#include "gradido_blockchain/lib/MapEnvironmentToConfig.h"
 
 namespace CryptoConfig
 {
@@ -22,7 +22,7 @@ namespace CryptoConfig
 	GRADIDOBLOCKCHAIN_EXPORT extern Mnemonic g_Mnemonic_WordLists[MNEMONIC_MAX];
 
 	GRADIDOBLOCKCHAIN_EXPORT bool loadMnemonicWordLists();
-	GRADIDOBLOCKCHAIN_EXPORT bool loadCryptoKeys(const Poco::Util::LayeredConfiguration& cfg);
+	GRADIDOBLOCKCHAIN_EXPORT bool loadCryptoKeys(const MapEnvironmentToConfig& cfg);
 	GRADIDOBLOCKCHAIN_EXPORT void unload();
 
 	class GRADIDOBLOCKCHAIN_EXPORT MissingKeyException : GradidoBlockchainException

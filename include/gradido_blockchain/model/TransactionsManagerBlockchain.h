@@ -29,7 +29,6 @@ namespace model {
 		Poco::SharedPtr<TransactionEntry> findByMessageId(const MemoryBin* messageId, bool cachedOnly = true);
 		std::vector<Poco::SharedPtr<TransactionEntry>> findTransactions(const std::string& address);
 		std::vector<Poco::SharedPtr<model::TransactionEntry>> findTransactions(const std::string& address, int month, int year);
-		std::vector<Poco::SharedPtr<model::TransactionEntry>> findTransactions(const std::string& address, uint32_t maxResultCount, uint64_t startTransactionNr);
 		void calculateCreationSum(const std::string& address, int month, int year, Poco::DateTime received, mpfr_ptr sum);
 		const std::string& getGroupId() const;
 	protected:

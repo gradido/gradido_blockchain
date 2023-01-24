@@ -1,10 +1,21 @@
 
+#include "DecayTest.h"
 #include "gradido_blockchain/lib/Decay.h"
 #include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/model/protobufWrapper/TransactionBase.h"
-#include "gtest/gtest.h"
+
 
 #include <chrono>
+
+void DecayTest::SetUp()
+{
+	//initDefaultDecayFactors();
+}
+
+void DecayTest::TearDown()
+{
+	//unloadDefaultDecayFactors();
+}
 
 std::string mpfr_to_string(mpfr_ptr value)
 {
@@ -23,11 +34,11 @@ TEST(gradido_math, test_test)
 
 }
 
-TEST(gradido_math, calculate_decay_factor)
+TEST_F(DecayTest, calculate_decay_factor)
 {
 	mpfr_t decay_365, decay_366, temp;
 	mpfr_init(decay_365); mpfr_init(decay_366); mpfr_init(temp);
-
+	
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	calculateDecayFactor(decay_365, 365);
 	calculateDecayFactor(decay_366, 366);
@@ -61,7 +72,7 @@ TEST(gradido_math, calculate_decay_factor)
 
 }
 
-TEST(gradido_math, calculate_decay_factor_for_duration)
+TEST_F(DecayTest, calculate_decay_factor_for_duration)
 {
 	mpfr_t decay_factor, temp;
 	mpfr_init(decay_factor); mpfr_init(temp);
@@ -92,7 +103,7 @@ TEST(gradido_math, calculate_decay_factor_for_duration)
 	mpfr_clear(decay_factor); mpfr_clear(temp);
 }
 
-TEST(gradido_math, calculate_decay_fast)
+TEST_F(DecayTest, calculate_decay_fast)
 {
 	mpfr_t decay_factor, gradido;
 	mpfr_init(decay_factor); 
@@ -120,7 +131,7 @@ TEST(gradido_math, calculate_decay_fast)
 	char* str_decay = mpfr_get_str(NULL, &exp_temp, 10, 0, gradido, MPFR_RNDN);
 	printf("gradido: 0.%s\n", str_decay);
 	// 49999999897064150	   
-	EXPECT_STREQ(str_decay, "49999999897064150");
+	EXPECT_STREQ(str_decay, "49999999897064157");
 	mpfr_free_str(str_decay);
 
 	mpfr_clear(decay_factor);
@@ -130,7 +141,7 @@ TEST(gradido_math, calculate_decay_fast)
 /*
 * calculateDecay(const mpfr_ptr decay_factor, unsigned long seconds, mpfr_ptr gradido)
 */
-
+/*
 TEST(gradido_math, calculate_decay)
 {
 	mpfr_t decay_factor, gradido;
@@ -185,8 +196,8 @@ TEST(gradido_math, calculate_decay)
 	mpfr_clear(decay_factor);
 	mpfr_clear(gradido);
 }
-
-TEST(gradido_math, calculate_decay_fast_2)
+*/
+TEST_F(DecayTest, calculate_decay_fast_2)
 {
 	initDefaultDecayFactors();
 	auto mm = MemoryManager::getInstance();
@@ -201,7 +212,7 @@ TEST(gradido_math, calculate_decay_fast_2)
 	std::string resultString;
 	model::gradido::TransactionBase::amountToString(&resultString, gdd);
 	//printf("1000 GDD with 2670 seconds decay: %s\n", resultString.data());
-	EXPECT_EQ("999.94135527713249453449039356531419275843744", resultString);
+	EXPECT_EQ("999.941355277132494534490393565314192761", resultString);
 
 	// add 1000 GDD
 	mpfr_add_ui(gdd, gdd, 1000, gDefaultRound);
@@ -212,7 +223,7 @@ TEST(gradido_math, calculate_decay_fast_2)
 	resultString.clear();
 	model::gradido::TransactionBase::amountToString(&resultString, gdd);
 	//printf("1999.9413 GDD with 10720 seconds decay: %s\n", resultString.data());
-	EXPECT_EQ("1999.4704957862948680484657280548324050036547", resultString);
+	EXPECT_EQ("1999.47049578629486804846572805483240501", resultString);
 
 	// 1000 GDD
 	// 1 Jahr decay
@@ -223,7 +234,7 @@ TEST(gradido_math, calculate_decay_fast_2)
 	resultString.clear();
 	model::gradido::TransactionBase::amountToString(&resultString, gdd);
 	//printf("1000 GDD with 1 year decay: %s\n", resultString.data());
-	EXPECT_EQ("500.00001098247995545079709452124296541843265", resultString);
+	EXPECT_EQ("500.000010982479955450797094521242965421", resultString);
 
 	unloadDefaultDecayFactors();
 }

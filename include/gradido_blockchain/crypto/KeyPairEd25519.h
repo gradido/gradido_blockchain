@@ -18,19 +18,28 @@
 #include "../lib/DataTypeConverter.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
+enum DerivationType {
+	DERIVATION_SOFT,
+	DERIVATION_HARD
+};
+
+class KeyPairEd25519Ex;
 class GRADIDOBLOCKCHAIN_EXPORT KeyPairEd25519
 {
 public:
 	//! \param privateKey: take ownership, release after object destruction
 	//! \param publicKey: copy
-	KeyPairEd25519(MemoryBin* privateKey);
-	KeyPairEd25519(const unsigned char* publicKey);
+	KeyPairEd25519(MemoryBin* privateKey, MemoryBin* chainCode = nullptr);
+	KeyPairEd25519(const unsigned char* publicKey, MemoryBin* chainCode = nullptr);
 
 	~KeyPairEd25519();
 
 	//! \param passphrase must contain word indices
 	//! \return create KeyPairEd25519, caller muss call delete at return after finish
 	static std::unique_ptr<KeyPairEd25519> create(const std::shared_ptr<Passphrase> passphrase);
+
+	KeyPairEd25519Ex* deriveChild(Poco::UInt32 index);
+	static DerivationType getDerivationType(Poco::UInt32 index);
 
 	//! \return caller take ownership of return value
 	MemoryBin* sign(const MemoryBin* message) const { return sign(message->data(), message->size()); }
@@ -39,10 +48,14 @@ public:
 
 	//! \return true if signature is valid
 	bool verify(const std::string& message, const std::string& signature) const;
+	bool verify(const MemoryBin* message, const MemoryBin* signature) const;
+	virtual bool is3rdHighestBitClear() const;
 
 	inline const unsigned char* getPublicKey() const { return mSodiumPublic; }
+	inline MemoryBin* getChainCode() const { return mChainCode; }
 	MemoryBin* getPublicKeyCopy() const;
 	inline std::string getPublicKeyHex() const { return DataTypeConverter::binToHex(mSodiumPublic, getPublicKeySize()); }
+	inline std::string getChainCodeHex() const { return DataTypeConverter::binToHex(mChainCode); }
 	const static size_t getPublicKeySize() { return crypto_sign_PUBLICKEYBYTES; }
 
 	inline bool isTheSame(const KeyPairEd25519& b) const {
@@ -88,6 +101,7 @@ private:
 
 	//! TODO: replace MemoryBin by a memory obfuscation class which make it hard to steal the private key from memory
 	MemoryBin* mSodiumSecret;
+	MemoryBin* mChainCode;
 
 	// 32 Byte
 	//! \brief ed25519 libsodium public key
@@ -106,6 +120,53 @@ public:
 protected:
 	MemoryBin* mPubkey;
 	std::string mMessage;
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT Ed25519VerifyException: public GradidoBlockchainException
+{
+public:
+	explicit Ed25519VerifyException(const char* what, std::string messageString, std::string signatureHex) noexcept;
+	std::string getFullString() const;
+	rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
+
+protected:
+	std::string mMessageString;
+	std::string mSignatureHex;
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT Ed25519DeriveException : public GradidoBlockchainException
+{
+public:
+	explicit Ed25519DeriveException(const char* what, MemoryBin* pubkey) noexcept;
+	~Ed25519DeriveException();
+	std::string getFullString() const;
+
+protected:
+	MemoryBin* mPubkey;
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT Ed25519InvalidKeyException: public GradidoBlockchainException
+{
+public:
+	//! \param invalidKey move key and free up memory on exception deconstruct
+	explicit Ed25519InvalidKeyException(const char* what, MemoryBin* invalidKey, size_t expectedKeySize = 0) noexcept;
+	~Ed25519InvalidKeyException();
+	std::string getFullString() const;
+
+protected:
+	MemoryBin* mKey;
+	size_t mExpectedKeySize;
+};
+
+
+class GRADIDOBLOCKCHAIN_EXPORT ED25519InvalidPrivateKeyForPublicKey : public GradidoBlockchainException
+{
+public:
+	explicit ED25519InvalidPrivateKeyForPublicKey(const char* what, std::string publicKey) noexcept;
+	std::string getFullString() const;
+
+protected:
+	std::string mPublicKey;
 };
 
 #endif //__GRADIDO_LOGIN_SERVER_CRYPTO_ED25519_H

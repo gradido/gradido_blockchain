@@ -49,7 +49,7 @@ namespace ServerConfig {
 		return true;
 	}
 
-	bool readUnsecureFlags(const Poco::Util::LayeredConfiguration& cfg)
+	bool readUnsecureFlags(const MapEnvironmentToConfig& cfg)
 	{
 		// unsecure flags
 		//g_AllowUnsecureFlags
@@ -68,7 +68,7 @@ namespace ServerConfig {
 		return true;
 	}
 
-	bool initIota(const Poco::Util::LayeredConfiguration& cfg)
+	bool initIota(const MapEnvironmentToConfig& cfg)
 	{
 		std::string iota_host = cfg.getString("iota.host", "api.lb-0.h.chrysalis-devnet.iota.cafe");
 		int iota_port = cfg.getInt("iota.port", 443);
