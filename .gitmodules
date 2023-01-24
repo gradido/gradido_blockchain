@@ -16,3 +16,6 @@
 [submodule "doc/doxygen-awesome-css"]
 	path = doc/doxygen_awesome_css
 	url = https://github.com/jothepro/doxygen-awesome-css.git
+[submodule "doc/doxygen_awesome_css"]
+	path = doc/doxygen_awesome_css
+	url = https://github.com/jothepro/doxygen-awesome-css.git
