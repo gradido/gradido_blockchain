@@ -157,6 +157,11 @@ namespace model {
 		}
 		return std::move(result);
 	}
+
+	std::vector<Poco::SharedPtr<model::TransactionEntry>> TransactionsManagerBlockchain::findTransactions(const std::string& address, uint32_t maxResultCount, uint64_t startTransactionNr)
+	{
+		throw std::runtime_error("not implemented yet");
+	}
 	void TransactionsManagerBlockchain::calculateCreationSum(const std::string& address, int month, int year, Poco::DateTime received, mpfr_ptr sum)
 	{
 		auto tm = TransactionsManager::getInstance();

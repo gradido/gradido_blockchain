@@ -51,6 +51,7 @@ namespace model {
 		//! \brief Find transactions of account from a specific month.
 		//! \param address User account public key.
 		virtual std::vector<Poco::SharedPtr<model::TransactionEntry>> findTransactions(const std::string& address, int month, int year) = 0;
+		virtual std::vector<Poco::SharedPtr<model::TransactionEntry>> findTransactions(const std::string& address, uint32_t maxResultCount, uint64_t startTransactionNr) = 0;
 		virtual const std::string& getGroupId() const = 0;
 
 	protected:

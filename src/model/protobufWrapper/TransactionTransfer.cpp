@@ -114,6 +114,7 @@ namespace model {
 				amountToString(&amountString, amount->getData());
 				amountToString(&balanceString, finalBalance->getData());
 				//printf("amount: %s, balance: %s\n", amountString.data(), balanceString.data());
+				// TODO: allow a error of 1 GDD or 0,01 GDD or % or time decay for max((received - created) * 2, 5 minutes) for example
 				if (mpfr_cmp(amount->getData(), finalBalance->getData()) > 0) {
 					// if op1 > op2
 					throw InsufficientBalanceException("not enough Gradido Balance for send coins", amount->getData(), finalBalance->getData());
