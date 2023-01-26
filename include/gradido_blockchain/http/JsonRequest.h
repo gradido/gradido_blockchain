@@ -28,11 +28,14 @@ public:
 
 	rapidjson::Document::AllocatorType& getJsonAllocator() { return mJsonDocument.GetAllocator(); }
 
+	void addCookie(const std::string& name, const std::string& value) { mCookies.add(name, value); }
+
 protected:
 	std::string POST(const char* path, const rapidjson::Document& payload, const char* version = nullptr);
 	rapidjson::Document parseResponse(std::string responseString);
 
 	rapidjson::Document mJsonDocument;
+	Poco::Net::NameValueCollection mCookies;
 };
 
 

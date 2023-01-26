@@ -35,7 +35,7 @@ Decimal::Decimal(Decimal&& src)
 Decimal::Decimal()
 	: mDecimal(MemoryManager::getInstance()->getMathMemory())
 {
-	int zahl = 1;
+
 }
 
 Decimal::~Decimal()

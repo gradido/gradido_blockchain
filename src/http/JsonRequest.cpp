@@ -79,6 +79,9 @@ std::string JsonRequest::POST(const char* path, const rapidjson::Document& paylo
 	request.setChunkedTransferEncoding(true);
 	request.setContentType("application/json");
 	request.add("Accept", "*/*");
+	if (mCookies.size()) {
+		request.setCookies(mCookies);
+	}
 
 	std::string responseString;
 	try {
