@@ -28,8 +28,6 @@ JsonRPCRequest::~JsonRPCRequest()
 
 Document JsonRPCRequest::request(const char* methodName, Value& params)
 {
-	static const char* functionName = "JsonRPCRequest::request";
-		
 	Document requestJson(kObjectType);
 	auto alloc = requestJson.GetAllocator();
 
@@ -57,32 +55,61 @@ Document JsonRPCRequest::request(const char* methodName, Value& params)
 			jsonAnswear["error"]["message"].GetString(),
 			static_cast<JsonRPCErrorCodes>(jsonAnswear["error"]["code"].GetInt())
 		);
-	}
-
-	std::string state;
-	Value& stateValue = Pointer("/result/state").GetWithDefault(jsonAnswear, "");
-	if (stateValue.GetStringLength()) {
-		state = stateValue.GetString();
-	}
-
-	std::string errorMsg, detailsString;
-	Value& msg = Pointer("/result/msg").GetWithDefault(jsonAnswear, "");
-	if (msg.GetStringLength()) {
-		errorMsg = msg.GetString();
-	}
+	}	
 	
-	if (state == "error") {
-		RequestResponseErrorException exception("node server return error", mRequestUri, errorMsg);
-		throw exception.setDetails(Pointer("/result/details").GetWithDefault(jsonAnswear, ""));
+	return std::move(jsonAnswear);
+}
+
+std::vector<Value> JsonRPCRequest::batchRequest(std::vector<std::string> methods, std::vector<Value> params)
+{
+	assert(methods.size() == params.size());
+
+	std::vector<Value> results;
+	std::map<int, Value> orderResultsMap;
+	results.reserve(methods.size());
+	int startId = rand();
+	Document batchRequestJson(kArrayType);
+	auto alloc = batchRequestJson.GetAllocator();
+
+	for (int i = 0; i < methods.size(); i++) {
+		Value requestJson(kObjectType);
+		requestJson.AddMember("jsonrpc", "2.0", alloc);
+		requestJson.AddMember("id", startId+i, alloc);
+		requestJson.AddMember("method", Value(methods[i].data(), alloc), alloc);
+		requestJson.AddMember("params", params[i], alloc);
+		batchRequestJson.PushBack(requestJson, alloc);
 	}
-	else if (state == "success") {
-		/*for (auto it = result->begin(); it != result->end(); it++) {
-			std::string index = it->first;
-			std::string value = it->second.toString();
-			printf("[JsonRequest] %s: %s\n", index.data(), value.data());
-		}*/
-		return jsonAnswear;
+
+	auto responseString = POST("/", batchRequestJson, "HTTP/1.1");
+	// debugging answer
+	if (responseString.size() == 0) {
+		throw RequestEmptyResponseException("methodName", mRequestUri);
 	}
-	RequestResponseErrorException exception("node server return unhandled state", mRequestUri, errorMsg);
-	throw exception.setDetails(detailsString);
+
+	auto jsonAnswearBatch = parseResponse(responseString);
+
+	if (!jsonAnswearBatch.IsArray()) {
+		throw RequestResponseInvalidJsonException("batch", mRequestUri, responseString);
+	}
+
+	for (auto& jsonAnswear : jsonAnswearBatch.GetArray())
+	{
+		if (jsonAnswear.FindMember("error") != jsonAnswear.MemberEnd()) {
+			throw JsonRPCException(
+				jsonAnswear["error"]["message"].GetString(),
+				static_cast<JsonRPCErrorCodes>(jsonAnswear["error"]["code"].GetInt())
+			);
+		}
+		if (!jsonAnswear.HasMember("id") || !jsonAnswear["id"].IsInt()) {
+			throw JsonRPCException(
+				"id in response not set correctly",
+				JSON_RPC_ERROR_INVALID_PARAMS
+			);
+		}
+		orderResultsMap.insert({ jsonAnswear["id"].GetInt(), std::move(jsonAnswear) });
+	}
+	for (auto& pair : orderResultsMap) {
+		results.push_back(std::move(pair.second));
+	}
+	return results;
 }

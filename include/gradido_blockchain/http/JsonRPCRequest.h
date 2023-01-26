@@ -19,6 +19,7 @@ enum GRADIDOBLOCKCHAIN_EXPORT JsonRPCErrorCodes : int
 	JSON_RPC_ERROR_NONE = 0,
 	JSON_RPC_ERROR_GRADIDO_NODE_ERROR = -10000,
 	JSON_RPC_ERROR_UNKNOWN_GROUP = -10001,
+	JSON_RPC_ERROR_NOT_IMPLEMENTED = -10002,
 	// default errors from json rpc standard: https://www.jsonrpc.org/specification
 	// -32700 	Parse error 	Invalid JSON was received by the server.
 	JSON_RPC_ERROR_PARSE_ERROR = -32700,
@@ -42,6 +43,7 @@ public:
 	~JsonRPCRequest();
 
 	rapidjson::Document request(const char* methodName, rapidjson::Value& params);
+	std::vector<rapidjson::Value> batchRequest(std::vector<std::string> methods, std::vector<rapidjson::Value> params);
 
 protected:
 
