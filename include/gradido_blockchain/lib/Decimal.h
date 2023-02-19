@@ -35,12 +35,17 @@ public:
 	inline operator const mpfr_ptr() const { return mDecimal; }
 	inline operator const mpfr_srcptr() const { return mDecimal; }
 	inline Decimal& operator+=(const Decimal& rhs) { mpfr_add(mDecimal, mDecimal, rhs, gDefaultRound); return *this; }
+	inline Decimal& operator+=(const int& b) { mpfr_add_si(mDecimal, mDecimal, b, gDefaultRound); return *this; }
 	inline Decimal& operator-=(const Decimal& rhs) { mpfr_sub(mDecimal, mDecimal, rhs, gDefaultRound); return *this; }
+	inline Decimal& operator-=(const int& b) { mpfr_sub_si(mDecimal, mDecimal, b, gDefaultRound); return *this; }
 	inline Decimal& operator*=(const Decimal& rhs) { mpfr_mul(mDecimal, mDecimal, rhs, gDefaultRound); return *this; }
+	inline Decimal& operator*=(const int& b) { mpfr_mul_si(mDecimal, mDecimal, b, gDefaultRound); return *this; }
 	inline Decimal& operator/=(const Decimal& rhs) { mpfr_div(mDecimal, mDecimal, rhs, gDefaultRound); return *this; }
+	inline Decimal& operator/=(const int& b) { mpfr_div_si(mDecimal, mDecimal, b, gDefaultRound); return *this; }
 	inline Decimal& operator=(const std::string& decimalString) { fromString(decimalString); return *this; }
 	inline Decimal& operator=(const mpfr_ptr& decimal) { mpfr_set(mDecimal, decimal, gDefaultRound); return *this; }
 	inline Decimal& operator=(const Decimal& b) { mpfr_set(mDecimal, b.mDecimal, gDefaultRound); return *this; }
+	inline bool operator>(int b) { return mpfr_cmp_si(mDecimal, b) > 0; };
 
 protected:
 	mpfr_ptr mDecimal;
@@ -61,6 +66,7 @@ inline Decimal operator-(Decimal lhs, const Decimal& rhs)
 	result -= rhs;
 	return std::move(result);
 }
+
 inline Decimal operator*(Decimal lhs, const Decimal& rhs)
 {
 	Decimal result;
@@ -68,6 +74,7 @@ inline Decimal operator*(Decimal lhs, const Decimal& rhs)
 	result *= rhs;
 	return std::move(result);
 }
+
 inline Decimal operator/(Decimal lhs, const Decimal& rhs)
 {
 	Decimal result;

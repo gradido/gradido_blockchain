@@ -43,7 +43,7 @@ public:
 	~JsonRPCRequest();
 
 	rapidjson::Document request(const char* methodName, rapidjson::Value& params);
-	std::vector<rapidjson::Value> batchRequest(std::vector<std::string> methods, std::vector<rapidjson::Value> params);
+	rapidjson::Document& batchRequest(std::vector<std::string> methods, rapidjson::Value& params);
 
 protected:
 

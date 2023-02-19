@@ -154,4 +154,11 @@ protected:
 
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT GradidoNodeInvalidDataException : public GradidoBlockchainException
+{
+public: 
+	explicit GradidoNodeInvalidDataException(const char* what) noexcept :GradidoBlockchainException(what) {};
+	std::string getFullString() const { return what(); }
+};
+
 #endif //__GRADIDO_BLOCKCHAIN_EXCEPTION_H

@@ -6,6 +6,7 @@
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/pointer.h"
+#include "gradido_blockchain/lib/Profiler.h"
 
 using namespace rapidjson;
 
@@ -60,27 +61,29 @@ Document JsonRPCRequest::request(const char* methodName, Value& params)
 	return std::move(jsonAnswear);
 }
 
-std::vector<Value> JsonRPCRequest::batchRequest(std::vector<std::string> methods, std::vector<Value> params)
+Document& JsonRPCRequest::batchRequest(std::vector<std::string> methods, rapidjson::Value& params)
 {
-	assert(methods.size() == params.size());
+	assert(params.IsArray());
+	assert(methods.size() == params.GetArray().Size());
 
-	std::vector<Value> results;
+	Value results(kArrayType);
 	std::map<int, Value> orderResultsMap;
-	results.reserve(methods.size());
 	int startId = rand();
 	Document batchRequestJson(kArrayType);
-	auto alloc = batchRequestJson.GetAllocator();
-
+	mJsonDocument.SetArray();
+	auto alloc = mJsonDocument.GetAllocator();
+	auto paramsArray = params.GetArray();
 	for (int i = 0; i < methods.size(); i++) {
 		Value requestJson(kObjectType);
 		requestJson.AddMember("jsonrpc", "2.0", alloc);
 		requestJson.AddMember("id", startId+i, alloc);
 		requestJson.AddMember("method", Value(methods[i].data(), alloc), alloc);
-		requestJson.AddMember("params", params[i], alloc);
-		batchRequestJson.PushBack(requestJson, alloc);
+		auto& paramSet = paramsArray[i];
+		requestJson.AddMember("params", paramSet, alloc);
+		mJsonDocument.PushBack(requestJson, alloc);
 	}
 
-	auto responseString = POST("/", batchRequestJson, "HTTP/1.1");
+	auto responseString = POST("/", mJsonDocument, "HTTP/1.1");
 	// debugging answer
 	if (responseString.size() == 0) {
 		throw RequestEmptyResponseException("methodName", mRequestUri);
@@ -109,7 +112,18 @@ std::vector<Value> JsonRPCRequest::batchRequest(std::vector<std::string> methods
 		orderResultsMap.insert({ jsonAnswear["id"].GetInt(), std::move(jsonAnswear) });
 	}
 	for (auto& pair : orderResultsMap) {
-		results.push_back(std::move(pair.second));
+		results.PushBack(std::move(pair.second), alloc);
 	}
-	return results;
+	Profiler timeStart;
+
+	StringBuffer buffer;
+	PrettyWriter<StringBuffer> writer(buffer);
+	results.Accept(writer);
+
+	mJsonDocument.Parse(buffer.GetString());
+	std::clog << "time for write and parse: " << timeStart.string() << std::endl;
+
+	//std::clog << buffer.GetString() << std::endl;
+
+	return mJsonDocument;
 }
