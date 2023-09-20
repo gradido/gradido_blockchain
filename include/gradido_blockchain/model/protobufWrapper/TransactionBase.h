@@ -112,6 +112,8 @@ namespace model {
 			virtual std::string toDebugString() const { return ""; }
 
 		protected:
+			static MemoryBin* protoBufferStringToMemoryBin(const std::string& protoBufferString);
+
 			uint32_t mMinSignatureCount;
 			bool mIsPrepared;
 			std::vector<MemoryBin*> mRequiredSignPublicKeys;

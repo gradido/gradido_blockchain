@@ -23,8 +23,9 @@ namespace model {
 			bool isInvolved(const std::string pubkeyString) const;
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 
-			MemoryBin* getUserPubkey() const;
 			const std::string& getUserPubkeyString() const;
+			inline MemoryBin* getUserPubkey() const { return protoBufferStringToMemoryBin(getUserPubkeyString()); }
+
 			proto::gradido::RegisterAddress_AddressType getAddressType() const;
 			[[deprecated("Replaced by isCommunityHuman or isCryptoAccount")]]
 			inline bool isHuman() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_COMMUNITY_HUMAN; }
@@ -34,10 +35,12 @@ namespace model {
 			inline bool isCommunityProject() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_COMMUNITY_PROJECT; }
 			inline bool isSubaccount() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_SUBACCOUNT; }
 			inline bool isCryptoAccount() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_CRYPTO_ACCOUNT; }
-			MemoryBin* getNameHash() const;
+
 			const std::string& getNameHashString() const;
-			MemoryBin* getSubaccountPubkey() const;
+			inline MemoryBin* getNameHash() const { return protoBufferStringToMemoryBin(getNameHashString()); }			
 			const std::string& getSubaccountPubkeyString() const;
+			inline MemoryBin* getSubaccountPubkey() const { return protoBufferStringToMemoryBin(getSubaccountPubkeyString()); }
+			
 
 			static proto::gradido::RegisterAddress_AddressType getAddressTypeFromString(const std::string& addressType);
 			static const std::string& getAddressStringFromType(proto::gradido::RegisterAddress_AddressType type);

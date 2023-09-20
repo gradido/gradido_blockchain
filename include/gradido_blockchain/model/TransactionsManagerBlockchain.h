@@ -30,7 +30,7 @@ namespace model {
 		std::vector<Poco::SharedPtr<TransactionEntry>> findTransactions(const std::string& address);
 		std::vector<Poco::SharedPtr<model::TransactionEntry>> findTransactions(const std::string& address, int month, int year);
 		void calculateCreationSum(const std::string& address, int month, int year, Poco::DateTime received, mpfr_ptr sum);
-		const std::string& getGroupId() const;
+		const std::string& getCommunityId() const;
 	protected:
 
 		static Poco::SharedPtr<model::gradido::ConfirmedTransaction> createBlockFromTransaction(

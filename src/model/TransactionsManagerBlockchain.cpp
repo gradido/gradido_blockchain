@@ -187,7 +187,7 @@ namespace model {
 		// maybe using a link transaction
 	}
 
-	const std::string& TransactionsManagerBlockchain::getGroupId() const
+	const std::string& TransactionsManagerBlockchain::getCommunityId() const
 	{
 		return mGroupAlias;
 	}

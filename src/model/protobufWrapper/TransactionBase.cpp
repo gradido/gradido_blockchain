@@ -202,6 +202,16 @@ namespace model {
 			}
 			mpfr_free_str(str);
 		}
+
+		MemoryBin* TransactionBase::protoBufferStringToMemoryBin(const std::string& protoBufferString)
+		{
+			if (!protoBufferString.size()) {
+				return nullptr;
+			}
+			auto bin = MemoryManager::getInstance()->getMemory(protoBufferString.size());
+			bin->copyFromProtoBytes(protoBufferString);
+			return bin;
+		}
 	}
 }
 

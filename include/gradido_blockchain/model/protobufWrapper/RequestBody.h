@@ -4,11 +4,7 @@
 #include "proto/gradido/request_body.pb.h"
 #include "../../lib/MultithreadContainer.h"
 
-#include "GroupFriendsUpdate.h"
-#include "RegisterAddress.h"
-#include "TransactionCreation.h"
-#include "TransactionTransfer.h"
-
+#include "../../MemoryManager.h"
 
 namespace model {
 	namespace gradido {

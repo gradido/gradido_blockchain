@@ -93,7 +93,7 @@ namespace model {
 			}
 
 			if (blockchain) {
-				if (getCoinGroupId() == blockchain->getGroupId()) {
+				if (getCoinCommunityId() == blockchain->getCommunityId()) {
 					throw TransactionValidationInvalidInputException(
 						"coinGroupId shouldn't be set if it is the same as blockchain group alias",
 						"coinGroupId", "string or UUID"

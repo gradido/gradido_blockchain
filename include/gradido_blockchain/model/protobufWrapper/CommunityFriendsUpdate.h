@@ -2,20 +2,20 @@
 #define __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_GROUP_FRIENDS_UPDATE_H
 
 #include "TransactionBase.h"
-#include "proto/gradido/group_friends_update.pb.h"
+#include "proto/gradido/community_friends_update.pb.h"
 
 namespace model {
 	namespace gradido {
-		class GRADIDOBLOCKCHAIN_EXPORT GroupFriendsUpdate : public TransactionBase
+		class GRADIDOBLOCKCHAIN_EXPORT CommunityFriendsUpdate : public TransactionBase
 		{
 		public:
-			GroupFriendsUpdate(const proto::gradido::GroupFriendsUpdate& protoGroupFriendsUpdate);
-			~GroupFriendsUpdate();
+			CommunityFriendsUpdate(const proto::gradido::CommunityFriendsUpdate& protoGroupFriendsUpdate);
+			~CommunityFriendsUpdate();
 
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
-				const ConfirmedTransaction* parentGradidoBlock = nullptr
+				const ConfirmedTransaction* parentConfirmedTransaction = nullptr
 				) const;
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
 			bool isInvolved(const std::string pubkeyString) const;
@@ -23,7 +23,7 @@ namespace model {
 
 			bool isColorFusion() const;
 		protected:
-			const proto::gradido::GroupFriendsUpdate& mProtoGroupFriendsUpdate;
+			const proto::gradido::CommunityFriendsUpdate& mProtoGroupFriendsUpdate;
 		};
 	}
 }

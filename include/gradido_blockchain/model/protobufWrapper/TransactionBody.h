@@ -4,7 +4,7 @@
 #include "proto/gradido/transaction_body.pb.h"
 
 #include "DeferredTransfer.h"
-#include "GroupFriendsUpdate.h"
+#include "CommunityFriendsUpdate.h"
 #include "RegisterAddress.h"
 #include "TransactionCreation.h"
 #include "TransactionTransfer.h"
@@ -93,7 +93,7 @@ namespace model {
 			const proto::gradido::TransactionBody* getBody() const { return mProtoTransactionBody; }
 
 			const DeferredTransfer* getDeferredTransfer() const;
-			const GroupFriendsUpdate* getGroupFriendsUpdate() const;
+			const CommunityFriendsUpdate* getGroupFriendsUpdate() const;
 			const RegisterAddress* getRegisterAddress() const;
 			const TransactionCreation* getCreationTransaction() const;
 			const TransactionTransfer* getTransferTransaction() const;

@@ -86,7 +86,7 @@ namespace model {
 		TransactionBody* TransactionBody::createGroupFriendsUpdate(bool colorFusion)
 		{
 			auto obj = new TransactionBody;
-			auto groupFriendsUpdate = obj->mProtoTransactionBody->mutable_group_friends_update();
+			auto groupFriendsUpdate = obj->mProtoTransactionBody->mutable_community_friends_update();
 			groupFriendsUpdate->set_color_fusion(colorFusion);
 			obj->initSpecificTransaction();
 			return obj;
@@ -229,9 +229,9 @@ namespace model {
 			return dynamic_cast<DeferredTransfer*>(mTransactionSpecific);
 		}
 
-		const GroupFriendsUpdate* TransactionBody::getGroupFriendsUpdate() const
+		const CommunityFriendsUpdate* TransactionBody::getGroupFriendsUpdate() const
 		{
-			return dynamic_cast<GroupFriendsUpdate*>(mTransactionSpecific);
+			return dynamic_cast<CommunityFriendsUpdate*>(mTransactionSpecific);
 		}
 
 		const RegisterAddress* TransactionBody::getRegisterAddress() const
@@ -335,9 +335,9 @@ namespace model {
 				mTransactionType = TRANSACTION_TRANSFER;
 				mTransactionSpecific = new model::gradido::TransactionTransfer(mProtoTransactionBody->transfer());
 			}
-			else if (mProtoTransactionBody->has_group_friends_update()) {
+			else if (mProtoTransactionBody->has_community_friends_update()) {
 				mTransactionType = TRANSACTION_GROUP_FRIENDS_UPDATE;
-				mTransactionSpecific = new model::gradido::GroupFriendsUpdate(mProtoTransactionBody->group_friends_update());
+				mTransactionSpecific = new model::gradido::CommunityFriendsUpdate(mProtoTransactionBody->community_friends_update());
 			}
 			else if (mProtoTransactionBody->has_register_address()) {
 				mTransactionType = TRANSACTION_REGISTER_ADDRESS;
