@@ -49,8 +49,8 @@ namespace model {
 			assert(mMinSignatureCount);
 			
 			// not enough
-			if (mMinSignatureCount > sig_map->sigpair_size()) {
-				throw TransactionValidationMissingSignException(sig_map->sigpair_size(), mMinSignatureCount);
+			if (mMinSignatureCount > sig_map->sig_pair_size()) {
+				throw TransactionValidationMissingSignException(sig_map->sig_pair_size(), mMinSignatureCount);
 			}
 			// enough
 			if (!mRequiredSignPublicKeys.size() && !mForbiddenSignPublicKeys.size()) {
@@ -61,7 +61,7 @@ namespace model {
 			// prepare, make a copy from the vector, because entries will be removed from it
 			std::vector<MemoryBin*> required_keys = mRequiredSignPublicKeys;			
 			
-			for (auto it = sig_map->sigpair().begin(); it != sig_map->sigpair().end(); it++) 
+			for (auto it = sig_map->sig_pair().begin(); it != sig_map->sig_pair().end(); it++) 
 			{
 				auto pubkey_size = it->pubkey().size();
 				assert(pubkey_size == crypto_sign_PUBLICKEYBYTES);

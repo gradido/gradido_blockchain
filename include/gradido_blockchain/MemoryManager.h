@@ -14,9 +14,11 @@
 #include "gradido_blockchain/lib/MultithreadContainer.h"
 #include <google/protobuf/arena.h>
 
-#include "proto/gradido/GradidoBlock.pb.h"
-#include "proto/gradido/GradidoTransaction.pb.h"
-#include "proto/gradido/TransactionBody.pb.h"
+/* TODO: remove if it works without them
+#include "proto/gradido/confirmed_transaction.pb.h"
+#include "proto/gradido/gradido_transaction.pb.h"
+#include "proto/gradido/transaction_body.pb.h"
+*/
 
 #include <list>
 #include <stack>

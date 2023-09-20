@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_GRADIDO_TRANSACTION_H
 
 #include "TransactionBody.h"
-#include "proto/gradido/GradidoTransaction.pb.h"
+#include "proto/gradido/gradido_transaction.pb.h"
 #include "Poco/RefCountedObject.h"
 
 class TransactionFactory;
@@ -12,7 +12,7 @@ namespace model {
 
 	namespace gradido {
 
-		class GradidoBlock;
+		class ConfirmedTransaction;
 
 		/*!
 		 *  \addtogroup Gradido-Protocol
@@ -26,7 +26,7 @@ namespace model {
 		*/
 		class GRADIDOBLOCKCHAIN_EXPORT GradidoTransaction: public Poco::RefCountedObject
 		{
-			friend GradidoBlock;
+			friend ConfirmedTransaction;
 		public:
 			GradidoTransaction(proto::gradido::GradidoTransaction* protoGradidoTransaction, std::shared_ptr<ProtobufArenaMemory> arenaMemory);
 			GradidoTransaction(const std::string* serializedProtobuf);
@@ -42,7 +42,7 @@ namespace model {
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
-				const GradidoBlock* parentGradidoBlock = nullptr,
+				const ConfirmedTransaction* parentGradidoBlock = nullptr,
 				IGradidoBlockchain* otherBlockchain = nullptr
 			) const;
 

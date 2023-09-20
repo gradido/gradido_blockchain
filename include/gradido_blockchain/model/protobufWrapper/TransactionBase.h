@@ -11,7 +11,7 @@
 
 #pragma warning(disable:4800)
 
-#include "proto/gradido/BasicTypes.pb.h"
+#include "proto/gradido/basic_types.pb.h"
 #include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/lib/MultithreadContainer.h"
 #include "gradido_blockchain/export.h"
@@ -27,7 +27,7 @@ namespace model {
 	namespace gradido {
 
 		class GradidoTransaction;
-		class GradidoBlock;
+		class ConfirmedTransaction;
 
 		/*!
 		 *  \addtogroup enums
@@ -89,7 +89,7 @@ namespace model {
 			virtual bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
-				const GradidoBlock* parentGradidoBlock = nullptr
+				const ConfirmedTransaction* parentGradidoBlock = nullptr
 				) const = 0;
 			//! \return caller need to clean up memory bins
 			virtual std::vector<MemoryBin*> getInvolvedAddresses() const = 0;

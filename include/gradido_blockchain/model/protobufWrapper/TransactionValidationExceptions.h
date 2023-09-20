@@ -8,7 +8,7 @@
 #include "gradido_blockchain/model/protobufWrapper/GradidoTransaction.h"
 
 #include "Poco/DateTime.h"
-#include "proto/gradido/RegisterAddress.pb.h"
+#include "proto/gradido/register_address.pb.h"
 
 namespace model {
 	namespace gradido {

@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_GROUP_FRIENDS_UPDATE_H
 
 #include "TransactionBase.h"
-#include "proto/gradido/GroupFriendsUpdate.pb.h"
+#include "proto/gradido/group_friends_update.pb.h"
 
 namespace model {
 	namespace gradido {
@@ -15,7 +15,7 @@ namespace model {
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
-				const GradidoBlock* parentGradidoBlock = nullptr
+				const ConfirmedTransaction* parentGradidoBlock = nullptr
 				) const;
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
 			bool isInvolved(const std::string pubkeyString) const;

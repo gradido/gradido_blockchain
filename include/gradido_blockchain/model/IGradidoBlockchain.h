@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_MODEL_I_GRADIDO_BLOCKCHAIN_H
 #define __GRADIDO_BLOCKCHAIN_MODEL_I_GRADIDO_BLOCKCHAIN_H
 
-//#include "protobufWrapper/GradidoBlock.h"
+#include "protobufWrapper/ConfirmedTransaction.h"
 #include "protobufWrapper/TransactionBase.h"
 #include "TransactionEntry.h"
 #include "Poco/SharedPtr.h"
@@ -37,7 +37,7 @@ namespace model {
 			std::function<FilterResult(model::TransactionEntry*)> filter = nullptr,
 			SearchDirection order = SearchDirection::ASC
 		) = 0;
-		virtual Poco::SharedPtr<gradido::GradidoBlock> getLastTransaction(std::function<bool(const gradido::GradidoBlock*)> filter = nullptr) = 0;
+		virtual Poco::SharedPtr<gradido::ConfirmedTransaction> getLastTransaction(std::function<bool(const gradido::ConfirmedTransaction*)> filter = nullptr) = 0;
 		virtual mpfr_ptr calculateAddressBalance(const std::string& address, const std::string& groupId, Poco::DateTime date) = 0;
 		virtual proto::gradido::RegisterAddress_AddressType getAddressType(const std::string& address) = 0;
 		virtual Poco::SharedPtr<TransactionEntry> getTransactionForId(uint64_t transactionId) = 0;

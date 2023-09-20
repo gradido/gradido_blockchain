@@ -9,7 +9,7 @@
 #include "Poco/Nullable.h"
 #include "Poco/Dynamic/Var.h"
 
-#include "proto/gradido/BasicTypes.pb.h"
+#include "proto/gradido/basic_types.pb.h"
 
 #include "sodium.h"
 

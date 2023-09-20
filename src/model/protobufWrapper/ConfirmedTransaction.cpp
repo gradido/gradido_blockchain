@@ -1,11 +1,11 @@
-#include "gradido_blockchain/model/protobufWrapper/GradidoBlock.h"
+#include "gradido_blockchain/model/protobufWrapper/ConfirmedTransaction.h"
 #include "gradido_blockchain/model/protobufWrapper/ProtobufExceptions.h"
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 #include "gradido_blockchain/model/IGradidoBlockchain.h"
 
 
 #include <google/protobuf/util/json_util.h>
-#include "proto/gradido/TransactionBody.pb.h"
+#include "proto/gradido/transaction_body.pb.h"
 
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/lib/Decay.h"
@@ -18,53 +18,53 @@ using namespace rapidjson;
 namespace model {
 	namespace gradido {
 
-		GradidoBlock::GradidoBlock(const std::string* serializedGradidoBlock)
+		ConfirmedTransaction::ConfirmedTransaction(const std::string* serializedGradidoBlock)
 			: mGradidoTransaction(nullptr)
 		{
 			assert(serializedGradidoBlock);
 			mProtobufArenaMemory = ProtobufArenaMemory::create();
-			mProtoGradidoBlock = google::protobuf::Arena::CreateMessage<proto::gradido::GradidoBlock>(*mProtobufArenaMemory);
+			mProtoConfirmedTransaction = google::protobuf::Arena::CreateMessage<proto::gradido::ConfirmedTransaction>(*mProtobufArenaMemory);
 
-			if (!mProtoGradidoBlock->ParseFromArray(serializedGradidoBlock->data(), serializedGradidoBlock->size())) {
+			if (!mProtoConfirmedTransaction->ParseFromArray(serializedGradidoBlock->data(), serializedGradidoBlock->size())) {
 				throw ProtobufParseException(serializedGradidoBlock->data());
 			}
-			mGradidoTransaction = new GradidoTransaction(mProtoGradidoBlock->mutable_transaction(), mProtobufArenaMemory);
+			mGradidoTransaction = new GradidoTransaction(mProtoConfirmedTransaction->mutable_transaction(), mProtobufArenaMemory);
 		}
 
-		GradidoBlock::GradidoBlock(std::unique_ptr<GradidoTransaction> transaction)
+		ConfirmedTransaction::ConfirmedTransaction(std::unique_ptr<GradidoTransaction> transaction)
 			: mGradidoTransaction(transaction.release())
 		{
 			assert(mGradidoTransaction);
 			mProtobufArenaMemory = mGradidoTransaction->getProtobufArena();
-			mProtoGradidoBlock = google::protobuf::Arena::CreateMessage<proto::gradido::GradidoBlock>(*mProtobufArenaMemory);
+			mProtoConfirmedTransaction = google::protobuf::Arena::CreateMessage<proto::gradido::ConfirmedTransaction>(*mProtobufArenaMemory);
 			auto gradidoTransactionProto = mGradidoTransaction->getProto();
-			mProtoGradidoBlock->unsafe_arena_set_allocated_transaction(mGradidoTransaction->getProto());
+			mProtoConfirmedTransaction->unsafe_arena_set_allocated_transaction(mGradidoTransaction->getProto());
 		}
 
-		GradidoBlock::~GradidoBlock()
+		ConfirmedTransaction::~ConfirmedTransaction()
 		{
 			if (mGradidoTransaction) {
 				delete mGradidoTransaction;
 				mGradidoTransaction = nullptr;
 			}
 			// proto memory will be released automatic with arena memory
-			mProtoGradidoBlock = nullptr;
+			mProtoConfirmedTransaction = nullptr;
 		}
 
-		Poco::SharedPtr<GradidoBlock> GradidoBlock::create(std::unique_ptr<GradidoTransaction> transaction, uint64_t id, int64_t received, const MemoryBin* messageId)
+		Poco::SharedPtr<ConfirmedTransaction> ConfirmedTransaction::create(std::unique_ptr<GradidoTransaction> transaction, uint64_t id, int64_t received, const MemoryBin* messageId)
 		{
-			Poco::SharedPtr<GradidoBlock> gradidoBlock(new GradidoBlock(std::move(transaction)));
-			auto proto = gradidoBlock->mProtoGradidoBlock;
+			Poco::SharedPtr<ConfirmedTransaction> confirmedTransaction(new ConfirmedTransaction(std::move(transaction)));
+			auto proto = confirmedTransaction->mProtoConfirmedTransaction;
 			proto->set_id(id);
-			proto->mutable_received()->set_seconds(received);
+			proto->mutable_confirmed_at()->set_seconds(received);
 			proto->set_version_number(GRADIDO_BLOCK_PROTOCOL_VERSION);
 			if (messageId) {
 				proto->set_allocated_message_id(messageId->copyAsString().release());
 			}
-			return gradidoBlock;
+			return confirmedTransaction;
 		}
 
-		std::string GradidoBlock::toJson()
+		std::string ConfirmedTransaction::toJson()
 		{
 			std::string json_message = "";
 			std::string json_message_body = "";
@@ -72,18 +72,16 @@ namespace model {
 			options.add_whitespace = true;
 			options.always_print_primitive_fields = true;
 
-			auto protoGradidoBlock = *mProtoGradidoBlock;
-
-			auto status = google::protobuf::util::MessageToJsonString(*mProtoGradidoBlock, &json_message, options);
+			auto status = google::protobuf::util::MessageToJsonString(*mProtoConfirmedTransaction, &json_message, options);
 			if (!status.ok()) {
-				throw ProtobufJsonSerializationException("error parsing gradido block", *mProtoGradidoBlock, status);
+				throw ProtobufJsonSerializationException("error parsing gradido block", *mProtoConfirmedTransaction, status);
 			}
 
 			proto::gradido::TransactionBody body;
-			body.ParseFromString(mProtoGradidoBlock->transaction().body_bytes());
+			body.ParseFromString(mProtoConfirmedTransaction->transaction().body_bytes());
 			status = google::protobuf::util::MessageToJsonString(body, &json_message_body, options);
 			if (!status.ok()) {
-				throw ProtobufJsonSerializationException("error parsing transaction body", *mProtoGradidoBlock, status);
+				throw ProtobufJsonSerializationException("error parsing transaction body", *mProtoConfirmedTransaction, status);
 			}
 			//\"bodyBytes\": \"MigKIC7Sihz14RbYNhVAa8V3FSIhwvd0pWVvZqDnVA91dtcbIgRnZGQx\"
 			int startBodyBytes = json_message.find("bodyBytes") + std::string("\"bodyBytes\": \"").size() - 2;
@@ -110,7 +108,7 @@ namespace model {
 			return json_message;
 		}
 
-		Value GradidoBlock::toJson(Document& baseDocument)
+		Value ConfirmedTransaction::toJson(Document& baseDocument)
 		{
 			auto jsonString = toJson();
 			Document parsedJsonString;
@@ -119,72 +117,72 @@ namespace model {
 			return Value(parsedJsonString, alloc);
 		}
 
-		uint64_t GradidoBlock::getID() const
+		uint64_t ConfirmedTransaction::getID() const
 		{
-			return mProtoGradidoBlock->id();
+			return mProtoConfirmedTransaction->id();
 		}
-		const std::string& GradidoBlock::getTxHash() const
+		const std::string& ConfirmedTransaction::getTxHash() const
 		{
-			return mProtoGradidoBlock->running_hash();
+			return mProtoConfirmedTransaction->running_hash();
 		}
-		const std::string& GradidoBlock::getFinalBalance() const
+		const std::string& ConfirmedTransaction::getFinalBalance() const
 		{
-			return mProtoGradidoBlock->final_gdd();
-		}
-
-		void GradidoBlock::setTxHash(const MemoryBin* txHash)
-		{
-			mProtoGradidoBlock->set_allocated_running_hash(txHash->copyAsString().release());
+			return mProtoConfirmedTransaction->account_balance();
 		}
 
-		int64_t GradidoBlock::getReceived() const
+		void ConfirmedTransaction::setTxHash(const MemoryBin* txHash)
 		{
-			return mProtoGradidoBlock->received().seconds();
+			mProtoConfirmedTransaction->set_allocated_running_hash(txHash->copyAsString().release());
 		}
 
-		std::unique_ptr<std::string> GradidoBlock::getSerialized()
+		int64_t ConfirmedTransaction::getConfirmedAt() const
 		{
-			mProtoGradidoBlock->mutable_transaction()->set_allocated_body_bytes(mGradidoTransaction->getTransactionBody()->getBodyBytes().release());
+			return mProtoConfirmedTransaction->confirmed_at().seconds();
+		}
+
+		std::unique_ptr<std::string> ConfirmedTransaction::getSerialized()
+		{
+			mProtoConfirmedTransaction->mutable_transaction()->set_allocated_body_bytes(mGradidoTransaction->getTransactionBody()->getBodyBytes().release());
 			//mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
 
-			auto size = mProtoGradidoBlock->ByteSizeLong();
+			auto size = mProtoConfirmedTransaction->ByteSizeLong();
 			//auto bodyBytesSize = MemoryManager::getInstance()->getFreeMemory(mProtoCreation.ByteSizeLong());
 			std::string* resultString(new std::string(size, 0));
-			if (!mProtoGradidoBlock->SerializeToString(resultString)) {
+			if (!mProtoConfirmedTransaction->SerializeToString(resultString)) {
 				//addError(new Error("TransactionCreation::getBodyBytes", "error serializing string"));
-				throw ProtobufSerializationException(mProtoGradidoBlock);
+				throw ProtobufSerializationException(mProtoConfirmedTransaction);
 			}
 			std::unique_ptr<std::string> result;
 			result.reset(resultString);
 			return result;
 		}
 
-		MemoryBin* GradidoBlock::getMessageId() const
+		MemoryBin* ConfirmedTransaction::getMessageId() const
 		{
-			if (!mProtoGradidoBlock->message_id().size()) {
+			if (!mProtoConfirmedTransaction->message_id().size()) {
 				return nullptr;
 			}
 			auto mm = MemoryManager::getInstance();
-			auto result = mm->getMemory(mProtoGradidoBlock->message_id().size());
-			memcpy(*result, mProtoGradidoBlock->message_id().data(), result->size());
+			auto result = mm->getMemory(mProtoConfirmedTransaction->message_id().size());
+			memcpy(*result, mProtoConfirmedTransaction->message_id().data(), result->size());
 			return result;
 		}
 
-		const std::string GradidoBlock::getMessageIdString() const
+		const std::string ConfirmedTransaction::getMessageIdString() const
 		{
-			return mProtoGradidoBlock->message_id();
+			return mProtoConfirmedTransaction->message_id();
 		}
 
-		std::string GradidoBlock::getMessageIdHex() const
+		std::string ConfirmedTransaction::getMessageIdHex() const
 		{
-			if (!mProtoGradidoBlock->message_id().size()) return "";
+			if (!mProtoConfirmedTransaction->message_id().size()) return "";
 			return DataTypeConverter::binToHex(
-				(const unsigned char*)mProtoGradidoBlock->message_id().data(),
-				mProtoGradidoBlock->message_id().size()
+				(const unsigned char*)mProtoConfirmedTransaction->message_id().data(),
+				mProtoConfirmedTransaction->message_id().size()
 			);
 		}
 
-		bool GradidoBlock::validate(
+		bool ConfirmedTransaction::validate(
 			TransactionValidationLevel level /*= TRANSACTION_VALIDATION_SINGLE*/,
 			IGradidoBlockchain* blockchain /*= nullptr*/,
 			IGradidoBlockchain* otherBlockchain /*= nullptr*/
@@ -192,12 +190,12 @@ namespace model {
 		{
 			auto created = Poco::Timestamp(getGradidoTransaction()->getTransactionBody()->getCreatedSeconds() * Poco::Timestamp::resolution());
 			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
-				if (mProtoGradidoBlock->version_number() != GRADIDO_BLOCK_PROTOCOL_VERSION) {
+				if (mProtoConfirmedTransaction->version_number() != GRADIDO_BLOCK_PROTOCOL_VERSION) {
 					TransactionValidationInvalidInputException exception("wrong version in gradido block", "version_number", "uint64");
 					exception.setTransactionBody(getGradidoTransaction()->getTransactionBody());
 					throw exception;
 				}	// with iota it is a BLAKE2b-256 hash with 256 Bits or 32 Bytes
-				if (mProtoGradidoBlock->message_id().size() && mProtoGradidoBlock->message_id().size() != 32) {
+				if (mProtoConfirmedTransaction->message_id().size() && mProtoConfirmedTransaction->message_id().size() != 32) {
 					TransactionValidationInvalidInputException exception("wrong size", "message_id", "binary");
 					exception.setTransactionBody(getGradidoTransaction()->getTransactionBody());
 					throw exception;
@@ -213,16 +211,16 @@ namespace model {
 			if ((level & TRANSACTION_VALIDATION_SINGLE_PREVIOUS) == TRANSACTION_VALIDATION_SINGLE_PREVIOUS) {
 				if (getID() > 1) {
 					assert(blockchain);
-					auto previousBlock = blockchain->getTransactionForId(getID() - 1);
-					if (previousBlock.isNull()) {
+					auto previousTransaction = blockchain->getTransactionForId(getID() - 1);
+					if (previousTransaction.isNull()) {
 						GradidoBlockchainTransactionNotFoundException exception("previous transaction not found");
 						throw exception.setTransactionId(getID() - 1);
 					}
-					auto previousGradidoBlock = std::make_unique<GradidoBlock>(previousBlock->getSerializedTransaction());
-					if (previousGradidoBlock->getReceived() > getReceived()) {
+					auto previousConfirmedTransaction = std::make_unique<ConfirmedTransaction>(previousTransaction->getSerializedTransaction());
+					if (previousConfirmedTransaction->getConfirmedAt() > getConfirmedAt()) {
 						throw BlockchainOrderException("previous transaction is younger");
 					}
-					auto previousCreated = Poco::Timestamp(previousGradidoBlock->getGradidoTransaction()->getTransactionBody()->getCreatedSeconds() * Poco::Timestamp::resolution());
+					auto previousCreated = Poco::Timestamp(previousConfirmedTransaction->getGradidoTransaction()->getTransactionBody()->getCreatedSeconds() * Poco::Timestamp::resolution());
 					if (previousCreated > created) {
 						auto timespanBetweenCreatedAndReceivedSeconds = Poco::Timespan(getReceivedAsTimestamp() - created).totalSeconds();
 						if (timespanBetweenCreatedAndReceivedSeconds / 60 > MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION_IN_MINUTES) {
@@ -232,12 +230,12 @@ namespace model {
 						}
 					}
 					auto mm = MemoryManager::getInstance();
-					auto txHash = calculateTxHash(previousGradidoBlock.get());
-					if (txHash->size() != mProtoGradidoBlock->running_hash().size()) {
+					auto txHash = calculateTxHash(previousConfirmedTransaction.get());
+					if (txHash->size() != mProtoConfirmedTransaction->running_hash().size()) {
 						mm->releaseMemory(txHash);
 						throw TransactionValidationException("tx hash size isn't equal");
 					}
-					if (0 != memcmp(*txHash, mProtoGradidoBlock->running_hash().data(), txHash->size())) {
+					if (0 != memcmp(*txHash, mProtoConfirmedTransaction->running_hash().data(), txHash->size())) {
 						mm->releaseMemory(txHash);
 						throw TransactionValidationInvalidInputException("stored tx hash isn't equal to calculated txHash", "txHash", "binary");
 					}
@@ -247,25 +245,25 @@ namespace model {
 			return mGradidoTransaction->validate(level, blockchain, this, otherBlockchain);
 		}
 
-		MemoryBin* GradidoBlock::calculateTxHash(const GradidoBlock* previousBlock) const
+		MemoryBin* ConfirmedTransaction::calculateTxHash(const ConfirmedTransaction* previousBlock) const
 		{
 			auto mm = MemoryManager::getInstance();
 			std::string prevTxHash;
 			if (previousBlock) {
 				prevTxHash = previousBlock->getTxHash();
 			}
-			std::string transactionIdString = std::to_string(mProtoGradidoBlock->id());
+			std::string transactionIdString = std::to_string(mProtoConfirmedTransaction->id());
 			std::string receivedString;
 
 			//yyyy-MM-dd HH:mm:ss
 
-			Poco::DateTime received(Poco::Timestamp(mProtoGradidoBlock->received().seconds() * Poco::Timestamp::resolution()));
+			Poco::DateTime received(Poco::Timestamp(mProtoConfirmedTransaction->confirmed_at().seconds() * Poco::Timestamp::resolution()));
 			receivedString = Poco::DateTimeFormatter::format(received, "%Y-%m-%d %H:%M:%S");
-			std::string signatureMapString = mProtoGradidoBlock->transaction().sig_map().SerializeAsString();
+			std::string signatureMapString = mProtoConfirmedTransaction->transaction().sig_map().SerializeAsString();
 
 			auto hash = mm->getMemory(crypto_generichash_BYTES);
 
-			// Sodium use for the generichash function BLAKE2b today (11.11.2019), mabye change in the future
+			// Sodium use for the generic hash function BLAKE2b today (11.11.2019), maybe change in the future
 			crypto_generichash_state state;
 			crypto_generichash_init(&state, nullptr, 0, crypto_generichash_BYTES);
 			if (prevTxHash.size()) {
@@ -278,12 +276,12 @@ namespace model {
 			//printf("received: %s\n", receivedString.data());
 			crypto_generichash_update(&state, (const unsigned char*)signatureMapString.data(), signatureMapString.size());
 			//printf("signature map serialized: %s\n", convertBinToHex(signatureMapString).data());
-			crypto_generichash_update(&state, (const unsigned char*)mProtoGradidoBlock->final_gdd().data(), sizeof(uint64_t));
+			crypto_generichash_update(&state, (const unsigned char*)mProtoConfirmedTransaction->account_balance().data(), sizeof(uint64_t));
 			crypto_generichash_final(&state, *hash, hash->size());
 			return hash;
 		}
 
-		void GradidoBlock::calculateFinalGDD(IGradidoBlockchain* blockchain)
+		void ConfirmedTransaction::calculateAccountBalance(IGradidoBlockchain* blockchain)
 		{
 			assert(blockchain);
 			std::unique_lock _lock(mWorkMutex);
@@ -310,7 +308,7 @@ namespace model {
 				return;
 			case model::gradido::TRANSACTION_REGISTER_ADDRESS:
 				if (getGradidoTransaction()->getTransactionBody()->isLocal()) {
-					mProtoGradidoBlock->set_final_gdd("0");
+					mProtoConfirmedTransaction->set_account_balance("0");
 				}
 				else {
 					// when moving user from one to another group
@@ -339,7 +337,7 @@ namespace model {
 				mpfr_set_str(temp, transactionBody->getTransferTransaction()->getAmount().data(), 10, gDefaultRound);
 				mpfr_sub(finalBalance, finalBalance, temp, gDefaultRound);
 			}
-			TransactionBase::amountToString(mProtoGradidoBlock->mutable_final_gdd(), finalBalance);
+			TransactionBase::amountToString(mProtoConfirmedTransaction->mutable_account_balance(), finalBalance);
 			mm->releaseMathMemory(finalBalance);
 			mm->releaseMathMemory(temp);
 		}

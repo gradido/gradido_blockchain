@@ -5,7 +5,7 @@
 #include "Poco/DateTimeFormatter.h"
 
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
-#include "gradido_blockchain/model/protobufWrapper/GradidoBlock.h"
+#include "gradido_blockchain/model/protobufWrapper/ConfirmedTransaction.h"
 #include "gradido_blockchain/model/IGradidoBlockchain.h"
 #include <sodium.h>
 
@@ -65,7 +65,7 @@ namespace model {
 		bool TransactionCreation::validate(
 			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
 			IGradidoBlockchain* blockchain/* = nullptr*/,
-			const GradidoBlock* parentGradidoBlock/* = nullptr*/
+			const ConfirmedTransaction* parentConfirmedTransaction/* = nullptr*/
 		) const
 		{
 			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
@@ -104,7 +104,7 @@ namespace model {
 			{
 				Poco::DateTime targetDate = Poco::Timestamp(mProtoCreation.target_date().seconds() * Poco::Timestamp::resolution());
 				assert(blockchain);
-				assert(parentGradidoBlock);
+				assert(parentConfirmedTransaction);
 
 				auto pubkey = mProtoCreation.recipient().pubkey();
 				auto mm = MemoryManager::getInstance();
@@ -113,13 +113,13 @@ namespace model {
 					throw TransactionValidationInvalidInputException("amount cannot be parsed to a number", "amount", "string");
 				}
 				mpfr_ptr sum;
-				auto received = parentGradidoBlock->getReceivedAsTimestamp();
-				auto creationMaxAlgo = getCorrectCreationMaxAlgo(received);
+				auto confirmedAt = parentConfirmedTransaction->getConfirmedAtAsTimestamp();
+				auto creationMaxAlgo = getCorrectCreationMaxAlgo(confirmedAt);
 				auto targetCreationMaxAlgo = getCorrectCreationMaxAlgo(targetDate);
 
 				if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo) {
 					try {
-						sum = calculateCreationSumLegacy(pubkey, received, blockchain);
+						sum = calculateCreationSumLegacy(pubkey, confirmedAt, blockchain);
 					} catch (Poco::NullPointerException& ex) {
 						std::clog << "poco null pointer exception by calling calculateCreationSumLegacy" << std::endl;
 						throw;
@@ -127,7 +127,7 @@ namespace model {
 				}
 				else if(CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo) {
 					try {
-						sum = calculateCreationSum(pubkey, targetDate.month(), targetDate.year(), parentGradidoBlock->getReceivedAsTimestamp(), blockchain);
+						sum = calculateCreationSum(pubkey, targetDate.month(), targetDate.year(), parentConfirmedTransaction->getReceivedAsTimestamp(), blockchain);
 					} catch (Poco::NullPointerException& ex) {
 						std::clog << "poco null pointer exception by calling calculateCreationSum" << std::endl;
 						throw;
@@ -135,7 +135,7 @@ namespace model {
 				}
 				mpfr_add(sum, sum, amount, gDefaultRound);
 
-				auto id = parentGradidoBlock->getID();
+				auto id = parentConfirmedTransaction->getID();
 				int lastId = 0;
 				auto lastTransaction = blockchain->getLastTransaction();
 				if (!lastTransaction.isNull()) {
@@ -205,7 +205,9 @@ namespace model {
 			if ((level & TRANSACTION_VALIDATION_CONNECTED_GROUP) == TRANSACTION_VALIDATION_CONNECTED_GROUP) {
 				assert(blockchain);
 				auto addressType = blockchain->getAddressType(getRecipientPublicKeyString());
-				if (addressType != proto::gradido::RegisterAddress_AddressType_HUMAN) {
+				if (addressType != proto::gradido::RegisterAddress_AddressType_COMMUNITY_HUMAN &&
+					addressType != proto::gradido::RegisterAddress_AddressType_COMMUNITY_AUF && 
+					addressType != proto::gradido::RegisterAddress_AddressType_COMMUNITY_GMW) {
 					throw WrongAddressTypeException("wrong address type for creation", addressType, getRecipientPublicKeyString());
 				}
 			}
@@ -292,8 +294,8 @@ namespace model {
 			auto sum = mm->getMathMemory();
 			for (auto it = allTransactions.begin(); it != allTransactions.end(); it++) {
 				try {
-					auto gradidoBlock = std::make_unique<model::gradido::GradidoBlock>((*it)->getSerializedTransaction());
-					auto body = gradidoBlock->getGradidoTransaction()->getTransactionBody();
+					auto confirmedTransaction = std::make_unique<model::gradido::ConfirmedTransaction>((*it)->getSerializedTransaction());
+					auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
 					if (body->getTransactionType() == model::gradido::TRANSACTION_CREATION) {
 						auto creation = body->getCreationTransaction();
 						auto targetDate = creation->getTargetDate();
@@ -346,8 +348,8 @@ namespace model {
 			auto amount = mm->getMathMemory();
 			auto sum = mm->getMathMemory();
 			for (auto it = allTransactions.begin(); it != allTransactions.end(); it++) {
-				auto gradidoBlock = std::make_unique<model::gradido::GradidoBlock>((*it)->getSerializedTransaction());
-				auto body = gradidoBlock->getGradidoTransaction()->getTransactionBody();
+				auto confirmedTransaction = std::make_unique<model::gradido::ConfirmedTransaction>((*it)->getSerializedTransaction());
+				auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
 				if (body->getTransactionType() == model::gradido::TRANSACTION_CREATION) {
 					auto creation = body->getCreationTransaction();
 					//printf("added from transaction: %d \n", gradidoBlock->getID());
@@ -372,10 +374,10 @@ namespace model {
 			return mProtoCreation.recipient().pubkey() == pubkeyString;
 		}
 
-		const std::string& TransactionCreation::getCoinGroupId() const
+		const std::string& TransactionCreation::getCoinCommunityId() const
 		{
 			// cannot inline, because this doens't work in dll build
-			return mProtoCreation.recipient().group_id();
+			return mProtoCreation.recipient().community_id();
 		}
 
 		bool TransactionCreation::isBelongToUs(const TransactionBase* pairingTransaction) const
@@ -390,7 +392,7 @@ namespace model {
 				belongToUs = false;
 			}
 
-			if (getCoinGroupId() != pair->getCoinGroupId()) {
+			if (getCoinCommunityId() != pair->getCoinCommunityId()) {
 				belongToUs = false;
 			}
 

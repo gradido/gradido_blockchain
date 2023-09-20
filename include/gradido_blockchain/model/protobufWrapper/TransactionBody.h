@@ -1,7 +1,7 @@
 #ifndef GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_TRANSACTION_BODY_H
 #define GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_TRANSACTION_BODY_H
 
-#include "proto/gradido/TransactionBody.pb.h"
+#include "proto/gradido/transaction_body.pb.h"
 
 #include "DeferredTransfer.h"
 #include "GroupFriendsUpdate.h"
@@ -32,9 +32,16 @@ namespace model {
 		public:
 			virtual ~TransactionBody();
 
-			void setCreated(Poco::DateTime created);
-			uint32_t getCreatedSeconds() const;
-			inline Poco::DateTime getCreated() const { return Poco::Timestamp(getCreatedSeconds() * Poco::Timestamp::resolution()); }
+			void setCreatedAt(Poco::DateTime createdAt);
+			[[deprecated("Replaced by setCreatedAt, changed name according to Gradido Apollo implementation")]]
+			inline void setCreated(Poco::DateTime created) { setCreatedAt(created); }
+
+			uint32_t getCreatedAtSeconds() const;
+			[[deprecated("Replaced by getCreatedAtSeconds, changed name according to Gradido Apollo implementation")]]
+			inline uint32_t getCreatedSeconds() const { return getCreatedAtSeconds(); }
+			Poco::DateTime getCreatedAt() const;
+			[[deprecated("Replaced by getCreatedAt, changed name according to Gradido Apollo implementation")]]
+			inline Poco::DateTime getCreated() const { return getCreatedAt(); }
 
 			static TransactionBody* load(const std::string& protoMessageBin, std::shared_ptr<ProtobufArenaMemory> arenaMemory);
 			void upgradeToDeferredTransaction(Poco::Timestamp timeout);
@@ -78,7 +85,7 @@ namespace model {
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
-				const GradidoBlock* parentGradidoBlock = nullptr
+				const ConfirmedTransaction* parentConfirmedTransaction = nullptr
 				) const;
 			bool isBelongToUs(const TransactionBody* pairingTransaction) const;
 

@@ -1,8 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_MODEL_TRANSACTION_FACTORY_H
 #define __GRADIDO_BLOCKCHAIN_MODEL_TRANSACTION_FACTORY_H
 
-//#include "protobufWrapper/GradidoTransaction.h"
-#include "protobufWrapper/GradidoBlock.h"
+#include "protobufWrapper/ConfirmedTransaction.h"
 #include "Poco/Timestamp.h"
 #include "Poco/SharedPtr.h"
 
@@ -25,10 +24,10 @@ public:
 	static std::unique_ptr<model::gradido::GradidoTransaction> createTransactionTransfer(
 		const MemoryBin* senderPubkey,
 		const std::string& amountGddCent,
-		std::string groupId,
+		std::string communityId,
 		const MemoryBin* recipientPubkey
 	);
-	static Poco::SharedPtr<model::gradido::GradidoBlock> createGradidoBlock(
+	static Poco::SharedPtr<model::gradido::ConfirmedTransaction> createConfirmedTransaction(
 		std::unique_ptr<model::gradido::GradidoTransaction> transaction,
 		uint64_t id,
 		int64_t received,

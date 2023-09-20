@@ -59,7 +59,7 @@ namespace model {
 		bool GradidoTransaction::validate(
 			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
 			IGradidoBlockchain* blockchain/* = nullptr*/,
-			const GradidoBlock* parentGradidoBlock/* = nullptr*/,
+			const ConfirmedTransaction* parentConfirmedTransaction/* = nullptr*/,
 			IGradidoBlockchain* otherBlockchain/* = nullptr*/
 		) const
 		{
@@ -69,7 +69,7 @@ namespace model {
 
 				// check if all signatures belong to current body bytes
 				auto body_bytes = mProtoGradidoTransaction->body_bytes();
-				for (auto it = sig_map.sigpair().begin(); it != sig_map.sigpair().end(); it++)
+				for (auto it = sig_map.sig_pair().begin(); it != sig_map.sig_pair().end(); it++)
 				{
 					if (it->pubkey().size() != KeyPairEd25519::getPublicKeySize()) {
 						throw TransactionValidationInvalidInputException(
@@ -79,14 +79,14 @@ namespace model {
 					KeyPairEd25519 key_pair((const unsigned char*)it->pubkey().data());
 					if (!key_pair.verify(body_bytes, it->signature())) {
 						throw TransactionValidationInvalidSignatureException(
-							"pubkey don't belong to bodybytes", it->pubkey(), it->signature(), body_bytes
+							"pubkey don't belong to body bytes", it->pubkey(), it->signature(), body_bytes
 						);
 					}
 				}
 
 				// check for not allowed signatures
 				mTransactionBody->getTransactionBase()->checkRequiredSignatures(&sig_map);
-				mTransactionBody->validate(level, blockchain, parentGradidoBlock);
+				mTransactionBody->validate(level, blockchain, parentConfirmedTransaction);
 			}
 
 			// must be implemented in gradido node server
@@ -113,8 +113,8 @@ namespace model {
 						if (pairTransactionEntry.isNull()) {
 							throw TransactionValidationException("pairing transaction not found");
 						}
-						auto pairingGradidoBlock = std::make_unique<GradidoBlock>(pairTransactionEntry->getSerializedTransaction());
-						auto pairingTransaction = pairingGradidoBlock->getGradidoTransaction();
+						auto pairingConfirmedTransaction = std::make_unique<ConfirmedTransaction>(pairTransactionEntry->getSerializedTransaction());
+						auto pairingTransaction = pairingConfirmedTransaction->getGradidoTransaction();
 						if (!isBelongToUs(pairingTransaction)) {
 							throw PairingTransactionNotMatchException(
 								"pairing transaction not matching",
@@ -163,7 +163,7 @@ namespace model {
 			auto sigMap = mProtoGradidoTransaction->mutable_sig_map();
 
 			// check if pubkey already exist
-			for (auto it = sigMap->sigpair().begin(); it != sigMap->sigpair().end(); it++)
+			for (auto it = sigMap->sig_pair().begin(); it != sigMap->sig_pair().end(); it++)
 			{
 				if (it->pubkey().size() != KeyPairEd25519::getPublicKeySize()) {
 					throw TransactionValidationInvalidInputException("invalid size", "public key");
@@ -173,15 +173,15 @@ namespace model {
 				}
 			}
 
-			auto sigPair = sigMap->add_sigpair();
+			auto sigPair = sigMap->add_sig_pair();
 			sigPair->mutable_pubkey()->assign((const char*)pubkeyBin->data(), crypto_sign_PUBLICKEYBYTES);
 			sigPair->mutable_signature()->assign((const char*)signatureBin->data(), crypto_sign_BYTES);
-			return sigMap->sigpair_size() >= mTransactionBody->getTransactionBase()->getMinSignatureCount();
+			return sigMap->sig_pair_size() >= mTransactionBody->getTransactionBase()->getMinSignatureCount();
 		}
 
 		int GradidoTransaction::getSignCount() const
 		{
-			return mProtoGradidoTransaction->sig_map().sigpair_size();
+			return mProtoGradidoTransaction->sig_map().sig_pair_size();
 		}
 
 		std::vector<std::pair<MemoryBin*, MemoryBin*>> GradidoTransaction::getPublicKeySignaturePairs(bool withPublicKey, bool withSignatures, bool onlyFirst/* = true*/) const
@@ -197,8 +197,8 @@ namespace model {
 			MemoryBin* pubkey = nullptr;
 			MemoryBin* signature = nullptr;
 
-			for (int i = 0; i < sigMap.sigpair_size(); i++) {
-				auto sigPair = sigMap.sigpair()[i];
+			for (int i = 0; i < sigMap.sig_pair_size(); i++) {
+				auto sigPair = sigMap.sig_pair()[i];
 				if (withPublicKey) {
 					pubkey = mm->getMemory(sigPair.pubkey().size());
 					pubkey->copyFromProtoBytes(sigPair.pubkey());

@@ -24,10 +24,12 @@ namespace model {
 		bool RegisterAddress::validate(
 			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
 			IGradidoBlockchain* blockchain/* = nullptr*/,
-			const GradidoBlock* parentGradidoBlock/* = nullptr*/) const
+			const ConfirmedTransaction* parentGradidoBlock/* = nullptr*/) const
 		{
 			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
-
+				if (isCommunityGMW() || isCommunityAUF()) {
+					throw WrongAddressTypeException("register address transaction not allowed with community auf or gmw account", getAddressType(), getUserPubkeyString());
+				}
 			}
 
 			if ((level & TRANSACTION_VALIDATION_CONNECTED_GROUP) == TRANSACTION_VALIDATION_CONNECTED_GROUP) {
@@ -38,8 +40,9 @@ namespace model {
 				std::string address;
 
 				switch (getAddressType()) {
-				case proto::gradido::RegisterAddress_AddressType_HUMAN:
-				case proto::gradido::RegisterAddress_AddressType_PROJECT:
+				case proto::gradido::RegisterAddress_AddressType_COMMUNITY_HUMAN:
+				case proto::gradido::RegisterAddress_AddressType_COMMUNITY_PROJECT:
+				case proto::gradido::RegisterAddress_AddressType_CRYPTO_ACCOUNT:
 					address = getUserPubkeyString();
 					break;
 				case proto::gradido::RegisterAddress_AddressType_SUBACCOUNT:

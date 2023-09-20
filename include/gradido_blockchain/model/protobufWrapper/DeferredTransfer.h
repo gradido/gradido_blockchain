@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_PROTOBUF_WRAPPER_DEFERRED_TRANSFER_H
 
 #include "TransactionTransfer.h"
-#include "proto/gradido/GradidoTransfer.pb.h"
+#include "proto/gradido/gradido_transfer.pb.h"
 
 #include "Poco/Timestamp.h"
 #include "Poco/DateTime.h"
@@ -17,7 +17,7 @@ namespace model {
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE, 
 				IGradidoBlockchain* blockchain = nullptr,
-				const GradidoBlock* parentGradidoBlock = nullptr
+				const ConfirmedTransaction* parentGradidoBlock = nullptr
 			)const;
 
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;

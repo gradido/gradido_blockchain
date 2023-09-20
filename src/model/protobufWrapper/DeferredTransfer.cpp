@@ -1,5 +1,5 @@
 #include "gradido_blockchain/model/protobufWrapper/DeferredTransfer.h"
-#include "gradido_blockchain/model/protobufWrapper/GradidoBlock.h"
+#include "gradido_blockchain/model/protobufWrapper/ConfirmedTransaction.h"
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/lib/Decay.h"
@@ -15,17 +15,17 @@ namespace model {
 		bool DeferredTransfer::validate(
 			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
 			IGradidoBlockchain* blockchain/* = nullptr*/,
-			const GradidoBlock* parentGradidoBlock/* = nullptr*/
+			const ConfirmedTransaction* parentConfirmedTransaction/* = nullptr*/
 		) const
 		{
 			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
-				if (parentGradidoBlock) {
-					if (parentGradidoBlock->getReceivedAsTimestamp() >= getTimeoutAsPocoTimestamp()) {
+				if (parentConfirmedTransaction) {
+					if (parentConfirmedTransaction->getConfirmedAtAsTimestamp() >= getTimeoutAsPocoTimestamp()) {
 						throw TransactionValidationInvalidInputException("timeout is already in the past", "timeout", "timestamp");
 					}
 				}
 			}
-			return TransactionTransfer::validate(level, blockchain, parentGradidoBlock);
+			return TransactionTransfer::validate(level, blockchain, parentConfirmedTransaction);
 		}
 
 		bool DeferredTransfer::isBelongToUs(const TransactionBase* pairingTransaction) const
@@ -41,7 +41,7 @@ namespace model {
 
 		Poco::Timestamp DeferredTransfer::getTimeoutAsPocoTimestamp() const
 		{
-			return DataTypeConverter::convertFromProtoTimestamp(mProtoDeferredTransfer.timeout());
+			return DataTypeConverter::convertFromProtoTimestampSeconds(mProtoDeferredTransfer.timeout());
 		}
 	}
 }

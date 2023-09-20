@@ -13,7 +13,7 @@
 
 #include "TransactionBase.h"
 //#include "Transaction.h"
-#include "proto/gradido/GradidoTransfer.pb.h"
+#include "proto/gradido/gradido_transfer.pb.h"
 
 
 namespace model {
@@ -31,12 +31,14 @@ namespace model {
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
-				const GradidoBlock* parentGradidoBlock = nullptr
+				const ConfirmedTransaction* parentConfirmedTransaction = nullptr
 			) const;
 
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
 			bool isInvolved(const std::string pubkeyString) const;
-			const std::string& getCoinGroupId() const;
+			const std::string& getCoinCommunityId() const;
+			[[deprecated("Replaced by getCoinCommunityId, changed name according to Gradido Apollo implementation")]]
+			inline const std::string& getCoinGroupId() const { return getCoinCommunityId(); }
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 
 			const std::string& getAmount() const;

@@ -44,7 +44,7 @@ namespace model {
 		bool TransactionTransfer::validate(
 			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
 			IGradidoBlockchain* blockchain/* = nullptr*/,
-			const GradidoBlock* parentGradidoBlock/* = nullptr*/)
+			const ConfirmedTransaction* parentConfirmedTransaction/* = nullptr*/)
 			const
 		{
 			LOCK_RECURSIVE;
@@ -104,9 +104,9 @@ namespace model {
 			if ((level & TRANSACTION_VALIDATION_SINGLE_PREVIOUS) == TRANSACTION_VALIDATION_SINGLE_PREVIOUS)
 			{
 				assert(blockchain);
-				assert(parentGradidoBlock);
-				Poco::DateTime receivedDate = parentGradidoBlock->getReceivedAsTimestamp() - Poco::Timespan(1, 0);
-				auto finalBalanceTransaction = blockchain->calculateAddressBalance(getSenderPublicKeyString(), getCoinGroupId(), receivedDate);
+				assert(parentConfirmedTransaction);
+				Poco::DateTime confirmedAt = parentConfirmedTransaction->getConfirmedAtAsTimestamp() - Poco::Timespan(1, 0);
+				auto finalBalanceTransaction = blockchain->calculateAddressBalance(getSenderPublicKeyString(), getCoinGroupId(), confirmedAt);
 				auto finalBalance = MathMemory::create();
 				mpfr_swap(finalBalanceTransaction, finalBalance->getData());
 				mm->releaseMathMemory(finalBalanceTransaction);
@@ -157,10 +157,10 @@ namespace model {
 				;
 		}
 
-		const std::string& TransactionTransfer::getCoinGroupId() const
+		const std::string& TransactionTransfer::getCoinCommunityId() const
 		{
 			// cannot inline, because this doens't work in dll build
-			return mProtoTransfer.sender().group_id();
+			return mProtoTransfer.sender().community_id();
 		}
 
 		bool TransactionTransfer::isBelongToUs(const TransactionBase* pairingTransaction) const
@@ -169,7 +169,7 @@ namespace model {
 			auto mm = MemoryManager::getInstance();
 			bool belongToUs = true;
 
-			if (getCoinGroupId() != pair->getCoinGroupId()) {
+			if (getCoinCommunityId() != pair->getCoinCommunityId()) {
 				belongToUs = false;
 			}
 			if (getAmount() != pair->getAmount()) {

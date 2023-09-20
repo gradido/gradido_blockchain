@@ -18,8 +18,8 @@ namespace model {
 			: mProtoTransactionBody(google::protobuf::Arena::CreateMessage<proto::gradido::TransactionBody>(*arenaMemory)),
 		      mTransactionSpecific(nullptr), mTransactionType(TRANSACTION_NONE), mProtobufArenaMemory(arenaMemory)
 		{
-			auto created = mProtoTransactionBody->mutable_created();
-			DataTypeConverter::convertToProtoTimestampSeconds(Poco::Timestamp(), created);
+			auto createdAt = mProtoTransactionBody->mutable_created_at();
+			DataTypeConverter::convertToProtoTimestamp(Poco::Timestamp(), createdAt);
 			mProtoTransactionBody->set_type(proto::gradido::TransactionBody_CrossGroupType_LOCAL);
 			mProtoTransactionBody->set_version_number(GRADIDO_PROTOCOL_VERSION);
 		}
@@ -36,16 +36,24 @@ namespace model {
 			unlock();
 		}
 
-		void TransactionBody::setCreated(Poco::DateTime created)
+		void TransactionBody::setCreatedAt(Poco::DateTime createdAt)
 		{
 			LOCK_RECURSIVE;
-			auto protoCreated = mProtoTransactionBody->mutable_created();
-			DataTypeConverter::convertToProtoTimestampSeconds(created.timestamp(), protoCreated);
+			auto protoCreated = mProtoTransactionBody->mutable_created_at();
+			DataTypeConverter::convertToProtoTimestamp(createdAt.timestamp(), protoCreated);
 		}
 
-		uint32_t TransactionBody::getCreatedSeconds() const
+		uint32_t TransactionBody::getCreatedAtSeconds() const
 		{
-			return mProtoTransactionBody->created().seconds();
+			return mProtoTransactionBody->created_at().seconds();
+		}
+
+		Poco::DateTime TransactionBody::getCreatedAt() const
+		{
+			const auto& createdAt = mProtoTransactionBody->created_at();
+			return Poco::Timestamp(
+				createdAt.seconds() * Poco::Timestamp::resolution() + createdAt.nanos() / 1000
+			);
 		}
 
 		TransactionBody* TransactionBody::load(const std::string& protoMessageBin, std::shared_ptr<ProtobufArenaMemory> arenaMemory)
@@ -70,7 +78,7 @@ namespace model {
 			// move transfer object to deferred transfer
 			deferredTransfer->mutable_transfer()->Swap(transfer);
 			assert(!mProtoTransactionBody->has_transfer());
-			DataTypeConverter::convertToProtoTimestamp(timeout, deferredTransfer->mutable_timeout());
+			DataTypeConverter::convertToProtoTimestampSeconds(timeout, deferredTransfer->mutable_timeout());
 			initSpecificTransaction();
 		}
 
@@ -249,7 +257,7 @@ namespace model {
 		bool TransactionBody::validate(
 			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
 			IGradidoBlockchain* blockchain/* = nullptr*/,
-			const GradidoBlock* parentGradidoBlock/* = nullptr*/) const
+			const ConfirmedTransaction* parentConfirmedTransaction/* = nullptr*/) const
 		{
 			LOCK_RECURSIVE;
 
@@ -281,7 +289,7 @@ namespace model {
 					}
 				}
 
-				mTransactionSpecific->validate(level, blockchain, parentGradidoBlock);
+				mTransactionSpecific->validate(level, blockchain, parentConfirmedTransaction);
 			}
 			catch (TransactionValidationException& ex) {
 				ex.setTransactionBody(this);

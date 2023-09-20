@@ -70,7 +70,7 @@ namespace model {
 		return std::move(result);
 	}
 
-	Poco::SharedPtr<gradido::GradidoBlock> TransactionsManagerBlockchain::getLastTransaction(std::function<bool(const gradido::GradidoBlock*)> filter /*= nullptr*/)
+	Poco::SharedPtr<gradido::ConfirmedTransaction> TransactionsManagerBlockchain::getLastTransaction(std::function<bool(const gradido::ConfirmedTransaction*)> filter /*= nullptr*/)
 	{
 		if (filter) {
 			throw std::runtime_error("[TransactionsManagerBlockchain::getLastTransaction] not implemented with filter yet");
@@ -192,12 +192,12 @@ namespace model {
 		return mGroupAlias;
 	}
 
-	Poco::SharedPtr<model::gradido::GradidoBlock> TransactionsManagerBlockchain::createBlockFromTransaction(
+	Poco::SharedPtr<model::gradido::ConfirmedTransaction> TransactionsManagerBlockchain::createBlockFromTransaction(
 		std::shared_ptr<model::gradido::GradidoTransaction> transaction, uint64_t transactionNr
 	)
 	{
 		auto transactionCopy = std::make_unique<gradido::GradidoTransaction>(transaction->getSerialized().get());
-		return gradido::GradidoBlock::create(
+		return gradido::ConfirmedTransaction::create(
 			std::move(transactionCopy),
 			transactionNr,
 			transaction->getTransactionBody()->getCreatedSeconds(),

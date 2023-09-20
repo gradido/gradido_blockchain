@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_REGISTER_ADDRESS_H
 #define __GRADIDO_BLOCKCHAIN_MODEL_PROTOBUF_WRAPPER_REGISTER_ADDRESS_H
 
-#include "proto/gradido/RegisterAddress.pb.h"
+#include "proto/gradido/register_address.pb.h"
 #include "TransactionBase.h"
 
 namespace model {
@@ -17,7 +17,7 @@ namespace model {
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
-				const GradidoBlock* parentGradidoBlock = nullptr
+				const ConfirmedTransaction* parentGradidoBlock = nullptr
 			) const;
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
 			bool isInvolved(const std::string pubkeyString) const;
@@ -26,8 +26,14 @@ namespace model {
 			MemoryBin* getUserPubkey() const;
 			const std::string& getUserPubkeyString() const;
 			proto::gradido::RegisterAddress_AddressType getAddressType() const;
-			inline bool isSubaccount() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_SUBACCOUNT;}
-			inline bool isHuman() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_HUMAN; }
+			[[deprecated("Replaced by isCommunityHuman or isCryptoAccount")]]
+			inline bool isHuman() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_COMMUNITY_HUMAN; }
+			inline bool isCommunityHuman() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_COMMUNITY_HUMAN; }
+			inline bool isCommunityGMW() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_COMMUNITY_GMW; }
+			inline bool isCommunityAUF() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_COMMUNITY_AUF; }
+			inline bool isCommunityProject() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_COMMUNITY_PROJECT; }
+			inline bool isSubaccount() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_SUBACCOUNT; }
+			inline bool isCryptoAccount() const { return getAddressType() == proto::gradido::RegisterAddress_AddressType_CRYPTO_ACCOUNT; }
 			MemoryBin* getNameHash() const;
 			const std::string& getNameHashString() const;
 			MemoryBin* getSubaccountPubkey() const;

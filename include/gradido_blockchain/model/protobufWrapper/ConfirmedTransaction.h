@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_GRADIDO_BLOCK
 #define __GRADIDO_LOGIN_SERVER_MODEL_GRADIDO_GRADIDO_BLOCK
 
-#include "proto/gradido/GradidoBlock.pb.h"
+#include "proto/gradido/confirmed_transaction.pb.h"
 #include "GradidoTransaction.h"
 
 #include "Poco/SharedPtr.h"
@@ -24,13 +24,13 @@ namespace model {
 		    also the native format in which Gradido Node returns Gradido Transactions.<br>
 			<a href="https://github.com/gradido/gradido_protocol/blob/master/gradido/GradidoBlock.proto" target="_blank">Protobuf: GradidoBlock</a>
 		*/
-		class GRADIDOBLOCKCHAIN_EXPORT GradidoBlock : public MultithreadContainer, public Poco::RefCountedObject
+		class GRADIDOBLOCKCHAIN_EXPORT ConfirmedTransaction : public MultithreadContainer, public Poco::RefCountedObject
 		{
 		public:
-			GradidoBlock(const std::string* serializedGradidoBlock);
-			~GradidoBlock();
+			ConfirmedTransaction(const std::string* serializedGradidoBlock);
+			~ConfirmedTransaction();
 
-			static Poco::SharedPtr<GradidoBlock> create(std::unique_ptr<GradidoTransaction> transaction, uint64_t id, int64_t received, const MemoryBin* messageId);
+			static Poco::SharedPtr<ConfirmedTransaction> create(std::unique_ptr<GradidoTransaction> transaction, uint64_t id, int64_t received, const MemoryBin* messageId);
 
 			//! make json string from GradidoBlock Protobuf Object
 			std::string toJson();
@@ -66,10 +66,16 @@ namespace model {
 			const std::string& getFinalBalance() const;
 
 			void setTxHash(const MemoryBin* txHash);
+			
 			// convert from proto timestamp seconds to poco DateTime
+			[[deprecated("Replaced by getConfirmedAtAsTimestamp, changed name according to Gradido Apollo implementation")]]
 			inline Poco::Timestamp getReceivedAsTimestamp() const { return Poco::Timestamp(getReceived() * Poco::Timestamp::resolution());}
+			inline Poco::Timestamp getConfirmedAtAsTimestamp() const { return Poco::Timestamp(getConfirmedAt() * Poco::Timestamp::resolution()); }
+
 			// return as seconds since Jan 01 1970
-			int64_t getReceived() const;
+			int64_t getConfirmedAt() const;
+			[[deprecated("Replaced by getConfirmedAt, changed name according to Gradido Apollo implementation")]]
+			inline int64_t getReceived() const { return getConfirmedAt(); }
 
 			std::unique_ptr<std::string> getSerialized();
 			//! \return MemoryBin containing message id binar, must be freed from caller
@@ -79,19 +85,19 @@ namespace model {
 
 			//! calculate tx hash for this Gradido Block using last txHash as start
 			//! \return caller must free result
-			MemoryBin* calculateTxHash(const GradidoBlock* previousBlock) const;
+			MemoryBin* calculateTxHash(const ConfirmedTransaction* previousBlock) const;
 
 			//! \brief calculate final gdd for this transaction and set value into proto structure
 			//!
 			//! for transfer transaction, it is the final balance from sender
-			void calculateFinalGDD(IGradidoBlockchain* blockchain);
+			void calculateAccountBalance(IGradidoBlockchain* blockchain);
 
 			inline std::shared_ptr<ProtobufArenaMemory> getProtobufArena() { return mProtobufArenaMemory; }
 
 		protected:
-			GradidoBlock(std::unique_ptr<GradidoTransaction> transaction);
+			ConfirmedTransaction(std::unique_ptr<GradidoTransaction> transaction);
 
-			proto::gradido::GradidoBlock* mProtoGradidoBlock;
+			proto::gradido::ConfirmedTransaction* mProtoConfirmedTransaction;
 			GradidoTransaction* mGradidoTransaction;
 			std::shared_ptr<ProtobufArenaMemory> mProtobufArenaMemory;		
 			

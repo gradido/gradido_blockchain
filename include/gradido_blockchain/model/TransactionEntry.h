@@ -5,7 +5,7 @@
 #include "Poco/Mutex.h"
 #include "Poco/DateTime.h"
 
-#include "gradido_blockchain/model/protobufWrapper/GradidoBlock.h"
+#include "gradido_blockchain/model/protobufWrapper/ConfirmedTransaction.h"
 
 #include <vector>
 
@@ -28,10 +28,10 @@ namespace model {
 		//! \brief init entry object from serialized transaction, deserialize transaction to get infos
 		TransactionEntry(std::unique_ptr<std::string> _serializedTransaction);
 
-		TransactionEntry(gradido::GradidoBlock* transaction);
+		TransactionEntry(gradido::ConfirmedTransaction* transaction);
 
 		//! \brief init entry object without indices
-		TransactionEntry(uint64_t transactionNr, uint8_t month, uint16_t year, std::string groupId);
+		TransactionEntry(uint64_t transactionNr, uint8_t month, uint16_t year, std::string communityId);
 
 		//! \brief operator for sorting by mTransactionNr in ascending order
 		bool operator < (const TransactionEntry& b) { return mTransactionNr < b.mTransactionNr; }		
@@ -40,16 +40,21 @@ namespace model {
 		inline const std::string* getSerializedTransaction() const { return mSerializedTransaction.get(); }
 		inline uint8_t getMonth() const { return mMonth; }
 		inline uint16_t getYear() const { return mYear; }
-		inline std::string getCoinGroupId() const { return mGroupId; }
 
-		static std::string getCoinGroupId(const gradido::TransactionBody* body);
+		inline std::string getCoinCommunityId() const { return mCommunityId; }
+		[[deprecated("Replaced by getCoinCommunityId, changed name according to Gradido Apollo implementation")]]
+		inline std::string getCoinGroupId() const { return getCoinCommunityId(); }
+
+		static std::string getCoinCommunityId(const gradido::TransactionBody* body);
+		[[deprecated("Replaced by getCoinCommunityId, changed name according to Gradido Apollo implementation")]]
+		static inline std::string getCoinGroupId(const gradido::TransactionBody* body) { return getCoinCommunityId(body); }
 
 	protected:
 		uint64_t mTransactionNr;
 		std::unique_ptr<std::string> mSerializedTransaction;
 		uint8_t mMonth;
 		uint16_t mYear;
-		std::string mGroupId;
+		std::string mCommunityId;
 		Poco::FastMutex mFastMutex;
 	};
 

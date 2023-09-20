@@ -12,7 +12,7 @@
 #pragma warning(disable:4800)
 
 #include "TransactionBase.h"
-#include "proto/gradido/GradidoCreation.pb.h"
+#include "proto/gradido/gradido_creation.pb.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "Poco/DateTime.h"
 
@@ -31,7 +31,7 @@ namespace model {
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
-				const GradidoBlock* parentGradidoBlock = nullptr
+				const ConfirmedTransaction* parentConfirmedTransaction = nullptr
 			) const;
 
 			bool validateTargetDate(uint64_t receivedSeconds) const;
@@ -51,7 +51,9 @@ namespace model {
 
 			std::vector<MemoryBin*> getInvolvedAddresses() const;
 			bool isInvolved(const std::string pubkeyString) const;
-			const std::string& getCoinGroupId() const;
+			const std::string& getCoinCommunityId() const;
+			[[deprecated("Replaced by getCoinCommunityId, changed name according to Gradido Apollo implementation")]]
+			inline const std::string& getCoinGroupId() const { return getCoinCommunityId(); }
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 
 			const std::string& getAmount() const;
