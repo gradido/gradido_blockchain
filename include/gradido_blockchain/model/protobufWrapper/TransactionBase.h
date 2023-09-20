@@ -49,7 +49,9 @@ namespace model {
 			//! Register new address or sub address to group or move addres to another group
 			TRANSACTION_REGISTER_ADDRESS, 
 			//! Special Transfer Transaction with timeout used for Gradido Link
-			TRANSACTION_DEFERRED_TRANSFER 			
+			TRANSACTION_DEFERRED_TRANSFER,
+			//! First Transaction in Blockchain
+			TRANSACTION_COMMUNITY_ROOT
 		};
 	
 

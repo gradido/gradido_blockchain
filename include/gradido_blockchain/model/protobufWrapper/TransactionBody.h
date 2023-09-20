@@ -8,6 +8,7 @@
 #include "RegisterAddress.h"
 #include "TransactionCreation.h"
 #include "TransactionTransfer.h"
+#include "CommunityRoot.h"
 
 #include "Poco/DateTime.h"
 
@@ -54,6 +55,7 @@ namespace model {
 			);
 			static TransactionBody* createTransactionCreation(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, Poco::DateTime targetDate);
 			static TransactionBody* createTransactionTransfer(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, const MemoryBin* recipientPubkey);
+			static TransactionBody* createCommunityRoot(const MemoryBin* pubkey, const MemoryBin* gmwPubkey, const MemoryBin* aufPubkey);
 
 			void updateToOutbound(const std::string& otherGroup);
 			void updateToInbound(const std::string& otherGroup);
@@ -74,6 +76,7 @@ namespace model {
 			inline bool isRegisterAddress() const { return mTransactionType == TRANSACTION_REGISTER_ADDRESS; }
 			inline bool isCreation() const { return mTransactionType == TRANSACTION_CREATION; }
 			inline bool isTransfer() const  { return mTransactionType == TRANSACTION_TRANSFER; }
+			inline bool isCommunityRoot() const { return mTransactionType == TRANSACTION_COMMUNITY_ROOT; }
 			// cross group types
 			inline bool isLocal() const { return getCrossGroupType() == proto::gradido::TransactionBody_CrossGroupType_LOCAL; }
 			inline bool isInbound() const { return getCrossGroupType() == proto::gradido::TransactionBody_CrossGroupType_INBOUND; }
@@ -97,6 +100,7 @@ namespace model {
 			const RegisterAddress* getRegisterAddress() const;
 			const TransactionCreation* getCreationTransaction() const;
 			const TransactionTransfer* getTransferTransaction() const;
+			const CommunityRoot* getCommunityRoot() const;
 
 			const TransactionBase* getTransactionBase() const;
 

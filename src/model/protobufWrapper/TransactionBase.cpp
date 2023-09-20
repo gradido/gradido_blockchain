@@ -132,6 +132,7 @@ namespace model {
 			case TRANSACTION_GROUP_FRIENDS_UPDATE: return "group friends update";
 			case TRANSACTION_REGISTER_ADDRESS: return "register address";
 			case TRANSACTION_DEFERRED_TRANSFER: return "deferred transfer";
+			case TRANSACTION_COMMUNITY_ROOT: return "community root";
 			default: return "<unknown>";
 			}
 		}

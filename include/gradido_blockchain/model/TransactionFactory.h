@@ -27,12 +27,17 @@ public:
 		std::string communityId,
 		const MemoryBin* recipientPubkey
 	);
+	static std::unique_ptr<model::gradido::GradidoTransaction> createCommunityRoot(
+		const MemoryBin* pubkey,
+		const MemoryBin* gmwPubkey,
+		const MemoryBin* aufPubkey
+	);
 	static Poco::SharedPtr<model::gradido::ConfirmedTransaction> createConfirmedTransaction(
 		std::unique_ptr<model::gradido::GradidoTransaction> transaction,
 		uint64_t id,
 		int64_t received,
 		const MemoryBin* messageId
-	);
+	);	
 
 protected:
 	static std::unique_ptr<proto::gradido::TransferAmount> createTransferAmount(

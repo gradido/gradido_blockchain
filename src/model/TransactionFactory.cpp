@@ -11,7 +11,9 @@ std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createDe
 
 std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createGroupFriendsUpdate(bool colorFusion)
 {
-	return std::unique_ptr<model::gradido::GradidoTransaction>(new GradidoTransaction(TransactionBody::createGroupFriendsUpdate(colorFusion)));
+	return std::unique_ptr<model::gradido::GradidoTransaction>(
+		new GradidoTransaction(TransactionBody::createGroupFriendsUpdate(colorFusion))
+	);
 }
 
 std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createRegisterAddress(
@@ -21,7 +23,9 @@ std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createRe
 	const MemoryBin* subaccountPubkey
 )
 {
-	return std::unique_ptr<model::gradido::GradidoTransaction>(new GradidoTransaction(TransactionBody::createRegisterAddress(userPubkey, type, nameHash, subaccountPubkey)));
+	return std::unique_ptr<model::gradido::GradidoTransaction>(
+		new GradidoTransaction(TransactionBody::createRegisterAddress(userPubkey, type, nameHash, subaccountPubkey))
+	);
 }
 
 std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createTransactionCreation(
@@ -31,7 +35,9 @@ std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createTr
 )
 {
 	auto transferAmount = createTransferAmount(recipientPubkey, amountGddCent, "");
-	return std::unique_ptr<model::gradido::GradidoTransaction>(new GradidoTransaction(TransactionBody::createTransactionCreation(std::move(transferAmount), targetDate)));
+	return std::unique_ptr<model::gradido::GradidoTransaction>(
+		new GradidoTransaction(TransactionBody::createTransactionCreation(std::move(transferAmount), targetDate))
+	);
 }
 
 std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createTransactionTransfer(
@@ -43,8 +49,22 @@ std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createTr
 {
 	assert(recipientPubkey);
 	auto transferAmount = createTransferAmount(senderPubkey, amountGdd, groupId);
-	return std::unique_ptr<model::gradido::GradidoTransaction>(new GradidoTransaction(TransactionBody::createTransactionTransfer(std::move(transferAmount), recipientPubkey)));
+	return std::unique_ptr<model::gradido::GradidoTransaction>(
+		new GradidoTransaction(TransactionBody::createTransactionTransfer(std::move(transferAmount), recipientPubkey))
+	);
 }
+
+
+std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createCommunityRoot(
+	const MemoryBin* pubkey,
+	const MemoryBin* gmwPubkey,
+	const MemoryBin* aufPubkey
+) {
+	return std::unique_ptr<model::gradido::GradidoTransaction>(
+		new GradidoTransaction(TransactionBody::createCommunityRoot(pubkey, gmwPubkey, aufPubkey))
+	);
+}
+
 
 Poco::SharedPtr<model::gradido::ConfirmedTransaction> TransactionFactory::createConfirmedTransaction(
 	std::unique_ptr<model::gradido::GradidoTransaction> transaction,

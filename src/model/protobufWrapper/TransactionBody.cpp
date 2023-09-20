@@ -136,6 +136,17 @@ namespace model {
 			return obj;
 		}
 
+		TransactionBody* TransactionBody::createCommunityRoot(const MemoryBin* pubkey, const MemoryBin* gmwPubkey, const MemoryBin* aufPubkey)
+		{
+			auto obj = new TransactionBody;
+			auto communityRoot = obj->mProtoTransactionBody->mutable_community_root();
+			communityRoot->set_allocated_pubkey(pubkey->copyAsString().release());
+			communityRoot->set_allocated_gmw_pubkey(gmwPubkey->copyAsString().release());
+			communityRoot->set_allocated_auf_pubkey(aufPubkey->copyAsString().release());
+			obj->initSpecificTransaction();
+			return obj;
+		}
+
 		void TransactionBody::updateToOutbound(const std::string& otherGroup)
 		{
 			LOCK_RECURSIVE;
@@ -249,6 +260,11 @@ namespace model {
 			return dynamic_cast<TransactionTransfer*>(mTransactionSpecific);
 		}
 
+		const CommunityRoot* TransactionBody::getCommunityRoot() const
+		{
+			return dynamic_cast<CommunityRoot*>(mTransactionSpecific);
+		}
+
 		const TransactionBase* TransactionBody::getTransactionBase() const
 		{
 			return mTransactionSpecific;
@@ -346,6 +362,10 @@ namespace model {
 			else if (mProtoTransactionBody->has_deferred_transfer()) {
 				mTransactionType = TRANSACTION_DEFERRED_TRANSFER;
 				mTransactionSpecific = new model::gradido::DeferredTransfer(mProtoTransactionBody->deferred_transfer());
+			}
+			else if (mProtoTransactionBody->has_community_root()) {
+				mTransactionType = TRANSACTION_COMMUNITY_ROOT;
+				mTransactionSpecific = new model::gradido::CommunityRoot(mProtoTransactionBody->community_root());
 			}
 			mTransactionSpecific->prepare();
 		}
