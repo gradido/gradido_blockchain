@@ -10,6 +10,11 @@ namespace model {
 
 		}
 
+		CommunityRoot::~CommunityRoot()
+		{
+
+		}
+
 		bool CommunityRoot::validate(
 			TransactionValidationLevel level/* = TRANSACTION_VALIDATION_SINGLE*/,
 			IGradidoBlockchain* blockchain/* = nullptr*/,
