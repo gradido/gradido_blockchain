@@ -339,6 +339,9 @@ namespace model {
 				mTransactionType = TRANSACTION_DEFERRED_TRANSFER;
 				mTransactionSpecific = new model::gradido::DeferredTransfer(mProtoTransactionBody->deferred_transfer());
 			}
+			else {
+				throw TransactionValidationInvalidInputException("transaction type unknown", "data", "oneof");
+			}
 			mTransactionSpecific->prepare();
 		}
 

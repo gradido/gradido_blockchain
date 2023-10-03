@@ -269,6 +269,8 @@ namespace model {
 			// received - 2 month = min
 			auto monthDiff = model::gradido::TransactionCreation::getTargetDateReceivedDistanceMonth(received);
 			Poco::DateTime searchDate = received;
+			// TODO: with the current implementation searchDate should be the same as month and year and there for redundant
+			assert(searchDate.month() == month && searchDate.year() == year);
 			auto mm = MemoryManager::getInstance();
 			for (int i = 0; i < monthDiff + 1; i++) {
 				try {
