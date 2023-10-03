@@ -366,6 +366,8 @@ namespace model {
 			else if (mProtoTransactionBody->has_community_root()) {
 				mTransactionType = TRANSACTION_COMMUNITY_ROOT;
 				mTransactionSpecific = new model::gradido::CommunityRoot(mProtoTransactionBody->community_root());
+			else {
+				throw TransactionValidationInvalidInputException("transaction type unknown", "data", "oneof");
 			}
 			mTransactionSpecific->prepare();
 		}

@@ -141,6 +141,9 @@ std::pair<std::unique_ptr<std::string>, std::unique_ptr<std::string>> IotaReques
 	if (!payload->HasMember("data") || !payload->HasMember("index")) {
 		throw IotaRequestException("json field data.payload.data or data.payload.index missing", mRequestUri.getPath() + "messages/" + messageIdHex);
 	}
+	if (!(*payload)["data"].GetStringLength()) {
+		return { std::make_unique<std::string>(), DataTypeConverter::hexToBinString((*payload)["index"].GetString())};
+	}
 	return { DataTypeConverter::hexToBinString((*payload)["data"].GetString()), DataTypeConverter::hexToBinString((*payload)["index"].GetString()) };
 }
 
