@@ -4,7 +4,6 @@
 #include "gradido_blockchain/http/ServerConfig.h"
 
 #include "gradido_blockchain/lib/Profiler.h"
-#include "gradido_blockchain/lib/DataTypeConverter.h"
 
 #include <algorithm>
 #include <cctype>
@@ -62,13 +61,13 @@ std::vector<std::string> IotaRequest::getTips()
 
 
 
-std::string IotaRequest::sendMessage(const std::string& indexHex, const std::string& messageHex)
+std::string IotaRequest::sendMessage(const iota::Topic& index, const std::string& messageHex)
 {	
 	if (ServerConfig::g_IotaLocalPow) {
-		auto index = DataTypeConverter::hexToBinString(indexHex.substr(0, indexHex.size()-1));
+		//auto index = DataTypeConverter::hexToBinString(indexHex.substr(0, indexHex.size()-1));
 		//auto message = DataTypeConverter::hexToBinString(messageHex.substr(0, messageHex.size()-1));
 		//printf("message hex: %s\n", messageHex.data());
-		return sendMessageViaRustIotaClient(*index, messageHex);
+		return sendMessageViaRustIotaClient(index.getBinString(), messageHex);
 	}
 	auto tips = getTips();
 	if (!tips.size()) {
@@ -89,15 +88,8 @@ std::string IotaRequest::sendMessage(const std::string& indexHex, const std::str
 	Value payload(kObjectType);
 	payload.AddMember("type", 2, alloc);
 	std::string upperIndex;
-	for (int i = 0; i < indexHex.size(); i++) {
-		upperIndex.push_back((std::toupper(indexHex.data()[i])));
-	}
-	std::string upperMessage;
-	for (int i = 0; i < messageHex.size(); i++) {
-		upperMessage.push_back((std::toupper(messageHex.data()[i])));
-	}
 
-	payload.AddMember("index", Value(indexHex.data(), alloc), alloc);
+	payload.AddMember("index", Value(index.getHexString().data(), alloc), alloc);
 	payload.AddMember("data", Value(messageHex.data(), alloc), alloc);
 
 	requestJson.AddMember("payload", payload, alloc);
@@ -167,14 +159,13 @@ uint32_t IotaRequest::getMessageMilestoneId(const std::string& messageIdHex)
 	return 0;
 }
 
-std::vector<MemoryBin*> IotaRequest::findByIndex(const std::string& index)
+std::vector<MemoryBin*> IotaRequest::findByIndex(const iota::Topic& index)
 {
 	// GET /api/v1/messages?index=4752414449444f2e7079746861676f726173
 	std::string fullPath;
-	auto indexHex = DataTypeConverter::binToHex(index);
+	auto indexHex = index.getHexString();
 	fullPath.reserve(mRequestUri.getPath().size() + 18 + indexHex.size());
 	fullPath = mRequestUri.getPath() + "messages?index=" + indexHex;
-
 	std::vector<MemoryBin*> result;
 
 	auto json = parseResponse(GET(fullPath.data(), "HTTP/1.1"));

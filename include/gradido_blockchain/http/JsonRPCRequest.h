@@ -20,6 +20,7 @@ enum GRADIDOBLOCKCHAIN_EXPORT JsonRPCErrorCodes : int
 	JSON_RPC_ERROR_GRADIDO_NODE_ERROR = -10000,
 	JSON_RPC_ERROR_UNKNOWN_GROUP = -10001,
 	JSON_RPC_ERROR_NOT_IMPLEMENTED = -10002,
+	JSON_RPC_ERROR_TRANSACTION_NOT_FOUND = -10003,
 	// default errors from json rpc standard: https://www.jsonrpc.org/specification
 	// -32700 	Parse error 	Invalid JSON was received by the server.
 	JSON_RPC_ERROR_PARSE_ERROR = -32700,

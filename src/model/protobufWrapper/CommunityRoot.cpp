@@ -1,5 +1,6 @@
 #include "gradido_blockchain/model/protobufWrapper/CommunityRoot.h"
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
+#include "gradido_blockchain/model/IGradidoBlockchain.h"
 
 namespace model {
 	namespace gradido {
@@ -13,6 +14,19 @@ namespace model {
 		CommunityRoot::~CommunityRoot()
 		{
 
+		}
+
+		int CommunityRoot::prepare()
+		{
+			mMinSignatureCount = 1;
+			auto mm = MemoryManager::getInstance();
+			auto pubkey_copy = mm->getMemory(crypto_sign_PUBLICKEYBYTES);
+			assert(pubkey_copy);
+			memcpy(*pubkey_copy, mProtoCommunityRoot.pubkey().data(), crypto_sign_PUBLICKEYBYTES);
+			mRequiredSignPublicKeys.push_back(pubkey_copy);
+
+			mIsPrepared = true;
+			return 0;
 		}
 
 		bool CommunityRoot::validate(
@@ -64,7 +78,8 @@ namespace model {
 				mm->releaseMemory(empty);
 			}
 			if ((level & TRANSACTION_VALIDATION_SINGLE_PREVIOUS) == TRANSACTION_VALIDATION_SINGLE_PREVIOUS) {
-				if (parentConfirmedTransaction) {
+				assert(blockchain);
+				if (!blockchain->getLastTransaction().isNull()) {
 					throw TransactionValidationException("community root must be the first transaction in the blockchain!");
 				}
 			}

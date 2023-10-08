@@ -6,6 +6,7 @@
 #include "rapidjson/document.h"
 
 #include "gradido_blockchain/MemoryManager.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 
 #include "Poco/Logger.h"
 
@@ -18,6 +19,32 @@ namespace iota {
 		int32_t lastMilestoneIndex;
 		int64_t lastMilestoneTimestamp;
 		int32_t confirmedMilestoneIndex;
+	};
+
+
+	struct Topic
+	{
+		Topic(const std::string& alias)
+		{
+			// is already hex
+			// Q: https://stackoverflow.com/questions/8899069/how-to-find-if-a-given-string-conforms-to-hex-notation-eg-0x34ff-without-regex
+			if (std::all_of(alias.begin(), alias.end(), ::isxdigit)) {
+				index = std::move(*DataTypeConverter::hexToBinString(alias));
+			}
+			else {
+				// is named
+				index.reserve(alias.size() + 9);
+				index = "GRADIDO.";
+				index += alias;
+			}
+		}
+		Topic(const MemoryBin* rawIndex)
+			: index(std::string((const char*)rawIndex->data(), rawIndex->size()))
+		{	
+		}
+		inline const std::string& getBinString() const { return index; }
+		inline std::string getHexString() const { return DataTypeConverter::binToHex(index); }
+		std::string index;
 	};
 }
 
@@ -37,14 +64,14 @@ public:
 
 	//! \param indexHex iota index in hex format, for gradido transaction: GRADIDO.<groupAlias>
 	//! \return messageId as hex string
-	std::string sendMessage(const std::string& indexHex, const std::string& messageHex);
+	std::string sendMessage(const iota::Topic& index, const std::string& messageHex);
 	rapidjson::Document getMessageJson(const std::string& messageIdHex);
 	std::pair<std::unique_ptr<std::string>, std::unique_ptr<std::string>> getIndexiationMessageDataIndex(const std::string& messageIdHex);
 	//! use metadata call to check if it is referenced by a milestone
 	//! \return return 0 if not, else return milestone id
 	uint32_t getMessageMilestoneId(const std::string& messageIdHex);
 	//! caller must release MemoryBins
-	std::vector<MemoryBin*> findByIndex(const std::string& index);
+	std::vector<MemoryBin*> findByIndex(const iota::Topic& index);
 	MemoryBin* getMilestoneByIndex(int32_t milestoneIndex);
 	uint64_t getMilestoneTimestamp(int32_t milestoneIndex);
 	iota::NodeInfo getNodeInfo();

@@ -78,6 +78,8 @@ namespace model {
 		protected:
 			std::vector<std::pair<MemoryBin*, MemoryBin*>> getPublicKeySignaturePairs(bool withPublicKey, bool withSignatures, bool onlyFirst = true) const;
 			inline proto::gradido::GradidoTransaction* getProto() { return mProtoGradidoTransaction; }
+			//! \return true if at least one signature exist on GradidoTransaction, updating body bytes would invalidate the signature
+			bool isBodyLocked();
 			proto::gradido::GradidoTransaction* mProtoGradidoTransaction;
 			TransactionBody* mTransactionBody;
 			std::shared_ptr<ProtobufArenaMemory> mProtobufArenaMemory;
@@ -85,6 +87,15 @@ namespace model {
 			bool mBodyDirty;
 		};
 		/*! @} End of Doxygen Groups*/
+
+		class TransactionBodyLockedException : public GradidoBlockchainException
+		{
+		public:
+			explicit TransactionBodyLockedException(const char* what) : GradidoBlockchainException(what) {}
+			~TransactionBodyLockedException() {};
+			std::string getFullString() const { return what();  }
+		protected:
+		};
 	}
 }
 

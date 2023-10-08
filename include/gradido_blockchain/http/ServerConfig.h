@@ -24,8 +24,8 @@ namespace ServerConfig
 	GRADIDOBLOCKCHAIN_EXPORT extern bool		 g_IotaLocalPow;
 
 	GRADIDOBLOCKCHAIN_EXPORT bool initSSLClientContext(const char* cacertPath);
-	GRADIDOBLOCKCHAIN_EXPORT bool readUnsecureFlags(const MapEnvironmentToConfig& config);
-	GRADIDOBLOCKCHAIN_EXPORT bool initIota(const MapEnvironmentToConfig& cfg);
+	GRADIDOBLOCKCHAIN_EXPORT bool readUnsecureFlags(const Poco::Util::LayeredConfiguration& config);
+	GRADIDOBLOCKCHAIN_EXPORT bool initIota(const Poco::Util::LayeredConfiguration& cfg);
 }
 
 #endif //__GRADIDO_BLOCKCHAIN_HTTP_SERVER_CONFIG_H

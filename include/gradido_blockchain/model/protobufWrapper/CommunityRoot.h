@@ -12,6 +12,7 @@ namespace model {
 			CommunityRoot(const proto::gradido::CommunityRoot& protoCommunityRoot);
 			~CommunityRoot();
 
+			int prepare();
 			bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,

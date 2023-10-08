@@ -142,8 +142,8 @@ namespace model {
 
 		std::unique_ptr<std::string> ConfirmedTransaction::getSerialized()
 		{
-			mProtoConfirmedTransaction->mutable_transaction()->set_allocated_body_bytes(mGradidoTransaction->getTransactionBody()->getBodyBytes().release());
-			//mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
+			mGradidoTransaction->updateBodyBytes(); 
+			//mProtoConfirmedTransaction->mutable_transaction()->set_allocated_body_bytes(mGradidoTransaction->getTransactionBody()->getBodyBytes().release());
 
 			auto size = mProtoConfirmedTransaction->ByteSizeLong();
 			//auto bodyBytesSize = MemoryManager::getInstance()->getFreeMemory(mProtoCreation.ByteSizeLong());
@@ -305,6 +305,9 @@ namespace model {
 				address = transactionBody->getTransferTransaction()->getSenderPublicKeyString();
 				break;
 			case model::gradido::TRANSACTION_GROUP_FRIENDS_UPDATE:
+				return;
+			case model::gradido::TRANSACTION_COMMUNITY_ROOT:
+				mProtoConfirmedTransaction->set_account_balance("0");
 				return;
 			case model::gradido::TRANSACTION_REGISTER_ADDRESS:
 				if (getGradidoTransaction()->getTransactionBody()->isLocal()) {

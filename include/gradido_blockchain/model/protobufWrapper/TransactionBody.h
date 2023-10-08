@@ -14,7 +14,7 @@
 
 #include "../../lib/MultithreadContainer.h"
 
-#define GRADIDO_PROTOCOL_VERSION "3.2"
+#define GRADIDO_PROTOCOL_VERSION "3.3"
 
 namespace model {
 	namespace gradido {

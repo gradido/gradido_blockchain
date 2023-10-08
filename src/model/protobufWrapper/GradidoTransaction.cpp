@@ -16,7 +16,6 @@ namespace model {
 			: mProtoGradidoTransaction(protoGradidoTransaction), mTransactionBody(nullptr), mProtobufArenaMemory(arenaMemory), mBodyDirty(false)
 		{
 			mTransactionBody = TransactionBody::load(protoGradidoTransaction->body_bytes(), arenaMemory);
-			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
 		}
 
 		GradidoTransaction::GradidoTransaction(const std::string* serializedProtobuf)
@@ -34,7 +33,6 @@ namespace model {
 				}
 			}
 			mTransactionBody = TransactionBody::load(mProtoGradidoTransaction->body_bytes(), mProtobufArenaMemory);
-			mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
 		}
 
 		GradidoTransaction::GradidoTransaction(model::gradido::TransactionBody* body)
@@ -74,6 +72,11 @@ namespace model {
 					if (it->pubkey().size() != KeyPairEd25519::getPublicKeySize()) {
 						throw TransactionValidationInvalidInputException(
 							"pubkey hasn't the correct size", "pubkey", "binary string 32"
+						);
+					}
+					if (it->signature().size() != 64) {
+						throw TransactionValidationInvalidInputException(
+							"signature hasn't correct size", "signature", "binary string 64"
 						);
 					}
 					KeyPairEd25519 key_pair((const unsigned char*)it->pubkey().data());
@@ -257,8 +260,15 @@ namespace model {
 		void GradidoTransaction::updateBodyBytes()
 		{
 			if (mBodyDirty) {
-				mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
-				mBodyDirty = false;
+				if (!isBodyLocked()) {
+					mProtoGradidoTransaction->set_allocated_body_bytes(mTransactionBody->getBodyBytes().release());
+					mBodyDirty = false;
+				}
+				else {
+					// why? The protobuf transaction from node js gradido are in a very old proto format, they can be read but the signatures don't match
+					// protobuf seems to be backwards compatible 
+					throw TransactionBodyLockedException("try to updateBodyBytes but body is locked, at least one signature exist!");
+				}
 			}
 		}
 
@@ -344,6 +354,11 @@ namespace model {
 			}
 
 			return json_message;
+		}
+
+		bool GradidoTransaction::isBodyLocked()
+		{
+			return getSignCount() > 0;
 		}
 	}
 }

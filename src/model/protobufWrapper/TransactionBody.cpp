@@ -280,7 +280,7 @@ namespace model {
 			try {
 				if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
 					if (getVersionNumber() != GRADIDO_PROTOCOL_VERSION) {
-						throw TransactionValidationInvalidInputException("wrong version", "version_number", "uint64");
+						throw TransactionValidationInvalidInputException("wrong version", "version_number", "string");
 					}
 					// memo is only mandatory for transfer and creation transactions
 					if (isDeferredTransfer() || isTransfer() || isCreation()) {
@@ -366,7 +366,7 @@ namespace model {
 			else if (mProtoTransactionBody->has_community_root()) {
 				mTransactionType = TRANSACTION_COMMUNITY_ROOT;
 				mTransactionSpecific = new model::gradido::CommunityRoot(mProtoTransactionBody->community_root());
-			else {
+			} else {
 				throw TransactionValidationInvalidInputException("transaction type unknown", "data", "oneof");
 			}
 			mTransactionSpecific->prepare();

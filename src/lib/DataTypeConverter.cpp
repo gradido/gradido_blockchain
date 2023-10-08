@@ -187,6 +187,23 @@ namespace DataTypeConverter
 
 	}
 
+	MemoryBin* hexToBin(const char* hexString, size_t stringSize)
+	{
+		auto mm = MemoryManager::getInstance();
+		size_t binSize = (stringSize) / 2;
+		MemoryBin* bin = mm->getMemory(binSize);
+		memset(*bin, 0, binSize);
+
+		size_t resultBinSize = 0;
+
+		if (0 != sodium_hex2bin(*bin, binSize, hexString, stringSize, nullptr, &resultBinSize, nullptr)) {
+			mm->releaseMemory(bin);
+			// TODO: throw InvalidHexException
+			return nullptr;
+		}
+		return bin;
+	}
+
 	std::unique_ptr<std::string> hexToBinString(const std::string& hexString)
 	{
 		assert(hexString.size());
