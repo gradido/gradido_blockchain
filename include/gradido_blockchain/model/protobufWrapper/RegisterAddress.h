@@ -38,8 +38,8 @@ namespace model {
 
 			const std::string& getNameHashString() const;
 			inline MemoryBin* getNameHash() const { return protoBufferStringToMemoryBin(getNameHashString()); }			
-			const std::string& getSubaccountPubkeyString() const;
-			inline MemoryBin* getSubaccountPubkey() const { return protoBufferStringToMemoryBin(getSubaccountPubkeyString()); }
+			const std::string& getAccountPubkeyString() const;
+			inline MemoryBin* getAccountPubkey() const { return protoBufferStringToMemoryBin(getAccountPubkeyString()); }
 			
 
 			static proto::gradido::RegisterAddress_AddressType getAddressTypeFromString(const std::string& addressType);

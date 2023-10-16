@@ -17,7 +17,14 @@ namespace model {
 
 		int RegisterAddress::prepare()
 		{
+			if(mProtoRegisterAddress.account_pubkey().size() == crypto_sign_PUBLICKEYBYTES) {
+				mRequiredSignPublicKeys.push_back(getAccountPubkey());
+			}
+			else if (mProtoRegisterAddress.user_pubkey().size() == crypto_sign_PUBLICKEYBYTES) {
+			  	mRequiredSignPublicKeys.push_back(getUserPubkey());
+			} 
 			mMinSignatureCount = 1;
+
 			return 0;
 		}
 
@@ -46,7 +53,7 @@ namespace model {
 					address = getUserPubkeyString();
 					break;
 				case proto::gradido::RegisterAddress_AddressType_SUBACCOUNT:
-					address = getSubaccountPubkeyString();
+					address = getAccountPubkeyString();
 					break;
 				}
 				lastTransaction = blockchain->findLastTransactionForAddress(address);
@@ -70,7 +77,7 @@ namespace model {
 			if (userPubkey) {
 				result.push_back(userPubkey);
 			}
-			auto subaccountPubkey = getSubaccountPubkey();
+			auto subaccountPubkey = getAccountPubkey();
 			if (subaccountPubkey) {
 				result.push_back(subaccountPubkey);
 			}
@@ -80,7 +87,7 @@ namespace model {
 		{
 			return 
 				mProtoRegisterAddress.user_pubkey() == pubkeyString ||
-				mProtoRegisterAddress.subaccount_pubkey() == pubkeyString
+				mProtoRegisterAddress.account_pubkey() == pubkeyString
 				;
 		}
 
@@ -95,7 +102,7 @@ namespace model {
 			if (getNameHashString().compare(pair->getNameHashString())) {
 				return false;
 			}
-			if (getSubaccountPubkeyString().compare(pair->getUserPubkeyString())) {
+			if (getAccountPubkeyString().compare(pair->getAccountPubkeyString())) {
 				return false;
 			}
 
@@ -120,10 +127,10 @@ namespace model {
 			return mProtoRegisterAddress.name_hash();
 		}
 
-		const std::string& RegisterAddress::getSubaccountPubkeyString() const
+		const std::string& RegisterAddress::getAccountPubkeyString() const
 		{
 			// cannot inline, because this doens't work in dll build
-			return mProtoRegisterAddress.subaccount_pubkey();
+			return mProtoRegisterAddress.account_pubkey();
 		}
 
 		proto::gradido::RegisterAddress_AddressType RegisterAddress::getAddressTypeFromString(const std::string& addressType)

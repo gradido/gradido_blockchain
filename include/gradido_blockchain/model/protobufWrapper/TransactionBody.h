@@ -51,7 +51,7 @@ namespace model {
 				const MemoryBin* userPubkey,
 				proto::gradido::RegisterAddress_AddressType type,
 				const MemoryBin* nameHash,
-				const MemoryBin* subaccountPubkey
+				const MemoryBin* accountPubkey
 			);
 			static TransactionBody* createTransactionCreation(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, Poco::DateTime targetDate);
 			static TransactionBody* createTransactionTransfer(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, const MemoryBin* recipientPubkey);

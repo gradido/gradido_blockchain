@@ -20,11 +20,11 @@ std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createRe
 	const MemoryBin* userPubkey,
 	proto::gradido::RegisterAddress_AddressType type,
 	const MemoryBin* nameHash,
-	const MemoryBin* subaccountPubkey
+	const MemoryBin* accountPubkey
 )
 {
 	return std::unique_ptr<model::gradido::GradidoTransaction>(
-		new GradidoTransaction(TransactionBody::createRegisterAddress(userPubkey, type, nameHash, subaccountPubkey))
+		new GradidoTransaction(TransactionBody::createRegisterAddress(userPubkey, type, nameHash, accountPubkey))
 	);
 }
 

@@ -14,7 +14,7 @@ public:
 		const MemoryBin* userPubkey,
 		proto::gradido::RegisterAddress_AddressType type,
 		const MemoryBin* nameHash = nullptr,
-		const MemoryBin* subaccountPubkey = nullptr
+		const MemoryBin* accountPubkey = nullptr
 	);
 	static std::unique_ptr<model::gradido::GradidoTransaction> createTransactionCreation(
 		const MemoryBin* recipientPubkey,
