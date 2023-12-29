@@ -105,15 +105,13 @@ namespace model {
 			{
 				assert(blockchain);
 				assert(parentConfirmedTransaction);
-				Poco::DateTime confirmedAt = parentConfirmedTransaction->getConfirmedAtAsTimestamp() - Poco::Timespan(1, 0);
-				auto finalBalanceTransaction = blockchain->calculateAddressBalance(getSenderPublicKeyString(), getCoinGroupId(), confirmedAt);
+				Poco::DateTime confirmedAt = parentConfirmedTransaction->getConfirmedAtAsTimestamp();
+				printf("check Balance\n");
+				auto finalBalanceTransaction = blockchain->calculateAddressBalance(getSenderPublicKeyString(), getCoinGroupId(), confirmedAt, parentConfirmedTransaction->getID() + 1);
 				auto finalBalance = MathMemory::create();
 				mpfr_swap(finalBalanceTransaction, finalBalance->getData());
 				mm->releaseMathMemory(finalBalanceTransaction);
-				std::string amountString, balanceString;
-				amountToString(&amountString, amount->getData());
-				amountToString(&balanceString, finalBalance->getData());
-				//printf("amount: %s, balance: %s\n", amountString.data(), balanceString.data());
+
 				if (mpfr_cmp(amount->getData(), finalBalance->getData()) > 0) {
 					// if op1 > op2
 					throw InsufficientBalanceException("not enough Gradido Balance for send coins", amount->getData(), finalBalance->getData());

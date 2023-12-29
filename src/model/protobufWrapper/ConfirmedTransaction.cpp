@@ -221,6 +221,9 @@ namespace model {
 						throw BlockchainOrderException("previous transaction is younger");
 					}
 					auto previousCreated = Poco::Timestamp(previousConfirmedTransaction->getGradidoTransaction()->getTransactionBody()->getCreatedSeconds() * Poco::Timestamp::resolution());
+					// if previous transaction was created after this transaction we make sure that creation date and received/confirmation date are not 
+					// to far apart
+					// it is possible that they where created nearly at the same time but sorted from iota swapped
 					if (previousCreated > created) {
 						auto timespanBetweenCreatedAndReceivedSeconds = Poco::Timespan(getReceivedAsTimestamp() - created).totalSeconds();
 						if (timespanBetweenCreatedAndReceivedSeconds / 60 > MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION_IN_MINUTES) {
@@ -322,7 +325,7 @@ namespace model {
 			}
 			mpfr_ptr finalBalance;
 			try {
-				finalBalance = blockchain->calculateAddressBalance(address, TransactionEntry::getCoinGroupId(transactionBody), getReceivedAsTimestamp());
+				finalBalance = blockchain->calculateAddressBalance(address, TransactionEntry::getCoinGroupId(transactionBody), getReceivedAsTimestamp(), getID() + 1);
 			}
 			catch (Poco::NullPointerException& ex) {
 				printf("Poco Null Pointer exception by calling calculateAddressBalance\n");

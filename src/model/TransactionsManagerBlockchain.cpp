@@ -80,8 +80,9 @@ namespace model {
 		auto lastTransaction = transactions->back();
 		return createBlockFromTransaction(lastTransaction, transactions->size());
 	}
-	mpfr_ptr TransactionsManagerBlockchain::calculateAddressBalance(const std::string& address, const std::string& groupId, Poco::DateTime date)
+	mpfr_ptr TransactionsManagerBlockchain::calculateAddressBalance(const std::string& address, const std::string& groupId, Poco::DateTime date, uint64_t ownTransactionNr)
 	{
+		// TODO: limit search to not include transaction with nr ownTransactionNr
 		auto tm = TransactionsManager::getInstance();
 		auto mm = MemoryManager::getInstance();
 		auto addressHex = DataTypeConverter::binToHex(address).substr(0, 64);

@@ -38,7 +38,7 @@ namespace model {
 			SearchDirection order = SearchDirection::ASC
 		) = 0;
 		virtual Poco::SharedPtr<gradido::ConfirmedTransaction> getLastTransaction(std::function<bool(const gradido::ConfirmedTransaction*)> filter = nullptr) = 0;
-		virtual mpfr_ptr calculateAddressBalance(const std::string& address, const std::string& groupId, Poco::DateTime date) = 0;
+		virtual mpfr_ptr calculateAddressBalance(const std::string& address, const std::string& groupId, Poco::DateTime date, uint64_t ownTransactionNr) = 0;
 		virtual proto::gradido::RegisterAddress_AddressType getAddressType(const std::string& address) = 0;
 		virtual Poco::SharedPtr<TransactionEntry> getTransactionForId(uint64_t transactionId) = 0;
 		virtual Poco::SharedPtr<TransactionEntry> findLastTransactionForAddress(const std::string& address, const std::string& groupId = "") = 0;
