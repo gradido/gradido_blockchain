@@ -134,9 +134,23 @@ include_directories(
 	"dependencies/protobuf/src"
 	"dependencies/rapidjson/include"
 	"include"
-	"iota_rust_clib/include"
+	"iota_rust_clib/include"	
 	"dependencies/ed25519_bip32_c_interface/include"
 )
+IF(BUILD_SHARED_LIBS)
+# if static build
+ELSE()
+include_directories(
+	"dependencies/protobuf/third_party/abseil-cpp"
+	"dependencies/poco/NetSSL_OpenSSL/include"
+	"dependencies/poco/Foundation/include"
+	"dependencies/poco/Net/include"
+	"dependencies/poco/Util/include"
+	"dependencies/poco/JSON/include"
+	"dependencies/poco/JWT/include"
+	"dependencies/poco/Crypto/include"
+)
+ENDIF()
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 IF(WIN32)
 	include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
@@ -206,6 +220,10 @@ if(BUILD_SHARED_LIBS)
 	ELSE()
 		target_link_libraries(GradidoBlockchain ${POCO_LIBS} sodium iota_rust_clib ed25519_bip32_c_interface)
 	ENDIF()
+else()
+# static build
+  target_link_libraries(GradidoBlockchain ${MPFR_LIBRARIES})
+  target_link_libraries(GradidoBlockchain iota_rust_clib ed25519_bip32_c_interface)
 endif()
 set_target_properties(GradidoBlockchain PROPERTIES
                       VERSION ${GradidoBlockchain_VERSION}
