@@ -8,7 +8,7 @@
 #include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/model/iota/NodeInfo.h"
-#include "gradido_blockchain/model/iota/Topic.h"
+#include "gradido_blockchain/model/iota/TopicIndex.h"
 
 #include "Poco/Logger.h"
 
@@ -28,14 +28,14 @@ public:
 
 	//! \param indexHex iota index in hex format, for gradido transaction: GRADIDO.<groupAlias>
 	//! \return messageId as hex string
-	std::string sendMessage(const iota::Topic& index, const std::string& messageHex);
+	std::string sendMessage(const iota::TopicIndex& index, const std::string& messageHex);
 	rapidjson::Document getMessageJson(const std::string& messageIdHex);
 	std::pair<std::unique_ptr<std::string>, std::unique_ptr<std::string>> getIndexiationMessageDataIndex(const std::string& messageIdHex);
 	//! use metadata call to check if it is referenced by a milestone
 	//! \return return 0 if not, else return milestone id
 	uint32_t getMessageMilestoneId(const std::string& messageIdHex);
 	//! caller must release MemoryBins
-	std::vector<MemoryBin*> findByIndex(const iota::Topic& index);
+	std::vector<MemoryBin*> findByIndex(const iota::TopicIndex& index);
 	MemoryBin* getMilestoneByIndex(int32_t milestoneIndex);
 	uint64_t getMilestoneTimestamp(int32_t milestoneIndex);
 	iota::NodeInfo getNodeInfo();

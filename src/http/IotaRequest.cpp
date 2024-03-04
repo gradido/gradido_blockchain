@@ -61,7 +61,7 @@ std::vector<std::string> IotaRequest::getTips()
 
 
 
-std::string IotaRequest::sendMessage(const iota::Topic& index, const std::string& messageHex)
+std::string IotaRequest::sendMessage(const iota::TopicIndex& index, const std::string& messageHex)
 {	
 	if (ServerConfig::g_IotaLocalPow) {
 		//auto index = DataTypeConverter::hexToBinString(indexHex.substr(0, indexHex.size()-1));
@@ -159,7 +159,7 @@ uint32_t IotaRequest::getMessageMilestoneId(const std::string& messageIdHex)
 	return 0;
 }
 
-std::vector<MemoryBin*> IotaRequest::findByIndex(const iota::Topic& index)
+std::vector<MemoryBin*> IotaRequest::findByIndex(const iota::TopicIndex& index)
 {
 	// GET /api/v1/messages?index=4752414449444f2e7079746861676f726173
 	std::string fullPath;

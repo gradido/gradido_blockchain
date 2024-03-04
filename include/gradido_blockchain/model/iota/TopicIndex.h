@@ -7,11 +7,11 @@
 #include <string>
 
 namespace iota {
-    class GRADIDOBLOCKCHAIN_EXPORT Topic
+    class GRADIDOBLOCKCHAIN_EXPORT TopicIndex
 	{
     public:
-		Topic(const std::string& alias);
-		Topic(const MemoryBin* rawIndex);
+		TopicIndex(const std::string& alias);
+		TopicIndex(const MemoryBin* rawIndex);
 
 		inline const std::string& getBinString() const { return index; }
 		inline std::string getHexString() const { return DataTypeConverter::binToHex(index); }
