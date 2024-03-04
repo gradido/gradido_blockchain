@@ -7,46 +7,10 @@
 
 #include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain/model/iota/NodeInfo.h"
+#include "gradido_blockchain/model/iota/Topic.h"
 
 #include "Poco/Logger.h"
-
-namespace iota {
-	struct NodeInfo
-	{
-		std::string version;
-		bool isHealthy;
-		float messagesPerSecond;
-		int32_t lastMilestoneIndex;
-		int64_t lastMilestoneTimestamp;
-		int32_t confirmedMilestoneIndex;
-	};
-
-
-	struct Topic
-	{
-		Topic(const std::string& alias)
-		{
-			// is already hex
-			// Q: https://stackoverflow.com/questions/8899069/how-to-find-if-a-given-string-conforms-to-hex-notation-eg-0x34ff-without-regex
-			if (std::all_of(alias.begin(), alias.end(), ::isxdigit)) {
-				index = std::move(*DataTypeConverter::hexToBinString(alias));
-			}
-			else {
-				// is named
-				index.reserve(alias.size() + 9);
-				index = "GRADIDO.";
-				index += alias;
-			}
-		}
-		Topic(const MemoryBin* rawIndex)
-			: index(std::string((const char*)rawIndex->data(), rawIndex->size()))
-		{	
-		}
-		inline const std::string& getBinString() const { return index; }
-		inline std::string getHexString() const { return DataTypeConverter::binToHex(index); }
-		std::string index;
-	};
-}
 
 /*!		
 	@author einhornimmond
