@@ -330,7 +330,7 @@ namespace DataTypeConverter
 
 		sodium_bin2hex(*hex, hexSize, data, binSize);
 
-		std::string hexString((const char*)*hex, hexSize);
+		std::string hexString((const char*)*hex, hexSize - 1);
 		mm->releaseMemory(hex);
 		return hexString;
 	}
@@ -346,7 +346,7 @@ namespace DataTypeConverter
 
 		size_t resultBinSize = 0;
 		sodium_bin2hex(*hex, hexSize, (const unsigned char*)binString->data(), binSize);
-		binString->assign((const char*)*hex, hexSize);
+		binString->assign((const char *)*hex, hexSize - 1);
 
 		mm->releaseMemory(hex);
 		return binString;
