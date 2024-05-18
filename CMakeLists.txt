@@ -99,6 +99,21 @@ ELSE()
 	ENDFOREACH(proto)
 ENDIF()
 #message("Proto: ${PROTO_FILES}")
+############################## find dependencies ###################################
+find_package(MPFR REQUIRED)
+find_package(libsodium REQUIRED)
+find_package(poco REQUIRED)
+find_package(openssl REQUIRED)
+
+include_directories(
+	${mpfr_INCLUDE_DIRS}
+	${gmp_INCLUDE_DIRS}
+	${libsodium_INCLUDE_DIRS}
+	${OPENSSL_INCLUDE_DIR}
+	${Poco_INCLUDE_DIRS}
+)
+message("openssl include: ${OPENSSL_INCLUDE_DIR}")
+
 ############################## bind source files ###################################
 
 FILE(GLOB TINF "dependencies/tinf/src/*.c" "dependencies/tinf/src/*.h")
@@ -115,7 +130,6 @@ SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${TINF} ${MAIN} ${HTTP}
 	${CRYPTO} ${MODEL} ${MODEL_PROTOBUF_WRAPPER} ${MODEL_IOTA} ${LIB_SRC} 
 	${PROTO_GRADIDO} 
-#	${PROTO_FILES}
 )
 
 if(MSVC)
@@ -141,9 +155,8 @@ include_directories(
 )
 IF(BUILD_SHARED_LIBS)
 # if static build
-ELSE()
-include_directories(
-	"dependencies/protobuf/third_party/abseil-cpp"
+ELSEIF(USE_OWN_POCO)
+  include_directories(
 	"dependencies/poco/NetSSL_OpenSSL/include"
 	"dependencies/poco/Foundation/include"
 	"dependencies/poco/Net/include"
@@ -152,18 +165,16 @@ include_directories(
 	"dependencies/poco/JWT/include"
 	"dependencies/poco/Crypto/include"
 )
+ELSE()
+  include_directories("dependencies/protobuf/third_party/abseil-cpp")
 ENDIF()
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 IF(WIN32)
-	include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-	conan_basic_setup()
 	message("[GradidoBlockchain] runtime output binary: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 	set(GradidoBlockchain_BINARY_DIR ${CMAKE_BINARY_DIR}/bin)
 	message("[GradidoBlockchain] project binary folder: ${GradidoBlockchain_BINARY_DIR}")
 ENDIF()
 
-
-find_package(Sodium REQUIRED)
 IF(UNIX AND NOT TARGET Poco::Foundation)
 	SET(ENABLE_MONGODB OFF CACHE BOOL "" FORCE) 
 	SET(ENABLE_DATA_SQLITE OFF CACHE BOOL "" FORCE) 
@@ -174,10 +185,6 @@ IF(UNIX AND NOT TARGET Poco::Foundation)
 	add_subdirectory("dependencies/poco")
 	set(POCO_LIBS Poco::Foundation Poco::Util Poco::Net Poco::NetSSL Poco::JWT)
 ENDIF()
-
-#include("CMAKE/FindMPFR.cmake")
-find_package(MPFR REQUIRED)
-message(STATUS "MPFR Found: ${MPFR_FOUND}")
 
 ############################# add rust and iota.rs ####################
 # https://webdevolutions.blob.core.windows.net/blog/pdf/insider-series-using-rust-code-in-a-cc-project-with-cmake.pdf
@@ -193,7 +200,7 @@ add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
 if(BUILD_SHARED_LIBS) 
-	target_link_libraries(GradidoBlockchain libprotobuf ${MPFR_LIBRARIES})
+	target_link_libraries(GradidoBlockchain libprotobuf mpfr::mpfr libsodium::libsodium)
 	IF(WIN32) 
 		# needed for windows if linking to a rust lib
 		find_library(IOTA_RUST_C_LIB iota_rust_clib.dll.lib PATHS 
@@ -218,13 +225,13 @@ if(BUILD_SHARED_LIBS)
 			target_link_libraries(GradidoBlockchain ${IOTA_RUST_C_LIB})
 		ENDIF()
     
-		target_link_libraries(GradidoBlockchain ${CONAN_LIBS} ws2_32 userenv)
+		target_link_libraries(GradidoBlockchain  ws2_32 userenv)
 	ELSE()
-		target_link_libraries(GradidoBlockchain ${POCO_LIBS} sodium iota_rust_clib ed25519_bip32_c_interface)
+		target_link_libraries(GradidoBlockchain ${POCO_LIBS} iota_rust_clib ed25519_bip32_c_interface)
 	ENDIF()
 else()
 # static build
-  target_link_libraries(GradidoBlockchain ${MPFR_LIBRARIES})
+  target_link_libraries(GradidoBlockchain)
   target_link_libraries(GradidoBlockchain iota_rust_clib ed25519_bip32_c_interface)
 endif()
 set_target_properties(GradidoBlockchain PROPERTIES

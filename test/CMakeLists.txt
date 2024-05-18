@@ -26,10 +26,6 @@ endif()
 IF(WIN32)
     # if static lib build
     message("build shared libs: ${BUILD_SHARED_LIBS}")
-    if(NOT BUILD_SHARED_LIBS)
-	    include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-	    conan_basic_setup()
-    ENDIF()
 ENDIF()
 
 enable_testing()
