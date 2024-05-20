@@ -24,21 +24,24 @@ endif ()
 
 if (DEFINED GradidoBlockchain_SHARED_LIBS)
     set(BUILD_SHARED_LIBS "${GradidoBlockchain_SHARED_LIBS}")
-endif ()
+endif()
 
 ############################## find protobuf  #########################################
 
 if(NOT TARGET protoc)
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 	message("[GradidoBlockchain] runtime output directory: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-	# prevent problems with two libs including googletest 
-	option(protobuf_BUILD_TESTS "Build tests" ON)
+
+	# Set compile options for protobuf to ensure -fPIC is used
+	set(protobuf_BUILD_TESTS OFF)  # Disable tests to avoid potential conflicts
+	set(CMAKE_POSITION_INDEPENDENT_CODE ON)  # This sets -fPIC for all targets
+
 	add_subdirectory(dependencies/protobuf)
+
+  # Force protobuf to use -fPIC
+  set_target_properties(libprotobuf PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  set_target_properties(protoc PROPERTIES POSITION_INDEPENDENT_CODE ON)	
 endif()
-#INCLUDE(FindProtobuf)
-#find_package(Protobuf REQUIRED)
-#INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIR})
-#message("protobuf include: ${PROTOBUF_INCLUDE_DIR}")
 
 ############################## parse protobuf files ###################################
 
@@ -100,19 +103,24 @@ ELSE()
 ENDIF()
 #message("Proto: ${PROTO_FILES}")
 ############################## find dependencies ###################################
-find_package(MPFR REQUIRED)
-find_package(libsodium REQUIRED)
-find_package(poco REQUIRED)
-find_package(openssl REQUIRED)
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-include_directories(
-	${mpfr_INCLUDE_DIRS}
-	${gmp_INCLUDE_DIRS}
-	${libsodium_INCLUDE_DIRS}
-	${OPENSSL_INCLUDE_DIR}
-	${Poco_INCLUDE_DIRS}
-)
-message("openssl include: ${OPENSSL_INCLUDE_DIR}")
+find_package(MPFR REQUIRED)
+# using conan on windows
+IF(WIN32)
+  find_package(libsodium REQUIRED)
+	find_package(poco REQUIRED)
+	find_package(openssl REQUIRED)
+	include_directories(
+		${mpfr_INCLUDE_DIRS}
+		${gmp_INCLUDE_DIRS}
+		${libsodium_INCLUDE_DIR}
+		${OPENSSL_INCLUDE_DIR}
+		${Poco_INCLUDE_DIRS}
+	)
+ELSE()
+  find_package(Sodium)
+ENDIF()
 
 ############################## bind source files ###################################
 
@@ -200,8 +208,9 @@ add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
 if(BUILD_SHARED_LIBS) 
-	target_link_libraries(GradidoBlockchain libprotobuf mpfr::mpfr libsodium::libsodium)
+	target_link_libraries(GradidoBlockchain libprotobuf)
 	IF(WIN32) 
+	  target_link_libraries(GradidoBlockchain mpfr::mpfr libsodium::libsodium)
 		# needed for windows if linking to a rust lib
 		find_library(IOTA_RUST_C_LIB iota_rust_clib.dll.lib PATHS 
 			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
@@ -227,7 +236,7 @@ if(BUILD_SHARED_LIBS)
     
 		target_link_libraries(GradidoBlockchain  ws2_32 userenv)
 	ELSE()
-		target_link_libraries(GradidoBlockchain ${POCO_LIBS} iota_rust_clib ed25519_bip32_c_interface)
+		target_link_libraries(GradidoBlockchain ${POCO_LIBS} iota_rust_clib ed25519_bip32_c_interface ${MPFR_LIBRARIES})
 	ENDIF()
 else()
 # static build
