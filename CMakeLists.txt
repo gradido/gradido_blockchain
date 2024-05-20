@@ -234,7 +234,7 @@ if(BUILD_SHARED_LIBS)
 			target_link_libraries(GradidoBlockchain ${IOTA_RUST_C_LIB})
 		ENDIF()
     
-		target_link_libraries(GradidoBlockchain  ws2_32 userenv)
+		target_link_libraries(GradidoBlockchain ${Poco_LIBRARIES} ws2_32 userenv)
 	ELSE()
 		target_link_libraries(GradidoBlockchain ${POCO_LIBS} iota_rust_clib ed25519_bip32_c_interface ${MPFR_LIBRARIES})
 	ENDIF()
