@@ -30,6 +30,7 @@ namespace model {
 		public:
 			GradidoTransaction(proto::gradido::GradidoTransaction* protoGradidoTransaction, std::shared_ptr<ProtobufArenaMemory> arenaMemory);
 			GradidoTransaction(const std::string* serializedProtobuf);
+			GradidoTransaction(const void* data, int size);
 			GradidoTransaction(model::gradido::TransactionBody* body);
 			~GradidoTransaction();
 
@@ -57,7 +58,7 @@ namespace model {
 			std::vector<MemoryBin*> getSignaturesfromSignatureMap(bool onlyFirst = true) const;
 
 			inline GradidoTransaction& setMemo(const std::string& memo) { mBodyDirty = true; mTransactionBody->setMemo(memo); return *this; }
-			inline GradidoTransaction& setCreated(Poco::DateTime created) { mBodyDirty = true; mTransactionBody->setCreated(created); return *this; }
+			inline GradidoTransaction& setCreatedAt(Poco::DateTime created) { mBodyDirty = true; mTransactionBody->setCreatedAt(created); return *this; }
 			GradidoTransaction& setParentMessageId(const MemoryBin* parentMessageId);
 			/*! update body bytes into proto member
 				Serialize body bytes from TransactionBody member Variable and stuff it into proto::gradido::GradidoTransaction bodyBytes

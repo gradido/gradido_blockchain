@@ -69,7 +69,7 @@ namespace model {
 			
 			// convert from proto timestamp seconds to poco DateTime
 			[[deprecated("Replaced by getConfirmedAtAsTimestamp, changed name according to Gradido Apollo implementation")]]
-			inline Poco::Timestamp getReceivedAsTimestamp() const { return Poco::Timestamp(getReceived() * Poco::Timestamp::resolution());}
+			inline Poco::Timestamp getReceivedAsTimestamp() const { return Poco::Timestamp(getConfirmedAt() * Poco::Timestamp::resolution());}
 			inline Poco::Timestamp getConfirmedAtAsTimestamp() const { return Poco::Timestamp(getConfirmedAt() * Poco::Timestamp::resolution()); }
 
 			// return as seconds since Jan 01 1970

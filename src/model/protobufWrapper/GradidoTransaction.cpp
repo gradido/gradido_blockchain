@@ -35,6 +35,27 @@ namespace model {
 			mTransactionBody = TransactionBody::load(mProtoGradidoTransaction->body_bytes(), mProtobufArenaMemory);
 		}
 
+		GradidoTransaction::GradidoTransaction(const void *data, int size)
+			: mProtoGradidoTransaction(nullptr), mBodyDirty(false)
+		{
+			mProtobufArenaMemory = ProtobufArenaMemory::create();
+			mProtoGradidoTransaction = google::protobuf::Arena::CreateMessage<proto::gradido::GradidoTransaction>(*mProtobufArenaMemory);
+			if (!mProtoGradidoTransaction->ParseFromArray(data, size))
+			{
+				std::string serializedProtobuf;
+				serializedProtobuf.resize(size, 0);
+				memcpy(serializedProtobuf.data(), data, size);
+				if (!mProtoGradidoTransaction->ParsePartialFromArray(data, size)) {
+					throw ProtobufParseException(serializedProtobuf);
+				} 
+				else {
+					printf("only partial error\n");
+					throw ProtobufParseException(serializedProtobuf);
+				}
+			}
+			mTransactionBody = TransactionBody::load(mProtoGradidoTransaction->body_bytes(), mProtobufArenaMemory);
+		}
+
 		GradidoTransaction::GradidoTransaction(model::gradido::TransactionBody* body)
 			: mProtoGradidoTransaction(nullptr), mBodyDirty(false)
 		{
@@ -101,7 +122,7 @@ namespace model {
 				auto mm = MemoryManager::getInstance();
 				Poco::SharedPtr<TransactionEntry> pairTransactionEntry;
 				switch (transactionBody->getCrossGroupType()) {
-				case proto::gradido::TransactionBody_CrossGroupType_LOCAL: break; // no cross grouü
+				case proto::gradido::TransactionBody_CrossGroupType_LOCAL: break; // no cross grouï¿½
 				case proto::gradido::TransactionBody_CrossGroupType_INBOUND:
 					// happen before inbound, can only be checked after both transactions are written to blockchain
 				case proto::gradido::TransactionBody_CrossGroupType_OUTBOUND:
