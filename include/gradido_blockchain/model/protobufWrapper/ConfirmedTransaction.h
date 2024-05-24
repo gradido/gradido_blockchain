@@ -4,7 +4,7 @@
 #include "proto/gradido/confirmed_transaction.pb.h"
 #include "GradidoTransaction.h"
 
-#include "Poco/SharedPtr.h"
+#include <chrono>
 
 #define GRADIDO_BLOCK_PROTOCOL_VERSION "3.1"
 // MAGIC NUMBER: max allowed Timespan between creation date of transaction and receiving date (iota milestone timestamp)
@@ -24,13 +24,13 @@ namespace model {
 		    also the native format in which Gradido Node returns Gradido Transactions.<br>
 			<a href="https://github.com/gradido/gradido_protocol/blob/master/gradido/GradidoBlock.proto" target="_blank">Protobuf: GradidoBlock</a>
 		*/
-		class GRADIDOBLOCKCHAIN_EXPORT ConfirmedTransaction : public MultithreadContainer, public Poco::RefCountedObject
+		class GRADIDOBLOCKCHAIN_EXPORT ConfirmedTransaction : public MultithreadContainer
 		{
 		public:
 			ConfirmedTransaction(const std::string* serializedGradidoBlock);
 			~ConfirmedTransaction();
 
-			static Poco::SharedPtr<ConfirmedTransaction> create(std::unique_ptr<GradidoTransaction> transaction, uint64_t id, int64_t received, const MemoryBin* messageId);
+			static std::shared_ptr<ConfirmedTransaction> create(std::unique_ptr<GradidoTransaction> transaction, uint64_t id, int64_t received, const MemoryBin* messageId);
 
 			//! make json string from GradidoBlock Protobuf Object
 			std::string toJson();
@@ -67,15 +67,12 @@ namespace model {
 
 			void setTxHash(const MemoryBin* txHash);
 			
-			// convert from proto timestamp seconds to poco DateTime
-			[[deprecated("Replaced by getConfirmedAtAsTimestamp, changed name according to Gradido Apollo implementation")]]
-			inline Poco::Timestamp getReceivedAsTimestamp() const { return Poco::Timestamp(getConfirmedAt() * Poco::Timestamp::resolution());}
-			inline Poco::Timestamp getConfirmedAtAsTimestamp() const { return Poco::Timestamp(getConfirmedAt() * Poco::Timestamp::resolution()); }
+			inline std::chrono::time_point<std::chrono::system_clock> getConfirmedAtAsTimepoint() const { 
+				return std::chrono::system_clock::time_point(std::chrono::seconds(getConfirmedAt()));
+			}
 
 			// return as seconds since Jan 01 1970
 			int64_t getConfirmedAt() const;
-			[[deprecated("Replaced by getConfirmedAt, changed name according to Gradido Apollo implementation")]]
-			inline int64_t getReceived() const { return getConfirmedAt(); }
 
 			std::unique_ptr<std::string> getSerialized();
 			//! \return MemoryBin containing message id binar, must be freed from caller

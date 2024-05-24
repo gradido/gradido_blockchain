@@ -14,6 +14,7 @@
 #include "rapidjson/prettywriter.h"
 
 using namespace rapidjson;
+using namespace std::chrono;
 
 namespace model {
 	namespace gradido {
@@ -51,9 +52,9 @@ namespace model {
 			mProtoConfirmedTransaction = nullptr;
 		}
 
-		Poco::SharedPtr<ConfirmedTransaction> ConfirmedTransaction::create(std::unique_ptr<GradidoTransaction> transaction, uint64_t id, int64_t received, const MemoryBin* messageId)
+		std::shared_ptr<ConfirmedTransaction> ConfirmedTransaction::create(std::unique_ptr<GradidoTransaction> transaction, uint64_t id, int64_t received, const MemoryBin* messageId)
 		{
-			Poco::SharedPtr<ConfirmedTransaction> confirmedTransaction(new ConfirmedTransaction(std::move(transaction)));
+			auto confirmedTransaction = std::make_shared<ConfirmedTransaction>(transaction);
 			auto proto = confirmedTransaction->mProtoConfirmedTransaction;
 			proto->set_id(id);
 			proto->mutable_confirmed_at()->set_seconds(received);
@@ -188,7 +189,7 @@ namespace model {
 			IGradidoBlockchain* otherBlockchain /*= nullptr*/
 		) const
 		{
-			auto created = Poco::Timestamp(getGradidoTransaction()->getTransactionBody()->getCreatedSeconds() * Poco::Timestamp::resolution());
+			auto createdSeconds = getGradidoTransaction()->getTransactionBody()->getCreatedAtSeconds();
 			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
 				if (mProtoConfirmedTransaction->version_number() != GRADIDO_BLOCK_PROTOCOL_VERSION) {
 					TransactionValidationInvalidInputException exception("wrong version in gradido block", "version_number", "uint64");
@@ -201,8 +202,12 @@ namespace model {
 					throw exception;
 				}
 				
-				if (Poco::Timespan(getReceivedAsTimestamp() - created).totalSeconds() < 0) {
-					TransactionValidationInvalidInputException exception("timespan between created and received are negative", "iota milestone timestamp", std::to_string(getReceivedAsTimestamp().epochTime()).data());
+				if ((getConfirmedAt() - createdSeconds) < 0) {
+					TransactionValidationInvalidInputException exception(
+						"timespan between created and received are negative", 
+						"iota milestone timestamp", 
+						"seconds"
+					);
 					exception.setTransactionBody(getGradidoTransaction()->getTransactionBody());
 					throw exception;
 				}
@@ -220,12 +225,12 @@ namespace model {
 					if (previousConfirmedTransaction->getConfirmedAt() > getConfirmedAt()) {
 						throw BlockchainOrderException("previous transaction is younger");
 					}
-					auto previousCreated = Poco::Timestamp(previousConfirmedTransaction->getGradidoTransaction()->getTransactionBody()->getCreatedSeconds() * Poco::Timestamp::resolution());
+					auto previousCreated = previousConfirmedTransaction->getGradidoTransaction()->getTransactionBody()->getCreatedAtSeconds();
 					// if previous transaction was created after this transaction we make sure that creation date and received/confirmation date are not 
 					// to far apart
 					// it is possible that they where created nearly at the same time but sorted from iota swapped
-					if (previousCreated > created) {
-						auto timespanBetweenCreatedAndReceivedSeconds = Poco::Timespan(getReceivedAsTimestamp() - created).totalSeconds();
+					if (previousCreated > createdSeconds) {
+						auto timespanBetweenCreatedAndReceivedSeconds = getConfirmedAt() - createdSeconds;
 						if (timespanBetweenCreatedAndReceivedSeconds / 60 > MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION_IN_MINUTES) {
 							TransactionValidationInvalidInputException exception("timespan between created and received are more than 2 minutes", "received/iota milestone timestamp", "int64");
 							exception.setTransactionBody(getGradidoTransaction()->getTransactionBody());

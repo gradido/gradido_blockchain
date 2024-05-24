@@ -21,9 +21,9 @@ namespace model {
 			)const;
 
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
+			std::chrono::time_point<std::chrono::system_clock> getTimeoutAsTimePoint() const;
+			int64_t getTimeoutAt() const;
 
-			Poco::Timestamp getTimeoutAsPocoTimestamp() const;
-			inline Poco::DateTime getTimeoutAsPocoDateTime() const { return Poco::DateTime(getTimeoutAsPocoTimestamp()); }
 		protected:
 			const proto::gradido::GradidoDeferredTransfer& mProtoDeferredTransfer;
 		};

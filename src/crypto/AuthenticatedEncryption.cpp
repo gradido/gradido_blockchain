@@ -39,13 +39,12 @@ AuthenticatedEncryption::~AuthenticatedEncryption()
 	if (mPrivkey) {
 		mm->releaseMemory(mPrivkey);
 	}
-	mPrecalculatedSharedSecretsMutex.lock();
+	std::lock_guard _lock(mPrecalculatedSharedSecretsMutex);
 
 	for (auto it = mPrecalculatedSharedSecrets.begin(); it != mPrecalculatedSharedSecrets.end(); it++) {
 		mm->releaseMemory(it->second);
 	}
 	mPrecalculatedSharedSecrets.clear();
-	mPrecalculatedSharedSecretsMutex.unlock();
 }
 
 MemoryBin* AuthenticatedEncryption::encrypt(const unsigned char* message, size_t messageSize, AuthenticatedEncryption* recipiantKey)
@@ -70,7 +69,7 @@ MemoryBin* AuthenticatedEncryption::encrypt(const MemoryBin* message, int precal
 	int function_result = -1;
 	randombytes_buf(*result, crypto_box_NONCEBYTES);
 
-	mPrecalculatedSharedSecretsMutex.lock();
+	std::lock_guard _lock(mPrecalculatedSharedSecretsMutex);
 	auto sharedSecret = mPrecalculatedSharedSecrets.find(precalculatedSharedSecretIndex);
 	if (sharedSecret != mPrecalculatedSharedSecrets.end()) {
 		/*int crypto_box_easy_afternm(unsigned char* c, const unsigned char* m,
@@ -87,7 +86,6 @@ MemoryBin* AuthenticatedEncryption::encrypt(const MemoryBin* message, int precal
 		mm->releaseMemory(result);
 		result = nullptr;
 	}
-	mPrecalculatedSharedSecretsMutex.unlock();
 	
 	return result;
 }
@@ -118,7 +116,7 @@ MemoryBin* AuthenticatedEncryption::decrypt(const MemoryBin* encryptedMessage, i
 	auto result = mm->getMemory(encryptedMessage->size() - crypto_box_NONCEBYTES - crypto_box_MACBYTES);
 	int function_result = -1;
 
-	mPrecalculatedSharedSecretsMutex.lock();
+	std::lock_guard _lock(mPrecalculatedSharedSecretsMutex);
 	auto sharedSecret = mPrecalculatedSharedSecrets.find(precalculatedSharedSecretIndex);
 	
 	if (sharedSecret != mPrecalculatedSharedSecrets.end()) {
@@ -130,7 +128,6 @@ MemoryBin* AuthenticatedEncryption::decrypt(const MemoryBin* encryptedMessage, i
 			encryptedMessage->size() - crypto_box_NONCEBYTES, encryptedMessage->data(),
 			*(sharedSecret->second));
 	}
-	mPrecalculatedSharedSecretsMutex.unlock();
 
 	if (function_result) {
 		mm->releaseMemory(result);
@@ -142,7 +139,7 @@ MemoryBin* AuthenticatedEncryption::decrypt(const MemoryBin* encryptedMessage, i
 int AuthenticatedEncryption::precalculateSharedSecret(AuthenticatedEncryption* recipiantKey)
 {
 	if (!mPrivkey) return -1;
-	Poco::ScopedLock<Poco::FastMutex> _lock(mPrecalculatedSharedSecretsMutex);
+	std::lock_guard _lock(mPrecalculatedSharedSecretsMutex);
 	/*int crypto_box_beforenm(unsigned char* k, const unsigned char* pk,
 		const unsigned char* sk);*/
 	auto sharedSecret = MemoryManager::getInstance()->getMemory(crypto_box_BEFORENMBYTES);
@@ -154,7 +151,7 @@ int AuthenticatedEncryption::precalculateSharedSecret(AuthenticatedEncryption* r
 
 bool AuthenticatedEncryption::removePrecalculatedSharedSecret(int index)
 {
-	Poco::ScopedLock<Poco::FastMutex> _lock(mPrecalculatedSharedSecretsMutex);
+	std::lock_guard _lock(mPrecalculatedSharedSecretsMutex);
 	auto it = mPrecalculatedSharedSecrets.find(index);
 	if (it != mPrecalculatedSharedSecrets.end()) {
 		MemoryManager::getInstance()->releaseMemory(it->second);

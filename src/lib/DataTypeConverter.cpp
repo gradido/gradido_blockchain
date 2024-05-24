@@ -1,18 +1,21 @@
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
-#include "Poco/RegularExpression.h"
+#include "sodium.h"
 
 #include <stdexcept>
-#include "sodium.h"
 #include <assert.h>
+#include <regex>
+#include <iomanip>
 
 // needed for memset in linux
 #include <string.h>
 
+using namespace std::chrono;
+
 namespace DataTypeConverter
 {
-	Poco::RegularExpression g_rexExpBase64("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
+	std::regex g_rexExpBase64("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
 
 	NumberParseState strToInt(const std::string& input, int& result)
 	{
@@ -370,48 +373,80 @@ namespace DataTypeConverter
 		return hexString;
 	}
 
-	std::string timespanToString(const Poco::Timespan pocoTimespan)
+	std::string timePointToString(const time_point<system_clock>& tp) 
 	{
-		std::string fmt;
-		if (pocoTimespan.days()) {
-			fmt = "%d days ";
+		// Convert time_point to time_t, which represents the calendar time
+		std::time_t time = system_clock::to_time_t(tp);
+
+		// Create a stream to hold the formatted date-time string
+		std::stringstream ss;
+		ss << std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S");
+
+		return ss.str();
+	}
+
+	std::string timespanToString(const std::chrono::seconds timespan)
+	{
+		auto days = duration_cast<duration<int, std::ratio<86400>>>(timespan);
+		auto hours = duration_cast<std::chrono::hours>(timespan % std::chrono::duration<int, std::ratio<86400>>(1));
+		auto minutes = duration_cast<std::chrono::minutes>(timespan % std::chrono::hours(1));
+		auto seconds = duration_cast<std::chrono::seconds>(timespan % std::chrono::minutes(1));
+
+		std::ostringstream fmt;
+		if (days.count() != 0) {
+			fmt << days.count() << " days ";
 		}
-		if (pocoTimespan.hours()) {
-			fmt += "%H hours ";
-		} 
-		if (pocoTimespan.minutes()) {
-			fmt += "%M minutes ";
-		} 
-		if (pocoTimespan.seconds()) {
-			fmt += "%S seconds ";
+		if (hours.count() != 0) {
+			fmt << hours.count() << " hours ";
 		}
-		return Poco::DateTimeFormatter::format(pocoTimespan, fmt);
-	}
+		if (minutes.count() != 0) {
+			fmt << minutes.count() << " minutes ";
+		}
+		if (seconds.count() != 0) {
+			fmt << seconds.count() << " seconds ";
+		}
 
-	Poco::Timestamp convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp)
+		return fmt.str();
+	}
+	using namespace std::chrono;
+	const time_point<system_clock> convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp)
 	{
-		// microseconds
-		google::protobuf::int64 microseconds = timestamp.seconds() * (google::protobuf::int64)10e5 + (google::protobuf::int64)(timestamp.nanos()) / (google::protobuf::int64)10e2;
-		return microseconds;
+		// Convert the seconds and nanoseconds to microseconds
+		int64_t microseconds = timestamp.seconds() * static_cast<int64_t>(1e6) + timestamp.nanos() / static_cast<int64_t>(1e3);
+		return system_clock::time_point(std::chrono::microseconds(microseconds));
 	}
-
-
-	void convertToProtoTimestamp(const Poco::Timestamp pocoTimestamp, proto::gradido::Timestamp* protoTimestamp)
+	void convertToProtoTimestamp(const time_point<system_clock> timestamp, proto::gradido::Timestamp* protoTimestamp)
 	{
-		auto microsecondsTotal = pocoTimestamp.epochMicroseconds();
-		auto secondsTotal = pocoTimestamp.epochTime();
-		protoTimestamp->set_seconds(secondsTotal);
-		protoTimestamp->set_nanos((microsecondsTotal - secondsTotal * pocoTimestamp.resolution()) * 1000);
-	}
+		// Convert time_point to duration since epoch
+		auto duration = timestamp.time_since_epoch();
 
-	Poco::Timestamp convertFromProtoTimestampSeconds(const proto::gradido::TimestampSeconds& timestampSeconds)
+		// Convert duration to seconds and nanoseconds
+		auto seconds = duration_cast<std::chrono::seconds>(duration);
+		auto nanos = duration_cast<std::chrono::nanoseconds>(duration) - duration_cast<std::chrono::nanoseconds>(seconds);
+
+		// Set the protobuf timestamp fields
+		protoTimestamp->set_seconds(seconds.count());
+		protoTimestamp->set_nanos(nanos.count());
+	}
+	time_point<system_clock> convertFromProtoTimestampSeconds(const proto::gradido::TimestampSeconds& timestampSeconds)
 	{
-		google::protobuf::int64 microseconds = timestampSeconds.seconds() * (google::protobuf::int64)10e5;
+		// Convert seconds to a duration
+		auto seconds = std::chrono::seconds{ timestampSeconds.seconds() };
 
-		return microseconds;
+		// Create a time_point from the duration
+		return system_clock::time_point{ seconds };
 	}
+	void convertToProtoTimestampSeconds(const std::chrono::time_point<std::chrono::system_clock> timestamp, proto::gradido::TimestampSeconds* protoTimestampSeconds)
+	{
+		// Get the duration since epoch
+		auto duration = timestamp.time_since_epoch();
 
+		// Convert the duration to seconds
+		auto seconds = duration_cast<std::chrono::seconds>(duration);
 
+		// Set the protobuf timestamp fields
+		protoTimestampSeconds->set_seconds(seconds.count());
+	}
 
 	int replaceBase64WithHex(rapidjson::Value& json, rapidjson::Document::AllocatorType& alloc)
 	{
@@ -436,7 +471,7 @@ namespace DataTypeConverter
 		else if (json.IsString()) 
 		{
 			std::string field_value(json.GetString(), json.GetStringLength());
-			if (!g_rexExpBase64.match(field_value)) return 0;
+			if (!std::regex_match(field_value, g_rexExpBase64)) return 0;
 
 			auto bin = base64ToBin(field_value);
 			if (!bin) return 0;
@@ -467,55 +502,6 @@ namespace DataTypeConverter
 			in.replace(pos, 1, "&nbsp;");
 		}
 		return in;
-	}
-
-	bool PocoDynVarToRapidjsonValue(const Poco::Dynamic::Var& pocoVar, rapidjson::Value& rapidjsonValue, rapidjson::Document::AllocatorType& alloc)
-	{
-		if (pocoVar.isString()) {
-			std::string str;
-			pocoVar.convert(str);
-			rapidjsonValue.SetString(str.data(), str.size(), alloc);
-			return true;
-		} 
-		else if (pocoVar.isInteger()) 
-		{
-			if (pocoVar.isSigned()) {
-				Poco::Int64 i = 0;
-				pocoVar.convert(i);
-				if (i == (Poco::Int64)((Poco::Int32)i)) {
-					rapidjsonValue.SetInt(i);
-				}
-				else {
-					rapidjsonValue.SetInt64(i);
-				}
-				return true;
-			}
-			else {
-				Poco::UInt64 i = 0;
-				pocoVar.convert(i);
-				if (i == (Poco::UInt64)((Poco::UInt32)i)) {
-					rapidjsonValue.SetUint(i);
-				}
-				else {
-					rapidjsonValue.SetUint64(i);
-				}
-				return true;
-			}
-		} 
-		else if (pocoVar.isBoolean()) {
-			bool b = false;
-			pocoVar.convert(b);
-			rapidjsonValue.SetBool(b);
-			return true;
-		}
-		else if (pocoVar.isNumeric()) {
-			double d = 0.0;
-			pocoVar.convert(d);
-			rapidjsonValue.SetDouble(d);
-			return true;
-		}
-
-		return false;
 	}
 
 	// Exceptions

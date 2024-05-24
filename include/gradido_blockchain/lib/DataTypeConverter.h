@@ -1,19 +1,20 @@
 #ifndef __GRADIDO_LOGIN_SERVER_LIB_DATA_TYPE_CONVERTER_H
 #define __GRADIDO_LOGIN_SERVER_LIB_DATA_TYPE_CONVERTER_H
 
-#include <string>
 #include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
 #include "Poco/Timespan.h"
 #include "Poco/Nullable.h"
-#include "Poco/Dynamic/Var.h"
 
 #include "proto/gradido/basic_types.pb.h"
 
 #include "sodium.h"
 
 #include "rapidjson/document.h"
+
+#include <string>
+#include <chrono>
 
 namespace DataTypeConverter {
 
@@ -63,20 +64,20 @@ namespace DataTypeConverter {
 
 	GRADIDOBLOCKCHAIN_EXPORT const char* numberParseStateToString(NumberParseState state);
 
-	GRADIDOBLOCKCHAIN_EXPORT std::string timespanToString(const Poco::Timespan pocoTimespan);
-	GRADIDOBLOCKCHAIN_EXPORT Poco::Timestamp convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp);
-	GRADIDOBLOCKCHAIN_EXPORT void convertToProtoTimestamp(const Poco::Timestamp pocoTimestamp, proto::gradido::Timestamp* protoTimestamp);
-	GRADIDOBLOCKCHAIN_EXPORT Poco::Timestamp convertFromProtoTimestampSeconds(const proto::gradido::TimestampSeconds& timestampSeconds);
-	GRADIDOBLOCKCHAIN_EXPORT inline void convertToProtoTimestampSeconds(const Poco::Timestamp pocoTimestamp, proto::gradido::TimestampSeconds* protoTimestampSeconds) {
-		protoTimestampSeconds->set_seconds(pocoTimestamp.epochTime());
-	}
+	
+	GRADIDOBLOCKCHAIN_EXPORT std::string timePointToString(const std::chrono::time_point<std::chrono::system_clock>& tp);
+	GRADIDOBLOCKCHAIN_EXPORT std::string timespanToString(const std::chrono::seconds timespan);
+	GRADIDOBLOCKCHAIN_EXPORT const std::chrono::time_point<std::chrono::system_clock> convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp);
+	GRADIDOBLOCKCHAIN_EXPORT void convertToProtoTimestamp(const std::chrono::time_point<std::chrono::system_clock> timestamp, proto::gradido::Timestamp* protoTimestamp);
+	GRADIDOBLOCKCHAIN_EXPORT std::chrono::time_point<std::chrono::system_clock> convertFromProtoTimestampSeconds(const proto::gradido::TimestampSeconds& timestampSeconds);
+	GRADIDOBLOCKCHAIN_EXPORT void convertToProtoTimestampSeconds(const std::chrono::time_point<std::chrono::system_clock> pocoTimestamp, proto::gradido::TimestampSeconds* protoTimestampSeconds);
 
 	//! \brief go through json object and replace every string entry in base64 format into hex format
 	//! \return count of replaced strings
 	GRADIDOBLOCKCHAIN_EXPORT int replaceBase64WithHex(rapidjson::Value& json, rapidjson::Document::AllocatorType& alloc);
 	GRADIDOBLOCKCHAIN_EXPORT std::string replaceNewLineWithBr(std::string& in);
 
-	GRADIDOBLOCKCHAIN_EXPORT bool PocoDynVarToRapidjsonValue(const Poco::Dynamic::Var& pocoVar, rapidjson::Value& rapidjsonValue, rapidjson::Document::AllocatorType& alloc);
+
 
 	class GRADIDOBLOCKCHAIN_EXPORT InvalidHexException : public GradidoBlockchainException
 	{

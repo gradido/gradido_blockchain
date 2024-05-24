@@ -9,9 +9,9 @@
 
 #include "gradido_blockchain/crypto/CryptoConfig.h"
 
-#include "Poco/RegularExpression.h"
+#include <regex>
 
-static Poco::RegularExpression g_checkValidWord("^[a-zA-Zƒ÷‹‰ˆ¸ﬂ&;]*$");
+static std::regex g_checkValidWord("^[a-zA-Zƒ÷‹‰ˆ¸ﬂ&;]*$");
 
 Mnemonic::Mnemonic()
 {
@@ -190,18 +190,16 @@ const char* Mnemonic::getWord(short index) const {
 			std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);
 			word = mWords[index];
 		}
-
-		if (!g_checkValidWord.match(word, 0, Poco::RegularExpression::RE_NOTEMPTY)) {
-			
+		
+		if (!std::regex_match(word, g_checkValidWord)) {			
 			if (!CryptoConfig::loadMnemonicWordLists()) {
 				throw MnemonicException("error loading mnemonic word lists");
 			}	
-
 			{
 				std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);
 				word = mWords[index];
 			}
-			if (!g_checkValidWord.match(word, 0, Poco::RegularExpression::RE_NOTEMPTY)) {
+			if (!std::regex_match(word, g_checkValidWord)) {
 				throw MnemonicException("empty word, reload mnemonic word list doesn't helped", word.data());
 			}
 		}

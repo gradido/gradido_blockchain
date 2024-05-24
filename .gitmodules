@@ -22,3 +22,6 @@
 [submodule "dependencies/ed25519_bip32_c_interface"]
 	path = dependencies/ed25519_bip32_c_interface
 	url = https://github.com/gradido/ed25519_bip32_c_interface.git
+[submodule "dependencies/date"]
+        path = dependencies/date
+        url = https://github.com/HowardHinnant/date.git

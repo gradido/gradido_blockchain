@@ -4,6 +4,8 @@
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/lib/Decay.h"
 
+using namespace std::chrono;
+
 namespace model {
 	namespace gradido {
 		DeferredTransfer::DeferredTransfer(const proto::gradido::GradidoDeferredTransfer& deferredTransfer)
@@ -20,7 +22,7 @@ namespace model {
 		{
 			if ((level & TRANSACTION_VALIDATION_SINGLE) == TRANSACTION_VALIDATION_SINGLE) {
 				if (parentConfirmedTransaction) {
-					if (parentConfirmedTransaction->getConfirmedAtAsTimestamp() >= getTimeoutAsPocoTimestamp()) {
+					if (parentConfirmedTransaction->getConfirmedAtAsTimepoint() >= getTimeoutAsTimePoint()) {
 						throw TransactionValidationInvalidInputException("timeout is already in the past", "timeout", "timestamp");
 					}
 				}
@@ -31,7 +33,7 @@ namespace model {
 		bool DeferredTransfer::isBelongToUs(const TransactionBase* pairingTransaction) const
 		{
 			auto pair = dynamic_cast<const DeferredTransfer*>(pairingTransaction);
-			if (getTimeoutAsPocoTimestamp() == pair->getTimeoutAsPocoTimestamp()) {
+			if (getTimeoutAsTimePoint() == pair->getTimeoutAsTimePoint()) {
 				return TransactionTransfer::isBelongToUs(pairingTransaction);
 			}
 			else {
@@ -39,9 +41,13 @@ namespace model {
 			}
 		}
 
-		Poco::Timestamp DeferredTransfer::getTimeoutAsPocoTimestamp() const
+		time_point<system_clock> DeferredTransfer::getTimeoutAsTimePoint() const
 		{
-			return DataTypeConverter::convertFromProtoTimestampSeconds(mProtoDeferredTransfer.timeout());
+			return system_clock::time_point(std::chrono::seconds(mProtoDeferredTransfer.timeout().seconds()));
+		}
+		int64_t DeferredTransfer::getTimeoutAt() const
+		{
+			return mProtoDeferredTransfer.timeout().seconds();
 		}
 	}
 }

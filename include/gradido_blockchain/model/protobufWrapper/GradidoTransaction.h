@@ -3,7 +3,6 @@
 
 #include "TransactionBody.h"
 #include "proto/gradido/gradido_transaction.pb.h"
-#include "Poco/RefCountedObject.h"
 
 class TransactionFactory;
 class CrossGroupTransactionBuilder;
@@ -24,7 +23,7 @@ namespace model {
 
 			<a href="https://github.com/gradido/gradido_protocol/blob/master/gradido/GradidoTransaction.proto" target="_blank">Protobuf: GradidoTransaction</a>
 		*/
-		class GRADIDOBLOCKCHAIN_EXPORT GradidoTransaction: public Poco::RefCountedObject
+		class GRADIDOBLOCKCHAIN_EXPORT GradidoTransaction
 		{
 			friend ConfirmedTransaction;
 		public:
@@ -58,7 +57,7 @@ namespace model {
 			std::vector<MemoryBin*> getSignaturesfromSignatureMap(bool onlyFirst = true) const;
 
 			inline GradidoTransaction& setMemo(const std::string& memo) { mBodyDirty = true; mTransactionBody->setMemo(memo); return *this; }
-			inline GradidoTransaction& setCreatedAt(Poco::DateTime created) { mBodyDirty = true; mTransactionBody->setCreatedAt(created); return *this; }
+			inline GradidoTransaction& setCreatedAt(std::chrono::time_point<std::chrono::system_clock> createdAt) { mBodyDirty = true; mTransactionBody->setCreatedAt(createdAt); return *this; }
 			GradidoTransaction& setParentMessageId(const MemoryBin* parentMessageId);
 			/*! update body bytes into proto member
 				Serialize body bytes from TransactionBody member Variable and stuff it into proto::gradido::GradidoTransaction bodyBytes

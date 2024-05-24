@@ -6,9 +6,8 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "rapidjson/document.h"
 
-#include "Poco/Mutex.h"
-
 #include <map>
+#include <mutex>
 
 class KeyPairEd25519;
 
@@ -47,7 +46,7 @@ protected:
 	
 	MemoryBin* mPrivkey;
 
-	Poco::FastMutex mPrecalculatedSharedSecretsMutex;
+	std::mutex mPrecalculatedSharedSecretsMutex;
 	std::map<int, MemoryBin*> mPrecalculatedSharedSecrets;
 	int mPrecalculatedSharedSecretLastIndex;
 };

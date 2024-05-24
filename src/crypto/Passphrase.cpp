@@ -1,6 +1,3 @@
-#include "Poco/Types.h"
-#include "Poco/Tuple.h"
-
 #include "gradido_blockchain/crypto/Passphrase.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 #include "gradido_blockchain/crypto/CryptoConfig.h"
@@ -10,7 +7,7 @@
 
 #define STR_BUFFER_SIZE 25
 
-static std::vector<Poco::Tuple<int, std::string>> g_specialChars = {
+static std::vector<std::pair<int, std::string>> g_specialChars = {
 	{ 0xa4, "auml" },{ 0x84, "Auml" },
 	{ 0xbc, "uuml" },{ 0x9c, "Uuml" },
 	{ 0xb6, "ouml" },{ 0x96, "Ouml" },
@@ -52,8 +49,8 @@ std::string Passphrase::filter(const std::string& passphrase)
 				unsigned char c2 = passphrase.data()[i + 1];
 				bool insertedHtmlEntitie = false;
 				for (auto it = g_specialChars.begin(); it != g_specialChars.end(); it++) {
-					if (c2 == it->get<0>()) {
-						auto htmlEntitie = it->get<1>();
+					if (c2 == it->first) {
+						auto htmlEntitie = it->second;
 						filteredPassphrase += "&";
 						filteredPassphrase += htmlEntitie;
 						filteredPassphrase += ";";

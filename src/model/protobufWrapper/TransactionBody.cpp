@@ -6,6 +6,9 @@
 #include "gradido_blockchain/model/protobufWrapper/ProtobufExceptions.h"
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 
+
+using namespace std::chrono;
+
 namespace model {
 	namespace gradido {
 
@@ -19,7 +22,7 @@ namespace model {
 		      mTransactionSpecific(nullptr), mTransactionType(TRANSACTION_NONE), mProtobufArenaMemory(arenaMemory)
 		{
 			auto createdAt = mProtoTransactionBody->mutable_created_at();
-			DataTypeConverter::convertToProtoTimestamp(Poco::Timestamp(), createdAt);
+			DataTypeConverter::convertToProtoTimestamp(system_clock::now(), createdAt);
 			mProtoTransactionBody->set_type(proto::gradido::TransactionBody_CrossGroupType_LOCAL);
 			mProtoTransactionBody->set_version_number(GRADIDO_PROTOCOL_VERSION);
 		}
@@ -36,11 +39,11 @@ namespace model {
 			unlock();
 		}
 
-		void TransactionBody::setCreatedAt(Poco::DateTime createdAt)
+		void TransactionBody::setCreatedAt(time_point<system_clock> createdAt)
 		{
 			LOCK_RECURSIVE;
 			auto protoCreated = mProtoTransactionBody->mutable_created_at();
-			DataTypeConverter::convertToProtoTimestamp(createdAt.timestamp(), protoCreated);
+			DataTypeConverter::convertToProtoTimestamp(createdAt, protoCreated);
 		}
 
 		uint32_t TransactionBody::getCreatedAtSeconds() const
@@ -48,12 +51,9 @@ namespace model {
 			return mProtoTransactionBody->created_at().seconds();
 		}
 
-		Poco::DateTime TransactionBody::getCreatedAt() const
+		std::chrono::time_point<std::chrono::system_clock> TransactionBody::getCreatedAt() const
 		{
-			const auto& createdAt = mProtoTransactionBody->created_at();
-			return Poco::Timestamp(
-				createdAt.seconds() * Poco::Timestamp::resolution() + createdAt.nanos() / 1000
-			);
+			return DataTypeConverter::convertFromProtoTimestamp(mProtoTransactionBody->created_at());
 		}
 
 		TransactionBody* TransactionBody::load(const std::string& protoMessageBin, std::shared_ptr<ProtobufArenaMemory> arenaMemory)
@@ -68,7 +68,7 @@ namespace model {
 			return obj;
 		}
 
-		void TransactionBody::upgradeToDeferredTransaction(Poco::Timestamp timeout)
+		void TransactionBody::upgradeToDeferredTransaction(std::chrono::time_point<std::chrono::system_clock> timeout)
 		{
 			LOCK_RECURSIVE;
 			assert(mProtoTransactionBody->has_transfer());
@@ -115,13 +115,13 @@ namespace model {
 			return obj;
 		}
 
-		TransactionBody* TransactionBody::createTransactionCreation(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, Poco::DateTime targetDate)
+		TransactionBody* TransactionBody::createTransactionCreation(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, std::chrono::time_point<std::chrono::system_clock> targetDate)
 		{
 			auto obj = new TransactionBody;
 			auto creation = obj->mProtoTransactionBody->mutable_creation();
 			creation->set_allocated_recipient(transferAmount.release());
 			auto protoTargetDate = creation->mutable_target_date();
-			DataTypeConverter::convertToProtoTimestampSeconds(targetDate.timestamp(), protoTargetDate);
+			DataTypeConverter::convertToProtoTimestampSeconds(targetDate, protoTargetDate);
 			obj->initSpecificTransaction();
 			return obj;
 		}
@@ -294,14 +294,13 @@ namespace model {
 					}
 					if (isDeferredTransfer()) {
 						auto deferredTransfer = getDeferredTransfer();
-						auto timeout = deferredTransfer->getTimeoutAsPocoTimestamp();
-						if (getCreatedSeconds() >= timeout.epochTime()) {
+						if (getCreatedAtSeconds() >= deferredTransfer->getTimeoutAt()) {
 							throw TransactionValidationInvalidInputException("already reached", "timeout", "Timestamp");
 						}
 					}
 					// check target date for creation transactions
 					if (isCreation()) {
-						getCreationTransaction()->validateTargetDate(getCreatedSeconds());
+						getCreationTransaction()->validateTargetDate(getCreatedAtSeconds());
 					}
 				}
 
@@ -321,7 +320,7 @@ namespace model {
 			if (getMemo() != pairingTransaction->getMemo()) {
 				return false;
 			}
-			if (getCreatedSeconds() != pairingTransaction->getCreatedSeconds()) {
+			if (getCreatedAtSeconds() != pairingTransaction->getCreatedAtSeconds()) {
 				return false;
 			}
 			if (getOtherGroup() == pairingTransaction->getOtherGroup()) {
@@ -333,9 +332,7 @@ namespace model {
 		std::string TransactionBody::toDebugString() const
 		{
 			std::string result;
-			Poco::DateTime createdDate = Poco::Timestamp(getCreatedSeconds() * Poco::Timestamp::resolution());
-			auto createdDateString = Poco::DateTimeFormatter::format(createdDate, Poco::DateTimeFormat::SORTABLE_FORMAT);
-			result = "created: " + createdDateString + "\n";
+			result = "created: " + DataTypeConverter::timePointToString(DataTypeConverter::convertFromProtoTimestamp(mProtoTransactionBody->created_at())) + "\n";
 			result += getTransactionBase()->toDebugString();
 			return std::move(result);
 		}

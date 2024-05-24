@@ -6,6 +6,8 @@ project(GradidoBlockchain VERSION 2.0.0)
 #project(GradidoBlockchain C CXX)
 IF(WIN32)
 	set(CMAKE_CXX_FLAGS         "/MP /EHsc /std:c++17")
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+	set(BUILD_SHARED_LIBS On)
 ELSE()
 	SET(CMAKE_CXX_FLAGS "-std=c++17" )# -fPIC" )
 ENDIF()
@@ -125,6 +127,7 @@ ENDIF()
 ############################## bind source files ###################################
 
 FILE(GLOB TINF "dependencies/tinf/src/*.c" "dependencies/tinf/src/*.h")
+FIlE(GLOB THREADING "include/gradido_blockchain/threading/*.h" "src/threading/*.cpp")
 FILE(GLOB LIB_SRC "include/gradido_blockchain/lib/*.h" "src/lib/*.cpp")
 FILE(GLOB HTTP "include/gradido_blockchain/http/*.h" "src/http/*.cpp")
 FILE(GLOB MODEL "include/gradido_blockchain/model/*.h" "src/model/*.cpp")
@@ -135,7 +138,7 @@ FILE(GLOB MAIN "src/*.cpp" "src/*.c"  "include/gradido_blockchain/*.h")
 FILE(GLOB PROTO_GRADIDO "build/proto/gradido/*.cc" "build/proto/gradido/*.h")
 
 SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS 
-	${TINF} ${MAIN} ${HTTP}
+	${TINF} ${MAIN} ${HTTP} ${THREADING}
 	${CRYPTO} ${MODEL} ${MODEL_PROTOBUF_WRAPPER} ${MODEL_IOTA} ${LIB_SRC} 
 	${PROTO_GRADIDO} 
 )
@@ -143,6 +146,7 @@ SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 if(MSVC)
 	# src
 	source_group("proto\\gradido" FILES ${PROTO_GRADIDO})
+	source_group("threading" FILES ${THREADING})
 	source_group("tinf" FILES ${TINF})
 	source_group("crypto" FILES ${CRYPTO})
 	source_group("http" FILES ${HTTP})
@@ -157,6 +161,7 @@ include_directories(
 	"dependencies/tinf/src/" 
 	"dependencies/protobuf/src"
 	"dependencies/rapidjson/include"
+	"dependencies/date/include"
 	"include"
 	"iota_rust_clib/include"	
 	"dependencies/ed25519_bip32_c_interface/include"
@@ -233,8 +238,7 @@ if(BUILD_SHARED_LIBS)
 		ELSE()
 			target_link_libraries(GradidoBlockchain ${IOTA_RUST_C_LIB})
 		ENDIF()
-    
-		target_link_libraries(GradidoBlockchain ${Poco_LIBRARIES} ws2_32 userenv)
+		target_link_libraries(GradidoBlockchain Poco::Poco ws2_32 userenv)
 	ELSE()
 		target_link_libraries(GradidoBlockchain ${POCO_LIBS} iota_rust_clib ed25519_bip32_c_interface ${MPFR_LIBRARIES})
 	ENDIF()

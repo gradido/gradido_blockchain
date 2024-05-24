@@ -118,8 +118,8 @@ TEST_F(PassphraseTest, constructAndValid) {
 			EXPECT_TRUE(passphrase.checkIfValid());
 		}
 	}
-	Passphrase passphrase("Höh, maß, xDäöas", &CryptoConfig::g_Mnemonic_WordLists[CryptoConfig::MNEMONIC_GRADIDO_BOOK_GERMAN_RANDOM_ORDER]);
-	EXPECT_FALSE(passphrase.checkIfValid());
+	EXPECT_THROW(Passphrase passphrase("Höh, maß, xDäöas", &CryptoConfig::g_Mnemonic_WordLists[CryptoConfig::MNEMONIC_GRADIDO_BOOK_GERMAN_RANDOM_ORDER]), MnemonicException);
+	//EXPECT_FALSE(passphrase.checkIfValid());
 }
 
 TEST_F(PassphraseTest, wordIndices) {

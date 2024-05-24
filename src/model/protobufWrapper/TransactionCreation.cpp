@@ -2,13 +2,15 @@
 
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/lib/Decay.h"
-#include "Poco/DateTimeFormatter.h"
 
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 #include "gradido_blockchain/model/protobufWrapper/ConfirmedTransaction.h"
 #include "gradido_blockchain/model/IGradidoBlockchain.h"
-#include <sodium.h>
 
+#include <sodium.h>
+#include "date/date.h"
+
+using namespace std::chrono;
 
 namespace model {
 	namespace gradido {
@@ -49,15 +51,7 @@ namespace model {
 			return 0;
 		}
 
-		std::string TransactionCreation::getTargetDateString() const
-		{
-			// proto format is seconds, poco timestamp format is microseconds
-			Poco::Timestamp pocoStamp(mProtoCreation.target_date().seconds() * 1000 * 1000);
-			//Poco::DateTime(pocoStamp);
-			return Poco::DateTimeFormatter::format(pocoStamp, "%d. %b %y");
-		}
-
-		Poco::DateTime TransactionCreation::getTargetDate() const
+		std::chrono::time_point<std::chrono::system_clock> TransactionCreation::getTargetDate() const
 		{
 			return DataTypeConverter::convertFromProtoTimestampSeconds(mProtoCreation.target_date());
 		}
@@ -92,7 +86,7 @@ namespace model {
 			}
 
 			if (blockchain) {
-				if (getCoinGroupId() == blockchain->getGroupId()) {
+				if (getCoinCommunityId() == blockchain->getGroupId()) {
 					throw TransactionValidationInvalidInputException(
 						"coinGroupId shouldn't be set if it is the same as blockchain group alias",
 						"coinGroupId", "string or UUID"
@@ -102,7 +96,6 @@ namespace model {
 
 			if ((level & TRANSACTION_VALIDATION_DATE_RANGE) == TRANSACTION_VALIDATION_DATE_RANGE)
 			{
-				Poco::DateTime targetDate = Poco::Timestamp(mProtoCreation.target_date().seconds() * Poco::Timestamp::resolution());
 				assert(blockchain);
 				assert(parentConfirmedTransaction);
 
@@ -113,8 +106,10 @@ namespace model {
 					throw TransactionValidationInvalidInputException("amount cannot be parsed to a number", "amount", "string");
 				}
 				mpfr_ptr sum;
-				auto confirmedAt = parentConfirmedTransaction->getConfirmedAtAsTimestamp();
+				auto confirmedAt = parentConfirmedTransaction->getConfirmedAtAsTimepoint();
 				auto creationMaxAlgo = getCorrectCreationMaxAlgo(confirmedAt);
+				auto targetDate = DataTypeConverter::convertFromProtoTimestampSeconds(mProtoCreation.target_date());
+				auto ymd = date::year_month_day{ date::floor<date::days>(targetDate) };
 				auto targetCreationMaxAlgo = getCorrectCreationMaxAlgo(targetDate);
 
 				if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo) {
@@ -127,7 +122,13 @@ namespace model {
 				}
 				else if(CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo) {
 					try {
-						sum = calculateCreationSum(pubkey, targetDate.month(), targetDate.year(), parentConfirmedTransaction->getReceivedAsTimestamp(), blockchain);
+						sum = calculateCreationSum(
+							pubkey, 
+							static_cast<uint32_t>(ymd.month()),
+							static_cast<int>(ymd.year()), 
+							parentConfirmedTransaction->getConfirmedAtAsTimepoint(),
+							blockchain
+						);
 					} catch (Poco::NullPointerException& ex) {
 						std::clog << "poco null pointer exception by calling calculateCreationSum" << std::endl;
 						throw;
@@ -152,7 +153,7 @@ namespace model {
 					TransactionBase::amountToString(&alreadyCreatedSum, sum);
 					throw InvalidCreationException(
 						"creation more than 3.000 GDD in 3 month not allowed",
-						targetDate.month(), targetDate.year(),
+						static_cast<uint32_t>(ymd.month()), static_cast<int>(ymd.year()),
 						mProtoCreation.recipient().amount(),
 						alreadyCreatedSum
 					);
@@ -174,7 +175,7 @@ namespace model {
 					TransactionBase::amountToString(&alreadyCreatedSum, sum);
 					throw InvalidCreationException(
 						"creation more than 1.000 GDD per month not allowed",
-						targetDate.month(), targetDate.year(),
+						static_cast<uint32_t>(ymd.month()), static_cast<int>(ymd.year()),
 						mProtoCreation.recipient().amount(),
 						alreadyCreatedSum
 					);
@@ -217,17 +218,18 @@ namespace model {
 
 		bool TransactionCreation::validateTargetDate(uint64_t receivedSeconds) const
 		{
-			auto target_date = Poco::DateTime(DataTypeConverter::convertFromProtoTimestampSeconds(mProtoCreation.target_date()));
-			auto received = Poco::DateTime(Poco::Timestamp(receivedSeconds * Poco::Timestamp::resolution()));
+			auto target_date = date::year_month_day{ date::floor<date::days>(DataTypeConverter::convertFromProtoTimestampSeconds(mProtoCreation.target_date()))};
+			time_point<system_clock> receivedTimePoint{ std::chrono::seconds(receivedSeconds) };
+			auto received = date::year_month_day{ date::floor<date::days>(receivedTimePoint) };
 
-			auto targetDateReceivedDistanceMonth = getTargetDateReceivedDistanceMonth(received);
+			date::month targetDateReceivedDistanceMonth(getTargetDateReceivedDistanceMonth(receivedTimePoint));
 			//  2021-09-01 02:00:00 | 2021-12-04 01:22:14
 			if (target_date.year() == received.year())
 			{
 				if (target_date.month() + targetDateReceivedDistanceMonth < received.month()) {
 					std::string errorMessage =
 						"year is the same, target date month is more than "
-						+ std::to_string(targetDateReceivedDistanceMonth)
+						+ std::to_string(static_cast<unsigned>(targetDateReceivedDistanceMonth))
 						+ " month in past";
 					throw TransactionValidationInvalidInputException(errorMessage.data(), "target_date", "date time");
 				}
@@ -239,17 +241,17 @@ namespace model {
 			{
 				throw TransactionValidationInvalidInputException("target date year is in future", "target_date", "date time");
 			}
-			else if (target_date.year() + 1 < received.year())
+			else if (target_date.year() + date::year(1) < received.year())
 			{
 				throw TransactionValidationInvalidInputException("target date year is in past", "target_date", "date time");
 			}
 			else
 			{
 				// target_date.year +1 == now.year
-				if (target_date.month() + targetDateReceivedDistanceMonth < received.month() + 12) {
+				if (target_date.month() + targetDateReceivedDistanceMonth < received.month() + date::month(12)) {
 					std::string errorMessage =
 						"target date month is more than "
-						+ std::to_string(targetDateReceivedDistanceMonth)
+						+ std::to_string(static_cast<unsigned>(targetDateReceivedDistanceMonth))
 						+ " month in past";
 					throw TransactionValidationInvalidInputException(errorMessage.data(), "target_date", "date time");
 				}
@@ -261,7 +263,7 @@ namespace model {
 			const std::string& address,
 			int month,
 			int year,
-			Poco::DateTime received,
+			time_point<system_clock> received,
 			IGradidoBlockchain* blockchain
 		)
 		{
@@ -270,7 +272,7 @@ namespace model {
 			// received = max
 			// received - 2 month = min
 			auto monthDiff = model::gradido::TransactionCreation::getTargetDateReceivedDistanceMonth(received);
-			Poco::DateTime searchDate = received;
+			auto searchDate = received;
 			auto mm = MemoryManager::getInstance();
 			for (int i = 0; i < monthDiff + 1; i++) {
 				try {
@@ -319,7 +321,7 @@ namespace model {
 
 		mpfr_ptr TransactionCreation::calculateCreationSumLegacy(
 			const std::string& address,
-			Poco::DateTime received,
+			time_point<system_clock> received,
 			IGradidoBlockchain* blockchain
 		)
 		{
@@ -332,7 +334,7 @@ namespace model {
 			// received - 2 month = min
 			//auto monthDiff = model::gradido::TransactionCreation::getTargetDateReceivedDistanceMonth(received);
 			int monthDiff = 2;
-			Poco::DateTime searchDate = received;
+			auto searchDate = received;
 			auto mm = MemoryManager::getInstance();
 			for (int i = 0; i < monthDiff + 1; i++) {
 				auto transactions = blockchain->findTransactions(address, searchDate.month(), searchDate.year());
@@ -428,28 +430,30 @@ namespace model {
 		std::string TransactionCreation::toDebugString() const
 		{
 			std::string result;
-			auto targetDateString = Poco::DateTimeFormatter::format(getTargetDate(), Poco::DateTimeFormat::SORTABLE_FORMAT);
+			auto targetDateString = DataTypeConverter::timePointToString(getTargetDate());
 			result += "creation: " + getAmount() + " GDD, target: " + targetDateString + "\n";
 			result += "to:   " + DataTypeConverter::binToHex(getRecipientPublicKeyString()) + "\n";
 			return std::move(result);
 		}
 
-		int TransactionCreation::getTargetDateReceivedDistanceMonth(Poco::DateTime received)
+		unsigned TransactionCreation::getTargetDateReceivedDistanceMonth(time_point<system_clock> received)
 		{
-			int targetDateReceivedDistanceMonth = 2;
+			date::month targetDateReceivedDistanceMonth(2);
 			// extra rule from the beginning and testing phase to keep transactions from beginning valid
 			// allow 3 month distance between created and target date between this dates
 			// 1585544394 = Mon Mar 30 2020 04:59:54 GMT+0000
 			// 1641681224 = Sat Jan 08 2022 22:33:44 GMT+0000
-			if (received.timestamp() > 1585544394 * Poco::Timestamp::resolution() && received.timestamp() < 1641681224 * Poco::Timestamp::resolution()) {
-				targetDateReceivedDistanceMonth = 3;
+			auto secondsSinceEpoch = time_point_cast<std::chrono::seconds>(received).time_since_epoch().count();
+			if (secondsSinceEpoch > 1585544394 && secondsSinceEpoch < 1641681224) {
+				targetDateReceivedDistanceMonth = date::month(3);
 			}
-			return targetDateReceivedDistanceMonth;
+			return static_cast<unsigned>(targetDateReceivedDistanceMonth);
 		}
 
-		TransactionCreation::CreationMaxAlgoVersion TransactionCreation::getCorrectCreationMaxAlgo(Poco::DateTime date)
+		TransactionCreation::CreationMaxAlgoVersion TransactionCreation::getCorrectCreationMaxAlgo(time_point<system_clock> date)
 		{
-			if (date.timestamp() < 1588503608 * Poco::Timestamp::resolution()) {
+			auto secondsSinceEpoch = time_point_cast<std::chrono::seconds>(date).time_since_epoch().count();
+			if (secondsSinceEpoch < 1588503608) {
 				return CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD;
 			}
 			return CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE;

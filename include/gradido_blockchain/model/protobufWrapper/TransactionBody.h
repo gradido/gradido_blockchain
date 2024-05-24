@@ -10,8 +10,6 @@
 #include "TransactionTransfer.h"
 #include "CommunityRoot.h"
 
-#include "Poco/DateTime.h"
-
 #include "../../lib/MultithreadContainer.h"
 
 #define GRADIDO_PROTOCOL_VERSION "3.3"
@@ -33,19 +31,13 @@ namespace model {
 		public:
 			virtual ~TransactionBody();
 
-			void setCreatedAt(Poco::DateTime createdAt);
-			[[deprecated("Replaced by setCreatedAt, changed name according to Gradido Apollo implementation")]]
-			inline void setCreated(Poco::DateTime created) { setCreatedAt(created); }
+			void setCreatedAt(std::chrono::time_point<std::chrono::system_clock> createdAt);
 
 			uint32_t getCreatedAtSeconds() const;
-			[[deprecated("Replaced by getCreatedAtSeconds, changed name according to Gradido Apollo implementation")]]
-			inline uint32_t getCreatedSeconds() const { return getCreatedAtSeconds(); }
-			Poco::DateTime getCreatedAt() const;
-			[[deprecated("Replaced by getCreatedAt, changed name according to Gradido Apollo implementation")]]
-			inline Poco::DateTime getCreated() const { return getCreatedAt(); }
+			std::chrono::time_point<std::chrono::system_clock> getCreatedAt() const;
 
 			static TransactionBody* load(const std::string& protoMessageBin, std::shared_ptr<ProtobufArenaMemory> arenaMemory);
-			void upgradeToDeferredTransaction(Poco::Timestamp timeout);
+			void upgradeToDeferredTransaction(std::chrono::time_point<std::chrono::system_clock> timeout);
 			static TransactionBody* createGroupFriendsUpdate(bool colorFusion);
 			static TransactionBody* createRegisterAddress(
 				const MemoryBin* userPubkey,
@@ -53,7 +45,7 @@ namespace model {
 				const MemoryBin* nameHash,
 				const MemoryBin* accountPubkey
 			);
-			static TransactionBody* createTransactionCreation(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, Poco::DateTime targetDate);
+			static TransactionBody* createTransactionCreation(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, std::chrono::time_point<std::chrono::system_clock> targetDate);
 			static TransactionBody* createTransactionTransfer(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, const MemoryBin* recipientPubkey);
 			static TransactionBody* createCommunityRoot(const MemoryBin* pubkey, const MemoryBin* gmwPubkey, const MemoryBin* aufPubkey);
 
