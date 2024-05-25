@@ -105,9 +105,12 @@ namespace model {
 			{
 				assert(blockchain);
 				assert(parentConfirmedTransaction);
-				Poco::DateTime confirmedAt = parentConfirmedTransaction->getConfirmedAtAsTimestamp();
-				printf("check Balance\n");
-				auto finalBalanceTransaction = blockchain->calculateAddressBalance(getSenderPublicKeyString(), getCoinGroupId(), confirmedAt, parentConfirmedTransaction->getID() + 1);
+				auto finalBalanceTransaction = blockchain->calculateAddressBalance(
+					getSenderPublicKeyString(), 
+					getCoinGroupId(), 
+					parentConfirmedTransaction->getConfirmedAtAsTimepoint(),
+					parentConfirmedTransaction->getID() + 1
+				);
 				auto finalBalance = MathMemory::create();
 				mpfr_swap(finalBalanceTransaction, finalBalance->getData());
 				mm->releaseMathMemory(finalBalanceTransaction);

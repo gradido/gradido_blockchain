@@ -63,7 +63,7 @@ namespace DataTypeConverter
 		}
 	}
 #endif
-	NumberParseState strToInt(const std::string& input, Poco::UInt64& result)
+	NumberParseState strToInt(const std::string& input, uint64_t& result)
 	{
 		try {
 			result = stoull(input);
@@ -373,7 +373,7 @@ namespace DataTypeConverter
 		return hexString;
 	}
 
-	std::string timePointToString(const time_point<system_clock>& tp) 
+	std::string timePointToString(const Timepoint& tp) 
 	{
 		// Convert time_point to time_t, which represents the calendar time
 		std::time_t time = system_clock::to_time_t(tp);
@@ -409,13 +409,13 @@ namespace DataTypeConverter
 		return fmt.str();
 	}
 	using namespace std::chrono;
-	const time_point<system_clock> convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp)
+	const Timepoint convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp)
 	{
 		// Convert the seconds and nanoseconds to microseconds
 		int64_t microseconds = timestamp.seconds() * static_cast<int64_t>(1e6) + timestamp.nanos() / static_cast<int64_t>(1e3);
 		return system_clock::time_point(std::chrono::microseconds(microseconds));
 	}
-	void convertToProtoTimestamp(const time_point<system_clock> timestamp, proto::gradido::Timestamp* protoTimestamp)
+	void convertToProtoTimestamp(const Timepoint timestamp, proto::gradido::Timestamp* protoTimestamp)
 	{
 		// Convert time_point to duration since epoch
 		auto duration = timestamp.time_since_epoch();
@@ -428,7 +428,7 @@ namespace DataTypeConverter
 		protoTimestamp->set_seconds(seconds.count());
 		protoTimestamp->set_nanos(nanos.count());
 	}
-	time_point<system_clock> convertFromProtoTimestampSeconds(const proto::gradido::TimestampSeconds& timestampSeconds)
+	Timepoint convertFromProtoTimestampSeconds(const proto::gradido::TimestampSeconds& timestampSeconds)
 	{
 		// Convert seconds to a duration
 		auto seconds = std::chrono::seconds{ timestampSeconds.seconds() };
@@ -436,7 +436,7 @@ namespace DataTypeConverter
 		// Create a time_point from the duration
 		return system_clock::time_point{ seconds };
 	}
-	void convertToProtoTimestampSeconds(const std::chrono::time_point<std::chrono::system_clock> timestamp, proto::gradido::TimestampSeconds* protoTimestampSeconds)
+	void convertToProtoTimestampSeconds(const Timepoint timestamp, proto::gradido::TimestampSeconds* protoTimestampSeconds)
 	{
 		// Get the duration since epoch
 		auto duration = timestamp.time_since_epoch();

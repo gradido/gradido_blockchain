@@ -1,3 +1,5 @@
+#include "date/date.h"
+
 #include "gradido_blockchain/model/TransactionEntry.h"
 
 #include "gradido_blockchain/model/protobufWrapper/ConfirmedTransaction.h"
@@ -10,19 +12,19 @@ namespace model {
 		auto transaction = std::make_unique<gradido::ConfirmedTransaction>(mSerializedTransaction.get());
 
 		mTransactionNr = transaction->getID();
-		auto receivedDate = Poco::DateTime(transaction->getReceivedAsTimestamp());
-		mMonth = receivedDate.month();
-		mYear = receivedDate.year();
-		mCommunityId = getCoinGroupId(transaction->getGradidoTransaction()->getTransactionBody());
+		auto receivedDate = date::year_month_day{ date::floor<date::days>(transaction->getConfirmedAtAsTimepoint()) };
+		mMonth = static_cast<unsigned>(receivedDate.month());
+		mYear = static_cast<int>(receivedDate.year());
+		mCommunityId = getCoinCommunityId(transaction->getGradidoTransaction()->getTransactionBody());
 	}
 
 	TransactionEntry::TransactionEntry(gradido::ConfirmedTransaction* transaction)
 		: mTransactionNr(transaction->getID()), mSerializedTransaction(transaction->getSerialized())
 	{
-		auto received = Poco::DateTime(transaction->getReceivedAsTimestamp());
-		mMonth = received.month();
-		mYear = received.year();
-		mCommunityId = getCoinGroupId(transaction->getGradidoTransaction()->getTransactionBody());
+		auto receivedDate = date::year_month_day{ date::floor<date::days>(transaction->getConfirmedAtAsTimepoint()) };
+		mMonth = static_cast<unsigned>(receivedDate.month());
+		mYear = static_cast<int>(receivedDate.year());
+		mCommunityId = getCoinCommunityId(transaction->getGradidoTransaction()->getTransactionBody());
 	}
 
 	TransactionEntry::TransactionEntry(uint64_t transactionNr, uint8_t month, uint16_t year, std::string communityId)

@@ -7,13 +7,14 @@ project(GradidoBlockchain VERSION 2.0.0)
 IF(WIN32)
 	set(CMAKE_CXX_FLAGS         "/MP /EHsc /std:c++17")
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-	set(BUILD_SHARED_LIBS On)
+	set(BUILD_SHARED_LIBS ON)
 ELSE()
 	SET(CMAKE_CXX_FLAGS "-std=c++17" )# -fPIC" )
 ENDIF()
 #add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_definitions(-DNOMINMAX)
 
 set(INSTALL_BINDIR "bin")
 set(INSTALL_PLUGINDIR "bin")
@@ -110,22 +111,19 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(MPFR REQUIRED)
 # using conan on windows
 IF(WIN32)
-  find_package(libsodium REQUIRED)
-	find_package(poco REQUIRED)
+  	find_package(libsodium REQUIRED)
 	find_package(openssl REQUIRED)
 	include_directories(
 		${mpfr_INCLUDE_DIRS}
 		${gmp_INCLUDE_DIRS}
 		${libsodium_INCLUDE_DIR}
 		${OPENSSL_INCLUDE_DIR}
-		${Poco_INCLUDE_DIRS}
 	)
 ELSE()
   find_package(Sodium)
 ENDIF()
 
 ############################## bind source files ###################################
-
 FILE(GLOB TINF "dependencies/tinf/src/*.c" "dependencies/tinf/src/*.h")
 FIlE(GLOB THREADING "include/gradido_blockchain/threading/*.h" "src/threading/*.cpp")
 FILE(GLOB LIB_SRC "include/gradido_blockchain/lib/*.h" "src/lib/*.cpp")
@@ -140,7 +138,7 @@ FILE(GLOB PROTO_GRADIDO "build/proto/gradido/*.cc" "build/proto/gradido/*.h")
 SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS 
 	${TINF} ${MAIN} ${HTTP} ${THREADING}
 	${CRYPTO} ${MODEL} ${MODEL_PROTOBUF_WRAPPER} ${MODEL_IOTA} ${LIB_SRC} 
-	${PROTO_GRADIDO} 
+	${PROTO_GRADIDO}
 )
 
 if(MSVC)
@@ -153,31 +151,28 @@ if(MSVC)
 	source_group("model\\protobufWrapper" FILES ${MODEL_PROTOBUF_WRAPPER})
 	source_group("model\\iota" FILES ${MODEL_IOTA})
 	source_group("model" FILES ${MODEL})
-	source_group("lib" FILES ${LIB_SRC})
+	source_group("lib" FILES ${LIB_SRC})	
 endif()
 
 include_directories(
 	"dependencies" 
 	"dependencies/tinf/src/" 
 	"dependencies/protobuf/src"
+	"dependencies/loguru"
 	"dependencies/rapidjson/include"
+	#"dependencies/rapidyaml/src"
+	#"dependencies/rapidyaml/ext/c4core/src"
+	"dependencies/furi/code/"
+	"dependencies/magic_enum/include"
+	"dependencies/cpp-httplib"
 	"dependencies/date/include"
 	"include"
 	"iota_rust_clib/include"	
-	"dependencies/ed25519_bip32_c_interface/include"
+	"dependencies/ed25519_bip32_c_interface/include"	
 )
+
+
 IF(BUILD_SHARED_LIBS)
-# if static build
-ELSEIF(USE_OWN_POCO)
-  include_directories(
-	"dependencies/poco/NetSSL_OpenSSL/include"
-	"dependencies/poco/Foundation/include"
-	"dependencies/poco/Net/include"
-	"dependencies/poco/Util/include"
-	"dependencies/poco/JSON/include"
-	"dependencies/poco/JWT/include"
-	"dependencies/poco/Crypto/include"
-)
 ELSE()
   include_directories("dependencies/protobuf/third_party/abseil-cpp")
 ENDIF()
@@ -188,17 +183,6 @@ IF(WIN32)
 	message("[GradidoBlockchain] project binary folder: ${GradidoBlockchain_BINARY_DIR}")
 ENDIF()
 
-IF(UNIX AND NOT TARGET Poco::Foundation)
-	SET(ENABLE_MONGODB OFF CACHE BOOL "" FORCE) 
-	SET(ENABLE_DATA_SQLITE OFF CACHE BOOL "" FORCE) 
-	SET(ENABLE_REDIS OFF CACHE BOOL "" FORCE)
-	SET(ENABLE_JWT ON CACHE BOOL "" FORCE)
-	SET(ENABLE_PAGECOMPILER_FILE2PAGE OFF CACHE BOOL "" FORCE)
-	# TODO check if parent has already added poco
-	add_subdirectory("dependencies/poco")
-	set(POCO_LIBS Poco::Foundation Poco::Util Poco::Net Poco::NetSSL Poco::JWT)
-ENDIF()
-
 ############################# add rust and iota.rs ####################
 # https://webdevolutions.blob.core.windows.net/blog/pdf/insider-series-using-rust-code-in-a-cc-project-with-cmake.pdf
 #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/")
@@ -207,15 +191,23 @@ include(CMakeCargo)
 add_subdirectory(iota_rust_clib)
 add_subdirectory(dependencies/ed25519_bip32_c_interface)
 
+############################ small libraries as subproject ###########
+set(LOGURU_INSTALL ON)
+set(BUILD_SHARED_LIBS_TEMP ${BUILD_SHARED_LIBS})
+set(BUILD_SHARED_LIBS OFF)
+add_subdirectory(dependencies/loguru)
+set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP})
+
+
 ######################################################################
 
 add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
 if(BUILD_SHARED_LIBS) 
-	target_link_libraries(GradidoBlockchain libprotobuf)
+	target_link_libraries(GradidoBlockchain libprotobuf loguru::loguru)
 	IF(WIN32) 
-	  target_link_libraries(GradidoBlockchain mpfr::mpfr libsodium::libsodium)
+	  target_link_libraries(GradidoBlockchain mpfr::mpfr libsodium::libsodium openssl::openssl)
 		# needed for windows if linking to a rust lib
 		find_library(IOTA_RUST_C_LIB iota_rust_clib.dll.lib PATHS 
 			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
@@ -238,9 +230,9 @@ if(BUILD_SHARED_LIBS)
 		ELSE()
 			target_link_libraries(GradidoBlockchain ${IOTA_RUST_C_LIB})
 		ENDIF()
-		target_link_libraries(GradidoBlockchain Poco::Poco ws2_32 userenv)
+		target_link_libraries(GradidoBlockchain ws2_32 userenv)
 	ELSE()
-		target_link_libraries(GradidoBlockchain ${POCO_LIBS} iota_rust_clib ed25519_bip32_c_interface ${MPFR_LIBRARIES})
+		target_link_libraries(GradidoBlockchain iota_rust_clib ed25519_bip32_c_interface ${MPFR_LIBRARIES})
 	ENDIF()
 else()
 # static build
@@ -253,6 +245,7 @@ set_target_properties(GradidoBlockchain PROPERTIES
 target_include_directories(
     GradidoBlockchain PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 target_compile_features(GradidoBlockchain PUBLIC cxx_std_17)
+target_compile_definitions(GradidoBlockchain PUBLIC -DRYML_SINGLE_HEADER)
 
 include(GenerateExportHeader)
 generate_export_header(GradidoBlockchain EXPORT_FILE_NAME include/gradido_blockchain/export.h)

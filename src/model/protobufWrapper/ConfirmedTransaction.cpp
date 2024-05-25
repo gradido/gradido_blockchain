@@ -1,3 +1,5 @@
+#include "date/date.h"
+
 #include "gradido_blockchain/model/protobufWrapper/ConfirmedTransaction.h"
 #include "gradido_blockchain/model/protobufWrapper/ProtobufExceptions.h"
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
@@ -12,6 +14,8 @@
 
 #include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h"
+
+
 
 using namespace rapidjson;
 using namespace std::chrono;
@@ -54,7 +58,7 @@ namespace model {
 
 		std::shared_ptr<ConfirmedTransaction> ConfirmedTransaction::create(std::unique_ptr<GradidoTransaction> transaction, uint64_t id, int64_t received, const MemoryBin* messageId)
 		{
-			auto confirmedTransaction = std::make_shared<ConfirmedTransaction>(transaction);
+			std::shared_ptr<ConfirmedTransaction> confirmedTransaction(new ConfirmedTransaction(std::move(transaction)));
 			auto proto = confirmedTransaction->mProtoConfirmedTransaction;
 			proto->set_id(id);
 			proto->mutable_confirmed_at()->set_seconds(received);
@@ -217,7 +221,7 @@ namespace model {
 				if (getID() > 1) {
 					assert(blockchain);
 					auto previousTransaction = blockchain->getTransactionForId(getID() - 1);
-					if (previousTransaction.isNull()) {
+					if (!previousTransaction) {
 						GradidoBlockchainTransactionNotFoundException exception("previous transaction not found");
 						throw exception.setTransactionId(getID() - 1);
 					}
@@ -264,9 +268,7 @@ namespace model {
 			std::string receivedString;
 
 			//yyyy-MM-dd HH:mm:ss
-
-			Poco::DateTime received(Poco::Timestamp(mProtoConfirmedTransaction->confirmed_at().seconds() * Poco::Timestamp::resolution()));
-			receivedString = Poco::DateTimeFormatter::format(received, "%Y-%m-%d %H:%M:%S");
+			receivedString = date::format("%Y-%m-%d %H:%M:%S", DataTypeConverter::convertFromProtoTimestampSeconds(mProtoConfirmedTransaction->confirmed_at()));
 			std::string signatureMapString = mProtoConfirmedTransaction->transaction().sig_map().SerializeAsString();
 
 			auto hash = mm->getMemory(crypto_generichash_BYTES);
@@ -328,14 +330,9 @@ namespace model {
 				return;
 			default: throw GradidoUnknownEnumException("unknown enum", "model::gradido:TransactionType", (int)transactionBody->getTransactionType());
 			}
-			mpfr_ptr finalBalance;
-			try {
-				finalBalance = blockchain->calculateAddressBalance(address, TransactionEntry::getCoinGroupId(transactionBody), getReceivedAsTimestamp(), getID() + 1);
-			}
-			catch (Poco::NullPointerException& ex) {
-				printf("Poco Null Pointer exception by calling calculateAddressBalance\n");
-				throw;
-			}
+			mpfr_ptr finalBalance;			
+			finalBalance = blockchain->calculateAddressBalance(address, TransactionEntry::getCoinCommunityId(transactionBody), getConfirmedAtAsTimepoint(), getID() + 1);
+
 			auto temp = mm->getMathMemory();
 			// add value from this block if it was a transfer or creation transaction
 

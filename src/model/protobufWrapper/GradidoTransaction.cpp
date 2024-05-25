@@ -120,7 +120,7 @@ namespace model {
 
 				auto transactionBody = getTransactionBody();
 				auto mm = MemoryManager::getInstance();
-				Poco::SharedPtr<TransactionEntry> pairTransactionEntry;
+				std::shared_ptr<TransactionEntry> pairTransactionEntry;
 				switch (transactionBody->getCrossGroupType()) {
 				case proto::gradido::TransactionBody_CrossGroupType_LOCAL: break; // no cross grou�
 				case proto::gradido::TransactionBody_CrossGroupType_INBOUND:
@@ -134,7 +134,7 @@ namespace model {
 						auto parentMessageId = getParentMessageId();
 						pairTransactionEntry = otherBlockchain->findByMessageId(parentMessageId, false);
 						mm->releaseMemory(parentMessageId);
-						if (pairTransactionEntry.isNull()) {
+						if (!pairTransactionEntry) {
 							throw TransactionValidationException("pairing transaction not found");
 						}
 						auto pairingConfirmedTransaction = std::make_unique<ConfirmedTransaction>(pairTransactionEntry->getSerializedTransaction());

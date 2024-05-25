@@ -13,14 +13,10 @@ public:
 	using Decimal::Decimal;
 	virtual ~DecayDecimal();
 	
-	virtual void applyDecay(Poco::Timespan duration);
-	inline void applyDecay(Poco::Timestamp startTime, Poco::Timestamp endTime) {
+	virtual void applyDecay(Duration duration);
+	inline void applyDecay(Timepoint startTime, Timepoint endTime) {
 		applyDecay(calculateDecayDurationSeconds(startTime, endTime));
 	}
-	inline void applyDecay(Poco::DateTime startTime, Poco::DateTime endTime) {
-		applyDecay(calculateDecayDurationSeconds(startTime.timestamp(), endTime.timestamp()));
-	}
-
 };
 
 #endif //__GRADIDO_BLOCKCHAIN_LIB_DECAY_DECIMAL_H

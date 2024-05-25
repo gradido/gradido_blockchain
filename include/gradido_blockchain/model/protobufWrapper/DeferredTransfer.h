@@ -4,8 +4,6 @@
 #include "TransactionTransfer.h"
 #include "proto/gradido/gradido_transfer.pb.h"
 
-#include "Poco/Timestamp.h"
-#include "Poco/DateTime.h"
 
 namespace model {
 	namespace gradido {
@@ -21,7 +19,7 @@ namespace model {
 			)const;
 
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
-			std::chrono::time_point<std::chrono::system_clock> getTimeoutAsTimePoint() const;
+			Timepoint getTimeoutAsTimePoint() const;
 			int64_t getTimeoutAt() const;
 
 		protected:

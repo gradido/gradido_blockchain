@@ -1,3 +1,5 @@
+#include "date/date.h"
+
 #include "gradido_blockchain/model/protobufWrapper/TransactionCreation.h"
 
 #include "gradido_blockchain/lib/DataTypeConverter.h"
@@ -8,7 +10,6 @@
 #include "gradido_blockchain/model/IGradidoBlockchain.h"
 
 #include <sodium.h>
-#include "date/date.h"
 
 using namespace std::chrono;
 
@@ -51,7 +52,7 @@ namespace model {
 			return 0;
 		}
 
-		std::chrono::time_point<std::chrono::system_clock> TransactionCreation::getTargetDate() const
+		Timepoint TransactionCreation::getTargetDate() const
 		{
 			return DataTypeConverter::convertFromProtoTimestampSeconds(mProtoCreation.target_date());
 		}
@@ -113,33 +114,23 @@ namespace model {
 				auto targetCreationMaxAlgo = getCorrectCreationMaxAlgo(targetDate);
 
 				if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo) {
-					try {
-						sum = calculateCreationSumLegacy(pubkey, confirmedAt, blockchain);
-					} catch (Poco::NullPointerException& ex) {
-						std::clog << "poco null pointer exception by calling calculateCreationSumLegacy" << std::endl;
-						throw;
-					}
+					sum = calculateCreationSumLegacy(pubkey, confirmedAt, blockchain);
 				}
 				else if(CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo) {
-					try {
-						sum = calculateCreationSum(
-							pubkey, 
-							static_cast<uint32_t>(ymd.month()),
-							static_cast<int>(ymd.year()), 
-							parentConfirmedTransaction->getConfirmedAtAsTimepoint(),
-							blockchain
-						);
-					} catch (Poco::NullPointerException& ex) {
-						std::clog << "poco null pointer exception by calling calculateCreationSum" << std::endl;
-						throw;
-					}
+					sum = calculateCreationSum(
+						pubkey, 
+						static_cast<uint32_t>(ymd.month()),
+						static_cast<int>(ymd.year()), 
+						parentConfirmedTransaction->getConfirmedAtAsTimepoint(),
+						blockchain
+					);
 				}
 				mpfr_add(sum, sum, amount, gDefaultRound);
 
 				auto id = parentConfirmedTransaction->getID();
 				int lastId = 0;
 				auto lastTransaction = blockchain->getLastTransaction();
-				if (!lastTransaction.isNull()) {
+				if (lastTransaction) {
 					lastId = lastTransaction->getID();
 				}
 				if (id <= lastId) {
@@ -219,14 +210,14 @@ namespace model {
 		bool TransactionCreation::validateTargetDate(uint64_t receivedSeconds) const
 		{
 			auto target_date = date::year_month_day{ date::floor<date::days>(DataTypeConverter::convertFromProtoTimestampSeconds(mProtoCreation.target_date()))};
-			time_point<system_clock> receivedTimePoint{ std::chrono::seconds(receivedSeconds) };
+			Timepoint receivedTimePoint{ std::chrono::seconds(receivedSeconds) };
 			auto received = date::year_month_day{ date::floor<date::days>(receivedTimePoint) };
 
-			date::month targetDateReceivedDistanceMonth(getTargetDateReceivedDistanceMonth(receivedTimePoint));
+			auto targetDateReceivedDistanceMonth = getTargetDateReceivedDistanceMonth(receivedTimePoint);
 			//  2021-09-01 02:00:00 | 2021-12-04 01:22:14
 			if (target_date.year() == received.year())
 			{
-				if (target_date.month() + targetDateReceivedDistanceMonth < received.month()) {
+				if (static_cast<unsigned>(target_date.month()) + targetDateReceivedDistanceMonth < static_cast<unsigned>(received.month())) {
 					std::string errorMessage =
 						"year is the same, target date month is more than "
 						+ std::to_string(static_cast<unsigned>(targetDateReceivedDistanceMonth))
@@ -241,14 +232,14 @@ namespace model {
 			{
 				throw TransactionValidationInvalidInputException("target date year is in future", "target_date", "date time");
 			}
-			else if (target_date.year() + date::year(1) < received.year())
+			else if (static_cast<int>(target_date.year()) + 1 < static_cast<int>(received.year()))
 			{
 				throw TransactionValidationInvalidInputException("target date year is in past", "target_date", "date time");
 			}
 			else
 			{
 				// target_date.year +1 == now.year
-				if (target_date.month() + targetDateReceivedDistanceMonth < received.month() + date::month(12)) {
+				if (static_cast<unsigned>(target_date.month()) + targetDateReceivedDistanceMonth < static_cast<unsigned>(received.month()) + 12) {
 					std::string errorMessage =
 						"target date month is more than "
 						+ std::to_string(static_cast<unsigned>(targetDateReceivedDistanceMonth))
@@ -263,56 +254,46 @@ namespace model {
 			const std::string& address,
 			int month,
 			int year,
-			time_point<system_clock> received,
+			Timepoint received,
 			IGradidoBlockchain* blockchain
 		)
 		{
 			assert(blockchain);
-			std::vector<Poco::SharedPtr<model::TransactionEntry>> allTransactions;
+			std::vector<std::shared_ptr<model::TransactionEntry>> allTransactions;
 			// received = max
 			// received - 2 month = min
 			auto monthDiff = model::gradido::TransactionCreation::getTargetDateReceivedDistanceMonth(received);
-			auto searchDate = received;
+			auto searchDate = date::year_month_day{ date::floor<date::days>(received) };
 			auto mm = MemoryManager::getInstance();
-			for (int i = 0; i < monthDiff + 1; i++) {
-				try {
-					auto transactions = blockchain->findTransactions(address, searchDate.month(), searchDate.year());
-					if(transactions.size()) {
-					// https://stackoverflow.com/questions/201718/concatenating-two-stdvectors
-						allTransactions.insert(
-							allTransactions.end(),
-							std::make_move_iterator(transactions.begin()),
-							std::make_move_iterator(transactions.end())
-						);
-					}
-					searchDate -= Poco::Timespan(Poco::DateTime::daysOfMonth(searchDate.year(), searchDate.month()), 0, 0, 0, 0);
-				} catch(Poco::NullPointerException& ex) {
-					std::clog << "exception in calculateCreationSum by calling findTransactions" << std::endl;
-					throw;
+			for (int i = 0; i < monthDiff + 1; i++) 
+			{	
+				auto transactions = blockchain->findTransactions(address, static_cast<unsigned>(searchDate.month()), static_cast<int>(searchDate.year()));
+				if(transactions.size()) {
+				// https://stackoverflow.com/questions/201718/concatenating-two-stdvectors
+					allTransactions.insert(
+						allTransactions.end(),
+						std::make_move_iterator(transactions.begin()),
+						std::make_move_iterator(transactions.end())
+					);
 				}
+				searchDate.month()--;
 			}
 			//printf("[Group::calculateCreationSum] from group: %s\n", mGroupAlias.data());
 			auto amount = mm->getMathMemory();
 			auto sum = mm->getMathMemory();
-			for (auto it = allTransactions.begin(); it != allTransactions.end(); it++) {
-				try {
-					auto confirmedTransaction = std::make_unique<model::gradido::ConfirmedTransaction>((*it)->getSerializedTransaction());
-					auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
-					if (body->getTransactionType() == model::gradido::TRANSACTION_CREATION) {
-						auto creation = body->getCreationTransaction();
-						auto targetDate = creation->getTargetDate();
-						if (targetDate.month() != month || targetDate.year() != year) {
-							continue;
-						}
-						//printf("added from transaction: %d \n", gradidoBlock->getID());
-						mpfr_set_str(amount, creation->getAmount().data(), 10, gDefaultRound);
-						mpfr_add(sum, sum, amount, gDefaultRound);
+			for (auto it = allTransactions.begin(); it != allTransactions.end(); it++) 
+			{
+				auto confirmedTransaction = std::make_unique<model::gradido::ConfirmedTransaction>((*it)->getSerializedTransaction());
+				auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
+				if (body->getTransactionType() == model::gradido::TRANSACTION_CREATION) {
+					auto creation = body->getCreationTransaction();
+					auto targetDate = date::year_month_day{ date::floor<date::days>(creation->getTargetDate()) };
+					if (targetDate.month() != date::month(month) || targetDate.year() != date::year(year)) {
+						continue;
 					}
-				} catch(Poco::NullPointerException& ex) {
-					std::clog << "poco null pointer exception in calculateCreationSum" 
-							  << ", serialized size: " << (*it)->getSerializedTransaction()->size()
-					          << std::endl;
-					throw;
+					//printf("added from transaction: %d \n", gradidoBlock->getID());
+					mpfr_set_str(amount, creation->getAmount().data(), 10, gDefaultRound);
+					mpfr_add(sum, sum, amount, gDefaultRound);
 				}
 			}
 			mm->releaseMathMemory(amount);
@@ -321,7 +302,7 @@ namespace model {
 
 		mpfr_ptr TransactionCreation::calculateCreationSumLegacy(
 			const std::string& address,
-			time_point<system_clock> received,
+			Timepoint received,
 			IGradidoBlockchain* blockchain
 		)
 		{
@@ -329,22 +310,22 @@ namespace model {
 			// check that is is indeed an old transaction from before Sun May 03 2020 11:00:08 GMT+0000
 			auto algo = getCorrectCreationMaxAlgo(received);
 			assert(CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == algo);
-			std::vector<Poco::SharedPtr<model::TransactionEntry>> allTransactions;
+			std::vector<std::shared_ptr<model::TransactionEntry>> allTransactions;
 			// received = max
 			// received - 2 month = min
 			//auto monthDiff = model::gradido::TransactionCreation::getTargetDateReceivedDistanceMonth(received);
 			int monthDiff = 2;
-			auto searchDate = received;
+			auto searchDate = date::year_month_day{ date::floor<date::days>(received) };
 			auto mm = MemoryManager::getInstance();
 			for (int i = 0; i < monthDiff + 1; i++) {
-				auto transactions = blockchain->findTransactions(address, searchDate.month(), searchDate.year());
+				auto transactions = blockchain->findTransactions(address, static_cast<unsigned>(searchDate.month()), static_cast<int>(searchDate.year()));
 				// https://stackoverflow.com/questions/201718/concatenating-two-stdvectors
 				allTransactions.insert(
 					allTransactions.end(),
 					std::make_move_iterator(transactions.begin()),
 					std::make_move_iterator(transactions.end())
 				);
-				searchDate -= Poco::Timespan(Poco::DateTime::daysOfMonth(searchDate.year(), searchDate.month()), 0, 0, 0, 0);
+				searchDate.month()--;
 			}
 			//printf("[Group::calculateCreationSum] from group: %s\n", mGroupAlias.data());
 			auto amount = mm->getMathMemory();
@@ -436,7 +417,7 @@ namespace model {
 			return std::move(result);
 		}
 
-		unsigned TransactionCreation::getTargetDateReceivedDistanceMonth(time_point<system_clock> received)
+		unsigned TransactionCreation::getTargetDateReceivedDistanceMonth(Timepoint received)
 		{
 			date::month targetDateReceivedDistanceMonth(2);
 			// extra rule from the beginning and testing phase to keep transactions from beginning valid
@@ -450,7 +431,7 @@ namespace model {
 			return static_cast<unsigned>(targetDateReceivedDistanceMonth);
 		}
 
-		TransactionCreation::CreationMaxAlgoVersion TransactionCreation::getCorrectCreationMaxAlgo(time_point<system_clock> date)
+		TransactionCreation::CreationMaxAlgoVersion TransactionCreation::getCorrectCreationMaxAlgo(Timepoint date)
 		{
 			auto secondsSinceEpoch = time_point_cast<std::chrono::seconds>(date).time_since_epoch().count();
 			if (secondsSinceEpoch < 1588503608) {

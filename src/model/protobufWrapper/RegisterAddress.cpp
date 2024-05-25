@@ -42,7 +42,7 @@ namespace model {
 			if ((level & TRANSACTION_VALIDATION_CONNECTED_GROUP) == TRANSACTION_VALIDATION_CONNECTED_GROUP) {
 				assert(blockchain);
 
-				Poco::SharedPtr<model::TransactionEntry> lastTransaction;
+				std::shared_ptr<model::TransactionEntry> lastTransaction;
 
 				std::string address;
 
@@ -57,7 +57,7 @@ namespace model {
 					break;
 				}
 				lastTransaction = blockchain->findLastTransactionForAddress(address);
-				if (!lastTransaction.isNull()) {
+				if (lastTransaction) {
 					throw AddressAlreadyExistException("cannot register address because it already exist", DataTypeConverter::binToHex(address), getAddressType());
 				}
 

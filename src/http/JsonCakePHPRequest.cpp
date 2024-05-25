@@ -1,11 +1,6 @@
 #include "gradido_blockchain/http/JsonCakePHPRequest.h"
-
-#include "Poco/Net/HTTPRequest.h"
-#include "Poco/Net/HTTPResponse.h"
-#include "Poco/DateTimeFormatter.h"
-
-#include "gradido_blockchain/http/JsonRequestHandler.h"
 #include "gradido_blockchain/http/RequestExceptions.h"
+#include "gradido_blockchain/lib/RapidjsonHelper.h"
 
 #include "rapidjson/writer.h"
 using namespace rapidjson;
@@ -31,31 +26,38 @@ bool JsonCakePHPRequest::request(const char* methodName)
 	if (!resultJson.HasMember("state") && resultJson.HasMember("message")) {
 		// than we have maybe get an cakephp exception as result
 		std::string message;
-		JsonRequestHandler::getStringParameter(resultJson, "message", message);
-		throw RequestResponseCakePHPException(methodName, mRequestUri, message)
+		if (resultJson["message"].IsString()) {
+			message = resultJson["message"].GetString();
+		}
+		throw RequestResponseCakePHPException(methodName, mUrl, message)
 			.setDetails(resultJson);
 	}
 	else {
-		std::string stateString;
-		JsonRequestHandler::getStringParameter(resultJson, "state", stateString);
+		rapidjson_helper::checkMember(resultJson, "state", rapidjson_helper::MemberType::STRING, "cakePHP Response");
+		std::string stateString = resultJson["state"].GetString();
+
 		if (stateString == "error") {
 			std::string msg;
-			JsonRequestHandler::getStringParameter(resultJson, "msg", msg);
-			RequestResponseErrorException exception("php server return error", mRequestUri, msg);
-			std::string details;
-			JsonRequestHandler::getStringParameter(resultJson, "details", details);
-			if (!details.size()) {
-				Value::ConstMemberIterator itr = resultJson.FindMember("details");
-				if (itr != resultJson.MemberEnd()) {
-					StringBuffer buffer;
-					Writer<StringBuffer> writer(buffer);
-					const auto& obj = itr->value;
-					obj.Accept(writer);
-					details = buffer.GetString();
-				}
+			if (resultJson.HasMember("msg") && resultJson["msg"].IsString()) {
+				msg = resultJson["msg"].GetString();
 			}
-			if (details.size()) {
-				exception.setDetails(details);
+			
+			RequestResponseErrorException exception("php server return error", mUrl, msg);
+			std::string details;
+			if (resultJson.HasMember("details")) {
+				if (resultJson["details"].IsString()) {
+					exception.setDetails(details);
+				}
+				else {
+					Value::ConstMemberIterator itr = resultJson.FindMember("details");
+					if (itr != resultJson.MemberEnd()) {
+						StringBuffer buffer;
+						Writer<StringBuffer> writer(buffer);
+						const auto& obj = itr->value;
+						obj.Accept(writer);
+						details = buffer.GetString();
+					}
+				}
 			}
 			throw exception;
 		}

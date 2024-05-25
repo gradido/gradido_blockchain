@@ -3,8 +3,6 @@
 
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "JsonRPCRequest.h"
-#include "Poco/URI.h"
-#include "Poco/Exception.h"
 
 #include "rapidjson/error/error.h"
 #include "rapidjson/document.h"
@@ -13,24 +11,24 @@ class GRADIDOBLOCKCHAIN_EXPORT RequestException : public GradidoBlockchainExcept
 {
 public:
 	explicit RequestException(const char* what, const char* host, int port) noexcept;
-	explicit RequestException(const char* what, const Poco::URI& uri) noexcept;
+	explicit RequestException(const char* what, const std::string& uri) noexcept;
 	std::string getFullString() const;
 
 protected:
-	Poco::URI mUri;
+	std::string mUri;
 };
 
 class GRADIDOBLOCKCHAIN_EXPORT RequestEmptyResponseException : public RequestException
 {
 public: 
 	explicit RequestEmptyResponseException(const char* what, const char* host, int port) noexcept;
-	explicit RequestEmptyResponseException(const char* what, const Poco::URI& uri) noexcept;
+	explicit RequestEmptyResponseException(const char* what, const std::string& uri) noexcept;
 };
 
 class GRADIDOBLOCKCHAIN_EXPORT RequestResponseInvalidJsonException : public RequestException
 {
 public:
-	explicit RequestResponseInvalidJsonException(const char* what, const Poco::URI& uri, const std::string& rawText) noexcept;
+	explicit RequestResponseInvalidJsonException(const char* what, const std::string& uri, const std::string& rawText) noexcept;
 	inline const std::string& getRawText() const { return mRawText; }
 
 	//! write raw text to file with file name: <prefix><what><ending>
@@ -46,7 +44,7 @@ protected:
 class GRADIDOBLOCKCHAIN_EXPORT RequestResponseErrorException : public RequestException
 {
 public:
-	explicit RequestResponseErrorException(const char* what, const Poco::URI& uri, const std::string& msg) noexcept;
+	explicit RequestResponseErrorException(const char* what, const std::string& uri, const std::string& msg) noexcept;
 
 	rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 	RequestResponseErrorException& setDetails(const std::string& details);
@@ -58,10 +56,23 @@ protected:
 	std::string mErrorDetails;
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT HttplibRequestException : public RequestException
+{
+public:
+	explicit HttplibRequestException(const char* what, const std::string& uri, int status, const char* error) noexcept;
+	virtual ~HttplibRequestException() {};
+	std::string getFullString() const;
+
+protected:
+	int mStatus;
+	std::string mError;
+	
+};
+
 class GRADIDOBLOCKCHAIN_EXPORT RequestResponseCakePHPException : public RequestResponseErrorException
 {
 public:
-	explicit RequestResponseCakePHPException(const char* what, const Poco::URI& uri, const std::string& msg) noexcept;
+	explicit RequestResponseCakePHPException(const char* what, const std::string& uri, const std::string& msg) noexcept;
 
 	RequestResponseErrorException& setDetails(const rapidjson::Document& responseJson);
 protected:
@@ -75,15 +86,6 @@ public:
 	std::string getFullString() const;
 };
 
-class GRADIDOBLOCKCHAIN_EXPORT PocoNetException : public GradidoBlockchainException
-{
-public:
-	explicit PocoNetException(Poco::Exception& ex, const Poco::URI& uri, const char* query) noexcept;
-	std::string getFullString() const;
-protected:
-	std::string mQuery;
-	Poco::URI   mRequestUri;
-};
 
 class GRADIDOBLOCKCHAIN_EXPORT JsonRPCException : public GradidoBlockchainException
 {

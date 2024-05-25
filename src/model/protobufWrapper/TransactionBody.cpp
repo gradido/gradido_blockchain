@@ -39,7 +39,7 @@ namespace model {
 			unlock();
 		}
 
-		void TransactionBody::setCreatedAt(time_point<system_clock> createdAt)
+		void TransactionBody::setCreatedAt(Timepoint createdAt)
 		{
 			LOCK_RECURSIVE;
 			auto protoCreated = mProtoTransactionBody->mutable_created_at();
@@ -51,7 +51,7 @@ namespace model {
 			return mProtoTransactionBody->created_at().seconds();
 		}
 
-		std::chrono::time_point<std::chrono::system_clock> TransactionBody::getCreatedAt() const
+		Timepoint TransactionBody::getCreatedAt() const
 		{
 			return DataTypeConverter::convertFromProtoTimestamp(mProtoTransactionBody->created_at());
 		}
@@ -68,7 +68,7 @@ namespace model {
 			return obj;
 		}
 
-		void TransactionBody::upgradeToDeferredTransaction(std::chrono::time_point<std::chrono::system_clock> timeout)
+		void TransactionBody::upgradeToDeferredTransaction(Timepoint timeout)
 		{
 			LOCK_RECURSIVE;
 			assert(mProtoTransactionBody->has_transfer());
@@ -115,7 +115,7 @@ namespace model {
 			return obj;
 		}
 
-		TransactionBody* TransactionBody::createTransactionCreation(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, std::chrono::time_point<std::chrono::system_clock> targetDate)
+		TransactionBody* TransactionBody::createTransactionCreation(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, Timepoint targetDate)
 		{
 			auto obj = new TransactionBody;
 			auto creation = obj->mProtoTransactionBody->mutable_creation();
@@ -190,7 +190,7 @@ namespace model {
 
 		std::string TransactionBody::getGroupId(const IGradidoBlockchain* blockchain) const
 		{
-			std::string color = TransactionEntry::getCoinGroupId(this);
+			std::string color = TransactionEntry::getCoinCommunityId(this);
 			if (!color.size()) {
 				return blockchain->getGroupId();
 			}

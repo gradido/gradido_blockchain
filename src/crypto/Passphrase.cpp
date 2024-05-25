@@ -17,7 +17,7 @@ static std::vector<std::pair<int, std::string>> g_specialChars = {
 Passphrase::Passphrase(const std::string& passphrase, const Mnemonic* wordSource)
 	: mPassphraseString(filter(passphrase)), mWordSource(wordSource)
 {
-	memset(mWordIndices, 0, PHRASE_WORD_COUNT * sizeof(Poco::UInt16));
+	memset(mWordIndices, 0, PHRASE_WORD_COUNT * sizeof(uint16_t));
 	getWordIndices();
 }
 
@@ -157,7 +157,7 @@ std::shared_ptr<Passphrase> Passphrase::create(const uint16_t wordIndices[PHRASE
 std::shared_ptr<Passphrase> Passphrase::generate(const Mnemonic* wordSource)
 {
 	auto mm = MemoryManager::getInstance();
-	auto word_indices = mm->getMemory(PHRASE_WORD_COUNT * sizeof(Poco::UInt16));
+	auto word_indices = mm->getMemory(PHRASE_WORD_COUNT * sizeof(uint16_t));
 	uint16_t* word_indices_p = (uint16_t*)word_indices->data();
 
 	for (int i = 0; i < PHRASE_WORD_COUNT; i++) {
@@ -219,7 +219,7 @@ bool Passphrase::createWordIndices()
 	return true;
 }
 
-const Poco::UInt16* Passphrase::getWordIndices()
+const uint16_t* Passphrase::getWordIndices()
 {
 	if (!(mWordIndices[0] | mWordIndices[1] | mWordIndices[2] | mWordIndices[3])) {
 		if (createWordIndices()) return mWordIndices;
@@ -227,7 +227,7 @@ const Poco::UInt16* Passphrase::getWordIndices()
 	return mWordIndices;
 }
 
-const Poco::UInt16* Passphrase::getWordIndices() const
+const uint16_t* Passphrase::getWordIndices() const
 {
 	return mWordIndices;
 }

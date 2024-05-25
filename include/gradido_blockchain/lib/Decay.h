@@ -2,7 +2,7 @@
 #define _GRADIDO_MATH_H
 
 #include <mpfr.h>
-#include "Poco/DateTime.h"
+#include "gradido_blockchain/types.h"
 
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
@@ -10,7 +10,7 @@
 GRADIDOBLOCKCHAIN_EXPORT extern mpfr_t gDecayFactor356Days;
 GRADIDOBLOCKCHAIN_EXPORT extern mpfr_t gDecayFactor366Days;
 GRADIDOBLOCKCHAIN_EXPORT extern mpfr_t gDecayFactorGregorianCalender;
-GRADIDOBLOCKCHAIN_EXPORT extern Poco::Timestamp DECAY_START_TIME;
+GRADIDOBLOCKCHAIN_EXPORT extern Timepoint DECAY_START_TIME;
 GRADIDOBLOCKCHAIN_EXPORT extern const mpfr_rnd_t gDefaultRound;
 GRADIDOBLOCKCHAIN_EXPORT void initDefaultDecayFactors();
 GRADIDOBLOCKCHAIN_EXPORT void unloadDefaultDecayFactors();
@@ -59,20 +59,15 @@ GRADIDOBLOCKCHAIN_EXPORT void calculateDecayFactor(mpfr_ptr decay_factor, int da
  */
 GRADIDOBLOCKCHAIN_EXPORT void calculateDecayFactorForDuration(
 	mpfr_ptr decay_for_duration, mpfr_ptr decay_factor,
-	Poco::Timestamp startTime, Poco::Timestamp endTime
+	Timepoint startTime, Timepoint endTime
 );
 
 GRADIDOBLOCKCHAIN_EXPORT void calculateDecayFactorForDuration(
 	mpfr_ptr decay_for_duration, mpfr_ptr decay_factor,
-	unsigned long durationSeconds
+	Duration duration
 );
 
-GRADIDOBLOCKCHAIN_EXPORT Poco::Timespan calculateDecayDurationSeconds(Poco::Timestamp startTime, Poco::Timestamp endTime);
-
-inline void calculateDecayFactorForDuration(
-	mpfr_ptr decay_for_duration, mpfr_ptr decay_factor,
-	Poco::DateTime startTime, Poco::DateTime endTime
-) { calculateDecayFactorForDuration(decay_for_duration, decay_factor, startTime.timestamp(), endTime.timestamp());}
+GRADIDOBLOCKCHAIN_EXPORT Duration calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime);
 
 //! \param decay_for_duration decay factor for specific duration, taken from ::calculateDecayFactorForDuration
 //! \param gradido gradido decimal, contain updated value after function call

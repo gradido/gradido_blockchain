@@ -10,6 +10,8 @@
 
 #include "JsonRequest.h"
 
+#include <vector>
+
 #ifndef __GRADIDO_LOGIN_SERVER_LIB_JSON_RPC_REQUEST_
 #define __GRADIDO_LOGIN_SERVER_LIB_JSON_RPC_REQUEST_
 
@@ -40,7 +42,7 @@ class GRADIDOBLOCKCHAIN_EXPORT JsonRPCRequest : public JsonRequest
 {
 public:
 	JsonRPCRequest(const std::string& serverHost, int serverPort);
-	JsonRPCRequest(const Poco::URI& serverHost);
+	JsonRPCRequest(const std::string& uri);
 	~JsonRPCRequest();
 
 	rapidjson::Document request(const char* methodName, rapidjson::Value& params);

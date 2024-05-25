@@ -1,36 +1,14 @@
 
 #include "gradido_blockchain/http/ServerConfig.h"
 
-#include "Poco/Net/SSLManager.h"
-#include "Poco/Net/KeyConsoleHandler.h"
-#include "Poco/Net/RejectCertificateHandler.h"
-#include "Poco/Net/DNS.h"
-#include "Poco/SharedPtr.h"
-
-using Poco::Net::SSLManager;
-using Poco::Net::Context;
-using Poco::Net::KeyConsoleHandler;
-using Poco::Net::PrivateKeyPassphraseHandler;
-using Poco::Net::InvalidCertificateHandler;
-using Poco::Net::RejectCertificateHandler;
-using Poco::SharedPtr;
-
 namespace ServerConfig {
-	Context::Ptr g_SSL_Client_Context = nullptr;
 	AllowUnsecure g_AllowUnsecureFlags = NOT_UNSECURE;
 	IotaRequest* g_IotaRequestHandler = nullptr;
 	bool		 g_IotaLocalPow = true;
-
+	/*
 	bool initSSLClientContext(const char* cacertPath)
 	{
 		SharedPtr<InvalidCertificateHandler> pCert = new RejectCertificateHandler(false); // reject invalid certificates
-		/*
-		Context(Usage usage,
-		const std::string& certificateNameOrPath,
-		VerificationMode verMode = VERIFY_RELAXED,
-		int options = OPT_DEFAULTS,
-		const std::string& certificateStoreName = CERT_STORE_MY);
-		*/
 		try {
 #ifdef POCO_NETSSL_WIN
 			g_SSL_Client_Context = new Context(Context::CLIENT_USE, cacertPath, Context::VERIFY_RELAXED, Context::OPT_DEFAULTS);
@@ -48,8 +26,8 @@ namespace ServerConfig {
 
 		return true;
 	}
-
-	bool readUnsecureFlags(const Poco::Util::LayeredConfiguration& cfg)
+	*/
+	bool readUnsecureFlags(const MapEnvironmentToConfig& cfg)
 	{
 		// unsecure flags
 		//g_AllowUnsecureFlags
@@ -68,7 +46,7 @@ namespace ServerConfig {
 		return true;
 	}
 
-	bool initIota(const Poco::Util::LayeredConfiguration& cfg)
+	bool initIota(const MapEnvironmentToConfig& cfg)
 	{
 		std::string iota_host = cfg.getString("iota.host", "api.lb-0.h.chrysalis-devnet.iota.cafe");
 		int iota_port = cfg.getInt("iota.port", 443);

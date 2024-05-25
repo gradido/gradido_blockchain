@@ -3,9 +3,7 @@
 
 #include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
-
-#include "Poco/Timespan.h"
-#include "Poco/Nullable.h"
+#include "gradido_blockchain/types.h"
 
 #include "proto/gradido/basic_types.pb.h"
 
@@ -14,7 +12,6 @@
 #include "rapidjson/document.h"
 
 #include <string>
-#include <chrono>
 
 namespace DataTypeConverter {
 
@@ -30,7 +27,7 @@ namespace DataTypeConverter {
 #ifdef __linux__
 	GRADIDOBLOCKCHAIN_EXPORT NumberParseState strToInt(const std::string& input, unsigned long long& result);
 #endif
-	GRADIDOBLOCKCHAIN_EXPORT NumberParseState strToInt(const std::string& input, Poco::UInt64& result);
+	GRADIDOBLOCKCHAIN_EXPORT NumberParseState strToInt(const std::string& input, uint64_t& result);
 	GRADIDOBLOCKCHAIN_EXPORT uint64_t strToInt(const std::string& input);
 	GRADIDOBLOCKCHAIN_EXPORT NumberParseState strToDouble(const std::string& input, double& result);
 
@@ -65,12 +62,12 @@ namespace DataTypeConverter {
 	GRADIDOBLOCKCHAIN_EXPORT const char* numberParseStateToString(NumberParseState state);
 
 	
-	GRADIDOBLOCKCHAIN_EXPORT std::string timePointToString(const std::chrono::time_point<std::chrono::system_clock>& tp);
+	GRADIDOBLOCKCHAIN_EXPORT std::string timePointToString(const Timepoint& tp);
 	GRADIDOBLOCKCHAIN_EXPORT std::string timespanToString(const std::chrono::seconds timespan);
-	GRADIDOBLOCKCHAIN_EXPORT const std::chrono::time_point<std::chrono::system_clock> convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp);
-	GRADIDOBLOCKCHAIN_EXPORT void convertToProtoTimestamp(const std::chrono::time_point<std::chrono::system_clock> timestamp, proto::gradido::Timestamp* protoTimestamp);
-	GRADIDOBLOCKCHAIN_EXPORT std::chrono::time_point<std::chrono::system_clock> convertFromProtoTimestampSeconds(const proto::gradido::TimestampSeconds& timestampSeconds);
-	GRADIDOBLOCKCHAIN_EXPORT void convertToProtoTimestampSeconds(const std::chrono::time_point<std::chrono::system_clock> pocoTimestamp, proto::gradido::TimestampSeconds* protoTimestampSeconds);
+	GRADIDOBLOCKCHAIN_EXPORT const Timepoint convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp);
+	GRADIDOBLOCKCHAIN_EXPORT void convertToProtoTimestamp(const Timepoint timestamp, proto::gradido::Timestamp* protoTimestamp);
+	GRADIDOBLOCKCHAIN_EXPORT Timepoint convertFromProtoTimestampSeconds(const proto::gradido::TimestampSeconds& timestampSeconds);
+	GRADIDOBLOCKCHAIN_EXPORT void convertToProtoTimestampSeconds(const Timepoint pocoTimestamp, proto::gradido::TimestampSeconds* protoTimestampSeconds);
 
 	//! \brief go through json object and replace every string entry in base64 format into hex format
 	//! \return count of replaced strings

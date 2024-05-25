@@ -40,13 +40,13 @@ namespace model {
 				const std::string& address,
 				int month,
 				int year, 
-				std::chrono::time_point<std::chrono::system_clock> received,
+				Timepoint received,
 				IGradidoBlockchain* blockchain
 			);
 			// use only for transactions before Sun May 03 2020 11:00:08 GMT+0000!
 			static mpfr_ptr calculateCreationSumLegacy(
 				const std::string& address,
-				std::chrono::time_point<std::chrono::system_clock> received,
+				Timepoint received,
 				IGradidoBlockchain* blockchain
 			);
 
@@ -59,18 +59,18 @@ namespace model {
 			MemoryBin* getRecipientPublicKey() const;
 			const std::string& getRecipientPublicKeyString() const;
 
-			std::chrono::time_point<std::chrono::system_clock> getTargetDate() const;
+			Timepoint getTargetDate() const;
 
 			std::string toDebugString() const;
 
-			static unsigned getTargetDateReceivedDistanceMonth(std::chrono::time_point<std::chrono::system_clock> received);
+			static unsigned getTargetDateReceivedDistanceMonth(Timepoint received);
 
 			enum class CreationMaxAlgoVersion : short
 			{
 				v01_THREE_MONTHS_3000_GDD,
 				v02_ONE_MONTH_1000_GDD_TARGET_DATE
 			};
-			static CreationMaxAlgoVersion getCorrectCreationMaxAlgo(std::chrono::time_point<std::chrono::system_clock> date);
+			static CreationMaxAlgoVersion getCorrectCreationMaxAlgo(Timepoint date);
 		protected:
 			const proto::gradido::GradidoCreation& mProtoCreation;
 		};

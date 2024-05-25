@@ -14,7 +14,7 @@
 
 void PassphraseTest::SetUp()
 {
-	Poco::UInt16 wordIndices1[] = {
+	uint16_t wordIndices1[] = {
 		157, 1629, 1619, 1100, 2032, 1185, 1767, 1787, 1325, 963, 1906, 680, 1127, 252, 1547, 853, 414, 1569, 1767, 990, 755, 1593, 431, 722
 	};
 	std::string passphrases1[] = {
@@ -30,7 +30,7 @@ void PassphraseTest::SetUp()
 		));
 
 
-	Poco::UInt16 wordIndices2[] = {
+	uint16_t wordIndices2[] = {
 		742, 837, 269, 1067, 310, 1169, 1272, 365, 44, 619, 719, 108, 1750, 464, 1607, 663, 815, 343, 1784, 85, 510, 1809, 66, 1559
 	};
 	std::string passphrases2[] = {
@@ -46,7 +46,7 @@ void PassphraseTest::SetUp()
 	));
 
 
-	Poco::UInt16 wordIndices3[] = {
+	uint16_t wordIndices3[] = {
 		1412, 777, 1270, 905, 673, 670, 1780, 143, 546, 452, 505, 977, 1616, 916, 1635, 1318, 364, 1229, 1078, 1850, 514, 361, 990, 632
 	};
 	std::string passphrases3[] = {
@@ -130,7 +130,7 @@ TEST_F(PassphraseTest, wordIndices) {
 			Passphrase passphrase(testDataSet.passphrases[type], &CryptoConfig::g_Mnemonic_WordLists[type]);
 			ASSERT_TRUE(passphrase.checkIfValid());
 			auto wordIndices = passphrase.getWordIndices();
-			EXPECT_EQ(memcmp(wordIndices, testDataSet.wordIndices, PHRASE_WORD_COUNT * sizeof(Poco::UInt16)), 0);
+			EXPECT_EQ(memcmp(wordIndices, testDataSet.wordIndices, PHRASE_WORD_COUNT * sizeof(uint16_t)), 0);
 		}
 	}
 }

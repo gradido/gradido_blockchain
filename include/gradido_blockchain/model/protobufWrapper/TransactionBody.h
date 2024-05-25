@@ -31,13 +31,13 @@ namespace model {
 		public:
 			virtual ~TransactionBody();
 
-			void setCreatedAt(std::chrono::time_point<std::chrono::system_clock> createdAt);
+			void setCreatedAt(Timepoint createdAt);
 
 			uint32_t getCreatedAtSeconds() const;
-			std::chrono::time_point<std::chrono::system_clock> getCreatedAt() const;
+			Timepoint getCreatedAt() const;
 
 			static TransactionBody* load(const std::string& protoMessageBin, std::shared_ptr<ProtobufArenaMemory> arenaMemory);
-			void upgradeToDeferredTransaction(std::chrono::time_point<std::chrono::system_clock> timeout);
+			void upgradeToDeferredTransaction(Timepoint timeout);
 			static TransactionBody* createGroupFriendsUpdate(bool colorFusion);
 			static TransactionBody* createRegisterAddress(
 				const MemoryBin* userPubkey,
@@ -45,7 +45,7 @@ namespace model {
 				const MemoryBin* nameHash,
 				const MemoryBin* accountPubkey
 			);
-			static TransactionBody* createTransactionCreation(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, std::chrono::time_point<std::chrono::system_clock> targetDate);
+			static TransactionBody* createTransactionCreation(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, Timepoint targetDate);
 			static TransactionBody* createTransactionTransfer(std::unique_ptr<proto::gradido::TransferAmount> transferAmount, const MemoryBin* recipientPubkey);
 			static TransactionBody* createCommunityRoot(const MemoryBin* pubkey, const MemoryBin* gmwPubkey, const MemoryBin* aufPubkey);
 

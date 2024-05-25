@@ -15,6 +15,7 @@
 #include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/lib/MultithreadContainer.h"
 #include "gradido_blockchain/export.h"
+#include "gradido_blockchain/types.h"
 
 /*!
 	@file 

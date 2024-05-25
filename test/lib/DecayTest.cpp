@@ -80,7 +80,7 @@ TEST_F(DecayTest, calculate_decay_factor_for_duration)
 	calculateDecayFactor(decay_factor, 365);
 
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-	calculateDecayFactorForDuration(decay_factor, decay_factor, 60*60*24*365);
+	calculateDecayFactorForDuration(decay_factor, decay_factor, std::chrono::seconds{ 60 * 60 * 24 * 365 });
 	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
 	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
@@ -110,7 +110,7 @@ TEST_F(DecayTest, calculate_decay_fast)
 	mpfr_init_set_ui(gradido, 100, MPFR_RNDN);
 
 	calculateDecayFactor(decay_factor, 365);
-	calculateDecayFactorForDuration(decay_factor, decay_factor, 60 * 60 * 24 * 365);
+	calculateDecayFactorForDuration(decay_factor, decay_factor, std::chrono::seconds{ 60 * 60 * 24 * 365 });
 
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	calculateDecayFast(decay_factor, gradido);
@@ -207,7 +207,7 @@ TEST_F(DecayTest, calculate_decay_fast_2)
 	// 1000 GDD
 	// 2670 seconds decay (44,5 minutes)
 	mpfr_set_ui(gdd, 1000, gDefaultRound);
-	calculateDecayFactorForDuration(temp->getData(), gDecayFactorGregorianCalender, 2670);
+	calculateDecayFactorForDuration(temp->getData(), gDecayFactorGregorianCalender, std::chrono::seconds{ 2670 });
 	calculateDecayFast(temp->getData(), gdd);
 	std::string resultString;
 	model::gradido::TransactionBase::amountToString(&resultString, gdd);
@@ -218,7 +218,7 @@ TEST_F(DecayTest, calculate_decay_fast_2)
 	mpfr_add_ui(gdd, gdd, 1000, gDefaultRound);
 
 	// 10720 seconds decay (2,97 hours)
-	calculateDecayFactorForDuration(temp->getData(), gDecayFactorGregorianCalender, 10720);
+	calculateDecayFactorForDuration(temp->getData(), gDecayFactorGregorianCalender, std::chrono::seconds{ 10720 });
 	calculateDecayFast(temp->getData(), gdd);
 	resultString.clear();
 	model::gradido::TransactionBase::amountToString(&resultString, gdd);

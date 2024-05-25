@@ -1,7 +1,6 @@
 #include "gradido_blockchain/model/protobufWrapper/TransactionBase.h"
 #include "gradido_blockchain/model/protobufWrapper/GradidoTransaction.h"
 
-#include "Poco/RegularExpression.h"
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 
 #include "gradido_blockchain/lib/Decay.h"
@@ -9,16 +8,17 @@
 #include <iomanip>
 #include <sodium.h>
 #include <sstream>
+#include <regex>
 
 namespace model {
 	namespace gradido {
 
-		Poco::RegularExpression g_RegExGroupAlias("^[a-z0-9-]{3,120}$");
+		std::regex g_RegExGroupAlias("^[a-z0-9-]{3,120}$");
 
 		
 		bool TransactionBase::isValidGroupAlias(const std::string& groupAlias)
 		{
-			return g_RegExGroupAlias.match(groupAlias);
+			return std::regex_match(groupAlias, g_RegExGroupAlias);
 		}
 
 

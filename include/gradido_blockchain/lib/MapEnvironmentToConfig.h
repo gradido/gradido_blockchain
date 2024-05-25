@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_LIB_MAP_ENVIRONMENT_TO_CONFIG_H
 #define __GRADIDO_BLOCKCHAIN_LIB_MAP_ENVIRONMENT_TO_CONFIG_H
 
-#include "Poco/Util/LayeredConfiguration.h"
+#include "Config.h"
 #include "gradido_blockchain/export.h"
 
 /*!
@@ -20,10 +20,11 @@ else (no)
 @enduml
 */
 
-class GRADIDOBLOCKCHAIN_EXPORT MapEnvironmentToConfig : public Poco::Util::LayeredConfiguration
+class GRADIDOBLOCKCHAIN_EXPORT MapEnvironmentToConfig : public Config
 {
 public:
-	MapEnvironmentToConfig(Poco::Util::LayeredConfiguration& parent);
+	MapEnvironmentToConfig(const std::string& fileName);
+	~MapEnvironmentToConfig() {}
 	//! call getString from Poco::Util::LayeredConfiguration given on construction, and if that return defaultValue, 
 	//! call mapKey to translate the config key to an environment key and call again Poco::Util::LayeredConfiguration::getString but with the mapped key
 	std::string getString(const std::string& key, const std::string& defaultValue) const;
@@ -38,7 +39,5 @@ protected:
 	//! translate for example db.sqlite to system.env.DB_SQLITE
 	//! this try to read the env variable DB_SQLITE
 	std::string mapKey(const std::string& key) const;
-
-	Poco::Util::LayeredConfiguration& mParent;
 };
 #endif //__GRADIDO_BLOCKCHAIN_LIB_MAP_ENVIRONMENT_TO_CONFIG_H

@@ -25,3 +25,15 @@
 [submodule "dependencies/date"]
         path = dependencies/date
         url = https://github.com/HowardHinnant/date.git
+[submodule "dependencies/cpp-httplib"]
+	path = dependencies/cpp-httplib
+	url = https://github.com/yhirose/cpp-httplib.git
+[submodule "dependencies/furi"]
+	path = dependencies/furi
+	url = https://github.com/iboB/furi.git
+[submodule "dependencies/magic_enum"]
+	path = dependencies/magic_enum
+	url = https://github.com/Neargye/magic_enum.git
+[submodule "dependencies/loguru"]
+	path = dependencies/loguru
+	url = https://github.com/emilk/loguru.git

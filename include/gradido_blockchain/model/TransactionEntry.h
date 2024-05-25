@@ -1,10 +1,6 @@
 #ifndef __GRADIDO_BLOCKCHAIN_MODEL_TRANSACTION_ENTRY_H
 #define __GRADIDO_BLOCKCHAIN_MODEL_TRANSACTION_ENTRY_H
 
-#include "Poco/Types.h"
-#include "Poco/Mutex.h"
-#include "Poco/DateTime.h"
-
 #include "gradido_blockchain/model/protobufWrapper/ConfirmedTransaction.h"
 
 #include <vector>
@@ -23,7 +19,7 @@ namespace model {
 	{
 	public:
 		TransactionEntry()
-			: mTransactionNr(0) {}
+			: mTransactionNr(0), mMonth(0), mYear(0) {}
 
 		//! \brief init entry object from serialized transaction, deserialize transaction to get infos
 		TransactionEntry(std::unique_ptr<std::string> _serializedTransaction);
@@ -42,12 +38,7 @@ namespace model {
 		inline uint16_t getYear() const { return mYear; }
 
 		inline std::string getCoinCommunityId() const { return mCommunityId; }
-		[[deprecated("Replaced by getCoinCommunityId, changed name according to Gradido Apollo implementation")]]
-		inline std::string getCoinGroupId() const { return getCoinCommunityId(); }
-
 		static std::string getCoinCommunityId(const gradido::TransactionBody* body);
-		[[deprecated("Replaced by getCoinCommunityId, changed name according to Gradido Apollo implementation")]]
-		static inline std::string getCoinGroupId(const gradido::TransactionBody* body) { return getCoinCommunityId(body); }
 
 	protected:
 		uint64_t mTransactionNr;
@@ -55,7 +46,7 @@ namespace model {
 		uint8_t mMonth;
 		uint16_t mYear;
 		std::string mCommunityId;
-		Poco::FastMutex mFastMutex;
+		std::mutex mFastMutex;
 	};
 
 };

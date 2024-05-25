@@ -38,8 +38,8 @@ public:
 	//! \return create KeyPairEd25519, caller muss call delete at return after finish
 	static std::unique_ptr<KeyPairEd25519> create(const std::shared_ptr<Passphrase> passphrase);
 
-	KeyPairEd25519Ex* deriveChild(Poco::UInt32 index);
-	static DerivationType getDerivationType(Poco::UInt32 index);
+	KeyPairEd25519Ex* deriveChild(uint32_t index);
+	static DerivationType getDerivationType(uint32_t index);
 
 	//! \return caller take ownership of return value
 	MemoryBin* sign(const MemoryBin* message) const { return sign(message->data(), message->size()); }

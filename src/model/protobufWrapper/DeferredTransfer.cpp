@@ -41,7 +41,7 @@ namespace model {
 			}
 		}
 
-		time_point<system_clock> DeferredTransfer::getTimeoutAsTimePoint() const
+		Timepoint DeferredTransfer::getTimeoutAsTimePoint() const
 		{
 			return system_clock::time_point(std::chrono::seconds(mProtoDeferredTransfer.timeout().seconds()));
 		}

@@ -1,9 +1,7 @@
+#include "date/date.h"
 #include "gradido_blockchain/lib/Decay.h"
 
 #include "gradido_blockchain/MemoryManager.h"
-#include "Poco/DateTimeParser.h"
-#include "Poco/DateTimeFormat.h"
-#include "Poco/DateTimeFormatter.h"
 /*
 typedef enum {
 MPFR_RNDN=0,  // round to nearest, with ties to even
@@ -22,7 +20,7 @@ const mpfr_rnd_t gDefaultRound = MPFR_RNDA;
 mpfr_t gDecayFactor356Days;
 mpfr_t gDecayFactor366Days;
 mpfr_t gDecayFactorGregorianCalender;
-Poco::Timestamp DECAY_START_TIME; 
+Timepoint DECAY_START_TIME;
 
 bool gInited = false;
 
@@ -58,13 +56,19 @@ void initDefaultDecayFactors()
 	//mpfr_set_str(gDecayFactorGregorianCalender, apolloDecayValueString.data(), 10, MPFR_RNDZ);
 
 	std::string decayStartTimeString = "2021-05-13 17:46:31";
+/*	
 	int timezoneDifferential = Poco::DateTimeFormatter::UTC; // + GMT 0
 	DECAY_START_TIME = Poco::DateTimeParser::parse(
 		Poco::DateTimeFormat::SORTABLE_FORMAT,
 		decayStartTimeString,
 		timezoneDifferential 
 	).timestamp(); 
-	
+	*/
+
+	std::istringstream in{ decayStartTimeString };
+	date::sys_seconds tp;
+	in >> date::parse("%F %T", tp);	
+	DECAY_START_TIME = tp;
 }
 
 void unloadDefaultDecayFactors()
@@ -96,9 +100,10 @@ void calculateDecayFactor(mpfr_ptr decay_factor, int days_per_year)
 	mpfr_clear(temp);
 }
 
-void calculateDecayFactorForDuration(mpfr_ptr decay_for_duration, mpfr_ptr decay_factor, unsigned long seconds)
+void calculateDecayFactorForDuration(mpfr_ptr decay_for_duration, mpfr_ptr decay_factor, Duration duration)
 {
 	assert(gInited && "Decay lib not initalized");
+	auto seconds = static_cast<unsigned int>(std::chrono::duration_cast<std::chrono::seconds>(duration).count());
 	mpfr_pow_ui(decay_for_duration, decay_factor, seconds, gDefaultRound);
 }
 
@@ -106,11 +111,11 @@ void calculateDecayFactorForDuration(mpfr_ptr decay_for_duration, mpfr_ptr decay
 
 void calculateDecayFactorForDuration(
 	mpfr_ptr decay_for_duration, mpfr_ptr decay_factor,
-	Poco::Timestamp startTime, Poco::Timestamp endTime
+	Timepoint startTime, Timepoint endTime
 )
 {
 	assert(gInited && "Decay lib not initalized");
-	auto duration = calculateDecayDurationSeconds(startTime, endTime).totalSeconds();
+	auto duration = static_cast<unsigned int>(std::chrono::duration_cast<std::chrono::seconds>(calculateDecayDurationSeconds(startTime, endTime)).count());
 	if (!duration) {
 		// no decay
 		mpfr_set_ui(decay_for_duration, 1, gDefaultRound);
@@ -121,12 +126,12 @@ void calculateDecayFactorForDuration(
 }
 
 
-Poco::Timespan calculateDecayDurationSeconds(Poco::Timestamp startTime, Poco::Timestamp endTime)
+Duration calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime)
 {
 	assert(endTime > startTime);
-	Poco::Timestamp start = startTime > DECAY_START_TIME ? startTime : DECAY_START_TIME;
-	Poco::Timestamp end = endTime > DECAY_START_TIME ? endTime : DECAY_START_TIME;
-	if (start == end) return 0;
+	Timepoint start = startTime > DECAY_START_TIME ? startTime : DECAY_START_TIME;
+	Timepoint end = endTime > DECAY_START_TIME ? endTime : DECAY_START_TIME;
+	if (start == end) return std::chrono::seconds{0};
 	return end - start;
 }
 

@@ -67,8 +67,8 @@ std::unique_ptr<KeyPairEd25519> KeyPairEd25519::create(const std::shared_ptr<Pas
 
 	// ****  convert word indices into uint64  ****
 	// To prevent breaking existing passphrase-hash combinations word indices will be put into 64 Bit Variable to mimic first implementation of algorithms
-	auto valueSize = sizeof(Poco::UInt64);
-	Poco::UInt64 value = 0;
+	auto valueSize = sizeof(uint64_t);
+	uint64_t value = 0;
 	for (int i = 0; i < PHRASE_WORD_COUNT; i++) {
 		value = word_indices[i];
 		crypto_hash_sha512_update(&state, (const unsigned char*)&value, valueSize);
@@ -84,7 +84,7 @@ std::unique_ptr<KeyPairEd25519> KeyPairEd25519::create(const std::shared_ptr<Pas
 	std::string word_indicesHex = getHex(*word_indices, word_indices->size());
 	printf("word_indices: \n%s\n", word_indicesHex.data());
 	printf("word_indices: \n");
-	Poco::UInt64* word_indices_p = (Poco::UInt64*)(word_indices->data());
+	uint64_t* word_indices_p = (uint64_t*)(word_indices->data());
 	for (int i = 0; i < PHRASE_WORD_COUNT; i++) {
 	if (i > 0) printf(" ");
 	printf("%4hu", word_indices_p[i]);
@@ -122,7 +122,7 @@ std::unique_ptr<KeyPairEd25519> KeyPairEd25519::create(const std::shared_ptr<Pas
 }
 
 
-DerivationType KeyPairEd25519::getDerivationType(Poco::UInt32 index)
+DerivationType KeyPairEd25519::getDerivationType(uint32_t index)
 {
 	if (index >= 0x80000000) {
 		return DERIVATION_HARD;
@@ -132,7 +132,7 @@ DerivationType KeyPairEd25519::getDerivationType(Poco::UInt32 index)
 	}
 }
 
-KeyPairEd25519Ex* KeyPairEd25519::deriveChild(Poco::UInt32 index)
+KeyPairEd25519Ex* KeyPairEd25519::deriveChild(uint32_t index)
 {
 	auto mm = MemoryManager::getInstance();
 	auto temp_key = mm->getMemory(32);

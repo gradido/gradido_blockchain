@@ -1,3 +1,5 @@
+#include "date/date.h"
+
 #include "gradido_blockchain/model/TransactionsManagerBlockchain.h"
 #include "gradido_blockchain/model/TransactionsManager.h"
 #include "gradido_blockchain/lib/Decay.h"
@@ -14,7 +16,7 @@ namespace model {
 
 	}
 
-	std::vector<Poco::SharedPtr<TransactionEntry>> TransactionsManagerBlockchain::searchTransactions(
+	std::vector<std::shared_ptr<TransactionEntry>> TransactionsManagerBlockchain::searchTransactions(
 		uint64_t startTransactionNr/* = 0*/,
 		std::function<FilterResult(model::TransactionEntry*)> filter/* = nullptr*/,
 		SearchDirection order /*= SearchDirection::ASC*/
@@ -22,7 +24,7 @@ namespace model {
 	{
 		auto tm = TransactionsManager::getInstance();
 		auto transactions = tm->getSortedTransactions(mGroupAlias);
-		std::vector<Poco::SharedPtr<TransactionEntry>> result;
+		std::vector<std::shared_ptr<TransactionEntry>> result;
 		uint64_t transactionNr = 1;
 		if (startTransactionNr > transactions->size()) {
 			throw TransactionsCountException("not enough transactions in blockchain", startTransactionNr, transactions->size());
@@ -34,7 +36,7 @@ namespace model {
 			transactionNr = startTransactionNr;
 			for (; it != transactions->end(); ++it) {
 				auto gradidoBlock = createBlockFromTransaction(*it, transactionNr);
-				Poco::SharedPtr<model::TransactionEntry> transactionEntry = new TransactionEntry(gradidoBlock.get());
+				std::shared_ptr<model::TransactionEntry> transactionEntry = std::make_shared<model::TransactionEntry>(gradidoBlock.get());
 				FilterResult filterTransactionResult = FilterResult::USE;
 				if (filter) {
 					filterTransactionResult = filter(transactionEntry.get());
@@ -53,7 +55,7 @@ namespace model {
 			transactionNr = transactions->size();
 			for (auto it = transactions->rbegin(); it != transactions->rend(); ++it) {
 				auto gradidoBlock = createBlockFromTransaction(*it, transactionNr);
-				Poco::SharedPtr<model::TransactionEntry> transactionEntry = new TransactionEntry(gradidoBlock.get());
+				std::shared_ptr<model::TransactionEntry> transactionEntry = std::make_shared<model::TransactionEntry>(gradidoBlock.get());
 				FilterResult filterTransactionResult = FilterResult::USE;
 				if (filter) {
 					filterTransactionResult = filter(transactionEntry.get());
@@ -70,7 +72,7 @@ namespace model {
 		return std::move(result);
 	}
 
-	Poco::SharedPtr<gradido::ConfirmedTransaction> TransactionsManagerBlockchain::getLastTransaction(std::function<bool(const gradido::ConfirmedTransaction*)> filter /*= nullptr*/)
+	std::shared_ptr<gradido::ConfirmedTransaction> TransactionsManagerBlockchain::getLastTransaction(std::function<bool(const gradido::ConfirmedTransaction*)> filter /*= nullptr*/)
 	{
 		if (filter) {
 			throw std::runtime_error("[TransactionsManagerBlockchain::getLastTransaction] not implemented with filter yet");
@@ -80,7 +82,12 @@ namespace model {
 		auto lastTransaction = transactions->back();
 		return createBlockFromTransaction(lastTransaction, transactions->size());
 	}
-	mpfr_ptr TransactionsManagerBlockchain::calculateAddressBalance(const std::string& address, const std::string& groupId, Poco::DateTime date, uint64_t ownTransactionNr)
+	mpfr_ptr TransactionsManagerBlockchain::calculateAddressBalance(
+		const std::string& address, 
+		const std::string& groupId, 
+		Timepoint date,
+		uint64_t ownTransactionNr
+	)
 	{
 		// TODO: limit search to not include transaction with nr ownTransactionNr
 		auto tm = TransactionsManager::getInstance();
@@ -106,11 +113,11 @@ namespace model {
 		}
 		return proto::gradido::RegisterAddress_AddressType_NONE;
 	}
-	Poco::SharedPtr<TransactionEntry> TransactionsManagerBlockchain::getTransactionForId(uint64_t transactionId)
+	std::shared_ptr<TransactionEntry> TransactionsManagerBlockchain::getTransactionForId(uint64_t transactionId)
 	{
 		throw std::runtime_error("not implemented yet");
 	}
-	Poco::SharedPtr<TransactionEntry> TransactionsManagerBlockchain::findLastTransactionForAddress(const std::string& address, const std::string& groupId /*= ""*/)
+	std::shared_ptr<TransactionEntry> TransactionsManagerBlockchain::findLastTransactionForAddress(const std::string& address, const std::string& groupId /*= ""*/)
 	{
 		auto tm = TransactionsManager::getInstance();
 		auto pubkeyHex = DataTypeConverter::binToHex(address);
@@ -118,7 +125,7 @@ namespace model {
 			auto transactions = tm->getSortedTransactionsForUser(mGroupAlias, pubkeyHex);
 			auto lastTransaction = transactions.back();
 			auto gradidoBlock = createBlockFromTransaction(lastTransaction, transactions.size());
-			Poco::SharedPtr<model::TransactionEntry> transactionEntry = new TransactionEntry(gradidoBlock.get());
+			std::shared_ptr<model::TransactionEntry> transactionEntry = std::make_shared<model::TransactionEntry>(gradidoBlock.get());
 			return transactionEntry;
 		}
 		// not ideal, because exceptions should not be thrown in regular program operation
@@ -126,30 +133,32 @@ namespace model {
 			return nullptr;
 		}
 	}
-	Poco::SharedPtr<TransactionEntry> TransactionsManagerBlockchain::findByMessageId(const MemoryBin* messageId, bool cachedOnly/* = true*/)
+	std::shared_ptr<TransactionEntry> TransactionsManagerBlockchain::findByMessageId(const MemoryBin* messageId, bool cachedOnly/* = true*/)
 	{
 		throw std::runtime_error("not implemented yet");
 	}
-	std::vector<Poco::SharedPtr<TransactionEntry>> TransactionsManagerBlockchain::findTransactions(const std::string& address)
+	std::vector<std::shared_ptr<TransactionEntry>> TransactionsManagerBlockchain::findTransactions(const std::string& address)
 	{
 		throw std::runtime_error("not implemented yet");
 	}
-	std::vector<Poco::SharedPtr<model::TransactionEntry>> TransactionsManagerBlockchain::findTransactions(const std::string& address, int month, int year)
+	std::vector<std::shared_ptr<model::TransactionEntry>> TransactionsManagerBlockchain::findTransactions(const std::string& address, int _month, int _year)
 	{
 		auto tm = TransactionsManager::getInstance();
 		auto addressHex = DataTypeConverter::binToHex(address).substr(0, 64);
 		auto transactions = tm->getSortedTransactionsForUser(mGroupAlias, addressHex);
+		date::month month(_month);
+		date::year year(_year);
 
-		std::vector<Poco::SharedPtr<model::TransactionEntry>> result;
+		std::vector<std::shared_ptr<model::TransactionEntry>> result;
 
 		// TODO: is not current transaction nr, needs update for later use!
 		int transactionNr = transactions.size();
 		for (auto it = transactions.rbegin(); it != transactions.rend(); it++) {
 			auto body = (*it)->getTransactionBody();
-			auto received = body->getCreated();
+			auto received = date::year_month_day{ date::floor<date::days>(body->getCreatedAt()) };
 			if (received.month() == month && received.year() == year) {
 				auto gradidoBlock = createBlockFromTransaction(*it, transactionNr);
-				Poco::SharedPtr<model::TransactionEntry> transactionEntry = new TransactionEntry(gradidoBlock.get());
+				std::shared_ptr<model::TransactionEntry> transactionEntry = std::make_shared<model::TransactionEntry>(gradidoBlock.get());
 				result.push_back(transactionEntry);
 			}
 			transactionNr--;
@@ -158,21 +167,28 @@ namespace model {
 		}
 		return std::move(result);
 	}
-	void TransactionsManagerBlockchain::calculateCreationSum(const std::string& address, int month, int year, Poco::DateTime received, mpfr_ptr sum)
+	void TransactionsManagerBlockchain::calculateCreationSum(
+		const std::string& address,
+		int _month, int _year,
+		Timepoint received,
+		mpfr_ptr sum
+	)
 	{
 		auto tm = TransactionsManager::getInstance();
 		auto addressHex = DataTypeConverter::binToHex(address).substr(0, 64);
 		auto transactions = tm->getSortedTransactionsForUser(mGroupAlias, addressHex);
+		date::month month(_month);
+		date::year year(_year);
 
 		auto mm = MemoryManager::getInstance();
 		//printf("[Group::calculateCreationSum] from group: %s\n", mGroupAlias.data());
 		auto amount = mm->getMathMemory();
 		for (auto it = transactions.begin(); it != transactions.end(); it++) {
 			auto body = (*it)->getTransactionBody();
-			if(body->getCreated() > received) break;
+			if(body->getCreatedAt() > received) break;
 			if (body->getTransactionType() == model::gradido::TRANSACTION_CREATION) {
 				auto creation = body->getCreationTransaction();
-				auto targetDate = creation->getTargetDate();
+				auto targetDate = date::year_month_day{ date::floor<date::days>(creation->getTargetDate()) };
 				if (targetDate.month() != month || targetDate.year() != year) {
 					continue;
 				}
@@ -193,7 +209,7 @@ namespace model {
 		return mGroupAlias;
 	}
 
-	Poco::SharedPtr<model::gradido::ConfirmedTransaction> TransactionsManagerBlockchain::createBlockFromTransaction(
+	std::shared_ptr<model::gradido::ConfirmedTransaction> TransactionsManagerBlockchain::createBlockFromTransaction(
 		std::shared_ptr<model::gradido::GradidoTransaction> transaction, uint64_t transactionNr
 	)
 	{
@@ -201,7 +217,7 @@ namespace model {
 		return gradido::ConfirmedTransaction::create(
 			std::move(transactionCopy),
 			transactionNr,
-			transaction->getTransactionBody()->getCreatedSeconds(),
+			transaction->getTransactionBody()->getCreatedAtSeconds(),
 			nullptr
 		);
 	}

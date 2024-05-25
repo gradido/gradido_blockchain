@@ -3,7 +3,10 @@
 
 using namespace model::gradido;
 
-std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createDeferredTransfer(std::unique_ptr<model::gradido::GradidoTransaction> transfer, Poco::Timestamp timeout)
+std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createDeferredTransfer(
+	std::unique_ptr<model::gradido::GradidoTransaction> transfer, 
+	Timepoint timeout
+)
 {
 	transfer->getMutableTransactionBody()->upgradeToDeferredTransaction(timeout);
 	return transfer;	
@@ -31,7 +34,7 @@ std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createRe
 std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createTransactionCreation(
 	const MemoryBin* recipientPubkey,
 	const std::string& amountGddCent,
-	Poco::DateTime targetDate
+	Timepoint targetDate
 )
 {
 	auto transferAmount = createTransferAmount(recipientPubkey, amountGddCent, "");
@@ -66,7 +69,7 @@ std::unique_ptr<model::gradido::GradidoTransaction> TransactionFactory::createCo
 }
 
 
-Poco::SharedPtr<model::gradido::ConfirmedTransaction> TransactionFactory::createConfirmedTransaction(
+std::shared_ptr<model::gradido::ConfirmedTransaction> TransactionFactory::createConfirmedTransaction(
 	std::unique_ptr<model::gradido::GradidoTransaction> transaction,
 	uint64_t id,
 	int64_t received,

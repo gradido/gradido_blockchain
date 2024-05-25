@@ -67,7 +67,7 @@ namespace model {
 
 			void setTxHash(const MemoryBin* txHash);
 			
-			inline std::chrono::time_point<std::chrono::system_clock> getConfirmedAtAsTimepoint() const { 
+			inline Timepoint getConfirmedAtAsTimepoint() const { 
 				return std::chrono::system_clock::time_point(std::chrono::seconds(getConfirmedAt()));
 			}
 

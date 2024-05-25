@@ -3,12 +3,11 @@
 
 #include "RequestBody.h"
 #include "proto/gradido/gradido_request.pb.h"
-#include "Poco/RefCountedObject.h"
 
 namespace model {
 
 	namespace gradido {
-		class GRADIDOBLOCKCHAIN_EXPORT GradidoRequest : public Poco::RefCountedObject
+		class GRADIDOBLOCKCHAIN_EXPORT GradidoRequest
 		{
 		public: 
 			GradidoRequest(const std::string* serializedProtobuf);

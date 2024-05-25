@@ -79,7 +79,7 @@ namespace model {
 			}
 			if ((level & TRANSACTION_VALIDATION_SINGLE_PREVIOUS) == TRANSACTION_VALIDATION_SINGLE_PREVIOUS) {
 				assert(blockchain);
-				if (!blockchain->getLastTransaction().isNull()) {
+				if (blockchain->getLastTransaction()) {
 					throw TransactionValidationException("community root must be the first transaction in the blockchain!");
 				}
 			}

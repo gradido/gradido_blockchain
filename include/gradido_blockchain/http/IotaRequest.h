@@ -10,8 +10,6 @@
 #include "gradido_blockchain/model/iota/NodeInfo.h"
 #include "gradido_blockchain/model/iota/TopicIndex.h"
 
-#include "Poco/Logger.h"
-
 /*!		
 	@author einhornimmond
 
@@ -42,13 +40,16 @@ public:
 
 	//! \brief use inside of catch clause by calling one of the iota requests
 	//! \param terminate if set to true program will be terminated!
-	static void defaultExceptionHandler(Poco::Logger& errorLog, bool terminate = true);
+	static void defaultExceptionHandler(bool terminate = true);
 
 protected:
 	// Iota get parent message ids for own message
 	std::vector<std::string> getTips();
 
 	std::string sendMessageViaRustIotaClient(const std::string& index, const std::string& message);
+
+	std::string_view extractPathFromUrl();
+	std::string buildFullPath(const std::string& first, const std::string& second = "", const std::string& third = "");
 
 };
 
