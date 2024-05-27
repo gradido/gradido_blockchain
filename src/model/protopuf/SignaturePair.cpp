@@ -3,22 +3,21 @@
 
 namespace model {
 	namespace protopuf {
-
+		
 		SignaturePair::SignaturePair(const SignaturePairMessage& data)
 		{
 			auto mm = MemoryManager::getInstance();
-			//std::vector<unsigned char>
-			auto& pubkey = data["pubkey"_f].value();
-			/*
+
+			const std::vector<unsigned char>& pubkey = data["pubkey"_f].value();			
 			mPubkey = mm->getMemory(pubkey.size());
 			mPubkey->copyFrom(pubkey.data());
 
-			std::vector<unsigned char>& signature = data["signature"_f].value();
+			const std::vector<unsigned char>& signature = data["signature"_f].value();
 			mSignature = mm->getMemory(signature.size());
 			mSignature->copyFrom(signature.data());
-			*/
+			
 		}
-
+		
 		SignaturePair::~SignaturePair()
 		{
 			auto mm = MemoryManager::getInstance();

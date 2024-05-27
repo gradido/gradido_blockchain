@@ -2,12 +2,12 @@
 
 namespace model {
 	namespace protopuf {
-		/*
+		
 		SignatureMap::SignatureMap(const SignatureMapMessage& data)
 		{
-			auto maxCount = data.get_base<1>.size();
+			auto maxCount = data["sig_pair"_f].size();
 			for (auto i = 0; i < maxCount; i++) {
-				mSignaturePairs.push_back(std::move(SignaturePair(data.get<1>[i])));
+				mSignaturePairs.push_back(std::move(SignaturePair(data["sig_pair"_f][i])));
 			}
 			
 		}
@@ -15,6 +15,6 @@ namespace model {
 		{
 
 		}
-		*/
+		
 	}
 }

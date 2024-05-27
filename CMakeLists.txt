@@ -64,7 +64,7 @@ IF(WIN32)
 	message("[GradidoBlockchain] protoc path: ${PROTOC_BIN_PATH2}")
 	message("[GradidoBlockchain] cmake build type: ${CMAKE_BUILD_TYPE}")
 	message("[GradidoBlockchain] build type: ${BUILD_TYPE}")
-	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${PROTOC_BIN_PATH}" "${PROTOC_BIN_PATH2}" "${PROJECT_BINARY_DIR}/bin/Debug" "${PROJECT_BINARY_DIR}/bin/Release")
+	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${PROTOC_BIN_PATH}" "${PROTOC_BIN_PATH2}")
 	IF(NOT PROTOBUF_PROTOC_EXECUTABLE)
 		find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" )		
 	ENDIF()
@@ -94,6 +94,7 @@ ELSE()
 			${proto_native}
 			RESULT_VARIABLE rv
 		)
+		message("${PROTOBUF_PROTOC_EXECUTABLE} proto path: ${GRADIDO_PROTO_MODEL_PATH}, cpp out: ${PROTOBINDING_PATH}, native: ${proto_native}")
 		# Optional, but that can show the user if something have gone wrong with the proto generation 
 		IF(${rv})
 			MESSAGE("[GradidoBlockchain] Generation of data model returned ${rv} for proto ${proto_native}")
@@ -161,7 +162,7 @@ include_directories(
 	"dependencies/tinf/src/" 
 	"dependencies/protobuf/src"
 	"dependencies/protopuf/include"
-	"dependencies/loguru"
+	#"dependencies/loguru"
 	"dependencies/rapidjson/include"
 	#"dependencies/rapidyaml/src"
 	#"dependencies/rapidyaml/ext/c4core/src"

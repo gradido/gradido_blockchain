@@ -1,10 +1,22 @@
 # Gradido Blockchain
 lib for all gradido blockchain related stuff in c++
 
+git submodule update --init --recursive
+
+## Dependencies
+### Windows
+- conan 
+- rust
+
+
+
 ## Build with Conan
 ```bash`
 cd gradido_blockchain
 conan install . --output-folder=build --build=missing
+cd build
+cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
+cmake --build .
 ```
 
 ## Install for Linux

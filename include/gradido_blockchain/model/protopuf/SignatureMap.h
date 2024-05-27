@@ -5,14 +5,15 @@
 
 namespace model {
 	namespace protopuf {
+		
 		using SignatureMapMessage = message<
-			message_field<"sig_pair", 1, SignaturePair, repeated, std::vector<SignaturePair>>
+			message_field<"sig_pair", 1, SignaturePairMessage, repeated>
 		>;
-
+		
 		class SignatureMap {
 		public:
-			//SignatureMap(const SignatureMapMessage& data);
-			//~SignatureMap();
+			SignatureMap(const SignatureMapMessage& data);
+			~SignatureMap();
 
 			const std::list<SignaturePair>& getSignaturePairs() { return mSignaturePairs; }
 
