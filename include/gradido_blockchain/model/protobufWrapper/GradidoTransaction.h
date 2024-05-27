@@ -3,6 +3,7 @@
 
 #include "TransactionBody.h"
 #include "proto/gradido/gradido_transaction.pb.h"
+#include "gradido_blockchain/model/protopufTypes.h"
 
 class TransactionFactory;
 class CrossGroupTransactionBuilder;

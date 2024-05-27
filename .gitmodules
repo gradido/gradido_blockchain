@@ -37,3 +37,9 @@
 [submodule "dependencies/loguru"]
 	path = dependencies/loguru
 	url = https://github.com/emilk/loguru.git
+[submodule "dependencies/protopuf"]
+	path = dependencies/protopuf
+	url = https://github.com/PragmaTwice/protopuf
+[submodule "dependencies/Memory-Pool"]
+	path = dependencies/Memory-Pool
+	url = https://github.com/LLLida/Memory-Pool.git

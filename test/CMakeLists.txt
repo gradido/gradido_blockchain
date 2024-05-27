@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18.2)
 project(GradidoBlockchainTest)
 
 # GoogleTest requires at least C++11
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 
 IF(WIN32)
   find_package(gtest REQUIRED)
@@ -15,13 +15,15 @@ endif()
 FILE(GLOB TEST_MAIN "*.cpp" "*.h")
 FILE(GLOB TEST_CRYPTO "crypto/*.cpp" "crypto/*.h")
 FILE(GLOB TEST_LIB "lib/*.cpp" "lib/*.h")
+FILE(GLOB TEST_MODEL "model/*.cpp" "model/*.h")
 
-SET(TEST_SRC ${TEST_MAIN} ${TEST_LIB} ${TEST_CRYPTO})
+SET(TEST_SRC ${TEST_MAIN} ${TEST_LIB} ${TEST_CRYPTO} ${TEST_MODEL})
 
 if(MSVC)
 	# src
 	source_group("lib" FILES ${TEST_LIB})
     source_group("crypto" FILES ${TEST_CRYPTO})
+    source_group("model" FILES ${TEST_MODEL})
 endif()
 
 IF(WIN32)

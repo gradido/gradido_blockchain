@@ -5,14 +5,14 @@ cmake_policy(VERSION 3.18.2)
 project(GradidoBlockchain VERSION 2.0.0)
 #project(GradidoBlockchain C CXX)
 IF(WIN32)
-	set(CMAKE_CXX_FLAGS         "/MP /EHsc /std:c++17")
+	set(CMAKE_CXX_FLAGS         "/MP /EHsc /std:c++20")
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 	set(BUILD_SHARED_LIBS ON)
 ELSE()
-	SET(CMAKE_CXX_FLAGS "-std=c++17" )# -fPIC" )
+	SET(CMAKE_CXX_FLAGS "-std=c++20" )# -fPIC" )
 ENDIF()
 #add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_definitions(-DNOMINMAX)
 
@@ -130,6 +130,7 @@ FILE(GLOB LIB_SRC "include/gradido_blockchain/lib/*.h" "src/lib/*.cpp")
 FILE(GLOB HTTP "include/gradido_blockchain/http/*.h" "src/http/*.cpp")
 FILE(GLOB MODEL "include/gradido_blockchain/model/*.h" "src/model/*.cpp")
 FILE(GLOB MODEL_PROTOBUF_WRAPPER "include/gradido_blockchain/model/protobufWrapper/*.h" "src/model/protobufWrapper/*.cpp")
+FILE(GLOB MODEL_PROTOPUF "include/gradido_blockchain/model/protopuf/*.h" "src/model/protopuf/*.cpp")
 FILE(GLOB MODEL_IOTA "include/gradido_blockchain/model/iota/*.h" "src/model/iota/*.cpp")
 FILE(GLOB CRYPTO "include/gradido_blockchain/crypto/*.h" "src/crypto/*.cpp")
 FILE(GLOB MAIN "src/*.cpp" "src/*.c"  "include/gradido_blockchain/*.h")
@@ -137,7 +138,7 @@ FILE(GLOB PROTO_GRADIDO "build/proto/gradido/*.cc" "build/proto/gradido/*.h")
 
 SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS 
 	${TINF} ${MAIN} ${HTTP} ${THREADING}
-	${CRYPTO} ${MODEL} ${MODEL_PROTOBUF_WRAPPER} ${MODEL_IOTA} ${LIB_SRC} 
+	${CRYPTO} ${MODEL} ${MODEL_PROTOBUF_WRAPPER} ${MODEL_PROTOPUF} ${MODEL_IOTA} ${LIB_SRC} 
 	${PROTO_GRADIDO}
 )
 
@@ -149,6 +150,7 @@ if(MSVC)
 	source_group("crypto" FILES ${CRYPTO})
 	source_group("http" FILES ${HTTP})
 	source_group("model\\protobufWrapper" FILES ${MODEL_PROTOBUF_WRAPPER})
+	source_group("model\\protopuf" FILES ${MODEL_PROTOPUF})
 	source_group("model\\iota" FILES ${MODEL_IOTA})
 	source_group("model" FILES ${MODEL})
 	source_group("lib" FILES ${LIB_SRC})	
@@ -158,6 +160,7 @@ include_directories(
 	"dependencies" 
 	"dependencies/tinf/src/" 
 	"dependencies/protobuf/src"
+	"dependencies/protopuf/include"
 	"dependencies/loguru"
 	"dependencies/rapidjson/include"
 	#"dependencies/rapidyaml/src"
