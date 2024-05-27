@@ -3,6 +3,7 @@
 
 #include <map>
 #include <mutex>
+#include <vector>
 
 namespace model {
     namespace protopuf {
@@ -18,27 +19,29 @@ namespace model {
             template <class U> VectorCacheAllocator(VectorCacheAllocator<U> const&) noexcept {}
 
             // Allocate memory block of requested size
-            value_type* allocate(size_t size)
-            {
+            value_type* allocate(size_t count)
+            {   
+                auto size = count * sizeof(value_type);
                 std::lock_guard _lock(mMutex);
                 // Check if there's a free block of the requested size
                 auto it = mFreeBlocks.find(size);
                 if (it != mFreeBlocks.end())
                 {
-                    value_type* block = it->second;
+                    T* ptr = static_cast<T*>(it->second);
                     mFreeBlocks.erase(it); // Remove the block from freeBlocks
-                    return block;
+                    return ptr;
                 }
                 else
                 {
                     // If no free block available, allocate a new one
-                    return static_cast<value_type*>(std::malloc(size * sizeof(value_type)));
+                    return static_cast<value_type*>(std::malloc(size));
                 }
             }
 
             // Deallocate memory block
-            void deallocate(value_type* block, size_t size) noexcept
+            void deallocate(value_type* block, size_t count) noexcept
             {
+                auto size = count * sizeof(value_type);
                 std::lock_guard _lock(mMutex);
                 // Add the block to freeBlocks
                 mFreeBlocks.insert({ size, block });
@@ -47,7 +50,7 @@ namespace model {
             static size_t getMapSize() { std::lock_guard _lock(mMutex); return mFreeBlocks.size(); }
 
         private:
-            static std::multimap<size_t, value_type*> mFreeBlocks;
+            static std::multimap<size_t, void*> mFreeBlocks;
             static std::mutex mMutex;
         };
 
@@ -64,10 +67,13 @@ namespace model {
         }
 
         template <typename T>
-        std::multimap<std::size_t, T*> VectorCacheAllocator<T>::mFreeBlocks;
+        std::multimap<std::size_t, void*> VectorCacheAllocator<T>::mFreeBlocks;
 
         template <typename T>
         std::mutex VectorCacheAllocator<T>::mMutex;
+
+        typedef std::vector<std::byte, VectorCacheAllocator<std::byte>> ByteVectorCachedAlloc;
+
     }
 
 }

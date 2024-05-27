@@ -7,6 +7,8 @@
 */
 
 #include "protopuf/message.h"
+#include "AddressType.h"
+#include "CrossGroupType.h"
 
 using namespace pp;
 
@@ -47,15 +49,6 @@ namespace model {
             message_field<"timeout", 2, TimestampSeconds>
         >;
 
-
-
-        enum class CrossGroupType {
-            LOCAL = 0,
-            INBOUND = 1,
-            OUTBOUND = 2,
-            CROSS = 3
-        };
-
         using GradidoCreation = message<
             message_field<"recipient", 1, TransferAmount>,
             message_field<"target_date", 3, TimestampSeconds>
@@ -64,16 +57,6 @@ namespace model {
         using CommunityFriendsUpdate = message<
             bool_field<"color_fusion", 1>
         >;
-
-        enum class AddressType {
-            NONE = 0, // if no address was found
-            COMMUNITY_HUMAN = 1, // creation account for human
-            COMMUNITY_GMW = 2, // community public budget account
-            COMMUNITY_AUF = 3, // community compensation and environment founds account
-            COMMUNITY_PROJECT = 4, // no creations allowed
-            SUBACCOUNT = 5, // no creations allowed
-            CRYPTO_ACCOUNT = 6 // user control his keys, no creations
-        };
 
         using RegisterAddress = message<
             bytes_field<"user_pubkey", 1>,
