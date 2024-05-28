@@ -21,7 +21,7 @@ public:
 	Decimal(const mpfr_ptr& decimal);
 	Decimal(const Decimal& decimal);
 	// move constructor
-	Decimal(Decimal&& src);
+	Decimal(Decimal&& src) noexcept;
 	Decimal();
 	virtual ~Decimal();
 
@@ -56,7 +56,7 @@ inline Decimal operator+(Decimal lhs, const Decimal& rhs)
 	Decimal result;
 	mpfr_set((mpfr_ptr)result, (mpfr_ptr)lhs, gDefaultRound);
 	result += rhs;
-	return std::move(result);
+	return result;
 }
 
 inline Decimal operator-(Decimal lhs, const Decimal& rhs)
@@ -64,7 +64,7 @@ inline Decimal operator-(Decimal lhs, const Decimal& rhs)
 	Decimal result;
 	mpfr_set((mpfr_ptr)result, (mpfr_ptr)lhs, gDefaultRound);
 	result -= rhs;
-	return std::move(result);
+	return result;
 }
 
 inline Decimal operator*(Decimal lhs, const Decimal& rhs)
@@ -72,7 +72,7 @@ inline Decimal operator*(Decimal lhs, const Decimal& rhs)
 	Decimal result;
 	mpfr_set((mpfr_ptr)result, (mpfr_ptr)lhs, gDefaultRound);
 	result *= rhs;
-	return std::move(result);
+	return result;
 }
 
 inline Decimal operator/(Decimal lhs, const Decimal& rhs)
@@ -80,13 +80,13 @@ inline Decimal operator/(Decimal lhs, const Decimal& rhs)
 	Decimal result;
 	mpfr_set((mpfr_ptr)result, (mpfr_ptr)lhs, gDefaultRound);
 	result /= rhs;
-	return std::move(result);
+	return result;
 }
 
 inline Decimal operator ^(unsigned long lhs, const Decimal& rhs) {
 	Decimal result;
 	mpfr_ui_pow(result, lhs, rhs, gDefaultRound);
-	return std::move(result);
+	return result;
 }
 
 inline bool operator==(const Decimal& lhs, const Decimal& rhs) { return mpfr_cmp(lhs, rhs) == 0; }

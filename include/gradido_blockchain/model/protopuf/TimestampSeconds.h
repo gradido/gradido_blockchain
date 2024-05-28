@@ -6,6 +6,7 @@
 
 #include  <cstdint>
 #include "gradido_blockchain/types.h"
+#include "gradido_blockchain/export.h"
 
 using namespace pp;
 
@@ -15,10 +16,13 @@ namespace model {
 			int64_field<"seconds", 1>
 		>;
 
-		class TimestampSeconds
+		class GRADIDOBLOCKCHAIN_EXPORT TimestampSeconds
 		{
 		public:
 			TimestampSeconds(const TimestampSecondsMessage& data);
+			TimestampSeconds(const Timepoint& date);
+
+			~TimestampSeconds() {}
 
 			Timepoint getAsTimepoint() const;
 

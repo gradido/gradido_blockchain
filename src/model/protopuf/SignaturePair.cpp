@@ -5,28 +5,13 @@ namespace model {
 	namespace protopuf {
 		
 		SignaturePair::SignaturePair(const SignaturePairMessage& data)
+			: mPubkey(std::make_shared<CachedMemoryBlock>(data["pubkey"_f].value())),
+			mSignature(std::make_shared<CachedMemoryBlock>(data["signature"_f].value()))
 		{
-			auto mm = MemoryManager::getInstance();
-
-			const std::vector<unsigned char>& pubkey = data["pubkey"_f].value();			
-			mPubkey = mm->getMemory(pubkey.size());
-			mPubkey->copyFrom(pubkey.data());
-
-			const std::vector<unsigned char>& signature = data["signature"_f].value();
-			mSignature = mm->getMemory(signature.size());
-			mSignature->copyFrom(signature.data());
-			
 		}
-		
-		SignaturePair::~SignaturePair()
+		SignaturePair::SignaturePair(ConstCachedMemoryBlockPtr pubkey, ConstCachedMemoryBlockPtr signature)
+			: mPubkey(pubkey), mSignature(signature)
 		{
-			auto mm = MemoryManager::getInstance();
-			if (mPubkey) {
-				mm->releaseMemory(mPubkey);
-			}
-			if (mSignature) {
-				mm->releaseMemory(mSignature);
-			}
 		}
 	}
 }

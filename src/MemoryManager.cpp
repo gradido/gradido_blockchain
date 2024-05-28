@@ -100,6 +100,52 @@ MemoryBin* MemoryBin::copy() const
 	return result;
 }
 
+// *************** Cached Memory Block *************************
+// call getMemory of MemoryManager
+CachedMemoryBlock::CachedMemoryBlock(size_t size)
+	: mMemory(MemoryManager::getInstance()->getMemory(size))
+{
+	
+}
+
+CachedMemoryBlock::CachedMemoryBlock(size_t size, const unsigned char* data)
+	: CachedMemoryBlock(size)
+{
+	mMemory->copyFrom(data);
+}
+
+CachedMemoryBlock::CachedMemoryBlock(const std::vector<unsigned char>& data)
+	: CachedMemoryBlock(data.size())
+{
+	mMemory->copyFrom(data.data());
+}
+// copy
+CachedMemoryBlock::CachedMemoryBlock(CachedMemoryBlock& other)
+	: mMemory(other.mMemory->copy())
+{
+}
+// move
+CachedMemoryBlock::CachedMemoryBlock(CachedMemoryBlock&& other) noexcept
+	: mMemory(other.mMemory)
+{
+	other.mMemory = nullptr;
+}
+// also move 
+CachedMemoryBlock& CachedMemoryBlock::operator=(CachedMemoryBlock&& other) noexcept
+{
+	mMemory = other.mMemory;
+	other.mMemory = nullptr;
+	return *this;
+}
+
+// call releaseMemory of MemoryManager
+CachedMemoryBlock::~CachedMemoryBlock()
+{
+	if (mMemory) {
+		MemoryManager::getInstance()->releaseMemory(mMemory);
+		mMemory = nullptr;
+	}
+}
 
 // *************************************************************
 

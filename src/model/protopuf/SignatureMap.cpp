@@ -11,10 +11,10 @@ namespace model {
 			}
 			
 		}
-		SignatureMap::~SignatureMap()
-		{
 
-		}
-		
+		SignatureMap::SignatureMap(SignaturePair firstSignaturePair)
+		{
+			addSignaturePair(std::move(firstSignaturePair));
+		}		
 	}
 }

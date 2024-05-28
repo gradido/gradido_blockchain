@@ -4,6 +4,7 @@
 #include <map>
 #include <mutex>
 #include <vector>
+#include <string>
 
 namespace model {
     namespace protopuf {
@@ -73,7 +74,7 @@ namespace model {
         std::mutex VectorCacheAllocator<T>::mMutex;
 
         typedef std::vector<std::byte, VectorCacheAllocator<std::byte>> ByteVectorCachedAlloc;
-
+        typedef std::basic_string<char, std::char_traits<char>, VectorCacheAllocator<char>> StringCachedAlloc;
     }
 
 }

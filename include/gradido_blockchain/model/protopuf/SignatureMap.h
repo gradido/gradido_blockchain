@@ -10,12 +10,15 @@ namespace model {
 			message_field<"sig_pair", 1, SignaturePairMessage, repeated>
 		>;
 		
-		class SignatureMap {
+		class GRADIDOBLOCKCHAIN_EXPORT SignatureMap {
 		public:
+			SignatureMap() {}
 			SignatureMap(const SignatureMapMessage& data);
-			~SignatureMap();
+			SignatureMap(SignaturePair firstSignaturePair);
+			~SignatureMap() {}
 
-			const std::list<SignaturePair>& getSignaturePairs() { return mSignaturePairs; }
+			inline void addSignaturePair(SignaturePair signaturePair) { mSignaturePairs.push_back(std::move(signaturePair));}
+			inline const std::list<SignaturePair>& getSignaturePairs() { return mSignaturePairs; }
 
 		protected:
 			std::list<SignaturePair> mSignaturePairs;

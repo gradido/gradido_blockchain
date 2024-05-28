@@ -5,6 +5,7 @@
 #include "protopuf/message.h"
 #include "VectorCacheAllocator.h"
 #include "gradido_blockchain/MemoryManager.h"
+#include "gradido_blockchain/export.h"
 
 using namespace pp;
 
@@ -15,18 +16,23 @@ namespace model {
 			bytes_field<"signature", 2, pp::singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>
 		>;
 		
-		class SignaturePair
+		class GRADIDOBLOCKCHAIN_EXPORT SignaturePair
 		{
 		public: 
 			SignaturePair(const SignaturePairMessage& data);
-			~SignaturePair();
+			
+			//!
+			//! \param pubkey will be copied
+			//! \param signature will be copied
+			SignaturePair(ConstCachedMemoryBlockPtr pubkey, ConstCachedMemoryBlockPtr signature);
+			~SignaturePair() {}
 
-			inline const MemoryBin* getPubkey() const { return mPubkey; }
-			inline const MemoryBin* getSignature() const { return mSignature; }
+			inline ConstCachedMemoryBlockPtr getPubkey() const { return mPubkey; }
+			inline ConstCachedMemoryBlockPtr getSignature() const { return mSignature; }
 
 		protected:
-			MemoryBin* mPubkey;
-			MemoryBin* mSignature;
+			ConstCachedMemoryBlockPtr mPubkey;
+			ConstCachedMemoryBlockPtr mSignature;
 		};
 
 	}

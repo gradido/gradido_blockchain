@@ -26,7 +26,7 @@ Decimal::Decimal(const Decimal& src)
 	mpfr_set(mDecimal, (mpfr_ptr)src, gDefaultRound);
 }
 
-Decimal::Decimal(Decimal&& src)
+Decimal::Decimal(Decimal&& src) noexcept
 {
 	mDecimal = src.mDecimal;
 	src.mDecimal = nullptr;

@@ -80,6 +80,56 @@ protected:
 
 };
 
+/*
+* make using MemoryBin easier
+*/
+class GRADIDOBLOCKCHAIN_EXPORT CachedMemoryBlock
+{
+public:
+	// call getMemory of MemoryManager
+	CachedMemoryBlock(size_t size);
+	CachedMemoryBlock(size_t size, const unsigned char* data);
+	CachedMemoryBlock(const std::vector<unsigned char>& data);
+	// copy
+	CachedMemoryBlock(CachedMemoryBlock& other);
+	// move
+	CachedMemoryBlock(CachedMemoryBlock&& other) noexcept;
+	// also move 
+	CachedMemoryBlock& operator=(CachedMemoryBlock&& other) noexcept;
+
+	// call releaseMemory of MemoryManager
+	~CachedMemoryBlock();
+
+	inline operator unsigned char* () { return mMemory->data(); }
+	inline operator const unsigned char* () const { return mMemory->data(); }
+
+	inline size_t size() const { return mMemory->size(); }
+	inline operator size_t() const { return mMemory->size(); }
+
+	inline unsigned char* data() { return mMemory->data(); }
+	inline const unsigned char* data() const { return mMemory->data(); }
+
+	inline unsigned char* data(size_t startIndex) { return mMemory->data(startIndex); }
+	inline const unsigned char* data(size_t startIndex) const { return mMemory->data(startIndex); }
+	inline std::unique_ptr<std::string> convertToHex() const { return mMemory->convertToHex(); }
+	inline std::string convertToHexString() const { return mMemory->convertToHexString(); }
+	inline std::unique_ptr<std::string> copyAsString() const { return mMemory->copyAsString(); }
+	//! \return 0 if ok
+	//!        -1 if bin is to small
+	//!        -2 if hex is invalid
+	inline int convertFromHex(const std::string& hex) { return mMemory->convertFromHex(hex); }
+	inline void copyFromProtoBytes(const std::string& bytes) { return mMemory->copyFromProtoBytes(bytes); }
+	inline void copyFrom(const unsigned char* origin) { mMemory->copyFrom(origin); }
+
+	bool isSame(const MemoryBin* b) const { return mMemory->isSame(b); }
+
+protected:	
+	MemoryBin* mMemory;
+};
+
+typedef std::shared_ptr<CachedMemoryBlock> CachedMemoryBlockPtr;
+typedef std::shared_ptr<const CachedMemoryBlock> ConstCachedMemoryBlockPtr;
+
 class MemoryPageStack : protected MultithreadContainer
 {
 public:
