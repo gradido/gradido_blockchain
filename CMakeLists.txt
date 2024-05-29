@@ -15,6 +15,7 @@ ENDIF()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_definitions(-DNOMINMAX)
+add_definitions(-DUSE_MPFR)
 
 set(INSTALL_BINDIR "bin")
 set(INSTALL_PLUGINDIR "bin")
@@ -129,6 +130,7 @@ FILE(GLOB TINF "dependencies/tinf/src/*.c" "dependencies/tinf/src/*.h")
 FIlE(GLOB THREADING "include/gradido_blockchain/threading/*.h" "src/threading/*.cpp")
 FILE(GLOB LIB_SRC "include/gradido_blockchain/lib/*.h" "src/lib/*.cpp")
 FILE(GLOB HTTP "include/gradido_blockchain/http/*.h" "src/http/*.cpp")
+FILE(GLOB MEMORY "include/gradido_blockchain/memory/*.h" "src/memory/*.cpp")
 FILE(GLOB MODEL "include/gradido_blockchain/model/*.h" "src/model/*.cpp")
 FILE(GLOB MODEL_PROTOBUF_WRAPPER "include/gradido_blockchain/model/protobufWrapper/*.h" "src/model/protobufWrapper/*.cpp")
 FILE(GLOB MODEL_PROTOPUF "include/gradido_blockchain/model/protopuf/*.h" "src/model/protopuf/*.cpp")
@@ -138,7 +140,7 @@ FILE(GLOB MAIN "src/*.cpp" "src/*.c"  "include/gradido_blockchain/*.h")
 FILE(GLOB PROTO_GRADIDO "build/proto/gradido/*.cc" "build/proto/gradido/*.h")
 
 SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS 
-	${TINF} ${MAIN} ${HTTP} ${THREADING}
+	${TINF} ${MAIN} ${HTTP} ${MEMORY} ${THREADING}
 	${CRYPTO} ${MODEL} ${MODEL_PROTOBUF_WRAPPER} ${MODEL_PROTOPUF} ${MODEL_IOTA} ${LIB_SRC} 
 	${PROTO_GRADIDO}
 )
@@ -150,6 +152,7 @@ if(MSVC)
 	source_group("tinf" FILES ${TINF})
 	source_group("crypto" FILES ${CRYPTO})
 	source_group("http" FILES ${HTTP})
+	source_group("memory" FILES ${MEMORY})
 	source_group("model\\protobufWrapper" FILES ${MODEL_PROTOBUF_WRAPPER})
 	source_group("model\\protopuf" FILES ${MODEL_PROTOPUF})
 	source_group("model\\iota" FILES ${MODEL_IOTA})

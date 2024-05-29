@@ -21,17 +21,12 @@ SecretKeyCryptography::SecretKeyCryptography(unsigned long long opslimit, size_t
 
 SecretKeyCryptography::~SecretKeyCryptography()
 {
-	if (mEncryptionKey) {
-		MemoryManager::getInstance()->releaseMemory(mEncryptionKey);
-		mEncryptionKey = nullptr;
-	}
 }
 
 SecretKeyCryptography::ResultType SecretKeyCryptography::createKey(const std::string& salt_parameter, const std::string& passwd)
 {
 	assert(crypto_hash_sha512_BYTES >= crypto_pwhash_SALTBYTES);
 		
-	auto mm = MemoryManager::getInstance();
 	auto app_secret = CryptoConfig::g_CryptoAppSecret;
 	if (!app_secret) {
 		throw CryptoConfig::MissingKeyException("in SecretKeyCryptography::createKey key is missing", "crypto.app_secret");
@@ -50,14 +45,14 @@ SecretKeyCryptography::ResultType SecretKeyCryptography::createKey(const std::st
 #endif 
 	
 	// use hash512 because existing data where calculated with that, but could be also changed to hash256
-	auto hash512_salt = mm->getMemory(crypto_hash_sha512_BYTES); // need at least crypto_pwhash_SALTBYTES 16U
+	memory::Block hash512_salt(crypto_hash_sha512_BYTES); // need at least crypto_pwhash_SALTBYTES 16U
 
 	crypto_hash_sha512_state state;
 	crypto_hash_sha512_init(&state);
 	//crypto_hash_sha512_update
 	crypto_hash_sha512_update(&state, (const unsigned char*)salt_parameter.data(), salt_parameter.size());
-	crypto_hash_sha512_update(&state, *app_secret, app_secret->size());
-	crypto_hash_sha512_final(&state, *hash512_salt);
+	crypto_hash_sha512_update(&state, app_secret->data(), app_secret->size());
+	crypto_hash_sha512_final(&state, hash512_salt.data());
 
 #ifndef _TEST_BUILD
 	if (timeUsed.millis() > 200) {
@@ -69,14 +64,13 @@ SecretKeyCryptography::ResultType SecretKeyCryptography::createKey(const std::st
 	//unsigned char* key = (unsigned char *)malloc(crypto_box_SEEDBYTES); // 32U
 	//ObfusArray* key = new ObfusArray(crypto_box_SEEDBYTES);
 	if (!mEncryptionKey) {
-		mEncryptionKey = mm->getMemory(crypto_box_SEEDBYTES);
+		mEncryptionKey = std::make_shared<memory::Block>(crypto_box_SEEDBYTES);
 	}
 	//Bin32Bytes* key = mm->get32Bytes();
 
 	// generate encryption key, should take a bit longer to make brute force attacks hard
-	if (crypto_pwhash(*mEncryptionKey, mEncryptionKey->size(), passwd.data(), passwd.size(), *hash512_salt, mOpsLimit, mMemLimit, mAlgo) != 0) {
-		mm->releaseMemory(mEncryptionKey); 
-		mEncryptionKey = nullptr;
+	if (crypto_pwhash(mEncryptionKey->data(), mEncryptionKey->size(), passwd.data(), passwd.size(), hash512_salt.data(), mOpsLimit, mMemLimit, mAlgo) != 0) {
+		mEncryptionKey.reset();
 
 		return AUTH_CREATE_ENCRYPTION_KEY_FAILED;
 	}
@@ -88,12 +82,12 @@ SecretKeyCryptography::ResultType SecretKeyCryptography::createKey(const std::st
 	// generate hash from key for compare
 	assert(sizeof(KeyHashed) >= crypto_shorthash_BYTES);
 	assert(CryptoConfig::g_ServerCryptoKey);
-	crypto_shorthash((unsigned char*)&mEncryptionKeyHash, *mEncryptionKey, crypto_box_SEEDBYTES, *CryptoConfig::g_ServerCryptoKey);
+	crypto_shorthash((unsigned char*)&mEncryptionKeyHash, mEncryptionKey->data(), crypto_box_SEEDBYTES, CryptoConfig::g_ServerCryptoKey->data());
 
 	return AUTH_CREATE_ENCRYPTION_KEY_SUCCEED;
 }
 
-SecretKeyCryptography::ResultType SecretKeyCryptography::encrypt(const MemoryBin* message, MemoryBin** encryptedMessage) const
+SecretKeyCryptography::ResultType SecretKeyCryptography::encrypt(const memory::Block& message, MemoryBlockPtr encryptedMessage) const
 {
 	assert(message && encryptedMessage);
 	std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);
@@ -102,7 +96,7 @@ SecretKeyCryptography::ResultType SecretKeyCryptography::encrypt(const MemoryBin
 		return AUTH_NO_KEY;
 	}
 	
-	size_t message_len = message->size();
+	size_t message_len = message.size();
 	size_t ciphertext_len = crypto_secretbox_MACBYTES + message_len;
 
 	unsigned char nonce[crypto_secretbox_NONCEBYTES];
@@ -110,22 +104,18 @@ SecretKeyCryptography::ResultType SecretKeyCryptography::encrypt(const MemoryBin
 	// TODO: use a dynamic value, save it along with the other parameters
 	memset(nonce, 31, crypto_secretbox_NONCEBYTES);
 
-	auto mm = MemoryManager::getInstance();
-	auto ciphertext = mm->getMemory(ciphertext_len);
-	memset(*ciphertext, 0, ciphertext_len);
+	auto ciphertext = std::make_shared<memory::Block>(ciphertext_len);
 
-	if (0 != crypto_secretbox_easy(*ciphertext, *message, message_len, nonce, *mEncryptionKey)) {
-		mm->releaseMemory(ciphertext);
-
+	if (0 != crypto_secretbox_easy(ciphertext->data(), message.data(), message_len, nonce, mEncryptionKey->data())) {
 		return AUTH_ENCRYPT_MESSAGE_FAILED;
 	}
 
-	*encryptedMessage = ciphertext;
+	encryptedMessage.swap(ciphertext);
 
 	return AUTH_ENCRYPT_OK;
 }
 
-SecretKeyCryptography::ResultType SecretKeyCryptography::decrypt(const unsigned char* encryptedMessage, size_t encryptedMessageSize, MemoryBin** message) const
+SecretKeyCryptography::ResultType SecretKeyCryptography::decrypt(const unsigned char* encryptedMessage, size_t encryptedMessageSize, MemoryBlockPtr message) const
 {
 	assert(message);
 	std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);
@@ -136,19 +126,17 @@ SecretKeyCryptography::ResultType SecretKeyCryptography::decrypt(const unsigned 
 
 	size_t decryptSize = encryptedMessageSize - crypto_secretbox_MACBYTES;
 	//unsigned char* decryptBuffer = (unsigned char*)malloc(decryptSize);
-	auto mm = MemoryManager::getInstance();
 	//ObfusArray* decryptedData = new ObfusArray(decryptSize);
-	auto decryptedData = mm->getMemory(decryptSize);
+	auto decryptedData = std::make_shared<memory::Block>(decryptSize);
 	unsigned char nonce[crypto_secretbox_NONCEBYTES];
 	// we use a hardcoded value for nonce
 	// TODO: use a dynamic value, save it along with the other parameters
 	memset(nonce, 31, crypto_secretbox_NONCEBYTES);
 
-	if (crypto_secretbox_open_easy(*decryptedData, encryptedMessage, encryptedMessageSize, nonce, *mEncryptionKey)) {
-		mm->releaseMemory(decryptedData);
+	if (crypto_secretbox_open_easy(decryptedData->data(), encryptedMessage, encryptedMessageSize, nonce, mEncryptionKey->data())) {
 		return AUTH_DECRYPT_MESSAGE_FAILED;
 	}
-	*message = decryptedData;
+	message.swap(decryptedData);
 
 	return AUTH_DECRYPT_OK;
 }

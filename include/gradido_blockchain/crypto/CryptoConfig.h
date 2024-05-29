@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_LIB_CRYPTO_CONFIG_
 #define __GRADIDO_BLOCKCHAIN_LIB_CRYPTO_CONFIG_
 
-#include "gradido_blockchain/MemoryManager.h"
+#include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "mnemonic.h"
 
@@ -16,9 +16,9 @@ namespace CryptoConfig
 		MNEMONIC_MAX
 	};
 
-	GRADIDOBLOCKCHAIN_EXPORT extern MemoryBin* g_CryptoAppSecret;
-	GRADIDOBLOCKCHAIN_EXPORT extern MemoryBin* g_ServerCryptoKey;
-	GRADIDOBLOCKCHAIN_EXPORT extern MemoryBin* g_SupportPublicKey;
+	GRADIDOBLOCKCHAIN_EXPORT extern MemoryBlockPtr g_CryptoAppSecret;
+	GRADIDOBLOCKCHAIN_EXPORT extern MemoryBlockPtr g_ServerCryptoKey;
+	GRADIDOBLOCKCHAIN_EXPORT extern MemoryBlockPtr g_SupportPublicKey;
 	GRADIDOBLOCKCHAIN_EXPORT extern Mnemonic g_Mnemonic_WordLists[MNEMONIC_MAX];
 
 	GRADIDOBLOCKCHAIN_EXPORT bool loadMnemonicWordLists();

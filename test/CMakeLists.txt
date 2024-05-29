@@ -16,13 +16,15 @@ FILE(GLOB TEST_MAIN "*.cpp" "*.h")
 FILE(GLOB TEST_CRYPTO "crypto/*.cpp" "crypto/*.h")
 FILE(GLOB TEST_LIB "lib/*.cpp" "lib/*.h")
 FILE(GLOB TEST_MODEL "model/*.cpp" "model/*.h")
+FILE(GLOB TEST_MODEL_PROTOPUF "model/protopuf/*.cpp" "model/protopuf/*.h")
 
-SET(TEST_SRC ${TEST_MAIN} ${TEST_LIB} ${TEST_CRYPTO} ${TEST_MODEL})
+SET(TEST_SRC ${TEST_MAIN} ${TEST_LIB} ${TEST_CRYPTO} ${TEST_MODEL} ${TEST_MODEL_PROTOPUF})
 
 if(MSVC)
 	# src
 	source_group("lib" FILES ${TEST_LIB})
     source_group("crypto" FILES ${TEST_CRYPTO})
+    source_group("model\\protopuf" FILES ${TEST_MODEL_PROTOPUF})
     source_group("model" FILES ${TEST_MODEL})
 endif()
 

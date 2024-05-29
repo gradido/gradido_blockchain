@@ -26,6 +26,10 @@ namespace model {
 
 			Timepoint getAsTimepoint() const;
 
+			operator TimestampMessage() const {
+				return TimestampMessage{ mSeconds, mNanos };
+			}
+
 		protected:
 			int64_t mSeconds;
 			int32_t mNanos;

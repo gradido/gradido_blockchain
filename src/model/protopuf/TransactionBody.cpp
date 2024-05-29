@@ -22,10 +22,10 @@ namespace model {
                 mRegisterAddress = std::make_shared<RegisterAddress>(data["register_address"_f].value());
             }
             else if (data["deferred_transfer"_f].has_value()) {
-                mDeferredTransfer = std::make_shared<GradidoDeferredTransfer>(data["deferred_transfer"_f].has_value());
+                mDeferredTransfer = std::make_shared<GradidoDeferredTransfer>(data["deferred_transfer"_f].value());
             } 
             else if (data["community_root"_f].has_value()) {
-                mCommunityRoot = std::make_shared<CommunityRoot>(data["community_root"_f].has_value());
+                mCommunityRoot = std::make_shared<CommunityRoot>(data["community_root"_f].value());
             }
         }
         TransactionBody::TransactionBody(

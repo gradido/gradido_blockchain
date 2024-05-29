@@ -33,6 +33,10 @@ namespace model {
 			inline ConstCachedMemoryBlockPtr getGmwPubkey() const { return mGmwPubkey; }
 			inline ConstCachedMemoryBlockPtr getAufPubkey() const { return mAufPubkey; }
 
+			/*operator CommunityRootMessage() const {
+				return CommunityRootMessage{ mPubkey->bytes(), mGmwPubkey->bytes(), mAufPubkey->bytes() };
+			}*/
+
 		protected:
 			ConstCachedMemoryBlockPtr mPubkey;
 			ConstCachedMemoryBlockPtr mGmwPubkey;

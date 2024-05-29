@@ -1,7 +1,6 @@
 #ifndef __GRADIDO_LOGIN_SERVER_LIB_DATA_TYPE_CONVERTER_H
 #define __GRADIDO_LOGIN_SERVER_LIB_DATA_TYPE_CONVERTER_H
 
-#include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/types.h"
 

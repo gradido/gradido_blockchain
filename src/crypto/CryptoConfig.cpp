@@ -9,9 +9,9 @@
 
 namespace CryptoConfig
 {
-	MemoryBin* g_CryptoAppSecret = nullptr;
-	MemoryBin* g_ServerCryptoKey = nullptr;
-	MemoryBin* g_SupportPublicKey = nullptr;
+	MemoryBlockPtr g_CryptoAppSecret = nullptr;
+	MemoryBlockPtr g_ServerCryptoKey = nullptr;
+	MemoryBlockPtr g_SupportPublicKey = nullptr;
 
 	Mnemonic g_Mnemonic_WordLists[MNEMONIC_MAX];
 
@@ -56,13 +56,13 @@ namespace CryptoConfig
 		// TODO: encrypt with server admin key
 		auto app_secret_string = cfg.getString("crypto.app_secret", "");
 		if ("" != app_secret_string) {
-			g_CryptoAppSecret = DataTypeConverter::hexToBin(app_secret_string);
+			g_CryptoAppSecret = std::make_shared<memory::Block>(memory::Block::fromHex(app_secret_string));
 		}
 
 		// key for shorthash for comparing passwords
 		auto serverKey = cfg.getString("crypto.server_key", "");
 		if ("" != serverKey) {
-			g_ServerCryptoKey = DataTypeConverter::hexToBin(serverKey);
+			g_ServerCryptoKey = std::make_shared<memory::Block>(memory::Block::fromHex(serverKey));			
 			if (!g_ServerCryptoKey || g_ServerCryptoKey->size() != crypto_shorthash_KEYBYTES) {
 				throw std::runtime_error("crypto.server_key hasn't correct size or isn't valid hex");
 			}
@@ -70,7 +70,8 @@ namespace CryptoConfig
 
 		auto supportPublicKey = cfg.getString("crypto.server_admin_public", "");
 		if ("" != supportPublicKey) {
-			g_SupportPublicKey = DataTypeConverter::hexToBin(supportPublicKey);
+			g_SupportPublicKey = std::make_shared<memory::Block>(memory::Block::fromHex(supportPublicKey));
+			
 			if (!g_SupportPublicKey || g_SupportPublicKey->size() != KeyPairEd25519::getPublicKeySize()) {
 				throw std::runtime_error("crypto.server_admin_public hasn't correct size or isn't valid hex");
 			}
@@ -80,21 +81,9 @@ namespace CryptoConfig
 
 	void unload()
 	{
-		auto mm = MemoryManager::getInstance();
-		if (g_CryptoAppSecret) {
-			mm->releaseMemory(g_CryptoAppSecret);
-			g_CryptoAppSecret = nullptr;
-		}
-
-		if (g_ServerCryptoKey) {
-			mm->releaseMemory(g_ServerCryptoKey);
-			g_ServerCryptoKey = nullptr;
-		}
-
-		if (g_SupportPublicKey) {
-			mm->releaseMemory(g_SupportPublicKey);
-			g_SupportPublicKey = nullptr;
-		}
+		g_CryptoAppSecret.reset();
+		g_ServerCryptoKey.reset();
+		g_SupportPublicKey.reset();
 	}
 
 	// ####################### exception ##################################

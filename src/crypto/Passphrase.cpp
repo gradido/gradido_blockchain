@@ -113,13 +113,13 @@ std::shared_ptr<Passphrase> Passphrase::create(const std::string& passphrase, co
 	return std::shared_ptr<Passphrase>(new Passphrase(passphrase, wordSource));
 }
 
-std::shared_ptr<Passphrase> Passphrase::create(const MemoryBin* wordIndices, const Mnemonic* wordSource)
+std::shared_ptr<Passphrase> Passphrase::create(const MemoryBin& wordIndices, const Mnemonic* wordSource)
 {
-	if (PHRASE_WORD_COUNT * sizeof(uint16_t) >= wordIndices->size()) {
+	if (PHRASE_WORD_COUNT * sizeof(uint16_t) >= wordIndices.size()) {
 		return nullptr;
 	}
 
-	const uint16_t* word_indices_p = (const uint16_t*)wordIndices->data();
+	const uint16_t* word_indices_p = (const uint16_t*)wordIndices.data();
 	return create(word_indices_p, wordSource);
 }
 

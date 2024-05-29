@@ -171,6 +171,24 @@ std::string GradidoInvalidBase64Exception::getFullString() const
 	return resultString;
 }
 
+// ********************************* Invalid Hex **********************************************
+GradidoInvalidHexException::GradidoInvalidHexException(const char* what, const std::string& hex) noexcept
+	: GradidoBlockchainException(what), mHex(hex)
+{
+
+}
+
+std::string GradidoInvalidHexException::getFullString() const
+{
+	std::string resultString;
+	size_t resultSize = strlen(what()) + mHex.size() + 10;
+	resultString.reserve(resultSize);
+	resultString = what();
+	resultString += ", with: " + mHex;
+	return resultString;
+}
+
+
 // ######################### Blockchain Order Exception ####################################
 BlockchainOrderException::BlockchainOrderException(const char* what) noexcept
 	: GradidoBlockchainException(what)

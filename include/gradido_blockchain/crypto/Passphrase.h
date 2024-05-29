@@ -1,9 +1,8 @@
 #ifndef __GRADIDO_LOGIN_SERVER_CRYPTO_PASSPHRASE_H
 #define __GRADIDO_LOGIN_SERVER_CRYPTO_PASSPHRASE_H
 
-//#include <string>
+#include "gradido_blockchain/memory/Block.h"
 #include "mnemonic.h"
-#include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include <memory>
 
@@ -16,7 +15,7 @@ public:
 	Passphrase(const std::string& passphrase, const Mnemonic* wordSource);
 
 	static std::shared_ptr<Passphrase> create(const uint16_t wordIndices[PHRASE_WORD_COUNT], const Mnemonic* wordSource);
-	static std::shared_ptr<Passphrase> create(const MemoryBin* wordIndices, const Mnemonic* wordSource);
+	static std::shared_ptr<Passphrase> create(const MemoryBin& wordIndices, const Mnemonic* wordSource);
 	static std::shared_ptr<Passphrase> create(const std::string& passphrase, const Mnemonic* wordSource);
 	//! \brief generate new passphrase with random
 	static std::shared_ptr<Passphrase> generate(const Mnemonic* wordSource);

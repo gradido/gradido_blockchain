@@ -1,10 +1,8 @@
 #ifndef __GRADIDO_LOGIN_SERVER_CRYPTO_SECRET_KEY_CRYPTOGRAPHY_H
 #define __GRADIDO_LOGIN_SERVER_CRYPTO_SECRET_KEY_CRYPTOGRAPHY_H
 
-
-#include "gradido_blockchain/MemoryManager.h"
-
-
+#include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain/memory/Block.h"
 #include <shared_mutex>
 #include <vector>
 #include <mutex>
@@ -69,18 +67,18 @@ public:
 	//! \return AUTH_CREATE_ENCRYPTION_KEY_FAILED call strerror(errno) for more details 
 	ResultType createKey(const std::string& salt_parameter, const std::string& passwd);
 
-	ResultType encrypt(const MemoryBin* message, MemoryBin** encryptedMessage) const;
+	ResultType encrypt(const memory::Block& message, MemoryBlockPtr encryptedMessage) const;
 
-	inline ResultType decrypt(const MemoryBin* encryptedMessage, MemoryBin** message) const {
-		return decrypt(encryptedMessage->data(), encryptedMessage->size(), message);
+	inline ResultType decrypt(const memory::Block& encryptedMessage, MemoryBlockPtr message) const {
+		return decrypt(encryptedMessage.data(), encryptedMessage.size(), message);
 	}
 	//! \brief same as the other decrypt only in other format
 	//! \param encryptedMessage format from Poco Binary Data from DB, like returned from model/table/user for encrypted private key
-	inline ResultType decrypt(const std::vector<unsigned char>& encryptedMessage, MemoryBin** message) const {
+	inline ResultType decrypt(const std::vector<unsigned char>& encryptedMessage, MemoryBlockPtr message) const {
 		return decrypt(encryptedMessage.data(), encryptedMessage.size(), message);
 	}
 	//! \brief raw decrypt function, actual implementation
-	ResultType decrypt(const unsigned char* encryptedMessage, size_t encryptedMessageSize, MemoryBin** message) const;
+	ResultType decrypt(const unsigned char* encryptedMessage, size_t encryptedMessageSize, MemoryBlockPtr message) const;
 
 	static const char* getErrorMessage(ResultType type);
 
@@ -91,7 +89,7 @@ protected:
 	int				   mAlgo;
 
 	// encryption key and hash
-	MemoryBin* mEncryptionKey;
+	MemoryBlockPtr mEncryptionKey;
 	KeyHashed  mEncryptionKeyHash;
 
 	mutable std::shared_mutex mWorkingMutex;

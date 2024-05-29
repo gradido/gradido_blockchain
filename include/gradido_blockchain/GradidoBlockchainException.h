@@ -110,6 +110,15 @@ protected:
 
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT GradidoInvalidHexException : public GradidoBlockchainException
+{
+public:
+	explicit GradidoInvalidHexException(const char* what, const std::string& hex) noexcept;
+	std::string getFullString() const;
+protected:
+	std::string mHex;
+};
+
 class GRADIDOBLOCKCHAIN_EXPORT BlockchainOrderException : public GradidoBlockchainException
 {
 public:

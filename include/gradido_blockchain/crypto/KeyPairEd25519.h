@@ -11,7 +11,7 @@
  * TODO: add verify method
 */
 
-
+#include "gradido_blockchain/memory/Block.h"
 #include "sodium.h"
 #include "SecretKeyCryptography.h"
 #include "Passphrase.h"
