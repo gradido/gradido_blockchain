@@ -12,8 +12,8 @@ using namespace pp;
 namespace model {
 	namespace protopuf {
 		using SignaturePairMessage = message<
-			bytes_field<"pubkey", 1, pp::singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
-			bytes_field<"signature", 2, pp::singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>
+			bytes_field<"pubkey", 1, singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
+			bytes_field<"signature", 2, singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>
 		>;
 		
 		class GRADIDOBLOCKCHAIN_EXPORT SignaturePair
