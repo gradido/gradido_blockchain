@@ -9,7 +9,6 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "httplib.h"
 
-
 using namespace rapidjson;
 
 HttpRequest::HttpRequest(const std::string& url)

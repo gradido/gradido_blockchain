@@ -32,6 +32,8 @@ namespace memory {
 
 		inline uint8_t* data() { return mData; }
 		inline const uint8_t* data() const { return mData; }
+		inline operator uint8_t* () { return mData; }
+		inline operator const uint8_t* () const { return mData; }
 
 		inline unsigned char* data(size_t startIndex) { assert(startIndex < mSize); return &mData[startIndex]; }
 		inline const unsigned char* data(size_t startIndex) const { assert(startIndex < mSize); return &mData[startIndex]; }
@@ -47,7 +49,9 @@ namespace memory {
 		inline void copyFrom(const Block* origin) { assert(mSize == origin->size()); memcpy(mData, origin->data(), mSize); }
 		inline void copyFrom(const unsigned char* origin) { memcpy(mData, origin, mSize); }
 
-		bool isSame(const Block* b) const;
+		bool isTheSame(const Block& b) const;
+		inline bool operator == (const Block& b) const { return isTheSame(b); }
+		inline bool operator != (const Block& b) const { return !isTheSame(b); }
 
 	protected:
 		void clear();

@@ -1,27 +1,25 @@
 #ifndef __GRADIDO_BLOCKCHAIN_LIB_CRYPTO_CONFIG_
 #define __GRADIDO_BLOCKCHAIN_LIB_CRYPTO_CONFIG_
 
-#include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
-#include "mnemonic.h"
-
 #include "gradido_blockchain/lib/MapEnvironmentToConfig.h"
+#include "gradido_blockchain/memory/Block.h"
+#include "mnemonic.h"
+#include "MnemonicType.h"
+
+#include "magic_enum/magic_enum.hpp"
 
 namespace CryptoConfig
 {
-	enum GRADIDOBLOCKCHAIN_EXPORT Mnemonic_Types {
-		MNEMONIC_GRADIDO_BOOK_GERMAN_RANDOM_ORDER,
-		MNEMONIC_GRADIDO_BOOK_GERMAN_RANDOM_ORDER_FIXED_CASES,
-		MNEMONIC_BIP0039_SORTED_ORDER,
-		MNEMONIC_MAX
-	};
-
 	GRADIDOBLOCKCHAIN_EXPORT extern MemoryBlockPtr g_CryptoAppSecret;
 	GRADIDOBLOCKCHAIN_EXPORT extern MemoryBlockPtr g_ServerCryptoKey;
 	GRADIDOBLOCKCHAIN_EXPORT extern MemoryBlockPtr g_SupportPublicKey;
-	GRADIDOBLOCKCHAIN_EXPORT extern Mnemonic g_Mnemonic_WordLists[MNEMONIC_MAX];
+	GRADIDOBLOCKCHAIN_EXPORT extern Mnemonic g_Mnemonic_WordLists[magic_enum::enum_integer(MnemonicType::MAX)];
 
-	GRADIDOBLOCKCHAIN_EXPORT bool loadMnemonicWordLists();
+	// throw exception on error
+	//!
+	//! \param printToFile if true, print every word list in a separat txt file for debugging
+	GRADIDOBLOCKCHAIN_EXPORT void loadMnemonicWordLists(bool printToFile = false);
 	GRADIDOBLOCKCHAIN_EXPORT bool loadCryptoKeys(const MapEnvironmentToConfig& cfg);
 	GRADIDOBLOCKCHAIN_EXPORT void unload();
 

@@ -6,6 +6,12 @@
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
+#include "magic_enum/magic_enum_utility.hpp"
+
+#include <algorithm>
+#include <cstdlib>
+
+using namespace magic_enum;
 
 namespace CryptoConfig
 {
@@ -13,41 +19,38 @@ namespace CryptoConfig
 	MemoryBlockPtr g_ServerCryptoKey = nullptr;
 	MemoryBlockPtr g_SupportPublicKey = nullptr;
 
-	Mnemonic g_Mnemonic_WordLists[MNEMONIC_MAX];
+	Mnemonic g_Mnemonic_WordLists[enum_integer(MnemonicType::MAX)];
 
-	bool loadMnemonicWordLists()
+	void loadMnemonicWordLists(bool printToFile/* = false*/)
 	{
-		for (int i = 0; i < MNEMONIC_MAX; i++) {
-			int iResult = 0;
-			switch (i) {
-			case MNEMONIC_GRADIDO_BOOK_GERMAN_RANDOM_ORDER:
-				iResult = g_Mnemonic_WordLists[i].init(populate_mnemonic_german, g_mnemonic_german_original_size, g_mnemonic_german_compressed_size);
-				if (iResult) {
-					printf("[%s] error init german mnemonic set, error nr: %d\n", __FUNCTION__, iResult);
-					return false;
+		enum_for_each<MnemonicType>([printToFile](auto val) {
+			constexpr MnemonicType type = val;
+			int i = enum_integer(type);
+			try {
+				switch (type) {
+				case MnemonicType::GRADIDO_BOOK_GERMAN_RANDOM_ORDER:
+					g_Mnemonic_WordLists[i].init(populate_mnemonic_german, g_mnemonic_german_original_size, g_mnemonic_german_compressed_size);
+					break;
+				case MnemonicType::GRADIDO_BOOK_GERMAN_RANDOM_ORDER_FIXED_CASES:
+					g_Mnemonic_WordLists[i].init(populate_mnemonic_german2, g_mnemonic_german2_original_size, g_mnemonic_german2_compressed_size);
+					break;
+				case MnemonicType::BIP0039_SORTED_ORDER:
+					g_Mnemonic_WordLists[i].init(populate_mnemonic_bip0039, g_mnemonic_bip0039_original_size, g_mnemonic_bip0039_compressed_size);
+					break;
+					//const char* what, const char* enumName, int value
+				default: throw GradidoUnhandledEnum("loadMnemonicWordLists", enum_type_name<decltype(type)>().data(), i);
 				}
-				g_Mnemonic_WordLists[i].printToFile("de_words.txt");
-				break;
-			case MNEMONIC_GRADIDO_BOOK_GERMAN_RANDOM_ORDER_FIXED_CASES:
-				iResult = g_Mnemonic_WordLists[i].init(populate_mnemonic_german2, g_mnemonic_german2_original_size, g_mnemonic_german2_compressed_size);
-				if (iResult) {
-					printf("[%s] error init german mnemonic set 2, error nr: %d\n", __FUNCTION__, iResult);
-					return false;
-				}
-				g_Mnemonic_WordLists[i].printToFile("de_words2.txt");
-				break;
-			case MNEMONIC_BIP0039_SORTED_ORDER:
-				iResult = g_Mnemonic_WordLists[i].init(populate_mnemonic_bip0039, g_mnemonic_bip0039_original_size, g_mnemonic_bip0039_compressed_size);
-				if (iResult) {
-					printf("[%s] error init bip0039 mnemonic set, error nr: %d\n", __FUNCTION__, iResult);
-					return false;
-				}
-				//g_Mnemonic_WordLists[i].printToFile("en_words.txt");
-				break;
-			default: printf("[%s] unknown MnemonicType\n", __FUNCTION__); return false;
 			}
-		}
-		return true;
+			catch (MnemonicException& ex) {
+				// add info and rethrow
+				throw ex.setMnemonic(&g_Mnemonic_WordLists[i]);
+			}
+			if (printToFile) {
+				std::string fileName(enum_name(type));
+				std::transform(fileName.cbegin(), fileName.cend(), fileName.begin(), ::tolower);
+				g_Mnemonic_WordLists[i].printToFile(fileName.data());
+			}
+		});
 	}
 
 	bool loadCryptoKeys(const MapEnvironmentToConfig& cfg)
@@ -72,7 +75,7 @@ namespace CryptoConfig
 		if ("" != supportPublicKey) {
 			g_SupportPublicKey = std::make_shared<memory::Block>(memory::Block::fromHex(supportPublicKey));
 			
-			if (!g_SupportPublicKey || g_SupportPublicKey->size() != KeyPairEd25519::getPublicKeySize()) {
+			if (!g_SupportPublicKey || g_SupportPublicKey->size() != ED25519_PUBLIC_KEY_SIZE) {
 				throw std::runtime_error("crypto.server_admin_public hasn't correct size or isn't valid hex");
 			}
 		}

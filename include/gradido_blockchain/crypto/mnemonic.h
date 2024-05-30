@@ -10,9 +10,7 @@
  * @desc: Class for handling mnemonic word list, unpacking, reverse lookup
  * 
  */
-
 #include "gradido_blockchain/GradidoBlockchainException.h"
-
 #include "gradido_blockchain/lib/DRHashList.h"
 #include <string>
 #include <shared_mutex>
@@ -29,13 +27,13 @@ public:
 	Mnemonic();
 	~Mnemonic();
 
-	int init(void(*fill_words_func)(unsigned char*), unsigned int original_size, unsigned int compressed_size);
+	void init(void(*fill_words_func)(unsigned char*), unsigned int original_size, unsigned int compressed_size);
 
 	const char* getWord(short index) const;
 	short getWordIndex(const char* word) const;
-	inline bool isWordExist(const std::string& word) const {
+	inline bool isWordExist(const char* word) const {
 		std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);
-		return getWordIndex(word.data()) != -1; 
+		return getWordIndex(word) != -1; 
 	}
 	// using only for debugging
 	std::string getCompleteWordList();
@@ -56,13 +54,9 @@ protected:
 	};
 
 	char* mWords[2048];
-	//DRHashList mWordHashIndices;
-	typedef std::pair<DHASH, unsigned short> WordHashEntry;
-	typedef std::pair<std::string, unsigned short> HashCollideWordEntry;
 	std::map<DHASH, unsigned short> mWordHashIndices;
 	std::map<DHASH, std::map<std::string, unsigned short>> mHashCollisionWords;
 	mutable std::shared_mutex mWorkingMutex;
-
 };
 
 class MnemonicException : public GradidoBlockchainException
@@ -71,7 +65,7 @@ public:
 	explicit MnemonicException(const char* what, const char* word = nullptr);
 	std::string getFullString() const noexcept;
 
-	void setMnemonic(const Mnemonic* mnemonic);
+	MnemonicException& setMnemonic(const Mnemonic* mnemonic);
 	inline int getMnemonicIndex() { return mMnemonicIndex; }
 
 protected:

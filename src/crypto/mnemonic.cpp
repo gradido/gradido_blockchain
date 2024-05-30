@@ -1,15 +1,19 @@
 
-
+#include "gradido_blockchain/crypto/CryptoConfig.h"
+#include "gradido_blockchain/crypto/MnemonicType.h"
 #include "gradido_blockchain/crypto/mnemonic.h"
+
+#include "tinf.h"
+#include "magic_enum/magic_enum_utility.hpp"
+#include "loguru/loguru.hpp"
+
 #include <memory>
 #include <cstring>
 #include <assert.h>
 #include <mutex> 
-#include "../dependencies/tinf/src/tinf.h"
-
-#include "gradido_blockchain/crypto/CryptoConfig.h"
-
 #include <regex>
+
+using namespace magic_enum;
 
 static std::regex g_checkValidWord("^[a-zA-Zƒ÷‹‰ˆ¸ﬂ&;]*$");
 
@@ -26,8 +30,9 @@ Mnemonic::~Mnemonic()
 
 
 
-int Mnemonic::init(void(*fill_words_func)(unsigned char*), unsigned int original_size, unsigned int compressed_size)
+void Mnemonic::init(void(*fill_words_func)(unsigned char*), unsigned int original_size, unsigned int compressed_size)
 {
+	LOG_SCOPE_F(ERROR, "Mnemonic::init");
 	std::unique_lock<std::shared_mutex> _lock(mWorkingMutex);
 	clear();
 
@@ -42,12 +47,12 @@ int Mnemonic::init(void(*fill_words_func)(unsigned char*), unsigned int original
 	if (tinf_gzip_uncompress(uncompressed_buffer, &original_size_cpy, buffer, compressed_size) != TINF_OK) {
 		free(buffer);
 		free(uncompressed_buffer);
-		return -1;
+		throw MnemonicException("couldn't uncompress");
 	}
 	if (original_size_cpy != original_size) {
 		free(buffer);
 		free(uncompressed_buffer);
-		return -2;
+		throw MnemonicException("uncompressed size don't match");
 	}
 	else {
 		free(buffer);
@@ -65,30 +70,30 @@ int Mnemonic::init(void(*fill_words_func)(unsigned char*), unsigned int original
 
 		unsigned short cursor = 0;
 		u32 word_begin = 0, word_end = 0;
-
+		
 		for (unsigned int i = 0; i < original_size; i++) {
 			if (cursor >= 2048) {
-				return -3;
+				throw MnemonicException("more than 2048 words in word list");
 			}
 			if (uncompressed_buffer[i] == ',' || i == original_size - 1) {
 				word_end = i;
 
 				u32 word_size = word_end - word_begin;
 				if (word_size < 3) {
-					printf("[%s] ERROR! word is smaller than 3, word size: %d, index: %d \n", 
-						__FUNCTION__, word_size, cursor
-					);
+					LOG_SCOPE_F(ERROR, "word is smaller than 3");
+					LOG_F(ERROR, "word size: %d, index: %d", word_size, cursor);
 					char acBuffer[22]; memset(acBuffer, 0, 22);
 					int _start = word_end - 10;
 					if (_start < 0) {
 						_start = 0;
 					}
 					memcpy(acBuffer, &uncompressed_buffer[_start], 20);
-					printf("word_end: %d, word_begin: %d, part: %s\n", word_end, word_begin, acBuffer);
+					LOG_F(ERROR, "word_end: %d, word_begin: %d, part: %s", word_end, word_begin, acBuffer);
 				}
 				if (word_end < word_begin) {
-					printf("%c %c %c\n", uncompressed_buffer[i - 1], uncompressed_buffer[i], uncompressed_buffer[i + 1]);
-					printf("%s\n", uncompressed_buffer);
+					LOG_SCOPE_F(ERROR, "word_end < word_begin");
+					LOG_F(ERROR, "%c %c %c", uncompressed_buffer[i - 1], uncompressed_buffer[i], uncompressed_buffer[i + 1]);
+					LOG_F(ERROR, "%s", uncompressed_buffer);
 					continue;
 				}
 				if (uncompressed_buffer[i] != ',') {
@@ -101,37 +106,34 @@ int Mnemonic::init(void(*fill_words_func)(unsigned char*), unsigned int original
 				// fill hash list for fast reverse lookup
 				memset(mWords[cursor], 0, word_size + 1);
 				if (word_begin + word_size > original_size) {
-					printf("c[Mnemonic::%s] word goes out of array bounds\n", __FUNCTION__);
 					free(uncompressed_buffer);
-					return -4;
+					throw MnemonicException("word goes out of array bounds");
 				}
 				memcpy(mWords[cursor], &uncompressed_buffer[word_begin], word_size);
 				//printf("%d: %s\n", cursor, mWords[cursor]);
 
 				DHASH word_hash = DRMakeStringHash(mWords[cursor]);
 				//mWordHashIndices.addByHash(word_hash, (void*)cursor);
-				auto result = mWordHashIndices.insert(WordHashEntry(word_hash, cursor));
+				auto result = mWordHashIndices.insert({ word_hash, cursor });
 				if (!result.second) {
 					// handle hash collision
 					auto it_collide = mHashCollisionWords.find(word_hash);
 					if (it_collide == mHashCollisionWords.end()) {
 						std::map<std::string, unsigned short> collidedWordsMap;
-						collidedWordsMap.insert(HashCollideWordEntry(mWords[result.first->second], result.first->second));
-						auto result2 = mHashCollisionWords.insert(std::pair<DHASH, std::map<std::string, unsigned short>>(word_hash, collidedWordsMap));
+						collidedWordsMap.insert({ mWords[result.first->second], result.first->second });
+						auto result2 = mHashCollisionWords.insert({ word_hash, collidedWordsMap });
 						if (!result2.second) {
 							free(uncompressed_buffer);
-							printf("c[Mnemonc::%s] error inserting hash collided word map\n", __FUNCTION__);
-							return -6;
+							throw MnemonicException("couldn't add new entry to mHashCollisionWords");
 						}
 						it_collide = result2.first;
 					}
 					assert(it_collide != mHashCollisionWords.end());
 
-					auto result3 = it_collide->second.insert(HashCollideWordEntry(mWords[cursor], cursor));
+					auto result3 = it_collide->second.insert({ mWords[cursor], cursor });
 					if (!result3.second) {
 						free(uncompressed_buffer);
-						printf("c[Mnemonc::%s] error inserting hash collided word entry\n", __FUNCTION__);
-						return -7;
+						throw MnemonicException("couldn't add new word into mHashCollisionWords entry");
 					}
 				}
 
@@ -146,12 +148,10 @@ int Mnemonic::init(void(*fill_words_func)(unsigned char*), unsigned int original
 		for (auto it_collide = mHashCollisionWords.begin(); it_collide != mHashCollisionWords.end(); it_collide++) {
 			mWordHashIndices.erase(it_collide->first);
 		}
-
-		return 0;
 	}
 	//printf("c[Mnemonic::%s] before freeing buffer \n", __FUNCTION__);
 	free(buffer);
-	return -5;
+	throw MnemonicException("reached unexpected end of function");
 }
 
 short Mnemonic::getWordIndex(const char* word) const 
@@ -192,18 +192,15 @@ const char* Mnemonic::getWord(short index) const {
 		}
 		
 		if (!std::regex_match(word, g_checkValidWord)) {			
-			if (!CryptoConfig::loadMnemonicWordLists()) {
-				throw MnemonicException("error loading mnemonic word lists");
-			}	
+			CryptoConfig::loadMnemonicWordLists();
 			{
 				std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);
 				word = mWords[index];
 			}
 			if (!std::regex_match(word, g_checkValidWord)) {
-				throw MnemonicException("empty word, reload mnemonic word list doesn't helped", word.data());
+				throw MnemonicException("empty or invalid word, reload mnemonic word list doesn't helped", word.data());
 			}
 		}
-
 		{
 			std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);
 			return mWords[index];
@@ -214,7 +211,6 @@ const char* Mnemonic::getWord(short index) const {
 
 void Mnemonic::clear()
 {
-	//Poco::Mutex::ScopedLock _lock(mWorkingMutex, 500);
 	for (int i = 0; i < 2048; i++) {
 		if (mWords[i]) {
 			free(mWords[i]);
@@ -351,14 +347,20 @@ MnemonicException::MnemonicException(const char* what, const char* word/* = null
 	}
 }
 
-void MnemonicException::setMnemonic(const Mnemonic* mnemonic)
+MnemonicException& MnemonicException::setMnemonic(const Mnemonic* mnemonic)
 {
-	for (int i = 0; i < CryptoConfig::Mnemonic_Types::MNEMONIC_MAX; i++) {
+	int mnemonicIndex = 0;
+	enum_for_each<MnemonicType>([&mnemonicIndex, mnemonic](auto val) {
+		if (mnemonicIndex) return;
+		constexpr MnemonicType type = val;
+		int i = enum_integer(type);
 		if (&CryptoConfig::g_Mnemonic_WordLists[i] == mnemonic) {
-			mMnemonicIndex = i;
-			break;
+			mnemonicIndex = i;
+			return;
 		}
-	}
+	});
+	mMnemonicIndex = mnemonicIndex;
+	return *this;
 }
 
 std::string MnemonicException::getFullString() const noexcept

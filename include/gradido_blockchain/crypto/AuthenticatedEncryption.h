@@ -11,13 +11,16 @@
 
 class KeyPairEd25519;
 
+#define X25519_PUBLIC_KEY_SIZE crypto_scalarmult_curve25519_BYTES
+#define X25519_PRIVATE_KEY_SIZE crypto_scalarmult_curve25519_BYTES
+
 class GRADIDOBLOCKCHAIN_EXPORT AuthenticatedEncryption
 {
 public:
 	AuthenticatedEncryption();
 	AuthenticatedEncryption(KeyPairEd25519* ed25519KeyPair);
-	AuthenticatedEncryption(const memory::Block& privateKeyx25519);
-	AuthenticatedEncryption(const unsigned char pubkeyx25519[crypto_scalarmult_curve25519_BYTES]);
+	AuthenticatedEncryption(ConstMemoryBlockPtr privateKeyx25519);
+	AuthenticatedEncryption(const std::array<unsigned char, X25519_PUBLIC_KEY_SIZE>& pubkeyx25519);
 	~AuthenticatedEncryption();
 
 	memory::Block encrypt(const unsigned char* message, size_t messageSize, AuthenticatedEncryption* recipiantKey);
@@ -30,21 +33,19 @@ public:
 
 	memory::Block encrypt(const memory::Block& message, int precalculatedSharedSecretIndex);
 	memory::Block decrypt(const memory::Block& encryptedMessage, AuthenticatedEncryption* senderKey);
-	memory::Block decrypt(const memory::Block& encryptedMessage, int precalculatedSharedSecretIndex);
-
-	static size_t getPublicKeySize() { return crypto_scalarmult_curve25519_BYTES; }
-	static size_t getPrivateKeySize() { return crypto_scalarmult_curve25519_BYTES; }
+	memory::Block decrypt(const memory::Block& encryptedMessage, int precalculatedSharedSecretIndex);	
 
 	//! return index for the shared secret for this recipiant public key
 	int precalculateSharedSecret(AuthenticatedEncryption* recipiantKey);
 	bool removePrecalculatedSharedSecret(int index);
 	
-	unsigned char mPubkey[crypto_scalarmult_curve25519_BYTES];
-	inline const unsigned char* getPublicKey() const { return mPubkey; }
-	inline const MemoryBlockPtr getPrivateKey() const { return mPrivkey; }
+	ConstMemoryBlockPtr mPubkey;
+	inline const ConstMemoryBlockPtr getPublicKey() const { return mPubkey; }
+	inline const ConstMemoryBlockPtr getPrivateKey() const { return mPrivkey; }
+	inline bool hasPrivateKey() const { return static_cast<bool>(mPrivkey); }
 protected:
 	
-	MemoryBlockPtr mPrivkey;
+	ConstMemoryBlockPtr mPrivkey;
 
 	std::mutex mPrecalculatedSharedSecretsMutex;
 	std::map<int, std::unique_ptr<memory::Block>> mPrecalculatedSharedSecrets;

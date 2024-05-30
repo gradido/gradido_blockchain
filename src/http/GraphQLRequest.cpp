@@ -8,6 +8,7 @@
 
 #include "magic_enum/magic_enum.hpp"
 #include "furi/furi.hpp"
+#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "httplib.h"
 
 using namespace rapidjson;

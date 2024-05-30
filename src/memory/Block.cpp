@@ -130,12 +130,12 @@ namespace memory {
 		memcpy(mData, bytes.data(), bytes.size());
 	}
 
-	bool Block::isSame(const Block* b) const
+	bool Block::isTheSame(const Block& b) const
 	{
-		if (b->size() != size()) {
+		if (b.size() != size()) {
 			return false;
 		}
-		return 0 == memcmp(data(), b->data(), size());
+		return 0 == memcmp(mData, b, size());
 	}
 
 	// *************** Cached Memory Block *************************

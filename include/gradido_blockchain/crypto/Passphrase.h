@@ -4,7 +4,9 @@
 #include "gradido_blockchain/memory/Block.h"
 #include "mnemonic.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
+
 #include <memory>
+#include <array>
 
 
 class KeyPairEd25519;
@@ -12,14 +14,14 @@ class KeyPairEd25519;
 class GRADIDOBLOCKCHAIN_EXPORT Passphrase
 {
 public:
+	Passphrase() = delete;
 	Passphrase(const std::string& passphrase, const Mnemonic* wordSource);
 
-	static std::shared_ptr<Passphrase> create(const uint16_t wordIndices[PHRASE_WORD_COUNT], const Mnemonic* wordSource);
-	static std::shared_ptr<Passphrase> create(const MemoryBin& wordIndices, const Mnemonic* wordSource);
-	static std::shared_ptr<Passphrase> create(const std::string& passphrase, const Mnemonic* wordSource);
+	static std::shared_ptr<Passphrase> create(const std::array<uint16_t, PHRASE_WORD_COUNT>& wordIndices, const Mnemonic* wordSource);
 	//! \brief generate new passphrase with random
 	static std::shared_ptr<Passphrase> generate(const Mnemonic* wordSource);
-	static const Mnemonic* detectMnemonic(const std::string& passphrase, const KeyPairEd25519* keyPair = nullptr);
+
+	static const Mnemonic* detectMnemonic(const std::string& passphrase, const KeyPairEd25519* userKeyPair = nullptr);
 
 	//! \brief transform passphrase into another language/mnemonic source
 	//! \return this if targetWordSource is the same as mWordSource
@@ -39,21 +41,17 @@ public:
 	//! \return true if all words in passphrase existing in mWordSource
 	bool checkIfValid();
 
-	const uint16_t* getWordIndices();
-	const uint16_t* getWordIndices() const;
-
-	//! \return true if ok
-	bool createWordIndices();
+	inline const std::array<uint16_t, PHRASE_WORD_COUNT>& getWordIndices() const { return mWordIndices; }
 
 	//! \brief please handle with care! should be only seen by user and admin
 	const std::string& getString() const { return mPassphraseString; }
 
 protected:
-	
-	
+	void createWordIndices();
+
 	std::string			mPassphraseString;
 	const Mnemonic*		mWordSource;
-	uint16_t		mWordIndices[PHRASE_WORD_COUNT];
+	std::array<uint16_t, PHRASE_WORD_COUNT> mWordIndices;
 };
 
 class PassphraseEmptyWordSourceException : public GradidoBlockchainException

@@ -37,6 +37,6 @@ std::string MapEnvironmentToConfig::mapKey(const std::string& key) const
 {
 	std::string result = key;
 	std::replace(result.begin(), result.end(), '.', '_'); // replace all '.' to '_'
-	std::transform(result.begin(), result.end(), result.begin(), ::toupper);
+	std::transform(result.cbegin(), result.cend(), result.begin(), ::toupper);
 	return result;
 }
