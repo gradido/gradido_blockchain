@@ -3,6 +3,7 @@
 
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/types.h"
+#include "gradido_blockchain/memory/Block.h"
 
 #include "proto/gradido/basic_types.pb.h"
 
@@ -30,7 +31,6 @@ namespace DataTypeConverter {
 	GRADIDOBLOCKCHAIN_EXPORT uint64_t strToInt(const std::string& input);
 	GRADIDOBLOCKCHAIN_EXPORT NumberParseState strToDouble(const std::string& input, double& result);
 
-	GRADIDOBLOCKCHAIN_EXPORT MemoryBin* hexToBin(const std::string& hexString);
 	GRADIDOBLOCKCHAIN_EXPORT MemoryBin* hexToBin(const char* hexString, size_t stringSize);
 	GRADIDOBLOCKCHAIN_EXPORT std::unique_ptr<std::string> hexToBinString(const std::string& hexString);
 	GRADIDOBLOCKCHAIN_EXPORT MemoryBin* base64ToBin(const std::string& base64String, int variant = sodium_base64_VARIANT_ORIGINAL);

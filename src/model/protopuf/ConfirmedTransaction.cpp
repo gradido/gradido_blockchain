@@ -7,8 +7,8 @@ namespace model {
             mGradidoTransaction(data["transaction"_f].value()),
             mConfirmedAt(data["confirmed_at"_f].value()),
             mVersionNumber(data["version_number"_f].value()),
-            mRunningHash(std::make_shared<CachedMemoryBlock>(data["running_hash"_f].value())),
-            mMessageId(std::make_shared<CachedMemoryBlock>(data["message_id"_f].value())),
+            mRunningHash(std::make_shared<memory::Block>(data["running_hash"_f].value())),
+            mMessageId(std::make_shared<memory::Block>(data["message_id"_f].value())),
             mAccountBalance(data["account_balance"_f].value_or("0"))
         {
 
@@ -18,8 +18,8 @@ namespace model {
             const GradidoTransaction& gradidoTransaction,
             Timepoint confirmedAt,
             const std::string& versionNumber,
-            ConstCachedMemoryBlockPtr runningHash,
-            ConstCachedMemoryBlockPtr messageId,
+            ConstMemoryBlockPtr runningHash,
+            ConstMemoryBlockPtr messageId,
             const std::string& accountBalance
         )
             : mId(id),

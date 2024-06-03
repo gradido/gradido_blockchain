@@ -12,6 +12,7 @@
 */
 
 #include "gradido_blockchain/memory/Block.h"
+#include "PublicKey.h"
 #include "sodium.h"
 #include "SecretKeyCryptography.h"
 #include "Passphrase.h"
@@ -24,10 +25,11 @@ enum class Ed25519DerivationType {
 };
 
 class KeyPairEd25519Ex;
-#define ED25519_PUBLIC_KEY_SIZE crypto_sign_PUBLICKEYBYTES
 #define ED25519_PRIVATE_KEY_SIZE crypto_sign_SECRETKEYBYTES
 #define ED25519_CHAIN_CODE_SIZE 32
 #define ED25519_SIGNATURE_SIZE crypto_sign_BYTES
+
+using namespace memory;
 
 class GRADIDOBLOCKCHAIN_EXPORT KeyPairEd25519
 {

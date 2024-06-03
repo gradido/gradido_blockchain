@@ -25,8 +25,8 @@ namespace model {
                 const GradidoTransaction& gradidoTransaction,
                 Timepoint confirmedAt,
                 const std::string& versionNumber,
-                ConstCachedMemoryBlockPtr runningHash,
-                ConstCachedMemoryBlockPtr messageId,
+                ConstMemoryBlockPtr runningHash,
+                ConstMemoryBlockPtr messageId,
                 const std::string& accountBalance
             );
 
@@ -36,16 +36,16 @@ namespace model {
             inline const GradidoTransaction& getGradidoTransaction() const { return mGradidoTransaction; }
             inline Timepoint getConfirmedAt() const { return mConfirmedAt.getAsTimepoint(); }
             inline const std::string& getVersionNumber() const { return mVersionNumber; }
-            inline ConstCachedMemoryBlockPtr getRunningHash() const { return mRunningHash; }
-            inline ConstCachedMemoryBlockPtr getMessageId() const { return mMessageId; }
+            inline ConstMemoryBlockPtr getRunningHash() const { return mRunningHash; }
+            inline ConstMemoryBlockPtr getMessageId() const { return mMessageId; }
             inline const std::string& getAccountBalance() const { return mAccountBalance; }
         protected:
             uint64_t                    mId;
             GradidoTransaction          mGradidoTransaction;
             TimestampSeconds            mConfirmedAt;
             std::string                 mVersionNumber;
-            ConstCachedMemoryBlockPtr   mRunningHash;
-            ConstCachedMemoryBlockPtr   mMessageId;
+            ConstMemoryBlockPtr         mRunningHash;
+            ConstMemoryBlockPtr         mMessageId;
             std::string                 mAccountBalance;
         };
 	}

@@ -126,38 +126,75 @@ ELSE()
 ENDIF()
 
 ############################## bind source files ###################################
-FILE(GLOB TINF "dependencies/tinf/src/*.c" "dependencies/tinf/src/*.h")
-FIlE(GLOB THREADING "include/gradido_blockchain/threading/*.h" "src/threading/*.cpp")
-FILE(GLOB LIB_SRC "include/gradido_blockchain/lib/*.h" "src/lib/*.cpp")
+FILE(GLOB CRYPTO "include/gradido_blockchain/crypto/*.h" "src/crypto/*.cpp")
+FILE(GLOB DATA "include/gradido_blockchain/data/*.h" "src/data/*.cpp")
 FILE(GLOB HTTP "include/gradido_blockchain/http/*.h" "src/http/*.cpp")
+FILE(GLOB INTERACTION "include/gradido_blockchain/interaction/*.h" "src/interaction/*.cpp")
+FILE(GLOB INTERACTION_PROTOCOL_3_3_SERIALIZE 
+	"include/gradido_blockchain/interaction/protocol/3_3/serialize/*.h" 
+	"src/interaction/protocol/3_3/serialize/*.cpp"
+)
+FILE(GLOB INTERACTION_PROTOCOL_3_3_DESERIALIZE 
+	"include/gradido_blockchain/interaction/protocol/3_3/deserialize/*.h" 
+	"src/interaction/protocol/3_3/deserialize/*.cpp"
+)
+FILE(GLOB INTERACTION_PROTOCOL_3_3_VALIDATE 
+	"include/gradido_blockchain/interaction/protocol/3_3/validate/*.h"
+	"src/interaction/protocol/3_3/validate/*.cpp"
+)
+FILE(GLOB LIB_SRC "include/gradido_blockchain/lib/*.h" "src/lib/*.cpp")
+FILE(GLOB MAIN "src/*.cpp" "src/*.c"  "include/gradido_blockchain/*.h")
 FILE(GLOB MEMORY "include/gradido_blockchain/memory/*.h" "src/memory/*.cpp")
 FILE(GLOB MODEL "include/gradido_blockchain/model/*.h" "src/model/*.cpp")
+FILE(GLOB v3_3_DATA
+	"include/gradido_blockchain/v3_3/data/*.h"
+	"src/v3_3/data/*.cpp"
+)
 FILE(GLOB MODEL_PROTOBUF_WRAPPER "include/gradido_blockchain/model/protobufWrapper/*.h" "src/model/protobufWrapper/*.cpp")
 FILE(GLOB MODEL_PROTOPUF "include/gradido_blockchain/model/protopuf/*.h" "src/model/protopuf/*.cpp")
 FILE(GLOB MODEL_IOTA "include/gradido_blockchain/model/iota/*.h" "src/model/iota/*.cpp")
-FILE(GLOB CRYPTO "include/gradido_blockchain/crypto/*.h" "src/crypto/*.cpp")
-FILE(GLOB MAIN "src/*.cpp" "src/*.c"  "include/gradido_blockchain/*.h")
 FILE(GLOB PROTO_GRADIDO "build/proto/gradido/*.cc" "build/proto/gradido/*.h")
+FILE(GLOB TINF "dependencies/tinf/src/*.c" "dependencies/tinf/src/*.h")
+FIlE(GLOB THREADING "include/gradido_blockchain/threading/*.h" "src/threading/*.cpp")
 
 SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS 
-	${TINF} ${MAIN} ${HTTP} ${MEMORY} ${THREADING}
-	${CRYPTO} ${MODEL} ${MODEL_PROTOBUF_WRAPPER} ${MODEL_PROTOPUF} ${MODEL_IOTA} ${LIB_SRC} 
+	${CRYPTO}
+	${DATA}
+	${HTTP}
+	${INTERACTION}
+	${INTERACTION_PROTOCOL_3_3_SERIALIZE}
+	${INTERACTION_PROTOCOL_3_3_DESERIALIZE}
+	${INTERACTION_PROTOCOL_3_3_VALIDATE}
+	${LIB_SRC} 
+	${MAIN}
+	${MEMORY}
+	${MODEL} ${MODEL_IOTA} ${MODEL_PROTOBUF_WRAPPER} ${MODEL_PROTOPUF} 
 	${PROTO_GRADIDO}
+	${TINF} 
+	${THREADING}	
+	${v3_3_DATA}
 )
 
 if(MSVC)
 	# src
-	source_group("proto\\gradido" FILES ${PROTO_GRADIDO})
-	source_group("threading" FILES ${THREADING})
-	source_group("tinf" FILES ${TINF})
 	source_group("crypto" FILES ${CRYPTO})
+	source_group("data" FILES ${DATA})
 	source_group("http" FILES ${HTTP})
-	source_group("memory" FILES ${MEMORY})
-	source_group("model\\protobufWrapper" FILES ${MODEL_PROTOBUF_WRAPPER})
-	source_group("model\\protopuf" FILES ${MODEL_PROTOPUF})
-	source_group("model\\iota" FILES ${MODEL_IOTA})
-	source_group("model" FILES ${MODEL})
+	source_group("interaction\\protocol\\3_3\\serialize" FILES ${INTERACTION_PROTOCOL_3_3_SERIALIZE})
+	source_group("interaction\\protocol\\3_3\\deserialize" FILES ${INTERACTION_PROTOCOL_3_3_DESERIALIZE})
+	source_group("interaction\\protocol\\3_3\\validate" FILES ${INTERACTION_PROTOCOL_3_3_VALIDATE})
+	source_group("interaction" FILES ${INTERACTION})
 	source_group("lib" FILES ${LIB_SRC})	
+	source_group("memory" FILES ${MEMORY})
+	source_group("model\\iota" FILES ${MODEL_IOTA})
+	source_group("model\\protocol\\3_3" FILES ${MODEL_PROTOCOL_3_3})
+	source_group("model\\protobufWrapper" FILES ${MODEL_PROTOBUF_WRAPPER})
+	source_group("model\\protopuf" FILES ${MODEL_PROTOPUF})	
+	source_group("model" FILES ${MODEL})
+	source_group("proto\\gradido" FILES ${PROTO_GRADIDO})
+	source_group("tinf" FILES ${TINF})
+	source_group("threading" FILES ${THREADING})
+	source_group("v3_3\\data" FILES ${v3_3_DATA})
 endif()
 
 include_directories(

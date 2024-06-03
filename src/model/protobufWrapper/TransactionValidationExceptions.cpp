@@ -220,11 +220,11 @@ namespace model {
 		}
 
 		// ******************************* Missing required sign *****************************************************
-		TransactionValidationRequiredSignMissingException::TransactionValidationRequiredSignMissingException(const std::vector<MemoryBin*>& missingPublicKeys) noexcept
+		TransactionValidationRequiredSignMissingException::TransactionValidationRequiredSignMissingException(const std::vector<memory::Block>& missingPublicKeys) noexcept
 			: TransactionValidationException("missing required sign")
 		{
-			std::for_each(missingPublicKeys.begin(), missingPublicKeys.end(), [&](MemoryBin* pubkey) {
-				mMissingPublicKeysHex.push_back(DataTypeConverter::binToHex(pubkey));
+			std::for_each(missingPublicKeys.begin(), missingPublicKeys.end(), [&](memory::Block pubkey) {
+				mMissingPublicKeysHex.push_back(pubkey.convertToHexString());
 			});
 		}
 

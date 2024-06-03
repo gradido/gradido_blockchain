@@ -22,15 +22,15 @@ namespace model {
 		{
 		public:
 			GradidoTransfer(const GradidoTransferMessage& data);			
-			GradidoTransfer(const TransferAmount& sender, ConstCachedMemoryBlockPtr recipient);
+			GradidoTransfer(const TransferAmount& sender, ConstMemoryBlockPtr recipient);
 
 			~GradidoTransfer() {}
 
 			const TransferAmount& getSender() const { return mSender; }
-			ConstCachedMemoryBlockPtr getRecipient() const { return mRecipient; }
+			ConstMemoryBlockPtr getRecipient() const { return mRecipient; }
 		protected:
 			TransferAmount mSender;
-			ConstCachedMemoryBlockPtr mRecipient;
+			ConstMemoryBlockPtr mRecipient;
 		};
 	}
 }

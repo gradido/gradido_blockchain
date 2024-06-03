@@ -28,26 +28,26 @@ namespace model {
 		public:
 			RegisterAddress(const RegisterAddressMessage& data);
 			RegisterAddress(
-				ConstCachedMemoryBlockPtr userPubkey,
+				ConstMemoryBlockPtr userPubkey,
 				AddressType addressType,
 				uint32_t derivationIndex = 1,
-				ConstCachedMemoryBlockPtr nameHash = nullptr,
-				ConstCachedMemoryBlockPtr accountPubkey = nullptr
+				ConstMemoryBlockPtr nameHash = nullptr,
+				ConstMemoryBlockPtr accountPubkey = nullptr
 			);
 
 			~RegisterAddress() {}
 
-			inline ConstCachedMemoryBlockPtr getUserPubkey() const { return mUserPubkey; }
+			inline ConstMemoryBlockPtr getUserPubkey() const { return mUserPubkey; }
 			inline AddressType getAddressType() const { return mAddressType; }
-			inline ConstCachedMemoryBlockPtr getNameHash() const { return mNameHash; }
-			inline ConstCachedMemoryBlockPtr getAccountPubkey() const { return mAccountPubkey; }
+			inline ConstMemoryBlockPtr getNameHash() const { return mNameHash; }
+			inline ConstMemoryBlockPtr getAccountPubkey() const { return mAccountPubkey; }
 			inline uint32_t getDerivationIndex() const { return mDerivationIndex; }
 
 		protected:
-			ConstCachedMemoryBlockPtr	mUserPubkey;
+			ConstMemoryBlockPtr	mUserPubkey;
 			AddressType					mAddressType;
-			ConstCachedMemoryBlockPtr	mNameHash;
-			ConstCachedMemoryBlockPtr	mAccountPubkey;
+			ConstMemoryBlockPtr	mNameHash;
+			ConstMemoryBlockPtr	mAccountPubkey;
 			uint32_t					mDerivationIndex;			
 		};
 	}

@@ -102,7 +102,7 @@ namespace model {
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationRequiredSignMissingException : public TransactionValidationException
 		{
 		public:
-			explicit TransactionValidationRequiredSignMissingException(const std::vector<MemoryBin*>& missingPublicKeys) noexcept;
+			explicit TransactionValidationRequiredSignMissingException(const std::vector<memory::Block>& missingPublicKeys) noexcept;
 
 		protected:
 			std::vector<std::string> mMissingPublicKeysHex;

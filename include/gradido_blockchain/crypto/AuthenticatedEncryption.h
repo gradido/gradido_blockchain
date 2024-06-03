@@ -9,6 +9,8 @@
 #include <map>
 #include <mutex>
 
+using namespace memory;
+
 class KeyPairEd25519;
 
 #define X25519_PUBLIC_KEY_SIZE crypto_scalarmult_curve25519_BYTES

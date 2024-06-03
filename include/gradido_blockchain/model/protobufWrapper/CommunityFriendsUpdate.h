@@ -17,7 +17,7 @@ namespace model {
 				IGradidoBlockchain* blockchain = nullptr,
 				const ConfirmedTransaction* parentConfirmedTransaction = nullptr
 				) const;
-			std::vector<MemoryBin*> getInvolvedAddresses() const;
+			std::vector<std::string_view> getInvolvedAddresses() const;
 			bool isInvolved(const std::string pubkeyString) const;
 			bool isBelongToUs(const TransactionBase* pairingTransaction) const;
 

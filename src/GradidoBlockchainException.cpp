@@ -232,3 +232,13 @@ std::string GradidoNullPointerException::getFullString() const
 	resulString += ", type name: " + mTypeName + ", function name: " + mFunctionName;
 	return resulString;
 }
+
+// ****************************** Invalid Size Exception **********************************************
+
+std::string InvalidSizeException::getFullString() const
+{
+	std::string result = what();
+	result += ", expected size: " + std::to_string(mExpectedSize);
+	result += ", actual size: " + std::to_string(mActualSize);
+	return result;
+}

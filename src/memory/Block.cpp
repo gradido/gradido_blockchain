@@ -27,9 +27,14 @@ namespace memory {
 	}
 
 	Block::Block(const std::vector<unsigned char>& data)
-		: Block(data.size())
+		: Block(data.size(), data.data()) 
 	{
-		memcpy(mData, data.data(), data.size());
+	
+	}
+	Block::Block(const std::string& data)
+		: Block(data.size(), (const unsigned char*)data.data())
+	{
+
 	}
 	// copy
 	Block::Block(Block& other)
@@ -82,7 +87,7 @@ namespace memory {
 		}
 	}
 
-	std::string Block::convertToHexString() const
+	std::string Block::convertToHex() const
 	{
 		uint32_t hexSize = mSize * 2 + 1;
 		Block hexMem(hexSize);
@@ -91,43 +96,21 @@ namespace memory {
 		return hex;
 	}
 
-	std::unique_ptr<std::string> Block::copyAsString() const
+	std::string Block::copyAsString() const
 	{
-		return std::make_unique<std::string>((char*)mData, mSize);
+		return { (char*)mData, mSize };
 	}
 
-	int Block::convertFromHex(const std::string& hex)
+	Block& Block::fromHex(const char* hexString, size_t stringSize)
 	{
-		size_t hexSize = hex.size();
-		size_t binSize = (hexSize) / 2;
-		if (binSize != mSize) {
-			return -1;
-		}
-		memset(mData, 0, mSize);
-
-		size_t resultBinSize = 0;
-		if (0 != sodium_hex2bin(mData, binSize, hex.data(), hexSize, nullptr, &resultBinSize, nullptr)) {
-			return -2;
-		}
-		return 0;
-	}
-	Block& Block::fromHex(const std::string& hex)
-	{
-		size_t hexSize = hex.size();
-		size_t binSize = (hexSize) / 2;
+		size_t binSize = (stringSize) / 2;
 		Block result(binSize);
 	
 		size_t resultBinSize = 0;
-		if (0 != sodium_hex2bin(result.data(), binSize, hex.data(), hexSize, nullptr, &resultBinSize, nullptr)) {
-			throw GradidoInvalidHexException("invalid hex for Block::fromHex", hex);
+		if (0 != sodium_hex2bin(result.data(), binSize, hexString, stringSize, nullptr, &resultBinSize, nullptr)) {
+			throw GradidoInvalidHexException("invalid hex for Block::fromHex", hexString);
 		}
 		return result;
-	}
-
-	void Block::copyFromProtoBytes(const std::string& bytes)
-	{
-		assert(bytes.size() == size());
-		memcpy(mData, bytes.data(), bytes.size());
 	}
 
 	bool Block::isTheSame(const Block& b) const

@@ -1,65 +1,68 @@
 #include "gradido_blockchain/lib/Decimal.h"
-#include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/lib/Decay.h"
+
+#ifndef USE_MPFR
+#include "gradido_blockchain/lib/DataTypeConverter.h"
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#endif 
 
 Decimal::Decimal(const std::string& decimalString)
 	: Decimal()
 {
-	fromString(decimalString);
+	fromString(decimalString.data());
 }
 
-
-Decimal::Decimal(long number)
-	: Decimal()
+Decimal::Decimal(const memory::StringCachedAlloc& decimalString)
+    : Decimal()
 {
-	mpfr_set_si(mDecimal, number, gDefaultRound);
-}
-
-Decimal::Decimal(const mpfr_ptr& decimal)
-	: Decimal()
-{
-	mpfr_set(mDecimal, decimal, gDefaultRound);
-}
-Decimal::Decimal(const Decimal& src)
-	: Decimal()
-{
-	mpfr_set(mDecimal, (mpfr_ptr)src, gDefaultRound);
+	fromString(decimalString.data());
 }
 
 Decimal::Decimal(Decimal&& src) noexcept
+	: mDecimal(std::move(src.mDecimal))
 {
-	mDecimal = src.mDecimal;
-	src.mDecimal = nullptr;
 }
 
 Decimal::Decimal()
-	: mDecimal(MemoryManager::getInstance()->getMathMemory())
 {
 
 }
 
 Decimal::~Decimal()
 {
-	if (mDecimal) {
-		MemoryManager::getInstance()->releaseMathMemory(mDecimal);
-		mDecimal = nullptr;
-	}	
+}
+
+#ifdef USE_MPFR
+Decimal::Decimal(long number)
+{
+	mpfr_set_si(mDecimal, number, gDefaultRound);
+}
+
+Decimal::Decimal(const mpfr_ptr& decimal)
+{
+	mpfr_set(mDecimal, decimal, gDefaultRound);
+}
+Decimal::Decimal(const Decimal& src)
+{
+	mpfr_set(mDecimal, (mpfr_ptr)src, gDefaultRound);
 }
 
 std::string Decimal::toString(uint8_t precision /* = 25 */) const
 {	
 	char* tmpStr = nullptr;
 	std::string formatString = "%." + std::to_string(precision) + "R*f";
-	mpfr_asprintf(&tmpStr, formatString.data(), MPFR_RNDN, mDecimal);
+	mpfr_asprintf(&tmpStr, formatString.data(), MPFR_RNDN, mDecimal.data());
 	std::string result;
 	result.assign(tmpStr);
 	mpfr_free_str(tmpStr);
-	return std::move(result);
+	return result;
 }
 
-void Decimal::fromString(const std::string& decimalString)
+void Decimal::fromString(const char* decimalString)
 {
-	if (mpfr_set_str(mDecimal, decimalString.data(), 10, gDefaultRound)) {
+	if (mpfr_set_str(mDecimal, decimalString, 10, gDefaultRound)) {
 		throw ParseDecimalStringException("cannot parse to decimal", decimalString);
 	}
 }
@@ -74,7 +77,7 @@ void Decimal::roundToPrecision(uint8_t precision)
 	std::string roundedDecimalString;
 	roundedDecimalString.reserve(precision + exp + 3);
 	if (exp < 1) {
-		if (mDecimal->_mpfr_sign == -1) {
+		if (mDecimal.data()->_mpfr_sign == -1) {
 			roundedDecimalString.assign("-0.");
 		} else {
 			roundedDecimalString.assign("0.");
@@ -89,6 +92,40 @@ void Decimal::roundToPrecision(uint8_t precision)
 
 	mpfr_free_str(buffer);
 }
+#else 
+Decimal::Decimal(long number)
+	: mDecimal(static_cast<double>(number))
+{
+}
+
+Decimal::Decimal(const double& decimal)
+	: mDecimal(decimal)
+{
+}
+Decimal::Decimal(const Decimal& src)
+	: mDecimal(src.mDecimal)
+{
+}
+
+std::string Decimal::toString(uint8_t precision /* = 25 */) const
+{
+	std::stringstream ss;
+	ss << std::setprecision(precision);
+	ss << mDecimal;
+	return ss.str();
+}
+
+void Decimal::fromString(const char* decimalString)
+{
+	mDecimal = std::stod(decimalString);
+}
+
+void Decimal::roundToPrecision(uint8_t precision)
+{
+	auto factor = std::pow(10, precision);
+	mDecimal = std::round(mDecimal * factor) / factor;
+}
+#endif
 
 
 // *************** Exceptions ************************

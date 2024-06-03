@@ -17,18 +17,18 @@ namespace model {
 			GradidoTransaction(const GradidoTransactionMessage& data);
 			GradidoTransaction(
 				const SignaturePair& firstSignaturePair,
-				ConstCachedMemoryBlockPtr bodyBytes,
-				ConstCachedMemoryBlockPtr parentMessageId = nullptr
+				ConstMemoryBlockPtr bodyBytes,
+				ConstMemoryBlockPtr parentMessageId = nullptr
 			);
 
 			~GradidoTransaction() {}
 
 			inline const SignatureMap& getSignatureMap() { return mSignatureMap; }
-			inline ConstCachedMemoryBlockPtr getBodyBytes() { return mBodyBytes; }
+			inline ConstMemoryBlockPtr getBodyBytes() { return mBodyBytes; }
 		protected:
-			SignatureMap			mSignatureMap;
-			ConstCachedMemoryBlockPtr	mBodyBytes;
-			ConstCachedMemoryBlockPtr	mParentMessageId;
+			SignatureMap		mSignatureMap;
+			ConstMemoryBlockPtr	mBodyBytes;
+			ConstMemoryBlockPtr	mParentMessageId;
 		};
 	}
 }

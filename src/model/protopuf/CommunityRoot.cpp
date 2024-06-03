@@ -3,16 +3,16 @@
 namespace model {
 	namespace protopuf {
 		CommunityRoot::CommunityRoot(const CommunityRootMessage& data)
-			: mPubkey(std::make_shared<CachedMemoryBlock>(data["pubkey"_f].value())),
-			mGmwPubkey(std::make_shared<CachedMemoryBlock>(data["gmw_pubkey"_f].value())),
-			mAufPubkey(std::make_shared<CachedMemoryBlock>(data["auf_pubkey"_f].value()))
+			: mPubkey(std::make_shared<memory::Block>(data["pubkey"_f].value())),
+			mGmwPubkey(std::make_shared<memory::Block>(data["gmw_pubkey"_f].value())),
+			mAufPubkey(std::make_shared<memory::Block>(data["auf_pubkey"_f].value()))
 		{
 		}
 
 		CommunityRoot::CommunityRoot(
-			ConstCachedMemoryBlockPtr pubkey,
-			ConstCachedMemoryBlockPtr gmwPubkey,
-			ConstCachedMemoryBlockPtr aufPubkey
+			ConstMemoryBlockPtr pubkey,
+			ConstMemoryBlockPtr gmwPubkey,
+			ConstMemoryBlockPtr aufPubkey
 		)
 			: mPubkey(pubkey), mGmwPubkey(gmwPubkey), mAufPubkey(aufPubkey)
 		{

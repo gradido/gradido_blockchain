@@ -170,4 +170,16 @@ public:
 	std::string getFullString() const { return what(); }
 };
 
+class InvalidSizeException : public GradidoBlockchainException
+{
+public:
+	explicit InvalidSizeException(const char* what, size_t expectedSize, size_t actualSize) noexcept
+		: GradidoBlockchainException(what), mExpectedSize(expectedSize), mActualSize(actualSize) {}
+
+	std::string getFullString() const;
+protected:
+	size_t mExpectedSize;
+	size_t mActualSize;
+};
+
 #endif //__GRADIDO_BLOCKCHAIN_EXCEPTION_H

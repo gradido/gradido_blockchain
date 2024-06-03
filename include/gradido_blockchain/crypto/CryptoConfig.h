@@ -7,7 +7,7 @@
 #include "mnemonic.h"
 #include "MnemonicType.h"
 
-#include "magic_enum/magic_enum.hpp"
+using namespace memory;
 
 namespace CryptoConfig
 {

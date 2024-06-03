@@ -26,6 +26,12 @@ namespace memory {
 		mpfr_set_ui(mathMemory, 0, gDefaultRound);
 		mData = mathMemory;
 	}
+	// move
+	MPFRBlock::MPFRBlock(MPFRBlock&& src) noexcept
+	{
+		mData = src.mData;
+		src.mData = nullptr;
+	}
 
 	MPFRBlock::~MPFRBlock()
 	{

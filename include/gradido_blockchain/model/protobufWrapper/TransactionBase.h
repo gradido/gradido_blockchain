@@ -12,10 +12,13 @@
 #pragma warning(disable:4800)
 
 #include "proto/gradido/basic_types.pb.h"
-#include "gradido_blockchain/MemoryManager.h"
+#include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/lib/MultithreadContainer.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/types.h"
+#ifdef USE_MPFR
+#include "mpfr.h"
+#endif // USE_MPFR
 
 /*!
 	@file 
@@ -95,8 +98,8 @@ namespace model {
 				const ConfirmedTransaction* parentGradidoBlock = nullptr
 				) const = 0;
 			//! \return caller need to clean up memory bins
-			virtual std::vector<MemoryBin*> getInvolvedAddresses() const = 0;
-			virtual bool isInvolved(const std::string pubkeyString) const = 0;
+			virtual std::vector<std::string_view> getInvolvedAddresses() const = 0;
+			virtual bool isInvolved(const std::string& pubkeyString) const = 0;
 			virtual bool isBelongToUs(const TransactionBase* pairingTransaction) const = 0;
 	
 			//! \return true if all required signatures are found in signature pairs
@@ -111,16 +114,20 @@ namespace model {
 
 			static bool isValidGroupAlias(const std::string& groupAlias);
 			static const char* getTransactionTypeString(TransactionType type);
+#ifdef USE_MPFR
 			static void amountToString(std::string* strPointer, mpfr_ptr amount);
+#endif // USE_MPFR
 			virtual std::string toDebugString() const { return ""; }
 
-		protected:
-			static MemoryBin* protoBufferStringToMemoryBin(const std::string& protoBufferString);
+			//! throw if string has wrong size
+			//! throw if string is filled with zeros
+			static void validate25519PublicKey(const std::string& ed25519PublicKey, const char* name);
 
+		protected:
 			uint32_t mMinSignatureCount;
 			bool mIsPrepared;
-			std::vector<MemoryBin*> mRequiredSignPublicKeys;
-			std::vector<MemoryBin*> mForbiddenSignPublicKeys;
+			std::vector<std::string_view> mRequiredSignPublicKeys;
+			std::vector<std::string_view> mForbiddenSignPublicKeys;
 
 		};
 	}

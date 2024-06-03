@@ -3,11 +3,12 @@
 
 #include <bit>
 #include "protopuf/message.h"
-#include "VectorCacheAllocator.h"
-#include "gradido_blockchain/MemoryManager.h"
+#include "gradido_blockchain/memory/VectorCacheAllocator.h"
+#include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/export.h"
 
 using namespace pp;
+using namespace memory;
 
 namespace model {
 	namespace protopuf {
@@ -23,24 +24,24 @@ namespace model {
 		public:
 			CommunityRoot(const CommunityRootMessage& data);
 			CommunityRoot(
-				ConstCachedMemoryBlockPtr pubkey,
-				ConstCachedMemoryBlockPtr gmwPubkey,
-				ConstCachedMemoryBlockPtr aufPubkey
+				ConstMemoryBlockPtr pubkey,
+				ConstMemoryBlockPtr gmwPubkey,
+				ConstMemoryBlockPtr aufPubkey
 			);
 			~CommunityRoot() {}
 
-			inline ConstCachedMemoryBlockPtr getPubkey() const { return mPubkey; }
-			inline ConstCachedMemoryBlockPtr getGmwPubkey() const { return mGmwPubkey; }
-			inline ConstCachedMemoryBlockPtr getAufPubkey() const { return mAufPubkey; }
+			inline ConstMemoryBlockPtr getPubkey() const { return mPubkey; }
+			inline ConstMemoryBlockPtr getGmwPubkey() const { return mGmwPubkey; }
+			inline ConstMemoryBlockPtr getAufPubkey() const { return mAufPubkey; }
 
 			/*operator CommunityRootMessage() const {
 				return CommunityRootMessage{ mPubkey->bytes(), mGmwPubkey->bytes(), mAufPubkey->bytes() };
 			}*/
 
 		protected:
-			ConstCachedMemoryBlockPtr mPubkey;
-			ConstCachedMemoryBlockPtr mGmwPubkey;
-			ConstCachedMemoryBlockPtr mAufPubkey;
+			ConstMemoryBlockPtr mPubkey;
+			ConstMemoryBlockPtr mGmwPubkey;
+			ConstMemoryBlockPtr mAufPubkey;
 		};
 	}
 }

@@ -18,14 +18,17 @@ namespace memory {
 	class GRADIDOBLOCKCHAIN_EXPORT MPFRBlock
 	{
 	public:
+		MPFRBlock();
 		~MPFRBlock();
+		MPFRBlock(MPFRBlock&& src) noexcept;
 
 		static std::unique_ptr<MPFRBlock> create();
 
-		mpfr_ptr getData() { return mData; }
+		mpfr_ptr data() { return mData; }
+		const mpfr_ptr data() const { return mData; }
 		inline operator mpfr_ptr() { return mData; }
-	protected:
-		MPFRBlock();
+
+	protected:		
 		static void clear();
 
 		mpfr_ptr mData;

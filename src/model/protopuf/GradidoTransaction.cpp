@@ -12,16 +12,16 @@ namespace model {
 				mSignatureMap = SignatureMap(sigMap.value());
 			}
 			if (bodyBytes.has_value()) {
-				mBodyBytes = std::make_shared<CachedMemoryBlock>(bodyBytes.value());
+				mBodyBytes = std::make_shared<memory::Block>(bodyBytes.value());
 			}
 			if (parentMessageId.has_value()) {
-				mParentMessageId = std::make_shared<CachedMemoryBlock>(parentMessageId.value());
+				mParentMessageId = std::make_shared<memory::Block>(parentMessageId.value());
 			}
 		}
 		GradidoTransaction::GradidoTransaction(
 			const SignaturePair& firstSignaturePair,
-			ConstCachedMemoryBlockPtr bodyBytes,
-			ConstCachedMemoryBlockPtr parentMessageId /*= nullptr*/
+			ConstMemoryBlockPtr bodyBytes,
+			ConstMemoryBlockPtr parentMessageId /*= nullptr*/
 		)
 			: mSignatureMap(firstSignaturePair), mBodyBytes(bodyBytes), mParentMessageId(parentMessageId)
 		{

@@ -18,6 +18,7 @@ namespace memory {
 		// copy data
 		Block(size_t size, const unsigned char* data);
 		Block(const std::vector<unsigned char>& data);
+		Block(const std::string& data);
 		// copy
 		Block(Block& other);
 		Block(const Block& other);
@@ -37,17 +38,15 @@ namespace memory {
 
 		inline unsigned char* data(size_t startIndex) { assert(startIndex < mSize); return &mData[startIndex]; }
 		inline const unsigned char* data(size_t startIndex) const { assert(startIndex < mSize); return &mData[startIndex]; }
-		inline std::unique_ptr<std::string> convertToHex() const { return std::make_unique<std::string>(convertToHexString()); }
-		std::string convertToHexString() const;
-		std::unique_ptr<std::string> copyAsString() const;
+		std::string convertToHex() const;
+		std::string copyAsString() const;
 		//! \return 0 if ok
 		//!        -1 if bin is to small
 		//!        -2 if hex is invalid
-		int convertFromHex(const std::string& hex);
-		static Block& fromHex(const std::string& hex);
-		void copyFromProtoBytes(const std::string& bytes);
-		inline void copyFrom(const Block* origin) { assert(mSize == origin->size()); memcpy(mData, origin->data(), mSize); }
-		inline void copyFrom(const unsigned char* origin) { memcpy(mData, origin, mSize); }
+		static inline Block& fromHex(const std::string& hex) {
+			return fromHex(hex.data(), hex.size());
+		}
+		static Block& fromHex(const char* hexString, size_t stringSize);
 
 		bool isTheSame(const Block& b) const;
 		inline bool operator == (const Block& b) const { return isTheSame(b); }
@@ -61,10 +60,12 @@ namespace memory {
 		static std::mutex mBlockStacksMutex;
 		static std::map<size_t, BlockStack*> mBlockStacks;
 	};
+
+	typedef std::shared_ptr<Block> MemoryBlockPtr;
+	typedef std::shared_ptr<const Block> ConstMemoryBlockPtr;
 }
 
 typedef memory::Block MemoryBin;
-typedef std::shared_ptr<memory::Block> MemoryBlockPtr;
-typedef std::shared_ptr<const memory::Block> ConstMemoryBlockPtr;
+
 
 #endif //__GRADIDO_BLOCKCHAIN_MEMORY_BLOCK_H

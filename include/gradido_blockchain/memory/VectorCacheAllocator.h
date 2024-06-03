@@ -72,9 +72,10 @@ namespace memory {
     template <typename T>
     std::mutex VectorCacheAllocator<T>::mMutex;
 
-    typedef std::vector<std::byte, VectorCacheAllocator<std::byte>> ByteVectorCachedAlloc;
-    typedef std::basic_string<char, std::char_traits<char>, VectorCacheAllocator<char>> StringCachedAlloc;
+    typedef std::vector<std::byte, memory::VectorCacheAllocator<std::byte>> ByteVectorCachedAlloc;
+    typedef std::basic_string<char, std::char_traits<char>, memory::VectorCacheAllocator<char>> StringCachedAlloc;
 }
+
 
 
 #endif //__GRADIDO_BLOCKCHAIN_MEMORY_VECTOR_CACHE_ALLOCATOR_H
