@@ -153,7 +153,7 @@ namespace DataTypeConverter
 		size_t hexSize = hexString.size();
 		size_t binSize = (hexSize) / 2;
 		std::unique_ptr<std::string> binString(new std::string(binSize, 0));
-		
+
 		size_t resultBinSize = 0;
 
 		if (0 != sodium_hex2bin((unsigned char*)binString->data(), binSize, hexString.data(), hexSize, nullptr, &resultBinSize, nullptr)) {
@@ -190,23 +190,6 @@ namespace DataTypeConverter
 		return bin;
 	}
 
-	std::unique_ptr<std::string> base64ToBinString(std::unique_ptr<std::string> base64String, int variant/* = sodium_base64_VARIANT_ORIGINAL*/)
-	{
-		size_t encodedSize = base64String->size();
-		size_t binSize = (encodedSize / 4) * 3;
-		memory::Block bin(binSize);
-
-		size_t resultBinSize = 0;
-		auto convertResult = sodium_base642bin(bin, binSize, base64String->data(), encodedSize, nullptr, &resultBinSize, nullptr, variant);
-		if (0 != convertResult) {
-			throw GradidoInvalidBase64Exception("invalid base64", base64String.release()->data(), convertResult);
-		}
-		base64String->reserve(resultBinSize);
-		base64String->assign((const char*)*bin, resultBinSize);
-		return base64String;
-	}
-
-
 	std::string binToBase64(const unsigned char* data, size_t size, int variant /*= sodium_base64_VARIANT_ORIGINAL*/)
 	{
 		size_t encodedSize = sodium_base64_encoded_len(size, variant);
@@ -231,13 +214,13 @@ namespace DataTypeConverter
 		}
 		// we don't need a trailing \0 because string already store the size
 		proto_bin->reserve(encodedSize-1);
-		proto_bin->assign((const char*)*base64, encodedSize-1);
-		
+		proto_bin->assign((const char*)base64.data(), encodedSize-1);
+
 		return proto_bin;
 	}
-	
-	 
-	std::string binToHex(const unsigned char* data, size_t size) 
+
+
+	std::string binToHex(const unsigned char* data, size_t size)
 	{
 		size_t hexSize = size * 2 + 1;
 		size_t binSize = size;
@@ -255,7 +238,7 @@ namespace DataTypeConverter
 	{
 		size_t binSize = binString->size();
 		size_t hexSize = binSize * 2 + 1;
-		
+
 		memory::Block hex(hexSize);
 
 		size_t resultBinSize = 0;
@@ -266,7 +249,7 @@ namespace DataTypeConverter
 	}
 
 	std::string pubkeyToHex(const unsigned char* pubkey)
-	{	
+	{
 		size_t hexSize = crypto_sign_PUBLICKEYBYTES * 2 + 1;
 		size_t binSize = crypto_sign_PUBLICKEYBYTES;
 
@@ -280,7 +263,7 @@ namespace DataTypeConverter
 		return hexString;
 	}
 
-	std::string timePointToString(const Timepoint& tp) 
+	std::string timePointToString(const Timepoint& tp)
 	{
 		// Convert time_point to time_t, which represents the calendar time
 		std::time_t time = system_clock::to_time_t(tp);
@@ -361,13 +344,13 @@ namespace DataTypeConverter
 		int count_replacements = 0;
 
 		if (json.IsObject()) {
-			for (auto it = json.MemberBegin(); it != json.MemberEnd(); it++) 
+			for (auto it = json.MemberBegin(); it != json.MemberEnd(); it++)
 			{
 				if (it->value.IsString()) {
 					std::string name(it->name.GetString(), it->name.GetStringLength());
 					if ("amount" == name || "finalGdd" == name) continue;
 				}
-				
+
 				count_replacements += replaceBase64WithHex(it->value, alloc);
 			}
 		}
@@ -376,7 +359,7 @@ namespace DataTypeConverter
 				count_replacements += replaceBase64WithHex(*it, alloc);
 			}
 		}
-		else if (json.IsString()) 
+		else if (json.IsString())
 		{
 			std::string field_value(json.GetString(), json.GetStringLength());
 			if (!std::regex_match(field_value, g_rexExpBase64)) return 0;

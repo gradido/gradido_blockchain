@@ -38,13 +38,6 @@ TEST(DataTypeConverterTest, Base64ToBinString)
 	ASSERT_EQ(DataTypeConverter::base64ToBinString(g_Base64_Examples[0]), g_Base64_Example_Bins[0]);
 }
 
-TEST(DataTypeConverterTest, Base64ToBinUniqueString)
-{
-	auto base64UniqueString = std::make_unique<std::string>(g_Base64_Examples[0]);
-	auto bin = DataTypeConverter::base64ToBinString(std::move(base64UniqueString));
-	ASSERT_EQ(g_Base64_Example_Bins[0], bin->data());
-}
-
 TEST(DataTypeConverterTest, BinToBase64)
 {
 	ASSERT_EQ(DataTypeConverter::binToBase64(g_Base64_Example_Bins[0]), g_Base64_Examples[0]);

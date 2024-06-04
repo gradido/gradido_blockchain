@@ -10,16 +10,16 @@
 #include <memory>
 #include <cstring>
 #include <assert.h>
-#include <mutex> 
+#include <mutex>
 #include <regex>
 
 using namespace magic_enum;
 
-static std::regex g_checkValidWord("^[a-zA-ZÄÖÜäöüß&;]*$");
+static std::regex g_checkValidWord("^[a-zA-Zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½&;]*$");
 
 Mnemonic::Mnemonic()
 {
-	memset(mWords, 0, 2048);
+	memset(mWords, 0, 2048 * sizeof(char*));
 //	mWordHashIndices.resize(2048);
 }
 
@@ -32,7 +32,6 @@ Mnemonic::~Mnemonic()
 
 void Mnemonic::init(void(*fill_words_func)(unsigned char*), unsigned int original_size, unsigned int compressed_size)
 {
-	LOG_SCOPE_F(ERROR, "Mnemonic::init");
 	std::unique_lock<std::shared_mutex> _lock(mWorkingMutex);
 	clear();
 
@@ -70,7 +69,7 @@ void Mnemonic::init(void(*fill_words_func)(unsigned char*), unsigned int origina
 
 		unsigned short cursor = 0;
 		u32 word_begin = 0, word_end = 0;
-		
+
 		for (unsigned int i = 0; i < original_size; i++) {
 			if (cursor >= 2048) {
 				throw MnemonicException("more than 2048 words in word list");
@@ -148,16 +147,17 @@ void Mnemonic::init(void(*fill_words_func)(unsigned char*), unsigned int origina
 		for (auto it_collide = mHashCollisionWords.begin(); it_collide != mHashCollisionWords.end(); it_collide++) {
 			mWordHashIndices.erase(it_collide->first);
 		}
+		return;
 	}
 	//printf("c[Mnemonic::%s] before freeing buffer \n", __FUNCTION__);
 	free(buffer);
 	throw MnemonicException("reached unexpected end of function");
 }
 
-short Mnemonic::getWordIndex(const char* word) const 
-{ 
+short Mnemonic::getWordIndex(const char* word) const
+{
 	std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);
-	DHASH word_hash = DRMakeStringHash(word); 
+	DHASH word_hash = DRMakeStringHash(word);
 	auto it = mWordHashIndices.find(word_hash);
 	if (it != mWordHashIndices.end()) {
 		return it->second;
@@ -173,25 +173,25 @@ short Mnemonic::getWordIndex(const char* word) const
 }
 
 /*
-bool Mnemonic::isWordExist(const std::string& word) const 
-{ 
+bool Mnemonic::isWordExist(const std::string& word) const
+{
 	return getWordIndex(word.data()) != -1;
-	//DHASH word_hash = DRMakeStringHash(word.data());  
-	//return mWordHashIndices.find(word_hash) != mWordHashIndices.end(); 
+	//DHASH word_hash = DRMakeStringHash(word.data());
+	//return mWordHashIndices.find(word_hash) != mWordHashIndices.end();
 }
 */
 
 const char* Mnemonic::getWord(short index) const {
 	//std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);
-	
+
 	if (index < 2048 && index >= 0) {
 		std::string word;
 		{
 			std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);
 			word = mWords[index];
 		}
-		
-		if (!std::regex_match(word, g_checkValidWord)) {			
+
+		if (!std::regex_match(word, g_checkValidWord)) {
 			CryptoConfig::loadMnemonicWordLists();
 			{
 				std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);
@@ -216,7 +216,7 @@ void Mnemonic::clear()
 			free(mWords[i]);
 		}
 	}
-	memset(mWords, 0, 2048);
+	memset(mWords, 0, 2048 * sizeof(char*));
 	mWordHashIndices.clear();
 	mHashCollisionWords.clear();
 }
@@ -236,14 +236,14 @@ std::string Mnemonic::getCompleteWordList()
 		std::regex("Uuml;"),
 		std::regex("&szlig;")
 	};
-	std::string replaceStrings[] = { "ä", "ö", "ü", "Ä", "Ö", "Ü", "ß" };
+	std::string replaceStrings[] = { "ï¿½", "ï¿½", "ï¿½", "ï¿½", "ï¿½", "ï¿½", "ï¿½" };
 	for (int i = 0; i < 2048; i++) {
 		if (mWords[i]) {
 			std::string word = mWords[i];
 			for (int s = 0; s < 7; s++) {
 				word = std::regex_replace(word, toReplaced[s], replaceStrings[s]);
 			}
-		
+
 			result += std::to_string(i) + ": " + word + "\n";
 		}
 		else {
@@ -270,7 +270,7 @@ std::string Mnemonic::getCompleteWordListSorted()
 {
 	std::shared_lock<std::shared_mutex> _lock(mWorkingMutex);
 	std::string result("");
-	
+
 	std::list<std::string> words;
 	for (int i = 0; i < 2048; i++) {
 		if (mWords[i]) {
@@ -283,7 +283,7 @@ std::string Mnemonic::getCompleteWordListSorted()
 	words.sort(compare_nocase);
 
 	//std::string toReplaced[] = { "auml", "ouml", "uuml", "Auml", "Ouml", "Uuml", "szlig" };
-	std::regex toReplaced[] = { 
+	std::regex toReplaced[] = {
 		std::regex("&auml;"),
 		std::regex("&ouml;"),
 		std::regex("&uuml;"),
@@ -292,7 +292,7 @@ std::string Mnemonic::getCompleteWordListSorted()
 		std::regex("Uuml;"),
 		std::regex("&szlig;")
 	};
-	std::string replaceStrings[] = { "ä", "ö", "ü", "Ä", "Ö", "Ü", "ß" };
+	std::string replaceStrings[] = { "ï¿½", "ï¿½", "ï¿½", "ï¿½", "ï¿½", "ï¿½", "ï¿½" };
 	int i = 0;
 	for(auto it = words.begin(); it != words.end(); it++) {
 		std::string word = *it;
@@ -368,7 +368,7 @@ std::string MnemonicException::getFullString() const noexcept
 	if (mWord.size()) {
 		std::string result;
 		auto whatString = what();
-		result.reserve(strlen(whatString) + mWord.size() + 14); 
+		result.reserve(strlen(whatString) + mWord.size() + 14);
 		result = whatString;
 		result += " with word: " + mWord;
 		return result;

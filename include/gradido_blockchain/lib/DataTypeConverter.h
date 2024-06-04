@@ -35,15 +35,13 @@ namespace DataTypeConverter {
 		auto bin = base64ToBin(base64String, variant);
 		return bin.copyAsString();
 	}
-	GRADIDOBLOCKCHAIN_EXPORT std::unique_ptr<std::string> base64ToBinString(std::unique_ptr<std::string> base64String, int variant = sodium_base64_VARIANT_ORIGINAL);
-
 	GRADIDOBLOCKCHAIN_EXPORT std::string binToBase64(const unsigned char* data, size_t size, int variant = sodium_base64_VARIANT_ORIGINAL);
 	GRADIDOBLOCKCHAIN_EXPORT inline std::string binToBase64(const memory::Block& data, int variant = sodium_base64_VARIANT_ORIGINAL) { return binToBase64(data.data(), data.size(), variant); }
 	GRADIDOBLOCKCHAIN_EXPORT inline std::string binToBase64(const std::string& proto_bin, int variant = sodium_base64_VARIANT_ORIGINAL) {
 		return binToBase64((const unsigned char*)proto_bin.data(), proto_bin.size(), variant);
 	}
 	GRADIDOBLOCKCHAIN_EXPORT std::unique_ptr<std::string> binToBase64(std::unique_ptr<std::string> proto_bin, int variant = sodium_base64_VARIANT_ORIGINAL);
-	
+
 
 	GRADIDOBLOCKCHAIN_EXPORT std::string binToHex(const unsigned char* data, size_t size);
 	GRADIDOBLOCKCHAIN_EXPORT std::unique_ptr<std::string> binToHex(std::unique_ptr<std::string> binString);
@@ -56,7 +54,7 @@ namespace DataTypeConverter {
 
 	GRADIDOBLOCKCHAIN_EXPORT const char* numberParseStateToString(NumberParseState state);
 
-	
+
 	GRADIDOBLOCKCHAIN_EXPORT std::string timePointToString(const Timepoint& tp);
 	GRADIDOBLOCKCHAIN_EXPORT std::string timespanToString(const std::chrono::seconds timespan);
 	//GRADIDOBLOCKCHAIN_EXPORT const Timepoint convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp);
@@ -79,7 +77,7 @@ namespace DataTypeConverter {
 		std::string getFullString() const;
 	};
 
-	class GRADIDOBLOCKCHAIN_EXPORT ParseNumberException : public GradidoBlockchainException 
+	class GRADIDOBLOCKCHAIN_EXPORT ParseNumberException : public GradidoBlockchainException
 	{
 	public:
 		explicit ParseNumberException(const char* what, NumberParseState parseState) noexcept;

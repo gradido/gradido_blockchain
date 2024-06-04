@@ -1,6 +1,8 @@
 #include "gradido_blockchain/memory/BlockStack.h"
 #include "loguru/loguru.hpp"
 
+#include <cstring>
+
 namespace memory {
 	BlockStack::BlockStack(size_t size)
 		: mSize(size)

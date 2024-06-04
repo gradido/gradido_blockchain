@@ -28,7 +28,7 @@ SecretKeyCryptography::~SecretKeyCryptography()
 void SecretKeyCryptography::createKey(const std::string& salt_parameter, const std::string& passwd)
 {
 	assert(crypto_hash_sha512_BYTES >= crypto_pwhash_SALTBYTES);
-		
+
 	auto appSecret = CryptoConfig::g_CryptoAppSecret;
 	auto serverCryptoKey = CryptoConfig::g_ServerCryptoKey;
 	if (!appSecret) {
@@ -37,18 +37,17 @@ void SecretKeyCryptography::createKey(const std::string& salt_parameter, const s
 	if (!serverCryptoKey) {
 		throw CryptoConfig::MissingKeyException("in SecretKeyCryptography::createKey key is missing", "crypto.server_key");
 	}
-#ifndef _TEST_BUILD	
-	LOG_SCOPE_F(WARNING, __FUNCTION__);
+#ifndef _TEST_BUILD
 	Profiler timeUsed;
-#endif 
+#endif
 	std::unique_lock<std::shared_mutex> _lock(mWorkingMutex);
 #ifndef _TEST_BUILD
 	if (timeUsed.millis() > 10) {
 		LOG_F(WARNING, "wait % s on getting lock\n", timeUsed.string().data());
 		timeUsed.reset();
 	}
-#endif 
-	
+#endif
+
 	// use hash512 because existing data where calculated with that, but could be also changed to hash256
 	memory::Block hash512_salt(crypto_hash_sha512_BYTES); // need at least crypto_pwhash_SALTBYTES 16U
 
@@ -96,7 +95,7 @@ memory::Block SecretKeyCryptography::encrypt(const memory::Block& message) const
 	if (!mEncryptionKey) {
 		throw MissingEncryptionException("key missing for encrypt");
 	}
-	
+
 	size_t message_len = message.size();
 	size_t ciphertext_len = crypto_secretbox_MACBYTES + message_len;
 
@@ -142,7 +141,7 @@ memory::Block SecretKeyCryptography::decrypt(const unsigned char* encryptedMessa
 DecryptionException::DecryptionException(const char* what, memory::ConstBlockPtr message) noexcept
 	: SecretKeyCryptographyException(what), mMessage(message)
 {
-	
+
 }
 
 std::string DecryptionException::getFullString() const

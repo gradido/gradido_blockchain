@@ -2,7 +2,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
-#include <optional>    
+#include <optional>
 
 template <class TKey, class TValue>
 class AccessExpireCache
@@ -81,10 +81,10 @@ protected:
         }
     }
 
-    template<class TValue>
+    //template<class TValue>
     struct ValueTimePoint
     {
-        template<class TValue>
+//        template<class TValue>
         ValueTimePoint(TValue _value)
             : value(_value), timepoint(std::chrono::high_resolution_clock::now())
         {
@@ -94,7 +94,7 @@ protected:
     };
 
     std::chrono::milliseconds mTimeout;
-    std::map<TKey, ValueTimePoint<TValue>> mValues;
+    std::map<TKey, ValueTimePoint> mValues;
     std::multimap<std::chrono::time_point<std::chrono::high_resolution_clock>, TKey> mValuePairCreationTimes;
     mutable std::mutex mMutex;
 };

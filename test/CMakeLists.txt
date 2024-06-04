@@ -9,6 +9,15 @@ IF(WIN32)
     include_directories(
         ${GTest_INCLUDE_DIRS}
     )
+else()
+    include(FetchContent)
+    FetchContent_Declare(
+      googletest
+      URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
+    )
+    # For Windows: Prevent overriding the parent project's compiler/linker settings
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
 endif()
 
 # collect source code files
@@ -35,17 +44,11 @@ ENDIF()
 
 enable_testing()
 
-#include(FetchContent)
-#FetchContent_Declare(
-#  googletest
-#  URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
-#)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-#FetchContent_MakeAvailable(googletest)
+find_package(MPFR REQUIRED)
+find_package(Sodium REQUIRED)
 
 add_executable(GradidoBlockchainTest ${TEST_SRC})
-target_link_libraries(GradidoBlockchainTest GradidoBlockchain ) #libprotobuf
+target_link_libraries(GradidoBlockchainTest GradidoBlockchain ${MPFR_LIBRARIES} sodium loguru::loguru) #libprotobuf
 IF(WIN32)    
     find_library(ED25519_BIP32_RUST_C_LIB ed25519_bip32_c_interface.dll.lib PATHS 
 		"${PROJECT_BINARY_DIR}/../dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
@@ -62,11 +65,6 @@ ELSE()
     target_link_libraries(GradidoBlockchainTest ed25519_bip32_c_interface gtest)
 ENDIF()
 
-IF(NOT BUILD_SHARED_LIBS) 
-    IF(WIN32) 
-        target_link_libraries(GradidoBlockchainTest ${CONAN_LIBS})
-    ENDIF()
-ENDIF()
 
 IF(WIN32)
   add_custom_command(TARGET GradidoBlockchainTest POST_BUILD

@@ -8,7 +8,6 @@
 #include <memory>
 #include <array>
 
-
 class KeyPairEd25519;
 
 class GRADIDOBLOCKCHAIN_EXPORT Passphrase
@@ -28,16 +27,16 @@ public:
 	std::shared_ptr<Passphrase> transform(const Mnemonic* targetWordSource);
 
 	//! \brief create clear passphrase from word indices from bitcoin word list (bip0039)
-	//! 
+	//!
 	//! Used by hashing function to get really the same string,
 	//! even user has typed in some not filtered character
 	std::string createClearPassphrase() const;
 
 	//! \brief replace utf8 characters with html special character encoding
-	//! 
+	//!
 	//! TODO: add more utf8 chars for other languages as they needed
 	static std::string filter(const std::string& passphrase);
-	
+
 	//! \return true if all words in passphrase existing in mWordSource
 	bool checkIfValid();
 

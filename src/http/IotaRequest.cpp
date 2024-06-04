@@ -16,7 +16,7 @@
 #include "furi/furi.hpp"
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "httplib.h"
-#include "loguru.hpp"
+#include "loguru/loguru.hpp"
 
 #include "iota_rust_clib.h"
 
@@ -38,7 +38,7 @@ std::vector<std::string> IotaRequest::getTips()
 {
 	auto fullPath = buildFullPath("tips");
 	auto responseString = GET(fullPath);
-		
+
 	auto json = parseResponse(responseString);
 
 	if (!json.HasMember("data")) {
@@ -55,14 +55,14 @@ std::vector<std::string> IotaRequest::getTips()
 	for (auto it = tips.Begin(); it != tips.End(); it++) {
 		parentIds.push_back(it->GetString());
 	}
-	
+
 	return parentIds;
 }
 
 
 
 std::string IotaRequest::sendMessage(const iota::TopicIndex& index, const std::string& messageHex)
-{	
+{
 	if (ServerConfig::g_IotaLocalPow) {
 		//auto index = DataTypeConverter::hexToBinString(indexHex.substr(0, indexHex.size()-1));
 		//auto message = DataTypeConverter::hexToBinString(messageHex.substr(0, messageHex.size()-1));
@@ -98,7 +98,7 @@ std::string IotaRequest::sendMessage(const iota::TopicIndex& index, const std::s
 
 	auto fullPath = buildFullPath("messages");
 	auto responseString = POST(fullPath.data(), requestJson);
-	
+
 	auto json = parseResponse(responseString);
 	if (!json.HasMember("data")) {
 		throw IotaPostRequestException("data member in response missing", fullPath)
@@ -114,8 +114,8 @@ std::string IotaRequest::sendMessage(const iota::TopicIndex& index, const std::s
 
 rapidjson::Document IotaRequest::getMessageJson(const std::string& messageIdHex)
 {
-	// GET /api/v1/messages/{messageId} 
-	
+	// GET /api/v1/messages/{messageId}
+
 	std::string fullPath = buildFullPath(std::string("messages", 8), messageIdHex);
 	return parseResponse(GET(fullPath.data()));
 }
@@ -219,7 +219,7 @@ iota::NodeInfo IotaRequest::getNodeInfo()
 	auto fullPath = buildFullPath(std::string("info", 4));
 	auto json = parseResponse(GET(fullPath.data()));
 	if (!json.IsObject()) return result;
-	
+
 	if (!json.HasMember("data")) {
 		throw IotaRequestException("data member in response missing", fullPath);
 	}
@@ -248,7 +248,7 @@ iota::NodeInfo IotaRequest::getNodeInfo()
 		throw IotaRequestException("latestMilestoneTimestamp in response missing or not a int64", fullPath);
 	}
 	result.lastMilestoneTimestamp = data["latestMilestoneTimestamp"].GetInt64();
-	
+
 	return result;
 }
 

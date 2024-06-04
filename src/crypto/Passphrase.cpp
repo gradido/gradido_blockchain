@@ -211,6 +211,7 @@ bool Passphrase::checkIfValid()
 	}
 	return true;
 }
+#define _DEBUG
 const Mnemonic* Passphrase::detectMnemonic(const std::string& passphrase, const KeyPairEd25519* userKeyPair /* = nullptr*/)
 {
 	std::istringstream iss(passphrase);
@@ -219,11 +220,11 @@ const Mnemonic* Passphrase::detectMnemonic(const std::string& passphrase, const 
 		std::istream_iterator<std::string>()
 	);
 
-#ifdef _DEBUG 
-	LOG_SCOPE_F(9, __FUNCTION__);
+#ifdef _DEBUG
 	std::string userPublicKeyHex;
-	if (userKeyPair) 
+	if (userKeyPair)
 	{
+	    LOG_SCOPE_F(9, __FUNCTION__);
 		userPublicKeyHex = userKeyPair->getPublicKey()->convertToHex();
 		LOG_F(9, "user public key hex: %s\n", userPublicKeyHex.data());
 	}
@@ -231,8 +232,9 @@ const Mnemonic* Passphrase::detectMnemonic(const std::string& passphrase, const 
     std::string last_words_not_found[enum_integer(MnemonicType::MAX)];
 	Mnemonic* result = nullptr;
 	enum_for_each<MnemonicType>([&](auto val) {
-		if (result) { return; }
+		if (result)  return;
 		constexpr MnemonicType type = val;
+		if(type == MnemonicType::MAX) return;
 		int i = enum_integer(type);
 		Mnemonic& m = CryptoConfig::g_Mnemonic_WordLists[i];
 		bool existAll = true;
@@ -251,18 +253,19 @@ const Mnemonic* Passphrase::detectMnemonic(const std::string& passphrase, const 
 			}
 			count++;
 		}
-		if (existAll) 
+		if (existAll)
 		{
-			if (userKeyPair) 
+			if (userKeyPair)
 			{
 				std::shared_ptr<Passphrase> test_passphrase(new Passphrase(passphrase, &m));
 				test_passphrase->createWordIndices();
 				auto keyPairFromPassphrase = KeyPairEd25519::create(test_passphrase);
-				if (keyPairFromPassphrase) 
+				if (keyPairFromPassphrase)
 				{
-					if (!keyPairFromPassphrase->isTheSame(*userKeyPair)) 
+					if (!keyPairFromPassphrase->isTheSame(*userKeyPair))
 					{
 #ifdef _DEBUG  // additional infos for debugging if error occure in test
+                        LOG_SCOPE_F(9, __FUNCTION__);
 						LOG_F(9, "public key mismatch");
 						LOG_F(9, "user public key: %s, public key from passphrase: %s\n",
 							userPublicKeyHex.data(),

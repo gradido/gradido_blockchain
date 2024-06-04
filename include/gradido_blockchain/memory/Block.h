@@ -7,6 +7,7 @@
 #include <map>
 #include <vector>
 #include <cassert>
+#include <memory>
 
 namespace memory {
 
@@ -24,7 +25,7 @@ namespace memory {
 		Block(const Block& other);
 		// move
 		Block(Block&& other) noexcept;
-		// also move 
+		// also move
 		Block& operator=(Block&& other) noexcept;
 
 		~Block();

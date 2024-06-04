@@ -23,7 +23,7 @@ namespace CryptoConfig
 
 	void loadMnemonicWordLists(bool printToFile/* = false*/)
 	{
-		enum_for_each<MnemonicType>([printToFile](auto val) {
+		enum_for_each<MnemonicType>([&](auto val) {
 			constexpr MnemonicType type = val;
 			int i = enum_integer(type);
 			try {
@@ -37,6 +37,8 @@ namespace CryptoConfig
 				case MnemonicType::BIP0039_SORTED_ORDER:
 					g_Mnemonic_WordLists[i].init(populate_mnemonic_bip0039, g_mnemonic_bip0039_original_size, g_mnemonic_bip0039_compressed_size);
 					break;
+                case MnemonicType::MAX:
+                    return;
 					//const char* what, const char* enumName, int value
 				default: throw GradidoUnhandledEnum("loadMnemonicWordLists", enum_type_name<decltype(type)>().data(), i);
 				}
@@ -65,7 +67,7 @@ namespace CryptoConfig
 		// key for shorthash for comparing passwords
 		auto serverKey = cfg.getString("crypto.server_key", "");
 		if ("" != serverKey) {
-			g_ServerCryptoKey = std::make_shared<memory::Block>(memory::Block::fromHex(serverKey));			
+			g_ServerCryptoKey = std::make_shared<memory::Block>(memory::Block::fromHex(serverKey));
 			if (!g_ServerCryptoKey || g_ServerCryptoKey->size() != crypto_shorthash_KEYBYTES) {
 				throw std::runtime_error("crypto.server_key hasn't correct size or isn't valid hex");
 			}
@@ -74,7 +76,7 @@ namespace CryptoConfig
 		auto supportPublicKey = cfg.getString("crypto.server_admin_public", "");
 		if ("" != supportPublicKey) {
 			g_SupportPublicKey = std::make_shared<memory::Block>(memory::Block::fromHex(supportPublicKey));
-			
+
 			if (!g_SupportPublicKey || g_SupportPublicKey->size() != ED25519_PUBLIC_KEY_SIZE) {
 				throw std::runtime_error("crypto.server_admin_public hasn't correct size or isn't valid hex");
 			}
@@ -96,7 +98,7 @@ namespace CryptoConfig
 
 	}
 
-	std::string MissingKeyException::getFullString() const 
+	std::string MissingKeyException::getFullString() const
 	{
 		auto result = std::string(what());
 		result += ", key name: " + mKeyName;
