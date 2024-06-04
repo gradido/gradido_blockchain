@@ -6,7 +6,7 @@
 #include "ed25519_bip32_c_interface.h"
 
 
-KeyPairEd25519::KeyPairEd25519(ConstMemoryBlockPtr publicKey, ConstMemoryBlockPtr privateKey/* = nullptr*/, ConstMemoryBlockPtr chainCode/* = nullptr*/)
+KeyPairEd25519::KeyPairEd25519(memory::ConstBlockPtr publicKey, memory::ConstBlockPtr privateKey/* = nullptr*/, memory::ConstBlockPtr chainCode/* = nullptr*/)
 	:  mSodiumSecret(privateKey), mChainCode(chainCode), mSodiumPublic(publicKey)
 {
 	checkKeySizes();
@@ -84,7 +84,7 @@ std::shared_ptr<KeyPairEd25519> KeyPairEd25519::create(const std::shared_ptr<Pas
 	// using 
 }
 
-memory::Block KeyPairEd25519::calculatePublicKey(ConstMemoryBlockPtr privateKey)
+memory::Block KeyPairEd25519::calculatePublicKey(memory::ConstBlockPtr privateKey)
 {
 	memory::Block pubkey(ED25519_PUBLIC_KEY_SIZE);
 	crypto_sign_ed25519_sk_to_pk(pubkey.data(), *privateKey);
@@ -200,7 +200,7 @@ void KeyPairEd25519::checkKeySizes()
 }
 
 // ********************** Exceptions *************************************
-Ed25519SignException::Ed25519SignException(const char* what, ConstMemoryBlockPtr pubkey, const std::string& message) noexcept
+Ed25519SignException::Ed25519SignException(const char* what, memory::ConstBlockPtr pubkey, const std::string& message) noexcept
 	: GradidoBlockchainException(what), mPubkey(pubkey), mMessage(message)
 {
 
@@ -218,7 +218,7 @@ Ed25519SignException::~Ed25519SignException()
 std::string Ed25519SignException::getFullString() const
 {
 	std::string mResult(what());
-	mResult += ", with pubkey: " + mPubkey->convertToHexString();
+	mResult += ", with pubkey: " + mPubkey->convertToHex();
 	mResult += ", with message: " + DataTypeConverter::binToHex(mMessage);
 	return mResult;
 }
@@ -252,7 +252,7 @@ rapidjson::Value Ed25519VerifyException::getDetails(rapidjson::Document::Allocat
 
 // -----------------------------------------------------------------------------------------
 
-Ed25519DeriveException::Ed25519DeriveException(const char* what, ConstMemoryBlockPtr pubkey) noexcept
+Ed25519DeriveException::Ed25519DeriveException(const char* what, memory::ConstBlockPtr pubkey) noexcept
 	: GradidoBlockchainException(what), mPubkey(pubkey)
 {
 
@@ -265,12 +265,12 @@ Ed25519DeriveException::~Ed25519DeriveException()
 std::string Ed25519DeriveException::getFullString() const
 {
 	std::string mResult(what());
-	mResult += ", with pubkey: " + mPubkey->convertToHexString();
+	mResult += ", with pubkey: " + mPubkey->convertToHex();
 	return mResult;
 }
 
 // ------------------------------------------------------------------------------------------------
-Ed25519InvalidKeyException::Ed25519InvalidKeyException(const char* what, ConstMemoryBlockPtr invalidKey, size_t expectedKeySize /* = 0 */) noexcept
+Ed25519InvalidKeyException::Ed25519InvalidKeyException(const char* what, memory::ConstBlockPtr invalidKey, size_t expectedKeySize /* = 0 */) noexcept
 : GradidoBlockchainException(what), mKey(invalidKey), mExpectedKeySize(expectedKeySize)
 {
 
@@ -284,7 +284,7 @@ std::string Ed25519InvalidKeyException::getFullString() const
 {
 	std::string mResult(what());
 	if(mKey && mKey->size() > 0) {
-	 	mResult += ", with pubkey: " + mKey->convertToHexString();
+	 	mResult += ", with pubkey: " + mKey->convertToHex();
 	}
 	if(mExpectedKeySize) {
 		mResult += ", expected key size: " + std::to_string(mExpectedKeySize);

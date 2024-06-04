@@ -6,7 +6,7 @@
 
 #define MAGIC_NUMBER_GREGORIAN_CALENDER_SECONDS_PER_YEAR 31556952
 
-class DecayDecimal : public Decimal
+class GRADIDOBLOCKCHAIN_EXPORT DecayDecimal : public Decimal
 {
 public:
 	// inherit constructors

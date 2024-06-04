@@ -11,11 +11,11 @@
 
 #pragma warning(disable:4800)
 
-#include "proto/gradido/basic_types.pb.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/lib/MultithreadContainer.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/types.h"
+#include "gradido_blockchain/v3_3/data/Protocol.h"
 #ifdef USE_MPFR
 #include "mpfr.h"
 #endif // USE_MPFR
@@ -24,7 +24,7 @@
 	@file 
 	contain enum definitions
  */
-
+namespace v3_3_data = gradido::v3_3::data;
 namespace model {
 	class IGradidoBlockchain;
 
@@ -103,7 +103,7 @@ namespace model {
 			virtual bool isBelongToUs(const TransactionBase* pairingTransaction) const = 0;
 	
 			//! \return true if all required signatures are found in signature pairs
-			bool checkRequiredSignatures(const proto::gradido::SignatureMap* sig_map) const;
+			bool checkRequiredSignatures(const v3_3_data::SignatureMap* sig_map) const;
 			//! \param pubkey pointer must point to valid unsigned char[KeyPairEd25519::getPublicKeySize()] array
 			bool isPublicKeyRequired(const unsigned char* pubkey) const;
 			//! \param pubkey pointer must point to valid unsigned char[KeyPairEd25519::getPublicKeySize()] array

@@ -1,9 +1,7 @@
 
 #include "DecayTest.h"
 #include "gradido_blockchain/lib/Decay.h"
-#include "gradido_blockchain/MemoryManager.h"
-#include "gradido_blockchain/model/protobufWrapper/TransactionBase.h"
-
+#include "gradido_blockchain/lib/DecayDecimal.h"
 
 #include <chrono>
 
@@ -200,17 +198,15 @@ TEST(gradido_math, calculate_decay)
 TEST_F(DecayTest, calculate_decay_fast_2)
 {
 	initDefaultDecayFactors();
-	auto mm = MemoryManager::getInstance();
-	auto gdd = mm->getMathMemory();
-	auto temp = MathMemory::create();
+	DecayDecimal gdd;
+	DecayDecimal temp;
 
 	// 1000 GDD
 	// 2670 seconds decay (44,5 minutes)
 	mpfr_set_ui(gdd, 1000, gDefaultRound);
-	calculateDecayFactorForDuration(temp->getData(), gDecayFactorGregorianCalender, std::chrono::seconds{ 2670 });
-	calculateDecayFast(temp->getData(), gdd);
-	std::string resultString;
-	model::gradido::TransactionBase::amountToString(&resultString, gdd);
+	calculateDecayFactorForDuration(temp, gDecayFactorGregorianCalender, std::chrono::seconds{ 2670 });
+	calculateDecayFast(temp, gdd);
+	std::string resultString = gdd.toString();
 	//printf("1000 GDD with 2670 seconds decay: %s\n", resultString.data());
 	EXPECT_EQ("999.941355277132494534490393565314192761", resultString);
 
@@ -218,21 +214,19 @@ TEST_F(DecayTest, calculate_decay_fast_2)
 	mpfr_add_ui(gdd, gdd, 1000, gDefaultRound);
 
 	// 10720 seconds decay (2,97 hours)
-	calculateDecayFactorForDuration(temp->getData(), gDecayFactorGregorianCalender, std::chrono::seconds{ 10720 });
-	calculateDecayFast(temp->getData(), gdd);
-	resultString.clear();
-	model::gradido::TransactionBase::amountToString(&resultString, gdd);
+	calculateDecayFactorForDuration(temp, gDecayFactorGregorianCalender, std::chrono::seconds{ 10720 });
+	calculateDecayFast(temp, gdd);
+	resultString = gdd.toString();
 	//printf("1999.9413 GDD with 10720 seconds decay: %s\n", resultString.data());
 	EXPECT_EQ("1999.47049578629486804846572805483240501", resultString);
 
 	// 1000 GDD
 	// 1 Jahr decay
 	mpfr_set_ui(gdd, 1000, gDefaultRound);
-	mpfr_pow_ui(temp->getData(), gDecayFactorGregorianCalender, 365.2425 * 24.0 * 60.0 * 60.0, gDefaultRound);
+	mpfr_pow_ui(temp, gDecayFactorGregorianCalender, 365.2425 * 24.0 * 60.0 * 60.0, gDefaultRound);
 	//calculateDecayFactorForDuration(temp->getData(), gDecayFactorGregorianCalender, 365.2425 * 24.0 * 60.0 * 60.0);
-	calculateDecayFast(temp->getData(), gdd);
-	resultString.clear();
-	model::gradido::TransactionBase::amountToString(&resultString, gdd);
+	calculateDecayFast(temp, gdd);
+	resultString = gdd.toString();
 	//printf("1000 GDD with 1 year decay: %s\n", resultString.data());
 	EXPECT_EQ("500.000010982479955450797094521242965421", resultString);
 

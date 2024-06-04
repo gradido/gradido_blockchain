@@ -5,7 +5,9 @@
 #include <string>
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
+#include "magic_enum/magic_enum.hpp"
 
+using namespace magic_enum;
 using namespace rapidjson;
 
 GradidoBlockchainTransactionNotFoundException::GradidoBlockchainTransactionNotFoundException(const char* what) noexcept
@@ -210,9 +212,9 @@ InvalidTransactionTypeOnBlockchain::InvalidTransactionTypeOnBlockchain(const cha
 
 std::string InvalidTransactionTypeOnBlockchain::getFullString() const
 {
-	auto transactionTypeString = model::gradido::TransactionBase::getTransactionTypeString(mTransactionType);
+	auto transactionTypeString = magic_enum::enum_name(mTransactionType);
 	std::string resultString;
-	resultString.reserve(strlen(what()) + strlen(transactionTypeString) + 2 + 20);
+	resultString.reserve(strlen(what()) + transactionTypeString.size() + 2 + 20);
 	resultString = what();
 	resultString += ", transaction type: ";
 	resultString += transactionTypeString;

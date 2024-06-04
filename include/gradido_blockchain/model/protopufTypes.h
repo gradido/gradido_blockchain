@@ -5,7 +5,7 @@
 * Using protopuf, a header only library for serialisation and deserialisation of protobuf messages
 * definitions of gradido transaction protofol in protopuf format
 */
-
+#include <bit>
 #include "protopuf/message.h"
 #include "AddressType.h"
 #include "CrossGroupType.h"

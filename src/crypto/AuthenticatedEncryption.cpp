@@ -29,7 +29,7 @@ AuthenticatedEncryption::AuthenticatedEncryption(KeyPairEd25519* ed25519KeyPair)
 	mPubkey = std::make_shared<memory::Block>(pubkey);
 }
 
-AuthenticatedEncryption::AuthenticatedEncryption(ConstMemoryBlockPtr privateKeyx25519)
+AuthenticatedEncryption::AuthenticatedEncryption(memory::ConstBlockPtr privateKeyx25519)
 	: mPrecalculatedSharedSecretLastIndex(0)
 {
 	memory::Block pubkey(X25519_PUBLIC_KEY_SIZE);

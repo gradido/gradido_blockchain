@@ -21,7 +21,7 @@ class GRADIDOBLOCKCHAIN_EXPORT AuthenticatedEncryption
 public:
 	AuthenticatedEncryption();
 	AuthenticatedEncryption(KeyPairEd25519* ed25519KeyPair);
-	AuthenticatedEncryption(ConstMemoryBlockPtr privateKeyx25519);
+	AuthenticatedEncryption(memory::ConstBlockPtr privateKeyx25519);
 	AuthenticatedEncryption(const std::array<unsigned char, X25519_PUBLIC_KEY_SIZE>& pubkeyx25519);
 	~AuthenticatedEncryption();
 
@@ -41,13 +41,13 @@ public:
 	int precalculateSharedSecret(AuthenticatedEncryption* recipiantKey);
 	bool removePrecalculatedSharedSecret(int index);
 	
-	ConstMemoryBlockPtr mPubkey;
-	inline const ConstMemoryBlockPtr getPublicKey() const { return mPubkey; }
-	inline const ConstMemoryBlockPtr getPrivateKey() const { return mPrivkey; }
+	memory::ConstBlockPtr mPubkey;
+	inline const memory::ConstBlockPtr getPublicKey() const { return mPubkey; }
+	inline const memory::ConstBlockPtr getPrivateKey() const { return mPrivkey; }
 	inline bool hasPrivateKey() const { return static_cast<bool>(mPrivkey); }
 protected:
 	
-	ConstMemoryBlockPtr mPrivkey;
+	memory::ConstBlockPtr mPrivkey;
 
 	std::mutex mPrecalculatedSharedSecretsMutex;
 	std::map<int, std::unique_ptr<memory::Block>> mPrecalculatedSharedSecrets;

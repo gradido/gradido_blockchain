@@ -1,6 +1,6 @@
 #include "gradido_blockchain/memory/ProtobufArenaBlock.h"
-#include "gradido_blockchain/memory/Manager.h"
 
+#ifdef USE_PROTO
 namespace memory {
 
 	std::mutex ProtobufArenaBlock::mProtobufArenaMutex;
@@ -70,3 +70,4 @@ namespace memory {
 		return std::shared_ptr<ProtobufArenaBlock>(new ProtobufArenaBlock);
 	}
 }
+#endif //USE_PROTO

@@ -5,8 +5,6 @@
 #include "gradido_blockchain/types.h"
 #include "gradido_blockchain/memory/Block.h"
 
-#include "proto/gradido/basic_types.pb.h"
-
 #include "sodium.h"
 
 #include "rapidjson/document.h"
@@ -31,17 +29,16 @@ namespace DataTypeConverter {
 	GRADIDOBLOCKCHAIN_EXPORT uint64_t strToInt(const std::string& input);
 	GRADIDOBLOCKCHAIN_EXPORT NumberParseState strToDouble(const std::string& input, double& result);
 
-	GRADIDOBLOCKCHAIN_EXPORT MemoryBin* hexToBin(const char* hexString, size_t stringSize);
 	GRADIDOBLOCKCHAIN_EXPORT std::unique_ptr<std::string> hexToBinString(const std::string& hexString);
-	GRADIDOBLOCKCHAIN_EXPORT MemoryBin* base64ToBin(const std::string& base64String, int variant = sodium_base64_VARIANT_ORIGINAL);
+	GRADIDOBLOCKCHAIN_EXPORT memory::Block base64ToBin(const std::string& base64String, int variant = sodium_base64_VARIANT_ORIGINAL);
 	GRADIDOBLOCKCHAIN_EXPORT inline std::string base64ToBinString(const std::string& base64String, int variant = sodium_base64_VARIANT_ORIGINAL) {
 		auto bin = base64ToBin(base64String, variant);
-		return std::string((const char*)bin->data(), bin->size());
+		return bin.copyAsString();
 	}
 	GRADIDOBLOCKCHAIN_EXPORT std::unique_ptr<std::string> base64ToBinString(std::unique_ptr<std::string> base64String, int variant = sodium_base64_VARIANT_ORIGINAL);
 
 	GRADIDOBLOCKCHAIN_EXPORT std::string binToBase64(const unsigned char* data, size_t size, int variant = sodium_base64_VARIANT_ORIGINAL);
-	GRADIDOBLOCKCHAIN_EXPORT inline std::string binToBase64(const MemoryBin* data, int variant = sodium_base64_VARIANT_ORIGINAL) { return binToBase64(data->data(), data->size(), variant); }
+	GRADIDOBLOCKCHAIN_EXPORT inline std::string binToBase64(const memory::Block& data, int variant = sodium_base64_VARIANT_ORIGINAL) { return binToBase64(data.data(), data.size(), variant); }
 	GRADIDOBLOCKCHAIN_EXPORT inline std::string binToBase64(const std::string& proto_bin, int variant = sodium_base64_VARIANT_ORIGINAL) {
 		return binToBase64((const unsigned char*)proto_bin.data(), proto_bin.size(), variant);
 	}
@@ -50,7 +47,6 @@ namespace DataTypeConverter {
 
 	GRADIDOBLOCKCHAIN_EXPORT std::string binToHex(const unsigned char* data, size_t size);
 	GRADIDOBLOCKCHAIN_EXPORT std::unique_ptr<std::string> binToHex(std::unique_ptr<std::string> binString);
-	GRADIDOBLOCKCHAIN_EXPORT inline std::string binToHex(const MemoryBin* data) noexcept { return binToHex(data->data(), data->size());}
 	GRADIDOBLOCKCHAIN_EXPORT inline std::string binToHex(const std::vector<unsigned char>& data) { return binToHex(data.data(), data.size()); }
 	GRADIDOBLOCKCHAIN_EXPORT inline std::string binToHex(const std::string& str) { return binToHex((const unsigned char*)str.data(), str.size()); }
 
@@ -63,10 +59,10 @@ namespace DataTypeConverter {
 	
 	GRADIDOBLOCKCHAIN_EXPORT std::string timePointToString(const Timepoint& tp);
 	GRADIDOBLOCKCHAIN_EXPORT std::string timespanToString(const std::chrono::seconds timespan);
-	GRADIDOBLOCKCHAIN_EXPORT const Timepoint convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp);
-	GRADIDOBLOCKCHAIN_EXPORT void convertToProtoTimestamp(const Timepoint timestamp, proto::gradido::Timestamp* protoTimestamp);
-	GRADIDOBLOCKCHAIN_EXPORT Timepoint convertFromProtoTimestampSeconds(const proto::gradido::TimestampSeconds& timestampSeconds);
-	GRADIDOBLOCKCHAIN_EXPORT void convertToProtoTimestampSeconds(const Timepoint pocoTimestamp, proto::gradido::TimestampSeconds* protoTimestampSeconds);
+	//GRADIDOBLOCKCHAIN_EXPORT const Timepoint convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp);
+	//GRADIDOBLOCKCHAIN_EXPORT void convertToProtoTimestamp(const Timepoint timestamp, proto::gradido::Timestamp* protoTimestamp);
+	//GRADIDOBLOCKCHAIN_EXPORT Timepoint convertFromProtoTimestampSeconds(const proto::gradido::TimestampSeconds& timestampSeconds);
+	//GRADIDOBLOCKCHAIN_EXPORT void convertToProtoTimestampSeconds(const Timepoint pocoTimestamp, proto::gradido::TimestampSeconds* protoTimestampSeconds);
 
 	//! \brief go through json object and replace every string entry in base64 format into hex format
 	//! \return count of replaced strings

@@ -13,13 +13,13 @@ Decimal::Decimal(const std::string& decimalString)
 {
 	fromString(decimalString.data());
 }
-
+/*
 Decimal::Decimal(const memory::StringCachedAlloc& decimalString)
     : Decimal()
 {
 	fromString(decimalString.data());
 }
-
+*/
 Decimal::Decimal(Decimal&& src) noexcept
 	: mDecimal(std::move(src.mDecimal))
 {

@@ -7,13 +7,15 @@
 #include "mnemonic.h"
 #include "MnemonicType.h"
 
+#include "magic_enum/magic_enum.hpp"
+
 using namespace memory;
 
 namespace CryptoConfig
 {
-	GRADIDOBLOCKCHAIN_EXPORT extern MemoryBlockPtr g_CryptoAppSecret;
-	GRADIDOBLOCKCHAIN_EXPORT extern MemoryBlockPtr g_ServerCryptoKey;
-	GRADIDOBLOCKCHAIN_EXPORT extern MemoryBlockPtr g_SupportPublicKey;
+	GRADIDOBLOCKCHAIN_EXPORT extern memory::BlockPtr g_CryptoAppSecret;
+	GRADIDOBLOCKCHAIN_EXPORT extern memory::BlockPtr g_ServerCryptoKey;
+	GRADIDOBLOCKCHAIN_EXPORT extern memory::BlockPtr g_SupportPublicKey;
 	GRADIDOBLOCKCHAIN_EXPORT extern Mnemonic g_Mnemonic_WordLists[magic_enum::enum_integer(MnemonicType::MAX)];
 
 	// throw exception on error

@@ -12,7 +12,6 @@
 */
 
 #include "gradido_blockchain/memory/Block.h"
-#include "PublicKey.h"
 #include "sodium.h"
 #include "SecretKeyCryptography.h"
 #include "Passphrase.h"
@@ -26,8 +25,9 @@ enum class Ed25519DerivationType {
 
 class KeyPairEd25519Ex;
 #define ED25519_PRIVATE_KEY_SIZE crypto_sign_SECRETKEYBYTES
-#define ED25519_CHAIN_CODE_SIZE 32
+#define ED25519_PUBLIC_KEY_SIZE crypto_sign_PUBLICKEYBYTES
 #define ED25519_SIGNATURE_SIZE crypto_sign_BYTES
+#define ED25519_CHAIN_CODE_SIZE 32
 
 using namespace memory;
 
@@ -35,12 +35,12 @@ class GRADIDOBLOCKCHAIN_EXPORT KeyPairEd25519
 {
 	friend class AuthenticatedEncryption;
 public:
-	KeyPairEd25519(ConstMemoryBlockPtr publicKey, ConstMemoryBlockPtr privateKey = nullptr, ConstMemoryBlockPtr chainCode = nullptr);
+	KeyPairEd25519(memory::ConstBlockPtr publicKey, memory::ConstBlockPtr privateKey = nullptr, memory::ConstBlockPtr chainCode = nullptr);
 	~KeyPairEd25519();
 
 	//! \param passphrase must contain word indices
 	static std::shared_ptr<KeyPairEd25519> create(const std::shared_ptr<Passphrase> passphrase);
-	static memory::Block calculatePublicKey(ConstMemoryBlockPtr privateKey);
+	static memory::Block calculatePublicKey(memory::ConstBlockPtr privateKey);
 
 	std::shared_ptr<KeyPairEd25519Ex> deriveChild(uint32_t index);
 	static Ed25519DerivationType getDerivationType(uint32_t index);
@@ -54,8 +54,8 @@ public:
 	bool verify(const memory::Block& message, const memory::Block& signature) const;
 	virtual bool is3rdHighestBitClear() const;
 
-	inline ConstMemoryBlockPtr getPublicKey() const { return mSodiumPublic; }
-	inline ConstMemoryBlockPtr getChainCode() const { return mChainCode; }
+	inline memory::ConstBlockPtr getPublicKey() const { return mSodiumPublic; }
+	inline memory::ConstBlockPtr getChainCode() const { return mChainCode; }
 
 	inline bool isTheSame(const KeyPairEd25519& b) const {
 		return *b.mSodiumPublic == *mSodiumPublic;
@@ -68,7 +68,7 @@ public:
 	//! \return 0 if the same
 	//! \return -1 if not the same
 	//! \return 1 if hasn't private key
-	inline int isTheSame(ConstMemoryBlockPtr privkey) const {
+	inline int isTheSame(memory::ConstBlockPtr privkey) const {
 		if (!mSodiumSecret) return 1;
 		if (privkey->size() != mSodiumSecret->size()) return -1;
 		return sodium_memcmp(mSodiumSecret->data(), privkey->data(), privkey->size());
@@ -84,7 +84,7 @@ public:
 	memory::Block getCryptedPrivKey(const std::shared_ptr<SecretKeyCryptography> password) const;
 
 protected:
-	inline ConstMemoryBlockPtr getPrivateKey() const { return mSodiumSecret; }
+	inline memory::ConstBlockPtr getPrivateKey() const { return mSodiumSecret; }
 	//! check if all keys have the correct sizes (if present)
 	//! throw if not
 	void checkKeySizes();
@@ -92,28 +92,28 @@ private:
 	//!
 	// 32 Byte
 	//! \brief ed25519 libsodium public key
-	ConstMemoryBlockPtr mSodiumPublic;
+	memory::ConstBlockPtr mSodiumPublic;
 
 	//! TODO: replace MemoryBin by a memory obfuscation class which make it hard to steal the private key from memory
 	//! // 64 Byte
 	//! \brief ed25519 libsodium private key
-	ConstMemoryBlockPtr mSodiumSecret;
+	memory::ConstBlockPtr mSodiumSecret;
 
 	// 32 Byte
-	ConstMemoryBlockPtr mChainCode;
+	memory::ConstBlockPtr mChainCode;
 };
 
 // *********************** Exceptions ****************************
 class GRADIDOBLOCKCHAIN_EXPORT Ed25519SignException : public GradidoBlockchainException
 {
 public:
-	explicit Ed25519SignException(const char* what, ConstMemoryBlockPtr pubkey, const std::string& message) noexcept;
+	explicit Ed25519SignException(const char* what, memory::ConstBlockPtr pubkey, const std::string& message) noexcept;
 	Ed25519SignException(const char* what, const unsigned char* pubkey, const std::string& message) noexcept;
 	~Ed25519SignException();
 	std::string getFullString() const;
 
 protected:
-	ConstMemoryBlockPtr mPubkey;
+	memory::ConstBlockPtr mPubkey;
 	std::string mMessage;
 };
 
@@ -132,24 +132,24 @@ protected:
 class GRADIDOBLOCKCHAIN_EXPORT Ed25519DeriveException : public GradidoBlockchainException
 {
 public:
-	explicit Ed25519DeriveException(const char* what, ConstMemoryBlockPtr pubkey) noexcept;
+	explicit Ed25519DeriveException(const char* what, memory::ConstBlockPtr pubkey) noexcept;
 	~Ed25519DeriveException();
 	std::string getFullString() const;
 
 protected:
-	ConstMemoryBlockPtr mPubkey;
+	memory::ConstBlockPtr mPubkey;
 };
 
 class GRADIDOBLOCKCHAIN_EXPORT Ed25519InvalidKeyException: public GradidoBlockchainException
 {
 public:
 	//! \param invalidKey move key and free up memory on exception deconstruct
-	explicit Ed25519InvalidKeyException(const char* what, ConstMemoryBlockPtr invalidKey, size_t expectedKeySize = 0) noexcept;
+	explicit Ed25519InvalidKeyException(const char* what, memory::ConstBlockPtr invalidKey, size_t expectedKeySize = 0) noexcept;
 	~Ed25519InvalidKeyException();
 	std::string getFullString() const;
 
 protected:
-	ConstMemoryBlockPtr mKey;
+	memory::ConstBlockPtr mKey;
 	size_t mExpectedKeySize;
 };
 

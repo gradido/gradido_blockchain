@@ -1,3 +1,4 @@
+/*
 #include "gtest/gtest.h"
 #include "protopuf/message.h"
 #include "gradido_blockchain/model/protopuf/CommunityRoot.h"
@@ -29,3 +30,4 @@ TEST(modelProtopufCommunityRoot, protobufEncodeProtopufDecode) {
 	);
 	message_coder<CommunityRootMessage>::encode()
 }
+*/

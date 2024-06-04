@@ -154,7 +154,7 @@ uint32_t IotaRequest::getMessageMilestoneId(const std::string& messageIdHex)
 	return 0;
 }
 
-std::vector<MemoryBin*> IotaRequest::findByIndex(const iota::TopicIndex& index)
+std::vector<memory::Block> IotaRequest::findByIndex(const iota::TopicIndex& index)
 {
 	// GET /api/v1/messages?index=4752414449444f2e7079746861676f726173
 	auto pathView = extractPathFromUrl();
@@ -162,7 +162,7 @@ std::vector<MemoryBin*> IotaRequest::findByIndex(const iota::TopicIndex& index)
 	auto indexHex = index.getHexString();
 	fullPath.reserve(pathView.size() + 18 + indexHex.size());
 	fullPath = std::string(pathView) + "messages?index=" + indexHex;
-	std::vector<MemoryBin*> result;
+	std::vector<memory::Block> result;
 
 	auto json = parseResponse(GET(fullPath.data()));
 	if (!json.IsObject() || !json.HasMember("data")) {
@@ -175,13 +175,13 @@ std::vector<MemoryBin*> IotaRequest::findByIndex(const iota::TopicIndex& index)
 	}
 	auto messageIds = data["messageIds"].GetArray();
 	for (auto it = messageIds.Begin(); it != messageIds.End(); ++it) {
-		result.push_back(DataTypeConverter::hexToBin(it->GetString()));
+		result.push_back(memory::Block::fromHex(it->GetString(), data["messageId"].GetStringLength()));
 	}
 
 	return result;
 }
 
-MemoryBin* IotaRequest::getMilestoneByIndex(int32_t milestoneIndex)
+memory::Block IotaRequest::getMilestoneByIndex(int32_t milestoneIndex)
 {
 	// GET api/v1/milestones/909039
 	std::string fullPath = buildFullPath(std::string("milestones", 10), std::to_string(milestoneIndex));
@@ -194,7 +194,7 @@ MemoryBin* IotaRequest::getMilestoneByIndex(int32_t milestoneIndex)
 	if (!data.HasMember("messageId") || !data["messageId"].IsString()) {
 		throw IotaRequestException("messageId field not set or not string", fullPath);
 	}
-	return DataTypeConverter::hexToBin(data["messageId"].GetString());
+	return memory::Block::fromHex(data["messageId"].GetString(), data["messageId"].GetStringLength());
 }
 
 uint64_t IotaRequest::getMilestoneTimestamp(int32_t milestoneIndex)

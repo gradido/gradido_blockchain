@@ -13,6 +13,5 @@ namespace gradido {
             };
         }
     }
-    
 }
 #endif //__GRADIDO_BLOCKCHAIN_v3_3_DATA_CROSS_GROUP_TYPE_H

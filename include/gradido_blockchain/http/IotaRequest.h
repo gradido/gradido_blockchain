@@ -5,7 +5,6 @@
 
 #include "rapidjson/document.h"
 
-#include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/model/iota/NodeInfo.h"
 #include "gradido_blockchain/model/iota/TopicIndex.h"
@@ -32,9 +31,8 @@ public:
 	//! use metadata call to check if it is referenced by a milestone
 	//! \return return 0 if not, else return milestone id
 	uint32_t getMessageMilestoneId(const std::string& messageIdHex);
-	//! caller must release MemoryBins
-	std::vector<MemoryBin*> findByIndex(const iota::TopicIndex& index);
-	MemoryBin* getMilestoneByIndex(int32_t milestoneIndex);
+	std::vector<memory::Block> findByIndex(const iota::TopicIndex& index);
+	memory::Block getMilestoneByIndex(int32_t milestoneIndex);
 	uint64_t getMilestoneTimestamp(int32_t milestoneIndex);
 	iota::NodeInfo getNodeInfo();
 

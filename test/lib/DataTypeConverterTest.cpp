@@ -20,24 +20,17 @@ TEST(HelloTest, BasicAssertions) {
 
 TEST(DataTypeConverterTest, Base64ToBin)
 {
-	//MemoryBin* base64ToBin(const std::string & base64String, int variant = sodium_base64_VARIANT_ORIGINAL);
-	
-	auto mm = MemoryManager::getInstance();
-	auto payload = mm->getMemory(32);
+	memory::Block payload(32);
 	srand(188721);
 	for (int i = 0; i < 8; i++) {
 		int r = rand();
-		memcpy(&payload->data()[i * 4], &r, 4);
+		memcpy(&payload.data()[i * 4], &r, 4);
 	}
 	auto base64 = DataTypeConverter::binToBase64(payload);
-	printf("%s\n", base64.data());
 	auto bin = DataTypeConverter::base64ToBin(base64);
 
-	ASSERT_EQ(bin->size(), payload->size());
-	ASSERT_EQ(memcmp(bin->data(), payload->data(), bin->size()), 0);
-
-	mm->releaseMemory(payload);
-	mm->releaseMemory(bin);
+	ASSERT_EQ(bin.size(), payload.size());
+	ASSERT_TRUE(bin == payload);
 }
 
 TEST(DataTypeConverterTest, Base64ToBinString)
@@ -47,7 +40,7 @@ TEST(DataTypeConverterTest, Base64ToBinString)
 
 TEST(DataTypeConverterTest, Base64ToBinUniqueString)
 {
-	std::unique_ptr<std::string> base64UniqueString(new std::string(g_Base64_Examples[0]));
+	auto base64UniqueString = std::make_unique<std::string>(g_Base64_Examples[0]);
 	auto bin = DataTypeConverter::base64ToBinString(std::move(base64UniqueString));
 	ASSERT_EQ(g_Base64_Example_Bins[0], bin->data());
 }

@@ -31,7 +31,7 @@ if (DEFINED GradidoBlockchain_SHARED_LIBS)
 endif()
 
 ############################## find protobuf  #########################################
-
+IF(USE_PROTO)
 if(NOT TARGET protoc)
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 	message("[GradidoBlockchain] runtime output directory: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
@@ -106,6 +106,8 @@ ELSE()
 
 	ENDFOREACH(proto)
 ENDIF()
+
+ENDIF()
 #message("Proto: ${PROTO_FILES}")
 ############################## find dependencies ###################################
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -130,49 +132,56 @@ FILE(GLOB CRYPTO "include/gradido_blockchain/crypto/*.h" "src/crypto/*.cpp")
 FILE(GLOB DATA "include/gradido_blockchain/data/*.h" "src/data/*.cpp")
 FILE(GLOB HTTP "include/gradido_blockchain/http/*.h" "src/http/*.cpp")
 FILE(GLOB INTERACTION "include/gradido_blockchain/interaction/*.h" "src/interaction/*.cpp")
-FILE(GLOB INTERACTION_PROTOCOL_3_3_SERIALIZE 
-	"include/gradido_blockchain/interaction/protocol/3_3/serialize/*.h" 
-	"src/interaction/protocol/3_3/serialize/*.cpp"
-)
-FILE(GLOB INTERACTION_PROTOCOL_3_3_DESERIALIZE 
-	"include/gradido_blockchain/interaction/protocol/3_3/deserialize/*.h" 
-	"src/interaction/protocol/3_3/deserialize/*.cpp"
-)
-FILE(GLOB INTERACTION_PROTOCOL_3_3_VALIDATE 
-	"include/gradido_blockchain/interaction/protocol/3_3/validate/*.h"
-	"src/interaction/protocol/3_3/validate/*.cpp"
-)
+
 FILE(GLOB LIB_SRC "include/gradido_blockchain/lib/*.h" "src/lib/*.cpp")
 FILE(GLOB MAIN "src/*.cpp" "src/*.c"  "include/gradido_blockchain/*.h")
 FILE(GLOB MEMORY "include/gradido_blockchain/memory/*.h" "src/memory/*.cpp")
 FILE(GLOB MODEL "include/gradido_blockchain/model/*.h" "src/model/*.cpp")
-FILE(GLOB v3_3_DATA
-	"include/gradido_blockchain/v3_3/data/*.h"
-	"src/v3_3/data/*.cpp"
-)
-FILE(GLOB MODEL_PROTOBUF_WRAPPER "include/gradido_blockchain/model/protobufWrapper/*.h" "src/model/protobufWrapper/*.cpp")
+#FILE(GLOB MODEL_PROTOBUF_WRAPPER "include/gradido_blockchain/model/protobufWrapper/*.h" "src/model/protobufWrapper/*.cpp")
 FILE(GLOB MODEL_PROTOPUF "include/gradido_blockchain/model/protopuf/*.h" "src/model/protopuf/*.cpp")
 FILE(GLOB MODEL_IOTA "include/gradido_blockchain/model/iota/*.h" "src/model/iota/*.cpp")
 FILE(GLOB PROTO_GRADIDO "build/proto/gradido/*.cc" "build/proto/gradido/*.h")
 FILE(GLOB TINF "dependencies/tinf/src/*.c" "dependencies/tinf/src/*.h")
 FIlE(GLOB THREADING "include/gradido_blockchain/threading/*.h" "src/threading/*.cpp")
+FILE(GLOB v3_3
+	"include/gradido_blockchain/v3_3/*.h"
+	"src/v3_3/*.cpp"
+)
+FILE(GLOB v3_3_DATA
+	"include/gradido_blockchain/v3_3/data/*.h"
+	"src/v3_3/data/*.cpp"
+)
+FILE(GLOB v3_3_INTERACTION_SERIALIZE 
+	"include/gradido_blockchain/v3_3/interaction/serialize/*.h" 
+	"src/v3_3/interaction/serialize/*.cpp"
+)
+FILE(GLOB v3_3_INTERACTION_DESERIALIZE 
+	"include/gradido_blockchain/v3_3/interaction/deserialize/*.h" 
+	"src/v3_3/interaction/deserialize/*.cpp"
+)
+FILE(GLOB v3_3_INTERACTION_VALIDATE 
+	"include/gradido_blockchain/v3_3/interaction/validate/*.h"
+	"src/v3_3/interaction/validate/*.cpp"
+)
 
 SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS 
 	${CRYPTO}
 	${DATA}
 	${HTTP}
 	${INTERACTION}
-	${INTERACTION_PROTOCOL_3_3_SERIALIZE}
-	${INTERACTION_PROTOCOL_3_3_DESERIALIZE}
-	${INTERACTION_PROTOCOL_3_3_VALIDATE}
 	${LIB_SRC} 
 	${MAIN}
 	${MEMORY}
-	${MODEL} ${MODEL_IOTA} ${MODEL_PROTOBUF_WRAPPER} ${MODEL_PROTOPUF} 
-	${PROTO_GRADIDO}
+	#${MODEL} ${MODEL_PROTOBUF_WRAPPER} 
+	${MODEL_IOTA} 
+	#${MODEL_PROTOPUF} 
+	#${PROTO_GRADIDO}
 	${TINF} 
-	${THREADING}	
-	${v3_3_DATA}
+	${THREADING}
+	${v3_3}	 ${v3_3_DATA}
+	${v3_3_INTERACTION_SERIALIZE}
+	${v3_3_INTERACTION_DESERIALIZE}
+	${v3_3_INTERACTION_VALIDATE}
 )
 
 if(MSVC)
@@ -180,21 +189,22 @@ if(MSVC)
 	source_group("crypto" FILES ${CRYPTO})
 	source_group("data" FILES ${DATA})
 	source_group("http" FILES ${HTTP})
-	source_group("interaction\\protocol\\3_3\\serialize" FILES ${INTERACTION_PROTOCOL_3_3_SERIALIZE})
-	source_group("interaction\\protocol\\3_3\\deserialize" FILES ${INTERACTION_PROTOCOL_3_3_DESERIALIZE})
-	source_group("interaction\\protocol\\3_3\\validate" FILES ${INTERACTION_PROTOCOL_3_3_VALIDATE})
 	source_group("interaction" FILES ${INTERACTION})
 	source_group("lib" FILES ${LIB_SRC})	
 	source_group("memory" FILES ${MEMORY})
 	source_group("model\\iota" FILES ${MODEL_IOTA})
 	source_group("model\\protocol\\3_3" FILES ${MODEL_PROTOCOL_3_3})
 	source_group("model\\protobufWrapper" FILES ${MODEL_PROTOBUF_WRAPPER})
-	source_group("model\\protopuf" FILES ${MODEL_PROTOPUF})	
+	#source_group("model\\protopuf" FILES ${MODEL_PROTOPUF})	
 	source_group("model" FILES ${MODEL})
-	source_group("proto\\gradido" FILES ${PROTO_GRADIDO})
+	#source_group("proto\\gradido" FILES ${PROTO_GRADIDO})
 	source_group("tinf" FILES ${TINF})
 	source_group("threading" FILES ${THREADING})
 	source_group("v3_3\\data" FILES ${v3_3_DATA})
+	source_group("v3_3\\interaction\\serialize" FILES ${v3_3_INTERACTION_SERIALIZE})
+	source_group("v3_3\\interaction\\deserialize" FILES ${v3_3_INTERACTION_DESERIALIZE})
+	source_group("v3_3\\interaction\\validate" FILES ${v3_3_INTERACTION_VALIDATE})
+	source_group("v3_3" FILES ${v3_3})
 endif()
 
 include_directories(
@@ -218,7 +228,7 @@ include_directories(
 
 IF(BUILD_SHARED_LIBS)
 ELSE()
-  include_directories("dependencies/protobuf/third_party/abseil-cpp")
+  #include_directories("dependencies/protobuf/third_party/abseil-cpp")
 ENDIF()
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 IF(WIN32)
@@ -249,7 +259,7 @@ add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
 if(BUILD_SHARED_LIBS) 
-	target_link_libraries(GradidoBlockchain libprotobuf loguru::loguru)
+	target_link_libraries(GradidoBlockchain loguru::loguru) #libprotobuf
 	IF(WIN32) 
 	  target_link_libraries(GradidoBlockchain mpfr::mpfr libsodium::libsodium openssl::openssl)
 		# needed for windows if linking to a rust lib

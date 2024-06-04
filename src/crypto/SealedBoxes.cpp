@@ -28,8 +28,8 @@ namespace SealedBoxes {
 		if (error) {
 			LOG_F(ERROR, "box seal open result: %d", error);
 			LOG_F(ERROR, "clearMessage: %s", clearMessage.data());
-			LOG_F(ERROR, "public key: %s", keys->getPublicKey()->convertToHexString().data());
-			LOG_F(ERROR, "private key: %s\n", keys->getPrivateKey()->convertToHexString().data());
+			LOG_F(ERROR, "public key: %s", keys->getPublicKey()->convertToHex().data());
+			LOG_F(ERROR, "private key: %s\n", keys->getPrivateKey()->convertToHex().data());
 			throw DecryptException("couldn't decrypt message");
 		}
 		return clearMessage;

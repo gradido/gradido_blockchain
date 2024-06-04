@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_MEMORY_PROTOBUF_ARENA_BLOCK_H
 
 #include "gradido_blockchain/export.h"
+#ifdef USE_PROTO
 
 #include <google/protobuf/arena.h>
 
@@ -32,5 +33,5 @@ namespace memory {
 }
 
 typedef memory::ProtobufArenaBlock ProtobufArenaMemory;
-
+#endif // USE_PROTO
 #endif //__GRADIDO_BLOCKCHAIN_MEMORY_PROTOBUF_ARENA_BLOCK_H

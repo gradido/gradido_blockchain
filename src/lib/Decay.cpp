@@ -1,7 +1,7 @@
 #include "date/date.h"
 #include "gradido_blockchain/lib/Decay.h"
 
-#include "gradido_blockchain/MemoryManager.h"
+#include "gradido_blockchain/memory/MPFRBlock.h"
 /*
 typedef enum {
 MPFR_RNDN=0,  // round to nearest, with ties to even
@@ -145,11 +145,9 @@ void calculateDecayFast(mpfr_ptr decay_for_duration, mpfr_ptr gradido)
 void calculateDecay(const mpfr_ptr decay_factor, unsigned long seconds, mpfr_ptr gradido)
 {
 	assert(gInited && "Decay lib not initalized");
-	auto mm = MemoryManager::getInstance();
-	auto temp = mm->getMathMemory();
+	memory::MPFRBlock temp;
 	mpfr_pow_ui(temp, decay_factor, seconds, gDefaultRound);
 	mpfr_mul(gradido, gradido, temp, gDefaultRound);
-	mm->releaseMathMemory(temp);
 }
 
 ParseStringToMpfrException::ParseStringToMpfrException(const char* what, const std::string& valueString) noexcept

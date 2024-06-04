@@ -22,7 +22,7 @@ class GRADIDOBLOCKCHAIN_EXPORT Decimal
 public:
 	//! throw ParseDecimalStringException if mpfr_set_str cannot parse the string to a number
 	Decimal(const std::string& decimalString);
-	Decimal(const memory::StringCachedAlloc& decimalString);
+	// Decimal(const memory::StringCachedAlloc& decimalString);
 	Decimal(long number);
 	// copy constructor
 #ifdef USE_MPFR

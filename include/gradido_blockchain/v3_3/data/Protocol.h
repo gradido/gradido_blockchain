@@ -3,11 +3,9 @@
 
 #include "AddressType.h"
 #include "CrossGroupType.h"
-
+#include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/types.h"
-#include "gradido_blockchain/data/PublicKey.h"
-#include "gradido_blockchain/data/Signature.h"
 #include "gradido_blockchain/memory/VectorCacheAllocator.h"
 #include "gradido_blockchain/lib/DecayDecimal.h"
 
@@ -15,7 +13,6 @@
 #include <list>
 
 namespace gradido {
-	namespace common = data;
 	namespace v3_3 {
 		namespace data {
 
@@ -23,11 +20,11 @@ namespace gradido {
 			struct GRADIDOBLOCKCHAIN_EXPORT SignaturePair
 			{
 				// throw InvalidSizeException
-				SignaturePair(memory::ConstMemoryBlockPtr pubkeyPtr, memory::ConstMemoryBlockPtr signaturePtr)
+				SignaturePair(memory::ConstBlockPtr pubkeyPtr, memory::ConstBlockPtr signaturePtr)
 					: pubkey(pubkeyPtr), signature(signaturePtr) {}
 
-				common::PublicKey pubkey;
-				common::Signature signature;
+				memory::ConstBlockPtr pubkey;
+				memory::ConstBlockPtr signature;
 			};
 
 			struct GRADIDOBLOCKCHAIN_EXPORT SignatureMap 
@@ -44,6 +41,7 @@ namespace gradido {
 			struct GRADIDOBLOCKCHAIN_EXPORT Timestamp
 			{
 			public:
+				Timestamp() : seconds(0), nanos(0) {}
 				Timestamp(const Timepoint& date);
 				Timestamp(int64_t _seconds, int32_t _nanos): seconds(_seconds), nanos(_nanos) {}
 
@@ -59,6 +57,7 @@ namespace gradido {
 			struct GRADIDOBLOCKCHAIN_EXPORT TimestampSeconds
 			{
 			public:
+				TimestampSeconds() : seconds(0) {}
 				TimestampSeconds(const Timepoint& date);
 				TimestampSeconds(int64_t _seconds) : seconds(_seconds) {}
 
@@ -72,14 +71,14 @@ namespace gradido {
 			struct GRADIDOBLOCKCHAIN_EXPORT TransferAmount
 			{
 				TransferAmount(
-					memory::ConstMemoryBlockPtr recipientPubkeyPtr,
-					const memory::StringCachedAlloc& amountString,
-					const memory::StringCachedAlloc& communityId
+					memory::ConstBlockPtr recipientPubkeyPtr,
+					const std::string& amountString,
+					const std::string& communityId = ""
 				) : recipientPubkey(recipientPubkeyPtr), amount(amountString), communityId(communityId) {}
 
-				common::PublicKey recipientPubkey;
+				memory::ConstBlockPtr recipientPubkey;
 				DecayDecimal amount;
-				memory::StringCachedAlloc communityId;
+				std::string communityId;
 			};
 
 			//  ---------------- end   basic_types.proto   end -----------------------------------
@@ -97,14 +96,14 @@ namespace gradido {
 			{
 				// throw InvalidSizeException
 				CommunityRoot(
-					memory::ConstMemoryBlockPtr pubkeyPtr,
-					memory::ConstMemoryBlockPtr gmwPubkeyPtr,
-					memory::ConstMemoryBlockPtr aufPubkeyPtr
+					memory::ConstBlockPtr pubkeyPtr,
+					memory::ConstBlockPtr gmwPubkeyPtr,
+					memory::ConstBlockPtr aufPubkeyPtr
 				) : pubkey(pubkeyPtr), gmwPubkey(gmwPubkeyPtr), aufPubkey(aufPubkeyPtr) {};
 				
-				common::PublicKey pubkey;
-				common::PublicKey gmwPubkey;
-				common::PublicKey aufPubkey;
+				memory::ConstBlockPtr pubkey;
+				memory::ConstBlockPtr gmwPubkey;
+				memory::ConstBlockPtr aufPubkey;
 			};
 
 			// gradido_creation.proto
@@ -120,11 +119,11 @@ namespace gradido {
 			// gradido_transfer.proto
 			struct GRADIDOBLOCKCHAIN_EXPORT GradidoTransfer
 			{
-				GradidoTransfer(const TransferAmount& _sender, memory::ConstMemoryBlockPtr recipientPtr)
+				GradidoTransfer(const TransferAmount& _sender, memory::ConstBlockPtr recipientPtr)
 					: sender(_sender), recipient(recipientPtr) {}
 
 				TransferAmount sender;
-				common::PublicKey recipient;
+				memory::ConstBlockPtr recipient;
 			};
 
 			struct GRADIDOBLOCKCHAIN_EXPORT GradidoDeferredTransfer
@@ -140,30 +139,31 @@ namespace gradido {
 			struct GRADIDOBLOCKCHAIN_EXPORT RegisterAddress
 			{
 				RegisterAddress(
-					memory::ConstMemoryBlockPtr userPubkeyPtr,
+					memory::ConstBlockPtr userPubkeyPtr,
 					AddressType _addressType,
 					uint32_t _derivationIndex = 1,
-					memory::ConstMemoryBlockPtr nameHashPtr = nullptr,
-					memory::ConstMemoryBlockPtr accountPubkeyPtr = nullptr
+					memory::ConstBlockPtr nameHashPtr = nullptr,
+					memory::ConstBlockPtr accountPubkeyPtr = nullptr
 				) : userPubkey(userPubkeyPtr), addressType(_addressType), nameHash(nameHashPtr),
 					accountPubkey(accountPubkeyPtr), derivationIndex(_derivationIndex) {}
 
-				common::PublicKey			userPubkey;
+				memory::ConstBlockPtr	userPubkey;
 				AddressType					addressType;
-				memory::ConstMemoryBlockPtr	nameHash;
-				common::PublicKey			accountPubkey;
+				memory::ConstBlockPtr	nameHash;
+				memory::ConstBlockPtr accountPubkey;
 				uint32_t					derivationIndex;
 			};
 
 			// transaction_body.proto
 			struct GRADIDOBLOCKCHAIN_EXPORT TransactionBody
 			{
+				TransactionBody(): type(CrossGroupType::LOCAL) {}
 				TransactionBody(
-					const memory::StringCachedAlloc& _memo,
+					const std::string& _memo,
 					Timepoint _createdAt,
-					const memory::StringCachedAlloc& _versionNumber,
+					const std::string& _versionNumber,
 					CrossGroupType _type = CrossGroupType::LOCAL,
-					const memory::StringCachedAlloc& _otherGroup = ""
+					const std::string& _otherGroup = ""
 				) : memo(_memo), createdAt(_createdAt), versionNumber(_versionNumber), type(_type), otherGroup(_otherGroup) {};
 
 				inline bool isTransfer() const { return static_cast<bool>(transfer); }
@@ -173,11 +173,11 @@ namespace gradido {
 				inline bool isDeferredTransfer() const { return static_cast<bool>(deferredTransfer); }
 				inline bool isCommunityRoot() const { return static_cast<bool>(communityRoot); }
 
-				memory::StringCachedAlloc				memo;
+				std::string								memo;
 				Timestamp								createdAt;
-				memory::StringCachedAlloc				versionNumber;
+				std::string								versionNumber;
 				CrossGroupType							type;
-				memory::StringCachedAlloc				otherGroup;
+				std::string								otherGroup;
 
 				std::shared_ptr<GradidoTransfer>        transfer;
 				std::shared_ptr<GradidoCreation>        creation;
@@ -191,15 +191,16 @@ namespace gradido {
 			// gradido_transaction.proto
 			struct GRADIDOBLOCKCHAIN_EXPORT GradidoTransaction
 			{
+				GradidoTransaction() {}
 				GradidoTransaction(
 					const SignatureMap& signatureMap,
-					memory::ConstMemoryBlockPtr bodyBytes,
-					memory::ConstMemoryBlockPtr parentMessageId = nullptr
+					memory::ConstBlockPtr bodyBytes,
+					memory::ConstBlockPtr parentMessageId = nullptr
 				) : mSignatureMap(signatureMap), mBodyBytes(bodyBytes), mParentMessageId(parentMessageId) {}
 
 				SignatureMap				mSignatureMap;
-				memory::ConstMemoryBlockPtr	mBodyBytes;
-				memory::ConstMemoryBlockPtr	mParentMessageId;
+				memory::ConstBlockPtr	mBodyBytes;
+				memory::ConstBlockPtr	mParentMessageId;
 			};
 
 			// confirmed_transaction.proto
@@ -210,10 +211,10 @@ namespace gradido {
 					uint64_t id,
 					const GradidoTransaction& gradidoTransaction,
 					Timepoint confirmedAt,
-					const memory::StringCachedAlloc& versionNumber,
-					memory::ConstMemoryBlockPtr runningHash,
-					memory::ConstMemoryBlockPtr messageId,
-					const memory::StringCachedAlloc& accountBalance
+					const std::string& versionNumber,
+					memory::ConstBlockPtr runningHash,
+					memory::ConstBlockPtr messageId,
+					const std::string& accountBalance
 				) : mId(id),
 					mGradidoTransaction(gradidoTransaction),
 					mConfirmedAt(confirmedAt),
@@ -225,10 +226,10 @@ namespace gradido {
 				uint64_t                    mId;
 				GradidoTransaction          mGradidoTransaction;
 				TimestampSeconds            mConfirmedAt;
-				memory::StringCachedAlloc   mVersionNumber;
-				memory::ConstMemoryBlockPtr mRunningHash;
-				memory::ConstMemoryBlockPtr mMessageId;
-				memory::StringCachedAlloc   mAccountBalance;
+				std::string   mVersionNumber;
+				memory::ConstBlockPtr mRunningHash;
+				memory::ConstBlockPtr mMessageId;
+				std::string   mAccountBalance;
 			};
 		}
 	}

@@ -17,7 +17,7 @@ public:
     {
         std::lock_guard lock(mMutex);
         auto it = mValues.insert({ key ,val });
-        assert(it->second);
+        assert(it.second);
         mValuePairCreationTimes.insert({ it.first->second.timepoint, key });
         removeExpiredValues();
     }

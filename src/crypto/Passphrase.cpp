@@ -224,7 +224,7 @@ const Mnemonic* Passphrase::detectMnemonic(const std::string& passphrase, const 
 	std::string userPublicKeyHex;
 	if (userKeyPair) 
 	{
-		userPublicKeyHex = userKeyPair->getPublicKey()->convertToHexString();
+		userPublicKeyHex = userKeyPair->getPublicKey()->convertToHex();
 		LOG_F(9, "user public key hex: %s\n", userPublicKeyHex.data());
 	}
 #endif
@@ -266,7 +266,7 @@ const Mnemonic* Passphrase::detectMnemonic(const std::string& passphrase, const 
 						LOG_F(9, "public key mismatch");
 						LOG_F(9, "user public key: %s, public key from passphrase: %s\n",
 							userPublicKeyHex.data(),
-							keyPairFromPassphrase->getPublicKey()->convertToHexString().data()
+							keyPairFromPassphrase->getPublicKey()->convertToHex().data()
 						);
 #endif
 						// continue;

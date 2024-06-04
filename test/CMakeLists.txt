@@ -45,7 +45,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 #FetchContent_MakeAvailable(googletest)
 
 add_executable(GradidoBlockchainTest ${TEST_SRC})
-target_link_libraries(GradidoBlockchainTest GradidoBlockchain libprotobuf)
+target_link_libraries(GradidoBlockchainTest GradidoBlockchain ) #libprotobuf
 IF(WIN32)    
     find_library(ED25519_BIP32_RUST_C_LIB ed25519_bip32_c_interface.dll.lib PATHS 
 		"${PROJECT_BINARY_DIR}/../dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"

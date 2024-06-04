@@ -15,9 +15,9 @@ using namespace magic_enum;
 
 namespace CryptoConfig
 {
-	MemoryBlockPtr g_CryptoAppSecret = nullptr;
-	MemoryBlockPtr g_ServerCryptoKey = nullptr;
-	MemoryBlockPtr g_SupportPublicKey = nullptr;
+	memory::BlockPtr g_CryptoAppSecret = nullptr;
+	memory::BlockPtr g_ServerCryptoKey = nullptr;
+	memory::BlockPtr g_SupportPublicKey = nullptr;
 
 	Mnemonic g_Mnemonic_WordLists[enum_integer(MnemonicType::MAX)];
 

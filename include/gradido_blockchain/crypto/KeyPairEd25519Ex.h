@@ -16,7 +16,7 @@ class KeyPairEd25519Ex: public KeyPairEd25519
 public:
 	//! \param privateKey: take ownership, release after object destruction
 	//! \param publicKey: copy
-	KeyPairEd25519Ex(ConstMemoryBlockPtr publicKey, ConstMemoryBlockPtr privateKey, ConstMemoryBlockPtr chainCode, int derivationIndex);
+	KeyPairEd25519Ex(memory::ConstBlockPtr publicKey, memory::ConstBlockPtr privateKey, memory::ConstBlockPtr chainCode, int derivationIndex);
 
 	 ~KeyPairEd25519Ex();
 

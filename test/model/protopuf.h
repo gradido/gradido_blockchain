@@ -14,7 +14,7 @@ protected:
 	void SetUp() override;
 	void TearDown() override;
 
-	std::vector<std::unique_ptr<KeyPairEd25519>> mTestKeyPairs;
+	std::vector<std::shared_ptr<KeyPairEd25519>> mTestKeyPairs;
 };
 
 

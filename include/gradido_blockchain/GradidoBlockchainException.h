@@ -137,7 +137,6 @@ class GRADIDOBLOCKCHAIN_EXPORT InvalidTransactionTypeOnBlockchain : public Gradi
 {
 public:
 	explicit InvalidTransactionTypeOnBlockchain(const char* what, model::gradido::TransactionType type) noexcept;
-
 	std::string getFullString() const;
 
 protected:

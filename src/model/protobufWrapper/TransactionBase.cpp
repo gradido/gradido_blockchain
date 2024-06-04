@@ -33,13 +33,13 @@ namespace model {
 		}
 
 
-		bool TransactionBase::checkRequiredSignatures(const proto::gradido::SignatureMap* sig_map) const
+		bool TransactionBase::checkRequiredSignatures(const  v3_3_data::SignatureMap* sig_map) const
 		{
 			assert(mMinSignatureCount);
 			
 			// not enough
-			if (mMinSignatureCount > sig_map->sig_pair_size()) {
-				throw TransactionValidationMissingSignException(sig_map->sig_pair_size(), mMinSignatureCount);
+			if (mMinSignatureCount > sig_map->signaturePairs.size()) {
+				throw TransactionValidationMissingSignException(sig_map->signaturePairs.size(), mMinSignatureCount);
 			}
 			// enough
 			if (!mRequiredSignPublicKeys.size() && !mForbiddenSignPublicKeys.size()) {
@@ -50,7 +50,7 @@ namespace model {
 			// prepare, make a copy from the vector, because entries will be removed from it
 			std::vector<memory::Block> required_keys = mRequiredSignPublicKeys;			
 			
-			for (auto it = sig_map->sig_pair().begin(); it != sig_map->sig_pair().end(); it++) 
+			for (auto it = sig_map->signaturePairs.begin(); it != sig_map->signaturePairs.end(); it++)
 			{
 				auto pubkey_size = it->pubkey().size();
 				assert(pubkey_size == ED25519_PUBLIC_KEY_SIZE);

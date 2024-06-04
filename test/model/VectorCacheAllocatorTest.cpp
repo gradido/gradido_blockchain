@@ -1,10 +1,10 @@
-#include "gradido_blockchain/model/protopuf/VectorCacheAllocator.h"
+#include "gradido_blockchain/memory/VectorCacheAllocator.h"
 #include "gradido_blockchain/lib/Profiler.h"
 #include <gtest/gtest.h>
 
 #include <vector>
 
-using namespace model::protopuf;
+using namespace memory;
 
 // test that with using VectorCacheAllocator, vector is faster, after enough memory blocks are cached
 TEST(VectorCacheAllocator, sizeAfterReservePublicKey) {

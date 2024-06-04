@@ -47,6 +47,11 @@ namespace memory {
             mFreeBlocks.insert({ size, block });
         }
 
+        template <typename U>
+        struct rebind {
+            using other = VectorCacheAllocator<U>;
+        };
+
         static size_t getMapSize() { std::lock_guard _lock(mMutex); return mFreeBlocks.size(); }
 
     private:

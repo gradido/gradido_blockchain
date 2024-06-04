@@ -76,7 +76,7 @@ protected:
 	int				   mAlgo;
 
 	// encryption key and hash
-	MemoryBlockPtr mEncryptionKey;
+	memory::BlockPtr mEncryptionKey;
 	KeyHashed  mEncryptionKeyHash;
 
 	mutable std::shared_mutex mWorkingMutex;
@@ -108,11 +108,11 @@ public:
 class GRADIDOBLOCKCHAIN_EXPORT DecryptionException : public SecretKeyCryptographyException
 {
 public:
-	explicit DecryptionException(const char* what, ConstMemoryBlockPtr message) noexcept;
+	explicit DecryptionException(const char* what, memory::ConstBlockPtr message) noexcept;
 	std::string getFullString() const;
 
 protected:
-	ConstMemoryBlockPtr mMessage;
+	memory::ConstBlockPtr mMessage;
 };
 
 class GRADIDOBLOCKCHAIN_EXPORT EncryptionKeyException : public SecretKeyCryptographyException

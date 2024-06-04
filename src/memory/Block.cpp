@@ -101,7 +101,7 @@ namespace memory {
 		return { (char*)mData, mSize };
 	}
 
-	Block& Block::fromHex(const char* hexString, size_t stringSize)
+	Block Block::fromHex(const char* hexString, size_t stringSize)
 	{
 		size_t binSize = (stringSize) / 2;
 		Block result(binSize);

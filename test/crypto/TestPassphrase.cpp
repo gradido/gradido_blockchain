@@ -1,7 +1,6 @@
 #include "TestPassphrase.h"
 
 #include "gradido_blockchain/crypto/Passphrase.h"
-#include "gradido_blockchain/MemoryManager.h"
 
 #include "sodium.h"
 
@@ -11,6 +10,7 @@
 
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 
+using namespace magic_enum;
 
 void PassphraseTest::SetUp()
 {
@@ -24,7 +24,7 @@ void PassphraseTest::SetUp()
 	};
 	mPassphrasesForTesting.push_back(PassphraseDataSet(
 		passphrases1,
-		CryptoConfig::MNEMONIC_BIP0039_SORTED_ORDER,
+		MnemonicType::BIP0039_SORTED_ORDER,
 		"6fa7180b132e1248c649fc7b2e422ad57663299f85bd88b8b8031dce28b501a8",
 		wordIndices1
 		));
@@ -40,7 +40,7 @@ void PassphraseTest::SetUp()
 	};
 	mPassphrasesForTesting.push_back(PassphraseDataSet(
 		passphrases2,
-		CryptoConfig::MNEMONIC_GRADIDO_BOOK_GERMAN_RANDOM_ORDER,
+		MnemonicType::GRADIDO_BOOK_GERMAN_RANDOM_ORDER,
 		"8943813a623863dd7c5e5b248e408ac8a8851ef758275b6043a06e9b5832c36c",
 		wordIndices2
 	));
@@ -56,7 +56,7 @@ void PassphraseTest::SetUp()
 	};
 	mPassphrasesForTesting.push_back(PassphraseDataSet(
 		passphrases3,
-		CryptoConfig::MNEMONIC_GRADIDO_BOOK_GERMAN_RANDOM_ORDER,
+		MnemonicType::GRADIDO_BOOK_GERMAN_RANDOM_ORDER,
 		"d62f14173ae5d66b06753cc9d69d5471913ffc6053feedac2acf901eef3582a9",
 		wordIndices3
 	));
@@ -67,11 +67,11 @@ void PassphraseTest::SetUp()
 TEST_F(PassphraseTest, detectMnemonic) {
 	for (auto it = mPassphrasesForTesting.begin(); it != mPassphrasesForTesting.end(); it++) {
 		auto testDataSet = *it;
-		for (int i = 0; i < CryptoConfig::MNEMONIC_MAX; i++) {
-			CryptoConfig::Mnemonic_Types type = (CryptoConfig::Mnemonic_Types)i;
+		for (int i = 0; i < enum_integer(MnemonicType::MAX); i++) {
+			auto type = enum_cast<MnemonicType>(i).value();
 			// currently not easy to differentiate from MNEMONIC_GRADIDO_BOOK_GERMAN_RANDOM_ORDER
-			if (CryptoConfig::MNEMONIC_GRADIDO_BOOK_GERMAN_RANDOM_ORDER_FIXED_CASES == type) continue;
-			EXPECT_EQ(Passphrase::detectMnemonic(testDataSet.passphrases[type]), &CryptoConfig::g_Mnemonic_WordLists[type]);
+			if (MnemonicType::GRADIDO_BOOK_GERMAN_RANDOM_ORDER_FIXED_CASES == type) continue;
+			EXPECT_EQ(Passphrase::detectMnemonic(testDataSet.passphrases[i]), &CryptoConfig::g_Mnemonic_WordLists[i]);
 		}
 
 	}
@@ -79,19 +79,16 @@ TEST_F(PassphraseTest, detectMnemonic) {
 }
 
 TEST_F(PassphraseTest, detectMnemonicWithPubkey) {
-	auto mm = MemoryManager::getInstance();
-	auto pubkeyBin = mm->getMemory(crypto_sign_PUBLICKEYBYTES);
+	auto pubkeyBin = std::make_shared<memory::Block>(crypto_sign_PUBLICKEYBYTES);
 	for (auto it = mPassphrasesForTesting.begin(); it != mPassphrasesForTesting.end(); it++) {
 		auto testDataSet = *it;
 		//testDataSet.pubkeyHex
-		ASSERT_FALSE(pubkeyBin->convertFromHex(testDataSet.pubkeyHex));
-		auto key_pair = new KeyPairEd25519(*pubkeyBin);
-		for (int i = 0; i < CryptoConfig::MNEMONIC_MAX; i++) {
-			CryptoConfig::Mnemonic_Types type = (CryptoConfig::Mnemonic_Types)i;
-			EXPECT_EQ(Passphrase::detectMnemonic(testDataSet.passphrases[type], key_pair), &CryptoConfig::g_Mnemonic_WordLists[type]);
+		ASSERT_FALSE(pubkeyBin->fromHex(testDataSet.pubkeyHex));
+		auto key_pair = new KeyPairEd25519(pubkeyBin);
+		for (int i = 0; i < enum_integer(MnemonicType::MAX); i++) {
+			EXPECT_EQ(Passphrase::detectMnemonic(testDataSet.passphrases[i], key_pair), &CryptoConfig::g_Mnemonic_WordLists[i]);
 		}
 	}
-	mm->releaseMemory(pubkeyBin);
 }
 
 TEST_F(PassphraseTest, filter) {
@@ -112,25 +109,29 @@ TEST_F(PassphraseTest, filter) {
 TEST_F(PassphraseTest, constructAndValid) {
 	for (auto it = mPassphrasesForTesting.begin(); it != mPassphrasesForTesting.end(); it++) {
 		auto testDataSet = *it;
-		for (int i = 0; i < CryptoConfig::MNEMONIC_MAX; i++) {
-			CryptoConfig::Mnemonic_Types type = (CryptoConfig::Mnemonic_Types)i;
-			Passphrase passphrase(testDataSet.passphrases[type], &CryptoConfig::g_Mnemonic_WordLists[type]);
+		for (int i = 0; i < enum_integer(MnemonicType::MAX); i++) {
+			Passphrase passphrase(testDataSet.passphrases[i], &CryptoConfig::g_Mnemonic_WordLists[i]);
 			EXPECT_TRUE(passphrase.checkIfValid());
 		}
 	}
-	EXPECT_THROW(Passphrase passphrase("Höh, maß, xDäöas", &CryptoConfig::g_Mnemonic_WordLists[CryptoConfig::MNEMONIC_GRADIDO_BOOK_GERMAN_RANDOM_ORDER]), MnemonicException);
+	EXPECT_THROW(
+		Passphrase passphrase(
+			"Höh, maß, xDäöas",
+			&CryptoConfig::g_Mnemonic_WordLists[enum_integer(MnemonicType::GRADIDO_BOOK_GERMAN_RANDOM_ORDER)]
+		),
+		MnemonicException
+	);
 	//EXPECT_FALSE(passphrase.checkIfValid());
 }
 
 TEST_F(PassphraseTest, wordIndices) {
 	for (auto it = mPassphrasesForTesting.begin(); it != mPassphrasesForTesting.end(); it++) {
 		auto testDataSet = *it;
-		for (int i = 0; i < CryptoConfig::MNEMONIC_MAX; i++) {
-			CryptoConfig::Mnemonic_Types type = (CryptoConfig::Mnemonic_Types)i;
-			Passphrase passphrase(testDataSet.passphrases[type], &CryptoConfig::g_Mnemonic_WordLists[type]);
+		for (int i = 0; i < enum_integer(MnemonicType::MAX); i++) {
+			Passphrase passphrase(testDataSet.passphrases[i], &CryptoConfig::g_Mnemonic_WordLists[i]);
 			ASSERT_TRUE(passphrase.checkIfValid());
 			auto wordIndices = passphrase.getWordIndices();
-			EXPECT_EQ(memcmp(wordIndices, testDataSet.wordIndices, PHRASE_WORD_COUNT * sizeof(uint16_t)), 0);
+			EXPECT_TRUE(wordIndices == testDataSet.wordIndices);
 		}
 	}
 }
@@ -138,7 +139,7 @@ TEST_F(PassphraseTest, wordIndices) {
 TEST_F(PassphraseTest, createAndTransform) {
 	for (auto it = mPassphrasesForTesting.begin(); it != mPassphrasesForTesting.end(); it++) {
 		auto test_data_set = *it;
-		auto mnemonic = &CryptoConfig::g_Mnemonic_WordLists[test_data_set.mnemonicType];
+		auto mnemonic = &CryptoConfig::g_Mnemonic_WordLists[enum_integer(test_data_set.mnemonicType)];
 		auto tr = Passphrase::create(test_data_set.wordIndices, mnemonic);
 
 		auto word_indices = tr->getWordIndices();
@@ -149,25 +150,25 @@ TEST_F(PassphraseTest, createAndTransform) {
 		auto key_pair_ed25519 = KeyPairEd25519::create(tr);
 		//KeyPair key_pair;
 		//key_pair.generateFromPassphrase(test_data_set.passphrases[test_data_set.mnemonicType].data(), mnemonic);
-		EXPECT_EQ(DataTypeConverter::pubkeyToHex(key_pair_ed25519->getPublicKey()), test_data_set.pubkeyHex);
+		EXPECT_EQ(key_pair_ed25519->getPublicKey()->convertToHex(), test_data_set.pubkeyHex);
 		//EXPECT_EQ(key_pair.getPubkeyHex(), test_data_set.pubkeyHex);
 
 		//auto key_pair_old
 		ASSERT_FALSE(tr == nullptr);
 		EXPECT_TRUE(tr->checkIfValid());
-		auto tr_english = tr->transform(&CryptoConfig::g_Mnemonic_WordLists[CryptoConfig::MNEMONIC_BIP0039_SORTED_ORDER]);
+		auto tr_english = tr->transform(&CryptoConfig::g_Mnemonic_WordLists[enum_integer(MnemonicType::BIP0039_SORTED_ORDER)]);
 		ASSERT_FALSE(tr_english == nullptr);
-		EXPECT_EQ(tr_english->getString(), test_data_set.passphrases[CryptoConfig::MNEMONIC_BIP0039_SORTED_ORDER]);
+		EXPECT_EQ(tr_english->getString(), test_data_set.passphrases[enum_integer(MnemonicType::BIP0039_SORTED_ORDER)]);
 		//printf("english: %s\n", tr_english->getString().data());
 
-		auto tr_german1 = tr->transform(&CryptoConfig::g_Mnemonic_WordLists[CryptoConfig::MNEMONIC_GRADIDO_BOOK_GERMAN_RANDOM_ORDER]);
+		auto tr_german1 = tr->transform(&CryptoConfig::g_Mnemonic_WordLists[enum_integer(MnemonicType::GRADIDO_BOOK_GERMAN_RANDOM_ORDER)]);
 		ASSERT_FALSE(tr_german1 == nullptr);
-		EXPECT_EQ(tr_german1->getString(), test_data_set.passphrases[CryptoConfig::MNEMONIC_GRADIDO_BOOK_GERMAN_RANDOM_ORDER]);
+		EXPECT_EQ(tr_german1->getString(), test_data_set.passphrases[enum_integer(MnemonicType::GRADIDO_BOOK_GERMAN_RANDOM_ORDER)]);
 		//printf("german 1: %s\n", tr_german1->getString().data());
 
-		auto tr_german2 = tr->transform(&CryptoConfig::g_Mnemonic_WordLists[CryptoConfig::MNEMONIC_GRADIDO_BOOK_GERMAN_RANDOM_ORDER_FIXED_CASES]);
+		auto tr_german2 = tr->transform(&CryptoConfig::g_Mnemonic_WordLists[enum_integer(MnemonicType::GRADIDO_BOOK_GERMAN_RANDOM_ORDER_FIXED_CASES)]);
 		ASSERT_FALSE(tr_german2 == nullptr);
-		EXPECT_EQ(tr_german2->getString(), test_data_set.passphrases[CryptoConfig::MNEMONIC_GRADIDO_BOOK_GERMAN_RANDOM_ORDER_FIXED_CASES]);
+		EXPECT_EQ(tr_german2->getString(), test_data_set.passphrases[enum_integer(MnemonicType::GRADIDO_BOOK_GERMAN_RANDOM_ORDER_FIXED_CASES)]);
 		//printf("german 2: %s\n\n", tr_german2->getString().data());
 	}
 }

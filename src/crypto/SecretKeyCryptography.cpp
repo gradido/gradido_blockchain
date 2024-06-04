@@ -139,7 +139,7 @@ memory::Block SecretKeyCryptography::decrypt(const unsigned char* encryptedMessa
 	return decryptedData;
 }
 
-DecryptionException::DecryptionException(const char* what, ConstMemoryBlockPtr message) noexcept
+DecryptionException::DecryptionException(const char* what, memory::ConstBlockPtr message) noexcept
 	: SecretKeyCryptographyException(what), mMessage(message)
 {
 	
@@ -148,7 +148,7 @@ DecryptionException::DecryptionException(const char* what, ConstMemoryBlockPtr m
 std::string DecryptionException::getFullString() const
 {
 	std::string result = what();
-	result += "message converted to hex: " + mMessage->convertToHexString();
+	result += "message converted to hex: " + mMessage->convertToHex();
 	return result;
 }
 

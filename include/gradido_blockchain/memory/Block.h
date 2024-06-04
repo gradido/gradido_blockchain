@@ -35,7 +35,6 @@ namespace memory {
 		inline const uint8_t* data() const { return mData; }
 		inline operator uint8_t* () { return mData; }
 		inline operator const uint8_t* () const { return mData; }
-
 		inline unsigned char* data(size_t startIndex) { assert(startIndex < mSize); return &mData[startIndex]; }
 		inline const unsigned char* data(size_t startIndex) const { assert(startIndex < mSize); return &mData[startIndex]; }
 		std::string convertToHex() const;
@@ -43,10 +42,10 @@ namespace memory {
 		//! \return 0 if ok
 		//!        -1 if bin is to small
 		//!        -2 if hex is invalid
-		static inline Block& fromHex(const std::string& hex) {
+		static inline Block fromHex(const std::string& hex) {
 			return fromHex(hex.data(), hex.size());
 		}
-		static Block& fromHex(const char* hexString, size_t stringSize);
+		static Block fromHex(const char* hexString, size_t stringSize);
 
 		bool isTheSame(const Block& b) const;
 		inline bool operator == (const Block& b) const { return isTheSame(b); }
@@ -61,8 +60,8 @@ namespace memory {
 		static std::map<size_t, BlockStack*> mBlockStacks;
 	};
 
-	typedef std::shared_ptr<Block> MemoryBlockPtr;
-	typedef std::shared_ptr<const Block> ConstMemoryBlockPtr;
+	typedef std::shared_ptr<Block> BlockPtr;
+	typedef std::shared_ptr<const Block> ConstBlockPtr;
 }
 
 typedef memory::Block MemoryBin;
