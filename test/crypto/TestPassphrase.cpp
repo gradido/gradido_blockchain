@@ -71,18 +71,15 @@ TEST_F(PassphraseTest, detectMnemonic)
 
 TEST_F(PassphraseTest, detectMnemonicWithPubkey)
 {
-	auto pubkeyBin = std::make_shared<memory::Block>(crypto_sign_PUBLICKEYBYTES);
 	for (auto it = mPassphrasesForTesting.begin(); it != mPassphrasesForTesting.end(); it++)
 	{
 		auto testDataSet = *it;
 		// testDataSet.pubkeyHex
 
-		EXPECT_NO_THROW(pubkeyBin->fromHex(testDataSet.pubkeyHex));
-
+		auto pubkeyBin = std::make_shared<memory::Block>(memory::Block::fromHex(testDataSet.pubkeyHex));
 		auto key_pair = new KeyPairEd25519(pubkeyBin);
 		for (int i = 0; i < enum_integer(MnemonicType::MAX); i++)
 		{
-			printf("try to detect mnemonic for passphrase: %s, i: %d\n", testDataSet.passphrases[i].data(), i);
 			EXPECT_EQ(Passphrase::detectMnemonic(testDataSet.passphrases[i], key_pair), &CryptoConfig::g_Mnemonic_WordLists[i]);
 		}
 	}

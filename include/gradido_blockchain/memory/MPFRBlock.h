@@ -11,7 +11,7 @@
 #include <set>
 
 // MAGIC NUMBER: Define how many bits are used for amount calculation
-#define MAGIC_NUMBER_AMOUNT_PRECISION_BITS 128
+#define MAGIC_NUMBER_AMOUNT_PRECISION_BITS 256
 
 namespace memory {
 

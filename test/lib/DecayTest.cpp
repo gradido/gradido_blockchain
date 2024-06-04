@@ -206,9 +206,9 @@ TEST_F(DecayTest, calculate_decay_fast_2)
 	mpfr_set_ui(gdd, 1000, gDefaultRound);
 	calculateDecayFactorForDuration(temp, gDecayFactorGregorianCalender, std::chrono::seconds{ 2670 });
 	calculateDecayFast(temp, gdd);
-	std::string resultString = gdd.toString();
+	std::string resultString = gdd.toString(25);
 	//printf("1000 GDD with 2670 seconds decay: %s\n", resultString.data());
-	EXPECT_EQ("999.941355277132494534490393565314192761", resultString);
+	EXPECT_EQ("999.9413552771324945344903936", resultString);
 
 	// add 1000 GDD
 	mpfr_add_ui(gdd, gdd, 1000, gDefaultRound);
@@ -216,9 +216,9 @@ TEST_F(DecayTest, calculate_decay_fast_2)
 	// 10720 seconds decay (2,97 hours)
 	calculateDecayFactorForDuration(temp, gDecayFactorGregorianCalender, std::chrono::seconds{ 10720 });
 	calculateDecayFast(temp, gdd);
-	resultString = gdd.toString();
+	resultString = gdd.toString(25);
 	//printf("1999.9413 GDD with 10720 seconds decay: %s\n", resultString.data());
-	EXPECT_EQ("1999.47049578629486804846572805483240501", resultString);
+	EXPECT_EQ("1999.4704957862948680484657281", resultString);
 
 	// 1000 GDD
 	// 1 Jahr decay
@@ -226,9 +226,9 @@ TEST_F(DecayTest, calculate_decay_fast_2)
 	mpfr_pow_ui(temp, gDecayFactorGregorianCalender, 365.2425 * 24.0 * 60.0 * 60.0, gDefaultRound);
 	//calculateDecayFactorForDuration(temp->getData(), gDecayFactorGregorianCalender, 365.2425 * 24.0 * 60.0 * 60.0);
 	calculateDecayFast(temp, gdd);
-	resultString = gdd.toString();
+	resultString = gdd.toString(25);
 	//printf("1000 GDD with 1 year decay: %s\n", resultString.data());
-	EXPECT_EQ("500.000010982479955450797094521242965421", resultString);
+	EXPECT_EQ("500.0000109824799554507970945", resultString);
 
 	unloadDefaultDecayFactors();
 }
