@@ -53,7 +53,7 @@ namespace gradido {
 
 			//! if not called, time from calling TransactionBodyBuilder Constructor will be taken
 			inline TransactionBodyBuilder& setCreatedAt(Timepoint createdAt) {
-				mBody->createdAt = createdAt;
+				mBody->createdAt = data::Timestamp(createdAt);			
 				return *this;
 			}
 

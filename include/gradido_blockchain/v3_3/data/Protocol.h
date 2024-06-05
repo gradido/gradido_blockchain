@@ -49,6 +49,7 @@ namespace gradido {
 					int64_t microseconds = seconds * static_cast<int64_t>(1e6) + nanos / static_cast<int64_t>(1e3);
 					return std::chrono::system_clock::time_point(std::chrono::microseconds(microseconds));
 				};
+				bool operator==(const Timestamp& other) const { return seconds == other.seconds && nanos == other.nanos; }
 
 				int64_t seconds;
 				int32_t nanos;
@@ -64,6 +65,7 @@ namespace gradido {
 				operator Timepoint() const {
 					return std::chrono::system_clock::time_point(std::chrono::seconds{ seconds });
 				};
+				bool operator==(const TimestampSeconds& other) const { return seconds == other.seconds; }
 
 				int64_t seconds;
 			};
@@ -71,12 +73,12 @@ namespace gradido {
 			struct GRADIDOBLOCKCHAIN_EXPORT TransferAmount
 			{
 				TransferAmount(
-					memory::ConstBlockPtr recipientPubkeyPtr,
+					memory::ConstBlockPtr pubkeyPtr,
 					const std::string& amountString,
 					const std::string& communityId = ""
-				) : recipientPubkey(recipientPubkeyPtr), amount(amountString), communityId(communityId) {}
+				) : pubkey(pubkeyPtr), amount(amountString), communityId(communityId) {}
 
-				memory::ConstBlockPtr recipientPubkey;
+				memory::ConstBlockPtr pubkey;
 				DecayDecimal amount;
 				std::string communityId;
 			};

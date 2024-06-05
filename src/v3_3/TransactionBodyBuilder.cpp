@@ -28,10 +28,8 @@ namespace gradido {
 		std::unique_ptr<TransactionBody> TransactionBodyBuilder::build()
 		{
 			if (!mSpecificTransactionChoosen) {
-				throw TransactionBodyBuilderException("missing specific transaction (GradidoTransfer, GradidoCreation or ...");
+				throw TransactionBodyBuilderException("missing specific transaction (GradidoTransfer, GradidoCreation or other");
 			}
-
-			mSpecificTransactionChoosen = false;
 
 			auto body = move(mBody);
 			reset();
@@ -52,14 +50,14 @@ namespace gradido {
 			mBody->deferredTransfer = make_shared<GradidoDeferredTransfer>(
 				GradidoTransfer(
 					TransferAmount(
-						recipientPubkey,
+						senderPubkey,
 						amountGddCent,
 						communityId
-					), senderPubkey
+					), recipientPubkey
 				), timeout
 			);
 
-			mSpecificTransactionChoosen = false;
+			mSpecificTransactionChoosen = true;
 			return *this;
 		}
 
@@ -71,7 +69,7 @@ namespace gradido {
 
 			mBody->communityFriendsUpdate = make_shared<CommunityFriendsUpdate>(colorFusion);
 
-			mSpecificTransactionChoosen = false;
+			mSpecificTransactionChoosen = true;
 			return *this;
 		}
 
@@ -89,7 +87,7 @@ namespace gradido {
 				userPubkey, type, 1, nameHash, accountPubkey
 			);
 
-			mSpecificTransactionChoosen = false;
+			mSpecificTransactionChoosen = true;
 			return *this;
 		}
 
@@ -107,7 +105,7 @@ namespace gradido {
 				TransferAmount(recipientPubkey, amountGddCent), targetDate
 			);
 
-			mSpecificTransactionChoosen = false;
+			mSpecificTransactionChoosen = true;
 			return *this;
 		}
 
@@ -123,13 +121,13 @@ namespace gradido {
 
 			mBody->transfer = make_shared<GradidoTransfer>(
 				TransferAmount(
-					recipientPubkey,
+					senderPubkey,
 					amountGddCent,
 					communityId
-				), senderPubkey
+				), recipientPubkey
 			);
 
-			mSpecificTransactionChoosen = false;
+			mSpecificTransactionChoosen = true;
 			return *this;
 		}
 
@@ -146,7 +144,7 @@ namespace gradido {
 				pubkey, gmwPubkey, aufPubkey
 			);
 
-			mSpecificTransactionChoosen = false;
+			mSpecificTransactionChoosen = true;
 			return *this;
 		}
 	}
