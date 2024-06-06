@@ -2,9 +2,11 @@
 #define __GRADIDO_BLOCKCHAIN_MEMORY_BLOCK_H
 
 #include "BlockStack.h"
+#include "VectorCacheAllocator.h"
 #include "gradido_blockchain/export.h"
 
 #include <map>
+#include <span>
 #include <vector>
 #include <cassert>
 #include <memory>
@@ -19,6 +21,7 @@ namespace memory {
 		// copy data
 		Block(size_t size, const unsigned char* data);
 		Block(const std::vector<unsigned char>& data);
+		Block(std::span<std::byte> data);
 		Block(const std::string& data);
 		// copy
 		Block(Block& other);
@@ -34,12 +37,14 @@ namespace memory {
 
 		inline uint8_t* data() { return mData; }
 		inline const uint8_t* data() const { return mData; }
+		inline std::span<std::byte> span() const { return { reinterpret_cast<std::byte*>(mData), mSize }; }
 		inline operator uint8_t* () { return mData; }
 		inline operator const uint8_t* () const { return mData; }
 		inline unsigned char* data(size_t startIndex) { assert(startIndex < mSize); return &mData[startIndex]; }
 		inline const unsigned char* data(size_t startIndex) const { assert(startIndex < mSize); return &mData[startIndex]; }
 		std::string convertToHex() const;
 		std::string copyAsString() const;
+		std::vector<uint8_t> copyAsVector() const;
 		//! \return 0 if ok
 		//!        -1 if bin is to small
 		//!        -2 if hex is invalid

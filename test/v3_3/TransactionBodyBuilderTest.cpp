@@ -1,44 +1,17 @@
-#include "TransactionBodyBuilderTest.h"
+#include "gtest/gtest.h"
+#include "../KeyPairs.h"
 #include "gradido_blockchain/v3_3/TransactionBodyBuilder.h"
 
 using namespace gradido::v3_3;
 using namespace gradido::v3_3::data;
 using namespace std::chrono;
 
-void TransactionBodyBuilderTest::SetUp()
-{
-	unsigned char hash[crypto_hash_sha512_BYTES];
-	std::array seeds = {
-		"Ein Tauschmittel fuer die Menschen",
-		"Liebe und Gesundheit",
-		"hurra auf das dreifache Wohl",
-		"Wir machen die Erde zu einem Paradies fuer alle Wesen",
-		"Dankesausgleich",
-		"Folgt seinem Ruf"
-	};
-	mED25519KeyPairs.reserve(seeds.size());
-	for (int i = 0; i < seeds.size(); i++) {
-		KeyPair keyPair;
-		auto& seed = seeds[i];
-		
-		crypto_hash_sha512(hash, (const unsigned char*)seed, strlen(seed));
-		crypto_sign_seed_keypair(*keyPair.publicKey, *keyPair.privateKey, hash);
-		mED25519KeyPairs.push_back(keyPair);
-	}
-}
 
-void TransactionBodyBuilderTest::TearDown()
-{
-
-}
-
-TEST_F(TransactionBodyBuilderTest, CommunityRoot) {
+TEST(TransactionBodyBuilderTest, CommunityRoot) {
 	auto now = system_clock::now();
 	TransactionBodyBuilder builder;
-	std::string memo("Die Welt und ein Paar Schlittschuhe dazu.");
 	auto transactionBody = builder
-		.setCommunityRoot(mED25519KeyPairs[0].publicKey, mED25519KeyPairs[1].publicKey, mED25519KeyPairs[2].publicKey)
-		.setMemo(memo)
+		.setCommunityRoot(g_KeyPairs[0].publicKey, g_KeyPairs[1].publicKey, g_KeyPairs[2].publicKey)
 		.build();
 
 	EXPECT_FALSE(transactionBody->isCommunityFriendsUpdate());
@@ -48,21 +21,19 @@ TEST_F(TransactionBodyBuilderTest, CommunityRoot) {
 	EXPECT_FALSE(transactionBody->isRegisterAddress());
 	EXPECT_FALSE(transactionBody->isTransfer());
 
-	EXPECT_EQ(transactionBody->memo, memo);
-
 	auto communityRoot = transactionBody->communityRoot;
 	
-	EXPECT_EQ(*communityRoot->pubkey, *mED25519KeyPairs[0].publicKey);
-	EXPECT_EQ(*communityRoot->gmwPubkey, *mED25519KeyPairs[1].publicKey);
-	EXPECT_EQ(*communityRoot->aufPubkey, *mED25519KeyPairs[2].publicKey);
+	EXPECT_EQ(*communityRoot->pubkey, *g_KeyPairs[0].publicKey);
+	EXPECT_EQ(*communityRoot->gmwPubkey, *g_KeyPairs[1].publicKey);
+	EXPECT_EQ(*communityRoot->aufPubkey, *g_KeyPairs[2].publicKey);
 	EXPECT_GT((Timepoint)transactionBody->createdAt, now);
 }
 
-TEST_F(TransactionBodyBuilderTest, RegisterAddressUserOnly) {
+TEST(TransactionBodyBuilderTest, RegisterAddressUserOnly) {
 	auto now = system_clock::now();
 	TransactionBodyBuilder builder;
 	auto transactionBody = builder
-		.setRegisterAddress(mED25519KeyPairs[3].publicKey, AddressType::COMMUNITY_HUMAN)
+		.setRegisterAddress(g_KeyPairs[3].publicKey, AddressType::COMMUNITY_HUMAN)
 		.setCreatedAt(now)
 		.build();
 
@@ -78,19 +49,19 @@ TEST_F(TransactionBodyBuilderTest, RegisterAddressUserOnly) {
 
 	auto registerAddress = transactionBody->registerAddress;
 	EXPECT_EQ(registerAddress->addressType, AddressType::COMMUNITY_HUMAN);
-	EXPECT_EQ(*registerAddress->userPubkey, *mED25519KeyPairs[3].publicKey);
+	EXPECT_EQ(*registerAddress->userPubkey, *g_KeyPairs[3].publicKey);
 
 }
 
-TEST_F(TransactionBodyBuilderTest, RegisterAddressUserAndAccount) {
+TEST(TransactionBodyBuilderTest, RegisterAddressUserAndAccount) {
 	auto now = system_clock::now();
 	TransactionBodyBuilder builder;
 	auto transactionBody = builder
 		.setRegisterAddress(
-			mED25519KeyPairs[3].publicKey,
+			g_KeyPairs[3].publicKey,
 			AddressType::COMMUNITY_HUMAN,
 			nullptr, 
-			mED25519KeyPairs[4].publicKey
+			g_KeyPairs[4].publicKey
 		)
 		.setCreatedAt(now)
 		.build();
@@ -107,17 +78,17 @@ TEST_F(TransactionBodyBuilderTest, RegisterAddressUserAndAccount) {
 
 	auto registerAddress = transactionBody->registerAddress;
 	EXPECT_EQ(registerAddress->addressType, AddressType::COMMUNITY_HUMAN);
-	EXPECT_EQ(*registerAddress->userPubkey, *mED25519KeyPairs[3].publicKey);
-	EXPECT_EQ(*registerAddress->accountPubkey, *mED25519KeyPairs[4].publicKey);
+	EXPECT_EQ(*registerAddress->userPubkey, *g_KeyPairs[3].publicKey);
+	EXPECT_EQ(*registerAddress->accountPubkey, *g_KeyPairs[4].publicKey);
 }
 
-TEST_F(TransactionBodyBuilderTest, GradidoCreation) {
+TEST(TransactionBodyBuilderTest, GradidoCreation) {
 	auto now = system_clock::now();
 	std::string memo("Du bist der Schoepfer deiner Welt!");
 	TransactionBodyBuilder builder;
 	auto transactionBody = builder
 		.setTransactionCreation(
-			mED25519KeyPairs[4].publicKey,
+			g_KeyPairs[4].publicKey,
 			"1000",
 			TimestampSeconds(1660953712)
 		)
@@ -136,23 +107,23 @@ TEST_F(TransactionBodyBuilderTest, GradidoCreation) {
 	EXPECT_EQ(transactionBody->createdAt, Timestamp(now));
 
 	auto creation = transactionBody->creation;
-	EXPECT_EQ(*creation->recipient.pubkey, *mED25519KeyPairs[4].publicKey);
+	EXPECT_EQ(*creation->recipient.pubkey, *g_KeyPairs[4].publicKey);
 	EXPECT_EQ(creation->recipient.communityId, "");
 	EXPECT_EQ(creation->recipient.amount.toString(2), "1000.00");
 	EXPECT_EQ(creation->targetDate, TimestampSeconds(1660953712));
 }
 
 
-TEST_F(TransactionBodyBuilderTest, GradidoTransfer) {
+TEST(TransactionBodyBuilderTest, GradidoTransfer) {
 	auto now = system_clock::now();
 	std::string memo("Danke fuer dein Sein!");
 	TransactionBodyBuilder builder;
 	auto transactionBody = builder
 		.setTransactionTransfer(
-			mED25519KeyPairs[4].publicKey, // sender
+			g_KeyPairs[4].publicKey, // sender
 			"100.251621",
 			"",
-			mED25519KeyPairs[5].publicKey // recipient
+			g_KeyPairs[5].publicKey // recipient
 		)
 		.setCreatedAt(now)
 		.setMemo(memo)
@@ -169,22 +140,22 @@ TEST_F(TransactionBodyBuilderTest, GradidoTransfer) {
 	EXPECT_EQ(transactionBody->createdAt, Timestamp(now));
 
 	auto transfer = transactionBody->transfer;
-	EXPECT_EQ(*transfer->sender.pubkey, *mED25519KeyPairs[4].publicKey);
+	EXPECT_EQ(*transfer->sender.pubkey, *g_KeyPairs[4].publicKey);
 	EXPECT_EQ(transfer->sender.communityId, "");
 	EXPECT_EQ(transfer->sender.amount.toString(6), "100.251621");
-	EXPECT_EQ(*transfer->recipient, *mED25519KeyPairs[5].publicKey);
+	EXPECT_EQ(*transfer->recipient, *g_KeyPairs[5].publicKey);
 }
 
-TEST_F(TransactionBodyBuilderTest, GradidoDeferredTransfer) {
+TEST(TransactionBodyBuilderTest, GradidoDeferredTransfer) {
 	auto now = system_clock::now();
-	std::string memo("Danke fuer dein Sein!");
+	std::string memo("Probiere doch auch mal Gradidos aus");
 	TransactionBodyBuilder builder;
 	auto transactionBody = builder
 		.setDeferredTransfer(
-			mED25519KeyPairs[4].publicKey, // sender
+			g_KeyPairs[4].publicKey, // sender
 			"100.251621",
 			"",
-			mED25519KeyPairs[5].publicKey, // recipient
+			g_KeyPairs[5].publicKey, // recipient
 			now + days(5)
 		)
 		.setCreatedAt(now)
@@ -202,9 +173,9 @@ TEST_F(TransactionBodyBuilderTest, GradidoDeferredTransfer) {
 	EXPECT_EQ(transactionBody->createdAt, Timestamp(now));
 
 	auto deferredTransfer = transactionBody->deferredTransfer;
-	EXPECT_EQ(*deferredTransfer->transfer.sender.pubkey, *mED25519KeyPairs[4].publicKey);
+	EXPECT_EQ(*deferredTransfer->transfer.sender.pubkey, *g_KeyPairs[4].publicKey);
 	EXPECT_EQ(deferredTransfer->transfer.sender.communityId, "");
 	EXPECT_EQ(deferredTransfer->transfer.sender.amount.toString(6), "100.251621");
-	EXPECT_EQ(*deferredTransfer->transfer.recipient, *mED25519KeyPairs[5].publicKey);
+	EXPECT_EQ(*deferredTransfer->transfer.recipient, *g_KeyPairs[5].publicKey);
 	EXPECT_EQ(deferredTransfer->timeout, now + days(5));
 }

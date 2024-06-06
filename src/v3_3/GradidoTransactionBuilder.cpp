@@ -45,10 +45,13 @@ namespace gradido {
 
 		GradidoTransactionBuilder& GradidoTransactionBuilder::sign(std::shared_ptr<KeyPairEd25519> keyPair)
 		{
+			printf("sign\n");
 			if (!mGradidoTransaction->mBodyBytes) {
 				throw GradidoTransactionBuilderException("please call setTransactionBody before");
 			}
+			printf("[sign] body bytes: %s\n", DataTypeConverter::binToBase64(*mGradidoTransaction->mBodyBytes).data());
 			auto signature = make_shared<memory::Block>(keyPair->sign(*mGradidoTransaction->mBodyBytes));
+			printf("[sign] signature: %s\n", signature->convertToHex().data());
 			addSignaturePair(keyPair->getPublicKey(), signature);
 			return *this;
 		}

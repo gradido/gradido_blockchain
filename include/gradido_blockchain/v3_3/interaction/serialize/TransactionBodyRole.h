@@ -3,25 +3,28 @@
 
 #include "gradido_blockchain/v3_3/data/Protocol.h"
 #include "gradido_blockchain/v3_3/data/Protopuf.h"
-#include "AbstractRole.h"
+#include "BasicTypesRole.h"
+#include "CommunityRootRole.h"
+#include "gradido_blockchain/v3_3/data/CrossGroupType.h"
 
 namespace gradido {
 	namespace v3_3 {
 		namespace interaction {
 			namespace serialize {
+
+
 				class TransactionBodyRole: public AbstractRole
 				{
 				public:
 					TransactionBodyRole(const data::TransactionBody& body) : mBody(body) {}
 					~TransactionBodyRole() {};
 
-					virtual memory::ConstBlockPtr run() const;
+					RUM_IMPLEMENTATION
+					data::TransactionBodyMessage getMessage() const;
+					size_t calculateSerializedSize() const;					
+					size_t calculateTransferAmountSerializedSize(const data::TransferAmount& amount) const;
 
 				protected:
-					//data::TransferAmountMessage getTransferAmountMessage(const data::TransferAmount& amount) const;
-					//data::GradidoTransferMessage getTransferMessage(const data::GradidoTransfer& transfer) const;
-					//data::RegisterAddressMessage getRegisterAddressMessage(const data::RegisterAddress& registerAddress) const;
-
 					const data::TransactionBody& mBody;
 				};
 			}

@@ -51,8 +51,8 @@ namespace gradido {
             // community_root.proto
             using CommunityRootMessage = message <
                 bytes_field<"pubkey", 1>,// singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
-                bytes_field<"gmw_pubkey", 2>,// singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
-                bytes_field<"auf_pubkey", 3>//, singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>
+                bytes_field<"auf_pubkey", 3>,//, singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>
+                bytes_field<"gmw_pubkey", 3>
             >;
 
             // gradido_creation.proto

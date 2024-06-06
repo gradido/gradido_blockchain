@@ -29,8 +29,14 @@ namespace memory {
 	Block::Block(const std::vector<unsigned char>& data)
 		: Block(data.size(), data.data()) 
 	{
-	
 	}
+
+	Block::Block(std::span<std::byte> data) 
+		: Block(data.size(), reinterpret_cast<const unsigned char*>(data.data()))
+	{
+
+	}
+
 	Block::Block(const std::string& data)
 		: Block(data.size(), (const unsigned char*)data.data())
 	{
@@ -99,6 +105,11 @@ namespace memory {
 	std::string Block::copyAsString() const
 	{
 		return { (char*)mData, mSize };
+	}
+
+	std::vector<uint8_t> Block::copyAsVector() const
+	{
+		return { mData, mData + mSize };
 	}
 
 	Block Block::fromHex(const char* hexString, size_t stringSize)
