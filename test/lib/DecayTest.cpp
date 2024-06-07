@@ -4,6 +4,7 @@
 #include "gradido_blockchain/lib/DecayDecimal.h"
 
 #include <chrono>
+#include <array>
 
 void DecayTest::SetUp()
 {
@@ -135,6 +136,78 @@ TEST_F(DecayTest, calculate_decay_fast)
 	mpfr_clear(decay_factor);
 	mpfr_clear(gradido);
 }
+
+TEST_F(DecayTest, compareIntegerDoubleMpfrPrecision)
+{
+	std::array gdds = {
+		1000.0,
+		100.0121,
+		192817.1821,
+		1.021721,
+		101007.7635,
+		29871625.1621
+	};
+	std::array durations = {
+		1,
+		60, // 1 minute
+		3600, // 1 hour
+		86400,// 1 day
+		2592000, // 1 month
+		15379200, // 1/2 year
+		30758400, // 1 year		
+		307584000, // 10 year		
+	};
+	static long double factor = 0.99999997803504048973201202316767079413460520837376;
+	printf("long double size: %lld\n", sizeof(factor));
+	for (auto gdd : gdds) {
+		for (auto duration : durations) {
+			std::cout << std::to_string(gdd) << " gdd, " << std::to_string(duration) << " s" << std::endl;
+			Decimal mpfrGdd(std::to_string(gdd));
+			long double decimalGdd(gdd);
+			long long integerGdd(static_cast<long long>(gdd * 10000.0));
+			calculateDecay(gDecayFactorGregorianCalender, duration, mpfrGdd);
+			decimalGdd = decimalGdd * powl(factor, static_cast<long double>(duration));
+			integerGdd = static_cast<long long>(static_cast<long double>(integerGdd) * powl(factor, static_cast<long double>(duration)));			
+			long double roundedDecimalGdd = roundl(decimalGdd * 10000.0) / 10000.0;
+			long double roundedIntegerGdd = roundl(static_cast<double>(integerGdd)) / 10000.0;
+
+			/*std::cout
+				<< "mpfr: " << mpfrGdd.toString(4) << std::endl
+				<< "int : " << std::to_string(roundedIntegerGdd) << std::endl
+				<< "dec : " << std::fixed << std::to_string(roundedDecimalGdd) << std::endl
+				<< "----------------------------------------------------" << std::endl;	
+				*/
+			std::ostringstream decimalGddOss, integerGddOss;
+			decimalGddOss << std::fixed << std::setprecision(2) << roundedDecimalGdd;
+			integerGddOss << std::fixed << std::setprecision(2) << roundedIntegerGdd;
+			EXPECT_EQ(mpfrGdd.toString(2), decimalGddOss.str());
+			EXPECT_EQ(mpfrGdd.toString(2), integerGddOss.str());
+			EXPECT_EQ(decimalGddOss.str(), integerGddOss.str());
+		}
+	}
+
+}
+/*
+* 
+mpfr_ptr decayFormula(mpfr_ptr value, unsigned long seconds)
+{
+	calculateDecay(gDecayFactorGregorianCalender, seconds, value);
+	return value;
+}
+
+long long decayFormula(long long value, unsigned long seconds)
+{
+	return static_cast<long long>(decayFormula(static_cast<long double>(value), seconds));
+}
+
+long double decayFormula(long double value, unsigned long seconds)
+{
+	static long double factor = 0.99999997803504048973201202316767079413460520837376;
+	printf("long double size: %lld\n", sizeof(factor));
+	return roundl(value * powl(factor, static_cast<long double>(seconds)));
+}
+
+*/
 
 /*
 * calculateDecay(const mpfr_ptr decay_factor, unsigned long seconds, mpfr_ptr gradido)

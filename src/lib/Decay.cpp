@@ -150,6 +150,24 @@ void calculateDecay(const mpfr_ptr decay_factor, unsigned long seconds, mpfr_ptr
 	mpfr_mul(gradido, gradido, temp, gDefaultRound);
 }
 
+mpfr_ptr decayFormula(mpfr_ptr value, unsigned long seconds)
+{
+	calculateDecay(gDecayFactorGregorianCalender, seconds, value);
+	return value;
+}
+
+long long decayFormula(long long value, unsigned long seconds)
+{
+	return static_cast<long long>(decayFormula(static_cast<long double>(value), seconds));
+}
+
+long double decayFormula(long double value, unsigned long seconds)
+{
+	static long double factor = 0.99999997803504048973201202316767079413460520837376;
+	printf("long double size: %lld\n", sizeof(factor));
+	return roundl(value * powl(factor, static_cast<long double>(seconds)));
+}
+
 ParseStringToMpfrException::ParseStringToMpfrException(const char* what, const std::string& valueString) noexcept
 	: GradidoBlockchainException(what), mValueString(valueString)
 {

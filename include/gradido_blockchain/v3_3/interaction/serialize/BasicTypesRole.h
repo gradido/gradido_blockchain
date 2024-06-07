@@ -37,12 +37,6 @@ namespace gradido {
 					string_field<"community_id", 3>
 				>;
 
-				class BasicTypeRoles 
-				{
-				public:
-					static TimestampMessage getTimestampMessage(const data::Timestamp& timestamp);
-				};
-
 			}
 		}
 	}

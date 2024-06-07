@@ -78,7 +78,7 @@ GRADIDOBLOCKCHAIN_EXPORT Duration calculateDecayDurationSeconds(Timepoint startT
  */
 GRADIDOBLOCKCHAIN_EXPORT void calculateDecayFast(mpfr_ptr decay_for_duration, mpfr_ptr gradido);
 
-//GRADIDOBLOCKCHAIN_EXPORT void calculateDecay(const mpfr_ptr decay_factor, unsigned long seconds, mpfr_ptr gradido);
+GRADIDOBLOCKCHAIN_EXPORT void calculateDecay(const mpfr_ptr decay_factor, unsigned long seconds, mpfr_ptr gradido);
 
 class GRADIDOBLOCKCHAIN_EXPORT ParseStringToMpfrException : public GradidoBlockchainException
 {
