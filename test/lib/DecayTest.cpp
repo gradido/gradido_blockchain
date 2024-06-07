@@ -158,10 +158,10 @@ TEST_F(DecayTest, compareIntegerDoubleMpfrPrecision)
 		307584000, // 10 year		
 	};
 	static long double factor = 0.99999997803504048973201202316767079413460520837376;
-	printf("long double size: %lld\n", sizeof(factor));
+	//printf("long double size: %lld\n", sizeof(factor));
 	for (auto gdd : gdds) {
 		for (auto duration : durations) {
-			std::cout << std::to_string(gdd) << " gdd, " << std::to_string(duration) << " s" << std::endl;
+			//std::cout << std::to_string(gdd) << " gdd, " << std::to_string(duration) << " s" << std::endl;
 			Decimal mpfrGdd(std::to_string(gdd));
 			long double decimalGdd(gdd);
 			long long integerGdd(static_cast<long long>(gdd * 10000.0));
