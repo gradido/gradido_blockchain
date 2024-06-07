@@ -13,6 +13,9 @@ ENDIF()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# protoc generated header files cause some warnings about deprecation
+add_compile_options(-Wno-deprecated-declarations)
+
 set(INSTALL_BINDIR "bin")
 set(INSTALL_PLUGINDIR "bin")
 
