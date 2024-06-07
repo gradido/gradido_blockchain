@@ -17,6 +17,7 @@ TEST(SerializeTest, TransactionBodyWithoutMemo)
 	serialize::Context c(body);
 	auto serialized = c.run();
 	printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
+	printf("hex: %s\n", serialized->convertToHex().data());
 }
 
 
@@ -58,7 +59,7 @@ TEST(SerializeTest, RegisterAddressBody) {
 }
 
 TEST(SerializeTest, GradidoCreationBody) {
-	TransactionBody body("Deine erste Sch�pfung ;)", createdAt, VERSION_STRING);
+	TransactionBody body("Deine erste Schoepfung ;)", createdAt, VERSION_STRING);
 	body.creation = make_shared<GradidoCreation>(
 		TransferAmount(g_KeyPairs[4].publicKey, "1000.00"),
 		TimestampSeconds(1609459000)
@@ -102,4 +103,5 @@ TEST(SerializeTest, CommunityFriendsUpdateBody) {
 	serialize::Context c(body);
 	auto serialized = c.run();
 	printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
+	printf("hex: %s\n", serialized->convertToHex().data());
 }
