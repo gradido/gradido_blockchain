@@ -30,6 +30,7 @@
 #include <cstdio>
 #include "gtest/gtest.h"
 #include "gradido_blockchain/lib/Decay.h"
+#include "KeyPairs.h"
 
 #if GTEST_OS_ESP8266 || GTEST_OS_ESP32
 #if GTEST_OS_ESP8266
@@ -49,6 +50,7 @@ extern "C" {
 
 GTEST_API_ int main(int argc, char** argv) {
 	initDefaultDecayFactors();
+	generateKeyPairs();
 	printf("Running main() from %s\n", __FILE__);
 	testing::InitGoogleTest(&argc, argv);
 	auto result = RUN_ALL_TESTS();
