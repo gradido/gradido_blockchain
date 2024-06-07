@@ -17,7 +17,7 @@ public:
     {
         std::lock_guard lock(mMutex);
         auto it = mValues.insert({ key ,val });
-        assert(it->second);
+        assert(it.second);
         mValuePairCreationTimes.insert({ it.first->second.timepoint, key });
         removeExpiredValues();
     }
@@ -81,10 +81,8 @@ protected:
         }
     }
 
-    template<class TValue>
     struct ValueTimePoint
     {
-        template<class TValue>
         ValueTimePoint(TValue _value)
             : value(_value), timepoint(std::chrono::high_resolution_clock::now())
         {
@@ -94,7 +92,7 @@ protected:
     };
 
     std::chrono::milliseconds mTimeout;
-    std::map<TKey, ValueTimePoint<TValue>> mValues;
+    std::map<TKey, ValueTimePoint> mValues;
     std::multimap<std::chrono::time_point<std::chrono::high_resolution_clock>, TKey> mValuePairCreationTimes;
     mutable std::mutex mMutex;
 };
