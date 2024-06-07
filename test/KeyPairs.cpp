@@ -1,6 +1,7 @@
 #include "KeyPairs.h"
 #include "sodium.h"
 
+#include <cstring>
 #include <array>
 
 std::vector<KeyPair> g_KeyPairs;

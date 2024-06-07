@@ -58,7 +58,7 @@ TEST(SerializeTest, RegisterAddressBody) {
 }
 
 TEST(SerializeTest, GradidoCreationBody) {
-	TransactionBody body("Deine erste Schöpfung ;)", createdAt, VERSION_STRING);
+	TransactionBody body("Deine erste Schï¿½pfung ;)", createdAt, VERSION_STRING);
 	body.creation = make_shared<GradidoCreation>(
 		TransferAmount(g_KeyPairs[4].publicKey, "1000.00"),
 		TimestampSeconds(1609459000)

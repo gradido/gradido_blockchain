@@ -5,6 +5,7 @@
 
 #include <chrono>
 #include <array>
+#include <math.h>
 
 void DecayTest::SetUp()
 {
