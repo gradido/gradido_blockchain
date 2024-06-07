@@ -10,6 +10,12 @@ KeyPairEd25519::KeyPairEd25519(memory::ConstBlockPtr publicKey, memory::ConstBlo
 	:  mSodiumSecret(privateKey), mChainCode(chainCode), mSodiumPublic(publicKey)
 {
 	checkKeySizes();
+	if (privateKey) {
+		auto calculatedPublicKey = calculatePublicKey(privateKey);
+		if (!calculatedPublicKey.isTheSame(*publicKey)) {
+			throw ED25519InvalidPrivateKeyForPublicKey("public key don't belong to private key", publicKey->convertToHex());
+		}
+	}
 }
 
 
@@ -146,6 +152,11 @@ memory::Block KeyPairEd25519::sign(const unsigned char* message, size_t messageS
 	}
 #ifdef NDEBUG 
 	if (crypto_sign_verify_detached(signature, message, messageSize, *mSodiumPublic) != 0) {
+		//
+		auto calculatedPublicKey = calculatePublicKey(mSodiumSecret);
+		if (!calculatedPublicKey.isTheSame(*mSodiumPublic)) {
+			throw ED25519InvalidPrivateKeyForPublicKey("sign verify failed, public key don't belong to private key", mSodiumPublic->convertToHex());
+		}
 		throw Ed25519SignException("sign verify failed", getPublicKey(), std::string((const char*)message, messageSize));
 	}
 #endif

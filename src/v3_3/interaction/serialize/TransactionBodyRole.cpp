@@ -99,7 +99,7 @@ namespace gradido {
 				{
 											// timestamp						  // enum
 					auto size = mBody.memo.size() + 12 + mBody.versionNumber.size() + 1 + mBody.otherGroup.size() + 3;
-					printf("body base size: %lld\n", size);
+					//printf("body base size: %lld\n", size);
 
 					if (mBody.isCommunityRoot()) {
 						auto communityRoot = mBody.communityRoot;
@@ -108,7 +108,7 @@ namespace gradido {
 							+ communityRoot->pubkey->size()
 							+ communityRoot->gmwPubkey->size() 
 							+ communityRoot->aufPubkey->size();
-						printf("calculated size for community root: %lld\n", size);
+						// printf("calculated size for community root: %lld\n", size);
 					}
 					else if (mBody.isRegisterAddress()) {
 						auto registerAddress = mBody.registerAddress;
@@ -117,27 +117,27 @@ namespace gradido {
 						if (registerAddress->nameHash) size += registerAddress->nameHash->size();
 						if (registerAddress->accountPubkey) size += registerAddress->accountPubkey->size();
 						size += 2 + 4;
-						printf("calculated size for register address: %lld\n", size);
+						// printf("calculated size for register address: %lld\n", size);
 					}
 					else if (mBody.isCreation()) {
 						auto creation = mBody.creation;
 						size += 6 + calculateTransferAmountSerializedSize(creation->recipient);
-						printf("calculated size for gradido creation: %lld\n", size);
+						// printf("calculated size for gradido creation: %lld\n", size);
 					}
 					else if (mBody.isTransfer()) {
 						auto transfer = mBody.transfer;
 						size += transfer->recipient->size() + calculateTransferAmountSerializedSize(transfer->sender);
-						printf("calculated size for gradido transfer: %lld\n", size);
+						// printf("calculated size for gradido transfer: %lld\n", size);
 					}
 					else if (mBody.isDeferredTransfer()) {
 						auto deferredTransfer = mBody.deferredTransfer;
 						auto& transfer = deferredTransfer->transfer;
 						size += transfer.recipient->size() + calculateTransferAmountSerializedSize(transfer.sender) + 8;
-						printf("calculated size for gradido deferred transfer: %lld\n", size);
+						// printf("calculated size for gradido deferred transfer: %lld\n", size);
 					}
 					else if (mBody.isCommunityFriendsUpdate()) {
 						size += 4;
-						printf("calculated size for community friends update: %lld\n", size);
+						// printf("calculated size for community friends update: %lld\n", size);
 					}
 					return size;
 				}

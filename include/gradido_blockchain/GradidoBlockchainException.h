@@ -169,7 +169,7 @@ public:
 	std::string getFullString() const { return what(); }
 };
 
-class InvalidSizeException : public GradidoBlockchainException
+class GRADIDOBLOCKCHAIN_EXPORT InvalidSizeException : public GradidoBlockchainException
 {
 public:
 	explicit InvalidSizeException(const char* what, size_t expectedSize, size_t actualSize) noexcept
@@ -179,6 +179,15 @@ public:
 protected:
 	size_t mExpectedSize;
 	size_t mActualSize;
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT MissingSignatureException : public GradidoBlockchainException
+{
+public:
+	explicit MissingSignatureException(const char* what) noexcept
+		: GradidoBlockchainException(what) {}
+
+	std::string getFullString() const { return what(); }
 };
 
 #endif //__GRADIDO_BLOCKCHAIN_EXCEPTION_H

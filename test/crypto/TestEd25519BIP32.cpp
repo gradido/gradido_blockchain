@@ -39,7 +39,7 @@ void TestEd25519Bip32::SetUp()
 		}
 		mED25519KeyPairs.push_back(keyPair);
 	}
-	printf("run again: %d, max while count: %d, time: %s\n", run_again, max_while_count, timeUsed.string().data());
+	//printf("run again: %d, max while count: %d, time: %s\n", run_again, max_while_count, timeUsed.string().data());
 }
 
 void TestEd25519Bip32::TearDown()
@@ -80,16 +80,16 @@ TEST_F(TestEd25519Bip32, TestDerivePublic)
 		);
 		if (!result) {
 			//printf("failed with index: %d\n", index);
-			printf("normalized: %s\n", normalized_public.convertToHex().data());
-			printf("original  : %s\n", it->publicKey.convertToHex().data());
+			//printf("normalized: %s\n", normalized_public.convertToHex().data());
+			//printf("original  : %s\n", it->publicKey.convertToHex().data());
 		}
 		else {
 			//printf("success with index: %d\n", index);
 			if (!succeed) {
-				printf("extend: %s\n", extended.convertToHex().data());
-				printf("chain : %s\n", it->chainCode.convertToHex().data());
-				printf("public: %s\n", it->publicKey.convertToHex().data());
-				printf("seed  : %s\n", it->privateKey.convertToHex().data());
+				//printf("extend: %s\n", extended.convertToHex().data());
+				//printf("chain : %s\n", it->chainCode.convertToHex().data());
+				//printf("public: %s\n", it->publicKey.convertToHex().data());
+				//printf("seed  : %s\n", it->privateKey.convertToHex().data());
 			}
 			succeed++;
 		}

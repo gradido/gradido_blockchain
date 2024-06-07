@@ -3,15 +3,13 @@
 
 #include "gradido_blockchain/v3_3/data/Protocol.h"
 #include "gradido_blockchain/v3_3/data/Protopuf.h"
-#include "BasicTypesRole.h"
-#include "CommunityRootRole.h"
 #include "gradido_blockchain/v3_3/data/CrossGroupType.h"
+#include "AbstractRole.h"
 
 namespace gradido {
 	namespace v3_3 {
 		namespace interaction {
 			namespace serialize {
-
 
 				class TransactionBodyRole: public AbstractRole
 				{
