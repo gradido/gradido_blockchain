@@ -22,7 +22,7 @@ TEST(GradidoTransactionBuilderTest, SignTransaction) {
 		.sign(keyPair)
 		.build();
 
-	ASSERT_EQ(DataTypeConverter::binToBase64(*gradidoTransaction->bodyBytes),
+	ASSERT_EQ(gradidoTransaction->bodyBytes->convertToBase64(),
 		"CgASCAiAzLn/BRAAGgMzLjMgAA=="
 	);
 	ASSERT_EQ(gradidoTransaction->signatureMap.signaturePairs.front().signature->convertToHex(), 

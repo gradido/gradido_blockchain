@@ -49,7 +49,10 @@ ENDIF()
 
 enable_testing()
 
-find_package(MPFR REQUIRED)
+find_package(MPFR)
+if(MPFR_FOUND)
+	add_definitions(-DUSE_MPFR)	
+endif()
 find_package(Sodium REQUIRED)
 
 add_executable(GradidoBlockchainTest ${TEST_SRC})

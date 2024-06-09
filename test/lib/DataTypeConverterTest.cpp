@@ -18,20 +18,6 @@ TEST(HelloTest, BasicAssertions) {
 	EXPECT_EQ(7 * 6, 42);
 }
 
-TEST(DataTypeConverterTest, Base64ToBin)
-{
-	memory::Block payload(32);
-	srand(188721);
-	for (int i = 0; i < 8; i++) {
-		int r = rand();
-		memcpy(&payload.data()[i * 4], &r, 4);
-	}
-	auto base64 = DataTypeConverter::binToBase64(payload);
-	auto bin = DataTypeConverter::base64ToBin(base64);
-
-	ASSERT_EQ(bin.size(), payload.size());
-	ASSERT_TRUE(bin == payload);
-}
 
 TEST(DataTypeConverterTest, Base64ToBinString)
 {

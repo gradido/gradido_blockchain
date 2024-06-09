@@ -141,19 +141,19 @@ namespace gradido {
 			struct GRADIDOBLOCKCHAIN_EXPORT RegisterAddress
 			{
 				RegisterAddress(
-					memory::ConstBlockPtr userPubkeyPtr,
 					AddressType _addressType,
 					uint32_t _derivationIndex = 1,
+					memory::ConstBlockPtr userPubkeyPtr = nullptr,
 					memory::ConstBlockPtr nameHashPtr = nullptr,
 					memory::ConstBlockPtr accountPubkeyPtr = nullptr
 				) : userPubkey(userPubkeyPtr), addressType(_addressType), nameHash(nameHashPtr),
 					accountPubkey(accountPubkeyPtr), derivationIndex(_derivationIndex) {}
 
 				memory::ConstBlockPtr	userPubkey;
-				AddressType					addressType;
+				AddressType				addressType;
 				memory::ConstBlockPtr	nameHash;
-				memory::ConstBlockPtr accountPubkey;
-				uint32_t					derivationIndex;
+				memory::ConstBlockPtr   accountPubkey;
+				uint32_t				derivationIndex;
 			};
 
 			// transaction_body.proto

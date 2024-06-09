@@ -6,7 +6,7 @@
 namespace gradido {
 	namespace v3_3 {
 		namespace interaction {
-			namespace serialize {
+			namespace deserialize {
 				
 				enum class Type {
 					UNKNOWN,

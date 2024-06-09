@@ -211,7 +211,6 @@ bool Passphrase::checkIfValid()
 	}
 	return true;
 }
-#define _DEBUG
 const Mnemonic* Passphrase::detectMnemonic(const std::string& passphrase, const KeyPairEd25519* userKeyPair /* = nullptr*/)
 {
 	std::istringstream iss(passphrase);

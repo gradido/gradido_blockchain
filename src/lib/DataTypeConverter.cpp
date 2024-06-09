@@ -364,7 +364,7 @@ namespace DataTypeConverter
 			std::string field_value(json.GetString(), json.GetStringLength());
 			if (!std::regex_match(field_value, g_rexExpBase64)) return 0;
 
-			auto bin = base64ToBin(field_value);
+			auto bin = memory::Block::fromBase64(field_value);
 			if (!bin) return 0;
 			auto hex = bin.convertToHex();
 			json.SetString(hex.data(), hex.size() - 1, alloc);

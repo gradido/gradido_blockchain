@@ -1,8 +1,6 @@
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
-#include "sodium.h"
-
 namespace memory {
 
 	std::mutex Block::mBlockStacksMutex;
@@ -102,6 +100,19 @@ namespace memory {
 		return hex;
 	}
 
+	std::string Block::convertToBase64(int variant/* = sodium_base64_VARIANT_ORIGINAL*/) const
+	{
+		size_t encodedSize = sodium_base64_encoded_len(mSize, variant);
+		memory::Block base64(encodedSize);
+
+		if (nullptr == sodium_bin2base64((char*)base64.data(), encodedSize, mData, mSize, variant)) {
+			return "";
+		}
+
+		std::string base64String((const char*)base64.data(), encodedSize - 1);
+		return base64String;
+	}
+
 	std::string Block::copyAsString() const
 	{
 		return { (char*)mData, mSize };
@@ -122,6 +133,25 @@ namespace memory {
 			throw GradidoInvalidHexException("invalid hex for Block::fromHex", hexString);
 		}
 		return result;
+	}
+
+	Block Block::fromBase64(const char* base64String, size_t size, int variant /*= sodium_base64_VARIANT_ORIGINAL*/)
+	{
+		size_t binSize = (size / 4) * 3;
+		
+		memory::Block bin(binSize);
+		size_t resultBinSize = 0;
+
+		auto convertResult = sodium_base642bin(bin, binSize, base64String, size, nullptr, &resultBinSize, nullptr, variant);
+		if (0 != convertResult) {
+			throw GradidoInvalidBase64Exception("invalid base64", base64String, convertResult);
+		}
+		if (resultBinSize < binSize) {
+			memory::Block bin_real(resultBinSize, bin);
+			return bin_real;
+		}
+
+		return bin;
 	}
 
 	bool Block::isTheSame(const Block& b) const

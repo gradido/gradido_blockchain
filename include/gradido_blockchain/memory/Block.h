@@ -5,6 +5,8 @@
 #include "VectorCacheAllocator.h"
 #include "gradido_blockchain/export.h"
 
+#include "sodium.h"
+
 #include <map>
 #include <span>
 #include <vector>
@@ -43,6 +45,7 @@ namespace memory {
 		inline unsigned char* data(size_t startIndex) { assert(startIndex < mSize); return &mData[startIndex]; }
 		inline const unsigned char* data(size_t startIndex) const { assert(startIndex < mSize); return &mData[startIndex]; }
 		std::string convertToHex() const;
+		std::string convertToBase64(int variant = sodium_base64_VARIANT_ORIGINAL) const;
 		std::string copyAsString() const;
 		std::vector<uint8_t> copyAsVector() const;
 		//! \return 0 if ok
@@ -52,8 +55,15 @@ namespace memory {
 			return fromHex(hex.data(), hex.size());
 		}
 		static Block fromHex(const char* hexString, size_t stringSize);
+		static inline Block fromBase64(const std::string& base64, int variant = sodium_base64_VARIANT_ORIGINAL) {
+			return fromBase64(base64.data(), base64.size(), variant);
+		}
+		static Block fromBase64(const char* base64String, size_t size, int variant /*= sodium_base64_VARIANT_ORIGINAL*/);
 
 		bool isTheSame(const Block& b) const;
+		inline bool isTheSame(const std::shared_ptr<const Block> b) const {
+			return isTheSame(*b);
+		}
 		inline bool operator == (const Block& b) const { return isTheSame(b); }
 		inline bool operator != (const Block& b) const { return !isTheSame(b); }
 

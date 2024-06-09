@@ -30,18 +30,15 @@ namespace DataTypeConverter {
 	GRADIDOBLOCKCHAIN_EXPORT NumberParseState strToDouble(const std::string& input, double& result);
 
 	GRADIDOBLOCKCHAIN_EXPORT std::unique_ptr<std::string> hexToBinString(const std::string& hexString);
-	GRADIDOBLOCKCHAIN_EXPORT memory::Block base64ToBin(const std::string& base64String, int variant = sodium_base64_VARIANT_ORIGINAL);
 	GRADIDOBLOCKCHAIN_EXPORT inline std::string base64ToBinString(const std::string& base64String, int variant = sodium_base64_VARIANT_ORIGINAL) {
-		auto bin = base64ToBin(base64String, variant);
+		memory::Block bin = memory::Block::fromBase64(base64String, variant);
 		return bin.copyAsString();
 	}
 	GRADIDOBLOCKCHAIN_EXPORT std::string binToBase64(const unsigned char* data, size_t size, int variant = sodium_base64_VARIANT_ORIGINAL);
-	GRADIDOBLOCKCHAIN_EXPORT inline std::string binToBase64(const memory::Block& data, int variant = sodium_base64_VARIANT_ORIGINAL) { return binToBase64(data.data(), data.size(), variant); }
 	GRADIDOBLOCKCHAIN_EXPORT inline std::string binToBase64(const std::string& proto_bin, int variant = sodium_base64_VARIANT_ORIGINAL) {
 		return binToBase64((const unsigned char*)proto_bin.data(), proto_bin.size(), variant);
 	}
 	GRADIDOBLOCKCHAIN_EXPORT std::unique_ptr<std::string> binToBase64(std::unique_ptr<std::string> proto_bin, int variant = sodium_base64_VARIANT_ORIGINAL);
-
 
 	GRADIDOBLOCKCHAIN_EXPORT std::string binToHex(const unsigned char* data, size_t size);
 	GRADIDOBLOCKCHAIN_EXPORT std::unique_ptr<std::string> binToHex(std::unique_ptr<std::string> binString);
@@ -51,16 +48,10 @@ namespace DataTypeConverter {
 	//! \param pubkey pointer to array with crypto_sign_PUBLICKEYBYTES size
 	GRADIDOBLOCKCHAIN_EXPORT std::string pubkeyToHex(const unsigned char* pubkey);
 
-
 	GRADIDOBLOCKCHAIN_EXPORT const char* numberParseStateToString(NumberParseState state);
-
 
 	GRADIDOBLOCKCHAIN_EXPORT std::string timePointToString(const Timepoint& tp, const char* fmt = "%Y-%m-%d %H:%M:%S");
 	GRADIDOBLOCKCHAIN_EXPORT std::string timespanToString(const std::chrono::seconds timespan);
-	//GRADIDOBLOCKCHAIN_EXPORT const Timepoint convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp);
-	//GRADIDOBLOCKCHAIN_EXPORT void convertToProtoTimestamp(const Timepoint timestamp, proto::gradido::Timestamp* protoTimestamp);
-	//GRADIDOBLOCKCHAIN_EXPORT Timepoint convertFromProtoTimestampSeconds(const proto::gradido::TimestampSeconds& timestampSeconds);
-	//GRADIDOBLOCKCHAIN_EXPORT void convertToProtoTimestampSeconds(const Timepoint pocoTimestamp, proto::gradido::TimestampSeconds* protoTimestampSeconds);
 
 	//! \brief go through json object and replace every string entry in base64 format into hex format
 	//! \return count of replaced strings

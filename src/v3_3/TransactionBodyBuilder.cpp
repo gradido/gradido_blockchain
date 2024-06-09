@@ -84,7 +84,7 @@ namespace gradido {
 			}
 
 			mBody->registerAddress = make_shared<RegisterAddress>(
-				userPubkey, type, 1, nameHash, accountPubkey
+				type, 1, userPubkey, nameHash, accountPubkey
 			);
 
 			mSpecificTransactionChoosen = true;

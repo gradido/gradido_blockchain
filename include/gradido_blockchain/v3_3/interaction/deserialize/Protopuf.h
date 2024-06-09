@@ -1,5 +1,5 @@
-#ifndef __GRADIDO_BLOCKCHAIN_V3_3_INTERACTION_SERIALIZE_PROTOPUF_H
-#define __GRADIDO_BLOCKCHAIN_V3_3_INTERACTION_SERIALIZE_PROTOPUF_H
+#ifndef __GRADIDO_BLOCKCHAIN_V3_3_INTERACTION_DESERIALIZE_PROTOPUF_H
+#define __GRADIDO_BLOCKCHAIN_V3_3_INTERACTION_DESERIALIZE_PROTOPUF_H
 
 #include <bit>
 #include "protopuf/message.h"
@@ -15,7 +15,7 @@ using namespace std;
 namespace gradido {
     namespace v3_3 {
         namespace interaction {
-            namespace serialize {
+            namespace deserialize {
 
                 //  ----------------  basic_types.proto -----------------------------------
                 using SignaturePairMessage = message<
@@ -122,4 +122,4 @@ namespace gradido {
     }
 }
 
-#endif //__GRADIDO_BLOCKCHAIN_V3_3_INTERACTION_SERIALIZE_PROTOPUF_H
+#endif //__GRADIDO_BLOCKCHAIN_V3_3_INTERACTION_DESERIALIZE_PROTOPUF_H

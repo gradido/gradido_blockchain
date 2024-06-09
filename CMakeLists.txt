@@ -14,7 +14,6 @@ ENDIF()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_definitions(-DNOMINMAX)
-add_definitions(-DUSE_MPFR)
 
 set(INSTALL_BINDIR "bin")
 set(INSTALL_PLUGINDIR "bin")
@@ -111,13 +110,18 @@ ENDIF()
 ############################## find dependencies ###################################
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(MPFR REQUIRED)
+find_package(MPFR)
+if(MPFR_FOUND)
+	add_definitions(-DUSE_MPFR)
+	IF(WIN32)
+		include_directories(${mpfr_INCLUDE_DIRS})
+	endif()
+endif()
 # using conan on windows
 IF(WIN32)
   	find_package(libsodium REQUIRED)
 	find_package(openssl REQUIRED)
 	include_directories(
-		${mpfr_INCLUDE_DIRS}
 		${gmp_INCLUDE_DIRS}
 		${libsodium_INCLUDE_DIR}
 		${OPENSSL_INCLUDE_DIR}
