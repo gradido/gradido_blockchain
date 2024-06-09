@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_V3_3_INTERACTION_SERIALIZE_GRADIDO_TRANSACTION_ROLE_H
 
 #include "gradido_blockchain/v3_3/data/Protocol.h"
-#include "gradido_blockchain/v3_3/data/Protopuf.h"
+#include "Protopuf.h"
 #include "AbstractRole.h"
 #include "SignatureMapRole.h"
 
@@ -19,7 +19,7 @@ namespace gradido {
 					~GradidoTransactionRole() {};
 
 					RUM_IMPLEMENTATION
-					data::GradidoTransactionMessage getMessage() const;
+					GradidoTransactionMessage getMessage() const;
 					size_t calculateSerializedSize() const;
 
 				protected:

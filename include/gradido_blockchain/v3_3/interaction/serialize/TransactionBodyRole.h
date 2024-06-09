@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_V3_3_INTERACTION_SERIALIZE_TRANSACTION_BODY_ROLE_H
 
 #include "gradido_blockchain/v3_3/data/Protocol.h"
-#include "gradido_blockchain/v3_3/data/Protopuf.h"
+#include "Protopuf.h"
 #include "gradido_blockchain/v3_3/data/CrossGroupType.h"
 #include "AbstractRole.h"
 
@@ -18,7 +18,7 @@ namespace gradido {
 					~TransactionBodyRole() {};
 
 					RUM_IMPLEMENTATION
-					data::TransactionBodyMessage getMessage() const;
+					TransactionBodyMessage getMessage() const;
 					size_t calculateSerializedSize() const;					
 					size_t calculateTransferAmountSerializedSize(const data::TransferAmount& amount) const;
 

@@ -6,15 +6,15 @@ namespace gradido {
 		namespace interaction {
 			namespace serialize {
 
-				data::ConfirmedTransactionMessage ConfirmedTransactionRole::getMessage() const
+				ConfirmedTransactionMessage ConfirmedTransactionRole::getMessage() const
 				{
 					assert(mConfirmedTransaction.runningHash);
 					assert(mConfirmedTransaction.messageId);
-					data::ConfirmedTransactionMessage confirmedTransactionMessage;
-					return data::ConfirmedTransactionMessage{
+					ConfirmedTransactionMessage confirmedTransactionMessage;
+					return ConfirmedTransactionMessage{
 						mConfirmedTransaction.id,
 						mGradidoTransactionRole.getMessage(),
-						data::TimestampSecondsMessage { mConfirmedTransaction.confirmedAt.seconds },
+						TimestampSecondsMessage { mConfirmedTransaction.confirmedAt.seconds },
 						mConfirmedTransaction.versionNumber,
 						mConfirmedTransaction.runningHash->copyAsVector(),
 						mConfirmedTransaction.messageId->copyAsVector(),
@@ -25,9 +25,14 @@ namespace gradido {
 
 				size_t ConfirmedTransactionRole::calculateSerializedSize() const
 				{
-					size_t size = 8 + 8 + mConfirmedTransaction.versionNumber.size() + crypto_generichash_BYTES + 32 + mConfirmedTransaction.accountBalance.size() + 10;
+					size_t size = 8 + 8 
+						+ mConfirmedTransaction.versionNumber.size() 
+						+ crypto_generichash_BYTES 
+						+ 32 
+						+ mConfirmedTransaction.accountBalance.size() 
+						+ 10;
 					size += mGradidoTransactionRole.calculateSerializedSize();
-					printf("calculated confirmed transaction size: %lld\n", size);
+					//printf("calculated confirmed transaction size: %lld\n", size);
 					return size;
 				}
 

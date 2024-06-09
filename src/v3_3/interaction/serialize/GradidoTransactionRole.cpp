@@ -6,9 +6,9 @@ namespace gradido {
 		namespace interaction {
 			namespace serialize {
 
-				data::GradidoTransactionMessage GradidoTransactionRole::getMessage() const
+				GradidoTransactionMessage GradidoTransactionRole::getMessage() const
 				{
-					data::GradidoTransactionMessage gradidoTransactionMessage;
+					GradidoTransactionMessage gradidoTransactionMessage;
 					
 					if (mGradidoTransaction.bodyBytes) {
 						gradidoTransactionMessage["body_bytes"_f] = mGradidoTransaction.bodyBytes->copyAsVector();

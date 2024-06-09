@@ -6,13 +6,13 @@ namespace gradido {
 		namespace interaction {
 			namespace serialize {
 
-				data::SignatureMapMessage SignatureMapRole::getMessage() const
+				SignatureMapMessage SignatureMapRole::getMessage() const
 				{
 					auto& sigPairs = mSignatureMap.signaturePairs;
-					data::SignatureMapMessage signatureMap;
+					SignatureMapMessage signatureMap;
 					for (auto it = sigPairs.begin(); it != sigPairs.end(); it++) {
 						signatureMap["sig_pair"_f].push_back(
-							data::SignaturePairMessage{
+							SignaturePairMessage{
 								it->pubkey->copyAsVector(),
 								it->signature->copyAsVector()
 							}

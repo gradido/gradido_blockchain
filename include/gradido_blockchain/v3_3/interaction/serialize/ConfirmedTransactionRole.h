@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_v3_3_INTERACTION_SERIALIZE_CONFIRMED_TRANSACTION_ROLE_H
 
 #include "gradido_blockchain/v3_3/interaction/serialize/GradidoTransactionRole.h"
-#include "gradido_blockchain/v3_3/data/Protopuf.h"
+#include "Protopuf.h"
 #include "AbstractRole.h"
 
 namespace gradido {
@@ -18,7 +18,7 @@ namespace gradido {
 					~ConfirmedTransactionRole() {};
 
 					RUM_IMPLEMENTATION
-					data::ConfirmedTransactionMessage getMessage() const;
+					ConfirmedTransactionMessage getMessage() const;
 					size_t calculateSerializedSize() const;
 
 				protected:

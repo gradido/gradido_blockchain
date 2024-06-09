@@ -7,7 +7,6 @@
 #include "GradidoTransactionRole.h"
 #include "ConfirmedTransactionRole.h"
 #include "SignatureMapRole.h"
-#include "Type.h"
 
 namespace gradido {
 	namespace v3_3 {

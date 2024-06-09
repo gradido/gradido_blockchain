@@ -9,9 +9,9 @@ namespace gradido {
 
 				TransactionBodyMessage TransactionBodyRole::getMessage() const
 				{
-					data::TransactionBodyMessage message;
+					TransactionBodyMessage message;
 					message["memo"_f] = mBody.memo;
-					message["created_at"_f] = data::TimestampMessage{
+					message["created_at"_f] = TimestampMessage{
 						mBody.createdAt.seconds,
 						mBody.createdAt.nanos
 					};
@@ -24,7 +24,7 @@ namespace gradido {
 					if (mBody.isCommunityRoot()) 
 					{
 						auto communityRoot = mBody.communityRoot;
-						message["community_root"_f] = data::CommunityRootMessage {
+						message["community_root"_f] = CommunityRootMessage {
 							communityRoot->pubkey->copyAsVector(),
 							communityRoot->gmwPubkey->copyAsVector(),
 							communityRoot->aufPubkey->copyAsVector()
@@ -33,7 +33,7 @@ namespace gradido {
 					else if (mBody.isRegisterAddress()) 
 					{
 						auto registerAddress = mBody.registerAddress;
-						data::RegisterAddressMessage registerAddressMessage;
+						RegisterAddressMessage registerAddressMessage;
 						if (registerAddress->userPubkey) {
 							registerAddressMessage["user_pubkey"_f] = registerAddress->userPubkey->copyAsVector();
 						}
@@ -51,21 +51,21 @@ namespace gradido {
 					{
 						auto creation = mBody.creation;
 						auto& amount = creation->recipient;
-						data::TimestampSecondsMessage targetDateMessage{ creation->targetDate.seconds };
+						TimestampSecondsMessage targetDateMessage{ creation->targetDate.seconds };
 						
-						message["creation"_f] = data::GradidoCreationMessage{
-							data::TransferAmountMessage {
+						message["creation"_f] = GradidoCreationMessage{
+							TransferAmountMessage {
 								amount.pubkey->copyAsVector(),
 								amount.amount.toString(),
 								amount.communityId
-							},  data::TimestampSecondsMessage { creation->targetDate.seconds }
+							},  TimestampSecondsMessage { creation->targetDate.seconds }
 						};
 					}
 					else if (mBody.isTransfer()) {
 						auto transfer = mBody.transfer;
 						auto& amount = transfer->sender;
-						message["transfer"_f] = data::GradidoTransferMessage{
-							data::TransferAmountMessage {
+						message["transfer"_f] = GradidoTransferMessage{
+							TransferAmountMessage {
 								amount.pubkey->copyAsVector(),
 								amount.amount.toString(),
 								amount.communityId
@@ -76,18 +76,18 @@ namespace gradido {
 						auto deferredTransfer = mBody.deferredTransfer;
 						auto& transfer = mBody.deferredTransfer->transfer;
 						auto& amount = transfer.sender;
-						message["deferred_transfer"_f] = data::GradidoDeferredTransferMessage{
-							data::GradidoTransferMessage{
-								data::TransferAmountMessage {
+						message["deferred_transfer"_f] = GradidoDeferredTransferMessage{
+							GradidoTransferMessage{
+								TransferAmountMessage {
 									amount.pubkey->copyAsVector(),
 									amount.amount.toString(),
 									amount.communityId
 								}, transfer.recipient->copyAsVector()
-							}, data::TimestampSecondsMessage{deferredTransfer->timeout.seconds}
+							}, TimestampSecondsMessage{deferredTransfer->timeout.seconds}
 						};
 					}
 					else if (mBody.isCommunityFriendsUpdate()) {
-						message["community_friends_update"_f] = data::CommunityFriendsUpdateMessage{
+						message["community_friends_update"_f] = CommunityFriendsUpdateMessage{
 							mBody.communityFriendsUpdate->colorFusion
 						};
 					}

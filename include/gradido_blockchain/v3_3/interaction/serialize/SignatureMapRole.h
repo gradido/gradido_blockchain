@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_V3_3_INTERACTION_SERIALIZE_SIGNATURE_MAP_ROLE_H
 
 #include "AbstractRole.h"
-#include "gradido_blockchain/v3_3/data/Protopuf.h"
+#include "Protopuf.h"
 
 namespace gradido {
 	namespace v3_3 {
@@ -16,7 +16,7 @@ namespace gradido {
 					~SignatureMapRole() {};
 
 					RUM_IMPLEMENTATION
-					data::SignatureMapMessage getMessage() const;
+					SignatureMapMessage getMessage() const;
 					size_t calculateSerializedSize() const;
 				protected:
 					const data::SignatureMap& mSignatureMap;
