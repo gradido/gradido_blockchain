@@ -55,7 +55,7 @@ namespace DataTypeConverter {
 	GRADIDOBLOCKCHAIN_EXPORT const char* numberParseStateToString(NumberParseState state);
 
 
-	GRADIDOBLOCKCHAIN_EXPORT std::string timePointToString(const Timepoint& tp);
+	GRADIDOBLOCKCHAIN_EXPORT std::string timePointToString(const Timepoint& tp, const char* fmt = "%Y-%m-%d %H:%M:%S");
 	GRADIDOBLOCKCHAIN_EXPORT std::string timespanToString(const std::chrono::seconds timespan);
 	//GRADIDOBLOCKCHAIN_EXPORT const Timepoint convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp);
 	//GRADIDOBLOCKCHAIN_EXPORT void convertToProtoTimestamp(const Timepoint timestamp, proto::gradido::Timestamp* protoTimestamp);

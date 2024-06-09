@@ -5,6 +5,8 @@
 #include "AbstractRole.h"
 #include "TransactionBodyRole.h"
 #include "GradidoTransactionRole.h"
+#include "ConfirmedTransactionRole.h"
+#include "SignatureMapRole.h"
 #include "Type.h"
 
 namespace gradido {
@@ -16,16 +18,17 @@ namespace gradido {
 				public:
 					Context() = delete;
 					Context(const data::TransactionBody& body)
-						: mType(Type::TRANSACTION_BODY), mRole(std::make_unique<TransactionBodyRole>(body)) {}
+						: mRole(std::make_unique<TransactionBodyRole>(body)) {}
 					Context(const data::GradidoTransaction& transaction)
-						: mType(Type::GRADIDO_TRANSACTION), mRole(std::make_unique<GradidoTransactionRole>(transaction)) {}
-					// Context(const data::ConfirmedTransaction& confirmed);
+						: mRole(std::make_unique<GradidoTransactionRole>(transaction)) {}
+					Context(const data::ConfirmedTransaction& confirmed)
+						: mRole(std::make_unique<ConfirmedTransactionRole>(confirmed)) {}
+					Context(const data::SignatureMap& signatureMap)
+						: mRole(std::make_unique<SignatureMapRole>(signatureMap)) {}
 					~Context() {}
 					inline memory::ConstBlockPtr run() { return mRole->run(); }
 
 				protected:
-					
-					Type mType;
 					std::unique_ptr<AbstractRole> mRole;
 				};
 			}

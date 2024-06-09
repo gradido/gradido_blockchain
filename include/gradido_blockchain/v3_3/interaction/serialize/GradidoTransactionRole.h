@@ -4,6 +4,7 @@
 #include "gradido_blockchain/v3_3/data/Protocol.h"
 #include "gradido_blockchain/v3_3/data/Protopuf.h"
 #include "AbstractRole.h"
+#include "SignatureMapRole.h"
 
 namespace gradido {
 	namespace v3_3 {
@@ -13,7 +14,8 @@ namespace gradido {
 				class GradidoTransactionRole : public AbstractRole
 				{
 				public:
-					GradidoTransactionRole(const data::GradidoTransaction& gradidoTransaction) : mGradidoTransaction(gradidoTransaction) {}
+					GradidoTransactionRole(const data::GradidoTransaction& gradidoTransaction) 
+						: mGradidoTransaction(gradidoTransaction), mSigantureMapRole(gradidoTransaction.signatureMap) {}
 					~GradidoTransactionRole() {};
 
 					RUM_IMPLEMENTATION
@@ -22,6 +24,7 @@ namespace gradido {
 
 				protected:
 					const data::GradidoTransaction& mGradidoTransaction;
+					SignatureMapRole mSigantureMapRole;
 				};
 
 			}

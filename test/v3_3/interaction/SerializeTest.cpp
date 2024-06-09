@@ -2,6 +2,7 @@
 #include "../../KeyPairs.h"
 #include "gradido_blockchain/v3_3/interaction/serialize/Context.h"
 #include "gradido_blockchain/v3_3/TransactionBodyBuilder.h"
+#include "gradido_blockchain/v3_3/GradidoTransactionBuilder.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
 using namespace gradido::v3_3;
@@ -10,6 +11,7 @@ using namespace interaction;
 
 #define VERSION_STRING "3.3"
 const auto createdAt = std::chrono::system_clock::from_time_t(1609459200); //2021-01-01 00:00:00 UTC
+const auto confirmedAt = std::chrono::system_clock::from_time_t(1609464130); 
 
 TEST(SerializeTest, TransactionBodyWithoutMemo)
 {
@@ -136,8 +138,8 @@ TEST(SerializeTest, GradidoTransaction) {
 	auto& keyPair = g_KeyPairs[3];
 	unsigned long long actualSignLength = 0;
 	crypto_sign_detached(*sign, &actualSignLength, *bodyBytes, bodyBytes->size(), *keyPair.privateKey);
-	transaction.mSignatureMap.push({ keyPair.publicKey, keyPair.privateKey });
-	transaction.mBodyBytes = bodyBytes;
+	transaction.signatureMap.push({ keyPair.publicKey, keyPair.privateKey });
+	transaction.bodyBytes = bodyBytes;
 	
 	serialize::Context c(transaction);
 	auto serialized = c.run();
@@ -145,5 +147,84 @@ TEST(SerializeTest, GradidoTransaction) {
 	// printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(DataTypeConverter::binToBase64(*serialized),
 		"CmYKZAogJZcaoOdCIUTcwkSIfinvFg1UebEhnpgXym7OOLCfN8ASQNYLm6Z41YR3uoWtehLSswGDM8p0XropF8u+Emh+txDwJZcaoOdCIUTcwkSIfinvFg1UebEhnpgXym7OOLCfN8ASigEnJ1RvIGJlIHlvdXJzZWxmIGluIGEgd29ybGQgdGhhdCBpcyBjb25zdGFudGx5IHRyeWluZyB0byBtYWtlIHlvdSBzb21ldGhpbmcgZWxzZSBpcyB0aGUgZ3JlYXRlc3QgYWNjb21wbGlzaG1lbnQuJycKIC0gUmFscGggV2FsZG8gRW1lcnNvbiA="
+	);
+}
+
+TEST(SerializeTest, SignatureMap) {
+	memory::Block message(
+		"Human nature is a complex interplay of light and shadow, where our greatest strengths often emerge from our deepest vulnerabilities. To be human is to strive for connection, seek meaning, and continuously evolve through both triumphs and trials."
+	);
+	auto sign = make_shared<memory::Block>(64);
+	unsigned long long actualSignLength = 0;
+	SignatureMap signatureMap;
+	for (int i = 0; i < 2; i++) {
+		crypto_sign_detached(*sign, &actualSignLength, message, message.size(), *g_KeyPairs[i].privateKey);
+		signatureMap.push({ g_KeyPairs[i].publicKey, g_KeyPairs[i].privateKey });
+	}
+
+	serialize::Context c(signatureMap);
+	auto serialized = c.run();
+	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
+	//printf("hex: %s\n", serialized->convertToHex().data());
+	ASSERT_EQ(DataTypeConverter::binToBase64(*serialized),
+		"CmQKIGQ8Q4d2/CY0+viH34SFue1YBynCCZ4A5NTVPNdGJqDWEkAVfmpfqv7OHLnp5DqPU7RQngLBjAal/jGbcwsNtPh022Q8Q4d2/CY0+viH34SFue1YBynCCZ4A5NTVPNdGJqDWCmQKIFH5sejZhHY63U2QzGQi8f1KCcZ3uY5LGYwFW8KUIPWOEkDC/SCM7JsboMSTRqH1iIFiX0RaMV/YuMUtk1q+KyoReVH5sejZhHY63U2QzGQi8f1KCcZ3uY5LGYwFW8KUIPWO"
+	);
+}
+
+TEST(SerializeTest, MinimalConfirmedTransaction) {
+	
+	ConfirmedTransaction confirmedTransaction(
+		7, 
+		GradidoTransaction(),
+		confirmedAt,
+		VERSION_STRING,
+		make_shared<memory::Block>(crypto_generichash_BYTES),
+		make_shared<memory::Block>(32), "179.00"
+	);
+	serialize::Context c(confirmedTransaction);
+	auto serialized = c.run();
+	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
+	//printf("hex: %s\n", serialized->convertToHex().data());
+	ASSERT_EQ(DataTypeConverter::binToBase64(*serialized),
+		"CAcSAgoAGgYIwvK5/wUiAzMuMyogAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOgYxNzkuMDA="
+	);
+}
+
+TEST(SerializeTest, CompleteConfirmedTransaction) {
+	std::string memo("Danke fuer dein Sein!");
+	TransactionBodyBuilder bodyBuilder;
+	auto transactionBody = bodyBuilder
+		.setTransactionTransfer(
+			g_KeyPairs[4].publicKey, // sender
+			"100.251621",
+			"",
+			g_KeyPairs[5].publicKey // recipient
+		)
+		.setCreatedAt(createdAt)
+		.setMemo(memo)
+		.build();
+
+	GradidoTransactionBuilder builder;
+	auto keyPair = make_shared<KeyPairEd25519>(g_KeyPairs[0].publicKey, g_KeyPairs[0].privateKey);
+	auto gradidoTransaction = builder
+		.setTransactionBody(std::move(transactionBody))
+		.sign(keyPair)
+		.build();
+
+	ConfirmedTransaction confirmedTransaction(
+		7,
+		*gradidoTransaction,
+		confirmedAt,
+		VERSION_STRING,
+		nullptr,
+		make_shared<memory::Block>(32), "899.748379"
+	);
+	confirmedTransaction.runningHash = std::make_shared<memory::Block>(confirmedTransaction.calculateRunningHash());
+	serialize::Context c(confirmedTransaction);
+	auto serialized = c.run();
+	// printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
+	// printf("hex: %s\n", serialized->convertToHex().data());
+	ASSERT_EQ(DataTypeConverter::binToBase64(*serialized),
+		"CAcS/AEKZgpkCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hJAgV08sOXyyIDo6hStrBViGuW2zeUacV4SakadXHgfBGzBNhEZXEkc71jdbfGYvvK5En/lvQ74Qst94YlucESnAxKRAQoVRGFua2UgZnVlciBkZWluIFNlaW4hEggIgMy5/wUQABoDMy4zIAAyZwpDCiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIdMTAwLjI1MTYyMTAwMDAwMDAwMDAwMDAwMDAwMDAaABIg0alYJMhIWQAnm5KmAXX8Z2+JFMYdc5nGbC0MtvqexXYaBgjC8rn/BSIDMy4zKiAVP/0DKzblF1IjL9NxBvORA6F9CAtIBtKzNCeWaZLpAzIgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA6Cjg5OS43NDgzNzk="
 	);
 }

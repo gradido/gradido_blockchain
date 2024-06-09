@@ -10,35 +10,24 @@ namespace gradido {
 				{
 					data::GradidoTransactionMessage gradidoTransactionMessage;
 					
-					if (mGradidoTransaction.mBodyBytes) {
-						gradidoTransactionMessage["body_bytes"_f] = mGradidoTransaction.mBodyBytes->copyAsVector();
+					if (mGradidoTransaction.bodyBytes) {
+						gradidoTransactionMessage["body_bytes"_f] = mGradidoTransaction.bodyBytes->copyAsVector();
 					}
-					if (mGradidoTransaction.mParentMessageId) {
-						gradidoTransactionMessage["parent_message_id"_f] = mGradidoTransaction.mParentMessageId->copyAsVector();
+					if (mGradidoTransaction.parentMessageId) {
+						gradidoTransactionMessage["parent_message_id"_f] = mGradidoTransaction.parentMessageId->copyAsVector();
 					}					
-
-					auto& sigPairs = mGradidoTransaction.mSignatureMap.signaturePairs;
-					data::SignatureMapMessage signatureMap;
-					for (auto it = sigPairs.begin(); it != sigPairs.end(); it++) {
-						signatureMap["sig_pair"_f].push_back(
-							data::SignaturePairMessage {
-								it->pubkey->copyAsVector(),
-								it->signature->copyAsVector()
-							}
-						);
-					}
-					gradidoTransactionMessage["sig_map"_f] = signatureMap;
+					gradidoTransactionMessage["sig_map"_f] = mSigantureMapRole.getMessage();
 					return gradidoTransactionMessage;
 				}
 
 				size_t GradidoTransactionRole::calculateSerializedSize() const
 				{
-					size_t size = mGradidoTransaction.mSignatureMap.signaturePairs.size() * (32 + 64) + 10;
-					if (mGradidoTransaction.mBodyBytes) {
-						size += mGradidoTransaction.mBodyBytes->size();
+					size_t size = mSigantureMapRole.calculateSerializedSize();
+					if (mGradidoTransaction.bodyBytes) {
+						size += mGradidoTransaction.bodyBytes->size();
 					}
-					if (mGradidoTransaction.mParentMessageId) {
-						size += mGradidoTransaction.mParentMessageId->size();
+					if (mGradidoTransaction.parentMessageId) {
+						size += mGradidoTransaction.parentMessageId->size();
 					}
 					return size;
 				}

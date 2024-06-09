@@ -198,17 +198,16 @@ namespace gradido {
 					const SignatureMap& signatureMap,
 					memory::ConstBlockPtr bodyBytes,
 					memory::ConstBlockPtr parentMessageId = nullptr
-				) : mSignatureMap(signatureMap), mBodyBytes(bodyBytes), mParentMessageId(parentMessageId) {}
+				) : signatureMap(signatureMap), bodyBytes(bodyBytes), parentMessageId(parentMessageId) {}
 
-				SignatureMap				mSignatureMap;
-				memory::ConstBlockPtr	mBodyBytes;
-				memory::ConstBlockPtr	mParentMessageId;
+				SignatureMap			signatureMap;
+				memory::ConstBlockPtr	bodyBytes;
+				memory::ConstBlockPtr	parentMessageId;
 			};
 
 			// confirmed_transaction.proto
 			struct GRADIDOBLOCKCHAIN_EXPORT ConfirmedTransaction
 			{
-			public:
 				ConfirmedTransaction(
 					uint64_t id,
 					const GradidoTransaction& gradidoTransaction,
@@ -217,21 +216,23 @@ namespace gradido {
 					memory::ConstBlockPtr runningHash,
 					memory::ConstBlockPtr messageId,
 					const std::string& accountBalance
-				) : mId(id),
-					mGradidoTransaction(gradidoTransaction),
-					mConfirmedAt(confirmedAt),
-					mVersionNumber(versionNumber),
-					mRunningHash(runningHash),
-					mMessageId(messageId),
-					mAccountBalance(accountBalance) {}
+				) : id(id),
+					gradidoTransaction(gradidoTransaction),
+					confirmedAt(confirmedAt),
+					versionNumber(versionNumber),
+					runningHash(runningHash),
+					messageId(messageId),
+					accountBalance(accountBalance) {}
 
-				uint64_t                    mId;
-				GradidoTransaction          mGradidoTransaction;
-				TimestampSeconds            mConfirmedAt;
-				std::string   mVersionNumber;
-				memory::ConstBlockPtr mRunningHash;
-				memory::ConstBlockPtr mMessageId;
-				std::string   mAccountBalance;
+				memory::Block calculateRunningHash(std::shared_ptr<ConfirmedTransaction> previousConfirmedTransaction = nullptr);
+
+				uint64_t                    id;
+				GradidoTransaction          gradidoTransaction;
+				TimestampSeconds            confirmedAt;
+				std::string   versionNumber;
+				memory::ConstBlockPtr runningHash;
+				memory::ConstBlockPtr messageId;
+				std::string   accountBalance;
 			};
 		}
 	}

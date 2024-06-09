@@ -10,12 +10,11 @@ namespace gradido {
 				TransactionBodyMessage TransactionBodyRole::getMessage() const
 				{
 					data::TransactionBodyMessage message;
-					data::TimestampMessage created_at{ 
-						mBody.createdAt.seconds, 
-						mBody.createdAt.nanos 
-					};
 					message["memo"_f] = mBody.memo;
-					message["created_at"_f] = created_at;
+					message["created_at"_f] = data::TimestampMessage{
+						mBody.createdAt.seconds,
+						mBody.createdAt.nanos
+					};
 					message["version_number"_f] = mBody.versionNumber;
 					message["type"_f] = mBody.type;
 					if (mBody.otherGroup.size()) {

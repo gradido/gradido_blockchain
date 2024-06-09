@@ -33,29 +33,29 @@ namespace gradido {
 		GradidoTransactionBuilder& GradidoTransactionBuilder::setTransactionBody(std::unique_ptr<data::TransactionBody> body)
 		{
 			interaction::serialize::Context context(*body.get());
-			mGradidoTransaction->mBodyBytes = context.run();
+			mGradidoTransaction->bodyBytes = context.run();
 			return *this;
 		}
 
 		GradidoTransactionBuilder& GradidoTransactionBuilder::addSignaturePair(memory::ConstBlockPtr publicKey, memory::ConstBlockPtr signature)
 		{
-			mGradidoTransaction->mSignatureMap.push(SignaturePair(publicKey, signature));
+			mGradidoTransaction->signatureMap.push(SignaturePair(publicKey, signature));
 			return *this;
 		}
 
 		GradidoTransactionBuilder& GradidoTransactionBuilder::sign(std::shared_ptr<KeyPairEd25519> keyPair)
 		{
-			if (!mGradidoTransaction->mBodyBytes) {
+			if (!mGradidoTransaction->bodyBytes) {
 				throw GradidoTransactionBuilderException("please call setTransactionBody before");
 			}
-			auto signature = make_shared<memory::Block>(keyPair->sign(*mGradidoTransaction->mBodyBytes));
+			auto signature = make_shared<memory::Block>(keyPair->sign(*mGradidoTransaction->bodyBytes));
 			addSignaturePair(keyPair->getPublicKey(), signature);
 			return *this;
 		}
 
 		GradidoTransactionBuilder& GradidoTransactionBuilder::setParentMessageId(memory::ConstBlockPtr parentMessageId)
 		{
-			mGradidoTransaction->mParentMessageId = parentMessageId;
+			mGradidoTransaction->parentMessageId = parentMessageId;
 			return *this;
 		}
 	}
