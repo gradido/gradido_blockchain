@@ -60,11 +60,16 @@ namespace gradido {
 						if (communityRootMessage["pubkey"_f].has_value()) {
 							printf("pubkey size: %lld\n", communityRootMessage["pubkey"_f].value().size());
 						}
+						else {
+							return;
+						}
 						if (!communityRootMessage["gmw_pubkey"_f].has_value()) {
 							printf("gmw_pubkey missing\n");
+							return;
 						}
 						if (!communityRootMessage["auf_pubkey"_f].has_value()) {
 							printf("auf_pubkey missing\n");
+							return;
 						}
 						assert(communityRootMessage["pubkey"_f].has_value());
 						assert(communityRootMessage["gmw_pubkey"_f].has_value());

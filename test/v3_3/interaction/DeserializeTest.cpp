@@ -36,7 +36,7 @@ TEST(DeserializeTest, TransactionBodyWithoutMemo)
 TEST(DeserializeTest, CommunityRootBody)
 {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(
-		"CgASCAiAzLn/BRAAGgMzLjMgAFpmCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hogUfmx6NmEdjrdTZDMZCLx/UoJxne5jksZjAVbwpQg9Y4aILuZSh1i57PKe586fpKo7WESpT92xJWVtRfMdFClC3pa"
+		"CgASCAiAzLn/BRAAGgMzLjMgAFpmCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hIgUfmx6NmEdjrdTZDMZCLx/UoJxne5jksZjAVbwpQg9Y4aILuZSh1i57PKe586fpKo7WESpT92xJWVtRfMdFClC3pa"
 	));
 	deserialize::Context context(rawData, deserialize::Type::TRANSACTION_BODY);
 	context.run();

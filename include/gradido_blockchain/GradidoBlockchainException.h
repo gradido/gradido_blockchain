@@ -152,7 +152,7 @@ public:
 
 class GRADIDOBLOCKCHAIN_EXPORT GradidoNullPointerException : public GradidoBlockchainException
 {
-public: 
+public:
 	explicit GradidoNullPointerException(const char* what, const char* typeName, const char* functionName) noexcept;
 	std::string getFullString() const;
 

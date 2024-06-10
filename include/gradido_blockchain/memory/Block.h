@@ -71,9 +71,6 @@ namespace memory {
 		void clear();
 		size_t mSize;
 		uint8_t* mData;
-
-		static std::mutex mBlockStacksMutex;
-		static std::map<size_t, BlockStack*> mBlockStacks;
 	};
 
 	typedef std::shared_ptr<Block> BlockPtr;

@@ -18,7 +18,7 @@ TEST(SerializeTest, TransactionBodyWithoutMemo)
 	TransactionBody body("", createdAt, VERSION_STRING);
 	serialize::Context c(body);
 	auto serialized = c.run();
-	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
+	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
 	//printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(), "CgASCAiAzLn/BRAAGgMzLjMgAA==");
 }
@@ -44,9 +44,10 @@ TEST(SerializeTest, CommunityRootBody)
 	ASSERT_TRUE(body.isCommunityRoot());
 	serialize::Context c(body);
 	auto serialized = c.run();
-	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
+	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
+	//printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(),
-		"CgASCAiAzLn/BRAAGgMzLjMgAFpmCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hogUfmx6NmEdjrdTZDMZCLx/UoJxne5jksZjAVbwpQg9Y4aILuZSh1i57PKe586fpKo7WESpT92xJWVtRfMdFClC3pa"
+		"CgASCAiAzLn/BRAAGgMzLjMgAFpmCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hIgUfmx6NmEdjrdTZDMZCLx/UoJxne5jksZjAVbwpQg9Y4aILuZSh1i57PKe586fpKo7WESpT92xJWVtRfMdFClC3pa"
 	);
 }
 
@@ -79,9 +80,15 @@ TEST(SerializeTest, GradidoCreationBody) {
 	serialize::Context c(body);
 	auto serialized = c.run();
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
+#ifdef USE_MPFR
 	ASSERT_EQ(serialized->convertToBase64(),
 		"ChlEZWluZSBlcnN0ZSBTY2hvZXBmdW5nIDspEggIgMy5/wUQABoDMy4zIAA6TgpECiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIeMTAwMC4wMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwGgAaBgi4yrn/BQ=="
 	);
+#else 
+	ASSERT_EQ(serialized->convertToBase64(),
+		"ChlEZWluZSBlcnN0ZSBTY2hvZXBmdW5nIDspEggIgMy5/wUQABoDMy4zIAA6TgpECiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIeMTAwMC4wMDAwMDAwMDAwMDAxMTM2ODY4Mzc3MjE2GgAaBgi4yrn/BQ=="
+	);
+#endif
 }
 
 TEST(SerializeTest, GradidoTransferBody) {
@@ -94,9 +101,15 @@ TEST(SerializeTest, GradidoTransferBody) {
 	serialize::Context c(body);
 	auto serialized = c.run();
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
+#ifdef USE_MPFR
 	ASSERT_EQ(serialized->convertToBase64(),
 		"ChFJY2ggdGVpbGUgbWl0IGRpchIICIDMuf8FEAAaAzMuMyAAMmcKQwogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSHTUwMC41NTAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwGgASINGpWCTISFkAJ5uSpgF1/GdviRTGHXOZxmwtDLb6nsV2"
 	);
+#else
+	ASSERT_EQ(serialized->convertToBase64(),
+		"ChFJY2ggdGVpbGUgbWl0IGRpchIICIDMuf8FEAAaAzMuMyAAMmcKQwogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSHTUwMC41NTAwMDAwMDAwMDAwMTEzNjg2ODM3NzIyGgASINGpWCTISFkAJ5uSpgF1/GdviRTGHXOZxmwtDLb6nsV2"
+	);
+#endif
 }
 
 TEST(SerializeTest, GradidoDeferredTransferBody) {
@@ -111,9 +124,15 @@ TEST(SerializeTest, GradidoDeferredTransferBody) {
 	serialize::Context c(body);
 	auto serialized = c.run();
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
+#ifdef USE_MPFR
 	ASSERT_EQ(serialized->convertToBase64(),
 		"ChJMaW5rIHp1bSBlaW5sb2VzZW4SCAiAzLn/BRAAGgMzLjMgAFJxCmcKQwogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSHTU1NS41NTAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwGgASINGpWCTISFkAJ5uSpgF1/GdviRTGHXOZxmwtDLb6nsV2EgYIqPm5/wU="
 	);
+#else 
+	ASSERT_EQ(serialized->convertToBase64(),
+		"ChJMaW5rIHp1bSBlaW5sb2VzZW4SCAiAzLn/BRAAGgMzLjMgAFJxCmcKQwogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSHTU1NS41NDk5OTk5OTk5OTk5NTQ1MjUyNjQ5MTE0GgASINGpWCTISFkAJ5uSpgF1/GdviRTGHXOZxmwtDLb6nsV2EgYIqPm5/wU="
+	);
+#endif
 }
 
 TEST(SerializeTest, CommunityFriendsUpdateBody) {
@@ -224,7 +243,13 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 	auto serialized = c.run();
 	// printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 	// printf("hex: %s\n", serialized->convertToHex().data());
+#ifdef USE_MPFR
 	ASSERT_EQ(serialized->convertToBase64(),
 		"CAcS/AEKZgpkCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hJAgV08sOXyyIDo6hStrBViGuW2zeUacV4SakadXHgfBGzBNhEZXEkc71jdbfGYvvK5En/lvQ74Qst94YlucESnAxKRAQoVRGFua2UgZnVlciBkZWluIFNlaW4hEggIgMy5/wUQABoDMy4zIAAyZwpDCiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIdMTAwLjI1MTYyMTAwMDAwMDAwMDAwMDAwMDAwMDAaABIg0alYJMhIWQAnm5KmAXX8Z2+JFMYdc5nGbC0MtvqexXYaBgjC8rn/BSIDMy4zKiAVP/0DKzblF1IjL9NxBvORA6F9CAtIBtKzNCeWaZLpAzIgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA6Cjg5OS43NDgzNzk="
 	);
+#else 
+	ASSERT_EQ(serialized->convertToBase64(),
+		"CAcS/AEKZgpkCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hJAczocmBrFsUgFa/cf5M0wN8Kg03QYFZ8rUwn8OtPQwuo41Z5U5uC06TdyUMplgcnqcmpvRVAfJsWND4pKzDjxChKRAQoVRGFua2UgZnVlciBkZWluIFNlaW4hEggIgMy5/wUQABoDMy4zIAAyZwpDCiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIdMTAwLjI1MTYyMTAwMDAwMDAwMDA5NDU4NzQ0OTAaABIg0alYJMhIWQAnm5KmAXX8Z2+JFMYdc5nGbC0MtvqexXYaBgjC8rn/BSIDMy4zKiCnzafRdiYILB8OSADmN3GEE1a/adqNYrmRNCeAgIYMRjIgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA6Cjg5OS43NDgzNzk="
+	);
+#endif
 }

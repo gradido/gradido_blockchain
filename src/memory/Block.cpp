@@ -1,21 +1,12 @@
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain/memory/Manager.h"
 
 namespace memory {
-
-	std::mutex Block::mBlockStacksMutex;
-	std::map<size_t, BlockStack*> Block::mBlockStacks;
-
+	
 	Block::Block(size_t size)
-		: mSize(size), mData(nullptr)
-	{
-		assert(size > 0);
-		std::lock_guard _lock(mBlockStacksMutex);
-		auto it = mBlockStacks.find(size);
-		if (it == mBlockStacks.end()) {
-			it = mBlockStacks.insert({ size, new BlockStack(size) }).first;
-		}
-		mData = it->second->getBlock();
+		: mSize(size), mData(Manager::getInstance().getBlock(size))
+	{		
 	}
 
 	Block::Block(size_t size, const unsigned char* data)
@@ -78,14 +69,7 @@ namespace memory {
 	void Block::clear()
 	{
 		if (mData) {
-			std::lock_guard _lock(mBlockStacksMutex);
-			auto it = mBlockStacks.find(mSize);
-			if (it != mBlockStacks.end()) {
-				it->second->releaseBlock(mData);
-			}
-			else {
-				free(mData);
-			}
+			Manager::getInstance().releaseBlock(mSize, mData);
 			mData = nullptr;
 			mSize = 0;
 		}

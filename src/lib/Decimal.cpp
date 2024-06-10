@@ -109,9 +109,11 @@ Decimal::Decimal(const Decimal& src)
 
 std::string Decimal::toString(uint8_t precision /* = 25 */) const
 {
+	auto scale = pow(10.0, static_cast<double>(precision));
 	std::stringstream ss;
-	ss << std::setprecision(precision);
-	ss << mDecimal;
+
+	ss << std::fixed << std::setprecision(precision);	
+	ss << std::round(mDecimal * scale) / scale;
 	return ss.str();
 }
 
