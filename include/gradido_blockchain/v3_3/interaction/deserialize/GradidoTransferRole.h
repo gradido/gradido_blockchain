@@ -12,10 +12,10 @@ namespace gradido {
                 {
                 public:
                     GradidoTransferRole(const GradidoTransferMessage& gradidoTransfer);
-                    inline operator data::GradidoTransfer() const { return mGradidoTransfer; }
-                    inline data::GradidoTransfer data() const { return mGradidoTransfer; }
+                    inline operator const data::GradidoTransfer&() const { return *mGradidoTransfer.get(); }
+                    inline const data::GradidoTransfer& data() const { return *mGradidoTransfer.get(); }
                 protected:
-                    data::GradidoTransfer mGradidoTransfer;
+                    std::unique_ptr<data::GradidoTransfer> mGradidoTransfer;
                 };
             }
         }

@@ -9,9 +9,6 @@ namespace gradido {
 					: mGradidoTransaction(std::make_unique<data::GradidoTransaction>())
 				{
 					auto sigMap = message["sig_map"_f];
-					std::optional<std::vector<unsigned char>> bodyBytes = message["body_bytes"_f];
-					std::optional<std::vector<unsigned char>> parentMessageId = message["parent_message_id"_f];
-
 					if (sigMap.has_value() && sigMap.value()["sig_pair"_f].size()) {
 						auto sigPairs = sigMap.value()["sig_pair"_f];
 						for (int i = 0; i < sigPairs.size(); i++) {
@@ -21,9 +18,11 @@ namespace gradido {
 							));
 						}
 					}
+					auto bodyBytes = message["body_bytes"_f];
 					if (bodyBytes.has_value()) {
 						mGradidoTransaction->bodyBytes = std::make_shared<memory::Block>(bodyBytes.value());
 					}
+					auto parentMessageId = message["parent_message_id"_f];
 					if (parentMessageId.has_value()) {
 						mGradidoTransaction->parentMessageId = std::make_shared<memory::Block>(parentMessageId.value());
 					}

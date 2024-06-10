@@ -1,4 +1,5 @@
 #include "gradido_blockchain/v3_3/interaction/serialize/TransactionBodyRole.h"
+#include "gradido_blockchain/v3_3/interaction/serialize/Exceptions.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 
 namespace gradido {
@@ -24,6 +25,16 @@ namespace gradido {
 					if (mBody.isCommunityRoot()) 
 					{
 						auto communityRoot = mBody.communityRoot;
+						if (!communityRoot->pubkey) {
+							throw MissingMemberException("missing member by serializing CommunityRoot Transaction", "pubkey");
+						}
+						if (!communityRoot->gmwPubkey) {
+							throw MissingMemberException("missing member by serializing CommunityRoot Transaction", "gmwPubkey");
+						}
+						if (!communityRoot->aufPubkey) {
+							throw MissingMemberException("missing member by serializing CommunityRoot Transaction", "aufPubkey");
+						}
+
 						message["community_root"_f] = CommunityRootMessage {
 							communityRoot->pubkey->copyAsVector(),
 							communityRoot->gmwPubkey->copyAsVector(),
@@ -52,6 +63,10 @@ namespace gradido {
 						auto creation = mBody.creation;
 						auto& amount = creation->recipient;
 						TimestampSecondsMessage targetDateMessage{ creation->targetDate.seconds };
+
+						if (!amount.pubkey) {
+							throw MissingMemberException("missing member by serializing Gradido Creation Transaction", "recipient.pubkey");
+						}
 						
 						message["creation"_f] = GradidoCreationMessage{
 							TransferAmountMessage {
@@ -64,6 +79,12 @@ namespace gradido {
 					else if (mBody.isTransfer()) {
 						auto transfer = mBody.transfer;
 						auto& amount = transfer->sender;
+						if (!amount.pubkey) {
+							throw MissingMemberException("missing member by serializing Gradido Transfer Transaction", "sender.pubkey");
+						}
+						if (!transfer->recipient) {
+							throw MissingMemberException("missing member by serializing Gradido Transfer Transaction", "recipient");
+						}
 						message["transfer"_f] = GradidoTransferMessage{
 							TransferAmountMessage {
 								amount.pubkey->copyAsVector(),
@@ -76,6 +97,12 @@ namespace gradido {
 						auto deferredTransfer = mBody.deferredTransfer;
 						auto& transfer = mBody.deferredTransfer->transfer;
 						auto& amount = transfer.sender;
+						if (!amount.pubkey) {
+							throw MissingMemberException("missing member by serializing Gradido Deferred Transfer Transaction", "transfer.sender.pubkey");
+						}
+						if (!transfer.recipient) {
+							throw MissingMemberException("missing member by serializing Gradido Deferred Transfer Transaction", "transfer.recipient");
+						}
 						message["deferred_transfer"_f] = GradidoDeferredTransferMessage{
 							GradidoTransferMessage{
 								TransferAmountMessage {
@@ -102,6 +129,15 @@ namespace gradido {
 
 					if (mBody.isCommunityRoot()) {
 						auto communityRoot = mBody.communityRoot;
+						if (!communityRoot->pubkey) {
+							throw MissingMemberException("missing member by serializing CommunityRoot Transaction", "pubkey");
+						}
+						if (!communityRoot->gmwPubkey) {
+							throw MissingMemberException("missing member by serializing CommunityRoot Transaction", "gmwPubkey");
+						}
+						if (!communityRoot->aufPubkey) {
+							throw MissingMemberException("missing member by serializing CommunityRoot Transaction", "aufPubkey");
+						}
 						// 3x pubkey
 						size += 8
 							+ communityRoot->pubkey->size()
@@ -125,12 +161,18 @@ namespace gradido {
 					}
 					else if (mBody.isTransfer()) {
 						auto transfer = mBody.transfer;
+						if (!transfer->recipient) {
+							throw MissingMemberException("missing member by serializing Gradido Transfer Transaction", "recipient");
+						}
 						size += transfer->recipient->size() + calculateTransferAmountSerializedSize(transfer->sender);
 						// printf("calculated size for gradido transfer: %lld\n", size);
 					}
 					else if (mBody.isDeferredTransfer()) {
 						auto deferredTransfer = mBody.deferredTransfer;
 						auto& transfer = deferredTransfer->transfer;
+						if (!transfer.recipient) {
+							throw MissingMemberException("missing member by serializing Gradido Deferred Transfer Transaction", "transfer.recipient");
+						}
 						size += transfer.recipient->size() + calculateTransferAmountSerializedSize(transfer.sender) + 8;
 						// printf("calculated size for gradido deferred transfer: %lld\n", size);
 					}
@@ -143,6 +185,9 @@ namespace gradido {
 
 				size_t TransactionBodyRole::calculateTransferAmountSerializedSize(const data::TransferAmount& amount) const
 				{
+					if (!amount.pubkey) {
+						throw MissingMemberException("missing member by serializing TransferAmount", "amount.pubkey");
+					}
 					return amount.pubkey->size() + amount.amount.toString().size() + amount.communityId.size() + 12;
 				}
 				

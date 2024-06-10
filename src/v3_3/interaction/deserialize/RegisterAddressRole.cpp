@@ -1,4 +1,5 @@
 #include "gradido_blockchain/v3_3/interaction/deserialize/RegisterAddressRole.h"
+#include "gradido_blockchain/v3_3/interaction/deserialize/Exceptions.h"
 
 namespace gradido {
     namespace v3_3 {
@@ -13,20 +14,27 @@ namespace gradido {
 					memory::ConstBlockPtr accountPubkeyPtr = nullptr
                 */
                 RegisterAddressRole::RegisterAddressRole(const RegisterAddressMessage& registerAddressMessage)
-                    : mRegisterAddress(
+                {
+                    if (!registerAddressMessage["address_type"_f].has_value()) {
+                        throw MissingMemberException("missing member on deserialize register address transaction", "address_type");
+                    }
+					if (!registerAddressMessage["derivation_index"_f].has_value()) {
+						throw MissingMemberException("missing member on deserialize register address transaction", "derivation_index");
+					}
+                    mRegisterAddress = std::make_unique<data::RegisterAddress>(
                         registerAddressMessage["address_type"_f].value(),
                         registerAddressMessage["derivation_index"_f].value()
-                    )
-                {
+                    );
                     if (registerAddressMessage["user_pubkey"_f].has_value()) {
-                        mRegisterAddress.userPubkey = std::make_shared<memory::Block>(registerAddressMessage["user_pubkey"_f].value());
+                        mRegisterAddress->userPubkey = std::make_shared<memory::Block>(registerAddressMessage["user_pubkey"_f].value());
                     }
                     if (registerAddressMessage["name_hash"_f].has_value()) {
-                        mRegisterAddress.nameHash = std::make_shared<memory::Block>(registerAddressMessage["name_hash"_f].value());
+                        mRegisterAddress->nameHash = std::make_shared<memory::Block>(registerAddressMessage["name_hash"_f].value());
                     }
                     if (registerAddressMessage["account_pubkey"_f].has_value()) {
-                        mRegisterAddress.accountPubkey = std::make_shared<memory::Block>(registerAddressMessage["account_pubkey"_f].value());
+                        mRegisterAddress->accountPubkey = std::make_shared<memory::Block>(registerAddressMessage["account_pubkey"_f].value());
                     }
+					
                     
                 }
             }

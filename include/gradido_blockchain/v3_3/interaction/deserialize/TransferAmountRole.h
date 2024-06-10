@@ -12,10 +12,10 @@ namespace gradido {
                 {
                 public:
                     TransferAmountRole(const TransferAmountMessage& transferAmount);
-                    inline operator data::TransferAmount() const { return mTransferAmount; }
-                    inline data::TransferAmount data() const { return mTransferAmount; }
+                    inline operator const data::TransferAmount&() const { return *mTransferAmount.get(); }
+                    inline const data::TransferAmount& data() const { return *mTransferAmount.get(); }
                 protected:
-                    data::TransferAmount mTransferAmount;
+                    std::unique_ptr<data::TransferAmount> mTransferAmount;
                 };
             }
         }

@@ -12,10 +12,10 @@ namespace gradido {
                 {
                 public:
                     TimestampRole(const TimestampMessage& timestamp);
-                    inline operator data::Timestamp() const { return mTimestamp; }
-                    inline data::Timestamp data() const { return mTimestamp; }
+                    inline operator const data::Timestamp&() const { return *mTimestamp.get(); }
+                    inline const data::Timestamp& data() const { return *mTimestamp.get(); }
                 protected:
-                    data::Timestamp mTimestamp;
+                    std::unique_ptr<data::Timestamp> mTimestamp;
                 };
             }
         }

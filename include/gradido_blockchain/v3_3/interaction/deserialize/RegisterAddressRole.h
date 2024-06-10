@@ -12,10 +12,10 @@ namespace gradido {
                 {
                 public:
                     RegisterAddressRole(const RegisterAddressMessage& registerAddressMessage);
-                    inline operator data::RegisterAddress() const { return mRegisterAddress; }
-                    inline data::RegisterAddress data() const { return mRegisterAddress; }
+                    inline operator const data::RegisterAddress&() const { return *mRegisterAddress.get(); }
+                    inline const data::RegisterAddress& data() const { return *mRegisterAddress.get(); }
                 protected:
-                    data::RegisterAddress mRegisterAddress;
+                    std::unique_ptr<data::RegisterAddress> mRegisterAddress;
                 };
             }
         }

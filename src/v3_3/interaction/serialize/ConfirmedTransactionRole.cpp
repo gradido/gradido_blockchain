@@ -1,5 +1,5 @@
 #include "gradido_blockchain/v3_3/interaction/serialize/ConfirmedTransactionRole.h"
-
+#include "gradido_blockchain/v3_3/interaction/serialize/Exceptions.h"
 
 namespace gradido {
 	namespace v3_3 {
@@ -8,8 +8,12 @@ namespace gradido {
 
 				ConfirmedTransactionMessage ConfirmedTransactionRole::getMessage() const
 				{
-					assert(mConfirmedTransaction.runningHash);
-					assert(mConfirmedTransaction.messageId);
+					if (!mConfirmedTransaction.runningHash) {
+						throw MissingMemberException("missing member by serializing ConfirmedTransaction", "runningHash");
+					}
+					if (!mConfirmedTransaction.messageId) {
+						throw MissingMemberException("missing member by serializing ConfirmedTransaction", "messageId");
+					}
 					ConfirmedTransactionMessage confirmedTransactionMessage;
 					return ConfirmedTransactionMessage{
 						mConfirmedTransaction.id,
