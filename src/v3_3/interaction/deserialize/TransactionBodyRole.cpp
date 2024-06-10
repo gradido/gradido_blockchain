@@ -21,14 +21,12 @@ namespace gradido {
 						bodyMessage["other_group"_f].value_or("")
 					);
 					if (bodyMessage["transfer"_f].has_value()) {
-						printf("transfer\n");
 						auto transferMessage = bodyMessage["transfer"_f].value();
 						mBody->transfer = std::make_shared<GradidoTransfer>(
 							GradidoTransferRole(bodyMessage["transfer"_f].value()).data()
 						);
 					}
 					else if (bodyMessage["creation"_f].has_value()) {
-						printf("creation\n");
 						auto creationMessage = bodyMessage["creation"_f].value();
 						mBody->creation = std::make_shared<GradidoCreation>(
 							TransferAmountRole(creationMessage["recipient"_f].value()).data(),
@@ -36,44 +34,23 @@ namespace gradido {
 						);
 					}
 					else if (bodyMessage["community_friends_update"_f].has_value()) {
-						printf("community_friends_update\n");
 						mBody->communityFriendsUpdate = std::make_shared<CommunityFriendsUpdate>(
 							bodyMessage["community_friends_update"_f].value()["color_fusion"_f].value()
 						);
 					}
 					else if (bodyMessage["register_address"_f].has_value()) {
-						printf("register_address\n");
 						mBody->registerAddress = std::make_shared<RegisterAddress>(
 							RegisterAddressRole(bodyMessage["register_address"_f].value())
 						);
 					}
 					else if (bodyMessage["deferred_transfer"_f].has_value()) {
-						printf("deferred_transfer\n");
 						mBody->deferredTransfer = std::make_shared<GradidoDeferredTransfer>(
 							GradidoTransferRole(bodyMessage["deferred_transfer"_f].value()["transfer"_f].value()).data(),
 							TimestampSecondsRole(bodyMessage["deferred_transfer"_f].value()["timeout"_f].value()).data()
 						);
 					}
 					else if (bodyMessage["community_root"_f].has_value()) {
-						printf("community root\n");
 						auto communityRootMessage = bodyMessage["community_root"_f].value();
-						if (communityRootMessage["pubkey"_f].has_value()) {
-							printf("pubkey size: %lld\n", communityRootMessage["pubkey"_f].value().size());
-						}
-						else {
-							return;
-						}
-						if (!communityRootMessage["gmw_pubkey"_f].has_value()) {
-							printf("gmw_pubkey missing\n");
-							return;
-						}
-						if (!communityRootMessage["auf_pubkey"_f].has_value()) {
-							printf("auf_pubkey missing\n");
-							return;
-						}
-						assert(communityRootMessage["pubkey"_f].has_value());
-						assert(communityRootMessage["gmw_pubkey"_f].has_value());
-						assert(communityRootMessage["auf_pubkey"_f].has_value());
 						mBody->communityRoot = std::make_shared<CommunityRoot>(
 							std::make_shared<memory::Block>(communityRootMessage["pubkey"_f].value()),
 							std::make_shared<memory::Block>(communityRootMessage["gmw_pubkey"_f].value()),

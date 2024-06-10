@@ -294,8 +294,8 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_EQ(confirmedTransaction->confirmedAt, confirmedAt);
 	EXPECT_EQ(confirmedTransaction->versionNumber, VERSION_STRING);
 	EXPECT_EQ(confirmedTransaction->accountBalance.toString(6), "899.748379");
-	EXPECT_EQ(confirmedTransaction->runningHash->size(), crypto_generichash_BYTES);
-	printf("running hash: %s\n", confirmedTransaction->runningHash->convertToHex().data());
+	ASSERT_EQ(confirmedTransaction->runningHash->size(), crypto_generichash_BYTES);
+	EXPECT_EQ(confirmedTransaction->runningHash->convertToHex(), "e49df9286e16baaa4992ce5a56acc97972e260118f2c004ddf4e82a93e863ad5");
 
 	auto gradidoTransaction = confirmedTransaction->gradidoTransaction.get();
 	KeyPairEd25519 keyPair(g_KeyPairs[0].publicKey, g_KeyPairs[0].privateKey);
