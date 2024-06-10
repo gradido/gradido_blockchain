@@ -27,12 +27,14 @@ namespace gradido {
 
 					inline std::unique_ptr<data::TransactionBody> getTransactionBody() { return std::move(mTransactionBody); }
 					inline std::unique_ptr<data::GradidoTransaction> getGradidoTransaction() { return std::move(mGradidoTransaction); }
+					inline std::shared_ptr<const data::ConfirmedTransaction> getConfirmedTransaction() { return mConfirmedTransaction; }
 
 				protected:
 					memory::ConstBlockPtr mData;
 					Type mType;
 					std::unique_ptr<data::TransactionBody> mTransactionBody;
 					std::unique_ptr<data::GradidoTransaction> mGradidoTransaction;
+					std::shared_ptr<const data::ConfirmedTransaction> mConfirmedTransaction;
 				};
 			}
 		}

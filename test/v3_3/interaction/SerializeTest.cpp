@@ -155,7 +155,7 @@ TEST(SerializeTest, GradidoTransaction) {
 	unsigned long long actualSignLength = 0;
 	crypto_sign_detached(*sign, &actualSignLength, *bodyBytes, bodyBytes->size(), *keyPair.privateKey);
 	ASSERT_EQ(actualSignLength, crypto_sign_BYTES);
-	printf("signature: %s\n", sign->convertToHex().data());
+	//printf("signature: %s\n", sign->convertToHex().data());
 	transaction.signatureMap.push({ keyPair.publicKey, sign });
 	transaction.bodyBytes = bodyBytes;
 
@@ -192,19 +192,20 @@ TEST(SerializeTest, SignatureMap) {
 TEST(SerializeTest, MinimalConfirmedTransaction) {
 	
 	ConfirmedTransaction confirmedTransaction(
-		7, 
-		GradidoTransaction(),
+		7,
+		std::make_unique<GradidoTransaction>(),
 		confirmedAt,
 		VERSION_STRING,
 		make_shared<memory::Block>(crypto_generichash_BYTES),
-		make_shared<memory::Block>(32), "179.00"
+		make_shared<memory::Block>(32),
+		179.00
 	);
 	serialize::Context c(confirmedTransaction);
 	auto serialized = c.run();
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 	//printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(),
-		"CAcSAgoAGgYIwvK5/wUiAzMuMyogAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOgYxNzkuMDA="
+		"CAcSAgoAGgYIwvK5/wUiAzMuMyogAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOgMxNzk="
 	);
 }
 
@@ -231,11 +232,12 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 
 	ConfirmedTransaction confirmedTransaction(
 		7,
-		*gradidoTransaction,
+		std::move(gradidoTransaction),
 		confirmedAt,
 		VERSION_STRING,
 		nullptr,
-		make_shared<memory::Block>(32), "899.748379"
+		make_shared<memory::Block>(32),
+		899.748379
 	);
 	confirmedTransaction.runningHash = std::make_shared<memory::Block>(confirmedTransaction.calculateRunningHash());
 	serialize::Context c(confirmedTransaction);
@@ -248,7 +250,7 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 	);
 #else 
 	ASSERT_EQ(serialized->convertToBase64(),
-		"CAcS/AEKZgpkCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hJAczocmBrFsUgFa/cf5M0wN8Kg03QYFZ8rUwn8OtPQwuo41Z5U5uC06TdyUMplgcnqcmpvRVAfJsWND4pKzDjxChKRAQoVRGFua2UgZnVlciBkZWluIFNlaW4hEggIgMy5/wUQABoDMy4zIAAyZwpDCiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIdMTAwLjI1MTYyMTAwMDAwMDAwMDA5NDU4NzQ0OTAaABIg0alYJMhIWQAnm5KmAXX8Z2+JFMYdc5nGbC0MtvqexXYaBgjC8rn/BSIDMy4zKiCnzafRdiYILB8OSADmN3GEE1a/adqNYrmRNCeAgIYMRjIgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA6Cjg5OS43NDgzNzk="
+		"CAcS+wEKZgpkCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hJA+ljUBfKUP8AYS4fUJRAzJZmXKwoK+ZZYpDMenRmQ3ffylnIonrNQ/0qIrjQE0hu97NelANjfZCirL5umoyU/ABKQAQoVRGFua2UgZnVlciBkZWluIFNlaW4hEggIgMy5/wUQABoDMy4zIAAyZgpCCiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIcMTAwLjI1MTYyMTAwMDAwMDAwMDA5NDU4NzQ0ORoAEiDRqVgkyEhZACebkqYBdfxnb4kUxh1zmcZsLQy2+p7FdhoGCMLyuf8FIgMzLjMqIOSd+ShuFrqqSZLOWlasyXly4mARjywATd9Ogqk+hjrVMiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADocODk5Ljc0ODM3ODk5OTk5OTk5OTkwNTQxMjU1MQ=="
 	);
 #endif
 }

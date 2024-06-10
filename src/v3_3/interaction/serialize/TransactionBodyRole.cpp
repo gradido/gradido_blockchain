@@ -56,7 +56,7 @@ namespace gradido {
 						message["creation"_f] = GradidoCreationMessage{
 							TransferAmountMessage {
 								amount.pubkey->copyAsVector(),
-								amount.amount.toString(),
+								decimalToStringTrimTrailingZeros(amount.amount),
 								amount.communityId
 							},  TimestampSecondsMessage { creation->targetDate.seconds }
 						};
@@ -67,7 +67,7 @@ namespace gradido {
 						message["transfer"_f] = GradidoTransferMessage{
 							TransferAmountMessage {
 								amount.pubkey->copyAsVector(),
-								amount.amount.toString(),
+								decimalToStringTrimTrailingZeros(amount.amount),
 								amount.communityId
 							}, transfer->recipient->copyAsVector()
 						};
@@ -80,7 +80,7 @@ namespace gradido {
 							GradidoTransferMessage{
 								TransferAmountMessage {
 									amount.pubkey->copyAsVector(),
-									amount.amount.toString(),
+									decimalToStringTrimTrailingZeros(amount.amount),
 									amount.communityId
 								}, transfer.recipient->copyAsVector()
 							}, TimestampSecondsMessage{deferredTransfer->timeout.seconds}

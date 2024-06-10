@@ -114,6 +114,7 @@ std::string Decimal::toString(uint8_t precision /* = 25 */) const
 
 	ss << std::fixed << std::setprecision(precision);	
 	ss << std::round(mDecimal * scale) / scale;
+
 	return ss.str();
 }
 

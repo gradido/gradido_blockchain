@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "gradido_blockchain/v3_3/interaction/deserialize/Context.h"
 #include "../../KeyPairs.h"
+#include "gradido_blockchain/crypto/KeyPairEd25519.h"
 #include "const.h"
 
 using namespace gradido::v3_3;
@@ -247,4 +248,76 @@ TEST(DeserializeTest, GradidoTransaction) {
 		bodyBytes.size(),
 		*g_KeyPairs[3].publicKey
 	), 0);
+}
+
+
+TEST(DeserializeTest, MinimalConfirmedTransaction) {
+
+	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(
+		"CAcSAgoAGgYIwvK5/wUiAzMuMyogAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOgMxNzk="
+	));
+	deserialize::Context context(rawData, deserialize::Type::CONFIRMED_TRANSACTION);
+	context.run();
+	EXPECT_FALSE(context.isTransactionBody());
+	ASSERT_TRUE(context.isConfirmedTransaction());
+	EXPECT_FALSE(context.isGradidoTransaction());
+
+	auto confirmedTransaction = context.getConfirmedTransaction();
+	auto gradidoTransaction = confirmedTransaction->gradidoTransaction.get();
+
+	EXPECT_EQ(confirmedTransaction->id, 7);
+	EXPECT_EQ(confirmedTransaction->confirmedAt, confirmedAt);
+	EXPECT_EQ(confirmedTransaction->versionNumber, VERSION_STRING);
+	EXPECT_EQ(confirmedTransaction->accountBalance.toString(2), "179.00");
+	EXPECT_EQ(confirmedTransaction->runningHash->size(), crypto_generichash_BYTES);
+}
+
+
+TEST(DeserializeTest, CompleteConfirmedTransaction) {
+
+	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(
+#ifdef USE_MPFR
+		"CAcSAgoAGgYIwvK5/wUiAzMuMyogAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOgMxNzk="
+#else 
+		"CAcS+wEKZgpkCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hJA+ljUBfKUP8AYS4fUJRAzJZmXKwoK+ZZYpDMenRmQ3ffylnIonrNQ/0qIrjQE0hu97NelANjfZCirL5umoyU/ABKQAQoVRGFua2UgZnVlciBkZWluIFNlaW4hEggIgMy5/wUQABoDMy4zIAAyZgpCCiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIcMTAwLjI1MTYyMTAwMDAwMDAwMDA5NDU4NzQ0ORoAEiDRqVgkyEhZACebkqYBdfxnb4kUxh1zmcZsLQy2+p7FdhoGCMLyuf8FIgMzLjMqIOSd+ShuFrqqSZLOWlasyXly4mARjywATd9Ogqk+hjrVMiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADocODk5Ljc0ODM3ODk5OTk5OTk5OTkwNTQxMjU1MQ=="
+#endif
+	));
+	deserialize::Context context(rawData, deserialize::Type::CONFIRMED_TRANSACTION);
+	context.run();
+	EXPECT_FALSE(context.isTransactionBody());
+	ASSERT_TRUE(context.isConfirmedTransaction());
+	EXPECT_FALSE(context.isGradidoTransaction());
+
+	auto confirmedTransaction = context.getConfirmedTransaction();
+
+	EXPECT_EQ(confirmedTransaction->id, 7);
+	EXPECT_EQ(confirmedTransaction->confirmedAt, confirmedAt);
+	EXPECT_EQ(confirmedTransaction->versionNumber, VERSION_STRING);
+	EXPECT_EQ(confirmedTransaction->accountBalance.toString(6), "899.748379");
+	EXPECT_EQ(confirmedTransaction->runningHash->size(), crypto_generichash_BYTES);
+	printf("running hash: %s\n", confirmedTransaction->runningHash->convertToHex().data());
+
+	auto gradidoTransaction = confirmedTransaction->gradidoTransaction.get();
+	KeyPairEd25519 keyPair(g_KeyPairs[0].publicKey, g_KeyPairs[0].privateKey);
+	EXPECT_TRUE(keyPair.verify(*gradidoTransaction->bodyBytes, *gradidoTransaction->signatureMap.signaturePairs.front().signature));	
+	KeyPairEd25519 keyPair2(g_KeyPairs[2].publicKey, g_KeyPairs[2].privateKey);
+	EXPECT_FALSE(keyPair2.verify(*gradidoTransaction->bodyBytes, *gradidoTransaction->signatureMap.signaturePairs.front().signature));
+
+	deserialize::Context secondContext(gradidoTransaction->bodyBytes);
+	secondContext.run();
+
+	ASSERT_TRUE(secondContext.isTransactionBody());
+	EXPECT_FALSE(secondContext.isConfirmedTransaction());
+	EXPECT_FALSE(secondContext.isGradidoTransaction());
+
+	auto body = secondContext.getTransactionBody();
+	EXPECT_EQ(body->memo, "Danke fuer dein Sein!");
+	EXPECT_EQ(body->createdAt, createdAt);
+	EXPECT_TRUE(body->isTransfer());
+	
+	auto transfer = body->transfer;
+	EXPECT_EQ(transfer->sender.amount.toString(5), "100.25162");
+	EXPECT_TRUE(transfer->sender.pubkey->isTheSame(g_KeyPairs[4].publicKey));
+	EXPECT_TRUE(transfer->recipient->isTheSame(g_KeyPairs[5].publicKey));
+	
 }

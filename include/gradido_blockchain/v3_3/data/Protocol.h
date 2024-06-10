@@ -210,14 +210,14 @@ namespace gradido {
 			{
 				ConfirmedTransaction(
 					uint64_t id,
-					const GradidoTransaction& gradidoTransaction,
+					std::unique_ptr<data::GradidoTransaction> gradidoTransaction,
 					Timepoint confirmedAt,
 					const std::string& versionNumber,
 					memory::ConstBlockPtr runningHash,
 					memory::ConstBlockPtr messageId,
-					const std::string& accountBalance
+					DecayDecimal accountBalance
 				) : id(id),
-					gradidoTransaction(gradidoTransaction),
+					gradidoTransaction(std::move(gradidoTransaction)),
 					confirmedAt(confirmedAt),
 					versionNumber(versionNumber),
 					runningHash(runningHash),
@@ -226,13 +226,13 @@ namespace gradido {
 
 				memory::Block calculateRunningHash(std::shared_ptr<ConfirmedTransaction> previousConfirmedTransaction = nullptr);
 
-				uint64_t                    id;
-				GradidoTransaction          gradidoTransaction;
-				TimestampSeconds            confirmedAt;
-				std::string   versionNumber;
-				memory::ConstBlockPtr runningHash;
-				memory::ConstBlockPtr messageId;
-				std::string   accountBalance;
+				uint64_t                    				id;
+				std::unique_ptr<data::GradidoTransaction>   gradidoTransaction;
+				TimestampSeconds							confirmedAt;
+				std::string   								versionNumber;
+				memory::ConstBlockPtr 						runningHash;
+				memory::ConstBlockPtr 						messageId;
+				DecayDecimal   								accountBalance;
 			};
 		}
 	}

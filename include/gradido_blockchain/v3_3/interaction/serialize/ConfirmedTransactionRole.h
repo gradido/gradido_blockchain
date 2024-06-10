@@ -14,7 +14,7 @@ namespace gradido {
 				{
 				public:
 					ConfirmedTransactionRole(const data::ConfirmedTransaction& confirmedTransaction) 
-						: mConfirmedTransaction(confirmedTransaction), mGradidoTransactionRole(mConfirmedTransaction.gradidoTransaction) {}
+						: mConfirmedTransaction(confirmedTransaction), mGradidoTransactionRole(*mConfirmedTransaction.gradidoTransaction) {}
 					~ConfirmedTransactionRole() {};
 
 					RUM_IMPLEMENTATION

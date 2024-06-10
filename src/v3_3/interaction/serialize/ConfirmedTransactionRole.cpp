@@ -18,7 +18,7 @@ namespace gradido {
 						mConfirmedTransaction.versionNumber,
 						mConfirmedTransaction.runningHash->copyAsVector(),
 						mConfirmedTransaction.messageId->copyAsVector(),
-						mConfirmedTransaction.accountBalance
+						decimalToStringTrimTrailingZeros(mConfirmedTransaction.accountBalance)
 					};
 					return confirmedTransactionMessage;
 				}
@@ -29,7 +29,7 @@ namespace gradido {
 						+ mConfirmedTransaction.versionNumber.size() 
 						+ crypto_generichash_BYTES 
 						+ 32 
-						+ mConfirmedTransaction.accountBalance.size() 
+						+ mConfirmedTransaction.accountBalance.toString().size() 
 						+ 10;
 					size += mGradidoTransactionRole.calculateSerializedSize();
 					//printf("calculated confirmed transaction size: %lld\n", size);

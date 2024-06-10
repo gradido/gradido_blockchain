@@ -38,8 +38,9 @@ namespace gradido {
 			{
 				std::string transactionIdString = std::to_string(id);
 				auto confirmedAtString = DataTypeConverter::timePointToString(confirmedAt, "%Y-%m-%d %H:%M:%S");
-				serialize::Context serializeContext(gradidoTransaction.signatureMap);
+				serialize::Context serializeContext(gradidoTransaction->signatureMap);
 				std::string signatureMapString = serializeContext.run()->copyAsString();
+				std::string accountBalanceString = accountBalance.toString(25);
 
 				memory::Block hash(crypto_generichash_BYTES);
 
@@ -56,7 +57,7 @@ namespace gradido {
 				//printf("received: %s\n", receivedString.data());
 				crypto_generichash_update(&state, (const unsigned char*)signatureMapString.data(), signatureMapString.size());
 				//printf("signature map serialized: %s\n", convertBinToHex(signatureMapString).data());
-				crypto_generichash_update(&state, (const unsigned char*)accountBalance.data(), accountBalance.size());
+				crypto_generichash_update(&state, (const unsigned char*)accountBalanceString.data(), accountBalanceString.size());
 				crypto_generichash_final(&state, hash, hash.size());
 				return hash;
 			}

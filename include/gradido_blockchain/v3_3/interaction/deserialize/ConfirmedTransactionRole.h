@@ -12,11 +12,13 @@ namespace gradido {
 				class ConfirmedTransactionRole
 				{
 				public:
-					ConfirmedTransactionRole() {}
-					~ConfirmedTransactionRole() {};
+					ConfirmedTransactionRole(const ConfirmedTransactionMessage& message);
+					~ConfirmedTransactionRole() {}
+
+					std::shared_ptr<const data::ConfirmedTransaction> getConfirmedTransaction() { return mConfirmedTransaction; }
 
 				protected:
-
+					std::shared_ptr<data::ConfirmedTransaction> mConfirmedTransaction;
 				};
 
 			}

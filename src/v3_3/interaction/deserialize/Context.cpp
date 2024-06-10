@@ -1,6 +1,7 @@
 #include "gradido_blockchain/v3_3/interaction/deserialize/Context.h"
 #include "gradido_blockchain/v3_3/interaction/deserialize/TransactionBodyRole.h"
 #include "gradido_blockchain/v3_3/interaction/deserialize/GradidoTransactionRole.h"
+#include "gradido_blockchain/v3_3/interaction/deserialize/ConfirmedTransactionRole.h"
 #include "loguru/loguru.hpp"
 
 namespace gradido {
@@ -36,6 +37,16 @@ namespace gradido {
 							}
 							mType = Type::UNKNOWN;
 						}
+					}
+					try {
+						auto [confirmedTransaction, bufferEnd2] = message_coder<ConfirmedTransactionMessage>::decode(mData->span());
+						mConfirmedTransaction = ConfirmedTransactionRole(confirmedTransaction).getConfirmedTransaction();
+						mType = Type::CONFIRMED_TRANSACTION;
+						return;
+					}
+					catch (std::exception& ex) {
+						LOG_F(WARNING, "couldn't deserialize, invalid or unknown dataset! exception: %s", ex.what());
+						mType = Type::UNKNOWN;
 					}
 				}
 			}
