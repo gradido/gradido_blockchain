@@ -1,23 +1,29 @@
 #ifndef _GRADIDO_MATH_H
 #define _GRADIDO_MATH_H
 
+#ifdef USE_MPFR
 #include <mpfr.h>
+#endif 
 #include "gradido_blockchain/types.h"
 
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
+GRADIDOBLOCKCHAIN_EXPORT extern Timepoint DECAY_START_TIME;
+#ifdef USE_MPFR
 GRADIDOBLOCKCHAIN_EXPORT extern mpfr_t gDecayFactor356Days;
 GRADIDOBLOCKCHAIN_EXPORT extern mpfr_t gDecayFactor366Days;
 GRADIDOBLOCKCHAIN_EXPORT extern mpfr_t gDecayFactorGregorianCalender;
-GRADIDOBLOCKCHAIN_EXPORT extern Timepoint DECAY_START_TIME;
 GRADIDOBLOCKCHAIN_EXPORT extern const mpfr_rnd_t gDefaultRound;
+#else 
+GRADIDOBLOCKCHAIN_EXPORT extern long double gDecayFactorApollo;
+#endif
 GRADIDOBLOCKCHAIN_EXPORT void initDefaultDecayFactors();
 GRADIDOBLOCKCHAIN_EXPORT void unloadDefaultDecayFactors();
 
 // 1 second = 1×10^9 nanoseconds
 
-
+#ifdef USE_MPFR
 //! \param decay_factor to store the result, decay factor per second
 //! \param days_per_year 365 days in normal year, 366 days in leap year
 //! \brief calculate decay factor per second for exponential decay calculation, needs 100-400 micro seconds depending on processor
@@ -66,9 +72,6 @@ GRADIDOBLOCKCHAIN_EXPORT void calculateDecayFactorForDuration(
 	mpfr_ptr decay_for_duration, mpfr_ptr decay_factor,
 	Duration duration
 );
-
-GRADIDOBLOCKCHAIN_EXPORT Duration calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime);
-
 //! \param decay_for_duration decay factor for specific duration, taken from ::calculateDecayFactorForDuration
 //! \param gradido gradido decimal, contain updated value after function call
 //! \brief calculate decayed balance without memory allocation
@@ -79,6 +82,10 @@ GRADIDOBLOCKCHAIN_EXPORT Duration calculateDecayDurationSeconds(Timepoint startT
 GRADIDOBLOCKCHAIN_EXPORT void calculateDecayFast(mpfr_ptr decay_for_duration, mpfr_ptr gradido);
 
 GRADIDOBLOCKCHAIN_EXPORT void calculateDecay(const mpfr_ptr decay_factor, unsigned long seconds, mpfr_ptr gradido);
+#endif
+GRADIDOBLOCKCHAIN_EXPORT Duration calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime);
+GRADIDOBLOCKCHAIN_EXPORT long long decayFormula(long long value, unsigned long seconds);
+GRADIDOBLOCKCHAIN_EXPORT long double decayFormula(long double value, unsigned long seconds);
 
 class GRADIDOBLOCKCHAIN_EXPORT ParseStringToMpfrException : public GradidoBlockchainException
 {

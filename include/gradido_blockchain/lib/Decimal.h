@@ -24,6 +24,7 @@ public:
 	Decimal(const std::string& decimalString);
 	// Decimal(const memory::StringCachedAlloc& decimalString);
 	Decimal(long number);
+	Decimal(const double& decimal);
 	// copy constructor
 #ifdef USE_MPFR
 	Decimal(const mpfr_ptr& decimal);
@@ -131,24 +132,6 @@ inline bool operator==(const Decimal& lhs, const Decimal& rhs) { return static_c
 #endif //USE_MPFR
 inline bool operator!=(const Decimal& lhs, const Decimal& rhs) { return !operator==(lhs, rhs); }
 
-/*!
-	@author einhornimmond
-	@date 19.07.2022
-	@brief cache string representation of decimal
-*/
-class CachedDecimal : public Decimal
-{
-public:
-	CachedDecimal(const std::string& decimalString);
-	CachedDecimal(mpfr_ptr decimal);
-	CachedDecimal();
-	~CachedDecimal();
-
-	operator std::string() const;
-protected:
-	bool mDirty;
-	std::string mDecimalString;
-};
 
 class GRADIDOBLOCKCHAIN_EXPORT ParseDecimalStringException : public GradidoBlockchainException
 {

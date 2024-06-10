@@ -14,7 +14,9 @@
 #include "rapidjson/pointer.h"
 
 #include "furi/furi.hpp"
+#ifndef _DEBUG
 #define CPPHTTPLIB_OPENSSL_SUPPORT
+#endif
 #include "httplib.h"
 #include "loguru/loguru.hpp"
 

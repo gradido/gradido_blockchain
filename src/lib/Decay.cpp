@@ -14,12 +14,16 @@ MPFR_RNDNA = -1 // round to nearest, with ties away from zero (mpfr_round)
 } mpfr_rnd_t;
 
 */
+#ifdef USE_MPFR
 // TODO: move to server config
 const mpfr_rnd_t gDefaultRound = MPFR_RNDA;
 
 mpfr_t gDecayFactor356Days;
 mpfr_t gDecayFactor366Days;
 mpfr_t gDecayFactorGregorianCalender;
+#else 
+long double gDecayFactorApollo = 0.99999997803504048973201202316767079413460520837376;
+#endif
 Timepoint DECAY_START_TIME;
 
 bool gInited = false;
@@ -27,6 +31,7 @@ bool gInited = false;
 void initDefaultDecayFactors()
 {
 	gInited = true;
+#ifdef USE_MPFR
 	mpfr_init2(gDecayFactor356Days, MAGIC_NUMBER_AMOUNT_PRECISION_BITS);
 	calculateDecayFactor(gDecayFactor356Days, 356);
 	mpfr_init2(gDecayFactor366Days, MAGIC_NUMBER_AMOUNT_PRECISION_BITS);
@@ -54,7 +59,7 @@ void initDefaultDecayFactors()
 	//std::string apolloDecayValueString = "0.99999997803504048973201202316767079413460520837376";
 	//std::string apolloDecayValueString = "0.9999999780350404897320120"; 
 	//mpfr_set_str(gDecayFactorGregorianCalender, apolloDecayValueString.data(), 10, MPFR_RNDZ);
-
+#endif
 	std::string decayStartTimeString = "2021-05-13 17:46:31";
 /*	
 	int timezoneDifferential = Poco::DateTimeFormatter::UTC; // + GMT 0
@@ -74,12 +79,14 @@ void initDefaultDecayFactors()
 void unloadDefaultDecayFactors()
 {
 	if (!gInited) return;
+#ifdef USE_MPFR
 	mpfr_clear(gDecayFactor356Days);
 	mpfr_clear(gDecayFactor366Days);
 	mpfr_clear(gDecayFactorGregorianCalender);
+#endif
 	gInited = false;
 }
-
+#ifdef USE_MPFR
 void calculateDecayFactor(mpfr_ptr decay_factor, int days_per_year)
 {
 	assert(gInited && "Decay lib not initalized");
@@ -125,16 +132,6 @@ void calculateDecayFactorForDuration(
 	}
 }
 
-
-Duration calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime)
-{
-	assert(endTime > startTime);
-	Timepoint start = startTime > DECAY_START_TIME ? startTime : DECAY_START_TIME;
-	Timepoint end = endTime > DECAY_START_TIME ? endTime : DECAY_START_TIME;
-	if (start == end) return std::chrono::seconds{0};
-	return end - start;
-}
-
 void calculateDecayFast(mpfr_ptr decay_for_duration, mpfr_ptr gradido)
 {
 	assert(gInited && "Decay lib not initalized");
@@ -155,6 +152,17 @@ mpfr_ptr decayFormula(mpfr_ptr value, unsigned long seconds)
 	calculateDecay(gDecayFactorGregorianCalender, seconds, value);
 	return value;
 }
+
+#endif
+Duration calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime)
+{
+	assert(endTime > startTime);
+	Timepoint start = startTime > DECAY_START_TIME ? startTime : DECAY_START_TIME;
+	Timepoint end = endTime > DECAY_START_TIME ? endTime : DECAY_START_TIME;
+	if (start == end) return std::chrono::seconds{0};
+	return end - start;
+}
+
 
 long long decayFormula(long long value, unsigned long seconds)
 {

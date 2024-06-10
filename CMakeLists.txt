@@ -264,7 +264,10 @@ add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 if(BUILD_SHARED_LIBS) 
 	target_link_libraries(GradidoBlockchain loguru::loguru) #libprotobuf
 	IF(WIN32) 
-	  target_link_libraries(GradidoBlockchain mpfr::mpfr libsodium::libsodium openssl::openssl)
+	  if(MPFR_FOUND)
+	  	target_link_libraries(GradidoBlockchain mpfr::mpfr ${MPFR_LIBRARIES})
+	  endif()
+	  target_link_libraries(GradidoBlockchain libsodium::libsodium openssl::openssl)
 		# needed for windows if linking to a rust lib
 		find_library(IOTA_RUST_C_LIB iota_rust_clib.dll.lib PATHS 
 			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
@@ -289,7 +292,7 @@ if(BUILD_SHARED_LIBS)
 		ENDIF()
 		target_link_libraries(GradidoBlockchain ws2_32 userenv)
 	ELSE()
-		target_link_libraries(GradidoBlockchain iota_rust_clib ed25519_bip32_c_interface ${MPFR_LIBRARIES})
+		target_link_libraries(GradidoBlockchain iota_rust_clib ed25519_bip32_c_interface)
 	ENDIF()
 else()
 # static build

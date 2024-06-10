@@ -16,7 +16,7 @@ void DecayTest::TearDown()
 {
 	//unloadDefaultDecayFactors();
 }
-
+#ifdef USE_MPFR
 std::string mpfr_to_string(mpfr_ptr value)
 {
 	mpfr_exp_t exp_temp;
@@ -137,7 +137,7 @@ TEST_F(DecayTest, calculate_decay_fast)
 	mpfr_clear(decay_factor);
 	mpfr_clear(gradido);
 }
-
+#endif 
 TEST_F(DecayTest, compareIntegerDoubleMpfrPrecision)
 {
 	std::array gdds = {
@@ -166,7 +166,9 @@ TEST_F(DecayTest, compareIntegerDoubleMpfrPrecision)
 			Decimal mpfrGdd(std::to_string(gdd));
 			long double decimalGdd(gdd);
 			long long integerGdd(static_cast<long long>(gdd * 10000.0));
+#ifdef USE_MPFR
 			calculateDecay(gDecayFactorGregorianCalender, duration, mpfrGdd);
+#endif
 			decimalGdd = decimalGdd * powl(factor, static_cast<long double>(duration));
 			integerGdd = static_cast<long long>(static_cast<long double>(integerGdd) * powl(factor, static_cast<long double>(duration)));			
 			long double roundedDecimalGdd = roundl(decimalGdd * 10000.0) / 10000.0;
@@ -181,8 +183,10 @@ TEST_F(DecayTest, compareIntegerDoubleMpfrPrecision)
 			std::ostringstream decimalGddOss, integerGddOss;
 			decimalGddOss << std::fixed << std::setprecision(2) << roundedDecimalGdd;
 			integerGddOss << std::fixed << std::setprecision(2) << roundedIntegerGdd;
+#ifdef USE_MPFR
 			EXPECT_EQ(mpfrGdd.toString(2), decimalGddOss.str());
 			EXPECT_EQ(mpfrGdd.toString(2), integerGddOss.str());
+#endif
 			EXPECT_EQ(decimalGddOss.str(), integerGddOss.str());
 		}
 	}
@@ -269,6 +273,7 @@ TEST(gradido_math, calculate_decay)
 	mpfr_clear(gradido);
 }
 */
+#ifdef USE_MPFR
 TEST_F(DecayTest, calculate_decay_fast_2)
 {
 	initDefaultDecayFactors();
@@ -306,3 +311,4 @@ TEST_F(DecayTest, calculate_decay_fast_2)
 
 	unloadDefaultDecayFactors();
 }
+#endif
