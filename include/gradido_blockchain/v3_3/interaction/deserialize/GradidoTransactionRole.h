@@ -12,10 +12,12 @@ namespace gradido {
 				class GradidoTransactionRole
 				{
 				public:
-					GradidoTransactionRole() {}
+					GradidoTransactionRole(const GradidoTransactionMessage& message);
 					~GradidoTransactionRole() {};
-				protected:
 
+					inline std::unique_ptr<data::GradidoTransaction> getGradidoTransaction() { return std::move(mGradidoTransaction); }
+				protected:
+					std::unique_ptr<data::GradidoTransaction> mGradidoTransaction;
 				};
 
 			}

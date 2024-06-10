@@ -1,5 +1,6 @@
 ﻿#include "gtest/gtest.h"
 #include "../../KeyPairs.h"
+#include "const.h"
 #include "gradido_blockchain/v3_3/interaction/serialize/Context.h"
 #include "gradido_blockchain/v3_3/TransactionBodyBuilder.h"
 #include "gradido_blockchain/v3_3/GradidoTransactionBuilder.h"
@@ -8,10 +9,6 @@
 using namespace gradido::v3_3;
 using namespace data;
 using namespace interaction;
-
-#define VERSION_STRING "3.3"
-const auto createdAt = std::chrono::system_clock::from_time_t(1609459200); //2021-01-01 00:00:00 UTC
-const auto confirmedAt = std::chrono::system_clock::from_time_t(1609464130); 
 
 TEST(SerializeTest, TransactionBodyWithoutMemo)
 {
@@ -153,19 +150,21 @@ TEST(SerializeTest, GradidoTransaction) {
 	auto bodyBytes = make_shared<memory::Block>(
 		"''To be yourself in a world that is constantly trying to make you something else is the greatest accomplishment.''\n - Ralph Waldo Emerson "
 	);
-	auto sign = make_shared<memory::Block>(64);
+	auto sign = make_shared<memory::Block>(crypto_sign_BYTES);
 	auto& keyPair = g_KeyPairs[3];
 	unsigned long long actualSignLength = 0;
 	crypto_sign_detached(*sign, &actualSignLength, *bodyBytes, bodyBytes->size(), *keyPair.privateKey);
-	transaction.signatureMap.push({ keyPair.publicKey, keyPair.privateKey });
+	ASSERT_EQ(actualSignLength, crypto_sign_BYTES);
+	printf("signature: %s\n", sign->convertToHex().data());
+	transaction.signatureMap.push({ keyPair.publicKey, sign });
 	transaction.bodyBytes = bodyBytes;
-	
+
 	serialize::Context c(transaction);
 	auto serialized = c.run();
 	// printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
-	// printf("hex: %s\n", serialized->convertToHex().data());
+	//printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(),
-		"CmYKZAogJZcaoOdCIUTcwkSIfinvFg1UebEhnpgXym7OOLCfN8ASQNYLm6Z41YR3uoWtehLSswGDM8p0XropF8u+Emh+txDwJZcaoOdCIUTcwkSIfinvFg1UebEhnpgXym7OOLCfN8ASigEnJ1RvIGJlIHlvdXJzZWxmIGluIGEgd29ybGQgdGhhdCBpcyBjb25zdGFudGx5IHRyeWluZyB0byBtYWtlIHlvdSBzb21ldGhpbmcgZWxzZSBpcyB0aGUgZ3JlYXRlc3QgYWNjb21wbGlzaG1lbnQuJycKIC0gUmFscGggV2FsZG8gRW1lcnNvbiA="
+		"CmYKZAogJZcaoOdCIUTcwkSIfinvFg1UebEhnpgXym7OOLCfN8ASQNnYDRZmlKkhvEiea/cRiqwr2bExLlkQxcbwjDYXy3nC3Ggin7Jous8li9gLfQpnUX9FzhrbqOiMEvQqVisNHQUSigEnJ1RvIGJlIHlvdXJzZWxmIGluIGEgd29ybGQgdGhhdCBpcyBjb25zdGFudGx5IHRyeWluZyB0byBtYWtlIHlvdSBzb21ldGhpbmcgZWxzZSBpcyB0aGUgZ3JlYXRlc3QgYWNjb21wbGlzaG1lbnQuJycKIC0gUmFscGggV2FsZG8gRW1lcnNvbiA="
 	);
 }
 
