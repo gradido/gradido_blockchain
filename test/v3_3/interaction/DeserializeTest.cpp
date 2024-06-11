@@ -277,7 +277,7 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(
 #ifdef USE_MPFR
-		"CAcSAgoAGgYIwvK5/wUiAzMuMyogAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOgMxNzk="
+		"CAcS6AEKZgpkCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hJAFtFoFsE9iY4uovjW34EMFrQ/HV4fezgwdTi+Rnq0F8kd6h2vuOIz6mPtSBmRwxBRGd7Etx6WyVPHpHpUD+7fDRJ+ChVEYW5rZSBmdWVyIGRlaW4gU2VpbiESCAiAzLn/BRAAGgMzLjMgADJUCjAKIIqMkyk8uX6HhBeNqK5YgUT3yYL0ZYv9NRAaHitHnD5XEgoxMDAuMjUxNjIxGgASINGpWCTISFkAJ5uSpgF1/GdviRTGHXOZxmwtDLb6nsV2GgYIwvK5/wUiAzMuMyogCd5upLwZJ+fJiQqkdufU7diE0n9HmJlsZSFETpP3uiQyIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOgo4OTkuNzQ4Mzc5"
 #else 
 		"CAcS+wEKZgpkCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hJA+ljUBfKUP8AYS4fUJRAzJZmXKwoK+ZZYpDMenRmQ3ffylnIonrNQ/0qIrjQE0hu97NelANjfZCirL5umoyU/ABKQAQoVRGFua2UgZnVlciBkZWluIFNlaW4hEggIgMy5/wUQABoDMy4zIAAyZgpCCiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIcMTAwLjI1MTYyMTAwMDAwMDAwMDA5NDU4NzQ0ORoAEiDRqVgkyEhZACebkqYBdfxnb4kUxh1zmcZsLQy2+p7FdhoGCMLyuf8FIgMzLjMqIOSd+ShuFrqqSZLOWlasyXly4mARjywATd9Ogqk+hjrVMiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADocODk5Ljc0ODM3ODk5OTk5OTk5OTkwNTQxMjU1MQ=="
 #endif
@@ -295,7 +295,11 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_EQ(confirmedTransaction->versionNumber, VERSION_STRING);
 	EXPECT_EQ(confirmedTransaction->accountBalance.toString(6), "899.748379");
 	ASSERT_EQ(confirmedTransaction->runningHash->size(), crypto_generichash_BYTES);
+#ifdef USE_MPFR
+	EXPECT_EQ(confirmedTransaction->runningHash->convertToHex(), "09de6ea4bc1927e7c9890aa476e7d4edd884d27f4798996c6521444e93f7ba24");
+#else
 	EXPECT_EQ(confirmedTransaction->runningHash->convertToHex(), "e49df9286e16baaa4992ce5a56acc97972e260118f2c004ddf4e82a93e863ad5");
+#endif
 
 	auto gradidoTransaction = confirmedTransaction->gradidoTransaction.get();
 	KeyPairEd25519 keyPair(g_KeyPairs[0].publicKey, g_KeyPairs[0].privateKey);

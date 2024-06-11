@@ -215,14 +215,14 @@ namespace gradido {
 					const std::string& versionNumber,
 					memory::ConstBlockPtr runningHash,
 					memory::ConstBlockPtr messageId,
-					DecayDecimal accountBalance
+					const std::string& accountBalanceString
 				) : id(id),
 					gradidoTransaction(std::move(gradidoTransaction)),
 					confirmedAt(confirmedAt),
 					versionNumber(versionNumber),
 					runningHash(runningHash),
 					messageId(messageId),
-					accountBalance(accountBalance) {}
+					accountBalance(accountBalanceString) {}
 
 				memory::Block calculateRunningHash(std::shared_ptr<ConfirmedTransaction> previousConfirmedTransaction = nullptr);
 

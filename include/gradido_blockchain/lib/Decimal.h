@@ -24,7 +24,7 @@ public:
 	Decimal(const std::string& decimalString);
 	// Decimal(const memory::StringCachedAlloc& decimalString);
 	Decimal(long number);
-	Decimal(const double& decimal);
+	Decimal(double decimal);
 	// copy constructor
 #ifdef USE_MPFR
 	Decimal(const mpfr_ptr& decimal);

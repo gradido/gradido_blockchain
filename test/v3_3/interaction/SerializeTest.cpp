@@ -79,7 +79,7 @@ TEST(SerializeTest, GradidoCreationBody) {
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 #ifdef USE_MPFR
 	ASSERT_EQ(serialized->convertToBase64(),
-		"ChlEZWluZSBlcnN0ZSBTY2hvZXBmdW5nIDspEggIgMy5/wUQABoDMy4zIAA6TgpECiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIeMTAwMC4wMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwGgAaBgi4yrn/BQ=="
+		"ChlEZWluZSBlcnN0ZSBTY2hvZXBmdW5nIDspEggIgMy5/wUQABoDMy4zIAA6NAoqCiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIEMTAwMBoAGgYIuMq5/wU="
 	);
 #else 
 	ASSERT_EQ(serialized->convertToBase64(),
@@ -100,7 +100,7 @@ TEST(SerializeTest, GradidoTransferBody) {
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 #ifdef USE_MPFR
 	ASSERT_EQ(serialized->convertToBase64(),
-		"ChFJY2ggdGVpbGUgbWl0IGRpchIICIDMuf8FEAAaAzMuMyAAMmcKQwogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSHTUwMC41NTAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwGgASINGpWCTISFkAJ5uSpgF1/GdviRTGHXOZxmwtDLb6nsV2"
+		"ChFJY2ggdGVpbGUgbWl0IGRpchIICIDMuf8FEAAaAzMuMyAAMlAKLAogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSBjUwMC41NRoAEiDRqVgkyEhZACebkqYBdfxnb4kUxh1zmcZsLQy2+p7Fdg=="
 	);
 #else
 	ASSERT_EQ(serialized->convertToBase64(),
@@ -123,7 +123,7 @@ TEST(SerializeTest, GradidoDeferredTransferBody) {
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 #ifdef USE_MPFR
 	ASSERT_EQ(serialized->convertToBase64(),
-		"ChJMaW5rIHp1bSBlaW5sb2VzZW4SCAiAzLn/BRAAGgMzLjMgAFJxCmcKQwogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSHTU1NS41NTAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwGgASINGpWCTISFkAJ5uSpgF1/GdviRTGHXOZxmwtDLb6nsV2EgYIqPm5/wU="
+		"ChJMaW5rIHp1bSBlaW5sb2VzZW4SCAiAzLn/BRAAGgMzLjMgAFJaClAKLAogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSBjU1NS41NRoAEiDRqVgkyEhZACebkqYBdfxnb4kUxh1zmcZsLQy2+p7FdhIGCKj5uf8F"
 	);
 #else 
 	ASSERT_EQ(serialized->convertToBase64(),
@@ -198,7 +198,7 @@ TEST(SerializeTest, MinimalConfirmedTransaction) {
 		VERSION_STRING,
 		make_shared<memory::Block>(crypto_generichash_BYTES),
 		make_shared<memory::Block>(32),
-		179.00
+		"179.00"
 	);
 	serialize::Context c(confirmedTransaction);
 	auto serialized = c.run();
@@ -237,7 +237,7 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		VERSION_STRING,
 		nullptr,
 		make_shared<memory::Block>(32),
-		899.748379
+		"899.748379"
 	);
 	confirmedTransaction.runningHash = std::make_shared<memory::Block>(confirmedTransaction.calculateRunningHash());
 	serialize::Context c(confirmedTransaction);
@@ -246,7 +246,7 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 	// printf("hex: %s\n", serialized->convertToHex().data());
 #ifdef USE_MPFR
 	ASSERT_EQ(serialized->convertToBase64(),
-		"CAcS/AEKZgpkCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hJAgV08sOXyyIDo6hStrBViGuW2zeUacV4SakadXHgfBGzBNhEZXEkc71jdbfGYvvK5En/lvQ74Qst94YlucESnAxKRAQoVRGFua2UgZnVlciBkZWluIFNlaW4hEggIgMy5/wUQABoDMy4zIAAyZwpDCiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIdMTAwLjI1MTYyMTAwMDAwMDAwMDAwMDAwMDAwMDAaABIg0alYJMhIWQAnm5KmAXX8Z2+JFMYdc5nGbC0MtvqexXYaBgjC8rn/BSIDMy4zKiAVP/0DKzblF1IjL9NxBvORA6F9CAtIBtKzNCeWaZLpAzIgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA6Cjg5OS43NDgzNzk="
+		"CAcS6AEKZgpkCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hJAFtFoFsE9iY4uovjW34EMFrQ/HV4fezgwdTi+Rnq0F8kd6h2vuOIz6mPtSBmRwxBRGd7Etx6WyVPHpHpUD+7fDRJ+ChVEYW5rZSBmdWVyIGRlaW4gU2VpbiESCAiAzLn/BRAAGgMzLjMgADJUCjAKIIqMkyk8uX6HhBeNqK5YgUT3yYL0ZYv9NRAaHitHnD5XEgoxMDAuMjUxNjIxGgASINGpWCTISFkAJ5uSpgF1/GdviRTGHXOZxmwtDLb6nsV2GgYIwvK5/wUiAzMuMyogCd5upLwZJ+fJiQqkdufU7diE0n9HmJlsZSFETpP3uiQyIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOgo4OTkuNzQ4Mzc5"
 	);
 #else 
 	ASSERT_EQ(serialized->convertToBase64(),

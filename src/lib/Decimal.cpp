@@ -6,6 +6,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <cmath>
 #endif 
 
 Decimal::Decimal(const std::string& decimalString)
@@ -98,7 +99,7 @@ Decimal::Decimal(long number)
 {
 }
 
-Decimal::Decimal(const double& decimal)
+Decimal::Decimal(double decimal)
 	: mDecimal(decimal)
 {
 }
