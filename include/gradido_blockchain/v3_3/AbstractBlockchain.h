@@ -1,5 +1,5 @@
-#ifndef __GRADIDO_BLOCKCHAIN_MODEL_I_GRADIDO_BLOCKCHAIN_H
-#define __GRADIDO_BLOCKCHAIN_MODEL_I_GRADIDO_BLOCKCHAIN_H
+#ifndef __GRADIDO_BLOCKCHAIN_V3_3_ABSTRACT_BLOCKCHAIN_H
+#define __GRADIDO_BLOCKCHAIN_V3_3_ABSTRACT_BLOCKCHAIN_H
 
 #include "gradido_blockchain/types.h"
 #include "TransactionEntry.h"
@@ -10,7 +10,7 @@
 namespace gradido {
 	namespace v3_3 {
 
-		class IGradidoBlockchain
+		class AbstractBlockchain
 		{
 		public:
 			enum class FilterResult : uint8_t
@@ -62,19 +62,19 @@ namespace gradido {
 		protected:
 		};
 
-		inline IGradidoBlockchain::FilterResult operator | (IGradidoBlockchain::FilterResult lhs, IGradidoBlockchain::FilterResult rhs)
+		inline AbstractBlockchain::FilterResult operator | (AbstractBlockchain::FilterResult lhs, AbstractBlockchain::FilterResult rhs)
 		{
-			using T = std::underlying_type_t <IGradidoBlockchain::FilterResult>;
-			return static_cast<IGradidoBlockchain::FilterResult>(static_cast<T>(lhs) | static_cast<T>(rhs));
+			using T = std::underlying_type_t <AbstractBlockchain::FilterResult>;
+			return static_cast<AbstractBlockchain::FilterResult>(static_cast<T>(lhs) | static_cast<T>(rhs));
 		}
 
-		inline IGradidoBlockchain::FilterResult operator & (IGradidoBlockchain::FilterResult lhs, IGradidoBlockchain::FilterResult rhs)
+		inline AbstractBlockchain::FilterResult operator & (AbstractBlockchain::FilterResult lhs, AbstractBlockchain::FilterResult rhs)
 		{
-			using T = std::underlying_type_t <IGradidoBlockchain::FilterResult>;
-			return static_cast<IGradidoBlockchain::FilterResult>(static_cast<T>(lhs) & static_cast<T>(rhs));
+			using T = std::underlying_type_t <AbstractBlockchain::FilterResult>;
+			return static_cast<AbstractBlockchain::FilterResult>(static_cast<T>(lhs) & static_cast<T>(rhs));
 		}
 	}
 }
 
 
-#endif //__GRADIDO_BLOCKCHAIN_MODEL_I_GRADIDO_BLOCKCHAIN_H
+#endif //__GRADIDO_BLOCKCHAIN_V3_3_ABSTRACT_BLOCKCHAIN_H

@@ -14,18 +14,22 @@ namespace gradido {
         enum class Type {
           //! check only the transaction
           SINGLE = 1,
-          //! check also with previous transaction
-          SINGLE_PREVIOUS = 2,
-          /*! check all transaction from within date range
-            by creation automatic the same month
-          */
-          DATE_RANGE = 4,
+          //! check with previous transaction
+          //! previous transaction belonging to same address
+          //! sender by transfer transaction
+          PREVIOUS = 2,
+          //! check all transaction from same address in same month
+          //! by creation the target date month
+          MONTH_RANGE = 4,
           //! check paired transaction on another group by cross group transactions
           PAIRED = 8,
+          //! check if transaction is valid for account
+          //! check if account exist on blockchain
+          ACCOUNT = 16,
           //! check all transactions in the group which connected with this transaction address(es)
-          CONNECTED_GROUP = 16,
+          CONNECTED_GROUP = 32,
           //! check all transactions which connected with this transaction
-          CONNECTED_BLOCKCHAIN = 32			
+          CONNECTED_BLOCKCHAIN = 64			
         };
       }
     }
