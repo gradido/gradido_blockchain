@@ -3,6 +3,7 @@
 #include "rapidjson/error/en.h"
 
 #include <string>
+#include <sstream>
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "magic_enum/magic_enum.hpp"
@@ -243,4 +244,17 @@ std::string InvalidSizeException::getFullString() const
 	result += ", expected size: " + std::to_string(mExpectedSize);
 	result += ", actual size: " + std::to_string(mActualSize);
 	return result;
+}
+
+// **************************** Invalid Gradido Transaction Exception **********************************
+
+std::string InvalidGradidoTransaction::getFullString() const 
+{
+	std::stringstream ss;
+	ss << what();
+	if(mRawData) {
+		ss << ", raw data in hex for analysis with protoscope" << std::endl;
+		ss << "xxd -r -ps <<< \"" << mRawData->convertToHex() << "\" | protoscope";
+	}
+	return ss.str();
 }

@@ -190,4 +190,15 @@ public:
 	std::string getFullString() const { return what(); }
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT InvalidGradidoTransaction: public GradidoBlockchainException
+{
+public:
+	explicit InvalidGradidoTransaction(const char* what, memory::ConstBlockPtr rawData) noexcept
+		: GradidoBlockchainException(what), mRawData(rawData) {}
+
+		std::string getFullString() const;
+protected:
+	memory::ConstBlockPtr mRawData;
+
+};
 #endif //__GRADIDO_BLOCKCHAIN_EXCEPTION_H

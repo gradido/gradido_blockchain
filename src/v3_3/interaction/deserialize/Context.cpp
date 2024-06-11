@@ -10,6 +10,9 @@ namespace gradido {
 			namespace deserialize {
 				void Context::run()
 				{
+					if(!mData) {
+						throw GradidoNullPointerException("mData is empty", "memory::ConstBlockPtr", "gradido::v3_3::interaction_deserialize::Context::run");
+					}
 					if (Type::TRANSACTION_BODY == mType || Type::UNKNOWN == mType) {
 						try {
 							auto [body, bufferEnd2] = message_coder<TransactionBodyMessage>::decode(mData->span());
