@@ -8,6 +8,8 @@
 #include "ConfirmedTransactionRole.h"
 #include "SignatureMapRole.h"
 
+#include <memory>
+
 namespace gradido {
 	namespace v3_3 {
 		namespace interaction {

@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_v3_3_DATA_PROTOCOL_H
 
 #include "AddressType.h"
+#include "TransactionType.h"
 #include "CrossGroupType.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/export.h"
@@ -16,6 +17,7 @@ namespace gradido {
 	namespace v3_3 {
 		namespace data {
 
+			extern const char* GRADIDO_PROTOCOL_VERSION;
 			//  ----------------  basic_types.proto -----------------------------------
 			struct GRADIDOBLOCKCHAIN_EXPORT SignaturePair
 			{
@@ -29,13 +31,13 @@ namespace gradido {
 
 			struct GRADIDOBLOCKCHAIN_EXPORT SignatureMap 
 			{
-				SignatureMap() {}
-				SignatureMap(SignaturePair firstSignaturePair)
-					: signaturePairs({ firstSignaturePair }) {}
+				SignatureMap(size_t sizeHint = 1) { signaturePairs.reserve(sizeHint); }
+				SignatureMap(SignaturePair firstSignaturePair, size_t sizeHint = 1)
+					: SignatureMap(sizeHint) { push(firstSignaturePair); }
 
 				inline void push(const SignaturePair& signaturePair) { signaturePairs.push_back(signaturePair); }
 			
-				std::list<SignaturePair> signaturePairs;
+				std::vector<SignaturePair> signaturePairs;
 			};
 
 			struct GRADIDOBLOCKCHAIN_EXPORT Timestamp
@@ -45,10 +47,11 @@ namespace gradido {
 				Timestamp(const Timepoint& date);
 				Timestamp(int64_t _seconds, int32_t _nanos): seconds(_seconds), nanos(_nanos) {}
 
-				operator Timepoint() const {
+				inline operator Timepoint() const { return getAsTimepoint();}
+				Timepoint getAsTimepoint() const {
 					int64_t microseconds = seconds * static_cast<int64_t>(1e6) + nanos / static_cast<int64_t>(1e3);
 					return std::chrono::system_clock::time_point(std::chrono::microseconds(microseconds));
-				};
+				}
 				bool operator==(const Timestamp& other) const { return seconds == other.seconds && nanos == other.nanos; }
 
 				int64_t seconds;
@@ -62,9 +65,10 @@ namespace gradido {
 				TimestampSeconds(const Timepoint& date);
 				TimestampSeconds(int64_t _seconds) : seconds(_seconds) {}
 
-				operator Timepoint() const {
+				operator Timepoint() const { return getAsTimepoint(); }
+				Timepoint getAsTimepoint() const {
 					return std::chrono::system_clock::time_point(std::chrono::seconds{ seconds });
-				};
+				}
 				bool operator==(const TimestampSeconds& other) const { return seconds == other.seconds; }
 
 				int64_t seconds;
@@ -174,6 +178,7 @@ namespace gradido {
 				inline bool isRegisterAddress() const { return static_cast<bool>(registerAddress); }
 				inline bool isDeferredTransfer() const { return static_cast<bool>(deferredTransfer); }
 				inline bool isCommunityRoot() const { return static_cast<bool>(communityRoot); }
+				data::TransactionType getTransactionType() const;
 
 				std::string								memo;
 				Timestamp								createdAt;

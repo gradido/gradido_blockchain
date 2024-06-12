@@ -3,9 +3,7 @@
 
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/v3_3/data/Protocol.h"
-#include "gradido_blockchain/v3_3/AbstractBlockchainProvider.h"
 #include "TransactionBodyRole.h"
-#include "Type.h"
 
 namespace gradido {
 	namespace v3_3 {
@@ -16,12 +14,14 @@ namespace gradido {
                 public:
                     //! \param blockchainProvider provide Blockchain access to search for specific transactions
                   Context(const data::TransactionBody& body, const std::string& communityId = "", std::shared_ptr<AbstractBlockchainProvider> blockchainProvider = nullptr)
-                      : mBlockchainProvider(blockchainProvider) {}
+                      : mRole(std::make_unique<TransactionBodyRole>(body)), mCommunityId(communityId), mBlockchainProvider(blockchainProvider) {}
 
-                  void run(const data::TransactionBody& body, Type type = Type::SINGLE, const std::string& communityId = "");
-                  void run(const data::ConfirmedTransaction& confirmedTransaction, Type type = Type::SINGLE, const std::string& communityId = "");
-                  void run(const data::GradidoTransaction& gradidoTransaction, Type type = Type::SINGLE, const std::string& communityId = "");
+                  inline void run(Type type = Type::SINGLE) {
+                      mRole->run(type);
+                  }
                 protected:
+                    std::unique_ptr<AbstractRole> mRole;
+                    std::string mCommunityId;
                     std::shared_ptr<AbstractBlockchainProvider> mBlockchainProvider;
                 };
       }

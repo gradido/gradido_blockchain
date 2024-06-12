@@ -12,6 +12,8 @@ namespace gradido {
 		using namespace interaction;
 		namespace data {
 
+			const char* GRADIDO_PROTOCOL_VERSION = "3.3";
+
 			Timestamp::Timestamp(const Timepoint& date)
 				: seconds(0), nanos(0)
 			{
@@ -60,6 +62,17 @@ namespace gradido {
 				crypto_generichash_update(&state, (const unsigned char*)accountBalanceString.data(), accountBalanceString.size());
 				crypto_generichash_final(&state, hash, hash.size());
 				return hash;
+			}
+
+			data::TransactionType TransactionBody::getTransactionType() const
+			{
+				if (isTransfer()) return data::TransactionType::TRANSFER;
+				else if (isCreation()) return data::TransactionType::CREATION;
+				else if (isCommunityFriendsUpdate()) return data::TransactionType::COMMUNITY_FRIENDS_UPDATE;
+				else if (isRegisterAddress()) return data::TransactionType::REGISTER_ADDRESS;
+				else if (isDeferredTransfer()) return data::TransactionType::DEFERRED_TRANSFER;
+				else if (isCommunityRoot()) return data::TransactionType::COMMUNITY_ROOT;
+				return data::TransactionType::NONE;
 			}
 		}
 	}

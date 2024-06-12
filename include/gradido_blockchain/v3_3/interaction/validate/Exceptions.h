@@ -2,7 +2,13 @@
 #define __GRADIDO_BLOCKCHAIN_V3_3_INTERACTION_VALIDATE_EXCEPTIONS_H
 
 #include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain/v3_3/data/TransactionType.h"
+#include "gradido_blockchain/v3_3/data/AddressType.h"
+#include "gradido_blockchain/v3_3/data/Protocol.h"
+#include "gradido_blockchain/lib/Decimal.h"
 
+#include "magic_enum/magic_enum.hpp"
+#include "rapidjson/document.h"
 
 namespace gradido {
 	namespace v3_3 {
@@ -19,14 +25,14 @@ namespace gradido {
 					inline TransactionValidationException& setMemo(const std::string& memo) { mTransactionMemo = memo; return *this; }
 					inline const std::string& getMemo() const { return mTransactionMemo; }
 
-					inline TransactionValidationException& setTransactionType(TransactionType type) { mType = type; return *this; }
-					inline TransactionType getTransactionType() { return mType; }
+					inline TransactionValidationException& setTransactionType(data::TransactionType type) { mType = type; return *this; }
+					inline data::TransactionType getTransactionType() { return mType; }
 
-					TransactionValidationException& setTransactionBody(const TransactionBody* transactionBody);
-					inline const char* getTransactionTypeString() const { return TransactionBody::transactionTypeToString(mType); }
+					TransactionValidationException& setTransactionBody(const data::TransactionBody& transactionBody);
+					inline std::string_view getTransactionTypeString() const { return magic_enum::enum_name(mType); }
 				protected:
 					std::string mTransactionMemo;
-					TransactionType mType;
+					data::TransactionType mType;
 				};
 
 				class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationInvalidInputException : public TransactionValidationException
@@ -48,24 +54,21 @@ namespace gradido {
 				{
 				public:
 					explicit TransactionValidationInvalidSignatureException(
-						const char* what, const std::string& pubkey, const std::string& signature, const std::string& bodyBytes = "") noexcept;
+						const char* what, memory::ConstBlockPtr pubkey, memory::ConstBlockPtr signature, memory::ConstBlockPtr bodyBytes = nullptr) noexcept;
 					~TransactionValidationInvalidSignatureException();
 
 					std::string getFullString() const noexcept;
 					rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 
-					inline const std::string& getPubkey() const { return mPubkey; }
-					inline const std::string& getSignature() const { return mSignature; }
-					inline const std::string& getBodyBytes() const { return mBodyBytes; }
+					inline memory::ConstBlockPtr getPubkey() const { return mPubkey; }
+					inline memory::ConstBlockPtr getSignature() const { return mSignature; }
+					inline memory::ConstBlockPtr getBodyBytes() const { return mBodyBytes; }
 
 				protected:
-					std::string getPubkeyHex() const noexcept;
-					std::string getSignatureHex() const noexcept;
-					std::string getBodyBytesBase64() const noexcept;
 
-					std::string mPubkey;
-					std::string mSignature;
-					std::string mBodyBytes;
+					memory::ConstBlockPtr mPubkey;
+					memory::ConstBlockPtr mSignature;
+					memory::ConstBlockPtr mBodyBytes;
 				};
 
 				class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationForbiddenSignException : public TransactionValidationException
@@ -98,7 +101,7 @@ namespace gradido {
 				class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationRequiredSignMissingException : public TransactionValidationException
 				{
 				public:
-					explicit TransactionValidationRequiredSignMissingException(const std::vector<MemoryBin*>& missingPublicKeys) noexcept;
+					explicit TransactionValidationRequiredSignMissingException(const std::vector<memory::ConstBlockPtr>& missingPublicKeys) noexcept;
 
 				protected:
 					std::vector<std::string> mMissingPublicKeysHex;
@@ -107,32 +110,36 @@ namespace gradido {
 				class GRADIDOBLOCKCHAIN_EXPORT PairingTransactionNotMatchException : public TransactionValidationException
 				{
 				public:
-					explicit PairingTransactionNotMatchException(const char* what, const std::string* serializedTransaction, const std::string* serializedPairingTransaction) noexcept;
+					explicit PairingTransactionNotMatchException(
+						const char* what,
+						memory::ConstBlockPtr serializedTransaction,
+						memory::ConstBlockPtr serializedPairingTransaction
+					) noexcept;
 
 					std::string getFullString() const noexcept;
 
 				protected:
-					std::unique_ptr<model::gradido::GradidoTransaction> mTransaction;
-					std::unique_ptr<model::gradido::GradidoTransaction> mPairingTransaction;
+					std::unique_ptr<data::GradidoTransaction> mTransaction;
+					std::unique_ptr<data::GradidoTransaction> mPairingTransaction;
 				};
 
 				class GRADIDOBLOCKCHAIN_EXPORT AddressAlreadyExistException : public TransactionValidationException
 				{
 				public:
-					explicit AddressAlreadyExistException(const char* what, const std::string& addressHex, proto::gradido::RegisterAddress_AddressType addressType) noexcept;
+					explicit AddressAlreadyExistException(const char* what, const std::string& addressHex, data::AddressType addressType) noexcept;
 
 					std::string getFullString() const noexcept;
 					rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 
 				protected:
 					std::string mAddressHex;
-					proto::gradido::RegisterAddress_AddressType mAddressType;
+					data::AddressType mAddressType;
 				};
 
 				class GRADIDOBLOCKCHAIN_EXPORT InsufficientBalanceException : public TransactionValidationException
 				{
 				public:
-					explicit InsufficientBalanceException(const char* what, mpfr_ptr needed, mpfr_ptr exist) noexcept;
+					explicit InsufficientBalanceException(const char* what, Decimal needed, Decimal exist) noexcept;
 					std::string getFullString() const noexcept;
 					rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 
@@ -163,17 +170,13 @@ namespace gradido {
 				class GRADIDOBLOCKCHAIN_EXPORT WrongAddressTypeException : public TransactionValidationException
 				{
 				public:
-					explicit WrongAddressTypeException(
-						const char* what,
-						proto::gradido::RegisterAddress_AddressType type,
-						const std::string& pubkeyString
-					) noexcept;
+					explicit WrongAddressTypeException(const char* what, data::AddressType type, const std::string& pubkeyString) noexcept;
 
 					std::string getFullString() const noexcept;
 					rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 
 				protected:
-					proto::gradido::RegisterAddress_AddressType mType;
+					data::AddressType mType;
 					std::string mPubkey;
 				};
 			}

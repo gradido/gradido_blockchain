@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include "gradido_blockchain/export.h"
+#include "memory/Block.h"
 #include "rapidjson/error/error.h"
 
 #include "rapidjson/document.h"

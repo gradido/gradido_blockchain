@@ -1,11 +1,20 @@
 #include "gradido_blockchain/v3_3/interaction/validate/Exceptions.h"
+#include "gradido_blockchain/v3_3/interaction/deserialize/Context.h"
+#include "gradido_blockchain/v3_3/interaction/toJson/Context.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
+
+#include "loguru/loguru.hpp"
+#include "magic_enum/magic_enum.hpp"
+
+using namespace rapidjson;
+using namespace magic_enum;
 
 namespace gradido {
 	namespace v3_3 {
 		namespace interaction {
 			namespace validate {
 				TransactionValidationException::TransactionValidationException(const char* what) noexcept
-					: GradidoBlockchainException (what), mType(TRANSACTION_NONE)
+					: GradidoBlockchainException (what), mType(data::TransactionType::NONE)
 				{
 
 				}
@@ -15,10 +24,10 @@ namespace gradido {
 					return what();
 				}
 
-				TransactionValidationException& TransactionValidationException::setTransactionBody(const TransactionBody* transactionBody)
+				TransactionValidationException& TransactionValidationException::setTransactionBody(const data::TransactionBody& transactionBody)
 				{
-					mTransactionMemo = transactionBody->getMemo();
-					mType = transactionBody->getTransactionType();
+					mTransactionMemo = transactionBody.memo;
+					mType = transactionBody.getTransactionType();
 					return *this;
 				}
 
@@ -55,7 +64,7 @@ namespace gradido {
 				//************* Invalid Signature *******************
 
 				TransactionValidationInvalidSignatureException::TransactionValidationInvalidSignatureException(
-					const char* what, const std::string& pubkey, const std::string& signature, const std::string& bodyBytes/* = ""*/
+					const char* what, memory::ConstBlockPtr pubkey, memory::ConstBlockPtr signature, memory::ConstBlockPtr bodyBytes/* = ""*/
 				) noexcept
 					: TransactionValidationException(what), mPubkey(pubkey), mSignature(signature), mBodyBytes(bodyBytes)
 				{
@@ -67,21 +76,21 @@ namespace gradido {
 
 				std::string TransactionValidationInvalidSignatureException::getFullString() const noexcept
 				{
-					std::string pubkeyHex = getPubkeyHex();
-					std::string signatureHex = getSignatureHex();
-					std::string bodyBytesBase64 = getBodyBytesBase64();
+					std::string pubkeyHex = mPubkey ? mPubkey->convertToHex() : "";
+					std::string signatureHex = mSignature ? mSignature->convertToHex() : "";
+					std::string bodyBytesBase64 = mBodyBytes ? mBodyBytes->convertToBase64() : "";
 					auto whatString = what();
 					std::string result;
 
 					size_t staticTextSize = 29;
-					if (mBodyBytes.size()) {
+					if (!bodyBytesBase64.empty()) {
 						staticTextSize += 14;
 					}
 					result.reserve(pubkeyHex.size() + signatureHex.size() + bodyBytesBase64.size() + strlen(whatString) + staticTextSize);
 					result = whatString;
 					result += " with pubkey: " + pubkeyHex.substr(0, 64);
 					result += ", signature: " + signatureHex.substr(0, 128);
-					if (mBodyBytes.size()) {
+					if (!bodyBytesBase64.empty()) {
 						result += ", body bytes: " + bodyBytesBase64;
 					}
 					return result;
@@ -91,41 +100,16 @@ namespace gradido {
 				{
 					Value detailsObjs(kObjectType);
 					detailsObjs.AddMember("what", Value(what(), alloc), alloc);
-					detailsObjs.AddMember("pubkey", Value(getPubkeyHex().data(), alloc), alloc);
-					detailsObjs.AddMember("signature", Value(getSignatureHex().data(), alloc), alloc);
-					detailsObjs.AddMember("bodyBytes", Value(getBodyBytesBase64().data(), alloc), alloc);
+					if (mPubkey) {
+						detailsObjs.AddMember("pubkey", Value(mPubkey->convertToHex().data(), alloc), alloc);
+					}
+					if (mSignature) {
+						detailsObjs.AddMember("signature", Value(mSignature->convertToHex().data(), alloc), alloc);
+					}
+					if (mBodyBytes) {
+						detailsObjs.AddMember("bodyBytes", Value(mBodyBytes->convertToHex().data(), alloc), alloc);
+					}
 					return std::move(detailsObjs);
-				}
-
-				std::string TransactionValidationInvalidSignatureException::getPubkeyHex() const noexcept
-				{
-					if (mPubkey.size()) {
-						try {
-							return std::move(DataTypeConverter::binToHex(mPubkey));
-						}
-						catch (...) {}
-					}
-					return "";
-				}
-				std::string TransactionValidationInvalidSignatureException::getSignatureHex() const noexcept
-				{
-					if (mSignature.size()) {
-						try {
-							return std::move(DataTypeConverter::binToHex(mSignature));
-						}
-						catch (...) {}
-					}
-					return "";
-				}
-				std::string TransactionValidationInvalidSignatureException::getBodyBytesBase64() const noexcept
-				{
-					if (mBodyBytes.size()) {
-						try {
-							return std::move(DataTypeConverter::binToBase64(mBodyBytes));
-						}
-						catch (...) {}
-					}
-					return "";
 				}
 
 				// ************* Forbidden Sign *******************
@@ -210,38 +194,52 @@ namespace gradido {
 				}
 
 				// ******************************* Missing required sign *****************************************************
-				TransactionValidationRequiredSignMissingException::TransactionValidationRequiredSignMissingException(const std::vector<MemoryBin*>& missingPublicKeys) noexcept
+				TransactionValidationRequiredSignMissingException::TransactionValidationRequiredSignMissingException(const std::vector<memory::ConstBlockPtr>& missingPublicKeys) noexcept
 					: TransactionValidationException("missing required sign")
 				{
-					std::for_each(missingPublicKeys.begin(), missingPublicKeys.end(), [&](MemoryBin* pubkey) {
-						mMissingPublicKeysHex.push_back(DataTypeConverter::binToHex(pubkey));
-					});
+					for (auto pubkey : missingPublicKeys) {
+						mMissingPublicKeysHex.push_back(pubkey->convertToHex());
+					}
 				}
 
-
 				// ******************************** Invalid Pairing transaction **********************************************
-				PairingTransactionNotMatchException::PairingTransactionNotMatchException(const char* what, const std::string* serializedTransaction, const std::string* serializedPairingTransaction) noexcept
+				PairingTransactionNotMatchException::PairingTransactionNotMatchException(
+					const char* what,
+					memory::ConstBlockPtr serializedTransaction,
+					memory::ConstBlockPtr serializedPairingTransaction
+				) noexcept
 					:TransactionValidationException(what)
 				{
 					try {
-						mTransaction = std::make_unique<model::gradido::GradidoTransaction>(serializedTransaction);
-						mPairingTransaction = std::make_unique<model::gradido::GradidoTransaction>(serializedPairingTransaction);
+						interaction::deserialize::Context deserializeTransaction(serializedTransaction, interaction::deserialize::Type::GRADIDO_TRANSACTION);
+						deserializeTransaction.run();
+						if (deserializeTransaction.isGradidoTransaction()) {
+							mTransaction = deserializeTransaction.getGradidoTransaction();
+						}
+						interaction::deserialize::Context deserializePairingTransaction(serializedPairingTransaction, interaction::deserialize::Type::GRADIDO_TRANSACTION);
+						deserializePairingTransaction.run();
+						if (deserializePairingTransaction.isGradidoTransaction()) {
+							mPairingTransaction = deserializePairingTransaction.getGradidoTransaction();
+						}
 					}
 					catch (...) {
-						printf("exception by creating transaction from serialized string\n");
+						LOG_F(WARNING, "exception by creating transaction from serialized string");
 					}
 				}
 
 				std::string PairingTransactionNotMatchException::getFullString() const noexcept
 				{
 					std::string resultString;
-					auto transactionJson = mTransaction->toJson();
-					auto pairedTransactionJson = mPairingTransaction->toJson();
-					size_t resultSize = strlen(what()) + transactionJson.size() + pairedTransactionJson.size() + 4;
+					interaction::toJson::Context transactionToJson(*mTransaction.get());
+					auto transactionJson = transactionToJson.run(true);
+					interaction::toJson::Context paringTransactionToJson(*mPairingTransaction.get());
+					auto pairedTransactionJson = paringTransactionToJson.run(true);
+					size_t resultSize = strlen(what()) + strlen(transactionJson) + strlen(pairedTransactionJson) + 4;
 					resultString.reserve(resultSize);
 					resultString = what();
 					resultString += "\n";
-					resultString += transactionJson + "\n";
+					resultString += transactionJson;
+					resultString += "\n";
 					resultString += pairedTransactionJson;
 
 					return resultString;
@@ -249,11 +247,7 @@ namespace gradido {
 
 
 				// *********************************** Address Already Exist **********************************************************
-				AddressAlreadyExistException::AddressAlreadyExistException(
-					const char* what,
-					const std::string& addressHex,
-					proto::gradido::RegisterAddress_AddressType addressType
-				) noexcept
+				AddressAlreadyExistException::AddressAlreadyExistException(const char* what, const std::string& addressHex, data::AddressType addressType) noexcept
 					: TransactionValidationException(what), mAddressHex(addressHex), mAddressType(addressType)
 				{
 
@@ -262,12 +256,13 @@ namespace gradido {
 				std::string AddressAlreadyExistException::getFullString() const noexcept
 				{
 					std::string resultString;
-					auto addressTypeString = model::gradido::RegisterAddress::getAddressStringFromType(mAddressType);
+					auto addressTypeString = enum_name(mAddressType);
 					size_t resultStringSize = strlen(what()) + addressTypeString.size() + mAddressHex.size() + 9 + 16 + 2;
 					resultString.reserve(resultStringSize);
 					resultString = what();
 					resultString += ", address: " + mAddressHex;
-					resultString += ", address type: " + addressTypeString;
+					resultString += ", address type: ";
+					resultString += addressTypeString;
 
 					return resultString;
 
@@ -277,17 +272,15 @@ namespace gradido {
 				{
 					Value detailsObjs(kObjectType);
 					detailsObjs.AddMember("what", Value(what(), alloc), alloc);
-					detailsObjs.AddMember("addressType", Value(model::gradido::RegisterAddress::getAddressStringFromType(mAddressType).data(), alloc), alloc);
+					detailsObjs.AddMember("addressType", Value(enum_name(mAddressType).data(), alloc), alloc);
 					detailsObjs.AddMember("address", Value(mAddressHex.data(), alloc), alloc);
 					return std::move(detailsObjs);
 				}
 
 				// *************************** Insufficient Balance Exception ************************************************
-				InsufficientBalanceException::InsufficientBalanceException(const char* what, mpfr_ptr needed, mpfr_ptr exist) noexcept
-					: TransactionValidationException(what)
+				InsufficientBalanceException::InsufficientBalanceException(const char* what, Decimal needed, Decimal exist) noexcept
+					: TransactionValidationException(what), mNeeded(needed.toString()), mExist(exist.toString())
 				{
-					TransactionBase::amountToString(&mNeeded, needed);
-					TransactionBase::amountToString(&mExist, exist);
 				}
 
 				std::string InsufficientBalanceException::getFullString() const noexcept
@@ -354,11 +347,7 @@ namespace gradido {
 				}
 
 				// **************************** Wrong Address Type Exception ***********************************
-				WrongAddressTypeException::WrongAddressTypeException(
-					const char* what,
-					proto::gradido::RegisterAddress_AddressType type,
-					const std::string& pubkeyString
-				) noexcept
+				WrongAddressTypeException::WrongAddressTypeException(const char* what, data::AddressType type, const std::string& pubkeyString) noexcept
 					: TransactionValidationException(what), mType(type), mPubkey(pubkeyString)
 				{
 
@@ -366,12 +355,13 @@ namespace gradido {
 				std::string WrongAddressTypeException::getFullString() const noexcept
 				{
 					std::string result;
-					auto addressTypeName = proto::gradido::RegisterAddress_AddressType_Name(mType);
+					auto addressTypeName = enum_name(mType);
 					auto pubkeyHex = DataTypeConverter::binToHex(mPubkey);
 					size_t resultSize = strlen(what()) + addressTypeName.size() + 2 + 14 + 10 + pubkeyHex.size();
 					result.reserve(resultSize);
 					result = what();
-					result += ", address type: " + addressTypeName;
+					result += ", address type: ";
+					result += addressTypeName;
 					result += ", pubkey: " + pubkeyHex;
 
 					return result;
@@ -382,7 +372,7 @@ namespace gradido {
 					Value jsonDetails(kObjectType);
 					jsonDetails.AddMember("what", Value(what(), alloc), alloc);
 
-					auto addressTypeName = proto::gradido::RegisterAddress_AddressType_Name(mType);
+					auto addressTypeName = enum_name(mType);
 					jsonDetails.AddMember("addressType", Value(addressTypeName.data(), alloc), alloc);
 					return std::move(jsonDetails);
 				}

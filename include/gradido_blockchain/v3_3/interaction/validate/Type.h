@@ -1,6 +1,8 @@
 #ifndef __GRADIDO_BLOCKCHAIN_V3_3_INTERACTION_VALIDATE_TYPE_H
 #define __GRADIDO_BLOCKCHAIN_V3_3_INTERACTION_VALIDATE_TYPE_H
 
+#include "magic_enum/magic_enum_flags.hpp"
+
 namespace gradido {
 	namespace v3_3 {
 		namespace interaction {
@@ -31,9 +33,27 @@ namespace gradido {
           //! check all transactions which connected with this transaction
           CONNECTED_BLOCKCHAIN = 64			
         };
+
+		inline Type operator | (Type lhs, Type rhs)
+		{
+			using T = std::underlying_type_t <Type>;
+			return static_cast<Type>(static_cast<T>(lhs) | static_cast<T>(rhs));
+		}
+
+		inline Type operator & (Type lhs, Type rhs)
+		{
+			using T = std::underlying_type_t <Type>;
+			return static_cast<Type>(static_cast<T>(lhs) & static_cast<T>(rhs));
+		}
       }
     }
   }
 }
+template <>
+struct magic_enum::customize::enum_range<gradido::v3_3::interaction::validate::Type> {
+	static constexpr bool is_flags = true;
+};
+
+
 
 #endif //__GRADIDO_BLOCKCHAIN_V3_3_INTERACTION_VALIDATE_TYPE_H

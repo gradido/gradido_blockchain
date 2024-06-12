@@ -8,16 +8,21 @@ namespace gradido {
 	namespace v3_3 {
 		namespace interaction {
 			namespace validate {
-        class TransactionBodyRole: public AbstractRole 
-        {
-        public:
-          TransactionBodyRole(const data::TransactionBody& body): mBody(body) {}
-          void run();
 
-        protected:
-          const data::TransactionBody& mBody;
+                class TransactionBodyRole: public AbstractRole 
+                {
+                public:
+                  TransactionBodyRole(const data::TransactionBody& body): mBody(body) {}
+                  void run(
+                      Type type = Type::SINGLE,
+                      const std::string& communityId = "",
+                      std::shared_ptr<AbstractBlockchainProvider> blockchainProvider = nullptr
+                  );
 
-        };
+                protected:
+                  const data::TransactionBody& mBody;
+
+                };
       }
     }
   }

@@ -16,19 +16,19 @@ namespace gradido {
 		  /// Transaction Type Enum
 			enum class TransactionType : uint8_t {
 				//! Invalid or Empty Transaction
-				TRANSACTION_NONE,
+				NONE,
 				//! Creation Transaction, creates new Gradidos
-				TRANSACTION_CREATION,
+				CREATION,
 				//! Transfer Transaction, move Gradidos from one account to another
-				TRANSACTION_TRANSFER,
+				TRANSFER,
 				//! Group Friends Update Transaction, update relationship between groups
-				TRANSACTION_GROUP_FRIENDS_UPDATE,
+				COMMUNITY_FRIENDS_UPDATE,
 				//! Register new address or sub address to group or move addres to another group
-				TRANSACTION_REGISTER_ADDRESS,
+				REGISTER_ADDRESS,
 				//! Special Transfer Transaction with timeout used for Gradido Link
-				TRANSACTION_DEFERRED_TRANSFER,
+				DEFERRED_TRANSFER,
 				//! First Transaction in Blockchain
-				TRANSACTION_COMMUNITY_ROOT
+				COMMUNITY_ROOT
 			};
 		}
 	}
