@@ -13,8 +13,8 @@ namespace gradido {
 					if (mGradidoTransaction.bodyBytes) {
 						gradidoTransactionMessage["body_bytes"_f] = mGradidoTransaction.bodyBytes->copyAsVector();
 					}
-					if (mGradidoTransaction.parentMessageId) {
-						gradidoTransactionMessage["parent_message_id"_f] = mGradidoTransaction.parentMessageId->copyAsVector();
+					if (mGradidoTransaction.paringMessageId) {
+						gradidoTransactionMessage["parent_message_id"_f] = mGradidoTransaction.paringMessageId->copyAsVector();
 					}					
 					gradidoTransactionMessage["sig_map"_f] = mSigantureMapRole.getMessage();
 					return gradidoTransactionMessage;
@@ -26,8 +26,8 @@ namespace gradido {
 					if (mGradidoTransaction.bodyBytes) {
 						size += mGradidoTransaction.bodyBytes->size();
 					}
-					if (mGradidoTransaction.parentMessageId) {
-						size += mGradidoTransaction.parentMessageId->size();
+					if (mGradidoTransaction.paringMessageId) {
+						size += mGradidoTransaction.paringMessageId->size();
 					}
 					return size;
 				}

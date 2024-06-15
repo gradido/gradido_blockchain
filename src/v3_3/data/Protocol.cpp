@@ -2,8 +2,10 @@
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/v3_3/interaction/serialize/Context.h"
 #include "gradido_blockchain/v3_3/interaction/deserialize/Context.h"
+
 #include "sodium.h"
 
+#include <algorithm>
 #include <chrono>
 
 using namespace std::chrono;
@@ -37,24 +39,44 @@ namespace gradido {
 				seconds = duration_cast<std::chrono::seconds>(duration).count();
 			}
 
-			const TransactionBody& GradidoTransaction::getTransactionBody() const
+			ConstTransactionBodyPtr GradidoTransaction::getTransactionBody() const
 			{
-				if (!mTransactionBody) {
-					throw GradidoNullPointerException("transaction body is null", "TransactionBody", __FUNCTION__);
+				if (mTransactionBody) return mTransactionBody;
+				deserialize::Context c(bodyBytes, deserialize::Type::TRANSACTION_BODY);
+				c.run();
+				if (!c.isTransactionBody()) {
+					throw GradidoNullPointerException("cannot deserialize from body bytes", "TransactionBody", __FUNCTION__);
 				}
-				return *mTransactionBody;
+				return c.getTransactionBody();
 			}
-			const TransactionBody& GradidoTransaction::getTransactionBody()
+			ConstTransactionBodyPtr GradidoTransaction::getTransactionBody()
 			{
-				if (!mTransactionBody) {
-					deserialize::Context c(bodyBytes, deserialize::Type::TRANSACTION_BODY);
-					c.run();
-					if (!c.isTransactionBody()) {
-						throw GradidoNullPointerException("cannot deserialize from body bytes", "TransactionBody", __FUNCTION__);
-					}
-					mTransactionBody = c.getTransactionBody();
+				mTransactionBody = static_cast<const GradidoTransaction>(*this).getTransactionBody();
+				return mTransactionBody;
+			}
+			bool GradidoTransaction::isPairing(const GradidoTransaction& other) const
+			{
+				auto& sigPairs = signatureMap.signaturePairs;
+				auto& otherSigPairs = signatureMap.signaturePairs;
+
+				// compare signature pairs, should be all the same 
+				if (sigPairs.size() != otherSigPairs.size() ||
+					!std::equal(sigPairs.begin(), sigPairs.end(), otherSigPairs.begin())
+					) {
+					return false;
 				}
-				return *mTransactionBody;
+				return getTransactionBody()->isPairing(*other.getTransactionBody());
+			}
+
+			memory::ConstBlockPtr GradidoTransaction::getSerializedTransaction()
+			{
+				mSerializedTransaction = static_cast<const GradidoTransaction>(*this).getSerializedTransaction();
+				return mSerializedTransaction;
+			}
+
+			memory::ConstBlockPtr GradidoTransaction::getSerializedTransaction() const
+			{
+				return interaction::serialize::Context(*this).run();
 			}
 
 			memory::Block ConfirmedTransaction::calculateRunningHash(std::shared_ptr<ConfirmedTransaction> previousConfirmedTransaction/* = nullptr*/)
@@ -94,6 +116,27 @@ namespace gradido {
 				else if (isDeferredTransfer()) return data::TransactionType::DEFERRED_TRANSFER;
 				else if (isCommunityRoot()) return data::TransactionType::COMMUNITY_ROOT;
 				return data::TransactionType::NONE;
+			}
+
+			bool TransactionBody::isPairing(const TransactionBody& other) const
+			{
+				// memo, type and createdAt must be the same, otherGroup must be different
+				if (memo != other.memo ||
+					createdAt != other.createdAt ||
+					otherGroup == other.otherGroup
+					) {
+					return false;
+				}
+				if (isCommunityFriendsUpdate() && other.isCommunityFriendsUpdate()) {
+					return *communityFriendsUpdate == *other.communityFriendsUpdate;
+				}
+				if (isRegisterAddress() && other.isRegisterAddress()) {
+					return *registerAddress == *other.registerAddress;
+				}
+				if (isTransfer() && other.isTransfer()) {
+					return *transfer == *other.transfer;
+				}
+				return false;
 			}
 		}
 	}

@@ -24,7 +24,7 @@ namespace gradido {
 					if (!bodyMessage["type"_f].has_value()) {
 						throw MissingMemberException(rootExceptionMessage, "type");
 					}
-					mBody = std::make_unique<data::TransactionBody>(
+					mBody = std::make_shared<data::TransactionBody>(
 						bodyMessage["memo"_f].value_or(""),
 						TimestampRole(bodyMessage["created_at"_f].value()).data(),
 						bodyMessage["version_number"_f].value(),

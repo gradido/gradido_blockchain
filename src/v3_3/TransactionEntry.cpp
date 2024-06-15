@@ -17,7 +17,7 @@ namespace gradido {
 			auto receivedDate = date::year_month_day{ date::floor<date::days>(confirmedTransaction->confirmedAt.getAsTimepoint()) };
 			mMonth = static_cast<unsigned>(receivedDate.month());
 			mYear = static_cast<int>(receivedDate.year());
-			mCommunityId = getCoinCommunityId(confirmedTransaction->gradidoTransaction->getTransactionBody());
+			mCommunityId = getCoinCommunityId(*confirmedTransaction->gradidoTransaction->getTransactionBody());
 		}
 
 		TransactionEntry::TransactionEntry(const data::ConfirmedTransaction& transaction)
@@ -26,7 +26,7 @@ namespace gradido {
 			auto receivedDate = date::year_month_day{ date::floor<date::days>(transaction.confirmedAt.getAsTimepoint()) };
 			mMonth = static_cast<unsigned>(receivedDate.month());
 			mYear = static_cast<int>(receivedDate.year());
-			mCommunityId = getCoinCommunityId(transaction.gradidoTransaction->getTransactionBody());
+			mCommunityId = getCoinCommunityId(*transaction.gradidoTransaction->getTransactionBody());
 		}
 
 		TransactionEntry::TransactionEntry(uint64_t transactionNr, uint8_t month, uint16_t year, std::string communityId)

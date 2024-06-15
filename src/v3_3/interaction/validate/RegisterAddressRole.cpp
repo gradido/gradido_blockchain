@@ -61,8 +61,8 @@ namespace gradido {
 						if (!address) {
 							throw GradidoUnhandledEnum(
 								"register address has invalid type for account validation",
-								enum_name(mRegisterAddress.addressType).data(),
-								enum_integer(mRegisterAddress.addressType)
+								enum_type_name<decltype(mRegisterAddress.addressType)>().data(),
+								enum_name(mRegisterAddress.addressType).data()
 							);
 						}
 						lastTransaction = blockchain->findLastTransactionForAddress(address, "", senderPreviousConfirmedTransaction->id);

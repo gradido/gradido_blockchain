@@ -1,4 +1,4 @@
-#include "gradido_blockchain/v3_3/interaction/validate/TransactionBodyRole.h"
+﻿#include "gradido_blockchain/v3_3/interaction/validate/TransactionBodyRole.h"
 
 #include "gradido_blockchain/v3_3/interaction/validate/CommunityRootRole.h"
 #include "gradido_blockchain/v3_3/interaction/validate/Exceptions.h"
@@ -45,6 +45,7 @@ namespace gradido {
 								throw TransactionValidationInvalidInputException("invalid character, only ascii", "other_group", "string");
 							}
 						}
+
 						std::unique_ptr<AbstractRole> specificRole;
 						if (mBody.isTransfer()) {
 							if (specificRole) {
@@ -99,6 +100,11 @@ namespace gradido {
 						throw;
 					}
                 }
+
+				void TransactionBodyRole::checkRequiredSignatures(const data::SignatureMap& signatureMap)
+				{
+					throw std::runtime_error("not implemented yet");
+				}
 			}
 		}
 	}

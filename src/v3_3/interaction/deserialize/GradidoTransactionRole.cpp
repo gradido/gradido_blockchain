@@ -6,7 +6,7 @@ namespace gradido {
 		namespace interaction {
 			namespace deserialize {
 				GradidoTransactionRole::GradidoTransactionRole(const GradidoTransactionMessage& message)
-					: mGradidoTransaction(std::make_unique<data::GradidoTransaction>())
+					: mGradidoTransaction(std::make_shared<data::GradidoTransaction>())
 				{
 					auto sigMap = message["sig_map"_f];
 					if (sigMap.has_value() && sigMap.value()["sig_pair"_f].size()) {
@@ -22,9 +22,9 @@ namespace gradido {
 					if (bodyBytes.has_value()) {
 						mGradidoTransaction->bodyBytes = std::make_shared<memory::Block>(bodyBytes.value());
 					}
-					auto parentMessageId = message["parent_message_id"_f];
-					if (parentMessageId.has_value()) {
-						mGradidoTransaction->parentMessageId = std::make_shared<memory::Block>(parentMessageId.value());
+					auto paringMessageId = message["parent_message_id"_f];
+					if (paringMessageId.has_value()) {
+						mGradidoTransaction->paringMessageId = std::make_shared<memory::Block>(paringMessageId.value());
 					}
 				}
 			}

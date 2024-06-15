@@ -119,8 +119,8 @@ namespace gradido {
 					std::string getFullString() const noexcept;
 
 				protected:
-					std::unique_ptr<data::GradidoTransaction> mTransaction;
-					std::unique_ptr<data::GradidoTransaction> mPairingTransaction;
+					std::shared_ptr<const data::GradidoTransaction> mTransaction;
+					std::shared_ptr<const data::GradidoTransaction> mPairingTransaction;
 				};
 
 				class GRADIDOBLOCKCHAIN_EXPORT AddressAlreadyExistException : public TransactionValidationException

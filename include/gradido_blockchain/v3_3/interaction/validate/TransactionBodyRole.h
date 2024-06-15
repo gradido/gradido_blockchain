@@ -21,9 +21,9 @@ namespace gradido {
 					  data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
                   );
 
+                  void checkRequiredSignatures(const data::SignatureMap& signatureMap);
                 protected:
                   const data::TransactionBody& mBody;
-
                 };
       }
     }

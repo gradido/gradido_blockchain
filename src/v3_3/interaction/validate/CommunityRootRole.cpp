@@ -16,9 +16,9 @@ namespace gradido {
 					data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 				) {
 					if ((type & Type::SINGLE) == Type::SINGLE) {
-						validate25519PublicKey(mCommunityRoot.pubkey, "pubkey");
-						validate25519PublicKey(mCommunityRoot.gmwPubkey, "gmwPubkey");
-						validate25519PublicKey(mCommunityRoot.aufPubkey, "aufPubkey");
+						validateEd25519PublicKey(mCommunityRoot.pubkey, "pubkey");
+						validateEd25519PublicKey(mCommunityRoot.gmwPubkey, "gmwPubkey");
+						validateEd25519PublicKey(mCommunityRoot.aufPubkey, "aufPubkey");
 
 						const auto& pubkey = *mCommunityRoot.pubkey;
 						const auto& gmwPubkey = *mCommunityRoot.gmwPubkey;

@@ -27,6 +27,10 @@ namespace gradido {
 
 				memory::ConstBlockPtr pubkey;
 				memory::ConstBlockPtr signature;
+
+				bool operator==(const SignaturePair& other) const {
+					return pubkey->isTheSame(other.pubkey) && signature->isTheSame(other.signature);
+				}
 			};
 
 			struct GRADIDOBLOCKCHAIN_EXPORT SignatureMap 
@@ -87,9 +91,13 @@ namespace gradido {
 					const std::string& communityId = ""
 				) : pubkey(pubkeyPtr), amount(amountString), communityId(communityId) {}
 
+				inline bool operator==(const TransferAmount& other) const {
+					return pubkey && pubkey->isTheSame(other.pubkey) && amount == other.amount && communityId == other.communityId;
+				}
+
 				memory::ConstBlockPtr pubkey;
 				DecayDecimal amount;
-				std::string communityId;
+				std::string communityId;				
 			};
 
 			//  ---------------- end   basic_types.proto   end -----------------------------------
@@ -99,7 +107,11 @@ namespace gradido {
 			{
 				CommunityFriendsUpdate(bool _colorFusion) : colorFusion(_colorFusion) {}
 
-				bool colorFusion;
+				inline bool operator==(const CommunityFriendsUpdate& other) const {
+					return colorFusion == other.colorFusion;
+				}
+
+				bool colorFusion;				
 			};
 
 			// community_root.proto
@@ -133,8 +145,12 @@ namespace gradido {
 				GradidoTransfer(const TransferAmount& _sender, memory::ConstBlockPtr recipientPtr)
 					: sender(_sender), recipient(recipientPtr) {}
 
+				inline bool operator==(const GradidoTransfer& other) const {
+					return sender == other.sender && recipient && recipient->isTheSame(other.recipient);
+				}
+
 				TransferAmount sender;
-				memory::ConstBlockPtr recipient;
+				memory::ConstBlockPtr recipient;				
 			};
 
 			struct GRADIDOBLOCKCHAIN_EXPORT GradidoDeferredTransfer
@@ -157,6 +173,16 @@ namespace gradido {
 					memory::ConstBlockPtr accountPubkeyPtr = nullptr
 				) : userPubkey(userPubkeyPtr), addressType(_addressType), nameHash(nameHashPtr),
 					accountPubkey(accountPubkeyPtr), derivationIndex(_derivationIndex) {}
+
+				inline bool operator==(const RegisterAddress& other) const {
+					return
+						userPubkey && userPubkey->isTheSame(other.userPubkey) &&
+						addressType == other.addressType &&
+						nameHash && nameHash->isTheSame(other.nameHash) &&
+						accountPubkey && accountPubkey->isTheSame(other.accountPubkey) &&
+						derivationIndex == other.derivationIndex
+					;
+				}
 
 				memory::ConstBlockPtr	userPubkey;
 				AddressType				addressType;
@@ -185,6 +211,8 @@ namespace gradido {
 				inline bool isCommunityRoot() const { return static_cast<bool>(communityRoot); }
 				data::TransactionType getTransactionType() const;
 
+				bool isPairing(const TransactionBody& other) const;
+
 				std::string								memo;
 				Timestamp								createdAt;
 				std::string								versionNumber;
@@ -200,6 +228,8 @@ namespace gradido {
 
 			};
 
+			typedef std::shared_ptr<const TransactionBody> ConstTransactionBodyPtr;
+
 			// gradido_transaction.proto
 			struct GRADIDOBLOCKCHAIN_EXPORT GradidoTransaction
 			{
@@ -207,17 +237,27 @@ namespace gradido {
 				GradidoTransaction(
 					const SignatureMap& signatureMap,
 					memory::ConstBlockPtr bodyBytes,
-					memory::ConstBlockPtr parentMessageId = nullptr
-				) : signatureMap(signatureMap), bodyBytes(bodyBytes), parentMessageId(parentMessageId) {}
+					memory::ConstBlockPtr paringMessageId = nullptr
+				) : signatureMap(signatureMap), bodyBytes(bodyBytes), paringMessageId(paringMessageId) {}
 
 				SignatureMap			signatureMap;
 				memory::ConstBlockPtr	bodyBytes;
-				memory::ConstBlockPtr	parentMessageId;
+				memory::ConstBlockPtr	paringMessageId;
 
-				const TransactionBody& getTransactionBody() const;
-				const TransactionBody& getTransactionBody();
+				//! will deserialize on every call, if it isn't cached
+				ConstTransactionBodyPtr getTransactionBody() const;
+				//! will deserialize just once and cache the result
+				ConstTransactionBodyPtr getTransactionBody();
+				//! will deserialize transactionBody if not cached
+				bool isPairing(const GradidoTransaction& other) const;
+
+				//! will serialize on every call, if it isn't cached
+				memory::ConstBlockPtr getSerializedTransaction();
+				//! will serialize just once and cache the result
+				memory::ConstBlockPtr getSerializedTransaction() const;
 			protected:
-				std::unique_ptr<TransactionBody> mTransactionBody;
+				ConstTransactionBodyPtr mTransactionBody;
+				memory::ConstBlockPtr mSerializedTransaction;
 			};
 
 			// confirmed_transaction.proto
@@ -225,7 +265,7 @@ namespace gradido {
 			{
 				ConfirmedTransaction(
 					uint64_t id,
-					std::unique_ptr<data::GradidoTransaction> gradidoTransaction,
+					std::shared_ptr<const data::GradidoTransaction> gradidoTransaction,
 					Timepoint confirmedAt,
 					const std::string& versionNumber,
 					memory::ConstBlockPtr runningHash,
@@ -242,7 +282,7 @@ namespace gradido {
 				memory::Block calculateRunningHash(std::shared_ptr<ConfirmedTransaction> previousConfirmedTransaction = nullptr);
 
 				uint64_t                    				id;
-				std::unique_ptr<data::GradidoTransaction>   gradidoTransaction;
+				std::shared_ptr<const data::GradidoTransaction>   gradidoTransaction;
 				TimestampSeconds							confirmedAt;
 				std::string   								versionNumber;
 				memory::ConstBlockPtr 						runningHash;

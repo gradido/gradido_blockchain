@@ -16,7 +16,7 @@ namespace gradido {
 					if (Type::TRANSACTION_BODY == mType || Type::UNKNOWN == mType) {
 						try {
 							auto [body, bufferEnd2] = message_coder<TransactionBodyMessage>::decode(mData->span());
-							mTransactionBody = std::move(TransactionBodyRole(body).getTransactionBody());
+							mTransactionBody = TransactionBodyRole(body).getTransactionBody();
 							mType = Type::TRANSACTION_BODY;
 							return;
 						}
@@ -30,7 +30,7 @@ namespace gradido {
 					if (Type::GRADIDO_TRANSACTION == mType || Type::UNKNOWN == mType) {
 						try {
 							auto [gradidoTransaction, bufferEnd2] = message_coder<GradidoTransactionMessage>::decode(mData->span());
-							mGradidoTransaction = std::move(GradidoTransactionRole(gradidoTransaction).getGradidoTransaction());
+							mGradidoTransaction = GradidoTransactionRole(gradidoTransaction).getGradidoTransaction();
 							mType = Type::GRADIDO_TRANSACTION;
 							return;
 						}

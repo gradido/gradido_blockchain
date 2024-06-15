@@ -40,7 +40,7 @@ namespace CryptoConfig
                 case MnemonicType::MAX:
                     return;
 					//const char* what, const char* enumName, int value
-				default: throw GradidoUnhandledEnum("loadMnemonicWordLists", enum_type_name<decltype(type)>().data(), i);
+				default: throw GradidoUnhandledEnum("loadMnemonicWordLists", enum_type_name<decltype(type)>().data(), enum_name(type).data());
 				}
 			}
 			catch (MnemonicException& ex) {

@@ -16,7 +16,7 @@ namespace gradido {
 					return std::regex_match(communityAlias, g_RegExCommunityAlias);
 				}
 
-				void AbstractRole::validate25519PublicKey(const memory::ConstBlockPtr ed25519PublicKey, const char* name)
+				void AbstractRole::validateEd25519PublicKey(const memory::ConstBlockPtr ed25519PublicKey, const char* name)
 				{
 					if (!ed25519PublicKey) {
 						throw TransactionValidationInvalidInputException("missing", name, "public key");
@@ -27,6 +27,20 @@ namespace gradido {
 					
 					if(ed25519PublicKey->isEmpty()) {
 						throw TransactionValidationInvalidInputException("empty", name, "public key");
+					}
+				}
+
+				void AbstractRole::validateEd25519Signature(const memory::ConstBlockPtr ed25519Signature, const char* name)
+				{
+					if (!ed25519Signature) {
+						throw TransactionValidationInvalidInputException("missing", name, "signature");
+					}
+					if (ed25519Signature->size() != ED25519_SIGNATURE_SIZE) {
+						throw TransactionValidationInvalidInputException("invalid size", name, "signature");
+					}
+
+					if (ed25519Signature->isEmpty()) {
+						throw TransactionValidationInvalidInputException("empty", name, "signature");
 					}
 				}
 

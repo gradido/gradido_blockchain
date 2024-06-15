@@ -16,10 +16,10 @@ namespace gradido {
 					TransactionBodyRole(const TransactionBodyMessage& bodyMessage);
 					~TransactionBodyRole() {};
 
-					inline std::unique_ptr<data::TransactionBody> getTransactionBody() { return std::move(mBody); }
+					inline data::ConstTransactionBodyPtr getTransactionBody() { return mBody; }
 
 				protected:
-					std::unique_ptr<data::TransactionBody> mBody;
+					std::shared_ptr<data::TransactionBody> mBody;
 				};
 			}
 		}

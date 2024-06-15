@@ -15,9 +15,9 @@ namespace gradido {
 					GradidoTransactionRole(const GradidoTransactionMessage& message);
 					~GradidoTransactionRole() {};
 
-					inline std::unique_ptr<data::GradidoTransaction> getGradidoTransaction() { return std::move(mGradidoTransaction); }
+					inline std::shared_ptr<const data::GradidoTransaction> getGradidoTransaction() { return mGradidoTransaction; }
 				protected:
-					std::unique_ptr<data::GradidoTransaction> mGradidoTransaction;
+					std::shared_ptr<data::GradidoTransaction> mGradidoTransaction;
 				};
 
 			}

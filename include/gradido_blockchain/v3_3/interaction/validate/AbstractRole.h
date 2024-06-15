@@ -26,7 +26,8 @@ namespace gradido {
                   inline void setConfirmedAt(data::TimestampSeconds confirmedAt) { mConfirmedAt = confirmedAt; }
                 protected:
                     bool isValidCommunityAlias(const std::string& communityAlias);
-                    void validate25519PublicKey(const memory::ConstBlockPtr ed25519PublicKey, const char* name);                    
+                    void validateEd25519PublicKey(const memory::ConstBlockPtr ed25519PublicKey, const char* name);                    
+                    void validateEd25519Signature(const memory::ConstBlockPtr ed25519Signature, const char* name);
 
                     data::TimestampSeconds mConfirmedAt;
                 };

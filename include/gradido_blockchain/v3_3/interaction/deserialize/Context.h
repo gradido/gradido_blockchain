@@ -25,15 +25,15 @@ namespace gradido {
 					inline bool isConfirmedTransaction() const { return Type::CONFIRMED_TRANSACTION == mType; }
 					Type getType() const { return mType; }
 
-					inline std::unique_ptr<data::TransactionBody> getTransactionBody() { return std::move(mTransactionBody); }
-					inline std::unique_ptr<data::GradidoTransaction> getGradidoTransaction() { return std::move(mGradidoTransaction); }
+					inline data::ConstTransactionBodyPtr getTransactionBody() { return mTransactionBody; }
+					inline std::shared_ptr<const data::GradidoTransaction> getGradidoTransaction() { return mGradidoTransaction; }
 					inline std::shared_ptr<const data::ConfirmedTransaction> getConfirmedTransaction() { return mConfirmedTransaction; }
 
 				protected:
 					memory::ConstBlockPtr mData;
 					Type mType;
-					std::unique_ptr<data::TransactionBody> mTransactionBody;
-					std::unique_ptr<data::GradidoTransaction> mGradidoTransaction;
+					data::ConstTransactionBodyPtr mTransactionBody;
+					std::shared_ptr<const data::GradidoTransaction> mGradidoTransaction;
 					std::shared_ptr<const data::ConfirmedTransaction> mConfirmedTransaction;
 				};
 			}

@@ -56,7 +56,7 @@ namespace gradido {
 				const std::string& coinCommunityId = "",
 				uint64_t maxTransactionNr = 0
 			) = 0;
-			virtual std::shared_ptr<TransactionEntry> findByMessageId(const MemoryBin* messageId, bool cachedOnly = true) = 0;
+			virtual std::shared_ptr<TransactionEntry> findByMessageId(memory::ConstBlockPtr messageId, bool cachedOnly = true) = 0;
 			//! \brief Find every transaction belonging to address account in memory or block chain, expensive.
 			//!
 			//! Use with care, can need some time and return huge amount of data.

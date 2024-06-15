@@ -85,18 +85,18 @@ protected:
 class GRADIDOBLOCKCHAIN_EXPORT GradidoUnknownEnumException : public GradidoBlockchainException
 {
 public:
-	explicit GradidoUnknownEnumException(const char* what, const char* enumName, int value) noexcept;
+	explicit GradidoUnknownEnumException(const char* what, const char* enumName, const char* enumValue) noexcept;
 	std::string getFullString() const;
 
 protected:
 	std::string mEnumName;
-	int mValue;
+	std::string mEnumValue;
 };
 
 class GRADIDOBLOCKCHAIN_EXPORT GradidoUnhandledEnum : public GradidoUnknownEnumException
 {
 public:
-	explicit GradidoUnhandledEnum(const char* what, const char* enumName, int value) noexcept
+	explicit GradidoUnhandledEnum(const char* what, const char* enumName, const char* value) noexcept
 		: GradidoUnknownEnumException(what, enumName, value) {}
 };
 

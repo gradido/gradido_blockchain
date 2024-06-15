@@ -17,7 +17,7 @@ namespace gradido {
 			GradidoTransactionBuilder& setTransactionBody(std::unique_ptr<data::TransactionBody> body);
 			GradidoTransactionBuilder& addSignaturePair(memory::ConstBlockPtr publicKey, memory::ConstBlockPtr signature);
 			GradidoTransactionBuilder& sign(std::shared_ptr<KeyPairEd25519> keyPair);
-			GradidoTransactionBuilder& setParentMessageId(memory::ConstBlockPtr parentMessageId);
+			GradidoTransactionBuilder& setParentMessageId(memory::ConstBlockPtr paringMessageId);
 
 		protected:
 			std::unique_ptr<data::GradidoTransaction> mGradidoTransaction;

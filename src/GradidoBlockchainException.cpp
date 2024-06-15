@@ -138,8 +138,8 @@ std::string GradidoInvalidEnumException::getFullString() const
 }
 
 // ***************** it an enuam value is unknown by code ***************************
-GradidoUnknownEnumException::GradidoUnknownEnumException(const char* what, const char* enumName, int value) noexcept
-	: GradidoBlockchainException(what), mEnumName(enumName), mValue(value)
+GradidoUnknownEnumException::GradidoUnknownEnumException(const char* what, const char* enumName, const char* enumValue) noexcept
+	: GradidoBlockchainException(what), mEnumName(enumName), mEnumValue(enumValue)
 {
 
 }
@@ -147,12 +147,11 @@ GradidoUnknownEnumException::GradidoUnknownEnumException(const char* what, const
 std::string GradidoUnknownEnumException::getFullString() const
 {
 	std::string resultString;
-	auto valueString = std::to_string(mValue);
-	size_t resultSize = strlen(what()) + mEnumName.size() + valueString.size() + 2 + 13 + 9;
+	size_t resultSize = strlen(what()) + mEnumName.size() + mEnumValue.size() + 2 + 13 + 9;
 	resultString.reserve(resultSize);
 	resultString = what();
 	resultString += ", enum name: " + mEnumName;
-	resultString += ", value: " + valueString;
+	resultString += ", value: " + mEnumValue;
 	return resultString;
 }
 

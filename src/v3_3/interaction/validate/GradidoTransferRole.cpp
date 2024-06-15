@@ -61,8 +61,8 @@ namespace gradido {
 					if (sender.amount <= 0) {
 						throw TransactionValidationInvalidInputException("zero or negative amount", "amount", "Decimal");
 					}
-					validate25519PublicKey(mGradidoTransfer.recipient, "recipient");
-					validate25519PublicKey(sender.pubkey, "sender");
+					validateEd25519PublicKey(mGradidoTransfer.recipient, "recipient");
+					validateEd25519PublicKey(sender.pubkey, "sender");
 
 					if (!mGradidoTransfer.recipient->isTheSame(sender.pubkey)) {
 						throw TransactionValidationException("sender and recipient are the same");

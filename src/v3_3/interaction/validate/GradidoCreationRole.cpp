@@ -18,7 +18,7 @@ namespace gradido {
 					const auto& recipient = mGradidoCreation.recipient;
 					if ((type & Type::SINGLE) == Type::SINGLE) 
 					{
-						validate25519PublicKey(recipient.pubkey, "recipient pubkey");
+						validateEd25519PublicKey(recipient.pubkey, "recipient pubkey");
 						if (recipient.amount > 1000) {
 							throw TransactionValidationInvalidInputException("creation amount to high, max 1000 per month", "amount", "string");
 						}
@@ -182,9 +182,9 @@ namespace gradido {
 					for (auto it = allTransactions.begin(); it != allTransactions.end(); it++)
 					{
 						auto body = (*it)->getConfirmedTransaction()->gradidoTransaction->getTransactionBody();
-						if(body.isCreation()) 
+						if(body->isCreation()) 
 						{
-							auto creation = body.creation;
+							auto creation = body->creation;
 							auto targetDate = date::year_month_day{ date::floor<date::days>(creation->targetDate.getAsTimepoint()) };
 							if (targetDate.month() != date::month(month) || targetDate.year() != date::year(year)) {
 								continue;
@@ -230,8 +230,8 @@ namespace gradido {
 					Decimal sum;
 					for (auto it = allTransactions.begin(); it != allTransactions.end(); it++) {
 						auto body = (*it)->getConfirmedTransaction()->gradidoTransaction->getTransactionBody();
-						if (body.isCreation()) {
-							sum += body.creation->recipient.amount;
+						if (body->isCreation()) {
+							sum += body->creation->recipient.amount;
 						}
 					}
 					return sum;

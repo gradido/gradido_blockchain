@@ -154,6 +154,10 @@ FILE(GLOB v3_3_DATA
 	"include/gradido_blockchain/v3_3/data/*.h"
 	"src/v3_3/data/*.cpp"
 )
+FILE(GLOB v3_3_INTERACTION_DESERIALIZE 
+	"include/gradido_blockchain/v3_3/interaction/deserialize/*.h" 
+	"src/v3_3/interaction/deserialize/*.cpp"
+)
 FILE(GLOB v3_3_INTERACTION_SERIALIZE 
 	"include/gradido_blockchain/v3_3/interaction/serialize/*.h" 
 	"src/v3_3/interaction/serialize/*.cpp"
@@ -161,10 +165,6 @@ FILE(GLOB v3_3_INTERACTION_SERIALIZE
 FILE(GLOB v3_3_INTERACTION_TO_JSON 
 	"include/gradido_blockchain/v3_3/interaction/toJson/*.h" 
 	"src/v3_3/interaction/toJson/*.cpp"
-)
-FILE(GLOB v3_3_INTERACTION_DESERIALIZE 
-	"include/gradido_blockchain/v3_3/interaction/deserialize/*.h" 
-	"src/v3_3/interaction/deserialize/*.cpp"
 )
 FILE(GLOB v3_3_INTERACTION_VALIDATE 
 	"include/gradido_blockchain/v3_3/interaction/validate/*.h"
@@ -186,9 +186,9 @@ SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${TINF} 
 	${THREADING}
 	${v3_3}	 ${v3_3_DATA}
+	${v3_3_INTERACTION_DESERIALIZE}
 	${v3_3_INTERACTION_SERIALIZE}
 	${v3_3_INTERACTION_TO_JSON}
-	${v3_3_INTERACTION_DESERIALIZE}
 	${v3_3_INTERACTION_VALIDATE}
 )
 
@@ -209,9 +209,9 @@ if(MSVC)
 	source_group("tinf" FILES ${TINF})
 	source_group("threading" FILES ${THREADING})
 	source_group("v3_3\\data" FILES ${v3_3_DATA})
-	source_group("v3_3\\interaction\\serialize" FILES ${v3_3_INTERACTION_SERIALIZE})
-	source_group("v3_3\\interaction\\toJson" FILES ${v3_3_INTERACTION_TO_JSON})
 	source_group("v3_3\\interaction\\deserialize" FILES ${v3_3_INTERACTION_DESERIALIZE})
+		source_group("v3_3\\interaction\\serialize" FILES ${v3_3_INTERACTION_SERIALIZE})
+	source_group("v3_3\\interaction\\toJson" FILES ${v3_3_INTERACTION_TO_JSON})
 	source_group("v3_3\\interaction\\validate" FILES ${v3_3_INTERACTION_VALIDATE})
 	source_group("v3_3" FILES ${v3_3})
 endif()

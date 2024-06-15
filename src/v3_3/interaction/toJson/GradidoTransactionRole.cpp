@@ -36,15 +36,15 @@ namespace gradido {
 					}
 					if ((enum_integer(BodyBytesFormat::JSON) & enum_integer(mFormat)) == enum_integer(BodyBytesFormat::JSON)) {
 						try {
-							toJson::Context bodyBytesToJson(mTransaction.getTransactionBody());
+							toJson::Context bodyBytesToJson(*mTransaction.getTransactionBody());
 							bodyBytes.AddMember("json", Value(bodyBytesToJson.run(pretty), alloc), alloc);
 						} catch(std::exception& ex) {
 							bodyBytes.AddMember("json", Value(ex.what(), alloc), alloc);
 						}
 					}
 					d.AddMember("bodyBytes", bodyBytes, alloc);
-					if (mTransaction.parentMessageId) {
-						d.AddMember("parentMessageId", Value(mTransaction.parentMessageId->convertToHex().data(), alloc), alloc);
+					if (mTransaction.paringMessageId) {
+						d.AddMember("paringMessageId", Value(mTransaction.paringMessageId->convertToHex().data(), alloc), alloc);
 					}
 
 					return toString(&d, pretty);

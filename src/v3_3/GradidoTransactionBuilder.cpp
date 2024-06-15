@@ -53,9 +53,9 @@ namespace gradido {
 			return *this;
 		}
 
-		GradidoTransactionBuilder& GradidoTransactionBuilder::setParentMessageId(memory::ConstBlockPtr parentMessageId)
+		GradidoTransactionBuilder& GradidoTransactionBuilder::setParentMessageId(memory::ConstBlockPtr paringMessageId)
 		{
-			mGradidoTransaction->parentMessageId = parentMessageId;
+			mGradidoTransaction->paringMessageId = paringMessageId;
 			return *this;
 		}
 	}

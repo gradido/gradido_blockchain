@@ -1,6 +1,10 @@
 #include "gradido_blockchain/lib/RapidjsonHelper.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
+#include "magic_enum/magic_enum.hpp"
+
+using namespace magic_enum;
+
 using namespace rapidjson;
 
 namespace rapidjson_helper
@@ -14,7 +18,7 @@ namespace rapidjson_helper
 		case MemberType::NUMBER: return "number";
 		case MemberType::DATETIME: return "date time";
 		case MemberType::ARRAY: return "array";
-		default: throw GradidoUnknownEnumException("unknown enum value in model::graphql::Base", "MemberType", static_cast<int>(type));
+		default: throw GradidoUnknownEnumException("unknown enum value in model::graphql::Base", "MemberType", enum_name(type).data());
 		}
 	}
 
@@ -57,7 +61,7 @@ namespace rapidjson_helper
 		case MemberType::ARRAY:
 			if (!obj[memberName].IsArray()) wrongType = true;
 			break;
-		default: throw GradidoUnknownEnumException("unknown enum value in model::graphql::Base", "MemberType", static_cast<int>(type));
+		default: throw GradidoUnknownEnumException("unknown enum value in model::graphql::Base", "MemberType", enum_name(type).data());
 		}
 
 		if (wrongType) {
