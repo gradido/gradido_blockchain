@@ -74,14 +74,13 @@ namespace gradido {
 				class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationForbiddenSignException : public TransactionValidationException
 				{
 				public:
-					explicit TransactionValidationForbiddenSignException(const std::string& forbiddenPubkey) noexcept;
+					explicit TransactionValidationForbiddenSignException(memory::ConstBlockPtr forbiddenPubkey) noexcept;
 					~TransactionValidationForbiddenSignException();
 
 					std::string getFullString() const noexcept;
 					rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 				protected:
-					std::string getForbiddenPubkeyHex() const noexcept;
-					std::string mForbiddenPubkey;
+					memory::ConstBlockPtr mForbiddenPubkey;
 
 				};
 

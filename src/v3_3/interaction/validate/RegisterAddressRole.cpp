@@ -11,6 +11,18 @@ namespace gradido {
 		namespace interaction {
 			namespace validate {
 
+				RegisterAddressRole::RegisterAddressRole(const data::RegisterAddress& registerAddress)
+					: mRegisterAddress(registerAddress) 
+				{
+					if (registerAddress.accountPubkey) {
+						mRequiredSignPublicKeys.push_back(registerAddress.accountPubkey);
+					}
+					else if (registerAddress.userPubkey) {
+						mRequiredSignPublicKeys.push_back(registerAddress.userPubkey);
+					}
+					mMinSignatureCount = 1;
+				}
+
 				void RegisterAddressRole::run(
 					Type type,
 					const std::string& communityId,

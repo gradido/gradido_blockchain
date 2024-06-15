@@ -39,7 +39,8 @@ namespace gradido {
 				SignatureMap(SignaturePair firstSignaturePair, size_t sizeHint = 1)
 					: SignatureMap(sizeHint) { push(firstSignaturePair); }
 
-				inline void push(const SignaturePair& signaturePair) { signaturePairs.push_back(signaturePair); }
+				//! attention! not thread safe
+				void push(const SignaturePair& signaturePair);
 			
 				std::vector<SignaturePair> signaturePairs;
 			};
@@ -240,6 +241,10 @@ namespace gradido {
 					memory::ConstBlockPtr paringMessageId = nullptr
 				) : signatureMap(signatureMap), bodyBytes(bodyBytes), paringMessageId(paringMessageId) {}
 
+				// copy constructor
+				GradidoTransaction(const GradidoTransaction& other)
+					: GradidoTransaction(other.signatureMap, other.bodyBytes, other.paringMessageId) {}
+
 				SignatureMap			signatureMap;
 				memory::ConstBlockPtr	bodyBytes;
 				memory::ConstBlockPtr	paringMessageId;
@@ -257,7 +262,9 @@ namespace gradido {
 				memory::ConstBlockPtr getSerializedTransaction() const;
 			protected:
 				ConstTransactionBodyPtr mTransactionBody;
+				std::mutex mTransactionBodyMutex;
 				memory::ConstBlockPtr mSerializedTransaction;
+				std::mutex mSerializedTransactionMutex;
 			};
 
 			// confirmed_transaction.proto

@@ -11,8 +11,7 @@ namespace gradido {
 				class GradidoTransferRole : public AbstractRole
 				{
 				public:
-					GradidoTransferRole(const data::GradidoTransfer& gradidoTransfer, const std::string& otherCommunity)
-						: mGradidoTransfer(gradidoTransfer), mOtherCommunity(otherCommunity) {}
+					GradidoTransferRole(const data::GradidoTransfer& gradidoTransfer, const std::string& otherCommunity);
 
 					void run(
 						Type type,

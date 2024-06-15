@@ -9,6 +9,14 @@ namespace gradido {
 		namespace interaction {
 			namespace validate {
 
+				GradidoDeferredTransferRole::GradidoDeferredTransferRole(const data::GradidoDeferredTransfer& deferredTransfer)
+					: mDeferredTransfer(deferredTransfer) 
+				{
+					// prepare for signature check
+					mMinSignatureCount = 1;
+					mRequiredSignPublicKeys.push_back(deferredTransfer.transfer.sender.pubkey);
+				}
+
 				void GradidoDeferredTransferRole::run(
 					Type type,
 					const std::string& communityId,

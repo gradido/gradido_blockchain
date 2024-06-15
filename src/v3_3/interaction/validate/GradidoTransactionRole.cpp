@@ -12,6 +12,7 @@ namespace gradido {
 	namespace v3_3 {
 		namespace interaction {
 			namespace validate {
+
 				void GradidoTransactionRole::run(
 					Type type,
 					const std::string& communityId,

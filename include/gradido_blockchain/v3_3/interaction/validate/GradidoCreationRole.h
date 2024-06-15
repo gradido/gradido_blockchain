@@ -18,8 +18,7 @@ namespace gradido {
 				class GradidoCreationRole : public AbstractRole
 				{
 				public:
-					GradidoCreationRole(const data::GradidoCreation& gradidoCreation)
-						: mGradidoCreation(gradidoCreation) {}
+					GradidoCreationRole(const data::GradidoCreation& gradidoCreation);
 
 					void validateTargetDate(Timepoint receivedTimePoint);
 					void run(

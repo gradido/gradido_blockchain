@@ -17,6 +17,17 @@ namespace gradido {
 
 			const char* GRADIDO_PROTOCOL_VERSION = "3.3";
 
+			void SignatureMap::push(const SignaturePair& signaturePair)
+			{
+				// check if pubkey already exist
+				for (auto& signaturePairIt : signaturePairs) {
+					if (signaturePair.pubkey->isTheSame(signaturePairIt.pubkey)) {
+						throw GradidoAlreadyExist("public key already exist in signature map of gradido transaction");
+					}
+				}
+				signaturePairs.push_back(signaturePair);
+			}
+
 			Timestamp::Timestamp(const Timepoint& date)
 				: seconds(0), nanos(0)
 			{
@@ -51,6 +62,7 @@ namespace gradido {
 			}
 			ConstTransactionBodyPtr GradidoTransaction::getTransactionBody()
 			{
+				std::scoped_lock _lock(mTransactionBodyMutex);
 				mTransactionBody = static_cast<const GradidoTransaction>(*this).getTransactionBody();
 				return mTransactionBody;
 			}
@@ -70,6 +82,7 @@ namespace gradido {
 
 			memory::ConstBlockPtr GradidoTransaction::getSerializedTransaction()
 			{
+				std::scoped_lock _lock(mSerializedTransactionMutex);
 				mSerializedTransaction = static_cast<const GradidoTransaction>(*this).getSerializedTransaction();
 				return mSerializedTransaction;
 			}

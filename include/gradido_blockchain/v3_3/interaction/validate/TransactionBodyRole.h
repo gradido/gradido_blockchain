@@ -12,18 +12,21 @@ namespace gradido {
                 class TransactionBodyRole: public AbstractRole 
                 {
                 public:
-                  TransactionBodyRole(const data::TransactionBody& body): mBody(body) {}
-                  void run(
-					  Type type,
-					  const std::string& communityId,
-					  std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
-					  data::ConfirmedTransactionPtr previousConfirmedTransaction,
-					  data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
-                  );
+					TransactionBodyRole(const data::TransactionBody& body) : mBody(body) {}
+					void run(
+						Type type,
+						const std::string& communityId,
+						std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
+						data::ConfirmedTransactionPtr previousConfirmedTransaction,
+						data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+					);
 
-                  void checkRequiredSignatures(const data::SignatureMap& signatureMap);
+					inline void checkRequiredSignatures(const data::SignatureMap& signatureMap) { getSpecificTransactionRole().checkRequiredSignatures(signatureMap); }
                 protected:
-                  const data::TransactionBody& mBody;
+					AbstractRole& getSpecificTransactionRole();
+
+					std::unique_ptr<AbstractRole> mSpecificTransactionRole;
+					const data::TransactionBody& mBody;
                 };
       }
     }

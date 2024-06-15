@@ -69,6 +69,14 @@ namespace memory {
 		bool isEmpty() const;
 		inline bool operator == (const Block& b) const { return isTheSame(b); }
 		inline bool operator != (const Block& b) const { return !isTheSame(b); }
+		// compare operator for std container ordering
+		bool operator < (const Block& b) const
+		{
+			if (mSize != b.mSize) {
+				return mSize < b.mSize;
+			}
+			return std::memcmp(mData, b.mData, mSize) < 0;
+		}
 
 	protected:
 		void clear();

@@ -11,8 +11,7 @@ namespace gradido {
 				class GradidoDeferredTransferRole : public AbstractRole
 				{
 				public:
-					GradidoDeferredTransferRole(const data::GradidoDeferredTransfer& deferredTransfer)
-						: mDeferredTransfer(deferredTransfer) {}
+					GradidoDeferredTransferRole(const data::GradidoDeferredTransfer& deferredTransfer);
 
 					void run(
 						Type type,

@@ -113,7 +113,7 @@ namespace gradido {
 				}
 
 				// ************* Forbidden Sign *******************
-				TransactionValidationForbiddenSignException::TransactionValidationForbiddenSignException(const std::string& forbiddenPubkey) noexcept
+				TransactionValidationForbiddenSignException::TransactionValidationForbiddenSignException(memory::ConstBlockPtr forbiddenPubkey) noexcept
 					: TransactionValidationException("Forbidden Sign"), mForbiddenPubkey(forbiddenPubkey)
 				{
 				}
@@ -124,7 +124,7 @@ namespace gradido {
 
 				std::string TransactionValidationForbiddenSignException::getFullString() const noexcept
 				{
-					std::string forbiddenPubkeyHex = getForbiddenPubkeyHex();
+					std::string forbiddenPubkeyHex = mForbiddenPubkey->convertToHex();
 					size_t resultSize = 0;
 					if (mTransactionMemo.size()) {
 						resultSize += mTransactionMemo.size() + 25;
@@ -147,20 +147,9 @@ namespace gradido {
 				{
 					Value detailsObjs(kObjectType);
 					detailsObjs.AddMember("what", Value(what(), alloc), alloc);
-					detailsObjs.AddMember("forbiddenPubkey", Value(getForbiddenPubkeyHex().data(), alloc), alloc);
+					detailsObjs.AddMember("forbiddenPubkey", Value(mForbiddenPubkey->convertToHex().data(), alloc), alloc);
 					detailsObjs.AddMember("memo", Value(mTransactionMemo.data(), alloc), alloc);
 					return std::move(detailsObjs);
-				}
-
-				std::string TransactionValidationForbiddenSignException::getForbiddenPubkeyHex() const noexcept
-				{
-					if (mForbiddenPubkey.size()) {
-						try {
-							return std::move(DataTypeConverter::binToHex(mForbiddenPubkey));
-						}
-						catch (...) {}
-					}
-					return "";
 				}
 
 				// ********************************* Missing Sign ************************************************************

@@ -8,6 +8,14 @@ namespace gradido {
 		namespace interaction {
 			namespace validate {
 
+				GradidoCreationRole::GradidoCreationRole(const data::GradidoCreation& gradidoCreation)
+					: mGradidoCreation(gradidoCreation) 
+				{
+					// prepare for signature check
+					mMinSignatureCount = 1;
+					mForbiddenSignPublicKeys.push_back(gradidoCreation.recipient.pubkey);
+				}
+
 				void GradidoCreationRole::run(
 					Type type,
 					const std::string& communityId,

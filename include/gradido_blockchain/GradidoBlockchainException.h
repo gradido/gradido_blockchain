@@ -178,4 +178,15 @@ protected:
 	memory::ConstBlockPtr mRawData;
 
 };
+
+class GRADIDOBLOCKCHAIN_EXPORT GradidoAlreadyExist : public GradidoBlockchainException
+{
+public:
+	explicit GradidoAlreadyExist(const char* what) noexcept
+		: GradidoBlockchainException(what) {}
+
+	std::string getFullString() const {
+		return what();
+	}
+};
 #endif //__GRADIDO_BLOCKCHAIN_EXCEPTION_H

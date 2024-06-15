@@ -11,8 +11,7 @@ namespace gradido {
 				class RegisterAddressRole : public AbstractRole
 				{
 				public:
-					RegisterAddressRole(const data::RegisterAddress& registerAddress)
-						: mRegisterAddress(registerAddress) {}
+					RegisterAddressRole(const data::RegisterAddress& registerAddress);
 
 					void run(
 						Type type,
@@ -22,7 +21,6 @@ namespace gradido {
 						data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 					);
 				protected:
-
 					const data::RegisterAddress& mRegisterAddress;
 				};
 			}
