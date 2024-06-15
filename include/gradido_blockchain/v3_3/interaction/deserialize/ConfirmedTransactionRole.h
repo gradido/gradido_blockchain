@@ -18,7 +18,7 @@ namespace gradido {
 					std::shared_ptr<const data::ConfirmedTransaction> getConfirmedTransaction() { return mConfirmedTransaction; }
 
 				protected:
-					std::shared_ptr<data::ConfirmedTransaction> mConfirmedTransaction;
+					data::ConfirmedTransactionPtr mConfirmedTransaction;
 				};
 
 			}

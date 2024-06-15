@@ -14,7 +14,13 @@ namespace gradido {
 					RegisterAddressRole(const data::RegisterAddress& registerAddress)
 						: mRegisterAddress(registerAddress) {}
 
-					void run(Type type = Type::SINGLE, const std::string& communityId, std::shared_ptr<AbstractBlockchainProvider> blockchainProvider);
+					void run(
+						Type type,
+						const std::string& communityId,
+						std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
+						data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction,
+						data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+					);
 				protected:
 
 					const data::RegisterAddress& mRegisterAddress;

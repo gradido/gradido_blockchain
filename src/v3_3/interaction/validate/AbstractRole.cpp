@@ -1,4 +1,6 @@
 #include "gradido_blockchain/v3_3/interaction/validate/AbstractRole.h"
+#include "gradido_blockchain/v3_3/interaction/validate/Exceptions.h"
+#include "gradido_blockchain/crypto/KeyPairEd25519.h"
 
 #include <regex>
 
@@ -13,6 +15,21 @@ namespace gradido {
 				{
 					return std::regex_match(communityAlias, g_RegExCommunityAlias);
 				}
+
+				void AbstractRole::validate25519PublicKey(const memory::ConstBlockPtr ed25519PublicKey, const char* name)
+				{
+					if (!ed25519PublicKey) {
+						throw TransactionValidationInvalidInputException("missing", name, "public key");
+					}
+					if (ed25519PublicKey->size() != ED25519_PUBLIC_KEY_SIZE) {
+						throw TransactionValidationInvalidInputException("invalid size", name, "public key");
+					}
+					
+					if(ed25519PublicKey->isEmpty()) {
+						throw TransactionValidationInvalidInputException("empty", name, "public key");
+					}
+				}
+
 
 			}
 		}

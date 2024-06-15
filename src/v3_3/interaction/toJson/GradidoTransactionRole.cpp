@@ -1,5 +1,4 @@
 #include "gradido_blockchain/v3_3/interaction/toJson/GradidoTransactionRole.h"
-#include "gradido_blockchain/v3_3/interaction/deserialize/Context.h"
 #include "gradido_blockchain/v3_3/interaction/toJson/Context.h"
 
 #include "magic_enum/magic_enum.hpp"
@@ -36,15 +35,11 @@ namespace gradido {
 						bodyBytes.AddMember("hex", Value(mTransaction.bodyBytes->convertToHex().data(), alloc), alloc);
 					}
 					if ((enum_integer(BodyBytesFormat::JSON) & enum_integer(mFormat)) == enum_integer(BodyBytesFormat::JSON)) {
-						deserialize::Context deserializeBodyBytes(mTransaction.bodyBytes, deserialize::Type::TRANSACTION_BODY);
-						deserializeBodyBytes.run();
-						if (deserializeBodyBytes.isTransactionBody()) {
-							auto transactionBody = deserializeBodyBytes.getTransactionBody();
-							toJson::Context bodyBytesToJson(*transactionBody.get());
+						try {
+							toJson::Context bodyBytesToJson(mTransaction.getTransactionBody());
 							bodyBytes.AddMember("json", Value(bodyBytesToJson.run(pretty), alloc), alloc);
-						}
-						else {
-							bodyBytes.AddMember("json", Value("invalid body bytes", alloc), alloc);
+						} catch(std::exception& ex) {
+							bodyBytes.AddMember("json", Value(ex.what(), alloc), alloc);
 						}
 					}
 					d.AddMember("bodyBytes", bodyBytes, alloc);

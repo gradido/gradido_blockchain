@@ -145,6 +145,16 @@ namespace memory {
 		}
 		return 0 == memcmp(mData, b, size());
 	}
+	// is for loop faster or memcmp with zero filled buffer? (overhead for filling buffer or keeping static filled buffer in memory for each size, or maximal size?)
+	bool Block::isEmpty() const
+	{
+		for (auto i = 0; i < mSize; i++) {
+			if (mData[i] != 0) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	// *************** Cached Memory Block *************************
 	// call getMemory of MemoryManager

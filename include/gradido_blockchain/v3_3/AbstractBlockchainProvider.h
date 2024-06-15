@@ -9,7 +9,7 @@ namespace gradido {
 		{
 		public:
 			virtual ~AbstractBlockchainProvider() {}
-			virtual std::shared_ptr<AbstractBlockchain> findBlockchain(const std::string& communityId) = 0;
+			virtual std::shared_ptr<AbstractBlockchain> findBlockchain(std::string_view communityId) = 0;
 		};
 	}
 }

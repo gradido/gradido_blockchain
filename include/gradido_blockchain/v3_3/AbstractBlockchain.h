@@ -38,28 +38,40 @@ namespace gradido {
 				std::function<FilterResult(TransactionEntry*)> filter = nullptr,
 				SearchDirection order = SearchDirection::ASC
 			) = 0;
-			virtual std::shared_ptr<data::ConfirmedTransaction> getLastTransaction(std::function<bool(const data::ConfirmedTransaction*)> filter = nullptr) = 0;
+			virtual data::ConfirmedTransactionPtr getLastTransaction(std::function<bool(const data::ConfirmedTransaction&)> filter = nullptr) = 0;
+
+			//! \param maxTransactionNr don't search after this transaction id, so maxTransactionNr is last transaction included in search, 0 for not filtering
 			virtual DecayDecimal calculateAddressBalance(
-				const std::string& address, 
-				const std::string& groupId, 
+				memory::ConstBlockPtr accountPublicKey, 
+				const std::string& communityId,  // coin color
 				Timepoint date, 
-				uint64_t ownTransactionNr
+				uint64_t maxTransactionNr = 0
 			) = 0;
-			virtual data::AddressType getAddressType(const std::string& address) = 0;
+			//! \param maxTransactionNr don't search after this transaction id, so maxTransactionNr is last transaction included in search, 0 for not filtering
+			virtual data::AddressType getAddressType(memory::ConstBlockPtr accountPublicKey, uint64_t maxTransactionNr = 0) = 0;
 			virtual std::shared_ptr<TransactionEntry> getTransactionForId(uint64_t transactionId) = 0;
-			virtual std::shared_ptr<TransactionEntry> findLastTransactionForAddress(const std::string& address, const std::string& groupId = "") = 0;
+			//! \param coinGroupId last transaction for address filtered with coinCommunityId
+			virtual std::shared_ptr<TransactionEntry> findLastTransactionForAddress(
+				memory::ConstBlockPtr accountPublicKey,
+				const std::string& coinCommunityId = "",
+				uint64_t maxTransactionNr = 0
+			) = 0;
 			virtual std::shared_ptr<TransactionEntry> findByMessageId(const MemoryBin* messageId, bool cachedOnly = true) = 0;
 			//! \brief Find every transaction belonging to address account in memory or block chain, expensive.
 			//!
 			//! Use with care, can need some time and return huge amount of data.
 			//! \param address Address = user account public key.
-			virtual std::vector<std::shared_ptr<TransactionEntry>> findTransactions(const std::string& address) = 0;
+			virtual std::vector<std::shared_ptr<TransactionEntry>> findTransactions(memory::ConstBlockPtr accountPublicKey) = 0;
 			//! \brief Find transactions of account from a specific month.
 			//! \param address User account public key.
-			virtual std::vector<std::shared_ptr<TransactionEntry>> findTransactions(const std::string& address, int month, int year) = 0;
+			//! \param maxTransactionNr don't search after this transaction id, so maxTransactionNr is last transaction included in search, 0 for not filtering
+			virtual std::vector<std::shared_ptr<TransactionEntry>> findTransactions(
+				memory::ConstBlockPtr accountPublicKey,
+				int month,
+				int year,
+				uint64_t maxTransactionNr = 0
+			) = 0;
 			virtual const std::string& getCommunityId() const = 0;
-			[[deprecated("Replaced by getCommunityId, changed name according to Gradido Apollo implementation")]]
-			inline const std::string& getGroupId() const { return getCommunityId();}
 
 		protected:
 		};

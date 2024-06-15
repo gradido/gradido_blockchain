@@ -8,8 +8,99 @@ namespace gradido {
 		namespace interaction {
 			namespace validate {
 
-				void GradidoCreationRole::run(Type type = Type::SINGLE, const std::string& communityId, std::shared_ptr<AbstractBlockchainProvider> blockchainProvider)
-				{
+				void GradidoCreationRole::run(
+					Type type,
+					const std::string& communityId,
+					std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
+					data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction,
+					data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+				) {
+					const auto& recipient = mGradidoCreation.recipient;
+					if ((type & Type::SINGLE) == Type::SINGLE) 
+					{
+						validate25519PublicKey(recipient.pubkey, "recipient pubkey");
+						if (recipient.amount > 1000) {
+							throw TransactionValidationInvalidInputException("creation amount to high, max 1000 per month", "amount", "string");
+						}
+						if (recipient.amount < 1) {
+							throw TransactionValidationInvalidInputException("creation amount to low, min 1 GDD", "amount", "string");
+						}
+					}
+
+					if (recipient.communityId == communityId) {
+						throw TransactionValidationInvalidInputException(
+							"coin communityId shouldn't be set if it is the same as blockchain communityId",
+							"communityId", "hex"
+						);
+					}
+
+					if ((type & Type::MONTH_RANGE) == Type::MONTH_RANGE)
+					{
+						assert(blockchainProvider);
+						auto blockchain = blockchainProvider->findBlockchain(communityId);
+						assert(blockchain);
+						if (!recipientPreviousConfirmedTransaction) {
+							recipientPreviousConfirmedTransaction = senderPreviousConfirmedTransaction;
+						}
+						assert(recipientPreviousConfirmedTransaction);
+						assert(mConfirmedAt.seconds);
+
+						Decimal sum;
+						auto creationMaxAlgo = getCorrectCreationMaxAlgo(mConfirmedAt);
+						auto ymd = date::year_month_day{ date::floor<date::days>(mGradidoCreation.targetDate.getAsTimepoint()) };
+						auto targetCreationMaxAlgo = getCorrectCreationMaxAlgo(mGradidoCreation.targetDate);
+
+						if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo) {
+							sum = calculateCreationSumLegacy(
+								mGradidoCreation.recipient.pubkey,
+								mConfirmedAt,
+								blockchain,
+								recipientPreviousConfirmedTransaction->id
+							);
+						}
+						else if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo) {
+							sum = calculateCreationSum(
+								mGradidoCreation.recipient.pubkey,
+								static_cast<uint32_t>(ymd.month()),
+								static_cast<int>(ymd.year()),
+								mConfirmedAt,
+								blockchain,
+								recipientPreviousConfirmedTransaction->id
+							);
+						}
+						sum += recipient.amount;
+						// first max creation check algo
+						if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo && sum > 3000) {
+							sum -= recipient.amount;
+							throw InvalidCreationException(
+								"creation more than 3.000 GDD in 3 month not allowed",
+								static_cast<uint32_t>(ymd.month()), static_cast<int>(ymd.year()),
+								recipient.amount, sum
+							);
+						}
+						// second max creation check algo
+						else if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo && sum > 1000) {
+							sum -= recipient.amount;
+							throw InvalidCreationException(
+								"creation more than 1.000 GDD per month not allowed",
+								static_cast<uint32_t>(ymd.month()), static_cast<int>(ymd.year()),
+								recipient.amount, sum
+							);
+						}
+					}
+					// TODO: check if signer belongs to blockchain
+					if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
+						assert(blockchainProvider);
+						auto blockchain = blockchainProvider->findBlockchain(communityId);
+						assert(blockchain);
+
+						auto addressType = blockchain->getAddressType(mGradidoCreation.recipient.pubkey);
+						if (data::AddressType::COMMUNITY_HUMAN != addressType &&
+							data::AddressType::COMMUNITY_AUF != addressType &&
+							data::AddressType::COMMUNITY_GMW != addressType) {
+							throw WrongAddressTypeException("wrong address type for creation", addressType, mGradidoCreation.recipient.pubkey);
+						}
+					}
 
 				}
 
@@ -54,6 +145,99 @@ namespace gradido {
 					}
 				}
 
+				Decimal GradidoCreationRole::calculateCreationSum(
+					memory::ConstBlockPtr accountPubkey,
+					int month,
+					int year,
+					Timepoint received,
+					std::shared_ptr<AbstractBlockchain> blockchain,
+					uint64_t maxTransactionNr
+				)
+				{
+					assert(blockchain);
+					std::vector<std::shared_ptr<TransactionEntry>> allTransactions;
+					// received = max
+					// received - 2 month = min
+					auto monthDiff = getTargetDateReceivedDistanceMonth(received);
+					auto searchDate = date::year_month_day{ date::floor<date::days>(received) };
+					for (int i = 0; i < monthDiff + 1; i++)
+					{
+						auto transactions = blockchain->findTransactions(
+							accountPubkey, 
+							static_cast<unsigned>(searchDate.month()),
+							static_cast<int>(searchDate.year()),
+							maxTransactionNr
+						);
+						if (transactions.size()) {
+							// https://stackoverflow.com/questions/201718/concatenating-two-stdvectors
+							allTransactions.insert(
+								allTransactions.end(),
+								std::make_move_iterator(transactions.begin()),
+								std::make_move_iterator(transactions.end())
+							);
+						}
+						searchDate.month()--;
+					}
+					Decimal sum; // default initialized with zero
+					for (auto it = allTransactions.begin(); it != allTransactions.end(); it++)
+					{
+						auto body = (*it)->getConfirmedTransaction()->gradidoTransaction->getTransactionBody();
+						if(body.isCreation()) 
+						{
+							auto creation = body.creation;
+							auto targetDate = date::year_month_day{ date::floor<date::days>(creation->targetDate.getAsTimepoint()) };
+							if (targetDate.month() != date::month(month) || targetDate.year() != date::year(year)) {
+								continue;
+							}
+							sum += creation->recipient.amount;
+						}
+					}
+					return sum;
+				}
+
+				Decimal GradidoCreationRole::calculateCreationSumLegacy(
+					memory::ConstBlockPtr accountPubkey,
+					Timepoint received,
+					std::shared_ptr<AbstractBlockchain> blockchain,
+					uint64_t maxTransactionNr
+				)
+				{
+					assert(blockchain);
+					// check that is is indeed an old transaction from before Sun May 03 2020 11:00:08 GMT+0000
+					auto algo = getCorrectCreationMaxAlgo(received);
+					assert(CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == algo);
+					std::vector<std::shared_ptr<TransactionEntry>> allTransactions;
+					// received = max
+					// received - 2 month = min
+					//auto monthDiff = model::gradido::TransactionCreation::getTargetDateReceivedDistanceMonth(received);
+					int monthDiff = 2;
+					auto searchDate = date::year_month_day{ date::floor<date::days>(received) };
+					for (int i = 0; i < monthDiff + 1; i++) {
+						auto transactions = blockchain->findTransactions(
+							accountPubkey,
+							static_cast<unsigned>(searchDate.month()), 
+							static_cast<int>(searchDate.year()),
+							maxTransactionNr
+						);
+						// https://stackoverflow.com/questions/201718/concatenating-two-stdvectors
+						allTransactions.insert(
+							allTransactions.end(),
+							std::make_move_iterator(transactions.begin()),
+							std::make_move_iterator(transactions.end())
+						);
+						searchDate.month()--;
+					}
+					Decimal sum;
+					for (auto it = allTransactions.begin(); it != allTransactions.end(); it++) {
+						auto body = (*it)->getConfirmedTransaction()->gradidoTransaction->getTransactionBody();
+						if (body.isCreation()) {
+							sum += body.creation->recipient.amount;
+						}
+					}
+					return sum;
+				}
+
+
 				unsigned GradidoCreationRole::getTargetDateReceivedDistanceMonth(Timepoint createdAt)
 				{
 					date::month targetDateReceivedDistanceMonth(2);
@@ -66,6 +250,14 @@ namespace gradido {
 						targetDateReceivedDistanceMonth = date::month(3);
 					}
 					return static_cast<unsigned>(targetDateReceivedDistanceMonth);
+				}
+
+				CreationMaxAlgoVersion GradidoCreationRole::getCorrectCreationMaxAlgo(const data::TimestampSeconds& timepoint)
+				{
+					if (timepoint.seconds < 1588503608) {
+						return CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD;
+					}
+					return CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE;
 				}
 
 

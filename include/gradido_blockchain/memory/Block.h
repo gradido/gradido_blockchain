@@ -64,6 +64,8 @@ namespace memory {
 		inline bool isTheSame(const std::shared_ptr<const Block> b) const {
 			return isTheSame(*b);
 		}
+		//! \return true if all values are 0, for mSize = 4 => 0000
+		bool isEmpty() const;
 		inline bool operator == (const Block& b) const { return isTheSame(b); }
 		inline bool operator != (const Block& b) const { return !isTheSame(b); }
 

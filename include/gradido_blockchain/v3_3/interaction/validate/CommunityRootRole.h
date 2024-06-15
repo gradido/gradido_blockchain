@@ -14,7 +14,13 @@ namespace gradido {
 					CommunityRootRole(const data::CommunityRoot& communityRoot)
 						: mCommunityRoot(communityRoot) {}
 
-					void run(Type type = Type::SINGLE, const std::string& communityId, std::shared_ptr<AbstractBlockchainProvider> blockchainProvider);
+					void run(
+						Type type,
+						const std::string& communityId,
+						std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
+						data::ConfirmedTransactionPtr previousConfirmedTransaction,
+						data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+					);
 				protected:
 
 					const data::CommunityRoot& mCommunityRoot;

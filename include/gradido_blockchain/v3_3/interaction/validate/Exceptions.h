@@ -170,14 +170,14 @@ namespace gradido {
 				class GRADIDOBLOCKCHAIN_EXPORT WrongAddressTypeException : public TransactionValidationException
 				{
 				public:
-					explicit WrongAddressTypeException(const char* what, data::AddressType type, const std::string& pubkeyString) noexcept;
+					explicit WrongAddressTypeException(const char* what, data::AddressType type, memory::ConstBlockPtr pubkey) noexcept;
 
 					std::string getFullString() const noexcept;
 					rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 
 				protected:
 					data::AddressType mType;
-					std::string mPubkey;
+					memory::ConstBlockPtr mPubkey;
 				};
 			}
 		}

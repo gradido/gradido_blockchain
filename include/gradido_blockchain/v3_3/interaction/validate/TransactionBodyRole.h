@@ -14,9 +14,11 @@ namespace gradido {
                 public:
                   TransactionBodyRole(const data::TransactionBody& body): mBody(body) {}
                   void run(
-                      Type type = Type::SINGLE,
-                      const std::string& communityId = "",
-                      std::shared_ptr<AbstractBlockchainProvider> blockchainProvider = nullptr
+					  Type type,
+					  const std::string& communityId,
+					  std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
+					  data::ConfirmedTransactionPtr previousConfirmedTransaction,
+					  data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
                   );
 
                 protected:

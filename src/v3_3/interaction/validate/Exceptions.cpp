@@ -347,8 +347,8 @@ namespace gradido {
 				}
 
 				// **************************** Wrong Address Type Exception ***********************************
-				WrongAddressTypeException::WrongAddressTypeException(const char* what, data::AddressType type, const std::string& pubkeyString) noexcept
-					: TransactionValidationException(what), mType(type), mPubkey(pubkeyString)
+				WrongAddressTypeException::WrongAddressTypeException(const char* what, data::AddressType type, memory::ConstBlockPtr pubkey) noexcept
+					: TransactionValidationException(what), mType(type), mPubkey(pubkey)
 				{
 
 				}
@@ -356,7 +356,7 @@ namespace gradido {
 				{
 					std::string result;
 					auto addressTypeName = enum_name(mType);
-					auto pubkeyHex = DataTypeConverter::binToHex(mPubkey);
+					auto pubkeyHex = mPubkey->convertToHex();
 					size_t resultSize = strlen(what()) + addressTypeName.size() + 2 + 14 + 10 + pubkeyHex.size();
 					result.reserve(resultSize);
 					result = what();

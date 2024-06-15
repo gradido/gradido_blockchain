@@ -204,23 +204,6 @@ std::string BlockchainOrderException::getFullString() const
 	return what();
 }
 
-// *************************** Invalid Transaction Type on Blockchain
-InvalidTransactionTypeOnBlockchain::InvalidTransactionTypeOnBlockchain(const char* what, model::gradido::TransactionType type) noexcept
-	: GradidoBlockchainException(what), mTransactionType(type)
-{
-
-}
-
-std::string InvalidTransactionTypeOnBlockchain::getFullString() const
-{
-	auto transactionTypeString = magic_enum::enum_name(mTransactionType);
-	std::string resultString;
-	resultString.reserve(strlen(what()) + transactionTypeString.size() + 2 + 20);
-	resultString = what();
-	resultString += ", transaction type: ";
-	resultString += transactionTypeString;
-	return resultString;
-}
 
 // ****************************** Null Pointer Exception **********************************************
 GradidoNullPointerException::GradidoNullPointerException(const char* what, const char* typeName, const char* functionName) noexcept

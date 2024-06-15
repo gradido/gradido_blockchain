@@ -27,6 +27,9 @@ Decimal::Decimal(Decimal&& src) noexcept
 }
 
 Decimal::Decimal()
+#ifndef USE_MPFR
+	: mDecimal(0.0)
+#endif
 {
 
 }

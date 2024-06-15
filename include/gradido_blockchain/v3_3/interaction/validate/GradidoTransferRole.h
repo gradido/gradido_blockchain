@@ -11,13 +11,38 @@ namespace gradido {
 				class GradidoTransferRole : public AbstractRole
 				{
 				public:
-					GradidoTransferRole(const data::GradidoTransfer& gradidoTransfer)
-						: mGradidoTransfer(gradidoTransfer) {}
+					GradidoTransferRole(const data::GradidoTransfer& gradidoTransfer, const std::string& otherCommunity)
+						: mGradidoTransfer(gradidoTransfer), mOtherCommunity(otherCommunity) {}
 
-					void run(Type type = Type::SINGLE, const std::string& communityId, std::shared_ptr<AbstractBlockchainProvider> blockchainProvider);
+					void run(
+						Type type,
+						const std::string& communityId,
+						std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
+						data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction,
+						data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+					);
+					//! call only if this transfer belong to a deferred transfer, changing validation rules a bit
+					inline void setDeferredTransfer() { mDeferredTransfer = true; }
+
 				protected:
+					void validateSingle(const std::string& communityId);
+					void validatePrevious(
+						const data::ConfirmedTransaction& previousConfirmedTransaction,
+						std::shared_ptr<AbstractBlockchain> blockchain
+					);
+					//! both blockchain pointer could be the same
+					//! \param senderBlockchain blockchain of sender account
+					//! \param recipientBlockchain blockchain of recipient account
+					void validateAccount(
+						const data::ConfirmedTransaction& senderPreviousConfirmedTransaction,
+						const data::ConfirmedTransaction& recipientPreviousConfirmedTransaction,
+						std::shared_ptr<AbstractBlockchain> senderBlockchain,
+						std::shared_ptr<AbstractBlockchain> recipientBlockchain
+					);
 
 					const data::GradidoTransfer& mGradidoTransfer;
+					std::string_view mOtherCommunity;
+					bool mDeferredTransfer;
 				};
 			}
 		}

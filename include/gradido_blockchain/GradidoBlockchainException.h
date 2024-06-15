@@ -127,30 +127,6 @@ public:
 	std::string getFullString() const;
 };
 
-namespace model {
-	namespace gradido {
-		enum TransactionType: uint8_t;
-		class TransactionBase;
-	}
-}
-
-class GRADIDOBLOCKCHAIN_EXPORT InvalidTransactionTypeOnBlockchain : public GradidoBlockchainException
-{
-public:
-	explicit InvalidTransactionTypeOnBlockchain(const char* what, model::gradido::TransactionType type) noexcept;
-	std::string getFullString() const;
-
-protected:
-	model::gradido::TransactionType mTransactionType;
-};
-
-class GRADIDOBLOCKCHAIN_EXPORT InvalidCrossGroupTransaction : public InvalidTransactionTypeOnBlockchain
-{
-public:
-	explicit InvalidCrossGroupTransaction(const char* what, model::gradido::TransactionType type) noexcept
-		: InvalidTransactionTypeOnBlockchain(what, type) {}
-};
-
 class GRADIDOBLOCKCHAIN_EXPORT GradidoNullPointerException : public GradidoBlockchainException
 {
 public:

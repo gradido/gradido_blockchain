@@ -19,7 +19,7 @@ void signalHandler(int signum) {
 
 ServerApplication::ServerApplication()
 {
-	// make sure loop will canceld if sigint signal was send from os
+	// make sure loop will canceled if sigint signal was send from os
 	std::signal(SIGTERM, signalHandler);
 	std::signal(SIGINT, signalHandler);	
 	std::signal(SIGABRT, signalHandler);

@@ -35,11 +35,12 @@ namespace gradido {
 
 			inline uint64_t getTransactionNr() const { return mTransactionNr; }
 			inline memory::ConstBlockPtr getSerializedTransaction() const { return mSerializedTransaction; }
+			std::shared_ptr<const data::ConfirmedTransaction> getConfirmedTransaction();
 			inline uint8_t getMonth() const { return mMonth; }
 			inline uint16_t getYear() const { return mYear; }
 
 			inline std::string getCoinCommunityId() const { return mCommunityId; }
-			static std::string getCoinCommunityId(memory::ConstBlockPtr bodyBytes);
+			static std::string getCoinCommunityId(const data::TransactionBody& body);
 
 		protected:
 			uint64_t mTransactionNr;
@@ -48,6 +49,7 @@ namespace gradido {
 			uint16_t mYear;
 			std::string mCommunityId;
 			std::mutex mFastMutex;
+			std::shared_ptr<const data::ConfirmedTransaction> mConfirmedTransaction;
 		};
 	}
 }

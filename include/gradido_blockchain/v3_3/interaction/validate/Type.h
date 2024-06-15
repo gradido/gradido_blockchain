@@ -27,6 +27,7 @@ namespace gradido {
           PAIRED = 8,
           //! check if transaction is valid for account
           //! check if account exist on blockchain
+          //! check sender and recipient account, at least remote access needed for cross group transactions
           ACCOUNT = 16,
           //! check all transactions in the group which connected with this transaction address(es)
           CONNECTED_GROUP = 32,

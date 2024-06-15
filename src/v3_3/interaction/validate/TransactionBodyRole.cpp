@@ -17,12 +17,18 @@ namespace gradido {
 		namespace interaction {
 			namespace validate {
 
-                void TransactionBodyRole::run(
-                    Type type/* = Type::SINGLE*/,
-                    const std::string& communityId/* = ""*/,
-                    std::shared_ptr<AbstractBlockchainProvider> blockchainProvider/* = nullptr*/
-                )
-                {
+				void TransactionBodyRole::run(
+					Type type,
+					const std::string& communityId,
+					std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
+					data::ConfirmedTransactionPtr previousConfirmedTransaction,
+					data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+				) {
+					// when we don't know the confirmation date yet, we estimate
+					// normally it should be maximal 2 minutes after createdAt if the system clock is correct
+					if (!mConfirmedAt.seconds) {
+						mConfirmedAt.seconds = mBody.createdAt.seconds + 120;
+					}
 					try {
 						if ((type & Type::SINGLE) == Type::SINGLE) {
 							if (mBody.versionNumber != data::GRADIDO_PROTOCOL_VERSION) {
@@ -35,55 +41,58 @@ namespace gradido {
 								}
 							}
 							auto otherGroup = mBody.otherGroup;
-							if (otherGroup.size() && !isValidCommunityAlias(otherGroup)) {
+							if (!otherGroup.empty() && !isValidCommunityAlias(otherGroup)) {
 								throw TransactionValidationInvalidInputException("invalid character, only ascii", "other_group", "string");
 							}
-
-							std::unique_ptr<AbstractRole> specificRole;
-							if (mBody.isTransfer()) {
-								if (specificRole) {
-									throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
-								}
-								specificRole = std::make_unique<GradidoTransferRole>(*mBody.transfer.get());
-							}
-							if (mBody.isCreation()) {
-								if (specificRole) {
-									throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
-								}
-								specificRole = std::make_unique<GradidoCreationRole>(*mBody.creation.get());
-								// check target date for creation transactions
-								dynamic_cast<GradidoCreationRole*>(specificRole.get())->validateTargetDate(mBody.createdAt.getAsTimepoint());
-							}
-							if (mBody.isCommunityFriendsUpdate()) {
-								if (specificRole) {
-									throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
-								}
-								// currently empty
-							}
-							if (mBody.isRegisterAddress()) {
-								if (specificRole) {
-									throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
-								}
-								specificRole = std::make_unique<RegisterAddressRole>(*mBody.registerAddress.get());
-							}
-							if (mBody.isDeferredTransfer()) {
-								if (specificRole) {
-									throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
-								}
-								auto deferredTransfer = mBody.deferredTransfer;
-								if (mBody.createdAt.getAsTimepoint() >= deferredTransfer->timeout.getAsTimepoint()) {
-									throw TransactionValidationInvalidInputException("already reached", "timeout", "Timestamp");
-								}
-								specificRole = std::make_unique<GradidoDeferredTransferRole>(*mBody.deferredTransfer.get());
-							}
-							if (mBody.isCommunityRoot()) {
-								if (specificRole) {
-									throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
-								}
-								specificRole = std::make_unique<CommunityRootRole>(*mBody.communityRoot.get());
-							}
-							specificRole->run(type, communityId, blockchainProvider);
 						}
+						std::unique_ptr<AbstractRole> specificRole;
+						if (mBody.isTransfer()) {
+							if (specificRole) {
+								throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
+							}
+							specificRole = std::make_unique<GradidoTransferRole>(*mBody.transfer.get(), mBody.otherGroup);
+						}
+						if (mBody.isCreation()) {
+							if (specificRole) {
+								throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
+							}
+							specificRole = std::make_unique<GradidoCreationRole>(*mBody.creation.get());
+							// check target date for creation transactions
+							dynamic_cast<GradidoCreationRole*>(specificRole.get())->validateTargetDate(mBody.createdAt.getAsTimepoint());
+						}
+						if (mBody.isCommunityFriendsUpdate()) {
+							if (specificRole) {
+								throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
+							}
+							// currently empty
+						}
+						if (mBody.isRegisterAddress()) {
+							if (specificRole) {
+								throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
+							}
+							specificRole = std::make_unique<RegisterAddressRole>(*mBody.registerAddress.get());
+						}
+						if (mBody.isDeferredTransfer()) {
+							if (specificRole) {
+								throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
+							}
+							auto deferredTransfer = mBody.deferredTransfer;
+							if (mBody.createdAt.getAsTimepoint() >= deferredTransfer->timeout.getAsTimepoint()) {
+								throw TransactionValidationInvalidInputException("already reached", "timeout", "Timestamp");
+							}
+							specificRole = std::make_unique<GradidoDeferredTransferRole>(*mBody.deferredTransfer.get());
+						}
+						if (mBody.isCommunityRoot()) {
+							if (specificRole) {
+								throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
+							}
+							specificRole = std::make_unique<CommunityRootRole>(*mBody.communityRoot.get());
+						}
+						if (!mBody.otherGroup.empty() && !recipientPreviousConfirmedTransaction) {
+							recipientPreviousConfirmedTransaction = blockchainProvider->findBlockchain(mBody.otherGroup)->getLastTransaction();
+						}
+						specificRole->setConfirmedAt(mConfirmedAt);
+						specificRole->run(type, communityId, blockchainProvider, previousConfirmedTransaction, recipientPreviousConfirmedTransaction);
 					}
 					catch (TransactionValidationException& ex) {
 						ex.setTransactionBody(mBody);

@@ -1,6 +1,7 @@
 #include "gradido_blockchain/v3_3/data/Protocol.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/v3_3/interaction/serialize/Context.h"
+#include "gradido_blockchain/v3_3/interaction/deserialize/Context.h"
 #include "sodium.h"
 
 #include <chrono>
@@ -34,6 +35,26 @@ namespace gradido {
 
 				// Convert the duration to seconds
 				seconds = duration_cast<std::chrono::seconds>(duration).count();
+			}
+
+			const TransactionBody& GradidoTransaction::getTransactionBody() const
+			{
+				if (!mTransactionBody) {
+					throw GradidoNullPointerException("transaction body is null", "TransactionBody", __FUNCTION__);
+				}
+				return *mTransactionBody;
+			}
+			const TransactionBody& GradidoTransaction::getTransactionBody()
+			{
+				if (!mTransactionBody) {
+					deserialize::Context c(bodyBytes, deserialize::Type::TRANSACTION_BODY);
+					c.run();
+					if (!c.isTransactionBody()) {
+						throw GradidoNullPointerException("cannot deserialize from body bytes", "TransactionBody", __FUNCTION__);
+					}
+					mTransactionBody = c.getTransactionBody();
+				}
+				return *mTransactionBody;
 			}
 
 			memory::Block ConfirmedTransaction::calculateRunningHash(std::shared_ptr<ConfirmedTransaction> previousConfirmedTransaction/* = nullptr*/)

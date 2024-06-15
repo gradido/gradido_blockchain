@@ -14,7 +14,13 @@ namespace gradido {
 					GradidoDeferredTransferRole(const data::GradidoDeferredTransfer& deferredTransfer)
 						: mDeferredTransfer(deferredTransfer) {}
 
-					void run(Type type = Type::SINGLE, const std::string& communityId, std::shared_ptr<AbstractBlockchainProvider> blockchainProvider);
+					void run(
+						Type type,
+						const std::string& communityId,
+						std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
+						data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction,
+						data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+					);
 				protected:
 					const data::GradidoDeferredTransfer& mDeferredTransfer;
 				};

@@ -8,6 +8,13 @@ namespace gradido {
 	namespace v3_3 {
 		namespace interaction {
 			namespace validate {
+
+				enum class CreationMaxAlgoVersion : short
+				{
+					v01_THREE_MONTHS_3000_GDD,
+					v02_ONE_MONTH_1000_GDD_TARGET_DATE
+				};
+
 				class GradidoCreationRole : public AbstractRole
 				{
 				public:
@@ -15,9 +22,30 @@ namespace gradido {
 						: mGradidoCreation(gradidoCreation) {}
 
 					void validateTargetDate(Timepoint receivedTimePoint);
-					void run(Type type = Type::SINGLE, const std::string& communityId, std::shared_ptr<AbstractBlockchainProvider> blockchainProvider);
+					void run(
+						Type type,
+						const std::string& communityId,
+						std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
+						data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction,
+						data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+					);
 				protected:
+					Decimal calculateCreationSum(
+						memory::ConstBlockPtr accountPubkey,
+						int month,
+						int year,
+						Timepoint received,
+						std::shared_ptr<AbstractBlockchain> blockchain,
+						uint64_t maxTransactionNr
+					);
+					Decimal calculateCreationSumLegacy(
+						memory::ConstBlockPtr accountPubkey,
+						Timepoint received,
+						std::shared_ptr<AbstractBlockchain> blockchain,
+						uint64_t maxTransactionNr
+					);
 					unsigned getTargetDateReceivedDistanceMonth(Timepoint received);
+					CreationMaxAlgoVersion getCorrectCreationMaxAlgo(const data::TimestampSeconds& timepoint);
 
 					const data::GradidoCreation& mGradidoCreation;
 				};

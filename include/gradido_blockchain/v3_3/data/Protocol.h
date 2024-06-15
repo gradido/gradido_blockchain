@@ -70,6 +70,11 @@ namespace gradido {
 					return std::chrono::system_clock::time_point(std::chrono::seconds{ seconds });
 				}
 				bool operator==(const TimestampSeconds& other) const { return seconds == other.seconds; }
+				bool operator!=(const TimestampSeconds& other) const { return seconds != other.seconds; }
+				bool operator<(const TimestampSeconds& other) const { return seconds < other.seconds; }
+				bool operator<=(const TimestampSeconds& other) const { return seconds <= other.seconds; }
+				bool operator>(const TimestampSeconds& other) const { return seconds > other.seconds; }
+				bool operator>=(const TimestampSeconds& other) const { return seconds >= other.seconds; }
 
 				int64_t seconds;
 			};
@@ -208,6 +213,11 @@ namespace gradido {
 				SignatureMap			signatureMap;
 				memory::ConstBlockPtr	bodyBytes;
 				memory::ConstBlockPtr	parentMessageId;
+
+				const TransactionBody& getTransactionBody() const;
+				const TransactionBody& getTransactionBody();
+			protected:
+				std::unique_ptr<TransactionBody> mTransactionBody;
 			};
 
 			// confirmed_transaction.proto
@@ -239,6 +249,8 @@ namespace gradido {
 				memory::ConstBlockPtr 						messageId;
 				DecayDecimal   								accountBalance;
 			};
+
+			typedef std::shared_ptr<ConfirmedTransaction> ConfirmedTransactionPtr;
 		}
 	}
 }
