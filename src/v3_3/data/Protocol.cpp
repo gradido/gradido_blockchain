@@ -50,6 +50,19 @@ namespace gradido {
 				seconds = duration_cast<std::chrono::seconds>(duration).count();
 			}
 
+			std::vector<memory::ConstBlockPtr> RegisterAddress::getInvolvedAddresses() const
+			{
+				std::vector<memory::ConstBlockPtr> result;
+				result.resize(2);
+				if (userPubkey) {
+					result.push_back(userPubkey);
+				}
+				if (accountPubkey) {
+					result.push_back(accountPubkey);
+				}
+				return result;
+			}
+
 			ConstTransactionBodyPtr GradidoTransaction::getTransactionBody() const
 			{
 				if (mTransactionBody) return mTransactionBody;
@@ -78,6 +91,24 @@ namespace gradido {
 					return false;
 				}
 				return getTransactionBody()->isPairing(*other.getTransactionBody());
+			}
+
+			std::vector<memory::ConstBlockPtr> GradidoTransaction::getInvolvedAddresses() const
+			{
+				auto involvedAddresses = getTransactionBody()->getInvolvedAddresses();
+				for (auto& signPair : signatureMap.signaturePairs) {
+					bool found = false;
+					for (auto& involvedAddress : involvedAddresses) {
+						if (involvedAddress->isTheSame(signPair.pubkey)) {
+							found = true;
+							break;
+						}
+					}
+					if (!found) {
+						involvedAddresses.push_back(signPair.pubkey);
+					}
+				}
+				return involvedAddresses;
 			}
 
 			memory::ConstBlockPtr GradidoTransaction::getSerializedTransaction()
@@ -150,6 +181,16 @@ namespace gradido {
 					return *transfer == *other.transfer;
 				}
 				return false;
+			}
+
+			std::vector<memory::ConstBlockPtr> TransactionBody::getInvolvedAddresses() const
+			{
+				if (isCommunityFriendsUpdate()) return {};
+				if (isCommunityRoot()) return communityRoot->getInvolvedAddresses();
+				if (isRegisterAddress()) return registerAddress->getInvolvedAddresses();
+				if (isTransfer()) return transfer->getInvolvedAddresses();
+				if (isCreation()) return creation->getInvolvedAddresses();
+				if (isDeferredTransfer()) return deferredTransfer->getInvolvedAddresses();
 			}
 		}
 	}

@@ -125,9 +125,11 @@ namespace gradido {
 					memory::ConstBlockPtr aufPubkeyPtr
 				) : pubkey(pubkeyPtr), gmwPubkey(gmwPubkeyPtr), aufPubkey(aufPubkeyPtr) {};
 				
+				inline std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const { return { pubkey, gmwPubkey, aufPubkey }; }
+				
 				memory::ConstBlockPtr pubkey;
 				memory::ConstBlockPtr gmwPubkey;
-				memory::ConstBlockPtr aufPubkey;
+				memory::ConstBlockPtr aufPubkey;				
 			};
 
 			// gradido_creation.proto
@@ -135,6 +137,8 @@ namespace gradido {
 			{
 				GradidoCreation(const TransferAmount& _recipient, Timepoint _targetDate)
 					: recipient(_recipient), targetDate(_targetDate) {}
+
+				inline std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const { return { recipient.pubkey }; }
 
 				TransferAmount recipient;
 				TimestampSeconds targetDate;
@@ -150,14 +154,18 @@ namespace gradido {
 					return sender == other.sender && recipient && recipient->isTheSame(other.recipient);
 				}
 
+				inline std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const { return { sender.pubkey, recipient }; }
+
 				TransferAmount sender;
-				memory::ConstBlockPtr recipient;				
+				memory::ConstBlockPtr recipient;		
 			};
 
 			struct GRADIDOBLOCKCHAIN_EXPORT GradidoDeferredTransfer
 			{
 				GradidoDeferredTransfer(const GradidoTransfer& _transfer, Timepoint _timeout)
 					: transfer(_transfer), timeout(_timeout) {}
+
+				inline std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const { return transfer.getInvolvedAddresses(); }
 
 				GradidoTransfer transfer;
 				TimestampSeconds timeout;
@@ -184,6 +192,8 @@ namespace gradido {
 						derivationIndex == other.derivationIndex
 					;
 				}
+
+				std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
 
 				memory::ConstBlockPtr	userPubkey;
 				AddressType				addressType;
@@ -213,6 +223,7 @@ namespace gradido {
 				data::TransactionType getTransactionType() const;
 
 				bool isPairing(const TransactionBody& other) const;
+				std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
 
 				std::string								memo;
 				Timestamp								createdAt;
@@ -255,6 +266,7 @@ namespace gradido {
 				ConstTransactionBodyPtr getTransactionBody();
 				//! will deserialize transactionBody if not cached
 				bool isPairing(const GradidoTransaction& other) const;
+				std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
 
 				//! will serialize on every call, if it isn't cached
 				memory::ConstBlockPtr getSerializedTransaction();
