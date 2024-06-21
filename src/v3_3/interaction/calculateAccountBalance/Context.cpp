@@ -97,13 +97,9 @@ namespace gradido {
 						return gdd;
 					}
 					assert(balanceDate >= lastDate);
-					if (!(balanceDate - lastDate).zero()) {
-						calculateDecayFactorForDuration(
-							temp->getData(),
-							gDecayFactorGregorianCalender,
-							lastDate, date
-						);
-						calculateDecayFast(temp->getData(), gdd);
+					auto durationUntilBalanceDate = calculateDecayDurationSeconds(lastDate, balanceDate);
+					if (std::chrono::duration_cast<std::chrono::seconds>(durationUntilBalanceDate).count() >= 1) {
+						gdd = gdd.calculateDecay(durationUntilBalanceDate);
 					}
 					return gdd;
 				}
