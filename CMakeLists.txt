@@ -133,6 +133,7 @@ ENDIF()
 ############################## bind source files ###################################
 FILE(GLOB CRYPTO "include/gradido_blockchain/crypto/*.h" "src/crypto/*.cpp")
 FILE(GLOB DATA "include/gradido_blockchain/data/*.h" "src/data/*.cpp")
+FILE(GLOB DATA_IOTA "include/gradido_blockchain/data/iota/*.h" "src/data/iota/*.cpp")
 FILE(GLOB HTTP "include/gradido_blockchain/http/*.h" "src/http/*.cpp")
 FILE(GLOB INTERACTION "include/gradido_blockchain/interaction/*.h" "src/interaction/*.cpp")
 
@@ -158,6 +159,10 @@ FILE(GLOB v3_3_DATA
 	"include/gradido_blockchain/v3_3/data/*.h"
 	"src/v3_3/data/*.cpp"
 )
+FILE(GLOB v3_3_INTERACTION_CALCULATE_ACCOUNT_BALANCE 
+	"include/gradido_blockchain/v3_3/interaction/calculateAccountBalance/*.h" 
+	"src/v3_3/interaction/calculateAccountBalance/*.cpp"
+)
 FILE(GLOB v3_3_INTERACTION_DESERIALIZE 
 	"include/gradido_blockchain/v3_3/interaction/deserialize/*.h" 
 	"src/v3_3/interaction/deserialize/*.cpp"
@@ -177,7 +182,7 @@ FILE(GLOB v3_3_INTERACTION_VALIDATE
 
 SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS 
 	${CRYPTO}
-	${DATA}
+	${DATA} ${DATA_IOTA}
 	#${HTTP}
 	${INTERACTION}
 	${LIB_SRC} 
@@ -190,6 +195,7 @@ SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${TINF} 
 	${THREADING}
 	${v3_3}	${v3_3_BLOCKCHAIN} ${v3_3_DATA} 
+	${v3_3_INTERACTION_CALCULATE_ACCOUNT_BALANCE}
 	${v3_3_INTERACTION_DESERIALIZE}
 	${v3_3_INTERACTION_SERIALIZE}
 	${v3_3_INTERACTION_TO_JSON}
@@ -199,6 +205,7 @@ SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 if(MSVC)
 	# src
 	source_group("crypto" FILES ${CRYPTO})
+	source_group("data\\iota" FILES ${DATA_IOTA})
 	source_group("data" FILES ${DATA})
 	source_group("http" FILES ${HTTP})
 	source_group("interaction" FILES ${INTERACTION})
@@ -214,8 +221,9 @@ if(MSVC)
 	source_group("threading" FILES ${THREADING})
 	source_group("v3_3\\blockchain" FILES ${v3_3_BLOCKCHAIN})
 	source_group("v3_3\\data" FILES ${v3_3_DATA})
+	source_group("v3_3\\interaction\\calculateAccountBalance" FILES ${v3_3_INTERACTION_CALCULATE_ACCOUNT_BALANCE})
 	source_group("v3_3\\interaction\\deserialize" FILES ${v3_3_INTERACTION_DESERIALIZE})
-		source_group("v3_3\\interaction\\serialize" FILES ${v3_3_INTERACTION_SERIALIZE})
+	source_group("v3_3\\interaction\\serialize" FILES ${v3_3_INTERACTION_SERIALIZE})
 	source_group("v3_3\\interaction\\toJson" FILES ${v3_3_INTERACTION_TO_JSON})
 	source_group("v3_3\\interaction\\validate" FILES ${v3_3_INTERACTION_VALIDATE})
 	source_group("v3_3" FILES ${v3_3})

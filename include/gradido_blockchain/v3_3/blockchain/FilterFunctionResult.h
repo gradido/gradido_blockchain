@@ -14,6 +14,18 @@ namespace gradido {
 				//! stop search and return with result
 				STOP = 4
 			};
+
+			inline FilterFunctionResult operator | (FilterFunctionResult lhs, FilterFunctionResult rhs)
+			{
+				using T = std::underlying_type_t <FilterFunctionResult>;
+				return static_cast<FilterFunctionResult>(static_cast<T>(lhs) | static_cast<T>(rhs));
+			}
+
+			inline FilterFunctionResult operator & (FilterFunctionResult lhs, FilterFunctionResult rhs)
+			{
+				using T = std::underlying_type_t <FilterFunctionResult>;
+				return static_cast<FilterFunctionResult>(static_cast<T>(lhs) & static_cast<T>(rhs));
+			}
 		}
 	}
 }

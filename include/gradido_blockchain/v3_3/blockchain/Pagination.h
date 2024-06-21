@@ -11,6 +11,8 @@ namespace gradido {
 
 			struct GRADIDOBLOCKCHAIN_EXPORT Pagination
 			{
+				Pagination()
+					: size(0), page(0) {}
 				Pagination(unsigned int _size) 
 					: size(_size), page(0) {}
 				Pagination(unsigned int _size, unsigned int _page)
@@ -18,6 +20,7 @@ namespace gradido {
 
 				//! page size, how many result should be returned at max
 				//! offset if requesting other than page = 0
+				//! return all for 0
 				unsigned int size;
 
 				unsigned int page;

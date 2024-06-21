@@ -33,6 +33,12 @@ namespace memory {
 		src.mData = nullptr;
 	}
 
+	// copy
+	MPFRBlock::MPFRBlock(const MPFRBlock& src)
+	{
+
+	}
+
 	MPFRBlock::~MPFRBlock()
 	{
 		if (!mData) return;

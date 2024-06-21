@@ -2,6 +2,41 @@
 #include "gradido_blockchain/lib/Decay.h"
 
 #include "gradido_blockchain/memory/MPFRBlock.h"
+
+
+// Fixed-Point-Arithmetic Code by ChatGPT 4.0
+// Fixed-point precision scaling factor
+constexpr long long SCALE = 1LL << 32;
+constexpr long long SECONDS_PER_YEAR = 31556952;
+constexpr double LOG2 = 0.6931471805599453; // log(2)
+
+// Function to calculate 2^x using fixed-point arithmetic
+long long fixed_point_exp2(long long x)
+{
+	long long result = SCALE;
+	long long term = SCALE;
+	for (int i = 1; i < 20; ++i) {
+		term = (term * x) / (SCALE * i);
+		result += term;
+		// Check for potential overflow
+		if (term == 0) break;
+	}
+	return result;
+}
+
+long long decayFormula(long long value, unsigned long seconds)
+{
+	// Convert duration to a fixed-point time factor
+	long long timeFactor = (seconds * SCALE) / SECONDS_PER_YEAR;
+	timeFactor = (timeFactor * LOG2 * SCALE) / SCALE; // Multiply by log(2)
+
+	// Compute 2^timeFactor in fixed-point
+	long long decayFactor = fixed_point_exp2(timeFactor);
+
+	// Perform division in fixed-point and rescale
+	return (value * SCALE) / decayFactor;
+}
+
 /*
 typedef enum {
 MPFR_RNDN=0,  // round to nearest, with ties to even
@@ -163,11 +198,6 @@ Duration calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime)
 	return end - start;
 }
 
-
-long long decayFormula(long long value, unsigned long seconds)
-{
-	return static_cast<long long>(decayFormula(static_cast<long double>(value), seconds));
-}
 
 long double decayFormula(long double value, unsigned long seconds)
 {

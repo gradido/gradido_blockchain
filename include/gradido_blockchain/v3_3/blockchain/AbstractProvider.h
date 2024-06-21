@@ -6,11 +6,11 @@
 namespace gradido {
 	namespace v3_3 {
 		namespace blockchain {
-			class AbstractBlockchainProvider
+			class AbstractProvider
 			{
 			public:
-				virtual ~AbstractBlockchainProvider() {}
-				virtual std::shared_ptr<AbstractBlockchain> findBlockchain(std::string_view communityId) = 0;
+				virtual ~AbstractProvider() {}
+				virtual std::shared_ptr<Abstract> findBlockchain(std::string_view communityId) = 0;
 			};
 
 			class GroupNotFoundException : public GradidoBlockchainException

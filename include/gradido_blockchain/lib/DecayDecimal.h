@@ -11,12 +11,16 @@ class GRADIDOBLOCKCHAIN_EXPORT DecayDecimal : public Decimal
 public:
 	// inherit constructors
 	using Decimal::Decimal;
+
+	DecayDecimal(const Decimal& decimal);
+
 	virtual ~DecayDecimal();
 	
-	virtual void applyDecay(Duration duration);
-	inline void applyDecay(Timepoint startTime, Timepoint endTime) {
-		applyDecay(calculateDecayDurationSeconds(startTime, endTime));
+	virtual DecayDecimal calculateDecay(Duration duration) const;
+	inline DecayDecimal calculateDecay(Timepoint startTime, Timepoint endTime) const {
+		return calculateDecay(calculateDecayDurationSeconds(startTime, endTime));
 	}
+
 };
 
 #endif //__GRADIDO_BLOCKCHAIN_LIB_DECAY_DECIMAL_H

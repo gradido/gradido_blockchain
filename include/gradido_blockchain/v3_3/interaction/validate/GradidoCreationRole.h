@@ -24,23 +24,23 @@ namespace gradido {
 					void run(
 						Type type,
 						const std::string& communityId,
-						std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
+						std::shared_ptr<blockchain::AbstractProvider> blockchainProvider,
 						data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction,
 						data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 					);
 				protected:
 					Decimal calculateCreationSum(
 						memory::ConstBlockPtr accountPubkey,
-						int month,
-						int year,
+						date::month month,
+						date::year year,
 						Timepoint received,
-						std::shared_ptr<AbstractBlockchain> blockchain,
+						std::shared_ptr<blockchain::Abstract> blockchain,
 						uint64_t maxTransactionNr
 					);
 					Decimal calculateCreationSumLegacy(
 						memory::ConstBlockPtr accountPubkey,
 						Timepoint received,
-						std::shared_ptr<AbstractBlockchain> blockchain,
+						std::shared_ptr<blockchain::Abstract> blockchain,
 						uint64_t maxTransactionNr
 					);
 					unsigned getTargetDateReceivedDistanceMonth(Timepoint received);

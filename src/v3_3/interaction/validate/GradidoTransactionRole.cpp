@@ -1,7 +1,7 @@
 ﻿#include "gradido_blockchain/v3_3/interaction/validate/GradidoTransactionRole.h"
 #include "gradido_blockchain/v3_3/interaction/validate/TransactionBodyRole.h"
 #include "gradido_blockchain/v3_3/interaction/validate/Exceptions.h"
-#include "gradido_blockchain/v3_3/TransactionEntry.h"
+#include "gradido_blockchain/v3_3/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 
 #include "magic_enum/magic_enum.hpp"
@@ -16,7 +16,7 @@ namespace gradido {
 				void GradidoTransactionRole::run(
 					Type type,
 					const std::string& communityId,
-					std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
+					std::shared_ptr<blockchain::AbstractProvider> blockchainProvider,
 					data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction,
 					data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 				) {
@@ -50,7 +50,7 @@ namespace gradido {
 						auto otherBlockchain = blockchainProvider->findBlockchain(body->otherGroup);
 						assert(otherBlockchain);
 
-						std::shared_ptr<TransactionEntry> pairTransactionEntry;
+						std::shared_ptr<blockchain::TransactionEntry> pairTransactionEntry;
 						switch (body->type) {
 						case data::CrossGroupType::LOCAL: break; // no cross group
 						case data::CrossGroupType::INBOUND: break; // happen before OUTBOUND, can only be checked after both transactions are written to blockchain

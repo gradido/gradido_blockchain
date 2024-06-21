@@ -19,7 +19,7 @@ namespace gradido {
 				void GradidoCreationRole::run(
 					Type type,
 					const std::string& communityId,
-					std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
+					std::shared_ptr<blockchain::AbstractProvider> blockchainProvider,
 					data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction,
 					data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 				) {
@@ -68,11 +68,9 @@ namespace gradido {
 						}
 						else if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo) {
 							sum = calculateCreationSum(
-								mGradidoCreation.recipient.pubkey,
-								static_cast<uint32_t>(ymd.month()),
-								static_cast<int>(ymd.year()),
-								mConfirmedAt,
-								blockchain,
+								mGradidoCreation.recipient.pubkey, 
+								ymd.month(), ymd.year(),
+								mConfirmedAt, blockchain,
 								recipientPreviousConfirmedTransaction->id
 							);
 						}
@@ -155,50 +153,47 @@ namespace gradido {
 
 				Decimal GradidoCreationRole::calculateCreationSum(
 					memory::ConstBlockPtr accountPubkey,
-					int month,
-					int year,
+					date::month month,
+					date::year year,
 					Timepoint received,
-					std::shared_ptr<AbstractBlockchain> blockchain,
+					std::shared_ptr<blockchain::Abstract> blockchain,
 					uint64_t maxTransactionNr
 				)
 				{
 					assert(blockchain);
-					std::vector<std::shared_ptr<TransactionEntry>> allTransactions;
+
+					auto searchDate = date::year_month_day{ date::floor<date::days>(received) };
+					Decimal sum; // default initialized with zero
+
 					// received = max
 					// received - 2 month = min
 					auto monthDiff = getTargetDateReceivedDistanceMonth(received);
-					auto searchDate = date::year_month_day{ date::floor<date::days>(received) };
-					for (int i = 0; i < monthDiff + 1; i++)
+
+					for (int i = 0; i < monthDiff + 1; i++) 
 					{
-						auto transactions = blockchain->findTransactions(
+						blockchain->findAll(blockchain::Filter(
+							// static filter
+							maxTransactionNr,
 							accountPubkey, 
-							static_cast<unsigned>(searchDate.month()),
-							static_cast<int>(searchDate.year()),
-							maxTransactionNr
-						);
-						if (transactions.size()) {
-							// https://stackoverflow.com/questions/201718/concatenating-two-stdvectors
-							allTransactions.insert(
-								allTransactions.end(),
-								std::make_move_iterator(transactions.begin()),
-								std::make_move_iterator(transactions.end())
-							);
-						}
-						searchDate.month()--;
-					}
-					Decimal sum; // default initialized with zero
-					for (auto it = allTransactions.begin(); it != allTransactions.end(); it++)
-					{
-						auto body = (*it)->getConfirmedTransaction()->gradidoTransaction->getTransactionBody();
-						if(body->isCreation()) 
-						{
-							auto creation = body->creation;
-							auto targetDate = date::year_month_day{ date::floor<date::days>(creation->targetDate.getAsTimepoint()) };
-							if (targetDate.month() != date::month(month) || targetDate.year() != date::year(year)) {
-								continue;
+							searchDate.month(), searchDate.year(),
+							// dynamic filter
+							// called for each transaction which fulfills the static filters
+							[&sum, month, year](const blockchain::TransactionEntry& entry) -> blockchain::FilterFunctionResult 
+							{
+								auto body = entry.getConfirmedTransaction()->gradidoTransaction->getTransactionBody();
+								if (body->isCreation())
+								{
+									auto creation = body->creation;
+									auto targetDate = date::year_month_day{ date::floor<date::days>(creation->targetDate.getAsTimepoint()) };
+									if (targetDate.month() == month && targetDate.year() == year) {
+										sum += creation->recipient.amount;
+									}									
+								}
+								// we don't need any of it in our result set
+								return blockchain::FilterFunctionResult::DISMISS;
 							}
-							sum += creation->recipient.amount;
-						}
+						));
+						searchDate.month()--;
 					}
 					return sum;
 				}
@@ -206,7 +201,7 @@ namespace gradido {
 				Decimal GradidoCreationRole::calculateCreationSumLegacy(
 					memory::ConstBlockPtr accountPubkey,
 					Timepoint received,
-					std::shared_ptr<AbstractBlockchain> blockchain,
+					std::shared_ptr<blockchain::Abstract> blockchain,
 					uint64_t maxTransactionNr
 				)
 				{
@@ -214,37 +209,36 @@ namespace gradido {
 					// check that is is indeed an old transaction from before Sun May 03 2020 11:00:08 GMT+0000
 					auto algo = getCorrectCreationMaxAlgo(received);
 					assert(CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == algo);
-					std::vector<std::shared_ptr<TransactionEntry>> allTransactions;
+					auto searchDate = date::year_month_day{ date::floor<date::days>(received) };
+					Decimal sum; // default initialized with zero
+
 					// received = max
 					// received - 2 month = min
-					//auto monthDiff = model::gradido::TransactionCreation::getTargetDateReceivedDistanceMonth(received);
 					int monthDiff = 2;
-					auto searchDate = date::year_month_day{ date::floor<date::days>(received) };
+					
 					for (int i = 0; i < monthDiff + 1; i++) {
-						auto transactions = blockchain->findTransactions(
+						blockchain->findAll(blockchain::Filter(
+							// static filter
+							maxTransactionNr,
 							accountPubkey,
-							static_cast<unsigned>(searchDate.month()), 
-							static_cast<int>(searchDate.year()),
-							maxTransactionNr
-						);
-						// https://stackoverflow.com/questions/201718/concatenating-two-stdvectors
-						allTransactions.insert(
-							allTransactions.end(),
-							std::make_move_iterator(transactions.begin()),
-							std::make_move_iterator(transactions.end())
-						);
+							searchDate.month(), searchDate.year(),
+							// dynamic filter
+							// called for each transaction which fulfills the static filters
+							[&sum, &searchDate](const blockchain::TransactionEntry& entry) -> blockchain::FilterFunctionResult
+							{
+								auto body = entry.getConfirmedTransaction()->gradidoTransaction->getTransactionBody();
+								if (body->isCreation())
+								{
+									sum += body->creation->recipient.amount;
+								}
+								// we don't need any of it in our result set
+								return blockchain::FilterFunctionResult::DISMISS;
+							}
+						));
 						searchDate.month()--;
-					}
-					Decimal sum;
-					for (auto it = allTransactions.begin(); it != allTransactions.end(); it++) {
-						auto body = (*it)->getConfirmedTransaction()->gradidoTransaction->getTransactionBody();
-						if (body->isCreation()) {
-							sum += body->creation->recipient.amount;
-						}
 					}
 					return sum;
 				}
-
 
 				unsigned GradidoCreationRole::getTargetDateReceivedDistanceMonth(Timepoint createdAt)
 				{

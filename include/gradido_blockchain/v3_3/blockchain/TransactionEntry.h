@@ -39,11 +39,11 @@ namespace gradido {
 				);
 
 				//! \brief operator for sorting by mTransactionNr in ascending order
-				bool operator < (const TransactionEntry& b) { return mTransactionNr < b.mTransactionNr; }
+				bool operator < (const TransactionEntry& b) const { return mTransactionNr < b.mTransactionNr; }
 
 				inline uint64_t getTransactionNr() const { return mTransactionNr; }
 				inline memory::ConstBlockPtr getSerializedTransaction() const { return mSerializedTransaction; }
-				std::shared_ptr<const data::ConfirmedTransaction> getConfirmedTransaction();
+				std::shared_ptr<const data::ConfirmedTransaction> getConfirmedTransaction() const;
 				inline uint8_t getMonth() const { return mMonth; }
 				inline uint16_t getYear() const { return mYear; }
 				inline data::TransactionType getTransactionType() const { return mTransactionType; }
@@ -57,8 +57,8 @@ namespace gradido {
 				uint16_t mYear;
 				data::TransactionType mTransactionType;
 				std::string mCommunityId;
-				std::mutex mFastMutex;
-				std::shared_ptr<const data::ConfirmedTransaction> mConfirmedTransaction;
+				mutable std::mutex mFastMutex;
+				mutable std::shared_ptr<const data::ConfirmedTransaction> mConfirmedTransaction;
 			};
 		}
 	}

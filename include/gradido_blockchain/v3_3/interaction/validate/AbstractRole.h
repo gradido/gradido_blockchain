@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_V3_3_INTERACTION_VALIDATE_ABSTRACT_ROLE_H
 
 #include "Type.h"
-#include "gradido_blockchain/v3_3/AbstractBlockchainProvider.h"
+#include "gradido_blockchain/v3_3/blockchain/AbstractProvider.h"
 
 namespace gradido {
 	namespace v3_3 {
@@ -18,7 +18,7 @@ namespace gradido {
                     virtual void run(
                         Type type = Type::SINGLE,
                         const std::string& communityId = "",
-                        std::shared_ptr<AbstractBlockchainProvider> blockchainProvider = nullptr,
+                        std::shared_ptr<blockchain::AbstractProvider> blockchainProvider = nullptr,
                         data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction = nullptr,
                         data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction = nullptr
                     ) = 0;

@@ -16,7 +16,7 @@ namespace gradido {
 					void run(
 						Type type,
 						const std::string& communityId,
-						std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
+						std::shared_ptr<blockchain::AbstractProvider> blockchainProvider,
 						data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction,
 						data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 					);
@@ -27,7 +27,7 @@ namespace gradido {
 					void validateSingle(const std::string& communityId);
 					void validatePrevious(
 						const data::ConfirmedTransaction& previousConfirmedTransaction,
-						std::shared_ptr<AbstractBlockchain> blockchain
+						std::shared_ptr<blockchain::Abstract> blockchain
 					);
 					//! both blockchain pointer could be the same
 					//! \param senderBlockchain blockchain of sender account
@@ -35,8 +35,8 @@ namespace gradido {
 					void validateAccount(
 						const data::ConfirmedTransaction& senderPreviousConfirmedTransaction,
 						const data::ConfirmedTransaction& recipientPreviousConfirmedTransaction,
-						std::shared_ptr<AbstractBlockchain> senderBlockchain,
-						std::shared_ptr<AbstractBlockchain> recipientBlockchain
+						std::shared_ptr<blockchain::Abstract> senderBlockchain,
+						std::shared_ptr<blockchain::Abstract> recipientBlockchain
 					);
 
 					const data::GradidoTransfer& mGradidoTransfer;

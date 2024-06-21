@@ -1,32 +1,37 @@
-#ifndef __GRADIDO_BLOCKCHAIN_V3_3_IN_MEMORY_BLOCKCHAIN_PROVIDER_H
-#define __GRADIDO_BLOCKCHAIN_V3_3_IN_MEMORY_BLOCKCHAIN_PROVIDER_H
+#ifndef __GRADIDO_BLOCKCHAIN_V3_3_BLOCKCHAIN_IN_MEMORY_PROVIDER_H
+#define __GRADIDO_BLOCKCHAIN_V3_3_BLOCKCHAIN_IN_MEMORY_PROVIDER_H
 
-#include "AbstractBlockchainProvider.h"
-#include "InMemoryBlockchain.h"
+#include "gradido_blockchain/lib/StringViewCompare.h"
+#include "AbstractProvider.h"
+#include "InMemory.h"
 #include "gradido_blockchain/export.h"
 
 #include <map>
+#include <mutex>
 
 namespace gradido {
 	namespace v3_3 {
-		class GRADIDOBLOCKCHAIN_EXPORT InMemoryBlockchainProvider final: public AbstractBlockchainProvider
-		{
-		public:
-			static InMemoryBlockchainProvider* getInstance(); 
+		namespace blockchain {
+			class GRADIDOBLOCKCHAIN_EXPORT InMemoryProvider final : public AbstractProvider
+			{
+			public:
+				static InMemoryProvider* getInstance();
 
-			std::shared_ptr<AbstractBlockchain> findBlockchain(std::string_view communityId);
-		protected:
-			std::map<std::string, InMemoryBlockchain> mBlockchainsPerGroup;
+				std::shared_ptr<AbstractBlockchain> findBlockchain(std::string_view communityId);
+			protected:
+				std::map<std::string, std::shared_ptr<InMemory>, StringViewCompare> mBlockchainsPerGroup;
+				std::mutex mWorkMutex;
 
-		private:
-			InMemoryBlockchainProvider();
-			~InMemoryBlockchainProvider();
+			private:
+				InMemoryProvider();
+				~InMemoryProvider();
 
-			/* Explicitly disallow copying. */
-			InMemoryBlockchainProvider(const InMemoryBlockchainProvider&) = delete;
-			InMemoryBlockchainProvider& operator= (const InMemoryBlockchainProvider&) = delete;
-		};
+				/* Explicitly disallow copying. */
+				InMemoryProvider(const InMemoryProvider&) = delete;
+				InMemoryProvider& operator= (const InMemoryProvider&) = delete;
+			};
+		}
 	}
 }
 
-#endif //__GRADIDO_BLOCKCHAIN_V3_3_IN_MEMORY_BLOCKCHAIN_PROVIDER_H
+#endif //__GRADIDO_BLOCKCHAIN_V3_3_BLOCKCHAIN_IN_MEMORY_PROVIDER_H

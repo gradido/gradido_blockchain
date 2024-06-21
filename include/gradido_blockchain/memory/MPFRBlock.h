@@ -20,6 +20,8 @@ namespace memory {
 	public:
 		MPFRBlock();
 		~MPFRBlock();
+		// copy constructor
+		MPFRBlock(const MPFRBlock& src);
 		MPFRBlock(MPFRBlock&& src) noexcept;
 
 		static std::unique_ptr<MPFRBlock> create();

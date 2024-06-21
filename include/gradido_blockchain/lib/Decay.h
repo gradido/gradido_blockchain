@@ -84,7 +84,9 @@ GRADIDOBLOCKCHAIN_EXPORT void calculateDecayFast(mpfr_ptr decay_for_duration, mp
 GRADIDOBLOCKCHAIN_EXPORT void calculateDecay(const mpfr_ptr decay_factor, unsigned long seconds, mpfr_ptr gradido);
 #endif
 GRADIDOBLOCKCHAIN_EXPORT Duration calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime);
+// fixed point arithmetic, nearly only integer arithmetic
 GRADIDOBLOCKCHAIN_EXPORT long long decayFormula(long long value, unsigned long seconds);
+// calculate decay like in nodeJS Backend with Decimal-js
 GRADIDOBLOCKCHAIN_EXPORT long double decayFormula(long double value, unsigned long seconds);
 
 class GRADIDOBLOCKCHAIN_EXPORT ParseStringToMpfrException : public GradidoBlockchainException

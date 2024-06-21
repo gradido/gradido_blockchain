@@ -50,6 +50,19 @@ namespace gradido {
 				seconds = duration_cast<std::chrono::seconds>(duration).count();
 			}
 
+			bool CommunityRoot::isInvolved(memory::ConstBlockPtr publicKey) const
+			{
+				return 
+					publicKey->isTheSame(pubkey) || 
+					publicKey->isTheSame(gmwPubkey) || 
+					publicKey->isTheSame(gmwPubkey);
+			}
+
+			bool GradidoTransfer::isInvolved(memory::ConstBlockPtr publicKey) const
+			{
+				return publicKey->isTheSame(sender.pubkey) || publicKey->isTheSame(recipient);
+			}
+
 			std::vector<memory::ConstBlockPtr> RegisterAddress::getInvolvedAddresses() const
 			{
 				std::vector<memory::ConstBlockPtr> result;
@@ -63,20 +76,25 @@ namespace gradido {
 				return result;
 			}
 
+			bool RegisterAddress::isInvolved(memory::ConstBlockPtr publicKey) const
+			{
+				if (publicKey->isTheSame(userPubkey) || publicKey->isTheSame(accountPubkey)) {
+					return true;
+				}
+				return false;
+			}
+
 			ConstTransactionBodyPtr GradidoTransaction::getTransactionBody() const
 			{
+				std::scoped_lock _lock(mTransactionBodyMutex);
 				if (mTransactionBody) return mTransactionBody;
+
 				deserialize::Context c(bodyBytes, deserialize::Type::TRANSACTION_BODY);
 				c.run();
 				if (!c.isTransactionBody()) {
 					throw GradidoNullPointerException("cannot deserialize from body bytes", "TransactionBody", __FUNCTION__);
 				}
-				return c.getTransactionBody();
-			}
-			ConstTransactionBodyPtr GradidoTransaction::getTransactionBody()
-			{
-				std::scoped_lock _lock(mTransactionBodyMutex);
-				mTransactionBody = static_cast<const GradidoTransaction>(*this).getTransactionBody();
+				mTransactionBody = c.getTransactionBody();
 				return mTransactionBody;
 			}
 			bool GradidoTransaction::isPairing(const GradidoTransaction& other) const
@@ -91,6 +109,16 @@ namespace gradido {
 					return false;
 				}
 				return getTransactionBody()->isPairing(*other.getTransactionBody());
+			}
+
+			bool GradidoTransaction::isInvolved(memory::ConstBlockPtr publicKey) const
+			{
+				for (auto& signPair : signatureMap.signaturePairs) {
+					if (signPair.pubkey->isTheSame(publicKey)) {
+						return true;
+					}
+				}
+				return getTransactionBody()->isInvolved(publicKey);
 			}
 
 			std::vector<memory::ConstBlockPtr> GradidoTransaction::getInvolvedAddresses() const
@@ -111,16 +139,14 @@ namespace gradido {
 				return involvedAddresses;
 			}
 
-			memory::ConstBlockPtr GradidoTransaction::getSerializedTransaction()
-			{
-				std::scoped_lock _lock(mSerializedTransactionMutex);
-				mSerializedTransaction = static_cast<const GradidoTransaction>(*this).getSerializedTransaction();
-				return mSerializedTransaction;
-			}
-
 			memory::ConstBlockPtr GradidoTransaction::getSerializedTransaction() const
 			{
-				return interaction::serialize::Context(*this).run();
+				std::lock_guard _lock(mSerializedTransactionMutex);
+				if (mSerializedTransaction) {
+					return mSerializedTransaction;
+				}
+				mSerializedTransaction = interaction::serialize::Context(*this).run();
+				return mSerializedTransaction;
 			}
 
 			memory::Block ConfirmedTransaction::calculateRunningHash(std::shared_ptr<ConfirmedTransaction> previousConfirmedTransaction/* = nullptr*/)
@@ -182,6 +208,17 @@ namespace gradido {
 				}
 				return false;
 			}
+
+			bool TransactionBody::isInvolved(memory::ConstBlockPtr publicKey) const
+			{
+				if (isCommunityRoot()) return communityRoot->isInvolved(publicKey);
+				if (isRegisterAddress()) return registerAddress->isInvolved(publicKey);
+				if (isTransfer()) return transfer->isInvolved(publicKey);
+				if (isCreation()) return creation->isInvolved(publicKey);
+				if (isDeferredTransfer()) return deferredTransfer->isInvolved(publicKey);
+				return false;
+			}
+
 
 			std::vector<memory::ConstBlockPtr> TransactionBody::getInvolvedAddresses() const
 			{

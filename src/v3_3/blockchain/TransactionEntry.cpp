@@ -48,8 +48,9 @@ namespace gradido {
 
 			}
 
-			std::shared_ptr<const data::ConfirmedTransaction> TransactionEntry::getConfirmedTransaction()
+			std::shared_ptr<const data::ConfirmedTransaction> TransactionEntry::getConfirmedTransaction() const
 			{
+				std::lock_guard _lock(mFastMutex);
 				if (!mConfirmedTransaction) {
 					interaction::deserialize::Context c(mSerializedTransaction, interaction::deserialize::Type::CONFIRMED_TRANSACTION);
 					c.run();

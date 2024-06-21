@@ -21,7 +21,7 @@ namespace gradido {
 				void GradidoTransferRole::run(
 					Type type,
 					const std::string& communityId,
-					std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
+					std::shared_ptr<blockchain::AbstractProvider> blockchainProvider,
 					data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction,
 					data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 				) {
@@ -40,7 +40,7 @@ namespace gradido {
 					}
 					if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
 						auto senderBlockchain = blockchainProvider->findBlockchain(communityId);
-						std::shared_ptr<AbstractBlockchain> recipientBlockchain;
+						std::shared_ptr<blockchain::Abstract> recipientBlockchain;
 						if (!mOtherCommunity.empty() && mOtherCommunity != communityId) {
 							recipientBlockchain = blockchainProvider->findBlockchain(mOtherCommunity);
 						}
@@ -86,7 +86,7 @@ namespace gradido {
 
 				void GradidoTransferRole::validatePrevious(
 					const data::ConfirmedTransaction& previousConfirmedTransaction,
-					std::shared_ptr<AbstractBlockchain> blockchain
+					std::shared_ptr<blockchain::Abstract> blockchain
 				) {
 					assert(blockchain);
 					assert(mConfirmedAt.seconds);
@@ -105,8 +105,8 @@ namespace gradido {
 				void GradidoTransferRole::validateAccount(
 					const data::ConfirmedTransaction& senderPreviousConfirmedTransaction,
 					const data::ConfirmedTransaction& recipientPreviousConfirmedTransaction,
-					std::shared_ptr<AbstractBlockchain> senderBlockchain,
-					std::shared_ptr<AbstractBlockchain> recipientBlockchain
+					std::shared_ptr<blockchain::Abstract> senderBlockchain,
+					std::shared_ptr<blockchain::Abstract> recipientBlockchain
 				) {
 					assert(senderBlockchain);
 					assert(recipientBlockchain);
