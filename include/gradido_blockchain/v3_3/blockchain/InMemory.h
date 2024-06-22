@@ -21,7 +21,7 @@ namespace gradido {
 			class GRADIDOBLOCKCHAIN_EXPORT InMemory : public Abstract
 			{
 			public:
-				InMemory(std::string_view communityId);
+				InMemory(std::string_view communityId, std::chrono::seconds iotaMessageIdCacheTimeout);
 				~InMemory();
 
 				// remove all transactions and start over

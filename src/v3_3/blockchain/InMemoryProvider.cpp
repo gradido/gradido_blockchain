@@ -20,7 +20,7 @@ namespace gradido {
 				return &one;
 			}
 
-			std::shared_ptr<AbstractBlockchain> InMemoryProvider::findBlockchain(std::string_view communityId)
+			std::shared_ptr<Abstract> InMemoryProvider::findBlockchain(std::string_view communityId)
 			{
 				std::lock_guard _lock(mWorkMutex);
 				auto it = mBlockchainsPerGroup.find(communityId);

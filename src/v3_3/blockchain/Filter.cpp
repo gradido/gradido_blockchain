@@ -23,13 +23,13 @@ namespace gradido {
 			Filter::Filter(
 				uint64_t _minTransactionNr,
 				uint64_t _maxTransactionNr,
-				memory::ConstBlockPtr _involvedPublicKey = nullptr,
-				SearchDirection _searchDirection = SearchDirection::DESC,
-				Pagination _pagination = Pagination(0),				
-				std::string_view coinCommunityId = nullptr,
-				date::month _month = date::month(),
-				date::year _year = date::year(),
-				std::function<FilterFunctionResult(const TransactionEntry&)> _filterFunction = nullptr
+				memory::ConstBlockPtr _involvedPublicKey /*= nullptr*/,
+				SearchDirection _searchDirection /*= SearchDirection::DESC*/,
+				Pagination _pagination /*= Pagination(0)*/,				
+				std::string_view coinCommunityId /*= nullptr*/,
+				date::month _month /*= date::month()*/,
+				date::year _year /*= date::year()*/,
+				std::function<FilterFunctionResult(const TransactionEntry&)> _filterFunction/* = nullptr*/
 			) :
 				minTransactionNr(_minTransactionNr),
 				maxTransactionNr(_maxTransactionNr),

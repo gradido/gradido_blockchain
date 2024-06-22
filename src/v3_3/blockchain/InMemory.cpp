@@ -3,8 +3,8 @@
 namespace gradido {
 	namespace v3_3 {
 		namespace blockchain {
-			InMemory::InMemory(std::string_view communityId)
-				: mCommunityId(communityId), mSortedDirty(false)
+			InMemory::InMemory(std::string_view communityId, std::chrono::seconds iotaMessageIdCacheTimeout)
+				: Abstract(communityId, iotaMessageIdCacheTimeout), mSortedDirty(false)
 			{
 
 			}

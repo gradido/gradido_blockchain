@@ -22,8 +22,14 @@ namespace gradido {
 						uint64_t maxTransactionNr = 0, // last transaction nr to include
 						std::string_view coinCommunityId = nullptr // for calculate only a specific coin color
 					);
-				protected:					
+				protected:	
 					std::shared_ptr<AbstractRole> getRole(const data::TransactionBody& body, Timepoint balanceDate);
+					std::pair<Timepoint, DecayDecimal> calculateBookBackTimeoutedDeferredTransfer(
+						std::shared_ptr<blockchain::TransactionEntry> transactionEntry
+					);
+					std::pair<Timepoint, DecayDecimal> calculateRedeemedDeferredTransferChange(
+						const blockchain::DeferredRedeemedTransferPair& deferredRedeemingTransferPair
+					);
 					std::shared_ptr<blockchain::Abstract> mBlockchain;
 					
 				};

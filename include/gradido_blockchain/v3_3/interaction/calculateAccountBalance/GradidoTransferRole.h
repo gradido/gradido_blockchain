@@ -17,7 +17,7 @@ namespace gradido {
 					inline bool isFinalBalanceForAccount(memory::ConstBlockPtr accountPublicKey) const {
 						return mTransfer.sender.pubkey->isTheSame(accountPublicKey);
 					}
-					inline DecayDecimal getBalance() const {
+					inline DecayDecimal getAmount() const {
 						return mTransfer.sender.amount;
 					}
 				protected:

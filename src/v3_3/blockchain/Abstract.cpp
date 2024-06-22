@@ -5,7 +5,13 @@ namespace gradido {
 	namespace v3_3 {
 		namespace blockchain {
 
-			std::shared_ptr<TransactionEntry> Abstract::findOne(const Filter& filter = Filter::LAST_TRANSACTION) 
+			Abstract::Abstract(std::string_view communityId, std::chrono::seconds iotaMessageIdCacheTimeout)
+				: mCommunityId(communityId), mMessageIdTransactionNrCache(iotaMessageIdCacheTimeout)
+			{
+
+			}
+
+			std::shared_ptr<TransactionEntry> Abstract::findOne(const Filter& filter/* = Filter::LAST_TRANSACTION*/)
 			{
 				auto results = findAll(filter);
 				if (!results.size()) { 
@@ -15,15 +21,6 @@ namespace gradido {
 					throw TransactionResultCountException("to many transactions found with blockchain::Abstract::findOne", 1, results.size());
 				}
 				return results.front();
-			}
-
-			DecayDecimal Abstract::calculateAddressBalance(
-				memory::ConstBlockPtr accountPublicKey,
-				Timepoint date,
-				const Filter& filter = Filter::ALL_TRANSACTIONS
-			)
-			{
-
 			}
 
 			std::shared_ptr<TransactionEntry> Abstract::findByMessageId(
@@ -50,6 +47,7 @@ namespace gradido {
 					if (messageId->isTheSame(entry.getConfirmedTransaction()->messageId)) {
 						return FilterFunctionResult::USE | FilterFunctionResult::STOP;
 					}
+					return FilterFunctionResult::DISMISS;
 				};
 				return findOne(f);
 			}
@@ -69,6 +67,7 @@ namespace gradido {
 					if (body->isRegisterAddress() && body->isInvolved(publicKey)) {
 						return FilterFunctionResult::USE | FilterFunctionResult::STOP;
 					}
+					return FilterFunctionResult::DISMISS;
 				};
 				auto transactionEntry = findOne(f);
 				if (transactionEntry) {

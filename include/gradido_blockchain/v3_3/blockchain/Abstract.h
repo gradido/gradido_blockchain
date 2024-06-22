@@ -19,22 +19,37 @@ namespace gradido {
 		namespace blockchain {
 
 			typedef std::list<std::shared_ptr<TransactionEntry>> TransactionEntries;
+			typedef std::pair<std::shared_ptr<TransactionEntry>, std::shared_ptr<TransactionEntry>> DeferredRedeemedTransferPair;
 			class Abstract
 			{
 			public:
+				Abstract(std::string_view communityId, std::chrono::seconds iotaMessageIdCacheTimeout);
+				virtual ~Abstract() {}
+
 				// main search function, do all the work, reference from all other
 				virtual TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) = 0;
 				// only if you expect only one result
 				std::shared_ptr<TransactionEntry> findOne(const Filter& filter = Filter::LAST_TRANSACTION);
 
-				//! calculate account address balance at date with decay
-				//! \param filter for exclude transactions, search for last transaction with final balance and calculate from there + decay
-				//! make use of final_balance so balance always start by first transaction of user
-				DecayDecimal calculateAddressBalance(
-					memory::ConstBlockPtr accountPublicKey,
-					Timepoint date,
-					const Filter& filter = Filter::ALL_TRANSACTIONS
-				);
+				//! find all deferred transfers which have the timeout in date range between start and end, have senderPublicKey and are not redeemed,
+				//! therefore boocked back to sender
+				virtual TransactionEntries findTimeoutedDeferredTransfersInRange(
+					memory::ConstBlockPtr senderPublicKey,
+					Timepoint start, 
+					Timepoint end,
+					uint64_t maxTransactionNr
+				) = 0;
+
+				//! find all transfers which redeem a deferred transfer in date range
+				//! \param senderPublicKey sender public key of sending account of redeem transaction
+				//! \return list with transaction pairs, first is deferred transfer, second is redeeming transfer
+				virtual std::list<DeferredRedeemedTransferPair> findRedeemedDeferredTransfersInRange(
+					memory::ConstBlockPtr senderPublicKey,
+					Timepoint start,
+					Timepoint end,
+					uint64_t maxTransactionNr
+				) = 0;
+
 				//! analyze only registerAddress Transactions
 				//! \param use filter to check existing of a address in a subrange of transactions
 				//!        check for user and account public keys
