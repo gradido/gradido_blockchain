@@ -48,6 +48,9 @@ namespace memory {
 		std::string convertToBase64(int variant = sodium_base64_VARIANT_ORIGINAL) const;
 		std::string copyAsString() const;
 		std::vector<uint8_t> copyAsVector() const;
+		//! calculate generichash with libsodium using BLAKE2b algorithm
+		//! https://libsodium.gitbook.io/doc/hashing/generic_hashing
+		Block calculateHash() const;
 		//! \return 0 if ok
 		//!        -1 if bin is to small
 		//!        -2 if hex is invalid

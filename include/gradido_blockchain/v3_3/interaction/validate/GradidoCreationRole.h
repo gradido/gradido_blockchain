@@ -23,10 +23,10 @@ namespace gradido {
 					void validateTargetDate(Timepoint receivedTimePoint);
 					void run(
 						Type type,
-						const std::string& communityId,
+						std::string_view communityId,
 						std::shared_ptr<blockchain::AbstractProvider> blockchainProvider,
-						data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction,
-						data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+						data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
+						data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 					);
 				protected:
 					Decimal calculateCreationSum(

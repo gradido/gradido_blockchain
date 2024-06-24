@@ -19,10 +19,10 @@ namespace gradido {
 
 				void TransactionBodyRole::run(
 					Type type,
-					const std::string& communityId,
-					std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
-					data::ConfirmedTransactionPtr previousConfirmedTransaction,
-					data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+					std::string_view communityId,
+					std::shared_ptr<blockchain::AbstractProvider> blockchainProvider,
+					data::ConstConfirmedTransactionPtr previousConfirmedTransaction,
+					data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 				) {
 					// when we don't know the confirmation date yet, we estimate
 					// normally it should be maximal 2 minutes after createdAt if the system clock is correct

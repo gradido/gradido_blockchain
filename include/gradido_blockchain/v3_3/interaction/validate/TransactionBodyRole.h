@@ -15,10 +15,10 @@ namespace gradido {
 					TransactionBodyRole(const data::TransactionBody& body) : mBody(body) {}
 					void run(
 						Type type,
-						const std::string& communityId,
+						std::string_view communityId,
 						std::shared_ptr<blockchain::AbstractProvider> blockchainProvider,
-						data::ConfirmedTransactionPtr previousConfirmedTransaction,
-						data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+						data::ConstConfirmedTransactionPtr previousConfirmedTransaction,
+						data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 					);
 
 					inline void checkRequiredSignatures(const data::SignatureMap& signatureMap) { getSpecificTransactionRole().checkRequiredSignatures(signatureMap); }

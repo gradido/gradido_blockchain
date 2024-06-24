@@ -25,10 +25,10 @@ namespace gradido {
 
 				void RegisterAddressRole::run(
 					Type type,
-					const std::string& communityId,
-					std::shared_ptr<AbstractBlockchainProvider> blockchainProvider,
-					data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction,
-					data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+					std::string_view communityId,
+					std::shared_ptr<blockchain::AbstractProvider> blockchainProvider,
+					data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
+					data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 				) {
 					if ((type & Type::SINGLE) == Type::SINGLE) {
 						if (mRegisterAddress.addressType == data::AddressType::COMMUNITY_GMW || 
@@ -45,7 +45,7 @@ namespace gradido {
 						auto blockchain = blockchainProvider->findBlockchain(communityId);
 						assert(blockchain);
 
-						std::shared_ptr<TransactionEntry> lastTransaction;
+						std::shared_ptr<blockchain::TransactionEntry> lastTransaction;
 						if (data::AddressType::SUBACCOUNT == mRegisterAddress.addressType) {
 							lastTransaction = blockchain->findLastTransactionForAddress(mRegisterAddress.userPubkey, "", senderPreviousConfirmedTransaction->id);
 							if (!lastTransaction) {

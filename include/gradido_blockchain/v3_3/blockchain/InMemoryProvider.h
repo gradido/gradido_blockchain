@@ -15,7 +15,7 @@ namespace gradido {
 			class GRADIDOBLOCKCHAIN_EXPORT InMemoryProvider final : public AbstractProvider
 			{
 			public:
-				static InMemoryProvider* getInstance();
+				static std::shared_ptr<InMemoryProvider> getInstance();
 
 				std::shared_ptr<Abstract> findBlockchain(std::string_view communityId);
 			protected:

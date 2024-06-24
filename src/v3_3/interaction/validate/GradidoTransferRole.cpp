@@ -10,7 +10,7 @@ namespace gradido {
 		namespace interaction {
 			namespace validate {
 
-				GradidoTransferRole::GradidoTransferRole(const data::GradidoTransfer& gradidoTransfer, const std::string& otherCommunity)
+				GradidoTransferRole::GradidoTransferRole(const data::GradidoTransfer& gradidoTransfer, std::string_view otherCommunity)
 					: mGradidoTransfer(gradidoTransfer), mOtherCommunity(otherCommunity), mDeferredTransfer(false)
 				{
 					// prepare for signature check
@@ -20,10 +20,10 @@ namespace gradido {
 
 				void GradidoTransferRole::run(
 					Type type,
-					const std::string& communityId,
+					std::string_view communityId,
 					std::shared_ptr<blockchain::AbstractProvider> blockchainProvider,
-					data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction,
-					data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+					data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
+					data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 				) {
 					auto sender = mGradidoTransfer.sender;
 					if ((type & Type::SINGLE) == Type::SINGLE)
@@ -63,7 +63,7 @@ namespace gradido {
 					}
 				}
 
-				void GradidoTransferRole::validateSingle(const std::string& communityId)
+				void GradidoTransferRole::validateSingle(std::string_view communityId)
 				{
 					auto sender = mGradidoTransfer.sender;
 					if (sender.amount <= 0) {

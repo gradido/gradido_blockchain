@@ -27,7 +27,7 @@ namespace gradido {
 				//! \brief init entry object from serialized transaction, deserialize transaction to get infos
 				TransactionEntry(memory::ConstBlockPtr serializedTransaction);
 
-				TransactionEntry(const data::ConfirmedTransaction& transaction);
+				TransactionEntry(data::ConstConfirmedTransactionPtr confirmedTransaction);
 
 				//! \brief init entry object without indices
 				TransactionEntry(
@@ -43,7 +43,7 @@ namespace gradido {
 
 				inline uint64_t getTransactionNr() const { return mTransactionNr; }
 				inline memory::ConstBlockPtr getSerializedTransaction() const { return mSerializedTransaction; }
-				std::shared_ptr<const data::ConfirmedTransaction> getConfirmedTransaction() const;
+				data::ConstConfirmedTransactionPtr getConfirmedTransaction() const;
 				inline uint8_t getMonth() const { return mMonth; }
 				inline uint16_t getYear() const { return mYear; }
 				inline data::TransactionType getTransactionType() const { return mTransactionType; }
@@ -58,7 +58,7 @@ namespace gradido {
 				data::TransactionType mTransactionType;
 				std::string mCommunityId;
 				mutable std::mutex mFastMutex;
-				mutable std::shared_ptr<const data::ConfirmedTransaction> mConfirmedTransaction;
+				mutable data::ConstConfirmedTransactionPtr mConfirmedTransaction;
 			};
 		}
 	}

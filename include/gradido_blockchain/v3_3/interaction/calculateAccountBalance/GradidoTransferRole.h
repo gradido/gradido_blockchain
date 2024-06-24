@@ -20,6 +20,9 @@ namespace gradido {
 					inline DecayDecimal getAmount() const {
 						return mTransfer.sender.amount;
 					}
+					inline memory::ConstBlockPtr getFinalBalanceAddress() const {
+						return mTransfer.sender.pubkey;
+					}
 				protected:
 					const data::GradidoTransfer& mTransfer;
 

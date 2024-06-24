@@ -107,6 +107,13 @@ namespace memory {
 		return { mData, mData + mSize };
 	}
 
+	Block Block::calculateHash() const
+	{
+		memory::Block hash(crypto_generichash_BYTES);
+		crypto_generichash(hash, crypto_generichash_BYTES, mData, mSize, nullptr, 0);
+		return hash;
+	}
+
 	Block Block::fromHex(const char* hexString, size_t stringSize)
 	{
 		size_t binSize = (stringSize) / 2;

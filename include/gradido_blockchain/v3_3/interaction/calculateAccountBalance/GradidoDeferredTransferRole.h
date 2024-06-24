@@ -12,15 +12,19 @@ namespace gradido {
 				{
 				public:
 					GradidoDeferredTransferRole(const data::GradidoDeferredTransfer& deferredTransfer, Timepoint balanceDate)
-						: mDeferredTransfer(deferredTransfer), mBalanceDate(balanceDate) {}
+						: mDeferredTransfer(deferredTransfer) {}
 
 					inline bool isFinalBalanceForAccount(memory::ConstBlockPtr accountPublicKey) const {
 						return mDeferredTransfer.transfer.sender.pubkey->isTheSame(accountPublicKey);
 					}
-					DecayDecimal getAmount() const;
+					inline DecayDecimal getAmount() const {
+						return mDeferredTransfer.transfer.sender.amount;
+					}
+					inline memory::ConstBlockPtr getFinalBalanceAddress() const {
+						return mDeferredTransfer.transfer.sender.pubkey;
+					}
 				protected:
 					const data::GradidoDeferredTransfer& mDeferredTransfer;
-					Timepoint mBalanceDate;
 				};
 			}
 		}

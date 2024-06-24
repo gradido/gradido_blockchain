@@ -11,20 +11,20 @@ namespace gradido {
 				class GradidoTransferRole : public AbstractRole
 				{
 				public:
-					GradidoTransferRole(const data::GradidoTransfer& gradidoTransfer, const std::string& otherCommunity);
+					GradidoTransferRole(const data::GradidoTransfer& gradidoTransfer, std::string_view otherCommunity);
 
 					void run(
 						Type type,
-						const std::string& communityId,
+						std::string_view communityId,
 						std::shared_ptr<blockchain::AbstractProvider> blockchainProvider,
-						data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction,
-						data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+						data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
+						data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 					);
 					//! call only if this transfer belong to a deferred transfer, changing validation rules a bit
 					inline void setDeferredTransfer() { mDeferredTransfer = true; }
 
 				protected:
-					void validateSingle(const std::string& communityId);
+					void validateSingle(std::string_view communityId);
 					void validatePrevious(
 						const data::ConfirmedTransaction& previousConfirmedTransaction,
 						std::shared_ptr<blockchain::Abstract> blockchain

@@ -21,6 +21,8 @@ public:
 		return calculateDecay(calculateDecayDurationSeconds(startTime, endTime));
 	}
 
+	inline bool operator<(const DecayDecimal& b) { return mDecimal < b; };
+
 };
 
 #endif //__GRADIDO_BLOCKCHAIN_LIB_DECAY_DECIMAL_H

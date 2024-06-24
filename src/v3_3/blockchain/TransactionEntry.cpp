@@ -22,14 +22,17 @@ namespace gradido {
 				mCommunityId = getCoinCommunityId(*confirmedTransaction->gradidoTransaction->getTransactionBody());
 			}
 
-			TransactionEntry::TransactionEntry(const data::ConfirmedTransaction& transaction)
-				: mTransactionNr(transaction.id), mSerializedTransaction(interaction::serialize::Context(transaction).run())
+			TransactionEntry::TransactionEntry(data::ConstConfirmedTransactionPtr confirmedTransaction)
+				: mTransactionNr(confirmedTransaction->id),
+				mSerializedTransaction(interaction::serialize::Context(*confirmedTransaction).run()),
+				mConfirmedTransaction(confirmedTransaction)
 			{
-				auto receivedDate = date::year_month_day{ date::floor<date::days>(transaction.confirmedAt.getAsTimepoint()) };
+				auto receivedDate = date::year_month_day{ date::floor<date::days>(confirmedTransaction->confirmedAt.getAsTimepoint()) };
 				mMonth = static_cast<unsigned>(receivedDate.month());
 				mYear = static_cast<int>(receivedDate.year());
-				mTransactionType = transaction.gradidoTransaction->getTransactionBody()->getTransactionType();
-				mCommunityId = getCoinCommunityId(*transaction.gradidoTransaction->getTransactionBody());
+				auto body = confirmedTransaction->gradidoTransaction->getTransactionBody();
+				mTransactionType = body->getTransactionType();
+				mCommunityId = getCoinCommunityId(*body);
 			}
 
 			TransactionEntry::TransactionEntry(
@@ -48,7 +51,7 @@ namespace gradido {
 
 			}
 
-			std::shared_ptr<const data::ConfirmedTransaction> TransactionEntry::getConfirmedTransaction() const
+			data::ConstConfirmedTransactionPtr TransactionEntry::getConfirmedTransaction() const
 			{
 				std::lock_guard _lock(mFastMutex);
 				if (!mConfirmedTransaction) {

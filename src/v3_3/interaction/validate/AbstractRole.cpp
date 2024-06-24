@@ -12,9 +12,9 @@ namespace gradido {
 			
 				std::regex g_RegExCommunityAlias("^[a-z0-9-]{3,120}$");
 
-				bool AbstractRole::isValidCommunityAlias(const std::string& communityAlias) const
+				bool AbstractRole::isValidCommunityAlias(std::string_view communityAlias) const
 				{
-					return std::regex_match(communityAlias, g_RegExCommunityAlias);
+					return std::regex_match(communityAlias.begin(), communityAlias.end(), g_RegExCommunityAlias);
 				}
 
 				void AbstractRole::validateEd25519PublicKey(memory::ConstBlockPtr ed25519PublicKey, const char* name) const

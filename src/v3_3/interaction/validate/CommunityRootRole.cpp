@@ -18,10 +18,10 @@ namespace gradido {
 
 				void CommunityRootRole::run(
 					Type type,
-					const std::string& communityId,
+					std::string_view communityId,
 					std::shared_ptr<blockchain::AbstractProvider> blockchainProvider,
-					data::ConfirmedTransactionPtr previousConfirmedTransaction,
-					data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+					data::ConstConfirmedTransactionPtr previousConfirmedTransaction,
+					data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 				) {
 					if ((type & Type::SINGLE) == Type::SINGLE) {
 						validateEd25519PublicKey(mCommunityRoot.pubkey, "pubkey");

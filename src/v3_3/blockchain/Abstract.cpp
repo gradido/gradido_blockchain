@@ -5,13 +5,13 @@ namespace gradido {
 	namespace v3_3 {
 		namespace blockchain {
 
-			Abstract::Abstract(std::string_view communityId, std::chrono::seconds iotaMessageIdCacheTimeout)
-				: mCommunityId(communityId), mMessageIdTransactionNrCache(iotaMessageIdCacheTimeout)
+			Abstract::Abstract(std::string_view communityId)
+				: mCommunityId(communityId)
 			{
 
 			}
 
-			std::shared_ptr<TransactionEntry> Abstract::findOne(const Filter& filter/* = Filter::LAST_TRANSACTION*/)
+			std::shared_ptr<TransactionEntry> Abstract::findOne(const Filter& filter/* = Filter::LAST_TRANSACTION*/) const
 			{
 				auto results = findAll(filter);
 				if (!results.size()) { 
@@ -23,35 +23,8 @@ namespace gradido {
 				return results.front();
 			}
 
-			std::shared_ptr<TransactionEntry> Abstract::findByMessageId(
-				memory::ConstBlockPtr messageId,
-				bool cachedOnly,/* = true */
-				const Filter& filter /*= Filter::ALL_TRANSACTIONS*/
-			)
-			{
-				auto result = mMessageIdTransactionNrCache.get(iota::MessageId::fromMemoryBlock(*messageId));
-				if (result.has_value()) {
-					return getTransactionForId(result.value());
-				}
-				if (cachedOnly) return nullptr;
-				// copy filter
-				Filter f(filter);
-				f.filterFunction = [&messageId, filter](const TransactionEntry& entry) -> FilterFunctionResult {
-					if (filter.filterFunction) {
-						// evaluate filter from caller
-						auto result = filter.filterFunction(entry);
-						if ((result & FilterFunctionResult::USE) != FilterFunctionResult::USE) {
-							return result;
-						}
-					}
-					if (messageId->isTheSame(entry.getConfirmedTransaction()->messageId)) {
-						return FilterFunctionResult::USE | FilterFunctionResult::STOP;
-					}
-					return FilterFunctionResult::DISMISS;
-				};
-				return findOne(f);
-			}
-			data::AddressType Abstract::getAddressType(memory::ConstBlockPtr publicKey, const Filter& filter/* = Filter::ALL_TRANSACTIONS */)
+			
+			data::AddressType Abstract::getAddressType(memory::ConstBlockPtr publicKey, const Filter& filter/* = Filter::ALL_TRANSACTIONS */) const
 			{
 				// copy filter
 				Filter f(filter);
@@ -74,6 +47,29 @@ namespace gradido {
 					return transactionEntry->getConfirmedTransaction()->gradidoTransaction->getTransactionBody()->registerAddress->addressType;
 				}
 				return data::AddressType::NONE;
+			}
+
+			std::shared_ptr<TransactionEntry> Abstract::findByMessageId(
+				memory::ConstBlockPtr messageId,
+				const Filter& filter /*= Filter::ALL_TRANSACTIONS*/
+			) const
+			{
+				// copy filter
+				Filter f(filter);
+				f.filterFunction = [&messageId, filter](const TransactionEntry& entry) -> FilterFunctionResult {
+					if (filter.filterFunction) {
+						// evaluate filter from caller
+						auto result = filter.filterFunction(entry);
+						if ((result & FilterFunctionResult::USE) != FilterFunctionResult::USE) {
+							return result;
+						}
+					}
+					if (messageId->isTheSame(entry.getConfirmedTransaction()->messageId)) {
+						return FilterFunctionResult::USE | FilterFunctionResult::STOP;
+					}
+					return FilterFunctionResult::DISMISS;
+					};
+				return findOne(f);
 			}
 		}
 

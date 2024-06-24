@@ -57,7 +57,9 @@ namespace gradido {
 					int64_t microseconds = seconds * static_cast<int64_t>(1e6) + nanos / static_cast<int64_t>(1e3);
 					return std::chrono::system_clock::time_point(std::chrono::microseconds(microseconds));
 				}
-				bool operator==(const Timestamp& other) const { return seconds == other.seconds && nanos == other.nanos; }
+				inline bool operator==(const Timestamp& other) const { return seconds == other.seconds && nanos == other.nanos; }
+				inline bool operator<(const Timestamp& other) const { return seconds < other.seconds || (seconds == other.seconds && nanos < other.nanos); }
+				inline bool operator<(const TimestampSeconds& other) const { return seconds < other.seconds; }
 
 				int64_t seconds;
 				int32_t nanos;
@@ -274,12 +276,17 @@ namespace gradido {
 				std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
 				//! will serialize just once and cache the result
 				memory::ConstBlockPtr getSerializedTransaction() const;
+				//! return hash for clearly identify the transaction
+				//! normally the first signature, but if not exist return hash from bodyBytes
+				memory::ConstBlockPtr getFingerprint() const;
 			protected:
 				mutable ConstTransactionBodyPtr mTransactionBody;
 				mutable std::mutex mTransactionBodyMutex;
 				mutable memory::ConstBlockPtr mSerializedTransaction;
 				mutable std::mutex mSerializedTransactionMutex;
 			};
+
+			typedef std::shared_ptr<const GradidoTransaction> ConstGradidoTransactionPtr;
 
 			// confirmed_transaction.proto
 			struct GRADIDOBLOCKCHAIN_EXPORT ConfirmedTransaction
@@ -300,7 +307,7 @@ namespace gradido {
 					messageId(messageId),
 					accountBalance(accountBalanceString) {}
 
-				memory::Block calculateRunningHash(std::shared_ptr<ConfirmedTransaction> previousConfirmedTransaction = nullptr);
+				memory::Block calculateRunningHash(data::ConstConfirmedTransactionPtr previousConfirmedTransaction = nullptr) const;
 
 				uint64_t                    				id;
 				std::shared_ptr<const data::GradidoTransaction> gradidoTransaction;
@@ -312,6 +319,7 @@ namespace gradido {
 			};
 
 			typedef std::shared_ptr<ConfirmedTransaction> ConfirmedTransactionPtr;
+			typedef std::shared_ptr<const ConfirmedTransaction> ConstConfirmedTransactionPtr;
 		}
 	}
 }

@@ -1,4 +1,5 @@
 #include "gradido_blockchain/v3_3/TransactionBodyBuilder.h"
+#include "gradido_blockchain/v3_3/const.h"
 
 using namespace std;
 

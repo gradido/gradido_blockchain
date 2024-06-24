@@ -17,10 +17,10 @@ namespace gradido {
                     // test if transaction is valid, throw an exception on error
                     virtual void run(
                         Type type = Type::SINGLE,
-                        const std::string& communityId = "",
+                        std::string_view communityId = "",
                         std::shared_ptr<blockchain::AbstractProvider> blockchainProvider = nullptr,
-                        data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction = nullptr,
-                        data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction = nullptr
+                        data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction = nullptr,
+                        data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction = nullptr
                     ) = 0;
 
                     inline void setConfirmedAt(data::TimestampSeconds confirmedAt) { mConfirmedAt = confirmedAt; }
@@ -28,7 +28,7 @@ namespace gradido {
                     void checkRequiredSignatures(const data::SignatureMap& signatureMap) const;
 			        
                 protected:
-                    bool isValidCommunityAlias(const std::string& communityAlias) const;
+                    bool isValidCommunityAlias(std::string_view communityAlias) const;
                     void validateEd25519PublicKey(memory::ConstBlockPtr ed25519PublicKey, const char* name) const;                    
                     void validateEd25519Signature(memory::ConstBlockPtr ed25519Signature, const char* name) const;
 

@@ -14,10 +14,10 @@ namespace gradido {
 
 			}
 
-			InMemoryProvider* InMemoryProvider::getInstance()
+			std::shared_ptr<InMemoryProvider> InMemoryProvider::getInstance()
 			{
-				static InMemoryProvider one;
-				return &one;
+				static auto one = std::make_shared<InMemoryProvider>();
+				return one;
 			}
 
 			std::shared_ptr<Abstract> InMemoryProvider::findBlockchain(std::string_view communityId)

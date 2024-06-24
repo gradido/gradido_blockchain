@@ -15,10 +15,10 @@ namespace gradido {
 
 				void GradidoTransactionRole::run(
 					Type type,
-					const std::string& communityId,
+					std::string_view communityId,
 					std::shared_ptr<blockchain::AbstractProvider> blockchainProvider,
-					data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction,
-					data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+					data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
+					data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 				) {
 					const auto& body = mGradidoTransaction.getTransactionBody();
 					TransactionBodyRole bodyRole(*body);

@@ -15,8 +15,6 @@ namespace gradido {
 		using namespace interaction;
 		namespace data {
 
-			const char* GRADIDO_PROTOCOL_VERSION = "3.3";
-
 			void SignatureMap::push(const SignaturePair& signaturePair)
 			{
 				// check if pubkey already exist
@@ -149,7 +147,15 @@ namespace gradido {
 				return mSerializedTransaction;
 			}
 
-			memory::Block ConfirmedTransaction::calculateRunningHash(std::shared_ptr<ConfirmedTransaction> previousConfirmedTransaction/* = nullptr*/)
+			memory::ConstBlockPtr GradidoTransaction::getFingerprint() const {
+				if (signatureMap.signaturePairs.size()) {
+					return signatureMap.signaturePairs[0].signature;
+				}
+				if (!bodyBytes) throw InvalidGradidoTransaction("missing body bytes", getSerializedTransaction());
+				return std::make_shared<memory::Block>(bodyBytes->calculateHash());
+			}
+
+			memory::Block ConfirmedTransaction::calculateRunningHash(data::ConstConfirmedTransactionPtr previousConfirmedTransaction/* = nullptr*/) const
 			{
 				std::string transactionIdString = std::to_string(id);
 				auto confirmedAtString = DataTypeConverter::timePointToString(confirmedAt, "%Y-%m-%d %H:%M:%S");

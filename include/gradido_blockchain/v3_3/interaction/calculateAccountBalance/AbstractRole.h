@@ -12,6 +12,7 @@ namespace gradido {
 				{
 				public:
 					virtual bool isFinalBalanceForAccount(memory::ConstBlockPtr accountPublicKey) const = 0;
+					memory::ConstBlockPtr getFinalBalanceAddress() const = 0;
 					virtual DecayDecimal getAmount() const = 0;
 					virtual ~AbstractRole() {}
 				};

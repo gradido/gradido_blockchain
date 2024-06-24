@@ -32,7 +32,7 @@ namespace gradido {
           //! check all transactions in the group which connected with this transaction address(es)
           CONNECTED_GROUP = 32,
           //! check all transactions which connected with this transaction
-          CONNECTED_BLOCKCHAIN = 64			
+          CONNECTED_BLOCKCHAIN = 64		
         };
 
 		inline Type operator | (Type lhs, Type rhs)

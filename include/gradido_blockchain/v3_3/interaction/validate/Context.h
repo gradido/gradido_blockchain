@@ -4,6 +4,7 @@
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/v3_3/data/Protocol.h"
 #include "TransactionBodyRole.h"
+#include "ConfirmedTransactionRole.h"
 
 namespace gradido {
 	namespace v3_3 {
@@ -12,14 +13,17 @@ namespace gradido {
                 class GRADIDOBLOCKCHAIN_EXPORT Context 
                 {
                 public:
-                    //! \param blockchainProvider provide Blockchain access to search for specific transactions
                   Context(const data::TransactionBody& body)
                       : mRole(std::make_unique<TransactionBodyRole>(body)) {}
 
+                  Context(const data::ConfirmedTransaction& body)
+                      : mRole(std::make_unique<ConfirmedTransactionRole>(body)) {}
+
+                  //! \param blockchainProvider provide Blockchain access to search for specific transactions
                   void run(
                       Type type = Type::SINGLE,
-                      const std::string& communityId = "",
-                      std::shared_ptr<AbstractBlockchainProvider> blockchainProvider = nullptr
+                      std::string_view communityId = "",
+                      std::shared_ptr<blockchain::AbstractProvider> blockchainProvider = nullptr
                   );
 
                   //! set sender previous confirmed transaction manually, normally last transaction on blockchain will be used
@@ -33,9 +37,9 @@ namespace gradido {
                 protected:
                     std::unique_ptr<AbstractRole> mRole;
                     std::string mCommunityId;
-                    std::shared_ptr<AbstractBlockchainProvider> mBlockchainProvider;
-                    data::ConfirmedTransactionPtr mSenderPreviousConfirmedTransaction;
-                    data::ConfirmedTransactionPtr mRecipientPreviousConfirmedTransaction;
+                    std::shared_ptr<blockchain::AbstractProvider> mBlockchainProvider;
+                    data::ConstConfirmedTransactionPtr mSenderPreviousConfirmedTransaction;
+                    data::ConstConfirmedTransactionPtr mRecipientPreviousConfirmedTransaction;
                 };
       }
     }

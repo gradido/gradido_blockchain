@@ -11,6 +11,33 @@ namespace gradido {
 		namespace interaction {
 			namespace calculateAccountBalance {
 				DecayDecimal Context::run(
+					data::ConstGradidoTransactionPtr gradidoTransaction,
+					Timepoint confirmedAt,
+					uint64_t id
+				) {
+					auto transactionBody = gradidoTransaction->getTransactionBody();
+					
+					if (transactionBody->isRegisterAddress() && transactionBody->type != data::CrossGroupType::LOCAL) {
+						throw std::runtime_error("not implemented yet");
+					}
+					if (transactionBody->isTransfer() || transactionBody->isCreation() || transactionBody->isDeferredTransfer()) {
+						auto role = getRole(*transactionBody);
+						auto balance = run(role->getFinalBalanceAddress(), confirmedAt, id - 1);
+						if (transactionBody->isCreation()) {
+							balance += role->getAmount();
+						}
+						else if (transactionBody->isTransfer() || transactionBody->isDeferredTransfer()) {
+							if (balance < role->getAmount()) {
+								throw InvalidGradidoTransaction("not enough gdd for transfer or deferred transfer", gradidoTransaction->getSerializedTransaction());
+							}
+							balance -= role->getAmount();
+						}
+						return balance;
+					}
+					return 0.0;
+				}
+
+				DecayDecimal Context::run(
 					memory::ConstBlockPtr publicKey,
 					Timepoint balanceDate, 
 					uint64_t maxTransactionNr/* = 0 */,
@@ -19,7 +46,7 @@ namespace gradido {
 					// get last transaction entry with final balance 
 					// collect balances with balance date from all received transactions which occurred after last transaction entry with final balance
 					std::map<Timepoint, DecayDecimal> dateAmount;
-					auto lastTransactionEntryWithFinalBalance = mBlockchain->findOne(Filter(
+					auto lastTransactionEntryWithFinalBalance = mBlockchain.findOne(Filter(
 						maxTransactionNr,
 						publicKey,
 						SearchDirection::DESC,
@@ -32,12 +59,27 @@ namespace gradido {
 								return FilterFunctionResult::DISMISS;
 							}
 							auto transactionBody = confirmedTransaction->gradidoTransaction->getTransactionBody();
-							auto role = getRole(*transactionBody, balanceDate);
+							auto role = getRole(*transactionBody);
 							if (role->isFinalBalanceForAccount(publicKey)) {
 								return FilterFunctionResult::USE | FilterFunctionResult::STOP;
 							}
 							auto amount = role->getAmount();
-							if (amount > 0.0) {
+							if (amount > 0) {
+								if (transactionBody->isDeferredTransfer()) {
+									// if timeout is reached, balance is zero
+									// if deferred transfer wasn't redeemed, it was booked back to sender,
+									// if it was redeemed, it is booked away to redeem account
+									auto timeout = transactionBody->deferredTransfer->timeout.getAsTimepoint();
+									if (timeout <= balanceDate) {
+										return FilterFunctionResult::DISMISS;
+									}
+
+									// subtract decay from time: balanceDate -> timeout
+									// later in code the decay for: received -> balanceDate will be subtracted automatic
+									// deferred transfers contain redeemable amount + decay for createdAt -> timeout as fee
+									amount = amount.calculateDecay(balanceDate, timeout);
+								}
+
 								//receiveTransfers.push_front({ balance, confirmedTransaction->confirmedAt.getAsTimepoint() });
 								dateAmount.insert({ confirmedTransaction->confirmedAt.getAsTimepoint() , amount });
 							}
@@ -70,7 +112,7 @@ namespace gradido {
 					}
 
 					// check for time outed deferred transfers which will be automatic booked back
-					auto timeoutedDeferredTransfers = mBlockchain->findTimeoutedDeferredTransfersInRange(
+					auto timeoutedDeferredTransfers = mBlockchain.findTimeoutedDeferredTransfersInRange(
 						publicKey,
 						lastDate,
 						balanceDate,
@@ -85,7 +127,7 @@ namespace gradido {
 
 					// check for redeemed deferred Transfer ins Range an book back the rest blocked gdd for decay
 					// findRedeemedDeferredTransfersInRange
-					auto deferredRedeemingTransferPairs = mBlockchain->findRedeemedDeferredTransfersInRange(
+					auto deferredRedeemingTransferPairs = mBlockchain.findRedeemedDeferredTransfersInRange(
 						publicKey,
 						lastDate,
 						balanceDate,
@@ -117,13 +159,13 @@ namespace gradido {
 					return gdd;
 				}
 
-				std::shared_ptr<AbstractRole> Context::getRole(const data::TransactionBody& body, Timepoint balanceDate)
+				std::shared_ptr<AbstractRole> Context::getRole(const data::TransactionBody& body)
 				{
 					if (body.isCreation()) { 
 						return std::make_shared<GradidoCreationRole>(*body.creation); 
 					}
 					if (body.isDeferredTransfer()) {
-						return std::make_shared<GradidoDeferredTransferRole>(*body.deferredTransfer, balanceDate);
+						return std::make_shared<GradidoDeferredTransferRole>(*body.deferredTransfer);
 					}
 					if (body.isTransfer()) {
 						return std::make_shared<GradidoTransferRole>(*body.transfer);
