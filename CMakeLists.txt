@@ -114,18 +114,17 @@ find_package(MPFR)
 if(MPFR_FOUND)
 	add_definitions(-DUSE_MPFR)
 	IF(WIN32)
-		include_directories(${mpfr_INCLUDE_DIRS})
+		include_directories(${mpfr_INCLUDE_DIRS} ${gmp_INCLUDE_DIRS})
 	endif()
 endif()
 # using conan on windows
 IF(WIN32)
   	find_package(libsodium REQUIRED)
-	find_package(openssl REQUIRED)
-	include_directories(
-		${gmp_INCLUDE_DIRS}
-		${libsodium_INCLUDE_DIR}
-		${OPENSSL_INCLUDE_DIR}
-	)
+	include_directories(${libsodium_INCLUDE_DIR})
+	find_package(openssl)
+	if(openssl_FOUND)
+		include_directories(${OPENSSL_INCLUDE_DIR})
+	endif()
 ELSE()
   find_package(Sodium)
 ENDIF()
@@ -286,7 +285,10 @@ if(BUILD_SHARED_LIBS)
 	  if(MPFR_FOUND)
 	  	target_link_libraries(GradidoBlockchain mpfr::mpfr ${MPFR_LIBRARIES})
 	  endif()
-	  target_link_libraries(GradidoBlockchain libsodium::libsodium openssl::openssl)
+	  if(openssl_FOUND) 
+	  	target_link_libraries(GradidoBlockchain openssl::openssl)
+	  endif()
+	  target_link_libraries(GradidoBlockchain libsodium::libsodium)
 		# needed for windows if linking to a rust lib
 		find_library(IOTA_RUST_C_LIB iota_rust_clib.dll.lib PATHS 
 			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
