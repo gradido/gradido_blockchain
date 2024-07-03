@@ -21,8 +21,14 @@ public:
 		return calculateDecay(calculateDecayDurationSeconds(startTime, endTime));
 	}
 
-	inline bool operator<(const DecayDecimal& b) { return mDecimal < b; };
-
+#ifdef USE_MPFR
+	inline bool operator>(int b) { return mpfr_cmp_si(mDecimal, b) > 0; };	
+	inline bool operator<(int b) { return mpfr_cmp_si(mDecimal, b) < 0; };
+	inline bool operator<(DecayDecimal& b) { return mpfr_cmp(mDecimal, b.mDecimal) < 0; };
+#else
+	inline bool operator<(const DecayDecimal& b) const { return mDecimal < b; };
+	inline bool operator>(const DecayDecimal& b) const { return mDecimal > b; };
+#endif
 };
 
 #endif //__GRADIDO_BLOCKCHAIN_LIB_DECAY_DECIMAL_H

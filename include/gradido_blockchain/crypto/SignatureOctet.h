@@ -20,10 +20,38 @@ struct GRADIDOBLOCKCHAIN_EXPORT SignatureOctet
 			memcpy(&octet, *signature, sizeof(int64_t));
 		}
 	}
+
+	// Copy constructor
+	SignatureOctet(const SignatureOctet& other)
+		: octet(other.octet) {}
+
+
+	// Copy assignment operator
+	SignatureOctet& operator=(const SignatureOctet& other) {
+		octet = other.octet;
+		return *this;
+	}
+
 	inline bool operator<(const SignatureOctet& ob) const {
 		return octet < ob.octet;
 	}
+
+	inline bool operator==(const SignatureOctet& ob) const {
+		return octet == ob.octet;
+	}
 	int64_t octet;
 };
+
+
+// Hash function for SignatureOctet
+namespace std {
+	template <>
+	struct hash<SignatureOctet>
+	{
+		std::size_t operator()(const SignatureOctet& s) const noexcept {
+			return std::hash<int64_t>()(s.octet);
+		}
+	};
+}
 
 #endif //#define __GRADIDO_BLOCKCHAIN_CRYPTO_SIGNATURE_OCTET_H

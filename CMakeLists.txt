@@ -146,40 +146,31 @@ FILE(GLOB MODEL_IOTA "include/gradido_blockchain/model/iota/*.h" "src/model/iota
 FILE(GLOB PROTO_GRADIDO "build/proto/gradido/*.cc" "build/proto/gradido/*.h")
 FILE(GLOB TINF "dependencies/tinf/src/*.c" "dependencies/tinf/src/*.h")
 FIlE(GLOB THREADING "include/gradido_blockchain/threading/*.h" "src/threading/*.cpp")
-FILE(GLOB v3_3
-	"include/gradido_blockchain/v3_3/*.h"
-	"src/v3_3/*.cpp"
+FILE(GLOB BLOCKCHAIN "include/gradido_blockchain/blockchain/*.h" "src/blockchain/*.cpp")
+
+FILE(GLOB INTERACTION_CALCULATE_ACCOUNT_BALANCE 
+	"include/gradido_blockchain/interaction/calculateAccountBalance/*.h" 
+	"src/interaction/calculateAccountBalance/*.cpp"
 )
-FILE(GLOB v3_3_BLOCKCHAIN 
-	"include/gradido_blockchain/v3_3/blockchain/*.h" 
-	"src/v3_3/blockchain/*.cpp"
+FILE(GLOB INTERACTION_DESERIALIZE 
+	"include/gradido_blockchain/interaction/deserialize/*.h" 
+	"src/interaction/deserialize/*.cpp"
 )
-FILE(GLOB v3_3_DATA
-	"include/gradido_blockchain/v3_3/data/*.h"
-	"src/v3_3/data/*.cpp"
+FILE(GLOB INTERACTION_SERIALIZE 
+	"include/gradido_blockchain/interaction/serialize/*.h" 
+	"src/interaction/serialize/*.cpp"
 )
-FILE(GLOB v3_3_INTERACTION_CALCULATE_ACCOUNT_BALANCE 
-	"include/gradido_blockchain/v3_3/interaction/calculateAccountBalance/*.h" 
-	"src/v3_3/interaction/calculateAccountBalance/*.cpp"
+FILE(GLOB INTERACTION_TO_JSON 
+	"include/gradido_blockchain/interaction/toJson/*.h" 
+	"src/interaction/toJson/*.cpp"
 )
-FILE(GLOB v3_3_INTERACTION_DESERIALIZE 
-	"include/gradido_blockchain/v3_3/interaction/deserialize/*.h" 
-	"src/v3_3/interaction/deserialize/*.cpp"
-)
-FILE(GLOB v3_3_INTERACTION_SERIALIZE 
-	"include/gradido_blockchain/v3_3/interaction/serialize/*.h" 
-	"src/v3_3/interaction/serialize/*.cpp"
-)
-FILE(GLOB v3_3_INTERACTION_TO_JSON 
-	"include/gradido_blockchain/v3_3/interaction/toJson/*.h" 
-	"src/v3_3/interaction/toJson/*.cpp"
-)
-FILE(GLOB v3_3_INTERACTION_VALIDATE 
-	"include/gradido_blockchain/v3_3/interaction/validate/*.h"
-	"src/v3_3/interaction/validate/*.cpp"
+FILE(GLOB INTERACTION_VALIDATE 
+	"include/gradido_blockchain/interaction/validate/*.h"
+	"src/interaction/validate/*.cpp"
 )
 
 SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS 
+	${BLOCKCHAIN}
 	${CRYPTO}
 	${DATA} ${DATA_IOTA}
 	#${HTTP}
@@ -193,16 +184,16 @@ SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	#${PROTO_GRADIDO}
 	${TINF} 
 	${THREADING}
-	${v3_3}	${v3_3_BLOCKCHAIN} ${v3_3_DATA} 
-	${v3_3_INTERACTION_CALCULATE_ACCOUNT_BALANCE}
-	${v3_3_INTERACTION_DESERIALIZE}
-	${v3_3_INTERACTION_SERIALIZE}
-	${v3_3_INTERACTION_TO_JSON}
-	${v3_3_INTERACTION_VALIDATE}
+	${INTERACTION_CALCULATE_ACCOUNT_BALANCE}
+	${INTERACTION_DESERIALIZE}
+	${INTERACTION_SERIALIZE}
+	${INTERACTION_TO_JSON}
+	${INTERACTION_VALIDATE}
 )
 
 if(MSVC)
 	# src
+	source_group("blockchain" FILES ${BLOCKCHAIN})
 	source_group("crypto" FILES ${CRYPTO})
 	source_group("data\\iota" FILES ${DATA_IOTA})
 	source_group("data" FILES ${DATA})
@@ -217,15 +208,12 @@ if(MSVC)
 	source_group("model" FILES ${MODEL})
 	#source_group("proto\\gradido" FILES ${PROTO_GRADIDO})
 	source_group("tinf" FILES ${TINF})
-	source_group("threading" FILES ${THREADING})
-	source_group("v3_3\\blockchain" FILES ${v3_3_BLOCKCHAIN})
-	source_group("v3_3\\data" FILES ${v3_3_DATA})
-	source_group("v3_3\\interaction\\calculateAccountBalance" FILES ${v3_3_INTERACTION_CALCULATE_ACCOUNT_BALANCE})
-	source_group("v3_3\\interaction\\deserialize" FILES ${v3_3_INTERACTION_DESERIALIZE})
-	source_group("v3_3\\interaction\\serialize" FILES ${v3_3_INTERACTION_SERIALIZE})
-	source_group("v3_3\\interaction\\toJson" FILES ${v3_3_INTERACTION_TO_JSON})
-	source_group("v3_3\\interaction\\validate" FILES ${v3_3_INTERACTION_VALIDATE})
-	source_group("v3_3" FILES ${v3_3})
+	source_group("threading" FILES ${THREADING})	
+	source_group("interaction\\calculateAccountBalance" FILES ${INTERACTION_CALCULATE_ACCOUNT_BALANCE})
+	source_group("interaction\\deserialize" FILES ${INTERACTION_DESERIALIZE})
+	source_group("interaction\\serialize" FILES ${INTERACTION_SERIALIZE})
+	source_group("interaction\\toJson" FILES ${INTERACTION_TO_JSON})
+	source_group("interaction\\validate" FILES ${INTERACTION_VALIDATE})
 endif()
 
 include_directories(
