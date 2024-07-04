@@ -96,11 +96,7 @@ TEST(DeserializeTest, RegisterAddressBody) {
 TEST(DeserializeTest, GradidoCreationBody) {
 
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(
-#ifdef USE_MPFR
-		"ChlEZWluZSBlcnN0ZSBTY2hvZXBmdW5nIDspEggIgMy5/wUQABoDMy4zIAA6TgpECiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIeMTAwMC4wMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwGgAaBgi4yrn/BQ=="
-#else 
-		"ChlEZWluZSBlcnN0ZSBTY2hvZXBmdW5nIDspEggIgMy5/wUQABoDMy4zIAA6TgpECiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIeMTAwMC4wMDAwMDAwMDAwMDAxMTM2ODY4Mzc3MjE2GgAaBgi4yrn/BQ=="
-#endif
+		"ChlEZWluZSBlcnN0ZSBTY2hvZXBmdW5nIDspEggIgMy5/wUQABoDMy4zIAA6NAoqCiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIEMTAwMBoAGgYIuMq5/wU="
 	));
 	deserialize::Context context(rawData, deserialize::Type::TRANSACTION_BODY);
 	context.run();
@@ -122,7 +118,7 @@ TEST(DeserializeTest, GradidoCreationBody) {
 	EXPECT_FALSE(body->isTransfer());
 
 	auto creation = body->creation;
-	EXPECT_EQ(creation->recipient.amount.toString(), "1000.00");
+	EXPECT_EQ(creation->recipient.amount.toString(), "1000.0000");
 	EXPECT_TRUE(creation->recipient.pubkey->isTheSame(g_KeyPairs[4].publicKey));
 	EXPECT_EQ(creation->targetDate, targetDate);
 }
@@ -131,11 +127,7 @@ TEST(DeserializeTest, GradidoCreationBody) {
 
 TEST(DeserializeTest, GradidoTransferBody) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(
-#ifdef USE_MPFR
-		"ChFJY2ggdGVpbGUgbWl0IGRpchIICIDMuf8FEAAaAzMuMyAAMmcKQwogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSHTUwMC41NTAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwGgASINGpWCTISFkAJ5uSpgF1/GdviRTGHXOZxmwtDLb6nsV2"
-#else 
-		"ChFJY2ggdGVpbGUgbWl0IGRpchIICIDMuf8FEAAaAzMuMyAAMmcKQwogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSHTUwMC41NTAwMDAwMDAwMDAwMTEzNjg2ODM3NzIyGgASINGpWCTISFkAJ5uSpgF1/GdviRTGHXOZxmwtDLb6nsV2"
-#endif
+		"ChFJY2ggdGVpbGUgbWl0IGRpchIICIDMuf8FEAAaAzMuMyAAMlAKLAogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSBjUwMC41NRoAEiDRqVgkyEhZACebkqYBdfxnb4kUxh1zmcZsLQy2+p7Fdg=="
 	));
 	deserialize::Context context(rawData, deserialize::Type::TRANSACTION_BODY);
 	context.run();
@@ -157,7 +149,7 @@ TEST(DeserializeTest, GradidoTransferBody) {
 	ASSERT_TRUE(body->isTransfer());
 
 	auto transfer = body->transfer;
-	EXPECT_EQ(transfer->sender.amount.toString(), "500.55");
+	EXPECT_EQ(transfer->sender.amount.toString(), "500.5500");
 	EXPECT_TRUE(transfer->sender.pubkey->isTheSame(g_KeyPairs[4].publicKey));
 	EXPECT_TRUE(transfer->recipient->isTheSame(g_KeyPairs[5].publicKey));
 }
@@ -165,11 +157,7 @@ TEST(DeserializeTest, GradidoTransferBody) {
 
 TEST(DeserializeTest, GradidoDeferredTransferBody) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(
-#ifdef USE_MPFR
-		"ChJMaW5rIHp1bSBlaW5sb2VzZW4SCAiAzLn/BRAAGgMzLjMgAFJxCmcKQwogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSHTU1NS41NTAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwGgASINGpWCTISFkAJ5uSpgF1/GdviRTGHXOZxmwtDLb6nsV2EgYIqPm5/wU="
-#else 
-		"ChJMaW5rIHp1bSBlaW5sb2VzZW4SCAiAzLn/BRAAGgMzLjMgAFJxCmcKQwogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSHTU1NS41NDk5OTk5OTk5OTk5NTQ1MjUyNjQ5MTE0GgASINGpWCTISFkAJ5uSpgF1/GdviRTGHXOZxmwtDLb6nsV2EgYIqPm5/wU="
-#endif
+		"ChJMaW5rIHp1bSBlaW5sb2VzZW4SCAiAzLn/BRAAGgMzLjMgAFJaClAKLAogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSBjU1NS41NRoAEiDRqVgkyEhZACebkqYBdfxnb4kUxh1zmcZsLQy2+p7FdhIGCKj5uf8F"
 	));
 	deserialize::Context context(rawData, deserialize::Type::TRANSACTION_BODY);
 	context.run();
@@ -192,7 +180,7 @@ TEST(DeserializeTest, GradidoDeferredTransferBody) {
 
 	auto deferredTransfer = body->deferredTransfer;
 	auto transfer = deferredTransfer->transfer;
-	EXPECT_EQ(transfer.sender.amount.toString(), "555.55");
+	EXPECT_EQ(transfer.sender.amount.toString(), "555.5500");
 	EXPECT_TRUE(transfer.sender.pubkey->isTheSame(g_KeyPairs[4].publicKey));
 	EXPECT_TRUE(transfer.recipient->isTheSame(g_KeyPairs[5].publicKey));
 	EXPECT_EQ(deferredTransfer->timeout, timeout);
@@ -268,7 +256,7 @@ TEST(DeserializeTest, MinimalConfirmedTransaction) {
 	EXPECT_EQ(confirmedTransaction->id, 7);
 	EXPECT_EQ(confirmedTransaction->confirmedAt, confirmedAt);
 	EXPECT_EQ(confirmedTransaction->versionNumber, VERSION_STRING);
-	EXPECT_EQ(confirmedTransaction->accountBalance.toString(), "179.00");
+	EXPECT_EQ(confirmedTransaction->accountBalance.toString(), "179.0000");
 	EXPECT_EQ(confirmedTransaction->runningHash->size(), crypto_generichash_BYTES);
 }
 
@@ -276,11 +264,7 @@ TEST(DeserializeTest, MinimalConfirmedTransaction) {
 TEST(DeserializeTest, CompleteConfirmedTransaction) {
 
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(
-#ifdef USE_MPFR
-		"CAcS6AEKZgpkCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hJAFtFoFsE9iY4uovjW34EMFrQ/HV4fezgwdTi+Rnq0F8kd6h2vuOIz6mPtSBmRwxBRGd7Etx6WyVPHpHpUD+7fDRJ+ChVEYW5rZSBmdWVyIGRlaW4gU2VpbiESCAiAzLn/BRAAGgMzLjMgADJUCjAKIIqMkyk8uX6HhBeNqK5YgUT3yYL0ZYv9NRAaHitHnD5XEgoxMDAuMjUxNjIxGgASINGpWCTISFkAJ5uSpgF1/GdviRTGHXOZxmwtDLb6nsV2GgYIwvK5/wUiAzMuMyogCd5upLwZJ+fJiQqkdufU7diE0n9HmJlsZSFETpP3uiQyIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOgo4OTkuNzQ4Mzc5"
-#else 
-		"CAcS+wEKZgpkCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hJA+ljUBfKUP8AYS4fUJRAzJZmXKwoK+ZZYpDMenRmQ3ffylnIonrNQ/0qIrjQE0hu97NelANjfZCirL5umoyU/ABKQAQoVRGFua2UgZnVlciBkZWluIFNlaW4hEggIgMy5/wUQABoDMy4zIAAyZgpCCiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIcMTAwLjI1MTYyMTAwMDAwMDAwMDA5NDU4NzQ0ORoAEiDRqVgkyEhZACebkqYBdfxnb4kUxh1zmcZsLQy2+p7FdhoGCMLyuf8FIgMzLjMqIOSd+ShuFrqqSZLOWlasyXly4mARjywATd9Ogqk+hjrVMiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADocODk5Ljc0ODM3ODk5OTk5OTk5OTkwNTQxMjU1MQ=="
-#endif
+		"CAcS5gEKZgpkCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hJABLGV+LKPuwm777Y98sSKCJjyT764T0LkK9JMAlH8McVfE4a58QJDRkRVVw8s+97770Ecu41wN699/2dl2bMyCRJ8ChVEYW5rZSBmdWVyIGRlaW4gU2VpbiESCAiAzLn/BRAAGgMzLjMgADJSCi4KIIqMkyk8uX6HhBeNqK5YgUT3yYL0ZYv9NRAaHitHnD5XEggxMDAuMjUxNhoAEiDRqVgkyEhZACebkqYBdfxnb4kUxh1zmcZsLQy2+p7FdhoGCMLyuf8FIgMzLjMqIMk+dkeCIwpqoEeNjiEYmqpwdG+IQdPhu4OlboiDhqB9MiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADoIODk5Ljc0ODQ="
 	));
 	deserialize::Context context(rawData, deserialize::Type::CONFIRMED_TRANSACTION);
 	context.run();
@@ -293,13 +277,9 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_EQ(confirmedTransaction->id, 7);
 	EXPECT_EQ(confirmedTransaction->confirmedAt, confirmedAt);
 	EXPECT_EQ(confirmedTransaction->versionNumber, VERSION_STRING);
-	EXPECT_EQ(confirmedTransaction->accountBalance.toString(), "899.748379");
+	EXPECT_EQ(confirmedTransaction->accountBalance.toString(), "899.7484");
 	ASSERT_EQ(confirmedTransaction->runningHash->size(), crypto_generichash_BYTES);
-#ifdef USE_MPFR
-	EXPECT_EQ(confirmedTransaction->runningHash->convertToHex(), "09de6ea4bc1927e7c9890aa476e7d4edd884d27f4798996c6521444e93f7ba24");
-#else
-	EXPECT_EQ(confirmedTransaction->runningHash->convertToHex(), "e49df9286e16baaa4992ce5a56acc97972e260118f2c004ddf4e82a93e863ad5");
-#endif
+	EXPECT_EQ(confirmedTransaction->runningHash->convertToHex(), "c93e764782230a6aa0478d8e21189aaa70746f8841d3e1bb83a56e888386a07d");
 
 	auto gradidoTransaction = confirmedTransaction->gradidoTransaction.get();
 	KeyPairEd25519 keyPair(g_KeyPairs[0].publicKey, g_KeyPairs[0].privateKey);
@@ -320,7 +300,7 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_TRUE(body->isTransfer());
 	
 	auto transfer = body->transfer;
-	EXPECT_EQ(transfer->sender.amount.toString(), "100.25162");
+	EXPECT_EQ(transfer->sender.amount.toString(), "100.2516");
 	EXPECT_TRUE(transfer->sender.pubkey->isTheSame(g_KeyPairs[4].publicKey));
 	EXPECT_TRUE(transfer->recipient->isTheSame(g_KeyPairs[5].publicKey));
 	

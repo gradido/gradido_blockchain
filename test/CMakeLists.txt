@@ -30,11 +30,11 @@ FILE(GLOB INTERACTION "interaction/*.cpp" "interaction/*.h")
 
 SET(TEST_SRC 
   ${TEST_MAIN}
-  #${TEST_LIB} 
-  #${TEST_CRYPTO}
+  ${TEST_LIB} 
+  ${TEST_CRYPTO}
   #${TEST_MODEL}
   #${TEST_MODEL_PROTOPUF} 
-  #${INTERACTION}
+  ${INTERACTION}
 )
 
 if(MSVC)

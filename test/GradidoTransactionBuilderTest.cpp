@@ -1,4 +1,4 @@
-/*
+
 #include "gtest/gtest.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "KeyPairs.h"
@@ -32,4 +32,3 @@ TEST(GradidoTransactionBuilderTest, SignTransaction) {
 
 	//EXPECT_EQ(*gradidoTransaction->mBodyBytes, )
 }
-*/

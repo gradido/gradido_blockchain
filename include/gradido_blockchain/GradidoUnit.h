@@ -21,6 +21,7 @@ public:
 	~GradidoUnit() {};
 
 	std::string toString() const;
+	inline int64_t getGradidoCent() const { return mGradidoCent; }
 
 	// access operators
 	inline operator std::string() const { return toString(); }

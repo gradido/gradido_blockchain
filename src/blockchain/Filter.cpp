@@ -27,7 +27,7 @@ namespace gradido {
 			memory::ConstBlockPtr _involvedPublicKey /*= nullptr*/,
 			SearchDirection _searchDirection /*= SearchDirection::DESC*/,
 			Pagination _pagination /*= Pagination(0)*/,
-			std::string_view _coinCommunityId /*= nullptr*/,
+			std::string_view _coinCommunityId /*= std::string_view() */,
 			TimepointInterval _timepointInterval/* = MonthYearInterval()*/,
 			data::TransactionType _transactionType /* = data::TransactionType::NONE*/,
 			std::function<FilterResult(const TransactionEntry&)> _filterFunction/* = nullptr*/
