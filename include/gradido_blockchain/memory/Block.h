@@ -11,6 +11,7 @@
 #include <span>
 #include <vector>
 #include <cassert>
+#include <cstring>
 #include <memory>
 
 namespace memory {

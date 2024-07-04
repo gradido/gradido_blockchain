@@ -15,7 +15,7 @@ namespace gradido {
 				uint64_t id
 			) {
 				auto transactionBody = gradidoTransaction->getTransactionBody();
-					
+
 				if (transactionBody->isRegisterAddress() && transactionBody->type != data::CrossGroupType::LOCAL) {
 					throw std::runtime_error("not implemented yet");
 				}
@@ -39,11 +39,11 @@ namespace gradido {
 
 			GradidoUnit Context::run(
 				memory::ConstBlockPtr publicKey,
-				Timepoint balanceDate, 
+				Timepoint balanceDate,
 				uint64_t maxTransactionNr/* = 0 */,
 				std::string_view coinCommunityId/* = nullptr*/)
 			{
-				// get last transaction entry with final balance 
+				// get last transaction entry with final balance
 				// collect balances with balance date from all received transactions which occurred after last transaction entry with final balance
 				std::map<Timepoint, GradidoUnit> dateAmount;
 				auto lastTransactionEntryWithFinalBalance = mBlockchain.findOne(Filter(
@@ -54,7 +54,7 @@ namespace gradido {
 					[balanceDate, this, publicKey, &dateAmount](const TransactionEntry& entry) -> FilterResult
 					{
 						auto confirmedTransaction = entry.getConfirmedTransaction();
-							
+
 						if (confirmedTransaction->confirmedAt.getAsTimepoint() > balanceDate) {
 							return FilterResult::DISMISS;
 						}
@@ -64,7 +64,7 @@ namespace gradido {
 							return FilterResult::USE | FilterResult::STOP;
 						}
 						auto amount = role->getAmount();
-						if (amount > 0) {
+						if (amount > GradidoUnit::zero()) {
 							if (transactionBody->isDeferredTransfer()) {
 								// if timeout is reached, balance is zero
 								// if deferred transfer wasn't redeemed, it was booked back to sender,
@@ -83,7 +83,7 @@ namespace gradido {
 							//receiveTransfers.push_front({ balance, confirmedTransaction->confirmedAt.getAsTimepoint() });
 							dateAmount.insert({ confirmedTransaction->confirmedAt.getAsTimepoint() , amount });
 						}
-							
+
 						// publicKey must be the receive address from deferred transfer
 						// if it were sender address, isFinalBalanceForAccount should return true and we were never here
 						// the receive address from deferred transfer exist only once and cannot receive more gdds
@@ -136,7 +136,7 @@ namespace gradido {
 				}
 
 				// sum up received transfers and calculate decay between
-				for (auto& receiveTransfer: dateAmount) 
+				for (auto& receiveTransfer: dateAmount)
 				{
 					assert(receiveTransfer.first >= lastDate);
 					if (receiveTransfer.first > lastDate) {
@@ -151,14 +151,14 @@ namespace gradido {
 				}
 				assert(balanceDate >= lastDate);
 				gdd = gdd.calculateDecay(lastDate, balanceDate);
-				
+
 				return gdd;
 			}
 
 			std::shared_ptr<AbstractRole> Context::getRole(const data::TransactionBody& body)
 			{
-				if (body.isCreation()) { 
-					return std::make_shared<GradidoCreationRole>(*body.creation); 
+				if (body.isCreation()) {
+					return std::make_shared<GradidoCreationRole>(*body.creation);
 				}
 				if (body.isDeferredTransfer()) {
 					return std::make_shared<GradidoDeferredTransferRole>(*body.deferredTransfer);
@@ -180,7 +180,7 @@ namespace gradido {
 				assert(body->isDeferredTransfer());
 
 				auto confirmedAt = confirmedTransaction->confirmedAt.getAsTimepoint();
-				// use this role for calculate decayed amount at timeout 
+				// use this role for calculate decayed amount at timeout
 				// confirmedAt is used as start date in GradidoDeferredTransferRole.getAmount,
 				// timeout as end date
 				GradidoDeferredTransferRole deferredTransferRole(*body->deferredTransfer);

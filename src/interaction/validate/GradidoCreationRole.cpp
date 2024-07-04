@@ -8,7 +8,7 @@ namespace gradido {
 		namespace validate {
 
 			GradidoCreationRole::GradidoCreationRole(const data::GradidoCreation& gradidoCreation)
-				: mGradidoCreation(gradidoCreation) 
+				: mGradidoCreation(gradidoCreation)
 			{
 				// prepare for signature check
 				mMinSignatureCount = 1;
@@ -23,14 +23,14 @@ namespace gradido {
 				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 			) {
 				const auto& recipient = mGradidoCreation.recipient;
-				if ((type & Type::SINGLE) == Type::SINGLE) 
+				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
 					validateEd25519PublicKey(recipient.pubkey, "recipient pubkey");
 					auto recipientAmount = recipient.amount;
-					if (recipientAmount > 1000) {
+					if (recipientAmount > GradidoUnit(1000.0)) {
 						throw TransactionValidationInvalidInputException("creation amount to high, max 1000 per month", "amount", "string");
 					}
-					if (recipientAmount < 1) {
+					if (recipientAmount < GradidoUnit(1.0)) {
 						throw TransactionValidationInvalidInputException("creation amount to low, min 1 GDD", "amount", "string");
 					}
 				}
@@ -68,7 +68,7 @@ namespace gradido {
 					}
 					else if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo) {
 						sum = calculateCreationSum(
-							mGradidoCreation.recipient.pubkey, 
+							mGradidoCreation.recipient.pubkey,
 							ymd.month(), ymd.year(),
 							mConfirmedAt, blockchain,
 							recipientPreviousConfirmedTransaction->id
@@ -76,7 +76,7 @@ namespace gradido {
 					}
 					sum += recipient.amount;
 					// first max creation check algo
-					if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo && sum > 3000) {
+					if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo && sum > GradidoUnit(3000.0)) {
 						sum -= recipient.amount;
 						throw InvalidCreationException(
 							"creation more than 3.000 GDD in 3 month not allowed",
@@ -85,7 +85,7 @@ namespace gradido {
 						);
 					}
 					// second max creation check algo
-					else if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo && sum > 1000) {
+					else if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo && sum > GradidoUnit(1000.0)) {
 						sum -= recipient.amount;
 						throw InvalidCreationException(
 							"creation more than 1.000 GDD per month not allowed",
@@ -173,7 +173,7 @@ namespace gradido {
 				blockchain->findAll(blockchain::Filter(
 					// static filter
 					maxTransactionNr,
-					accountPubkey, 
+					accountPubkey,
 					TimepointInterval(beforeReceived, received),
 					// dynamic filter
 					// called for each transaction which fulfills the static filters
@@ -186,7 +186,7 @@ namespace gradido {
 							auto targetDate = date::year_month_day{ date::floor<date::days>(creation->targetDate.getAsTimepoint()) };
 							if (targetDate.month() == month && targetDate.year() == year) {
 								sum += creation->recipient.amount;
-							}									
+							}
 						}
 						// we don't need any of it in our result set
 						return blockchain::FilterResult::DISMISS;
@@ -212,7 +212,7 @@ namespace gradido {
 				// received = max
 				// received - 2 month = min
 				auto beforeReceived = received - std::chrono::months(2);
-					
+
 				blockchain->findAll(blockchain::Filter(
 					// static filter
 					maxTransactionNr,

@@ -29,7 +29,7 @@
 
 #include <cstdio>
 #include "gtest/gtest.h"
-//#include "KeyPairs.h"
+#include "KeyPairs.h"
 #include "gradido_blockchain/memory/Manager.h"
 
 #if GTEST_OS_ESP8266 || GTEST_OS_ESP32
@@ -37,6 +37,7 @@
 extern "C" {
 #endif
 	void setup() {
+	    generateKeyPairs();
 		testing::InitGoogleTest();
 	}
 

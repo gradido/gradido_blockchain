@@ -17,7 +17,7 @@ public:
 	// will be rounded to maximal 4 after comma so 1.271827 will be 1.2718
 	GradidoUnit(double gdd);
 	GradidoUnit(const std::string& stringAmount);
-	
+
 	~GradidoUnit() {};
 
 	std::string toString() const;
@@ -30,7 +30,7 @@ public:
 	inline GradidoUnit& operator+=(const GradidoUnit& other) { mGradidoCent += other.mGradidoCent; return *this; }
 	inline GradidoUnit& operator-=(const GradidoUnit& other) { mGradidoCent -= other.mGradidoCent; return *this; }
 	inline GradidoUnit& operator*=(const GradidoUnit& other) { mGradidoCent *= other.mGradidoCent; return *this; }
-	
+
 	inline GradidoUnit& operator=(const GradidoUnit& other) { mGradidoCent = other.mGradidoCent; return *this; }
 
 	// math operators
@@ -38,7 +38,7 @@ public:
 	inline GradidoUnit operator-(const GradidoUnit& other) const { return mGradidoCent - other.mGradidoCent; }
 	inline GradidoUnit operator*(const GradidoUnit& other) const { return mGradidoCent * other.mGradidoCent; }
 
-	// comparisation
+	// compare
 	inline bool operator>(const GradidoUnit& other) const { return mGradidoCent > other.mGradidoCent; }
 	inline bool operator>=(const GradidoUnit& other) const { return mGradidoCent >= other.mGradidoCent; }
 	inline bool operator<(const GradidoUnit& other) const { return mGradidoCent < other.mGradidoCent; }
@@ -56,8 +56,9 @@ public:
 	}
 	//! be aware that in production we started with decay calculation at a specific date
 	static Duration calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime);
-	
-protected:	
+    static GradidoUnit zero() { return GradidoUnit(); }
+
+protected:
 	static double roundToPrecision(double GradidoUnit, uint8_t precision);
 
 	int64_t mGradidoCent;
@@ -65,11 +66,11 @@ protected:
 
 
 /*!
-* will be thrown if x 
+* will be thrown if x
 */
 class FixedPointedArithmetikOverflowException : public GradidoBlockchainException
 {
-public: 
+public:
 	explicit FixedPointedArithmetikOverflowException(const char* what, long long x) noexcept
 		: GradidoBlockchainException(what), mX(x) {}
 
