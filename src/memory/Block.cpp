@@ -5,7 +5,7 @@
 namespace memory {
 	
 	Block::Block(size_t size)
-		: mSize(size), mData(Manager::getInstance().getBlock(size))
+		: mSize(size), mData(Manager::getInstance()->getBlock(size))
 	{		
 	}
 
@@ -69,7 +69,7 @@ namespace memory {
 	void Block::clear()
 	{
 		if (mData) {
-			Manager::getInstance().releaseBlock(mSize, mData);
+			Manager::getInstance()->releaseBlock(mSize, mData);
 			mData = nullptr;
 			mSize = 0;
 		}

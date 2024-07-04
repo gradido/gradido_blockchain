@@ -1,12 +1,12 @@
 ﻿#include "gtest/gtest.h"
-#include "../../KeyPairs.h"
+#include "../KeyPairs.h"
 #include "const.h"
-#include "gradido_blockchain/v3_3/interaction/serialize/Context.h"
-#include "gradido_blockchain/v3_3/TransactionBodyBuilder.h"
-#include "gradido_blockchain/v3_3/GradidoTransactionBuilder.h"
+#include "gradido_blockchain/interaction/serialize/Context.h"
+#include "gradido_blockchain/TransactionBodyBuilder.h"
+#include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
-using namespace gradido::v3_3;
+using namespace gradido;
 using namespace data;
 using namespace interaction;
 

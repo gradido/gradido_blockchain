@@ -1,10 +1,10 @@
 #include "gtest/gtest.h"
-#include "gradido_blockchain/v3_3/interaction/deserialize/Context.h"
-#include "../../KeyPairs.h"
+#include "gradido_blockchain/interaction/deserialize/Context.h"
+#include "../KeyPairs.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 #include "const.h"
 
-using namespace gradido::v3_3;
+using namespace gradido;
 using namespace data;
 using namespace interaction;
 
@@ -122,7 +122,7 @@ TEST(DeserializeTest, GradidoCreationBody) {
 	EXPECT_FALSE(body->isTransfer());
 
 	auto creation = body->creation;
-	EXPECT_EQ(creation->recipient.amount.toString(2), "1000.00");
+	EXPECT_EQ(creation->recipient.amount.toString(), "1000.00");
 	EXPECT_TRUE(creation->recipient.pubkey->isTheSame(g_KeyPairs[4].publicKey));
 	EXPECT_EQ(creation->targetDate, targetDate);
 }
@@ -157,7 +157,7 @@ TEST(DeserializeTest, GradidoTransferBody) {
 	ASSERT_TRUE(body->isTransfer());
 
 	auto transfer = body->transfer;
-	EXPECT_EQ(transfer->sender.amount.toString(2), "500.55");
+	EXPECT_EQ(transfer->sender.amount.toString(), "500.55");
 	EXPECT_TRUE(transfer->sender.pubkey->isTheSame(g_KeyPairs[4].publicKey));
 	EXPECT_TRUE(transfer->recipient->isTheSame(g_KeyPairs[5].publicKey));
 }
@@ -192,7 +192,7 @@ TEST(DeserializeTest, GradidoDeferredTransferBody) {
 
 	auto deferredTransfer = body->deferredTransfer;
 	auto transfer = deferredTransfer->transfer;
-	EXPECT_EQ(transfer.sender.amount.toString(2), "555.55");
+	EXPECT_EQ(transfer.sender.amount.toString(), "555.55");
 	EXPECT_TRUE(transfer.sender.pubkey->isTheSame(g_KeyPairs[4].publicKey));
 	EXPECT_TRUE(transfer.recipient->isTheSame(g_KeyPairs[5].publicKey));
 	EXPECT_EQ(deferredTransfer->timeout, timeout);
@@ -268,7 +268,7 @@ TEST(DeserializeTest, MinimalConfirmedTransaction) {
 	EXPECT_EQ(confirmedTransaction->id, 7);
 	EXPECT_EQ(confirmedTransaction->confirmedAt, confirmedAt);
 	EXPECT_EQ(confirmedTransaction->versionNumber, VERSION_STRING);
-	EXPECT_EQ(confirmedTransaction->accountBalance.toString(2), "179.00");
+	EXPECT_EQ(confirmedTransaction->accountBalance.toString(), "179.00");
 	EXPECT_EQ(confirmedTransaction->runningHash->size(), crypto_generichash_BYTES);
 }
 
@@ -293,7 +293,7 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_EQ(confirmedTransaction->id, 7);
 	EXPECT_EQ(confirmedTransaction->confirmedAt, confirmedAt);
 	EXPECT_EQ(confirmedTransaction->versionNumber, VERSION_STRING);
-	EXPECT_EQ(confirmedTransaction->accountBalance.toString(6), "899.748379");
+	EXPECT_EQ(confirmedTransaction->accountBalance.toString(), "899.748379");
 	ASSERT_EQ(confirmedTransaction->runningHash->size(), crypto_generichash_BYTES);
 #ifdef USE_MPFR
 	EXPECT_EQ(confirmedTransaction->runningHash->convertToHex(), "09de6ea4bc1927e7c9890aa476e7d4edd884d27f4798996c6521444e93f7ba24");
@@ -320,7 +320,7 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_TRUE(body->isTransfer());
 	
 	auto transfer = body->transfer;
-	EXPECT_EQ(transfer->sender.amount.toString(5), "100.25162");
+	EXPECT_EQ(transfer->sender.amount.toString(), "100.25162");
 	EXPECT_TRUE(transfer->sender.pubkey->isTheSame(g_KeyPairs[4].publicKey));
 	EXPECT_TRUE(transfer->recipient->isTheSame(g_KeyPairs[5].publicKey));
 	

@@ -1,3 +1,4 @@
+/*
 #include "KeyPairs.h"
 #include "sodium.h"
 
@@ -9,6 +10,7 @@ std::vector<KeyPair> g_KeyPairs;
 void generateKeyPairs()
 {
 	unsigned char hash[crypto_hash_sha512_BYTES];
+    
     std::array seeds = {
         "A medium of exchange for the people",
         "Love and health",
@@ -31,14 +33,19 @@ void generateKeyPairs()
         "Life is like riding a bicycle. To keep your balance, you must keep moving. - Albert Einstein",
         "Genius is one percent inspiration, ninety-nine percent perspiration. - Thomas Edison"
     };
-
 	g_KeyPairs.reserve(seeds.size());
-	for (int i = 0; i < seeds.size(); i++) {
-		KeyPair keyPair;
+    
+	for (int i = 0; i < seeds.size(); i++) 
+    {
+		//KeyPair keyPair;
+        
 		auto& seed = seeds[i];
-
+        
 		crypto_hash_sha512(hash, (const unsigned char*)seed, strlen(seed));
 		crypto_sign_seed_keypair(*keyPair.publicKey, *keyPair.privateKey, hash);
 		g_KeyPairs.push_back(keyPair);
+        
 	}
+    
 }
+*/

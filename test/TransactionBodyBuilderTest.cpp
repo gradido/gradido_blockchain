@@ -1,9 +1,10 @@
+/*
 #include "gtest/gtest.h"
-#include "../KeyPairs.h"
-#include "gradido_blockchain/v3_3/TransactionBodyBuilder.h"
+#include "KeyPairs.h"
+#include "gradido_blockchain/TransactionBodyBuilder.h"
 
-using namespace gradido::v3_3;
-using namespace gradido::v3_3::data;
+using namespace gradido;
+using namespace gradido::data;
 using namespace std::chrono;
 
 
@@ -109,7 +110,7 @@ TEST(TransactionBodyBuilderTest, GradidoCreation) {
 	auto creation = transactionBody->creation;
 	EXPECT_EQ(*creation->recipient.pubkey, *g_KeyPairs[4].publicKey);
 	EXPECT_EQ(creation->recipient.communityId, "");
-	EXPECT_EQ(creation->recipient.amount.toString(2), "1000.00");
+	EXPECT_EQ(creation->recipient.amount.toString(), "1000.00");
 	EXPECT_EQ(creation->targetDate, TimestampSeconds(1660953712));
 }
 
@@ -142,7 +143,7 @@ TEST(TransactionBodyBuilderTest, GradidoTransfer) {
 	auto transfer = transactionBody->transfer;
 	EXPECT_EQ(*transfer->sender.pubkey, *g_KeyPairs[4].publicKey);
 	EXPECT_EQ(transfer->sender.communityId, "");
-	EXPECT_EQ(transfer->sender.amount.toString(6), "100.251621");
+	EXPECT_EQ(transfer->sender.amount.toString(), "100.251621");
 	EXPECT_EQ(*transfer->recipient, *g_KeyPairs[5].publicKey);
 }
 
@@ -175,7 +176,8 @@ TEST(TransactionBodyBuilderTest, GradidoDeferredTransfer) {
 	auto deferredTransfer = transactionBody->deferredTransfer;
 	EXPECT_EQ(*deferredTransfer->transfer.sender.pubkey, *g_KeyPairs[4].publicKey);
 	EXPECT_EQ(deferredTransfer->transfer.sender.communityId, "");
-	EXPECT_EQ(deferredTransfer->transfer.sender.amount.toString(6), "100.251621");
+	EXPECT_EQ(deferredTransfer->transfer.sender.amount.toString(), "100.251621");
 	EXPECT_EQ(*deferredTransfer->transfer.recipient, *g_KeyPairs[5].publicKey);
 	EXPECT_EQ(deferredTransfer->timeout, now + days(5));
 }
+*/

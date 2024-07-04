@@ -2,16 +2,25 @@
 #include <cassert>
 
 namespace memory {
-	Manager& Manager::getInstance() 
+	Manager::Manager() : mInitalized(true)
+	{
+	}
+	Manager::~Manager() 
+	{ 
+		mInitalized = false; 
+	}
+	Manager* Manager::getInstance() 
 	{
 		static Manager one;
-		return one;
+		return &one;
 	}
 
 	uint8_t* Manager::getBlock(size_t size)
 	{
 		assert(size > 0);
-		if (!mInitalized) return (uint8_t*)malloc(size);
+		if (!mInitalized) {
+			return (uint8_t*)malloc(size);
+		}
 		std::lock_guard _lock(mBlockStacksMutex);
 		auto it = mBlockStacks.find(size);
 		if (it == mBlockStacks.end()) {

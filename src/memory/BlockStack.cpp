@@ -11,7 +11,7 @@ namespace memory {
 	}
 	BlockStack::~BlockStack()
 	{
-		LOG_F(INFO, "release memory page stack: %d, stack size: %d", mSize, static_cast<int>(mBlockStack.size()));
+		LOG_F(INFO, "release memory page stack: %d, stack size: %d", static_cast<int>(mSize), static_cast<int>(mBlockStack.size()));
 		clear();
 	}
 

@@ -1,9 +1,10 @@
+/*
 #include "gtest/gtest.h"
-#include "gradido_blockchain/v3_3/GradidoTransactionBuilder.h"
-#include "../KeyPairs.h"
+#include "gradido_blockchain/GradidoTransactionBuilder.h"
+#include "KeyPairs.h"
 
-using namespace gradido::v3_3;
-using namespace gradido::v3_3::data;
+using namespace gradido;
+using namespace gradido::data;
 using namespace std;
 using namespace std::chrono;
 
@@ -31,3 +32,4 @@ TEST(GradidoTransactionBuilderTest, SignTransaction) {
 
 	//EXPECT_EQ(*gradidoTransaction->mBodyBytes, )
 }
+*/

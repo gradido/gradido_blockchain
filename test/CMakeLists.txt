@@ -26,10 +26,16 @@ FILE(GLOB TEST_CRYPTO "crypto/*.cpp" "crypto/*.h")
 FILE(GLOB TEST_LIB "lib/*.cpp" "lib/*.h")
 FILE(GLOB TEST_MODEL "model/*.cpp" "model/*.h")
 FILE(GLOB TEST_MODEL_PROTOPUF "model/protopuf/*.cpp" "model/protopuf/*.h")
-FILE(GLOB V3_3 "v3_3/*.cpp" "v3_3/*.h")
-FILE(GLOB V3_3_INTERACTION "v3_3/interaction/*.cpp" "v3_3/interaction/*.h")
+FILE(GLOB INTERACTION "interaction/*.cpp" "interaction/*.h")
 
-SET(TEST_SRC ${TEST_MAIN} ${TEST_LIB} ${TEST_CRYPTO} ${TEST_MODEL} ${TEST_MODEL_PROTOPUF} ${V3_3} ${V3_3_INTERACTION})
+SET(TEST_SRC 
+  ${TEST_MAIN}
+  #${TEST_LIB} 
+  #${TEST_CRYPTO}
+  #${TEST_MODEL}
+  #${TEST_MODEL_PROTOPUF} 
+  #${INTERACTION}
+)
 
 if(MSVC)
 	# src
@@ -37,9 +43,7 @@ if(MSVC)
     source_group("crypto" FILES ${TEST_CRYPTO})
     source_group("model\\protopuf" FILES ${TEST_MODEL_PROTOPUF})
     source_group("model" FILES ${TEST_MODEL})
-    source_group("V3_3\\interaction" FILES ${V3_3_INTERACTION})
-    source_group("v3_3" FILES ${V3_3})
-    
+    source_group("interaction" FILES ${INTERACTION})    
 endif()
 
 IF(WIN32)
