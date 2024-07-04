@@ -160,7 +160,7 @@ namespace gradido {
 			auto confirmedAtString = DataTypeConverter::timePointToString(confirmedAt, "%Y-%m-%d %H:%M:%S");
 			serialize::Context serializeContext(gradidoTransaction->signatureMap);
 			std::string signatureMapString = serializeContext.run()->copyAsString();
-			std::string accountBalanceString = accountBalance.toString(25);
+			std::string accountBalanceString = accountBalance.toString();
 
 			memory::Block hash(crypto_generichash_BYTES);
 

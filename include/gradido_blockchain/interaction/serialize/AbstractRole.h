@@ -38,12 +38,12 @@ namespace gradido {
 					return std::make_shared<memory::Block>(buffer);
 				}
 
-				std::string decimalToStringTrimTrailingZeros(const Decimal& decimal) const
+				std::string GradidoUnitToStringTrimTrailingZeros(const GradidoUnit& GradidoUnit) const
 				{
 					// Trim trailing zeros
-					auto str = decimal.toString();
+					auto str = GradidoUnit.toString();
 					str.erase(str.find_last_not_of('0') + 1, std::string::npos);
-					if (str.back() == '.') str.pop_back(); // Remove trailing decimal point if present
+					if (str.back() == '.') str.pop_back(); // Remove trailing GradidoUnit point if present
 
 					return str;
 				}

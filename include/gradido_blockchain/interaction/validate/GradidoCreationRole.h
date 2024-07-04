@@ -28,7 +28,7 @@ namespace gradido {
 					data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 				);
 			protected:
-				Decimal calculateCreationSum(
+				GradidoUnit calculateCreationSum(
 					memory::ConstBlockPtr accountPubkey,
 					date::month month,
 					date::year year,
@@ -36,7 +36,7 @@ namespace gradido {
 					std::shared_ptr<blockchain::Abstract> blockchain,
 					uint64_t maxTransactionNr
 				);
-				Decimal calculateCreationSumLegacy(
+				GradidoUnit calculateCreationSumLegacy(
 					memory::ConstBlockPtr accountPubkey,
 					Timepoint received,
 					std::shared_ptr<blockchain::Abstract> blockchain,

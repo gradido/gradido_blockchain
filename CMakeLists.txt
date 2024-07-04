@@ -110,13 +110,6 @@ ENDIF()
 ############################## find dependencies ###################################
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(MPFR)
-if(MPFR_FOUND)
-	add_definitions(-DUSE_MPFR)
-	IF(WIN32)
-		include_directories(${mpfr_INCLUDE_DIRS} ${gmp_INCLUDE_DIRS})
-	endif()
-endif()
 # using conan on windows
 IF(WIN32)
   	find_package(libsodium REQUIRED)
@@ -270,9 +263,6 @@ add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 if(BUILD_SHARED_LIBS) 
 	target_link_libraries(GradidoBlockchain loguru::loguru) #libprotobuf
 	IF(WIN32) 
-	  if(MPFR_FOUND)
-	  	target_link_libraries(GradidoBlockchain mpfr::mpfr ${MPFR_LIBRARIES})
-	  endif()
 	  if(openssl_FOUND) 
 	  	target_link_libraries(GradidoBlockchain openssl::openssl)
 	  endif()

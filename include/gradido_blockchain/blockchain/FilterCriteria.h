@@ -13,7 +13,8 @@ namespace gradido {
 			COIN_COMMUNITY = 1UL << 2,
 			TIMEPOINT_INTERVAL = 1UL << 3,
 			FILTER_FUNCTION = 1UL << 4,
-			MAX = (1UL << 5) - 1
+			TRANSACTION_TYPE = 1UL << 5,
+			MAX = (1UL << 6) - 1
 		};
 
 		inline FilterCriteria operator | (FilterCriteria lhs, FilterCriteria rhs)

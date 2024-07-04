@@ -6,6 +6,7 @@
 #include "gradido_blockchain/interaction/validate/GradidoDeferredTransferRole.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
 #include "gradido_blockchain/interaction/validate/RegisterAddressRole.h"
+#include "gradido_blockchain/const.h"
 
 #include "magic_enum/magic_enum.hpp"
 #include "magic_enum/magic_enum_flags.hpp"
@@ -30,7 +31,7 @@ namespace gradido {
 				}
 				try {
 					if ((type & Type::SINGLE) == Type::SINGLE) {
-						if (mBody.versionNumber != data::GRADIDO_PROTOCOL_VERSION) {
+						if (mBody.versionNumber != GRADIDO_TRANSACTION_BODY_V3_3_VERSION_STRING) {
 							throw TransactionValidationInvalidInputException("wrong version", "version_number", "string");
 						}
 						// memo is only mandatory for transfer and creation transactions
@@ -47,7 +48,11 @@ namespace gradido {
 
 					auto& specificRole = getSpecificTransactionRole();
 					if (!mBody.otherGroup.empty() && !recipientPreviousConfirmedTransaction) {
-						recipientPreviousConfirmedTransaction = blockchainProvider->findBlockchain(mBody.otherGroup)->getLastTransaction();
+						recipientPreviousConfirmedTransaction = 
+							blockchainProvider
+							->findBlockchain(mBody.otherGroup)
+							->findOne(blockchain::Filter::LAST_TRANSACTION)
+							->getConfirmedTransaction();
 					}
 					specificRole.setConfirmedAt(mConfirmedAt);
 					specificRole.run(type, communityId, blockchainProvider, previousConfirmedTransaction, recipientPreviousConfirmedTransaction);

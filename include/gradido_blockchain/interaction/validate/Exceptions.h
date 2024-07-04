@@ -5,7 +5,7 @@
 #include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/Protocol.h"
-#include "gradido_blockchain/lib/Decimal.h"
+#include "gradido_blockchain/GradidoUnit.h"
 
 #include "magic_enum/magic_enum.hpp"
 #include "rapidjson/document.h"
@@ -137,7 +137,7 @@ namespace gradido {
 			class GRADIDOBLOCKCHAIN_EXPORT InsufficientBalanceException : public TransactionValidationException
 			{
 			public:
-				explicit InsufficientBalanceException(const char* what, Decimal needed, Decimal exist) noexcept;
+				explicit InsufficientBalanceException(const char* what, GradidoUnit needed, GradidoUnit exist) noexcept;
 				std::string getFullString() const noexcept;
 				rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 

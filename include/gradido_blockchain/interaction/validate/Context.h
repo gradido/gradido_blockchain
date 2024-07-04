@@ -36,7 +36,6 @@ namespace gradido {
             protected:
                 std::unique_ptr<AbstractRole> mRole;
                 std::string mCommunityId;
-                blockchain::AbstractProvider* mBlockchainProvider;
                 data::ConstConfirmedTransactionPtr mSenderPreviousConfirmedTransaction;
                 data::ConstConfirmedTransactionPtr mRecipientPreviousConfirmedTransaction;
             };

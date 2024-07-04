@@ -31,6 +31,7 @@ namespace gradido {
 				Pagination _pagination = Pagination(0),					
 				std::string_view coinCommunityId = nullptr,
 				TimepointInterval _timepointInterval = TimepointInterval(),
+				data::TransactionType _transactionType = data::TransactionType::NONE,
 				std::function<FilterResult(const TransactionEntry&)> _filterFunction = nullptr
 			);
 			// constructor for calculate creation sum in validate GradidoCreationRole
@@ -63,6 +64,8 @@ namespace gradido {
 			std::string coinCommunityId;
 			//! interval between two dates with 1 month resolution
 			TimepointInterval timepointInterval;
+			//! transaction type
+			data::TransactionType transactionType;
 
 			//! for advanced filtering, to prevent unnecessary copy around large amounts of transactions
 			//! see FilterFunctionResult for more infos

@@ -9,7 +9,7 @@ namespace gradido {
 
 	namespace interaction {
 		namespace calculateAccountBalance {
-			DecayDecimal Context::run(
+			GradidoUnit Context::run(
 				data::ConstGradidoTransactionPtr gradidoTransaction,
 				Timepoint confirmedAt,
 				uint64_t id
@@ -22,7 +22,7 @@ namespace gradido {
 				if (transactionBody->isTransfer() || transactionBody->isCreation() || transactionBody->isDeferredTransfer()) {
 					auto role = getRole(*transactionBody);
 					auto balance = run(role->getFinalBalanceAddress(), confirmedAt, id - 1);
-					DecayDecimal amount = role->getAmount();
+					GradidoUnit amount = role->getAmount();
 					if (transactionBody->isCreation()) {
 						balance += amount;
 					}
@@ -37,7 +37,7 @@ namespace gradido {
 				return 0.0;
 			}
 
-			DecayDecimal Context::run(
+			GradidoUnit Context::run(
 				memory::ConstBlockPtr publicKey,
 				Timepoint balanceDate, 
 				uint64_t maxTransactionNr/* = 0 */,
@@ -45,7 +45,7 @@ namespace gradido {
 			{
 				// get last transaction entry with final balance 
 				// collect balances with balance date from all received transactions which occurred after last transaction entry with final balance
-				std::map<Timepoint, DecayDecimal> dateAmount;
+				std::map<Timepoint, GradidoUnit> dateAmount;
 				auto lastTransactionEntryWithFinalBalance = mBlockchain.findOne(Filter(
 					maxTransactionNr,
 					publicKey,
@@ -97,7 +97,7 @@ namespace gradido {
 
 				// define start balance and date
 				Timepoint lastDate;
-				DecayDecimal gdd;
+				GradidoUnit gdd;
 				if (lastTransactionEntryWithFinalBalance) {
 					auto confirmedTransaction = lastTransactionEntryWithFinalBalance->getConfirmedTransaction();
 					lastDate = confirmedTransaction->confirmedAt.getAsTimepoint();
@@ -114,8 +114,7 @@ namespace gradido {
 				// check for time outed deferred transfers which will be automatic booked back
 				auto timeoutedDeferredTransfers = mBlockchain.findTimeoutedDeferredTransfersInRange(
 					publicKey,
-					lastDate,
-					balanceDate,
+					TimepointInterval(lastDate, balanceDate),
 					maxTransactionNr
 				);
 				for (auto transactionEntry : timeoutedDeferredTransfers) {
@@ -129,8 +128,7 @@ namespace gradido {
 				// findRedeemedDeferredTransfersInRange
 				auto deferredRedeemingTransferPairs = mBlockchain.findRedeemedDeferredTransfersInRange(
 					publicKey,
-					lastDate,
-					balanceDate,
+					TimepointInterval(lastDate, balanceDate),
 					maxTransactionNr
 				);
 				for (const auto& deferredRedeemingTransferPair : deferredRedeemingTransferPairs) {
@@ -148,14 +146,12 @@ namespace gradido {
 					gdd += receiveTransfer.second;
 				}
 				// cmp return 0 if gdd == 0
-				if (gdd == Decimal(0.0)) {
+				if (gdd == GradidoUnit(0.0)) {
 					return gdd;
 				}
 				assert(balanceDate >= lastDate);
-				auto durationUntilBalanceDate = calculateDecayDurationSeconds(lastDate, balanceDate);
-				if (std::chrono::duration_cast<std::chrono::seconds>(durationUntilBalanceDate).count() >= 1) {
-					gdd = gdd.calculateDecay(durationUntilBalanceDate);
-				}
+				gdd = gdd.calculateDecay(lastDate, balanceDate);
+				
 				return gdd;
 			}
 
@@ -176,7 +172,7 @@ namespace gradido {
 				return nullptr;
 			}
 
-			std::pair<Timepoint, DecayDecimal> Context::calculateBookBackTimeoutedDeferredTransfer(
+			std::pair<Timepoint, GradidoUnit> Context::calculateBookBackTimeoutedDeferredTransfer(
 				std::shared_ptr<blockchain::TransactionEntry> transactionEntry
 			) {
 				auto confirmedTransaction = transactionEntry->getConfirmedTransaction();
@@ -192,7 +188,7 @@ namespace gradido {
 				return { timeout, deferredTransferRole.getAmount() };
 			}
 
-			std::pair<Timepoint, DecayDecimal> Context::calculateRedeemedDeferredTransferChange(
+			std::pair<Timepoint, GradidoUnit> Context::calculateRedeemedDeferredTransferChange(
 				const blockchain::DeferredRedeemedTransferPair& deferredRedeemingTransferPair
 			)
 			{

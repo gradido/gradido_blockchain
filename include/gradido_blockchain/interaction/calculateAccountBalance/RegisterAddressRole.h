@@ -16,7 +16,7 @@ namespace gradido {
 				inline bool isFinalBalanceForAccount(memory::ConstBlockPtr accountPublicKey) const {
 					return true;
 				}
-				inline DecayDecimal getAmount() const {
+				inline GradidoUnit getAmount() const {
 					return 0.0;
 				}
 				inline memory::ConstBlockPtr getFinalBalanceAddress() const {

@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_ABSTRACT_H
 
 #include "gradido_blockchain/types.h"
-#include "gradido_blockchain/lib/DecayDecimal.h"
+#include "gradido_blockchain/GradidoUnit.h"
 #include "gradido_blockchain/lib/ExpireCache.h"
 #include "gradido_blockchain/data/iota/MessageId.h"
 
@@ -30,27 +30,27 @@ namespace gradido {
 
 			//! find all deferred transfers which have the timeout in date range between start and end, have senderPublicKey and are not redeemed,
 			//! therefore boocked back to sender
+			//! find all deferred transfers which have the timeout in date range between start and end, have senderPublicKey and are not redeemed,
+			//! therefore boocked back to sender
 			virtual TransactionEntries findTimeoutedDeferredTransfersInRange(
 				memory::ConstBlockPtr senderPublicKey,
-				Timepoint start, 
-				Timepoint end,
+				TimepointInterval timepointInterval,
 				uint64_t maxTransactionNr
-			) const = 0;
+			) const =  0;
 
 			//! find all transfers which redeem a deferred transfer in date range
-			//! \param senderPublicKey sender public key of sending account of redeem transaction
+			//! \param senderPublicKey sender public key of sending account of deferred transaction
 			//! \return list with transaction pairs, first is deferred transfer, second is redeeming transfer
 			virtual std::list<DeferredRedeemedTransferPair> findRedeemedDeferredTransfersInRange(
 				memory::ConstBlockPtr senderPublicKey,
-				Timepoint start,
-				Timepoint end,
+				TimepointInterval timepointInterval,
 				uint64_t maxTransactionNr
 			) const = 0;
 
 			//! analyze only registerAddress Transactions
 			//! \param use filter to check existing of a address in a subrange of transactions
 			//!        check for user and account public keys
-			data::AddressType getAddressType(memory::ConstBlockPtr publicKey, const Filter& filter = Filter::ALL_TRANSACTIONS) const;
+			data::AddressType getAddressType(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
 			virtual std::shared_ptr<TransactionEntry> getTransactionForId(uint64_t transactionId) const = 0;
 
 			//! \param filter use to speed up search if infos exist to narrow down search transactions range

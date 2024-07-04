@@ -1,5 +1,6 @@
 #include "gradido_blockchain/interaction/validate/RegisterAddressRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
+#include "gradido_blockchain/blockchain/FilterBuilder.h"
 
 #include "date/date.h"
 #include "magic_enum/magic_enum.hpp"
@@ -43,10 +44,17 @@ namespace gradido {
 					assert(blockchainProvider);
 					auto blockchain = blockchainProvider->findBlockchain(communityId);
 					assert(blockchain);
+					blockchain::FilterBuilder filterBuilder;
 
 					std::shared_ptr<blockchain::TransactionEntry> lastTransaction;
 					if (data::AddressType::SUBACCOUNT == mRegisterAddress.addressType) {
-						lastTransaction = blockchain->findLastTransactionForAddress(mRegisterAddress.userPubkey, "", senderPreviousConfirmedTransaction->id);
+						lastTransaction = blockchain->findOne(
+							filterBuilder
+							.setInvolvedPublicKey(mRegisterAddress.userPubkey)
+							.setMaxTransactionNr(senderPreviousConfirmedTransaction->id)
+							.setSearchDirection(blockchain::SearchDirection::DESC)
+							.build()
+						);
 						if (!lastTransaction) {
 							throw AddressAlreadyExistException(
 								"cannot register sub address because user is missing",
@@ -76,7 +84,13 @@ namespace gradido {
 							enum_name(mRegisterAddress.addressType).data()
 						);
 					}
-					lastTransaction = blockchain->findLastTransactionForAddress(address, "", senderPreviousConfirmedTransaction->id);
+					lastTransaction = blockchain->findOne(
+						filterBuilder
+						.setInvolvedPublicKey(address)
+						.setMaxTransactionNr(senderPreviousConfirmedTransaction->id)
+						.setSearchDirection(blockchain::SearchDirection::DESC)
+						.build()
+					);
 					if (lastTransaction) {
 						throw AddressAlreadyExistException(
 							"cannot register address because it already exist",

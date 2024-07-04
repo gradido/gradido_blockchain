@@ -23,24 +23,11 @@ namespace gradido {
 		}
 
 			
-		data::AddressType Abstract::getAddressType(memory::ConstBlockPtr publicKey, const Filter& filter/* = Filter::ALL_TRANSACTIONS */) const
+		data::AddressType Abstract::getAddressType(const Filter& filter/* = Filter::ALL_TRANSACTIONS */) const
 		{
 			// copy filter
 			Filter f(filter);
-			f.filterFunction = [&publicKey, filter](const TransactionEntry& entry) -> FilterResult {
-				if (filter.filterFunction) {
-					// evaluate filter from caller
-					auto result = filter.filterFunction(entry);
-					if ((result & FilterResult::USE) != FilterResult::USE) {
-						return result;
-					}
-				}
-				auto body = entry.getTransactionBody();
-				if (body->isRegisterAddress() && body->isInvolved(publicKey)) {
-					return FilterResult::USE | FilterResult::STOP;
-				}
-				return FilterResult::DISMISS;
-			};
+			f.transactionType = data::TransactionType::REGISTER_ADDRESS;
 			auto transactionEntry = findOne(f);
 			if (transactionEntry) {
 				return transactionEntry->getTransactionBody()->registerAddress->addressType;

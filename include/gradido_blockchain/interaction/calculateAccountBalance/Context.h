@@ -12,18 +12,21 @@ namespace gradido {
 			class GRADIDOBLOCKCHAIN_EXPORT Context 
 			{
 			public:
-				Context(const blockchain::Abstract& blockchain)
+				Context(blockchain::Abstract& blockchain)
 					: mBlockchain(blockchain) {}
 
+				Context(const Context&) = delete;
+				Context(Context&&) = delete;
+
 				// calculate (final) balance after a specific transaction
-				DecayDecimal run(
+				GradidoUnit run(
 					data::ConstGradidoTransactionPtr gradidoTransaction,
 					Timepoint confirmedAt,
 					uint64_t id
 				);
 
 				// calculate balance for a specific account for a specific date
-				DecayDecimal run(
+				GradidoUnit run(
 					memory::ConstBlockPtr publicKey,
 					Timepoint balanceDate,
 					uint64_t maxTransactionNr = 0, // last transaction nr to include
@@ -32,10 +35,10 @@ namespace gradido {
 					
 			protected:	
 				std::shared_ptr<AbstractRole> getRole(const data::TransactionBody& body);
-				std::pair<Timepoint, DecayDecimal> calculateBookBackTimeoutedDeferredTransfer(
+				std::pair<Timepoint, GradidoUnit> calculateBookBackTimeoutedDeferredTransfer(
 					std::shared_ptr<blockchain::TransactionEntry> transactionEntry
 				);
-				std::pair<Timepoint, DecayDecimal> calculateRedeemedDeferredTransferChange(
+				std::pair<Timepoint, GradidoUnit> calculateRedeemedDeferredTransferChange(
 					const blockchain::DeferredRedeemedTransferPair& deferredRedeemingTransferPair
 				);
 				const blockchain::Abstract& mBlockchain;

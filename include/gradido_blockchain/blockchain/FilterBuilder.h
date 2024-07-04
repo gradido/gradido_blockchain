@@ -8,6 +8,7 @@ namespace gradido {
 		class GRADIDOBLOCKCHAIN_EXPORT FilterBuilder
 		{
 		public:
+			inline void reset() { mFilter = Filter(); }
 			// default is 0
 			inline FilterBuilder& setMinTransactionNr(uint64_t _minTransactionNr) { mFilter.minTransactionNr = _minTransactionNr; return *this;}
 			// default is 0, no max use all
@@ -22,13 +23,16 @@ namespace gradido {
 			inline FilterBuilder& setCoinCommunityId(std::string_view _coinCommunityId) { mFilter.coinCommunityId = _coinCommunityId; return *this; }
 			// default is zero, don't filter for date
 			inline FilterBuilder& setTimepointInterval(TimepointInterval _timepointInterval) { mFilter.timepointInterval = _timepointInterval; return *this; }
+			// default is none, don't filter for transaction type
+			inline FilterBuilder& setTransactionType(data::TransactionType _transactionType) { mFilter.transactionType = _transactionType; return *this; }
 
 			inline FilterBuilder& setFilterFunction(std::function<FilterResult(const TransactionEntry&)> _filterFunction) {
 				mFilter.filterFunction = _filterFunction;
 				return *this;
 			}
 
-			inline Filter build() const { return mFilter; }
+			inline Filter build() { auto f = mFilter; reset(); return f; }
+			inline Filter getFilter() const { return mFilter; }
 
 		protected:
 			Filter mFilter;

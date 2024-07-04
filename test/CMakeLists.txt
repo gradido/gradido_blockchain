@@ -49,16 +49,10 @@ ENDIF()
 
 enable_testing()
 
-find_package(MPFR)
-if(MPFR_FOUND)
-	add_definitions(-DUSE_MPFR)	
-endif()
+
 find_package(Sodium REQUIRED)
 
 add_executable(GradidoBlockchainTest ${TEST_SRC})
-if(MPFR_FOUND)
-  target_link_libraries(GradidoBlockchainTest ${MPFR_LIBRARIES} )
-endif()
 target_link_libraries(GradidoBlockchainTest GradidoBlockchain sodium loguru::loguru) #libprotobuf
 IF(WIN32)    
     find_library(ED25519_BIP32_RUST_C_LIB ed25519_bip32_c_interface.dll.lib PATHS 

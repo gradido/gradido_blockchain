@@ -42,6 +42,7 @@ namespace gradido {
 
 			//! \brief operator for sorting by mTransactionNr in ascending order
 			bool operator < (const TransactionEntry& b) const { return mTransactionNr < b.mTransactionNr; }
+			bool operator > (const TransactionEntry& b) const { return mTransactionNr > b.mTransactionNr; }
 
 			inline uint64_t getTransactionNr() const { return mTransactionNr; }
 			inline memory::ConstBlockPtr getSerializedTransaction() const { return mSerializedTransaction; }
@@ -49,7 +50,7 @@ namespace gradido {
 			inline date::month getMonth() const { return mMonth; }
 			inline date::year getYear() const { return mYear; }
 			inline data::TransactionType getTransactionType() const { return mTransactionType; }
-			inline std::string getCoinCommunityId() const { return mCoinCommunityId; }
+			inline std::string_view getCoinCommunityId() const { return mCoinCommunityId; }
 			static std::string getCoinCommunityId(const data::TransactionBody& body);
 			inline data::ConstTransactionBodyPtr getTransactionBody() const { return getConfirmedTransaction()->gradidoTransaction->getTransactionBody(); }
 

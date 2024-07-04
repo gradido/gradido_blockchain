@@ -2,6 +2,7 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
 #include "sodium.h"
+#include "date/date.h"
 
 #include <stdexcept>
 #include <assert.h>
@@ -273,6 +274,14 @@ namespace DataTypeConverter
 		ss << std::put_time(std::localtime(&time), fmt);
 
 		return ss.str();
+	}
+
+	Timepoint dateTimeStringToTimePoint(const std::string& dateTimeString, const char* fmt /*= "%F %T"*/)
+	{
+		std::istringstream in{ dateTimeString };
+		date::sys_seconds tp;
+		in >> date::parse(fmt, tp);
+		return tp;
 	}
 
 	std::string timespanToString(const std::chrono::seconds timespan)

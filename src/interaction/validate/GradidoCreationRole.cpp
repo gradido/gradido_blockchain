@@ -53,7 +53,7 @@ namespace gradido {
 					assert(recipientPreviousConfirmedTransaction);
 					assert(mConfirmedAt.seconds);
 
-					Decimal sum;
+					GradidoUnit sum;
 					auto creationMaxAlgo = getCorrectCreationMaxAlgo(mConfirmedAt);
 					auto ymd = date::year_month_day{ date::floor<date::days>(mGradidoCreation.targetDate.getAsTimepoint()) };
 					auto targetCreationMaxAlgo = getCorrectCreationMaxAlgo(mGradidoCreation.targetDate);
@@ -100,7 +100,9 @@ namespace gradido {
 					auto blockchain = blockchainProvider->findBlockchain(communityId);
 					assert(blockchain);
 
-					auto addressType = blockchain->getAddressType(mGradidoCreation.recipient.pubkey);
+					blockchain::Filter filter;
+					filter.involvedPublicKey = mGradidoCreation.recipient.pubkey;
+					auto addressType = blockchain->getAddressType(filter);
 					if (data::AddressType::COMMUNITY_HUMAN != addressType &&
 						data::AddressType::COMMUNITY_AUF != addressType &&
 						data::AddressType::COMMUNITY_GMW != addressType) {
@@ -151,7 +153,7 @@ namespace gradido {
 				}
 			}
 
-			Decimal GradidoCreationRole::calculateCreationSum(
+			GradidoUnit GradidoCreationRole::calculateCreationSum(
 				memory::ConstBlockPtr accountPubkey,
 				date::month month,
 				date::year year,
@@ -162,7 +164,7 @@ namespace gradido {
 			{
 				assert(blockchain);
 
-				Decimal sum; // default initialized with zero
+				GradidoUnit sum; // default initialized with zero
 
 				// received = max
 				// received - 2 month = min
@@ -193,7 +195,7 @@ namespace gradido {
 				return sum;
 			}
 
-			Decimal GradidoCreationRole::calculateCreationSumLegacy(
+			GradidoUnit GradidoCreationRole::calculateCreationSumLegacy(
 				memory::ConstBlockPtr accountPubkey,
 				Timepoint received,
 				std::shared_ptr<blockchain::Abstract> blockchain,
@@ -205,7 +207,7 @@ namespace gradido {
 				auto algo = getCorrectCreationMaxAlgo(received);
 				assert(CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == algo);
 				auto searchDate = date::year_month_day{ date::floor<date::days>(received) };
-				Decimal sum; // default initialized with zero
+				GradidoUnit sum; // default initialized with zero
 
 				// received = max
 				// received - 2 month = min

@@ -37,10 +37,10 @@ namespace gradido {
 
 			struct UserBalance
 			{
-				UserBalance(memory::ConstBlockPtr _userPubkey, DecayDecimal _balance, Timepoint _balanceDate)
+				UserBalance(memory::ConstBlockPtr _userPubkey, GradidoUnit _balance, Timepoint _balanceDate)
 					: userPubkey(_userPubkey), balance(_balance), balanceDate(_balanceDate) {}
 				memory::ConstBlockPtr userPubkey;
-				DecayDecimal balance;
+				GradidoUnit balance;
 				Timepoint balanceDate;
 			};
 

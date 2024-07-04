@@ -1,7 +1,6 @@
 [requires]
 libsodium/1.0.18
 gtest/1.10.0
-mpfr/4.2.1
 
 [options]
 #*:shared=False

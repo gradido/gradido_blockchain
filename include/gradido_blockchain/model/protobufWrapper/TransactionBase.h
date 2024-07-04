@@ -15,7 +15,7 @@
 #include "gradido_blockchain/lib/MultithreadContainer.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/types.h"
-#include "gradido_blockchain/v3_3/data/Protocol.h"
+#include "gradido_blockchain/data/Protocol.h"
 #ifdef USE_MPFR
 #include "mpfr.h"
 #endif // USE_MPFR
@@ -24,7 +24,7 @@
 	@file 
 	contain enum definitions
  */
-namespace v3_3_data = gradido::v3_3::data;
+namespace v3_3_data = gradido::data;
 namespace model {
 	class IGradidoBlockchain;
 

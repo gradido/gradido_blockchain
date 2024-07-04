@@ -7,7 +7,8 @@ namespace gradido {
 			: minTransactionNr(0),
 			maxTransactionNr(0),
 			searchDirection(SearchDirection::DESC),
-			filterFunction(nullptr)
+			transactionType(data::TransactionType::NONE),
+			filterFunction(nullptr)			
 		{
 		}
 
@@ -15,7 +16,8 @@ namespace gradido {
 			: minTransactionNr(0),
 			maxTransactionNr(0),
 			searchDirection(SearchDirection::DESC),
-			filterFunction(_filterFunction)
+			transactionType(data::TransactionType::NONE),
+			filterFunction(_filterFunction)			
 		{
 		}
 
@@ -27,6 +29,7 @@ namespace gradido {
 			Pagination _pagination /*= Pagination(0)*/,
 			std::string_view _coinCommunityId /*= nullptr*/,
 			TimepointInterval _timepointInterval/* = MonthYearInterval()*/,
+			data::TransactionType _transactionType /* = data::TransactionType::NONE*/,
 			std::function<FilterResult(const TransactionEntry&)> _filterFunction/* = nullptr*/
 		) :
 			minTransactionNr(_minTransactionNr),
@@ -36,6 +39,7 @@ namespace gradido {
 			pagination(_pagination),
 			coinCommunityId(_coinCommunityId),
 			timepointInterval(_timepointInterval),
+			transactionType(_transactionType),
 			filterFunction(_filterFunction)
 		{
 		}
@@ -52,6 +56,7 @@ namespace gradido {
 			involvedPublicKey(_involvedPublicKey),
 			searchDirection(SearchDirection::DESC),
 			timepointInterval(_timepointInterval),
+			transactionType(data::TransactionType::NONE),
 			filterFunction(_filterFunction)
 		{
 		}
@@ -69,6 +74,7 @@ namespace gradido {
 			involvedPublicKey(_involvedPublicKey),
 			searchDirection(_searchDirection),
 			coinCommunityId(coinCommunityId),
+			transactionType(data::TransactionType::NONE),
 			filterFunction(_filterFunction)
 		{
 		}
@@ -96,7 +102,7 @@ namespace gradido {
 			if ((type & FilterCriteria::COIN_COMMUNITY) == FilterCriteria::COIN_COMMUNITY)
 			{
 				if (!coinCommunityId.empty()) {
-					std::string_view entryCoinCommunityId(entry->getCoinCommunityId());
+					std::string_view entryCoinCommunityId = entry->getCoinCommunityId();
 					// only if coin community id was set transaction 
 					if (!entryCoinCommunityId.empty()) {
 						if (coinCommunityId != entryCoinCommunityId) {
@@ -110,6 +116,13 @@ namespace gradido {
 						}
 					}
 					
+				}
+			}
+			if ((type & FilterCriteria::TRANSACTION_TYPE) == FilterCriteria::TRANSACTION_TYPE) {
+				if (transactionType != data::TransactionType::NONE) {
+					if (entry->getTransactionType() != transactionType) {
+						return FilterResult::DISMISS;
+					}
 				}
 			}
 			// has actually two versions without deserialize and with deserialize

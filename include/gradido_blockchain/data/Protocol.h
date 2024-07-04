@@ -8,7 +8,7 @@
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/types.h"
 #include "gradido_blockchain/memory/VectorCacheAllocator.h"
-#include "gradido_blockchain/lib/DecayDecimal.h"
+#include "gradido_blockchain/GradidoUnit.h"
 
 #include <array>
 #include <list>
@@ -16,7 +16,6 @@
 namespace gradido {
 	namespace data {
 
-		extern const char* GRADIDO_PROTOCOL_VERSION;
 		//  ----------------  basic_types.proto -----------------------------------
 		struct GRADIDOBLOCKCHAIN_EXPORT SignaturePair
 		{
@@ -98,7 +97,7 @@ namespace gradido {
 			}
 
 			memory::ConstBlockPtr pubkey;
-			DecayDecimal amount;
+			GradidoUnit amount;
 			std::string communityId;				
 		};
 
@@ -319,7 +318,7 @@ namespace gradido {
 			std::string   								versionNumber;
 			memory::ConstBlockPtr 						runningHash;
 			memory::ConstBlockPtr 						messageId;
-			DecayDecimal   								accountBalance;
+			GradidoUnit   								accountBalance;
 		};
 
 		typedef std::shared_ptr<ConfirmedTransaction> ConfirmedTransactionPtr;

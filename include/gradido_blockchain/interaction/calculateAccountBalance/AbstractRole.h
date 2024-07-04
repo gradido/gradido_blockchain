@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_CALCULATE_ACCOUNT_BALANCE_ABSTRACT_ROLE_H
 
 #include "gradido_blockchain/memory/Block.h"
-#include "gradido_blockchain/lib/DecayDecimal.h"
+#include "gradido_blockchain/GradidoUnit.h"
 
 namespace gradido {
 	namespace interaction {
@@ -12,7 +12,7 @@ namespace gradido {
 			public:
 				virtual bool isFinalBalanceForAccount(memory::ConstBlockPtr accountPublicKey) const = 0;
 				virtual memory::ConstBlockPtr getFinalBalanceAddress() const = 0;
-				virtual DecayDecimal getAmount() const = 0;
+				virtual GradidoUnit getAmount() const = 0;
 				virtual ~AbstractRole() {}
 			};
 		}

@@ -21,7 +21,7 @@ namespace gradido {
 					mConfirmedTransaction.versionNumber,
 					mConfirmedTransaction.runningHash->copyAsVector(),
 					mConfirmedTransaction.messageId->copyAsVector(),
-					decimalToStringTrimTrailingZeros(mConfirmedTransaction.accountBalance)
+					GradidoUnitToStringTrimTrailingZeros(mConfirmedTransaction.accountBalance)
 				};
 				return confirmedTransactionMessage;
 			}

@@ -108,46 +108,79 @@ namespace gradido {
 		{
 			// find smallest start set
 			auto startSetType = findSmallestPrefilteredTransactionList(filter);
-			FilterCriteria notYetFiltered = FilterCriteria::MAX;
-			TransactionEntries resultTransactionList;
-			auto processEntry = [&](auto& it, auto& end) {
-				while (it != end) {
-					auto result = filter.matches(it->second, notYetFiltered, mCommunityId);
+			auto processEntry = [&](auto& start, auto& end, FilterCriteria toFilter, const Filter& filter) -> TransactionEntries {
+				TransactionEntries transactionEntries;
+				bool revert = SearchDirection::DESC == filter.searchDirection;
+				auto& it = revert ? end : start;
+				int paginationCursor = 0;
+				while (it != (revert ? start : end)) {
+					auto result = filter.matches(it->second, toFilter, mCommunityId);
 					if ((result & FilterResult::USE) == FilterResult::USE) {
-						resultTransactionList.push_back(it->second);
+						if (paginationCursor >= filter.pagination.skipEntriesCount()) {
+							transactionEntries.push_back(it->second);
+							if (filter.pagination.size && transactionEntries.size() >= filter.pagination.size) {
+								return transactionEntries;
+							}
+						}
+						paginationCursor++;
 					}
 					if ((result & FilterResult::STOP) == FilterResult::STOP) {
-						return;
+						return transactionEntries;
 					}
-					++it;
+					if (revert) {
+						--it;
+					}
+					else {
+						++it;
+					}
 				}
+				return transactionEntries;
 			};
 
 			if (FilterCriteria::TIMEPOINT_INTERVAL == startSetType) 
 			{
-				notYetFiltered = notYetFiltered - FilterCriteria::TIMEPOINT_INTERVAL;
+				auto notYetFiltered = FilterCriteria::MAX - FilterCriteria::TIMEPOINT_INTERVAL;
 				data::TimestampSeconds startDate(filter.timepointInterval.getStartDate());
 				data::TimestampSeconds endDate(filter.timepointInterval.getEndDate());
 				auto startIt = mTransactionsByConfirmedAt.lower_bound(startDate);
 				auto endIt = mTransactionsByConfirmedAt.upper_bound(endDate);
-				processEntry(startIt, endIt);
+				return processEntry(startIt, endIt, notYetFiltered, filter);
 			}
 						
 			else if (FilterCriteria::INVOLVED_PUBLIC_KEY == startSetType) {
-				notYetFiltered = notYetFiltered - FilterCriteria::INVOLVED_PUBLIC_KEY;
+				// we have a problem there, filterFunction expect to be called in searchOrder, mTransactionsByPubkey is sorted by public key
+				// so we first filter without filterFunction to reduce result set as much as possible
+				auto notYetFiltered = FilterCriteria::MAX - FilterCriteria::INVOLVED_PUBLIC_KEY;
 				auto range = mTransactionsByPubkey.equal_range(filter.involvedPublicKey);
-				processEntry(range.first, range.second);
+				Filter partFilter = filter;
+				// disable pagination for prefilter round
+				partFilter.pagination = Pagination();
+				auto prefilteredTransactions = processEntry(range.first, range.second, notYetFiltered, partFilter);
+				// and if a filter function exist we sort and call it in correct order
+				if (filter.filterFunction) {
+					std::map<uint64_t, std::shared_ptr<TransactionEntry>> sortedTransactions;
+					for (std::shared_ptr<TransactionEntry> entry : prefilteredTransactions) {
+						sortedTransactions.insert({ entry->getTransactionNr(), entry });
+					}
+					prefilteredTransactions.clear();
+					auto startIt = sortedTransactions.begin();
+					auto endIt = sortedTransactions.end();
+					return processEntry(startIt, endIt, FilterCriteria::FILTER_FUNCTION, filter);
+				}
+				else {
+					return prefilteredTransactions;
+				}
 			}
 			else {
-				notYetFiltered = notYetFiltered - FilterCriteria::TRANSACTION_NR;
+				auto notYetFiltered = FilterCriteria::MAX - FilterCriteria::TRANSACTION_NR;
 				auto startIt = mTransactionsByNr.lower_bound(filter.minTransactionNr);
 				auto endIt = mTransactionsByNr.end();
 				if (filter.maxTransactionNr) {
 					endIt = mTransactionsByNr.upper_bound(filter.maxTransactionNr);
 				}
-				processEntry(startIt, endIt);
+				return processEntry(startIt, endIt, notYetFiltered, filter);
 			}
-			return resultTransactionList;
+			throw std::runtime_error("not expected branch");			
 		}
 
 		//! find all deferred transfers which have the timeout in date range between start and end, have senderPublicKey and are not redeemed,
@@ -255,13 +288,15 @@ namespace gradido {
 			// find out if transaction redeem a deferred transfer
 			if (body->isTransfer()) {
 				FilterBuilder filterBuilder;
-				filterBuilder
+				
+				auto lastFromSameSender = findOne(
+					filterBuilder
 					.setInvolvedPublicKey(body->transfer->sender.pubkey)
 					.setMaxTransactionNr(confirmedTransaction->id - 1)
 					.setSearchDirection(SearchDirection::DESC)
 					.setPagination(Pagination(1))
-					;
-				auto lastFromSameSender = findOne(filterBuilder.build());
+					.build()
+				);
 				if (lastFromSameSender) {
 					auto lastFromSameSenderBody = lastFromSameSender->getTransactionBody();
 					if (lastFromSameSenderBody->isDeferredTransfer() &&

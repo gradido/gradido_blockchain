@@ -266,7 +266,7 @@ namespace gradido {
 			}
 
 			// *************************** Insufficient Balance Exception ************************************************
-			InsufficientBalanceException::InsufficientBalanceException(const char* what, Decimal needed, Decimal exist) noexcept
+			InsufficientBalanceException::InsufficientBalanceException(const char* what, GradidoUnit needed, GradidoUnit exist) noexcept
 				: TransactionValidationException(what), mNeeded(needed.toString()), mExist(exist.toString())
 			{
 			}

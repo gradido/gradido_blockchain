@@ -1,5 +1,8 @@
 #include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
+#include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
+
+#include "gradido_blockchain/blockchain/FilterBuilder.h"
 
 #include <cassert>
 
@@ -65,8 +68,9 @@ namespace gradido {
 			void GradidoTransferRole::validateSingle(std::string_view communityId)
 			{
 				auto sender = mGradidoTransfer.sender;
-				if (sender.amount <= DecayDecimal(0.0)) {
-					throw TransactionValidationInvalidInputException("zero or negative amount", "amount", "Decimal");
+		
+				if (sender.amount <= GradidoUnit(0.0)) {
+					throw TransactionValidationInvalidInputException("zero or negative amount", "amount", "GradidoUnit");
 				}
 				validateEd25519PublicKey(mGradidoTransfer.recipient, "recipient");
 				validateEd25519PublicKey(sender.pubkey, "sender");
@@ -89,11 +93,12 @@ namespace gradido {
 			) {
 				assert(blockchain);
 				assert(mConfirmedAt.seconds);
-				auto finalBalance = blockchain->calculateAddressBalance(
+				calculateAccountBalance::Context c(*blockchain);
+				auto finalBalance = c.run(
 					mGradidoTransfer.sender.pubkey,
-					mGradidoTransfer.sender.communityId,
 					mConfirmedAt, // calculate decay after last transaction balance until confirmation date
-					previousConfirmedTransaction.id // calculate until this transaction nr
+					previousConfirmedTransaction.id, // calculate until this transaction nr
+					mGradidoTransfer.sender.communityId
 				);
 					
 				if (mGradidoTransfer.sender.amount > finalBalance) {
@@ -109,14 +114,26 @@ namespace gradido {
 			) {
 				assert(senderBlockchain);
 				assert(recipientBlockchain);
+				blockchain::FilterBuilder filterBuilder;
+
 				// check if sender address was registered
-				auto senderAddressType = senderBlockchain->getAddressType(mGradidoTransfer.sender.pubkey, senderPreviousConfirmedTransaction.id);
+				auto senderAddressType = senderBlockchain->getAddressType(
+					filterBuilder
+					.setInvolvedPublicKey(mGradidoTransfer.sender.pubkey)
+					.setMaxTransactionNr(senderPreviousConfirmedTransaction.id)
+					.build()
+				);
 				if (data::AddressType::NONE == senderAddressType) {
 					throw WrongAddressTypeException("sender address not registered", senderAddressType, mGradidoTransfer.sender.pubkey);
 				}
 
 				// check if recipient address was registered
-				auto recipientAddressType = recipientBlockchain->getAddressType(mGradidoTransfer.recipient, recipientPreviousConfirmedTransaction.id);
+				auto recipientAddressType = recipientBlockchain->getAddressType(
+					filterBuilder
+					.setInvolvedPublicKey(mGradidoTransfer.recipient)
+					.setMaxTransactionNr(recipientPreviousConfirmedTransaction.id)
+					.build()
+				);
 				if (data::AddressType::NONE == recipientAddressType && !mDeferredTransfer) {
 					throw WrongAddressTypeException("recipient address not registered", recipientAddressType, mGradidoTransfer.recipient);
 				}
