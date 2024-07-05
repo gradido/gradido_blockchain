@@ -66,10 +66,8 @@ public:
     }
 
     inline size_t size() const {
-        lock();
-        size_t _size = std::list<ResourceType>::size();
-        unlock();
-        return _size;
+        std::shared_lock _lock(mSharedMutex);
+        return std::list<ResourceType>::size();
     }
 
     // Extended functionality: allow iterating over the elements
@@ -81,7 +79,7 @@ public:
         using pointer = ResourceType*;
         using reference = ResourceType&;
 
-        iterator(ResourceType*) : lock_(mSharedMutex), current_(p) {}
+        iterator(ResourceType* p) : lock_(mSharedMutex), current_(p) {}
         reference operator*() const { return *current_; }
         pointer operator->() const { return current_; }
         iterator& operator++() {
@@ -96,10 +94,10 @@ public:
         ResourceType* current_;
     };
 
-    iterator begin() { return iterator(&list_.begin());}
-    const iterator begin() const { return iterator(&list_.begin()); }
-    iterator end() { return iterator(&list_.end()); }
-    const iterator end() const { return iterator(&list_.end()); }
+    iterator begin() { return iterator(&std::list<ResourceType>::begin());}
+    const iterator begin() const { return iterator(&std::list<ResourceType>::begin()); }
+    iterator end() { return iterator(&std::list<ResourceType>::end()); }
+    const iterator end() const { return iterator(&std::list<ResourceType>::end()); }
 
     friend class iterator;
     using iterator = iterator;

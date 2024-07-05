@@ -12,7 +12,9 @@ static const Timepoint DECAY_START_TIME = DataTypeConverter::dateTimeStringToTim
 // Fixed-point precision scaling factor
 constexpr unsigned long long SCALE = 1LL << 32;
 constexpr unsigned long long SECONDS_PER_YEAR = 31556952; // seconds in a year in gregorian calender
-constexpr double LOG2 = 0.6931471805599453; // log(2)
+constexpr double LN2 = 0.6931471805599453; // ln(2)
+//constexpr double LOG2 = 0.30102999566398119521373889472449;
+constexpr unsigned long long MAX_GRADIDO_CENT_VALUE = std::numeric_limits<unsigned long long>::max() / SCALE;
 
 // Function to calculate 2^x using fixed-point arithmetic
 // should be more deterministic than using default pow function
@@ -24,7 +26,7 @@ unsigned long long fixed_point_exp2(unsigned long long x)
 	*/
 	unsigned long long result = SCALE;
 	unsigned long long term = SCALE;
-	for (int i = 1; i < 20; ++i) {
+	for (int i = 1; i < 50; ++i) {
 		term = (term * x) / (SCALE * i);
 		result += term;
 		// Check for potential overflow
@@ -64,6 +66,19 @@ double GradidoUnit::roundToPrecision(double GradidoUnit, uint8_t precision)
 	return std::round(GradidoUnit * factor) / factor;
 }
 
+uint64_t GradidoUnit::calculateDecayFactor(uint64_t seconds)
+{
+	if (seconds == 0) return SCALE;
+	assert(seconds > 0);	
+
+	// Convert duration to a fixed-point time factor
+	unsigned long long timeFactor = (seconds * SCALE) / SECONDS_PER_YEAR;
+	timeFactor = (timeFactor * LN2 * SCALE) / SCALE; // Multiply by LN2(2)
+
+	// Compute 2^timeFactor in fixed-point
+	return fixed_point_exp2(timeFactor);
+}
+
 int64_t GradidoUnit::calculateDecay(int64_t gradidoCent, Duration duration)
 {
 	uint64_t seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
@@ -79,21 +94,43 @@ int64_t GradidoUnit::calculateDecay(int64_t gradidoCent, Duration duration)
 	// optimize version from above
 	if (seconds >= SECONDS_PER_YEAR) {
 		auto times = seconds / SECONDS_PER_YEAR;
-		seconds = seconds % SECONDS_PER_YEAR;
+		seconds = seconds - times * SECONDS_PER_YEAR;
 		gradidoCent = gradidoCent >> times;
+		if (!seconds) return gradidoCent;
 	}
-
-	// Convert duration to a fixed-point time factor
-	unsigned long long timeFactor = (seconds * SCALE) / SECONDS_PER_YEAR;
-	timeFactor = (timeFactor * LOG2 * SCALE) / SCALE; // Multiply by log(2)
-
-	// Compute 2^timeFactor in fixed-point
-	unsigned long long decayFactor = fixed_point_exp2(timeFactor);
+	unsigned long long decayFactor = calculateDecayFactor(seconds);
 	
-	// Perform division in fixed-point and rescale
-	// return (gradidoCent * SCALE) / decayFactor;
-	return (gradidoCent * SCALE) / decayFactor;
+	return calculateDecayFast(gradidoCent, decayFactor);
 }
+
+int64_t GradidoUnit::calculateDecayFast(int64_t gradidoCent, uint64_t decayFactor)
+{
+	// If decayFactor is zero, return the original value to prevent division by zero
+	if (decayFactor == 0) {
+		return gradidoCent;
+	}
+	// prevent overflow with partly calculation
+	if (gradidoCent > MAX_GRADIDO_CENT_VALUE) {
+		uint64_t maxDecaied = std::numeric_limits<unsigned long long>::max() / decayFactor;
+		uint64_t maxCount = gradidoCent / MAX_GRADIDO_CENT_VALUE;
+		//auto rest = (gradidoCent - (maxCount * MAX_GRADIDO_CENT_VALUE)) * SCALE / decayFactor;
+		uint64_t rest = gradidoCent - (maxCount * MAX_GRADIDO_CENT_VALUE);
+		uint64_t restScaled = (rest * SCALE) / decayFactor;
+		uint64_t maxCountScaled = maxCount * maxDecaied;
+
+		// Check for potential overflow in the addition
+		if (maxCountScaled > std::numeric_limits<int64_t>::max() - restScaled) {
+			throw FixedPointedArithmetikOverflowException("calculateDecayFast overflow, gradido cent is to much to handle", gradidoCent);
+		}
+
+		return restScaled + maxCountScaled;
+	}
+	else {
+		// Perform division in fixed-point and rescale
+		return (gradidoCent * SCALE) / decayFactor;
+	}
+}
+
 
 Duration GradidoUnit::calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime)
 {

@@ -47,8 +47,13 @@ public:
 	inline bool operator==(const GradidoUnit& other) const { return mGradidoCent == other.mGradidoCent; }
 	inline bool operator!=(const GradidoUnit& other) const { return mGradidoCent != other.mGradidoCent; }
 
+	static uint64_t calculateDecayFactor(uint64_t seconds);
+
 	//! decay calculation with fixed point arithmetik for max grad of deterministic
 	static int64_t calculateDecay(int64_t gradidoCent, Duration duration);
+
+	static int64_t calculateDecayFast(int64_t gradidoCent, uint64_t decayFactor);
+	
 	inline GradidoUnit calculateDecay(Duration duration) const {
 		return calculateDecay(mGradidoCent, duration);
 	}
