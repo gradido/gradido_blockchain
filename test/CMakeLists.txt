@@ -29,6 +29,7 @@ FILE(GLOB TEST_LIB "lib/*.cpp" "lib/*.h")
 FILE(GLOB TEST_MAIN "*.cpp" "*.h")
 FILE(GLOB TEST_MODEL "model/*.cpp" "model/*.h")
 FILE(GLOB TEST_MODEL_PROTOPUF "model/protopuf/*.cpp" "model/protopuf/*.h")
+FILE(GLOB TEST_SEEDING "seeding/*.cpp" "seeding/*.h")
 
 
 SET(TEST_SRC 
@@ -38,6 +39,7 @@ SET(TEST_SRC
   #${TEST_MODEL}
   #${TEST_MODEL_PROTOPUF} 
   ${TEST_INTERACTION}
+  ${TEST_SEEDING}
 )
 
 if(MSVC)
@@ -47,6 +49,7 @@ if(MSVC)
     source_group("model\\protopuf" FILES ${TEST_MODEL_PROTOPUF})
     source_group("model" FILES ${TEST_MODEL})
     source_group("interaction" FILES ${TEST_INTERACTION})    
+    source_group("seeding" FILES ${TEST_SEEDING})    
 endif()
 
 IF(WIN32)

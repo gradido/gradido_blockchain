@@ -222,7 +222,7 @@ namespace gradido {
 				auto transactionJson = transactionToJson.run(true);
 				interaction::toJson::Context paringTransactionToJson(*mPairingTransaction.get());
 				auto pairedTransactionJson = paringTransactionToJson.run(true);
-				size_t resultSize = strlen(what()) + strlen(transactionJson) + strlen(pairedTransactionJson) + 4;
+				size_t resultSize = strlen(what()) + transactionJson.size() + pairedTransactionJson.size() + 4;
 				resultString.reserve(resultSize);
 				resultString = what();
 				resultString += "\n";

@@ -9,10 +9,10 @@ using namespace magic_enum;
 namespace gradido {
 	namespace interaction {
 		namespace toJson {
-			const char* TransactionBodyRole::run(bool pretty) const
+			Value TransactionBodyRole::composeJson(rapidjson::Document& rootDocument) const
 			{
-				Document d(kObjectType);
-				auto& alloc = d.GetAllocator();
+				Value d(kObjectType);
+				auto& alloc = rootDocument.GetAllocator();
 				d.AddMember("memo", Value(mBody.memo.data(), alloc), alloc);
 				d.AddMember("createdAt", Value(DataTypeConverter::timePointToString(mBody.createdAt).data(), alloc), alloc);
 				d.AddMember("versionNumber", Value(mBody.versionNumber.data(), alloc), alloc);
@@ -21,12 +21,12 @@ namespace gradido {
 					d.AddMember("otherGroup", Value(mBody.otherGroup.data(), alloc), alloc);
 				}
 				if (mBody.isTransfer()) {
-					d.AddMember("transfer", gradidoTransfer(*mBody.transfer.get(), d), alloc);
+					d.AddMember("transfer", gradidoTransfer(*mBody.transfer.get(), d, rootDocument), alloc);
 				} 
 				else if (mBody.isCreation()) {
 					auto creation = mBody.creation;
 					Value v(kObjectType);
-					v.AddMember("recipient", transferAmount(creation->recipient, d), alloc);
+					v.AddMember("recipient", transferAmount(creation->recipient, d, rootDocument), alloc);
 					v.AddMember("targetDate", Value(DataTypeConverter::timePointToString(creation->targetDate).data(), alloc), alloc);
 					d.AddMember("creation", v, alloc);
 				}
@@ -54,7 +54,7 @@ namespace gradido {
 				else if (mBody.isDeferredTransfer()) {
 					auto deferredTransfer = mBody.deferredTransfer;
 					Value v(kObjectType);
-					v.AddMember("transfer", gradidoTransfer(deferredTransfer->transfer, d), alloc);
+					v.AddMember("transfer", gradidoTransfer(deferredTransfer->transfer, d, rootDocument), alloc);
 					v.AddMember("timeout", Value(DataTypeConverter::timePointToString(deferredTransfer->timeout).data(), alloc), alloc);
 					d.AddMember("deferredTransfer", v, alloc);
 				}
@@ -70,23 +70,24 @@ namespace gradido {
 					if (communityRoot->aufPubkey) {
 						v.AddMember("aufPubkey", Value(communityRoot->aufPubkey->convertToHex().data(), alloc), alloc);
 					}
+					d.AddMember("communityRoot", v, alloc);
 				}
-				return toString(&d, pretty);
+				return d;
 			}
 
-			Value TransactionBodyRole::gradidoTransfer(const data::GradidoTransfer& data, rapidjson::Document& d) const
+			Value TransactionBodyRole::gradidoTransfer(const data::GradidoTransfer& data, Value& d, Document& rootDocument) const
 			{
-				auto alloc = d.GetAllocator();
+				auto alloc = rootDocument.GetAllocator();
 				Value v(kObjectType);
-				v.AddMember("sender", transferAmount(data.sender, d), alloc);
+				v.AddMember("sender", transferAmount(data.sender, d, rootDocument), alloc);
 				if (data.recipient) {
 					v.AddMember("recipient", Value(data.recipient->convertToHex().data(), alloc), alloc);
 				}
 				return v;  
 			}
-			rapidjson::Value TransactionBodyRole::transferAmount(const data::TransferAmount& data, rapidjson::Document& d) const
+			rapidjson::Value TransactionBodyRole::transferAmount(const data::TransferAmount& data, Value& d, Document& rootDocument) const
 			{
-				auto alloc = d.GetAllocator();
+				auto alloc = rootDocument.GetAllocator();
 				Value v(kObjectType);
 				if (data.pubkey) {
 					v.AddMember("pubkey", Value(data.pubkey->convertToHex().data(), alloc), alloc);

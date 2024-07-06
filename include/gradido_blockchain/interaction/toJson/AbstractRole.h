@@ -12,9 +12,10 @@ namespace gradido {
 			{
 			public:
 				// return json string
-				virtual const char* run(bool pretty) const = 0;
+				std::string run(bool pretty) const;
+				virtual rapidjson::Value composeJson(rapidjson::Document& rootDocument) const = 0;
 			protected:
-				const char* toString(const rapidjson::Document* document, bool pretty = false) const;
+				std::string toString(const rapidjson::Document* document, bool pretty = false) const;
 			};
 		}
 	}

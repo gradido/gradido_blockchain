@@ -4,6 +4,7 @@
 #include "gradido_blockchain/data/Protocol.h"
 #include "TransactionBodyRole.h"
 #include "GradidoTransactionRole.h"
+#include "ConfirmedTransactionRole.h"
 
 namespace gradido {
 	namespace interaction {
@@ -15,7 +16,10 @@ namespace gradido {
 					: mRole(std::make_unique<TransactionBodyRole>(body)) {}
 				Context(const data::GradidoTransaction& gradidoTransaction, BodyBytesFormat format = BodyBytesFormat::JSON)
 					: mRole(std::make_unique<GradidoTransactionRole>(gradidoTransaction, format)) {}
-				inline const char* run(bool pretty = false) { return mRole->run(pretty);}
+				Context(const data::ConfirmedTransaction& confirmedTransaction, BodyBytesFormat format = BodyBytesFormat::JSON)
+					: mRole(std::make_unique<ConfirmedTransactionRole>(confirmedTransaction, format)) {}
+
+				inline std::string run(bool pretty = false) { return mRole->run(pretty);}
 			protected:
 				std::unique_ptr<AbstractRole> mRole;
 			};

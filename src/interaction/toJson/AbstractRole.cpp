@@ -8,7 +8,15 @@ using namespace rapidjson;
 namespace gradido {
 	namespace interaction {
 		namespace toJson {
-			const char* AbstractRole::toString(const rapidjson::Document* document, bool pretty/* = false*/) const
+
+			std::string AbstractRole::run(bool pretty) const
+			{
+				Document root(kObjectType);
+				auto value = composeJson(root);
+				root.Swap(value);
+				return toString(&root, pretty);
+			}
+			std::string AbstractRole::toString(const rapidjson::Document* document, bool pretty/* = false*/) const
 			{
 				StringBuffer buffer;
 				if (pretty) {

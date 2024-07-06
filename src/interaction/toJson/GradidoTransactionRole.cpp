@@ -1,5 +1,5 @@
 #include "gradido_blockchain/interaction/toJson/GradidoTransactionRole.h"
-#include "gradido_blockchain/interaction/toJson/Context.h"
+#include "gradido_blockchain/interaction/toJson/TransactionBodyRole.h"
 
 #include "magic_enum/magic_enum.hpp"
 #include "magic_enum/magic_enum_flags.hpp"
@@ -10,10 +10,10 @@ using namespace magic_enum;
 namespace gradido {
 	namespace interaction {
 		namespace toJson {
-			const char* GradidoTransactionRole::run(bool pretty) const
+			Value GradidoTransactionRole::composeJson(rapidjson::Document& rootDocument) const
 			{
-				Document d(kObjectType);
-				auto& alloc = d.GetAllocator();
+				Value d(kObjectType);
+				auto& alloc = rootDocument.GetAllocator();
 				Value signatures(kArrayType);
 				for (auto signaturePair : mTransaction.signatureMap.signaturePairs) {
 					Value v(kObjectType);
@@ -35,8 +35,8 @@ namespace gradido {
 				}
 				if ((enum_integer(BodyBytesFormat::JSON) & enum_integer(mFormat)) == enum_integer(BodyBytesFormat::JSON)) {
 					try {
-						toJson::Context bodyBytesToJson(*mTransaction.getTransactionBody());
-						bodyBytes.AddMember("json", Value(bodyBytesToJson.run(pretty), alloc), alloc);
+						TransactionBodyRole bodyBytesToJson(*mTransaction.getTransactionBody());
+						bodyBytes.AddMember("json", bodyBytesToJson.composeJson(rootDocument), alloc);
 					} catch(std::exception& ex) {
 						bodyBytes.AddMember("json", Value(ex.what(), alloc), alloc);
 					}
@@ -46,7 +46,7 @@ namespace gradido {
 					d.AddMember("paringMessageId", Value(mTransaction.paringMessageId->convertToHex().data(), alloc), alloc);
 				}
 
-				return toString(&d, pretty);
+				return d;
 			}
 		}
 	}

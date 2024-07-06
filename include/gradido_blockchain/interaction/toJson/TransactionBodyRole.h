@@ -13,10 +13,10 @@ namespace gradido {
 				TransactionBodyRole(const data::TransactionBody& body)
 					: mBody(body) {}
 
-				const char* run(bool pretty) const;
+				rapidjson::Value composeJson(rapidjson::Document& rootDocument) const;
 			protected:
-				rapidjson::Value gradidoTransfer(const data::GradidoTransfer& data, rapidjson::Document& d) const;
-				rapidjson::Value transferAmount(const data::TransferAmount& data, rapidjson::Document& d) const;
+				rapidjson::Value gradidoTransfer(const data::GradidoTransfer& data, rapidjson::Value& d, rapidjson::Document& rootDocument) const;
+				rapidjson::Value transferAmount(const data::TransferAmount& data, rapidjson::Value& d, rapidjson::Document& rootDocument) const;
 				const data::TransactionBody& mBody;
 			};
 		}

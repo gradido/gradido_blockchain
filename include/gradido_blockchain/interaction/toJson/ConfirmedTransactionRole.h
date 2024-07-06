@@ -14,7 +14,7 @@ namespace gradido {
 				ConfirmedTransactionRole(const data::ConfirmedTransaction& transaction, BodyBytesFormat format = BodyBytesFormat::JSON)
 					: mTransaction(transaction), mFormat(format) {}
 
-				const char* run(bool pretty) const;
+				rapidjson::Value composeJson(rapidjson::Document& rootDocument) const;
 			protected:
 				const data::ConfirmedTransaction& mTransaction;
 				BodyBytesFormat mFormat;

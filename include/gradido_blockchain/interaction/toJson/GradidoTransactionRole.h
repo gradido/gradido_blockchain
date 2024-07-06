@@ -13,13 +13,24 @@ namespace gradido {
 				HEX = 2,
 				JSON = 4
 			};
+			inline BodyBytesFormat operator | (BodyBytesFormat lhs, BodyBytesFormat rhs)
+			{
+				using T = std::underlying_type_t <BodyBytesFormat>;
+				return static_cast<BodyBytesFormat>(static_cast<T>(lhs) | static_cast<T>(rhs));
+			}
+
+			inline BodyBytesFormat operator & (BodyBytesFormat lhs, BodyBytesFormat rhs)
+			{
+				using T = std::underlying_type_t <BodyBytesFormat>;
+				return static_cast<BodyBytesFormat>(static_cast<T>(lhs) & static_cast<T>(rhs));
+			}
 			class GradidoTransactionRole : public AbstractRole
 			{
 			public:
 				GradidoTransactionRole(const data::GradidoTransaction& transaction, BodyBytesFormat format = BodyBytesFormat::JSON)
 					: mTransaction(transaction), mFormat(format) {}
 
-				const char* run(bool pretty) const;
+				rapidjson::Value composeJson(rapidjson::Document& rootDocument) const;
 			protected:
 				const data::GradidoTransaction& mTransaction;
 				BodyBytesFormat mFormat;
@@ -27,5 +38,6 @@ namespace gradido {
 		}
 	}
 }
+
 
 #endif //__GRADIDO_BLOCKCHAIN_INTERACTION_TO_JSON_GRADIDO_TRANSACTION_ROLE_H
