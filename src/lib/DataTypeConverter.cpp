@@ -264,16 +264,9 @@ namespace DataTypeConverter
 		return hexString;
 	}
 
-	std::string timePointToString(const Timepoint& tp, const char* fmt /*= "%Y-%m-%d %H:%M:%S"*/)
+	std::string timePointToString(const Timepoint& timepoint, const char* fmt /*= "%Y-%m-%d %H:%M:%S"*/)
 	{
-		// Convert time_point to time_t, which represents the calendar time
-		std::time_t time = system_clock::to_time_t(tp);
-
-		// Create a stream to hold the formatted date-time string
-		std::stringstream ss;
-		ss << std::put_time(std::localtime(&time), fmt);
-
-		return ss.str();
+		return date::format(fmt, timepoint);
 	}
 
 	Timepoint dateTimeStringToTimePoint(const std::string& dateTimeString, const char* fmt /*= "%F %T"*/)

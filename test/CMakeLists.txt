@@ -21,12 +21,15 @@ else()
 endif()
 
 # collect source code files
-FILE(GLOB TEST_MAIN "*.cpp" "*.h")
+
+FILE(GLOB TEST_BLOCKCHAIN "blockchain/*.cpp" "blockchain/*.h")
 FILE(GLOB TEST_CRYPTO "crypto/*.cpp" "crypto/*.h")
+FILE(GLOB TEST_INTERACTION "interaction/*.cpp" "interaction/*.h")
 FILE(GLOB TEST_LIB "lib/*.cpp" "lib/*.h")
+FILE(GLOB TEST_MAIN "*.cpp" "*.h")
 FILE(GLOB TEST_MODEL "model/*.cpp" "model/*.h")
 FILE(GLOB TEST_MODEL_PROTOPUF "model/protopuf/*.cpp" "model/protopuf/*.h")
-FILE(GLOB INTERACTION "interaction/*.cpp" "interaction/*.h")
+
 
 SET(TEST_SRC 
   ${TEST_MAIN}
@@ -34,7 +37,7 @@ SET(TEST_SRC
   ${TEST_CRYPTO}
   #${TEST_MODEL}
   #${TEST_MODEL_PROTOPUF} 
-  ${INTERACTION}
+  ${TEST_INTERACTION}
 )
 
 if(MSVC)
@@ -43,7 +46,7 @@ if(MSVC)
     source_group("crypto" FILES ${TEST_CRYPTO})
     source_group("model\\protopuf" FILES ${TEST_MODEL_PROTOPUF})
     source_group("model" FILES ${TEST_MODEL})
-    source_group("interaction" FILES ${INTERACTION})    
+    source_group("interaction" FILES ${TEST_INTERACTION})    
 endif()
 
 IF(WIN32)

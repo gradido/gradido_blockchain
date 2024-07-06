@@ -50,7 +50,7 @@ namespace DataTypeConverter {
 
 	GRADIDOBLOCKCHAIN_EXPORT const char* numberParseStateToString(NumberParseState state);
 	//! \param fmt: https://howardhinnant.github.io/date/date.html#to_stream_formatting
-	GRADIDOBLOCKCHAIN_EXPORT std::string timePointToString(const Timepoint& tp, const char* fmt = "%Y-%m-%d %H:%M:%S");
+	GRADIDOBLOCKCHAIN_EXPORT std::string timePointToString(const Timepoint& timepoint, const char* fmt = "%Y-%m-%d %H:%M:%S");
 	//! \param fmt: https://howardhinnant.github.io/date/date.html#from_stream_formatting
 	GRADIDOBLOCKCHAIN_EXPORT Timepoint dateTimeStringToTimePoint(const std::string& dateTimeString, const char* fmt = "%F %T");
 	GRADIDOBLOCKCHAIN_EXPORT std::string timespanToString(const std::chrono::seconds timespan);

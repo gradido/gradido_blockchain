@@ -47,6 +47,10 @@ public:
 		MonthYearIterator(pointer ptr)
 			: m_ptr(ptr) {}
 
+		~MonthYearIterator(){
+			if (m_ptr) delete m_ptr;
+		}
+
 		reference operator*() const { return *m_ptr; }
 		pointer operator->() { return m_ptr; }
 
@@ -56,12 +60,23 @@ public:
 		// Postfix increment
 		MonthYearIterator operator++(int) { MonthYearIterator tmp = *this; ++(*this); return tmp; }
 
-		friend bool operator== (const MonthYearIterator& a, const MonthYearIterator& b) { return a.m_ptr == b.m_ptr; };
-		friend bool operator!= (const MonthYearIterator& a, const MonthYearIterator& b) { return a.m_ptr != b.m_ptr; };
+		friend bool operator== (const MonthYearIterator& a, const MonthYearIterator& b) { return *a.m_ptr == *b.m_ptr; };
+		friend bool operator!= (const MonthYearIterator& a, const MonthYearIterator& b) { return *a.m_ptr != *b.m_ptr; };
 
 	private:
 		pointer m_ptr;
 	};
+
+	MonthYearIterator begin() { 
+		auto date = date::year_month_day{ date::floor<date::days>(mStartDate) };
+		return MonthYearIterator(new date::year_month(date.year(), date.month()));
+	}
+	MonthYearIterator end() { 
+		auto date = date::year_month_day{ date::floor<date::days>(mStartDate) };
+		// +1 month to have end out of bounds
+		date += date::months(1);
+		return MonthYearIterator(new date::year_month(date.year(), date.month()));
+	}
 	
 protected:
 	Timepoint mStartDate;
