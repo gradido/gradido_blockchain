@@ -10,7 +10,7 @@ namespace gradido {
 			class GradidoDeferredTransferRole : public AbstractRole
 			{
 			public:
-				GradidoDeferredTransferRole(const data::GradidoDeferredTransfer& deferredTransfer);
+				GradidoDeferredTransferRole(std::shared_ptr<const data::GradidoDeferredTransfer> deferredTransfer);
 
 				void run(
 					Type type,
@@ -20,7 +20,7 @@ namespace gradido {
 					data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 				);
 			protected:
-				const data::GradidoDeferredTransfer& mDeferredTransfer;
+				std::shared_ptr<const data::GradidoDeferredTransfer> mDeferredTransfer;
 			};
 		}
 	}

@@ -10,7 +10,7 @@ namespace gradido {
 			class RegisterAddressRole : public AbstractRole
 			{
 			public:
-				RegisterAddressRole(const data::RegisterAddress& registerAddress);
+				RegisterAddressRole(std::shared_ptr<const data::RegisterAddress> registerAddress);
 
 				void run(
 					Type type,
@@ -20,7 +20,7 @@ namespace gradido {
 					data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 				);
 			protected:
-				const data::RegisterAddress& mRegisterAddress;
+				std::shared_ptr<const data::RegisterAddress> mRegisterAddress;
 			};
 		}
 	}

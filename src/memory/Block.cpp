@@ -117,6 +117,10 @@ namespace memory {
 	Block Block::fromHex(const char* hexString, size_t stringSize)
 	{
 		size_t binSize = (stringSize) / 2;
+		// invalid hex size
+		if (binSize * 2 != stringSize) {
+			throw GradidoInvalidHexException("invalid hex size Block::fromHex", hexString);
+		}
 		Block result(binSize);
 	
 		size_t resultBinSize = 0;

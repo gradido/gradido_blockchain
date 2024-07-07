@@ -10,7 +10,7 @@ namespace gradido {
 			class GradidoTransferRole : public AbstractRole
 			{
 			public:
-				GradidoTransferRole(const data::GradidoTransfer& gradidoTransfer, std::string_view otherCommunity);
+				GradidoTransferRole(std::shared_ptr<const data::GradidoTransfer> gradidoTransfer, std::string_view otherCommunity);
 
 				void run(
 					Type type,
@@ -38,7 +38,7 @@ namespace gradido {
 					std::shared_ptr<blockchain::Abstract> recipientBlockchain
 				);
 
-				const data::GradidoTransfer& mGradidoTransfer;
+				std::shared_ptr<const data::GradidoTransfer> mGradidoTransfer;
 				std::string_view mOtherCommunity;
 				bool mDeferredTransfer;
 			};

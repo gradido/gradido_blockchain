@@ -17,7 +17,7 @@ namespace gradido {
 			class GradidoCreationRole : public AbstractRole
 			{
 			public:
-				GradidoCreationRole(const data::GradidoCreation& gradidoCreation);
+				GradidoCreationRole(std::shared_ptr<const data::GradidoCreation> gradidoCreation);
 
 				void validateTargetDate(Timepoint receivedTimePoint);
 				void run(
@@ -45,7 +45,7 @@ namespace gradido {
 				unsigned getTargetDateReceivedDistanceMonth(Timepoint received);
 				CreationMaxAlgoVersion getCorrectCreationMaxAlgo(const data::TimestampSeconds& timepoint);
 
-				const data::GradidoCreation& mGradidoCreation;
+				std::shared_ptr<const data::GradidoCreation> mGradidoCreation;
 			};
 		}
 	}

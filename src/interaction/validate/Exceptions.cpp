@@ -344,7 +344,10 @@ namespace gradido {
 			{
 				std::string result;
 				auto addressTypeName = enum_name(mType);
-				auto pubkeyHex = mPubkey->convertToHex();
+				std::string pubkeyHex;
+				if (mPubkey) {
+					pubkeyHex = mPubkey->convertToHex();
+				}
 				size_t resultSize = strlen(what()) + addressTypeName.size() + 2 + 14 + 10 + pubkeyHex.size();
 				result.reserve(resultSize);
 				result = what();

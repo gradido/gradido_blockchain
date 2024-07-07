@@ -7,12 +7,12 @@ namespace gradido {
 	namespace interaction {
 		namespace validate {
 
-			GradidoCreationRole::GradidoCreationRole(const data::GradidoCreation& gradidoCreation)
+			GradidoCreationRole::GradidoCreationRole(std::shared_ptr<const data::GradidoCreation> gradidoCreation)
 				: mGradidoCreation(gradidoCreation)
 			{
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mForbiddenSignPublicKeys.push_back(gradidoCreation.recipient.pubkey);
+				mForbiddenSignPublicKeys.push_back(gradidoCreation->recipient.pubkey);
 			}
 
 			void GradidoCreationRole::run(
@@ -22,7 +22,7 @@ namespace gradido {
 				data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
 				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 			) {
-				const auto& recipient = mGradidoCreation.recipient;
+				const auto& recipient = mGradidoCreation->recipient;
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
 					validateEd25519PublicKey(recipient.pubkey, "recipient pubkey");
@@ -35,9 +35,9 @@ namespace gradido {
 					}
 				}
 
-				if (recipient.communityId == communityId) {
+				if (!recipient.communityId.empty()) {
 					throw TransactionValidationInvalidInputException(
-						"coin communityId shouldn't be set if it is the same as blockchain communityId",
+						"coin communityId shouldn't be set on gradido creations",
 						"communityId", "hex"
 					);
 				}
@@ -55,12 +55,12 @@ namespace gradido {
 
 					GradidoUnit sum;
 					auto creationMaxAlgo = getCorrectCreationMaxAlgo(mConfirmedAt);
-					auto ymd = date::year_month_day{ date::floor<date::days>(mGradidoCreation.targetDate.getAsTimepoint()) };
-					auto targetCreationMaxAlgo = getCorrectCreationMaxAlgo(mGradidoCreation.targetDate);
+					auto ymd = date::year_month_day{ date::floor<date::days>(mGradidoCreation->targetDate.getAsTimepoint()) };
+					auto targetCreationMaxAlgo = getCorrectCreationMaxAlgo(mGradidoCreation->targetDate);
 
 					if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo) {
 						sum = calculateCreationSumLegacy(
-							mGradidoCreation.recipient.pubkey,
+							mGradidoCreation->recipient.pubkey,
 							mConfirmedAt,
 							blockchain,
 							recipientPreviousConfirmedTransaction->id
@@ -68,7 +68,7 @@ namespace gradido {
 					}
 					else if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo) {
 						sum = calculateCreationSum(
-							mGradidoCreation.recipient.pubkey,
+							mGradidoCreation->recipient.pubkey,
 							ymd.month(), ymd.year(),
 							mConfirmedAt, blockchain,
 							recipientPreviousConfirmedTransaction->id
@@ -101,12 +101,12 @@ namespace gradido {
 					assert(blockchain);
 
 					blockchain::Filter filter;
-					filter.involvedPublicKey = mGradidoCreation.recipient.pubkey;
+					filter.involvedPublicKey = mGradidoCreation->recipient.pubkey;
 					auto addressType = blockchain->getAddressType(filter);
 					if (data::AddressType::COMMUNITY_HUMAN != addressType &&
 						data::AddressType::COMMUNITY_AUF != addressType &&
 						data::AddressType::COMMUNITY_GMW != addressType) {
-						throw WrongAddressTypeException("wrong address type for creation", addressType, mGradidoCreation.recipient.pubkey);
+						throw WrongAddressTypeException("wrong address type for creation", addressType, mGradidoCreation->recipient.pubkey);
 					}
 				}
 
@@ -114,7 +114,7 @@ namespace gradido {
 
 			void GradidoCreationRole::validateTargetDate(Timepoint createdAtTimePoint)
 			{
-				auto target_date = date::year_month_day{ date::floor<date::days>(mGradidoCreation.targetDate.getAsTimepoint()) };
+				auto target_date = date::year_month_day{ date::floor<date::days>(mGradidoCreation->targetDate.getAsTimepoint()) };
 				auto received = date::year_month_day{ date::floor<date::days>(createdAtTimePoint) };
 
 				auto targetDateReceivedDistanceMonth = getTargetDateReceivedDistanceMonth(createdAtTimePoint);

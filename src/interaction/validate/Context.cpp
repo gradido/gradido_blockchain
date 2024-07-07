@@ -9,7 +9,7 @@ namespace gradido {
 				std::string_view communityId /* = "" */, 
 				blockchain::AbstractProvider* blockchainProvider /* = nullptr*/)
 			{
-				if (!mSenderPreviousConfirmedTransaction) {
+				if (!mSenderPreviousConfirmedTransaction && blockchainProvider) {
 					auto transactionEntry = blockchainProvider->findBlockchain(communityId)->findOne(blockchain::Filter::LAST_TRANSACTION);
 					mSenderPreviousConfirmedTransaction = transactionEntry->getConfirmedTransaction();
 				}

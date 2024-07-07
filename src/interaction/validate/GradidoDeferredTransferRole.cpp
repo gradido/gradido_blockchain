@@ -9,12 +9,12 @@ namespace gradido {
 	namespace interaction {
 		namespace validate {
 
-			GradidoDeferredTransferRole::GradidoDeferredTransferRole(const data::GradidoDeferredTransfer& deferredTransfer)
+			GradidoDeferredTransferRole::GradidoDeferredTransferRole(std::shared_ptr<const data::GradidoDeferredTransfer> deferredTransfer)
 				: mDeferredTransfer(deferredTransfer) 
 			{
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mRequiredSignPublicKeys.push_back(deferredTransfer.transfer.sender.pubkey);
+				mRequiredSignPublicKeys.push_back(deferredTransfer->transfer.sender.pubkey);
 			}
 
 			void GradidoDeferredTransferRole::run(
@@ -25,16 +25,18 @@ namespace gradido {
 				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 			) {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					if (mDeferredTransfer.timeout.getAsTimepoint() - mConfirmedAt.getAsTimepoint() > GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL) {
+					if (mDeferredTransfer->timeout.getAsTimepoint() - mConfirmedAt.getAsTimepoint() > GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL) {
 						throw TransactionValidationInvalidInputException("timeout is to far away from confirmed date", "timeout", "timestamp");
 					}
 					if (senderPreviousConfirmedTransaction) {
-						if (senderPreviousConfirmedTransaction->confirmedAt >= mDeferredTransfer.timeout) {
+						if (senderPreviousConfirmedTransaction->confirmedAt >= mDeferredTransfer->timeout) {
 							throw TransactionValidationInvalidInputException("timeout is already in the past", "timeout", "timestamp");
 						}
 					}
 				}
-				GradidoTransferRole transferRole(mDeferredTransfer.transfer, "");
+				// make copy from GradidoTransfer
+				auto transfer = std::make_shared<data::GradidoTransfer>(mDeferredTransfer->transfer);
+				GradidoTransferRole transferRole(transfer, "");
 				transferRole.setConfirmedAt(mConfirmedAt);
 				transferRole.run(type, communityId, blockchainProvider, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
 			}

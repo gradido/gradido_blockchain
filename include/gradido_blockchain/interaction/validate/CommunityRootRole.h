@@ -10,7 +10,7 @@ namespace gradido {
 			class CommunityRootRole : public AbstractRole
 			{
 			public:
-				CommunityRootRole(const data::CommunityRoot& communityRoot);
+				CommunityRootRole(std::shared_ptr<const data::CommunityRoot> communityRoot);
 
 				void run(
 					Type type,
@@ -20,7 +20,7 @@ namespace gradido {
 					data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 				);
 			protected:
-				const data::CommunityRoot& mCommunityRoot;
+				std::shared_ptr<const data::CommunityRoot> mCommunityRoot;
 			};
 		}
 	}

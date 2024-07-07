@@ -69,49 +69,38 @@ namespace gradido {
 					return *mSpecificTransactionRole;
 				}
 				if (mBody.isTransfer()) {
-					if (mSpecificTransactionRole) {
-						throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
-					}
-					mSpecificTransactionRole = std::make_unique<GradidoTransferRole>(*mBody.transfer.get(), mBody.otherGroup);
+					mSpecificTransactionRole = std::make_unique<GradidoTransferRole>(mBody.transfer, mBody.otherGroup);
 				}
-				if (mBody.isCreation()) {
-					if (mSpecificTransactionRole) {
-						throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
-					}
-					mSpecificTransactionRole = std::make_unique<GradidoCreationRole>(*mBody.creation.get());
+				else if (mBody.isCreation()) 
+				{
+					mSpecificTransactionRole = std::make_unique<GradidoCreationRole>(mBody.creation);
 					// check target date for creation transactions
 					dynamic_cast<GradidoCreationRole*>(mSpecificTransactionRole.get())->validateTargetDate(mBody.createdAt.getAsTimepoint());
-				}
-				if (mBody.isCommunityFriendsUpdate()) {
-					if (mSpecificTransactionRole) {
-						throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
-					}
+				} 
+				else if (mBody.isCommunityFriendsUpdate()) 
+				{
 					// currently empty
 					throw std::runtime_error("not implemented yet");
 				}
-				if (mBody.isRegisterAddress()) {
-					if (mSpecificTransactionRole) {
-						throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
-					}
-					mSpecificTransactionRole = std::make_unique<RegisterAddressRole>(*mBody.registerAddress.get());
+				else if (mBody.isRegisterAddress()) 
+				{
+					mSpecificTransactionRole = std::make_unique<RegisterAddressRole>(mBody.registerAddress);
 				}
-				if (mBody.isDeferredTransfer()) {
-					if (mSpecificTransactionRole) {
-						throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
-					}
+				else if (mBody.isDeferredTransfer()) 
+				{
 					auto deferredTransfer = mBody.deferredTransfer;
 					if (mBody.createdAt.getAsTimepoint() >= deferredTransfer->timeout.getAsTimepoint()) {
 						throw TransactionValidationInvalidInputException("already reached", "timeout", "Timestamp");
 					}
-					mSpecificTransactionRole = std::make_unique<GradidoDeferredTransferRole>(*mBody.deferredTransfer.get());
+					mSpecificTransactionRole = std::make_unique<GradidoDeferredTransferRole>(mBody.deferredTransfer);
 				}
-				if (mBody.isCommunityRoot()) {
-					if (mSpecificTransactionRole) {
-						throw TransactionValidationException("TransactionBody has more than one Transaction Data Object");
-					}
-					mSpecificTransactionRole = std::make_unique<CommunityRootRole>(*mBody.communityRoot.get());
+				else if (mBody.isCommunityRoot()) 
+				{
+					mSpecificTransactionRole = std::make_unique<CommunityRootRole>(mBody.communityRoot);
 				}
-				mSpecificTransactionRole = std::move(mSpecificTransactionRole);
+				if (!mSpecificTransactionRole) {
+					throw TransactionValidationException("body without specific transaction");
+				}
 				return *mSpecificTransactionRole;
 			}
 		}

@@ -7,12 +7,12 @@ namespace gradido {
 	namespace interaction {
 		namespace validate {
 
-			CommunityRootRole::CommunityRootRole(const data::CommunityRoot& communityRoot)
+			CommunityRootRole::CommunityRootRole(std::shared_ptr<const data::CommunityRoot> communityRoot)
 				: mCommunityRoot(communityRoot) 
 			{
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mRequiredSignPublicKeys.push_back(communityRoot.pubkey);
+				mRequiredSignPublicKeys.push_back(communityRoot->pubkey);
 			}
 
 			void CommunityRootRole::run(
@@ -23,13 +23,13 @@ namespace gradido {
 				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 			) {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					validateEd25519PublicKey(mCommunityRoot.pubkey, "pubkey");
-					validateEd25519PublicKey(mCommunityRoot.gmwPubkey, "gmwPubkey");
-					validateEd25519PublicKey(mCommunityRoot.aufPubkey, "aufPubkey");
+					validateEd25519PublicKey(mCommunityRoot->pubkey, "pubkey");
+					validateEd25519PublicKey(mCommunityRoot->gmwPubkey, "gmwPubkey");
+					validateEd25519PublicKey(mCommunityRoot->aufPubkey, "aufPubkey");
 
-					const auto& pubkey = *mCommunityRoot.pubkey;
-					const auto& gmwPubkey = *mCommunityRoot.gmwPubkey;
-					const auto& aufPubkey = *mCommunityRoot.aufPubkey;
+					const auto& pubkey = *mCommunityRoot->pubkey;
+					const auto& gmwPubkey = *mCommunityRoot->gmwPubkey;
+					const auto& aufPubkey = *mCommunityRoot->aufPubkey;
 
 					if (gmwPubkey == aufPubkey) { throw TransactionValidationException("gmw and auf are the same"); }
 					if (pubkey == gmwPubkey) { throw TransactionValidationException("gmw and pubkey are the same"); }
