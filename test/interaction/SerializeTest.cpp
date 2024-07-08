@@ -106,7 +106,8 @@ TEST(SerializeTest, GradidoDeferredTransferBody) {
 		GradidoTransfer(
 			TransferAmount(g_KeyPairs[4].publicKey, "555.55"),
 			g_KeyPairs[5].publicKey
-		), TimestampSeconds(1609465000)
+		), 
+		timeout
 	);
 	ASSERT_TRUE(body.isDeferredTransfer());
 	serialize::Context c(body);
