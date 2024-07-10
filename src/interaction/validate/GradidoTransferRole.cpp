@@ -1,6 +1,7 @@
 #include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
+#include "gradido_blockchain/interaction/validate/TransferAmountRole.h"
 
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 
@@ -27,10 +28,17 @@ namespace gradido {
 				data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
 				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 			) {
+				TransferAmountRole transferAmountRole(mGradidoTransfer->sender);
+				transferAmountRole.run(type, communityId, blockchainProvider, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
 				auto sender = mGradidoTransfer->sender;
+
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
-					validateSingle(communityId);
+					validateEd25519PublicKey(mGradidoTransfer->recipient, "recipient");
+
+					if (mGradidoTransfer->recipient->isTheSame(sender.pubkey)) {
+						throw TransactionValidationException("sender and recipient are the same");
+					}
 				}
 
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS)
@@ -61,28 +69,6 @@ namespace gradido {
 						*recipientPreviousConfirmedTransaction,
 						senderBlockchain,
 						recipientBlockchain
-					);
-				}
-			}
-
-			void GradidoTransferRole::validateSingle(std::string_view communityId)
-			{
-				auto sender = mGradidoTransfer->sender;
-		
-				if (sender.amount <= GradidoUnit(0.0)) {
-					throw TransactionValidationInvalidInputException("zero or negative amount", "amount", "GradidoUnit");
-				}
-				validateEd25519PublicKey(mGradidoTransfer->recipient, "recipient");
-				validateEd25519PublicKey(sender.pubkey, "sender");
-
-				if (mGradidoTransfer->recipient->isTheSame(sender.pubkey)) {
-					throw TransactionValidationException("sender and recipient are the same");
-				}
-
-				if (!communityId.empty() && sender.communityId == communityId) {
-					throw TransactionValidationInvalidInputException(
-						"coin communityId shouldn't be set if it is the same as blockchain communityId",
-						"communityId", "hex"
 					);
 				}
 			}

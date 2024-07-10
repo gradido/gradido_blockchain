@@ -23,7 +23,6 @@ namespace gradido {
 				inline void setDeferredTransfer() { mDeferredTransfer = true; }
 
 			protected:
-				void validateSingle(std::string_view communityId);
 				void validatePrevious(
 					const data::ConfirmedTransaction& previousConfirmedTransaction,
 					std::shared_ptr<blockchain::Abstract> blockchain

@@ -21,6 +21,27 @@ TEST(ValidateGradidoCreationTest, valid) {
 	EXPECT_NO_THROW(c.run());
 }
 
+TEST(ValidateGradidoCreationTest, invalidMemo) {
+	TransactionBody body("", createdAt, VERSION_STRING);
+	body.creation = make_shared<GradidoCreation>(
+		TransferAmount(g_KeyPairs[4].publicKey, "1000.00"),
+		TimestampSeconds(1609459000)
+	);
+	ASSERT_TRUE(body.isCreation());
+	validate::Context c(body);
+	// empty memo
+	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+
+	// to short
+	body.memo = "hall";
+	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+
+	// to big
+	// fill with 451 x a
+	body.memo = std::string(451, 'a');
+	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+}
+
 TEST(ValidateGradidoCreationTest, invalidAmount) {
 	TransactionBody body("Deine erste Schoepfung ;)", createdAt, VERSION_STRING);
 	// negative amount

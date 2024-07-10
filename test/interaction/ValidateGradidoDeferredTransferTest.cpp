@@ -27,6 +27,32 @@ TEST(ValidateGradidoDeferredTransferTest, Valid) {
 	EXPECT_NO_THROW(c.run());
 }
 
+
+TEST(ValidateGradidoDeferredTransferTest, invalidMemo) {
+	TransactionBody body("", createdAt, VERSION_STRING);
+	body.deferredTransfer = make_shared<GradidoDeferredTransfer>(
+		GradidoTransfer(
+			TransferAmount(g_KeyPairs[4].publicKey, "500.55"),
+			g_KeyPairs[5].publicKey
+		),
+		timeout
+	);
+	ASSERT_TRUE(body.isDeferredTransfer());
+	validate::Context c(body);
+	// empty memo
+	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+
+	// to short
+	body.memo = "hall";
+	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+
+	// to big
+	// fill with 451 x a
+	body.memo = std::string(451, 'a');
+	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+
+}
+
 TEST(ValidateGradidoDeferredTransferTest, InvalidAmount) {
 	TransactionBody body(memo, createdAt, VERSION_STRING);
 	body.deferredTransfer = make_shared<GradidoDeferredTransfer>(

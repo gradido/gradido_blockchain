@@ -21,6 +21,28 @@ TEST(ValidateGradidoTransferTest, Valid) {
 	EXPECT_NO_THROW(c.run());
 }
 
+TEST(ValidateGradidoTransferTest, invalidMemo) {
+	TransactionBody body("", createdAt, VERSION_STRING);
+	body.transfer = make_shared<GradidoTransfer>(
+		TransferAmount(g_KeyPairs[4].publicKey, "500.55"),
+		g_KeyPairs[5].publicKey
+	);
+	ASSERT_TRUE(body.isTransfer());
+	validate::Context c(body);
+	// empty memo
+	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+
+	// to short
+	body.memo = "hall";
+	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+
+	// to big
+	// fill with 451 x a
+	body.memo = std::string(451, 'a');
+	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+
+}
+
 TEST(ValidateGradidoTransferTest, InvalidAmount) {
 	TransactionBody body("Ich teile mit dir", createdAt, VERSION_STRING);
 	body.transfer = make_shared<GradidoTransfer>(

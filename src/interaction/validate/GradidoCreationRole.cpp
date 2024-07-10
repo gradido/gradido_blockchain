@@ -1,5 +1,6 @@
 #include "gradido_blockchain/interaction/validate/GradidoCreationRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
+#include "gradido_blockchain/interaction/validate/TransferAmountRole.h"
 
 #include "date/date.h"
 
@@ -23,6 +24,9 @@ namespace gradido {
 				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 			) {
 				const auto& recipient = mGradidoCreation->recipient;
+				TransferAmountRole transferAmountRole(mGradidoCreation->recipient);
+				transferAmountRole.run(type, communityId, blockchainProvider, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
+
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
 					validateEd25519PublicKey(recipient.pubkey, "recipient pubkey");
@@ -33,13 +37,6 @@ namespace gradido {
 					if (recipientAmount < GradidoUnit(1.0)) {
 						throw TransactionValidationInvalidInputException("creation amount to low, min 1 GDD", "amount", "string");
 					}
-				}
-
-				if (!recipient.communityId.empty()) {
-					throw TransactionValidationInvalidInputException(
-						"coin communityId shouldn't be set on gradido creations",
-						"communityId", "hex"
-					);
 				}
 
 				if ((type & Type::MONTH_RANGE) == Type::MONTH_RANGE)
