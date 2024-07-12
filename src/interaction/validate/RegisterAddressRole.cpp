@@ -133,6 +133,9 @@ namespace gradido {
 				filter.transactionType = data::TransactionType::COMMUNITY_ROOT;
 				filter.searchDirection = blockchain::SearchDirection::ASC;
 				auto communityRoot = blockchain->findOne(filter);
+				if (!communityRoot) {
+					throw BlockchainOrderException("cannot finde community root transaction before register address");
+				}
 				bool foundCommunityRootSigner = false;
 
 				// check for account type

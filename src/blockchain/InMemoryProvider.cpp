@@ -24,13 +24,20 @@ namespace gradido {
 			std::lock_guard _lock(mWorkMutex);
 			auto it = mBlockchainsPerGroup.find(communityId);
 			if (it == mBlockchainsPerGroup.end()) {
-				auto insertedIt = mBlockchainsPerGroup.insert({ std::string(communityId), std::make_shared<InMemory>(communityId)});
+				std::shared_ptr<InMemory> blockchain(new InMemory(communityId));
+				auto insertedIt = mBlockchainsPerGroup.insert({ std::string(communityId), blockchain });
 				if (!insertedIt.second) {
 					throw ConstructBlockchainException("cannot insert into mBlockchainsPerGroup", communityId);
 				}
 				it = insertedIt.first;
 			}
 			return it->second;
+		}
+
+		void InMemoryProvider::clear()
+		{
+			std::lock_guard _lock(mWorkMutex);
+			mBlockchainsPerGroup.clear();
 		}
 	}
 }

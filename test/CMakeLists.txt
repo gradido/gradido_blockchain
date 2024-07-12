@@ -33,6 +33,7 @@ FILE(GLOB TEST_SEEDING "seeding/*.cpp" "seeding/*.h")
 
 
 SET(TEST_SRC 
+  ${TEST_BLOCKCHAIN}
   ${TEST_MAIN}
   ${TEST_LIB} 
   ${TEST_CRYPTO}
@@ -45,6 +46,7 @@ SET(TEST_SRC
 if(MSVC)
 	# src
 	source_group("lib" FILES ${TEST_LIB})
+    source_group("blockchain" FILES ${TEST_BLOCKCHAIN})
     source_group("crypto" FILES ${TEST_CRYPTO})
     source_group("model\\protopuf" FILES ${TEST_MODEL_PROTOPUF})
     source_group("model" FILES ${TEST_MODEL})

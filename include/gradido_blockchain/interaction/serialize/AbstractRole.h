@@ -34,6 +34,7 @@ namespace gradido {
 					// auto buffer = std::make_shared<memory::Block>(size);
 					auto bufferEnd = pp::message_coder<T>::encode(message, buffer);
 					buffer.resize(pp::begin_diff(bufferEnd, buffer));
+					if (!buffer.size()) return nullptr;
 					//pp::bytes
 					return std::make_shared<memory::Block>(buffer);
 				}

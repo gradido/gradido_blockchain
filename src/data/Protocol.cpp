@@ -158,8 +158,11 @@ namespace gradido {
 		{
 			std::string transactionIdString = std::to_string(id);
 			auto confirmedAtString = DataTypeConverter::timePointToString(confirmedAt, "%Y-%m-%d %H:%M:%S");
-			serialize::Context serializeContext(gradidoTransaction->signatureMap);
-			std::string signatureMapString = serializeContext.run()->copyAsString();
+			std::string signatureMapString;
+			if (gradidoTransaction->signatureMap.signaturePairs.size()) {
+				serialize::Context serializeContext(gradidoTransaction->signatureMap);
+				signatureMapString = serializeContext.run()->copyAsString();
+			}
 			std::string accountBalanceString = accountBalance.toString();
 
 			memory::Block hash(crypto_generichash_BYTES);

@@ -37,6 +37,9 @@ namespace gradido {
 
 		bool InMemory::addGradidoTransaction(data::ConstGradidoTransactionPtr gradidoTransaction)
 		{
+			auto provider = InMemoryProvider::getInstance();
+			interaction::validate::Context validateGradidoTransaction(*gradidoTransaction);
+			validateGradidoTransaction.run(interaction::validate::Type::SINGLE, mCommunityId, provider);
 			std::lock_guard _lock(mWorkMutex);
 			if (mExitCalled) return false;
 			if (isTransactionExist(gradidoTransaction)) {
@@ -89,7 +92,7 @@ namespace gradido {
 				level = level | interaction::validate::Type::PAIRED;
 			}
 			// throw if some error occure
-			validate.run(level, getCommunityId(), InMemoryProvider::getInstance());
+			validate.run(level, getCommunityId(), provider);
 
 			auto transactionEntry = std::make_shared<TransactionEntry>(confirmedTransaction);
 			pushTransactionEntry(transactionEntry);
@@ -372,7 +375,7 @@ namespace gradido {
 				auto endIt = mTransactionsByConfirmedAt.upper_bound(endDate);
 				resultCounts.emplace(std::distance(startIt, endIt), FilterCriteria::TIMEPOINT_INTERVAL);
 			}	
-			if (!filter.involvedPublicKey->isEmpty()) {
+			if (filter.involvedPublicKey && !filter.involvedPublicKey->isEmpty()) {
 				auto its = mTransactionsByPubkey.equal_range(filter.involvedPublicKey);
 				resultCounts.emplace(std::distance(its.first, its.second), FilterCriteria::INVOLVED_PUBLIC_KEY);
 			}

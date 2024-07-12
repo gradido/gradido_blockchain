@@ -41,7 +41,7 @@ namespace gradido {
 				memory::ConstBlockPtr publicKey,
 				Timepoint balanceDate,
 				uint64_t maxTransactionNr/* = 0 */,
-				std::string_view coinCommunityId/* = nullptr*/)
+				std::string_view coinCommunityId /* = std::string_view() */)
 			{
 				// get last transaction entry with final balance
 				// collect balances with balance date from all received transactions which occurred after last transaction entry with final balance

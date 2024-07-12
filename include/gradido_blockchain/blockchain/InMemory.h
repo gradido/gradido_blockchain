@@ -13,6 +13,7 @@
 
 namespace gradido {
 	namespace blockchain {
+		class InMemoryProvider;
 		/*
 		* @author einhornimmond
 		* @date 16.06.2024
@@ -22,8 +23,9 @@ namespace gradido {
 		*/
 		class GRADIDOBLOCKCHAIN_EXPORT InMemory : public Abstract
 		{
+			friend InMemoryProvider;
 		public:
-			InMemory(std::string_view communityId);
+			
 			~InMemory();
 
 			// remove all transactions and start over
@@ -78,6 +80,8 @@ namespace gradido {
 			) const;
 
 		protected:
+			InMemory(std::string_view communityId);
+
 			// if called, mWorkMutex should be locked exclusive
 			void pushTransactionEntry(std::shared_ptr<TransactionEntry> transactionEntry);
 			void removeTransactionEntry(std::shared_ptr<TransactionEntry> transactionEntry);

@@ -17,6 +17,7 @@ namespace gradido {
 			static InMemoryProvider* getInstance();
 
 			std::shared_ptr<Abstract> findBlockchain(std::string_view communityId);
+			void clear();
 		protected:
 			std::map<std::string, std::shared_ptr<InMemory>, StringViewCompare> mBlockchainsPerGroup;
 			std::mutex mWorkMutex;

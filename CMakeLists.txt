@@ -28,85 +28,6 @@ if (DEFINED GradidoBlockchain_SHARED_LIBS)
     set(BUILD_SHARED_LIBS "${GradidoBlockchain_SHARED_LIBS}")
 endif()
 
-############################## find protobuf  #########################################
-IF(USE_PROTO)
-if(NOT TARGET protoc)
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-	message("[GradidoBlockchain] runtime output directory: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-
-	# Set compile options for protobuf to ensure -fPIC is used
-	set(protobuf_BUILD_TESTS OFF)  # Disable tests to avoid potential conflicts
-	set(CMAKE_POSITION_INDEPENDENT_CODE ON)  # This sets -fPIC for all targets
-
-	add_subdirectory(dependencies/protobuf)
-
-  # Force protobuf to use -fPIC
-  set_target_properties(libprotobuf PROPERTIES POSITION_INDEPENDENT_CODE ON)
-  set_target_properties(protoc PROPERTIES POSITION_INDEPENDENT_CODE ON)	
-endif()
-
-############################## parse protobuf files ###################################
-
-FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/gradido_protocol GRADIDO_PROTO_MODEL_PATH)
-FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/build PROTOBINDING_PATH)
-file(MAKE_DIRECTORY ${PROTOBINDING_PATH})
-file(MAKE_DIRECTORY ${PROTOBINDING_PATH}/proto/gradido)
-FILE(GLOB DATAMODEL_GRADIDO_PROTOS "${GRADIDO_PROTO_MODEL_PATH}/proto/gradido/*.proto")
-include_directories(${PROTOBINDING_PATH})
-IF(WIN32)
-	set(BUILD_TYPE ${CMAKE_BUILD_TYPE})
-	IF(BUILD_TYPE STREQUAL "" OR NOT BUILD_TYPE)
-		set(BUILD_TYPE "Debug")
-	ENDIF()
-	set(PROTOC_BIN_PATH "${PROJECT_BINARY_DIR}/bin/${BUILD_TYPE}")
-	set(PROTOC_BIN_PATH2 "${CMAKE_BINARY_DIR}/bin/${BUILD_TYPE}")
-	message("[GradidoBlockchain] protoc path: ${PROTOC_BIN_PATH2}")
-	message("[GradidoBlockchain] cmake build type: ${CMAKE_BUILD_TYPE}")
-	message("[GradidoBlockchain] build type: ${BUILD_TYPE}")
-	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${PROTOC_BIN_PATH}" "${PROTOC_BIN_PATH2}")
-	IF(NOT PROTOBUF_PROTOC_EXECUTABLE)
-		find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" )		
-	ENDIF()
-ELSE()
-	find_program(PROTOBUF_PROTOC_EXECUTABLE protoc PATHS "${CMAKE_BINARY_DIR}/bin" "${PROJECT_SOURCE_DIR}/dependencies/protobuf/build" )
-	MESSAGE("[GradidoBlockchain] protoc: ${PROTOBUF_PROTOC_EXECUTABLE} in ${PROJECT_SOURCE_DIR}/dependencies/gradido_blockchain/dependencies/protobuf/build")
-ENDIF()
-
-#MESSAGE("current src: ${CMAKE_CURRENT_SOURCE_DIR}, binary: ${CMAKE_BINARY_DIR}")
-#MESSAGE("project src:${PROJECT_SOURCE_DIR}, project bin: ${PROJECT_BINARY_DIR}")
-#MESSAGE("src: ${CMAKE_SOURCE_DIR}")
-IF(PROTOBUF_PROTOC_EXECUTABLE STREQUAL "PROTOBUF_PROTOC_EXECUTABLE-NOTFOUND" ) 
-  MESSAGE("[GradidoBlockchain] !!!!!!\nplease call `make protoc` to build the protoc compiler and call again `cmake`\n!!!!!!")
-ELSE()
-	FOREACH(proto ${DATAMODEL_GRADIDO_PROTOS})
-	FILE(TO_NATIVE_PATH ${proto} proto_native)
-	get_filename_component(proto_parsed ${proto} NAME_WLE)
-	FILE(TO_NATIVE_PATH ${PROTOBINDING_PATH}/proto/gradido/${proto_parsed}.pb.h proto_parsed_native)
-
-
-	IF(${proto_native} IS_NEWER_THAN ${proto_parsed_native})
-		EXECUTE_PROCESS(
-			COMMAND 
-			${PROTOBUF_PROTOC_EXECUTABLE} 
-			--proto_path=${GRADIDO_PROTO_MODEL_PATH} 
-			--cpp_out=${PROTOBINDING_PATH} 
-			${proto_native}
-			RESULT_VARIABLE rv
-		)
-		message("${PROTOBUF_PROTOC_EXECUTABLE} proto path: ${GRADIDO_PROTO_MODEL_PATH}, cpp out: ${PROTOBINDING_PATH}, native: ${proto_native}")
-		# Optional, but that can show the user if something have gone wrong with the proto generation 
-		IF(${rv})
-			MESSAGE("[GradidoBlockchain] Generation of data model returned ${rv} for proto ${proto_native}")
-		ELSE()
-			MESSAGE("[GradidoBlockchain] Parsed: src/proto/gradido/${proto_parsed}.proto")
-		ENDIF()
-	ENDIF()
-
-	ENDFOREACH(proto)
-ENDIF()
-
-ENDIF()
-#message("Proto: ${PROTO_FILES}")
 ############################## find dependencies ###################################
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -228,10 +149,6 @@ include_directories(
 )
 
 
-IF(BUILD_SHARED_LIBS)
-ELSE()
-  #include_directories("dependencies/protobuf/third_party/abseil-cpp")
-ENDIF()
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 IF(WIN32)
 	message("[GradidoBlockchain] runtime output binary: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
@@ -261,7 +178,7 @@ add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
 if(BUILD_SHARED_LIBS) 
-	target_link_libraries(GradidoBlockchain loguru::loguru) #libprotobuf
+	target_link_libraries(GradidoBlockchain loguru::loguru)
 	IF(WIN32) 
 	  if(openssl_FOUND) 
 	  	target_link_libraries(GradidoBlockchain openssl::openssl)
@@ -321,7 +238,5 @@ endif ()
 
 # add test
 include(CTest)
-#add_subdirectory("dependencies/protobuf/third_party/googletest")
+
 add_subdirectory(test)
-#add_test(NAME GradidoBlockchainTest
- #        COMMAND GradidoBlockchainTest)
