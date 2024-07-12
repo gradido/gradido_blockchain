@@ -10,14 +10,6 @@ using namespace data;
 using namespace interaction;
 using namespace std;
 
-static void sign(GradidoTransaction& transaction, const KeyPair& keyPair)
-{
-	auto sign = make_shared<memory::Block>(crypto_sign_BYTES);
-	unsigned long long actualSignLength = 0;
-	crypto_sign_detached(*sign, &actualSignLength, *transaction.bodyBytes, transaction.bodyBytes->size(), *keyPair.privateKey);
-	assert(actualSignLength == crypto_sign_BYTES);
-	transaction.signatureMap.push({ keyPair.publicKey, sign });
-}
 
 TEST(ValidateGradidoTransaction, invalidBody) {
 	GradidoTransaction transaction;
