@@ -20,7 +20,7 @@ namespace gradido {
 				else if (registerAddress->userPubkey) {
 					mRequiredSignPublicKeys.push_back(registerAddress->userPubkey);
 				}
-				mMinSignatureCount = 1;
+				mMinSignatureCount = 2;
 			}
 
 			void RegisterAddressRole::run(
@@ -30,10 +30,13 @@ namespace gradido {
 				data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
 				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 			) {
+				if (data::AddressType::COMMUNITY_PROJECT == mRegisterAddress->addressType ||
+					data::AddressType::COMMUNITY_HUMAN == mRegisterAddress->addressType) {
+				}
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					if (mRegisterAddress->addressType == data::AddressType::COMMUNITY_GMW ||
-						mRegisterAddress->addressType == data::AddressType::COMMUNITY_AUF ||
-						mRegisterAddress->addressType == data::AddressType::NONE) {
+					if (data::AddressType::COMMUNITY_GMW == mRegisterAddress->addressType ||
+						data::AddressType::COMMUNITY_AUF == mRegisterAddress->addressType ||
+						data::AddressType::NONE == mRegisterAddress->addressType) {
 						throw WrongAddressTypeException(
 							"register address transaction not allowed with community auf or gmw account or None",
 							mRegisterAddress->addressType, mRegisterAddress->userPubkey
@@ -113,6 +116,38 @@ namespace gradido {
 							mRegisterAddress->addressType
 						);
 					}
+				}
+			}
+
+			void RegisterAddressRole::checkRequiredSignatures(
+				const data::SignatureMap& signatureMap,
+				std::shared_ptr<blockchain::Abstract> blockchain /*  = nullptr*/
+			) const
+			{
+				AbstractRole::checkRequiredSignatures(signatureMap, blockchain);
+				if (!blockchain) return;
+				auto& signPairs = signatureMap.signaturePairs;
+
+				// get community root transaction
+				blockchain::Filter filter;
+				filter.transactionType = data::TransactionType::COMMUNITY_ROOT;
+				filter.searchDirection = blockchain::SearchDirection::ASC;
+				auto communityRoot = blockchain->findOne(filter);
+				bool foundCommunityRootSigner = false;
+
+				// check for account type
+				for (auto& signPair : signPairs) {
+					if(signPair.pubkey == mRegisterAddress->accountPubkey ||
+					   signPair.pubkey == mRegisterAddress->userPubkey) {
+						continue;
+					}
+					if (signPair.pubkey == communityRoot->getTransactionBody()->communityRoot->pubkey) {
+						foundCommunityRootSigner = true;
+						break;
+					}
+				}
+				if (!foundCommunityRootSigner) {
+					throw TransactionValidationRequiredSignMissingException({ communityRoot->getTransactionBody()->communityRoot->pubkey });
 				}
 			}
 		}

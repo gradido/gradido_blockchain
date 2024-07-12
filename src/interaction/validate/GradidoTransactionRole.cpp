@@ -22,6 +22,8 @@ namespace gradido {
 				const auto& body = mGradidoTransaction.getTransactionBody();
 				TransactionBodyRole bodyRole(*body);
 				bodyRole.setConfirmedAt(mConfirmedAt);
+				// recursive validation					
+				bodyRole.run(type, communityId, blockchainProvider, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
 
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
@@ -39,10 +41,13 @@ namespace gradido {
 							);
 						}
 					}
-
-					// check for not allowed signatures
-					bodyRole.checkRequiredSignatures(mGradidoTransaction.signatureMap);
 				}
+				// check signatures
+				std::shared_ptr<blockchain::Abstract> blockchain;
+				if (blockchainProvider && !communityId.empty()) {
+					blockchain = blockchainProvider->findBlockchain(communityId);
+				}
+				bodyRole.checkRequiredSignatures(mGradidoTransaction.signatureMap, blockchain);				
 
 				if ((type & Type::PAIRED) == Type::PAIRED) {
 					assert(blockchainProvider);
@@ -75,10 +80,7 @@ namespace gradido {
 						break;
 					default: throw GradidoUnknownEnumException("unknown cross group type", "data::CrossGroupType", enum_name(body->type).data());
 					}
-				}
-
-				// recursive validation					
-				bodyRole.run(type, communityId, blockchainProvider, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
+				}				
 			}
 		}
 	}

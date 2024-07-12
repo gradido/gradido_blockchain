@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "../KeyPairs.h"
@@ -69,6 +70,25 @@ TEST(ValidateGradidoCreationTest, invalidAmount) {
 	
 }
 
+TEST(ValidateGradidoCreationTest, InvalidCoinCommunityId) {
+	TransactionBody body("Ich teile mit dir", createdAt, VERSION_STRING);
+	// coin community id is identical to blockchain community id to which transaction belong
+	body.creation = make_shared<GradidoCreation>(
+		TransferAmount(g_KeyPairs[4].publicKey, "-1000.00", "testGroup"),
+		TimestampSeconds(1609459000)
+	);
+	ASSERT_TRUE(body.isCreation());
+	validate::Context c(body);
+	EXPECT_THROW(c.run(validate::Type::SINGLE, "testGroup"), validate::TransactionValidationInvalidInputException);
+
+	// invalid coin community id
+	body.creation = make_shared<GradidoCreation>(
+		TransferAmount(g_KeyPairs[4].publicKey, "0", "<script>"),
+		TimestampSeconds(1609459000)
+	);
+	EXPECT_THROW(c.run(validate::Type::SINGLE, "testGroup"), validate::TransactionValidationInvalidInputException);
+}
+
 TEST(ValidateGradidoCreationTest, invalidPubkey) {
 	TransactionBody body("Deine erste Schoepfung ;)", createdAt, VERSION_STRING);
 	// nullptr key
@@ -97,3 +117,4 @@ TEST(ValidateGradidoCreationTest, invalidPubkey) {
 	);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
+

@@ -76,6 +76,31 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidAmount) {
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
 
+TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityId) {
+	TransactionBody body("Ich teile mit dir", createdAt, VERSION_STRING);
+	// coin community id is identical to blockchain community id to which transaction belong
+	body.deferredTransfer = make_shared<GradidoDeferredTransfer>(
+		GradidoTransfer(
+			TransferAmount(g_KeyPairs[4].publicKey, "0", "testGroup"),
+			g_KeyPairs[5].publicKey
+		),
+		timeout
+	);
+	ASSERT_TRUE(body.isDeferredTransfer());
+	validate::Context c(body);
+	EXPECT_THROW(c.run(validate::Type::SINGLE, "testGroup"), validate::TransactionValidationInvalidInputException);
+
+	// invalid coin community id
+	body.deferredTransfer = make_shared<GradidoDeferredTransfer>(
+		GradidoTransfer(
+			TransferAmount(g_KeyPairs[4].publicKey, "0", "<script>"),
+			g_KeyPairs[5].publicKey
+		),
+		timeout
+	);
+	EXPECT_THROW(c.run(validate::Type::SINGLE, "testGroup"), validate::TransactionValidationInvalidInputException);
+}
+
 TEST(ValidateGradidoDeferredTransferTest, SenderAndRecipientIdentical) {
 	TransactionBody body(memo, createdAt, VERSION_STRING);
 	body.deferredTransfer = make_shared<GradidoDeferredTransfer>(

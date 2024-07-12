@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "../KeyPairs.h"
@@ -20,6 +21,7 @@ TEST(ValidateCommunityRootTest, Valid)
 	);
 	ASSERT_TRUE(body.isCommunityRoot());
 	validate::Context c(body);
+	// body only
 	EXPECT_NO_THROW(c.run());
 }
 
@@ -159,4 +161,3 @@ TEST(ValidateCommunityRootTest, InvalidNullptrPublic)
 	);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
-

@@ -47,6 +47,9 @@ namespace gradido {
 			if (lastTransaction) {
 				id = lastTransaction->getTransactionNr() + 1;
 			}
+			else {
+				mStartDate = gradidoTransaction->getTransactionBody()->createdAt;
+			}
 				
 			auto serializedTransaction = gradidoTransaction->getSerializedTransaction();
 			auto body = gradidoTransaction->getTransactionBody();

@@ -38,6 +38,7 @@ namespace gradido {
 				auto transfer = std::make_shared<data::GradidoTransfer>(mDeferredTransfer->transfer);
 				GradidoTransferRole transferRole(transfer, "");
 				transferRole.setConfirmedAt(mConfirmedAt);
+				transferRole.setCreatedAt(mCreatedAt);
 				transferRole.run(type, communityId, blockchainProvider, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
 			}
 

@@ -1,6 +1,7 @@
 #include "gradido_blockchain/interaction/validate/GradidoCreationRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/validate/TransferAmountRole.h"
+#include "gradido_blockchain/blockchain/FilterBuilder.h"
 
 #include "date/date.h"
 
@@ -13,7 +14,7 @@ namespace gradido {
 			{
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mForbiddenSignPublicKeys.push_back(gradidoCreation->recipient.pubkey);
+				mForbiddenSignPublicKeys.push_back(mGradidoCreation->recipient.pubkey);
 			}
 
 			void GradidoCreationRole::run(
@@ -91,7 +92,6 @@ namespace gradido {
 						);
 					}
 				}
-				// TODO: check if signer belongs to blockchain
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
 					assert(blockchainProvider);
 					auto blockchain = blockchainProvider->findBlockchain(communityId);
@@ -106,7 +106,31 @@ namespace gradido {
 						throw WrongAddressTypeException("wrong address type for creation", addressType, mGradidoCreation->recipient.pubkey);
 					}
 				}
+			}
 
+			void GradidoCreationRole::checkRequiredSignatures(
+				const data::SignatureMap& signatureMap,
+				std::shared_ptr<blockchain::Abstract> blockchain /*  = nullptr*/
+			) const
+			{
+				AbstractRole::checkRequiredSignatures(signatureMap, blockchain);
+				if (!blockchain) return;
+				auto& signPairs = signatureMap.signaturePairs;
+				// check for account type
+				for (auto& signPair : signPairs) {
+					blockchain::Filter filter;
+					filter.involvedPublicKey = signPair.pubkey;
+					filter.searchDirection = blockchain::SearchDirection::DESC;
+					filter.timepointInterval = TimepointInterval(blockchain->getStartDate(), mCreatedAt);
+					auto signerAccountType = blockchain->getAddressType(filter);
+					if (data::AddressType::COMMUNITY_HUMAN != signerAccountType) {
+						throw WrongAddressTypeException(
+							"signer for creation doesn't have a community human account",
+							signerAccountType,
+							signPair.pubkey
+						);
+					}
+				}
 			}
 
 			void GradidoCreationRole::validateTargetDate(Timepoint createdAtTimePoint)

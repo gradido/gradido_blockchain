@@ -5,6 +5,7 @@
 #include "gradido_blockchain/data/Protocol.h"
 #include "TransactionBodyRole.h"
 #include "ConfirmedTransactionRole.h"
+#include "GradidoTransactionRole.h"
 
 namespace gradido {
 	namespace interaction {
@@ -14,6 +15,9 @@ namespace gradido {
             public:
                 Context(const data::TransactionBody& body)
                     : mRole(std::make_unique<TransactionBodyRole>(body)) {}
+
+                Context(const data::GradidoTransaction& body)
+                    : mRole(std::make_unique<GradidoTransactionRole>(body)) {}
 
                 Context(const data::ConfirmedTransaction& body)
                     : mRole(std::make_unique<ConfirmedTransactionRole>(body)) {}

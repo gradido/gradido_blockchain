@@ -44,20 +44,25 @@ namespace gradido {
 				}
 			}
 
-			void AbstractRole::checkRequiredSignatures(const data::SignatureMap& signatureMap) const
+			void AbstractRole::checkRequiredSignatures(
+				const data::SignatureMap& signatureMap,
+				std::shared_ptr<blockchain::Abstract> blockchain
+			) const 
 			{
 				assert(mMinSignatureCount);
 
 				auto& signPairs = signatureMap.signaturePairs;
 
 				// check for doublets
-				std::set<memory::Block> memoryBlockSet;
-				for (auto& signPair : signPairs) {
-					if (!memoryBlockSet.insert(*signPair.pubkey).second) {
-						throw TransactionValidationInvalidInputException("double public key", "public key");
-					};
+				if (signPairs.size() > 1) {
+					std::set<memory::Block> memoryBlockSet;
+					for (auto& signPair : signPairs) {
+						if (!memoryBlockSet.insert(*signPair.pubkey).second) {
+							throw TransactionValidationInvalidInputException("double public key", "public key");
+						};
+					}
+					memoryBlockSet.clear();
 				}
-				memoryBlockSet.clear();
 					
 				// not enough
 				if (mMinSignatureCount > signPairs.size()) {

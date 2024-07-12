@@ -19,6 +19,10 @@ namespace gradido {
 					data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
 					data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 				);
+				void checkRequiredSignatures(
+					const data::SignatureMap& signatureMap,
+					std::shared_ptr<blockchain::Abstract> blockchain = nullptr
+				) const;
 			protected:
 				std::shared_ptr<const data::RegisterAddress> mRegisterAddress;
 			};

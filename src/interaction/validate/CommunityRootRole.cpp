@@ -12,7 +12,7 @@ namespace gradido {
 			{
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mRequiredSignPublicKeys.push_back(communityRoot->pubkey);
+				mRequiredSignPublicKeys.push_back(mCommunityRoot->pubkey);
 			}
 
 			void CommunityRootRole::run(

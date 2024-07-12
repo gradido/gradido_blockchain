@@ -20,7 +20,13 @@ namespace gradido {
 					data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 				);
 
-				inline void checkRequiredSignatures(const data::SignatureMap& signatureMap) { getSpecificTransactionRole().checkRequiredSignatures(signatureMap); }
+				inline void checkRequiredSignatures(
+					const data::SignatureMap& signatureMap,
+					std::shared_ptr<blockchain::Abstract> blockchain
+				) { 
+					getSpecificTransactionRole()
+						.checkRequiredSignatures(signatureMap, blockchain);
+				}
             protected:
 				AbstractRole& getSpecificTransactionRole();
 

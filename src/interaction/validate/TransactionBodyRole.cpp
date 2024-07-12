@@ -101,6 +101,7 @@ namespace gradido {
 				if (!mSpecificTransactionRole) {
 					throw TransactionValidationException("body without specific transaction");
 				}
+				mSpecificTransactionRole->setCreatedAt(mBody.createdAt);
 				return *mSpecificTransactionRole;
 			}
 		}

@@ -23,8 +23,13 @@ namespace gradido {
                 ) = 0;
 
                 inline void setConfirmedAt(data::TimestampSeconds confirmedAt) { mConfirmedAt = confirmedAt; }
+                inline void setCreatedAt(data::Timestamp createdAt) { mCreatedAt = createdAt; }
 
-                void checkRequiredSignatures(const data::SignatureMap& signatureMap) const;
+                //! \param blockchain can be nullptr, so if overloading this function, don't forget to check
+                virtual void checkRequiredSignatures(
+                    const data::SignatureMap& signatureMap,
+                    std::shared_ptr<blockchain::Abstract> blockchain = nullptr
+                ) const;
 			        
             protected:
                 bool isValidCommunityAlias(std::string_view communityAlias) const;
@@ -34,6 +39,7 @@ namespace gradido {
 				void isPublicKeyForbidden(memory::ConstBlockPtr pubkey) const;
 
                 data::TimestampSeconds mConfirmedAt;
+                data::Timestamp mCreatedAt;
 				uint32_t mMinSignatureCount;
 				std::vector<memory::ConstBlockPtr> mRequiredSignPublicKeys;
 				std::vector<memory::ConstBlockPtr> mForbiddenSignPublicKeys;

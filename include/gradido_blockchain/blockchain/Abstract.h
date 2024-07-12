@@ -60,9 +60,11 @@ namespace gradido {
 			) const;
 
 			inline std::string_view getCommunityId() const { return mCommunityId; }
+			inline Timepoint getStartDate() const { return mStartDate; }
 
 		protected:
 			std::string mCommunityId;
+			Timepoint mStartDate;
 		};
 			
 	}

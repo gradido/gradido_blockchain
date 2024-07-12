@@ -28,6 +28,7 @@ namespace gradido {
 			// copy filter
 			Filter f(filter);
 			f.transactionType = data::TransactionType::REGISTER_ADDRESS;
+			f.pagination.size = 1;
 			auto transactionEntry = findOne(f);
 			if (transactionEntry) {
 				return transactionEntry->getTransactionBody()->registerAddress->addressType;
