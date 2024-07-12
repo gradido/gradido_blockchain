@@ -57,6 +57,52 @@ TEST(ValidateGradidoTransaction, invalidCommunityRootMissingSigner) {
 	EXPECT_THROW(c.run(), validate::TransactionValidationRequiredSignMissingException);
 }
 
+TEST(ValidateGradidoTransaction, validRegisterAddressTransaction) {
+	GradidoTransaction transaction;
+	// must be signed two times, with user or account pubkey and with community root pubkey
+	transaction.bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(
+		"CgASCAiAzLn/BRAAGgMzLjMgAEpICiAllxqg50IhRNzCRIh+Ke8WDVR5sSGemBfKbs44sJ83wBABIiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VygB"
+	));
+	// signed with account public key
+	sign(transaction, g_KeyPairs[0]);
+	sign(transaction, g_KeyPairs[4]);
+
+	validate::Context c(transaction);
+	EXPECT_NO_THROW(c.run());
+}
+
+TEST(ValidateGradidoTransaction, invalidRegisterAddressTransaction) {
+	GradidoTransaction transaction;
+	// must be signed two times, with user or account pubkey and with community root pubkey
+	transaction.bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(
+		"CgASCAiAzLn/BRAAGgMzLjMgAEpICiAllxqg50IhRNzCRIh+Ke8WDVR5sSGemBfKbs44sJ83wBABIiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VygB"
+	));
+	//
+
+	validate::Context c(transaction);
+	// missing signature
+	EXPECT_THROW(c.run(), validate::TransactionValidationMissingSignException);
+
+	sign(transaction, g_KeyPairs[0]);
+	// still missing signature
+	EXPECT_THROW(c.run(), validate::TransactionValidationMissingSignException);
+
+	// account public key set but signed with user pubkey, so sign with account pubkey is still missing
+	sign(transaction, g_KeyPairs[3]);
+	EXPECT_THROW(c.run(), validate::TransactionValidationRequiredSignMissingException);
+}
+
+TEST(ValidateGradidoTransaction, validGradidoCreationTransaction) {
+	GradidoTransaction transaction;
+	transaction.bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(
+		"ChlEZWluZSBlcnN0ZSBTY2hvZXBmdW5nIDspEggIgMy5/wUQABoDMy4zIAA6NAoqCiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIEMTAwMBoAGgYIuMq5/wU="
+	));
+	sign(transaction, g_KeyPairs[3]);
+
+	validate::Context c(transaction);
+	EXPECT_NO_THROW(c.run());
+}
+
 // creation transaction must be signed by another user
 TEST(ValidateGradidoTransaction, invalidGradidoCreationMissingSigner) {
 	GradidoTransaction transaction;
@@ -71,4 +117,57 @@ TEST(ValidateGradidoTransaction, invalidGradidoCreationMissingSigner) {
 	sign(transaction, g_KeyPairs[4]);
 	// wrong signer
 	EXPECT_THROW(c.run(), validate::TransactionValidationForbiddenSignException);
+}
+
+TEST(ValidateGradidoTransaction, validGradidoTransferTransaction) {
+	GradidoTransaction transaction;
+	transaction.bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(
+		"ChFJY2ggdGVpbGUgbWl0IGRpchIICIDMuf8FEAAaAzMuMyAAMlAKLAogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSBjUwMC41NRoAEiDRqVgkyEhZACebkqYBdfxnb4kUxh1zmcZsLQy2+p7Fdg=="
+	));
+	sign(transaction, g_KeyPairs[4]);
+
+	validate::Context c(transaction);
+	EXPECT_NO_THROW(c.run());
+}
+
+TEST(ValidateGradidoTransaction, invalidGradidoTransferTransactionMissingSigner) {
+	GradidoTransaction transaction;
+	transaction.bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(
+		"ChFJY2ggdGVpbGUgbWl0IGRpchIICIDMuf8FEAAaAzMuMyAAMlAKLAogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSBjUwMC41NRoAEiDRqVgkyEhZACebkqYBdfxnb4kUxh1zmcZsLQy2+p7Fdg=="
+	));
+
+	// missing signer
+	validate::Context c(transaction);
+	EXPECT_THROW(c.run(), validate::TransactionValidationMissingSignException);
+
+	// wrong signer, missing required signer, the sender of transaction
+	sign(transaction, g_KeyPairs[3]);
+	EXPECT_THROW(c.run(), validate::TransactionValidationRequiredSignMissingException);
+}
+
+
+TEST(ValidateGradidoTransaction, validGradidoDeferredTransferTransaction) {
+	GradidoTransaction transaction;
+	transaction.bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(
+		"ChJMaW5rIHp1bSBlaW5sb2VzZW4SCAiAzLn/BRAAGgMzLjMgAFJaClAKLAogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSBjU1NS41NRoAEiDRqVgkyEhZACebkqYBdfxnb4kUxh1zmcZsLQy2+p7FdhIGCKj5uf8F"
+	));
+	sign(transaction, g_KeyPairs[4]);
+
+	validate::Context c(transaction);
+	EXPECT_NO_THROW(c.run());
+}
+
+TEST(ValidateGradidoTransaction, invalidGradidoDeferredTransferTransactionMissingSigner) {
+	GradidoTransaction transaction;
+	transaction.bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(
+		"ChJMaW5rIHp1bSBlaW5sb2VzZW4SCAiAzLn/BRAAGgMzLjMgAFJaClAKLAogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSBjU1NS41NRoAEiDRqVgkyEhZACebkqYBdfxnb4kUxh1zmcZsLQy2+p7FdhIGCKj5uf8F"
+	));
+
+	// missing signer
+	validate::Context c(transaction);
+	EXPECT_THROW(c.run(), validate::TransactionValidationMissingSignException);
+
+	// wrong signer, missing required signer, the sender of transaction
+	sign(transaction, g_KeyPairs[5]);
+	EXPECT_THROW(c.run(), validate::TransactionValidationRequiredSignMissingException);
 }
