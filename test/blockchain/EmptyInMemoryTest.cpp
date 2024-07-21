@@ -9,6 +9,8 @@ using namespace data;
 using namespace blockchain;
 using namespace interaction;
 
+const auto confirmedAt = std::chrono::system_clock::from_time_t(1609464130);
+
 void EmptyInMemoryTest::SetUp()
 {
 
@@ -31,7 +33,7 @@ TEST_F(EmptyInMemoryTest, AddCommunityRootAsFirst) {
 	));
 	sign(*transaction, g_KeyPairs[0]);
 	
-	EXPECT_TRUE(blockchain->addGradidoTransaction(transaction));
+	EXPECT_TRUE(blockchain->addGradidoTransaction(transaction, nullptr, confirmedAt));
 }
 
 TEST_F(EmptyInMemoryTest, InvalidMissingSignature) {
@@ -45,7 +47,7 @@ TEST_F(EmptyInMemoryTest, InvalidMissingSignature) {
 	));
 	//sign(*transaction, g_KeyPairs[0]);
 
-	EXPECT_THROW(blockchain->addGradidoTransaction(transaction), validate::TransactionValidationMissingSignException);
+	EXPECT_THROW(blockchain->addGradidoTransaction(transaction, nullptr, confirmedAt), validate::TransactionValidationMissingSignException);
 }
 
 TEST_F(EmptyInMemoryTest, InvalidRegisterAddressAsFirst) {
@@ -60,7 +62,7 @@ TEST_F(EmptyInMemoryTest, InvalidRegisterAddressAsFirst) {
 	sign(*transaction, g_KeyPairs[0]);
 	sign(*transaction, g_KeyPairs[4]);
 
-	EXPECT_THROW(blockchain->addGradidoTransaction(transaction), BlockchainOrderException);
+	EXPECT_THROW(blockchain->addGradidoTransaction(transaction, nullptr, confirmedAt), BlockchainOrderException);
 }
 TEST_F(EmptyInMemoryTest, InvalidGradidoCreationAsFirst) {
 	std::shared_ptr<InMemory> blockchain = dynamic_pointer_cast<InMemory>(
@@ -73,7 +75,7 @@ TEST_F(EmptyInMemoryTest, InvalidGradidoCreationAsFirst) {
 	));
 	sign(*transaction, g_KeyPairs[3]);
 
-	EXPECT_THROW(blockchain->addGradidoTransaction(transaction), validate::WrongAddressTypeException);
+	EXPECT_THROW(blockchain->addGradidoTransaction(transaction, nullptr, confirmedAt), validate::WrongAddressTypeException);
 }
 
 TEST_F(EmptyInMemoryTest, InvalidGradidoTransferAsFirst) {
@@ -87,7 +89,7 @@ TEST_F(EmptyInMemoryTest, InvalidGradidoTransferAsFirst) {
 	));
 	sign(*transaction, g_KeyPairs[4]);
 
-	EXPECT_THROW(blockchain->addGradidoTransaction(transaction), InvalidGradidoTransaction);
+	EXPECT_THROW(blockchain->addGradidoTransaction(transaction, nullptr, confirmedAt), InvalidGradidoTransaction);
 }
 
 
@@ -102,5 +104,5 @@ TEST_F(EmptyInMemoryTest, InvalidGradidoDeferredTransferAsFirst) {
 	));
 	sign(*transaction, g_KeyPairs[4]);
 
-	EXPECT_THROW(blockchain->addGradidoTransaction(transaction), InvalidGradidoTransaction);
+	EXPECT_THROW(blockchain->addGradidoTransaction(transaction, nullptr, confirmedAt), InvalidGradidoTransaction);
 }

@@ -23,6 +23,11 @@ namespace gradido {
 			Abstract(std::string_view communityId);
 			virtual ~Abstract() {}
 
+			//! validate and generate confirmed transaction
+			//! throw if gradido transaction isn't valid
+			//! \return false if transaction already exist
+			virtual bool addGradidoTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt) = 0;
+
 			// main search function, do all the work, reference from other functions
 			virtual TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const = 0;
 			// only if you expect only one result

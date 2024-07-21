@@ -35,7 +35,7 @@ namespace gradido {
 			mExitCalled = true;
 		}
 
-		bool InMemory::addGradidoTransaction(data::ConstGradidoTransactionPtr gradidoTransaction)
+		bool InMemory::addGradidoTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt)
 		{
 			auto provider = InMemoryProvider::getInstance();
 			interaction::validate::Context validateGradidoTransaction(*gradidoTransaction);
@@ -56,17 +56,19 @@ namespace gradido {
 				
 			auto serializedTransaction = gradidoTransaction->getSerializedTransaction();
 			auto body = gradidoTransaction->getTransactionBody();
-			// fake message id simply with taking hash from serialized transaction,
-			// iota message id will normally calculated with same algorithmus but with additional data 
-			auto messageId = std::make_shared<memory::Block>(serializedTransaction->calculateHash());			
+			if (!messageId) {
+				// fake message id simply with taking hash from serialized transaction,
+				// iota message id will normally calculated with same algorithmus but with additional data 
+				messageId = std::make_shared<memory::Block>(serializedTransaction->calculateHash());
+			}
 
 			interaction::calculateAccountBalance::Context finalBalanceCalculate(*this);
-			auto finalBalance = finalBalanceCalculate.run(gradidoTransaction, body->createdAt.getAsTimepoint(), id);
+			auto finalBalance = finalBalanceCalculate.run(gradidoTransaction, confirmedAt, id);
 
 			auto confirmedTransaction = std::make_shared<data::ConfirmedTransaction>(
 				id,
 				gradidoTransaction,
-				body->createdAt,
+				confirmedAt,
 				GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING,
 				nullptr,
 				messageId,
@@ -75,7 +77,7 @@ namespace gradido {
 			data::ConstConfirmedTransactionPtr lastConfirmedTransaction;
 			if (lastTransaction) {
 				lastConfirmedTransaction = lastTransaction->getConfirmedTransaction();
-				if (body->createdAt < lastConfirmedTransaction->confirmedAt) {
+				if (confirmedAt < lastConfirmedTransaction->confirmedAt.getAsTimepoint()) {
 					throw BlockchainOrderException("previous transaction is younger");
 				}
 			}
