@@ -52,9 +52,6 @@ namespace memory {
 		//! calculate generichash with libsodium using BLAKE2b algorithm
 		//! https://libsodium.gitbook.io/doc/hashing/generic_hashing
 		Block calculateHash() const;
-		//! \return 0 if ok
-		//!        -1 if bin is to small
-		//!        -2 if hex is invalid
 		static inline Block fromHex(const std::string& hex) {
 			return fromHex(hex.data(), hex.size());
 		}
@@ -90,6 +87,14 @@ namespace memory {
 
 	typedef std::shared_ptr<Block> BlockPtr;
 	typedef std::shared_ptr<const Block> ConstBlockPtr;
+
+	struct ConstBlockPtrComparator {
+		bool operator()(ConstBlockPtr a, ConstBlockPtr b) const
+		{
+			// Compare based on string length 
+			return *a < *b;
+		}
+	};
 }
 
 typedef memory::Block MemoryBin;

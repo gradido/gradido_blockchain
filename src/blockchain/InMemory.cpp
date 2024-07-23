@@ -37,7 +37,7 @@ namespace gradido {
 
 		bool InMemory::addGradidoTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt)
 		{
-			auto provider = InMemoryProvider::getInstance();
+			auto provider = getProvider();
 			interaction::validate::Context validateGradidoTransaction(*gradidoTransaction);
 			validateGradidoTransaction.run(interaction::validate::Type::SINGLE, mCommunityId, provider);
 			std::lock_guard _lock(mWorkMutex);
@@ -85,7 +85,7 @@ namespace gradido {
 			// important! validation
 			interaction::validate::Context validate(*confirmedTransaction);
 			interaction::validate::Type level =
-				interaction::validate::Type::SINGLE |
+				// interaction::validate::Type::SINGLE | // already checked
 				interaction::validate::Type::PREVIOUS |
 				interaction::validate::Type::MONTH_RANGE |
 				interaction::validate::Type::ACCOUNT
@@ -116,7 +116,12 @@ namespace gradido {
 		{
 			// find smallest start set
 			auto startSetType = findSmallestPrefilteredTransactionList(filter);
-			auto processEntry = [&](auto& start, auto& end, FilterCriteria toFilter, const Filter& filter) -> TransactionEntries {
+			if (FilterCriteria::NONE == startSetType) {
+				return {};
+			}
+			auto processEntry = [&](auto& start, auto& end, FilterCriteria toFilter, const Filter& filter) -> TransactionEntries 
+			{
+				end--;
 				TransactionEntries transactionEntries;
 				bool revert = SearchDirection::DESC == filter.searchDirection;
 				auto& it = revert ? end : start;
@@ -135,17 +140,22 @@ namespace gradido {
 					if ((result & FilterResult::STOP) == FilterResult::STOP) {
 						return transactionEntries;
 					}
-					if (revert) {
-						--it;
-					}
-					else {
+					if (!revert) {
 						++it;
 					}
+					else {
+						--it;
+					}
+				}
+				// last entry
+				auto result = filter.matches(it->second, toFilter, mCommunityId);
+				if ((result & FilterResult::USE) == FilterResult::USE) {
+					transactionEntries.push_back(start->second);
 				}
 				return transactionEntries;
 			};
 
-			if (FilterCriteria::TIMEPOINT_INTERVAL == startSetType) 
+			if ((startSetType & FilterCriteria::TIMEPOINT_INTERVAL) == FilterCriteria::TIMEPOINT_INTERVAL)
 			{
 				auto notYetFiltered = FilterCriteria::MAX - FilterCriteria::TIMEPOINT_INTERVAL;
 				data::TimestampSeconds startDate(filter.timepointInterval.getStartDate());
@@ -153,19 +163,19 @@ namespace gradido {
 				auto startIt = mTransactionsByConfirmedAt.lower_bound(startDate);
 				auto endIt = mTransactionsByConfirmedAt.upper_bound(endDate);
 				return processEntry(startIt, endIt, notYetFiltered, filter);
-			}
-						
-			else if (FilterCriteria::INVOLVED_PUBLIC_KEY == startSetType) {
+			}						
+			else if ((startSetType & FilterCriteria::INVOLVED_PUBLIC_KEY) == FilterCriteria::INVOLVED_PUBLIC_KEY) {
 				// we have a problem there, filterFunction expect to be called in searchOrder, mTransactionsByPubkey is sorted by public key
 				// so we first filter without filterFunction to reduce result set as much as possible
-				auto notYetFiltered = FilterCriteria::MAX - FilterCriteria::INVOLVED_PUBLIC_KEY;
+				auto notYetFiltered = FilterCriteria::MAX - FilterCriteria::FILTER_FUNCTION;
+				memory::BlockKey key(filter.involvedPublicKey);
 				auto range = mTransactionsByPubkey.equal_range(filter.involvedPublicKey);
 				Filter partFilter = filter;
 				// disable pagination for prefilter round
-				partFilter.pagination = Pagination();
+				partFilter.pagination = Pagination();				
 				auto prefilteredTransactions = processEntry(range.first, range.second, notYetFiltered, partFilter);
 				// and if a filter function exist we sort and call it in correct order
-				if (filter.filterFunction) {
+				if (filter.filterFunction && !prefilteredTransactions.empty()) {
 					std::map<uint64_t, std::shared_ptr<TransactionEntry>> sortedTransactions;
 					for (std::shared_ptr<TransactionEntry> entry : prefilteredTransactions) {
 						sortedTransactions.insert({ entry->getTransactionNr(), entry });
@@ -182,6 +192,9 @@ namespace gradido {
 			else {
 				auto notYetFiltered = FilterCriteria::MAX - FilterCriteria::TRANSACTION_NR;
 				auto startIt = mTransactionsByNr.lower_bound(filter.minTransactionNr);
+				if (mTransactionsByNr.end() == startIt) {
+					return {};
+				}
 				auto endIt = mTransactionsByNr.end();
 				if (filter.maxTransactionNr) {
 					endIt = mTransactionsByNr.upper_bound(filter.maxTransactionNr);
@@ -269,6 +282,11 @@ namespace gradido {
 			return nullptr;
 		}
 
+		AbstractProvider* InMemory::getProvider() const
+		{
+			return InMemoryProvider::getInstance();
+		}
+
 		void InMemory::pushTransactionEntry(std::shared_ptr<TransactionEntry> transactionEntry)
 		{
 			std::lock_guard _lock(mWorkMutex);
@@ -345,9 +363,12 @@ namespace gradido {
 				auto byPublicKeyIt = mTransactionsByPubkey.equal_range(involvedAddress);
 				for (auto it = byPublicKeyIt.first; it != byPublicKeyIt.second; ++it)
 				{
-					it = mTransactionsByPubkey.erase(it);
-					if (it == byPublicKeyIt.second) {
-						break;
+					if (serializedTransaction->isTheSame(it->second->getSerializedTransaction()))
+					{
+						it = mTransactionsByPubkey.erase(it);
+						if (it == byPublicKeyIt.second) {
+							break;
+						}
 					}
 				}
 			}
@@ -375,18 +396,27 @@ namespace gradido {
 				data::TimestampSeconds endDate(filter.timepointInterval.getEndDate());
 				auto startIt = mTransactionsByConfirmedAt.lower_bound(startDate);
 				auto endIt = mTransactionsByConfirmedAt.upper_bound(endDate);
-				resultCounts.emplace(std::distance(startIt, endIt), FilterCriteria::TIMEPOINT_INTERVAL);
+				if (startIt != mTransactionsByConfirmedAt.end() && startIt != endIt) {
+					resultCounts.emplace(std::distance(startIt, endIt), FilterCriteria::TIMEPOINT_INTERVAL);
+				}
 			}	
 			if (filter.involvedPublicKey && !filter.involvedPublicKey->isEmpty()) {
 				auto its = mTransactionsByPubkey.equal_range(filter.involvedPublicKey);
-				resultCounts.emplace(std::distance(its.first, its.second), FilterCriteria::INVOLVED_PUBLIC_KEY);
+				if (its.first != mTransactionsByPubkey.end() && its.first != its.second) {
+					resultCounts.emplace(std::distance(its.first, its.second), FilterCriteria::INVOLVED_PUBLIC_KEY);
+				}
 			}
 			auto startIt = mTransactionsByNr.lower_bound(filter.minTransactionNr);
 			auto endIt = mTransactionsByNr.end();
 			if (filter.maxTransactionNr) {
 				endIt = mTransactionsByNr.upper_bound(filter.maxTransactionNr);
 			}
-			resultCounts.emplace(std::distance(startIt, endIt), FilterCriteria::TRANSACTION_NR);
+			if (startIt != mTransactionsByNr.end() && startIt != endIt) {
+				resultCounts.emplace(std::distance(startIt, endIt), FilterCriteria::TRANSACTION_NR);
+			}
+			
+			if (resultCounts.empty()) { return FilterCriteria::NONE; }
+
 			// map is auto sorted and begin is smallest distance between iterators
 			return resultCounts.begin()->second;
 		}

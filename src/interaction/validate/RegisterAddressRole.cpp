@@ -64,23 +64,23 @@ namespace gradido {
 					assert(blockchain);
 					blockchain::FilterBuilder filterBuilder;
 
-					std::shared_ptr<blockchain::TransactionEntry> lastTransaction;
+					std::shared_ptr<blockchain::TransactionEntry> transactionWithSameAddress;
 					if (data::AddressType::SUBACCOUNT == mRegisterAddress->addressType) {
-						lastTransaction = blockchain->findOne(
+						transactionWithSameAddress = blockchain->findOne(
 							filterBuilder
 							.setInvolvedPublicKey(mRegisterAddress->userPubkey)
 							.setMaxTransactionNr(senderPreviousConfirmedTransaction->id)
 							.setSearchDirection(blockchain::SearchDirection::DESC)
 							.build()
 						);
-						if (!lastTransaction) {
+						if (!transactionWithSameAddress) {
 							throw AddressAlreadyExistException(
 								"cannot register sub address because user is missing",
 								mRegisterAddress->userPubkey->convertToHex(),
 								mRegisterAddress->addressType
 							);
 						}
-						lastTransaction.reset();
+						transactionWithSameAddress.reset();
 					}
 
 					memory::ConstBlockPtr address;
@@ -102,14 +102,15 @@ namespace gradido {
 							enum_name(mRegisterAddress->addressType).data()
 						);
 					}
-					lastTransaction = blockchain->findOne(
+					transactionWithSameAddress = blockchain->findOne(
 						filterBuilder
 						.setInvolvedPublicKey(address)
 						.setMaxTransactionNr(senderPreviousConfirmedTransaction->id)
 						.setSearchDirection(blockchain::SearchDirection::DESC)
+						.setPagination({1})
 						.build()
 					);
-					if (lastTransaction) {
+					if (transactionWithSameAddress) {
 						throw AddressAlreadyExistException(
 							"cannot register address because it already exist",
 							address->convertToHex(),
@@ -140,11 +141,11 @@ namespace gradido {
 
 				// check for account type
 				for (auto& signPair : signPairs) {
-					if(signPair.pubkey == mRegisterAddress->accountPubkey ||
-					   signPair.pubkey == mRegisterAddress->userPubkey) {
+					if(signPair.pubkey->isTheSame(mRegisterAddress->accountPubkey) ||
+					   signPair.pubkey->isTheSame(mRegisterAddress->userPubkey)) {
 						continue;
 					}
-					if (signPair.pubkey == communityRoot->getTransactionBody()->communityRoot->pubkey) {
+					if (signPair.pubkey->isTheSame(communityRoot->getTransactionBody()->communityRoot->pubkey)) {
 						foundCommunityRootSigner = true;
 						break;
 					}

@@ -16,8 +16,9 @@
 
 namespace gradido {	
 	namespace blockchain {
+		class AbstractProvider;
 
-		class Abstract
+		class GRADIDOBLOCKCHAIN_EXPORT Abstract
 		{
 		public:
 			Abstract(std::string_view communityId);
@@ -66,10 +67,14 @@ namespace gradido {
 
 			inline std::string_view getCommunityId() const { return mCommunityId; }
 			inline Timepoint getStartDate() const { return mStartDate; }
+			virtual AbstractProvider* getProvider() const = 0;
 
 		protected:
+			virtual void pushTransactionEntry(std::shared_ptr<TransactionEntry> transactionEntry) = 0;
+
 			std::string mCommunityId;
 			Timepoint mStartDate;
+			
 		};
 			
 	}

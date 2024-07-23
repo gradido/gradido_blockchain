@@ -155,7 +155,6 @@ namespace gradido {
 			TransactionValidationMissingSignException::TransactionValidationMissingSignException(int currentSignCount, int requiredSignCount) noexcept
 				: TransactionValidationException("missing sign"), mCurrentSignCount(currentSignCount), mRequiredSignCount(requiredSignCount)
 			{
-
 			}
 
 			std::string TransactionValidationMissingSignException::getFullString() const noexcept

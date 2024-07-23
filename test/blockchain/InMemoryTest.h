@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_TEST_BLOCKCHAIN_IN_MEMORY_TEST_H
 
 #include "gtest/gtest.h"
-#include "gradido_blockchain/blockchain/InMemoryProvider.h"
+#include "gradido_blockchain/blockchain/Abstract.h"
 #include "../KeyPairs.h"
 
 #include <array>
@@ -18,12 +18,15 @@ protected:
     Timepoint generateNewCreatedAt();
 
     void createRegisterAddress();
+    void createRegisterAddress(int keyPairIndexStart);
 
     std::mt19937 gen; // seed the generator with a random value
     std::uniform_int_distribution<int> randTimeRange; // distribution for seconds between 120 and 2 days
 
     Timepoint mLastCreatedAt;
     int mKeyPairCursor;
+    std::string mCommunityId;
+    std::shared_ptr<gradido::blockchain::Abstract> mBlockchain;
 
     struct Account 
     {

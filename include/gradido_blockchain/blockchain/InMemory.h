@@ -6,6 +6,7 @@
 #include "../data/Protocol.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/crypto/SignatureOctet.h"
+#include "gradido_blockchain/memory/BlockKey.h"
 
 #include <vector>
 #include <unordered_map>
@@ -79,6 +80,8 @@ namespace gradido {
 				const Filter& filter = Filter::ALL_TRANSACTIONS
 			) const;
 
+			AbstractProvider* getProvider() const;
+
 		protected:
 			InMemory(std::string_view communityId);
 
@@ -93,8 +96,8 @@ namespace gradido {
 			mutable std::recursive_mutex mWorkMutex;
 
 			// update map and multimap on every transaction add and remove
-			//! key is pubkey
-			std::multimap<memory::ConstBlockPtr, std::shared_ptr<TransactionEntry>> mTransactionsByPubkey;
+			//! key is hash from pubkey, not collision resistent!
+			std::multimap<memory::BlockKey, std::shared_ptr<TransactionEntry>> mTransactionsByPubkey;
 			//! key is transaction received date
 			std::multimap<data::TimestampSeconds, std::shared_ptr<TransactionEntry>> mTransactionsByConfirmedAt;
 			//! find transaction nr by iota message id

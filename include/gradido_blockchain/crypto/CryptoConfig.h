@@ -11,6 +11,7 @@
 
 using namespace memory;
 
+// TODO: change to class to make it write protected!
 namespace CryptoConfig
 {
 	GRADIDOBLOCKCHAIN_EXPORT extern memory::BlockPtr g_CryptoAppSecret;

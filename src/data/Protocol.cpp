@@ -63,7 +63,7 @@ namespace gradido {
 		std::vector<memory::ConstBlockPtr> RegisterAddress::getInvolvedAddresses() const
 		{
 			std::vector<memory::ConstBlockPtr> result;
-			result.resize(2);
+			result.reserve(2);
 			if (userPubkey) {
 				result.push_back(userPubkey);
 			}

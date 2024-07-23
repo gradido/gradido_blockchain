@@ -30,6 +30,7 @@
 #include <cstdio>
 #include "gtest/gtest.h"
 #include "KeyPairs.h"
+#include "gradido_blockchain/crypto/CryptoConfig.h"
 
 #if GTEST_OS_ESP8266 || GTEST_OS_ESP32
 #if GTEST_OS_ESP8266
@@ -50,10 +51,12 @@ extern "C" {
 
 GTEST_API_ int main(int argc, char** argv) {
 	generateKeyPairs();
+	CryptoConfig::g_ServerCryptoKey = std::make_shared<memory::Block>(memory::Block::fromHex("153afcd54ef316e45cd3e5ed4567cd21"));
 	//printf("Running main() from %s\n", __FILE__);
 	testing::InitGoogleTest(&argc, argv);
 	auto result = RUN_ALL_TESTS();
 	return result;
 }
+
 #endif
 
