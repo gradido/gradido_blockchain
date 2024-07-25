@@ -1,24 +1,24 @@
 #include "gradido_blockchain/model/protobufWrapper/TransactionBase.h"
 #include "gradido_blockchain/model/protobufWrapper/GradidoTransaction.h"
-
-#include "Poco/RegularExpression.h"
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
+#include "gradido_blockchain/crypto/KeyPairEd25519.h"
 
 #include "gradido_blockchain/lib/Decay.h"
 
 #include <iomanip>
 #include <sodium.h>
 #include <sstream>
+#include <regex>
 
 namespace model {
 	namespace gradido {
 
-		Poco::RegularExpression g_RegExGroupAlias("^[a-z0-9-]{3,120}$");
+		std::regex g_RegExGroupAlias("^[a-z0-9-]{3,120}$");
 
 		
 		bool TransactionBase::isValidGroupAlias(const std::string& groupAlias)
 		{
-			return g_RegExGroupAlias.match(groupAlias);
+			return std::regex_match(groupAlias, g_RegExGroupAlias);
 		}
 
 
@@ -30,27 +30,16 @@ namespace model {
 
 		TransactionBase::~TransactionBase()
 		{
-			auto mm = MemoryManager::getInstance();
-			for (auto it = mRequiredSignPublicKeys.begin(); it != mRequiredSignPublicKeys.end(); it++)
-			{
-				mm->releaseMemory(*it);
-			}
-			mRequiredSignPublicKeys.clear();
-			for (auto it = mForbiddenSignPublicKeys.begin(); it != mForbiddenSignPublicKeys.end(); it++)
-			{
-				mm->releaseMemory(*it);
-			}
-			mForbiddenSignPublicKeys.clear();
 		}
 
 
-		bool TransactionBase::checkRequiredSignatures(const proto::gradido::SignatureMap* sig_map) const
+		bool TransactionBase::checkRequiredSignatures(const  v3_3_data::SignatureMap* sig_map) const
 		{
 			assert(mMinSignatureCount);
 			
 			// not enough
-			if (mMinSignatureCount > sig_map->sigpair_size()) {
-				throw TransactionValidationMissingSignException(sig_map->sigpair_size(), mMinSignatureCount);
+			if (mMinSignatureCount > sig_map->signaturePairs.size()) {
+				throw TransactionValidationMissingSignException(sig_map->signaturePairs.size(), mMinSignatureCount);
 			}
 			// enough
 			if (!mRequiredSignPublicKeys.size() && !mForbiddenSignPublicKeys.size()) {
@@ -59,12 +48,12 @@ namespace model {
 			// check if specific signatures can be found
 			
 			// prepare, make a copy from the vector, because entries will be removed from it
-			std::vector<MemoryBin*> required_keys = mRequiredSignPublicKeys;			
+			std::vector<memory::Block> required_keys = mRequiredSignPublicKeys;			
 			
-			for (auto it = sig_map->sigpair().begin(); it != sig_map->sigpair().end(); it++) 
+			for (auto it = sig_map->signaturePairs.begin(); it != sig_map->signaturePairs.end(); it++)
 			{
 				auto pubkey_size = it->pubkey().size();
-				assert(pubkey_size == crypto_sign_PUBLICKEYBYTES);
+				assert(pubkey_size == ED25519_PUBLIC_KEY_SIZE);
 				
 				// check for forbidden key
 				if (isPublicKeyForbidden((const unsigned char*)it->pubkey().data())) {
@@ -74,8 +63,8 @@ namespace model {
 				// compare with required keys
 				for (auto it3 = required_keys.begin(); it3 != required_keys.end(); it3++) 
 				{
-					assert((*it3)->size() == crypto_sign_PUBLICKEYBYTES);
-					if (0 == memcmp((*it3)->data(), it->pubkey().data(), pubkey_size)) 
+					assert((*it3).size() == ED25519_PUBLIC_KEY_SIZE);
+					if (0 == memcmp((*it3).data(), it->pubkey().data(), pubkey_size)) 
 					{
 						it3 = required_keys.erase(it3);
 						break;
@@ -96,7 +85,7 @@ namespace model {
 			std::lock_guard<std::recursive_mutex> _lock(mWorkMutex);
 
 			for (auto it = mRequiredSignPublicKeys.begin(); it != mRequiredSignPublicKeys.end(); it++) {
-				if (memcmp((*it)->data(), pubkey, crypto_sign_PUBLICKEYBYTES) == 0) {
+				if (memcmp((*it), pubkey, ED25519_PUBLIC_KEY_SIZE) == 0) {
 					return true;
 				}
 			}
@@ -107,7 +96,7 @@ namespace model {
 		{
 			std::lock_guard<std::recursive_mutex> _lock(mWorkMutex);
 			for (auto it = mForbiddenSignPublicKeys.begin(); it != mForbiddenSignPublicKeys.end(); it++) {
-				if (memcmp((*it)->data(), pubkey, crypto_sign_PUBLICKEYBYTES) == 0) {
+				if (memcmp((*it), pubkey, ED25519_PUBLIC_KEY_SIZE) == 0) {
 					return true;
 				}
 			}
@@ -132,10 +121,11 @@ namespace model {
 			case TRANSACTION_GROUP_FRIENDS_UPDATE: return "group friends update";
 			case TRANSACTION_REGISTER_ADDRESS: return "register address";
 			case TRANSACTION_DEFERRED_TRANSFER: return "deferred transfer";
+			case TRANSACTION_COMMUNITY_ROOT: return "community root";
 			default: return "<unknown>";
 			}
 		}
-
+#ifdef USE_MPFR
 		void TransactionBase::amountToString(std::string* strPointer, mpfr_ptr amount)
 		{
 			mpfr_exp_t exp_temp;
@@ -201,6 +191,17 @@ namespace model {
 				}
 			}
 			mpfr_free_str(str);
+		}
+#endif // USE_MPFR
+
+		void TransactionBase::validate25519PublicKey(const std::string& ed25519PublicKey, const char* name)
+		{
+			if (ed25519PublicKey.size() != ED25519_PUBLIC_KEY_SIZE) {
+				throw TransactionValidationInvalidInputException("invalid size", name, "public key");
+			}
+			if (ed25519PublicKey.find_first_not_of('\0') == std::string::npos) {
+				throw TransactionValidationInvalidInputException("empty", name, "public key");
+			}
 		}
 	}
 }

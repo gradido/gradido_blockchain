@@ -1,11 +1,12 @@
 [requires]
-poco/1.11.1
 libsodium/1.0.18
 gtest/1.10.0
-mpfr/4.1.0
 
 [options]
-
+#*:shared=False
 
 [generators]
-cmake
+CMakeDeps
+CMakeToolchain
+
+

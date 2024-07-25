@@ -30,16 +30,20 @@ namespace model {
 		
 		struct UserBalance
 		{
-			UserBalance(const std::string _pubkeyHex, const std::string _balance, Poco::DateTime _balanceDate)
+			UserBalance(const std::string _pubkeyHex, const std::string _balance, Timepoint _balanceDate)
 				: pubkeyHex(_pubkeyHex), balance(_balance), balanceDate(_balanceDate) {}
 			std::string pubkeyHex;
 			std::string balance;
-			Poco::DateTime balanceDate;
+			Timepoint balanceDate;
 		};
 
-		UserBalance calculateUserBalanceUntil(const std::string& groupAlias, const std::string& pubkeyHex, Poco::DateTime date);
+		UserBalance calculateUserBalanceUntil(
+			const std::string& groupAlias,
+			const std::string& pubkeyHex, 
+			Timepoint date
+		);
 		std::string getUserTransactionsDebugString(const std::string& groupAlias, const std::string& pubkeyHex);
-		std::list<UserBalance> calculateFinalUserBalances(const std::string& groupAlias, Poco::DateTime date);
+		std::list<UserBalance> calculateFinalUserBalances(const std::string& groupAlias, Timepoint date);
 
 		TransactionList getSortedTransactionsForUser(const std::string& groupAlias, const std::string& pubkeyHex);
 		// get all transactions from a group sorted by id
@@ -79,7 +83,7 @@ namespace model {
 	protected:
 		
 		
-		Poco::DateTime mDecayStartTime;
+		Timepoint mDecayStartTime;
 
 		// TODO: maybe we need a move constructor and to block copy constructor
 		struct GroupTransactions
@@ -96,7 +100,7 @@ namespace model {
 			//! key is pubkey hex
 			std::map<std::string, TransactionList> transactionsByPubkey;
 			//! key is transaction received date
-			std::multimap<Poco::DateTime, std::shared_ptr<model::gradido::GradidoTransaction>> transactionsByReceived;
+			std::multimap<Timepoint, std::shared_ptr<model::gradido::GradidoTransaction>> transactionsByReceived;
 			// cache of sorted transactions because traversing multimap shows on profiling as relatively slow
 			bool dirty;
 			TransactionList sortedTransactions;

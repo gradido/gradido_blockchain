@@ -1,18 +1,22 @@
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
-#include "Poco/RegularExpression.h"
+#include "sodium.h"
+#include "date/date.h"
 
 #include <stdexcept>
-#include "sodium.h"
 #include <assert.h>
+#include <regex>
+#include <iomanip>
 
 // needed for memset in linux
 #include <string.h>
 
+using namespace std::chrono;
+
 namespace DataTypeConverter
 {
-	Poco::RegularExpression g_rexExpBase64("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
+	std::regex g_rexExpBase64("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
 
 	NumberParseState strToInt(const std::string& input, int& result)
 	{
@@ -60,7 +64,7 @@ namespace DataTypeConverter
 		}
 	}
 #endif
-	NumberParseState strToInt(const std::string& input, Poco::UInt64& result)
+	NumberParseState strToInt(const std::string& input, uint64_t& result)
 	{
 		try {
 			result = stoull(input);
@@ -141,63 +145,16 @@ namespace DataTypeConverter
 		return "<unknown>";
 	}
 
-	MemoryBin* hexToBin(const std::string& hexString)
-	{
-		/*
-		int sodium_hex2bin(unsigned char * const bin, const size_t bin_maxlen,
-		const char * const hex, const size_t hex_len,
-		const char * const ignore, size_t * const bin_len,
-		const char ** const hex_end);
-
-		The sodium_hex2bin() function parses a hexadecimal string hex and converts it to a byte sequence.
-
-		hex does not have to be nul terminated, as the number of characters to parse is supplied via the hex_len parameter.
-
-		ignore is a string of characters to skip. For example, the string ": " allows columns and spaces to be present at any locations in the hexadecimal string. These characters will just be ignored. As a result, "69:FC", "69 FC", "69 : FC" and "69FC" will be valid inputs, and will produce the same output.
-
-		ignore can be set to NULL in order to disallow any non-hexadecimal character.
-
-		bin_maxlen is the maximum number of bytes to put into bin.
-
-		The parser stops when a non-hexadecimal, non-ignored character is found or when bin_maxlen bytes have been written.
-
-		If hex_end is not NULL, it will be set to the address of the first byte after the last valid parsed character.
-
-		The function returns 0 on success.
-
-		It returns -1 if more than bin_maxlen bytes would be required to store the parsed string, or if the string couldn't be fully parsed, but a valid pointer for hex_end was not provided.
-
-		It evaluates in constant time for a given length and format.
-		*/
-
-		auto mm = MemoryManager::getInstance();
-		size_t hexSize = hexString.size();
-		size_t binSize = (hexSize) / 2;
-		MemoryBin* bin = mm->getMemory(binSize);
-		memset(*bin, 0, binSize);
-
-		size_t resultBinSize = 0;
-
-		if (0 != sodium_hex2bin(*bin, binSize, hexString.data(), hexSize, nullptr, &resultBinSize, nullptr)) {
-			mm->releaseMemory(bin);
-			// TODO: throw InvalidHexException
-			return nullptr;
-		}
-		return bin;
-
-	}
-
 	std::unique_ptr<std::string> hexToBinString(const std::string& hexString)
 	{
 		assert(hexString.size());
 		if (hexString.size() % 2 != 0) {
 			throw InvalidHexException("invalid hex, size not divisible by two");
 		}
-		auto mm = MemoryManager::getInstance();
 		size_t hexSize = hexString.size();
 		size_t binSize = (hexSize) / 2;
 		std::unique_ptr<std::string> binString(new std::string(binSize, 0));
-		
+
 		size_t resultBinSize = 0;
 
 		if (0 != sodium_hex2bin((unsigned char*)binString->data(), binSize, hexString.data(), hexSize, nullptr, &resultBinSize, nullptr)) {
@@ -207,7 +164,7 @@ namespace DataTypeConverter
 		return binString;
 	}
 
-	MemoryBin* base64ToBin(const std::string& base64String, int variant /*= sodium_base64_VARIANT_ORIGINAL*/)
+	memory::Block base64ToBin(const std::string& base64String, int variant /*= sodium_base64_VARIANT_ORIGINAL*/)
 	{
 		/*
 		int sodium_base642bin(unsigned char * const bin, const size_t bin_maxlen,
@@ -217,197 +174,185 @@ namespace DataTypeConverter
 
 		sodium_base64_VARIANT_ORIGINAL
 		*/
-		auto mm = MemoryManager::getInstance();
 		size_t encodedSize = base64String.size();
 		size_t binSize = (encodedSize / 4) * 3;
-		auto bin = mm->getMemory(binSize);
-		memset(*bin, 0, binSize);
-
+		memory::Block bin(binSize);
 		size_t resultBinSize = 0;
 
-		auto convertResult = sodium_base642bin(*bin, binSize, base64String.data(), encodedSize, nullptr, &resultBinSize, nullptr, variant);
+		auto convertResult = sodium_base642bin(bin, binSize, base64String.data(), encodedSize, nullptr, &resultBinSize, nullptr, variant);
 		if (0 != convertResult) {
-			mm->releaseMemory(bin);
 			throw GradidoInvalidBase64Exception("invalid base64", base64String.data(), convertResult);
 		}
 		if (resultBinSize < binSize) {
-			auto bin_real = mm->getMemory(resultBinSize);
-			memcpy(*bin_real, *bin, resultBinSize);
-			mm->releaseMemory(bin);
+			memory::Block bin_real(resultBinSize, bin);
 			return bin_real;
 		}
 
 		return bin;
 	}
 
-	std::unique_ptr<std::string> base64ToBinString(std::unique_ptr<std::string> base64String, int variant/* = sodium_base64_VARIANT_ORIGINAL*/)
-	{
-		auto mm = MemoryManager::getInstance();
-		size_t encodedSize = base64String->size();
-		size_t binSize = (encodedSize / 4) * 3;
-		MemoryBin* bin = mm->getMemory(binSize);
-		memset(*bin, 0, binSize);
-
-		size_t resultBinSize = 0;
-		auto convertResult = sodium_base642bin(*bin, binSize, base64String->data(), encodedSize, nullptr, &resultBinSize, nullptr, variant);
-		if (0 != convertResult) {
-			mm->releaseMemory(bin);
-			throw GradidoInvalidBase64Exception("invalid base64", base64String.release()->data(), convertResult);
-		}
-		base64String->reserve(resultBinSize);
-		base64String->assign((const char*)*bin, resultBinSize);
-		mm->releaseMemory(bin);
-		return base64String;
-	}
-
-
 	std::string binToBase64(const unsigned char* data, size_t size, int variant /*= sodium_base64_VARIANT_ORIGINAL*/)
 	{
-		auto mm = MemoryManager::getInstance();
-
 		size_t encodedSize = sodium_base64_encoded_len(size, variant);
-		auto base64 = mm->getMemory(encodedSize);
-		memset(*base64, 0, encodedSize);
+		memory::Block base64(encodedSize);
 
-		if (nullptr == sodium_bin2base64(*base64, encodedSize, data, size, variant)) {
-			mm->releaseMemory(base64);
+		if (nullptr == sodium_bin2base64((char*)base64.data(), encodedSize, data, size, variant)) {
 			return "";
 		}
 
-		std::string base64String((const char*)*base64, encodedSize-1);
-		mm->releaseMemory(base64);
+		std::string base64String((const char*)base64.data(), encodedSize - 1);
 		return base64String;
 	}
 
 	std::unique_ptr<std::string> binToBase64(std::unique_ptr<std::string> proto_bin, int variant/* = sodium_base64_VARIANT_ORIGINAL*/)
 	{
-		auto mm = MemoryManager::getInstance();
-
 		// return encodedSize + 1 for trailing \0
 		size_t encodedSize = sodium_base64_encoded_len(proto_bin->size(), variant);
-		auto base64 = mm->getMemory(encodedSize);
-		memset(*base64, 0, encodedSize);
+		memory::Block base64(encodedSize);
 
-		if (nullptr == sodium_bin2base64(*base64, encodedSize, (const unsigned char*)proto_bin->data(), proto_bin->size(), variant)) {
-			mm->releaseMemory(base64);
+		if (nullptr == sodium_bin2base64((char*)base64.data(), encodedSize, (const unsigned char*)proto_bin->data(), proto_bin->size(), variant)) {
 			return nullptr;
 		}
 		// we don't need a trailing \0 because string already store the size
 		proto_bin->reserve(encodedSize-1);
-		proto_bin->assign((const char*)*base64, encodedSize-1);
-		
-		mm->releaseMemory(base64);
+		proto_bin->assign((const char*)base64.data(), encodedSize-1);
+
 		return proto_bin;
 	}
-	
-	 
-	std::string binToHex(const unsigned char* data, size_t size) 
+
+
+	std::string binToHex(const unsigned char* data, size_t size)
 	{
-		auto mm = MemoryManager::getInstance();
 		size_t hexSize = size * 2 + 1;
 		size_t binSize = size;
-		MemoryBin* hex = mm->getMemory(hexSize);
-		memset(*hex, 0, hexSize);
+		memory::Block hex(hexSize);
 
 		size_t resultBinSize = 0;
 
-		sodium_bin2hex(*hex, hexSize, data, binSize);
+		sodium_bin2hex((char*)hex.data(), hexSize, data, binSize);
 
-		std::string hexString((const char*)*hex, hexSize);
-		mm->releaseMemory(hex);
+		std::string hexString((const char*)*hex, hexSize - 1);
 		return hexString;
 	}
 
 	std::unique_ptr<std::string> binToHex(std::unique_ptr<std::string> binString)
 	{
-		auto mm = MemoryManager::getInstance();
 		size_t binSize = binString->size();
 		size_t hexSize = binSize * 2 + 1;
-		
-		MemoryBin* hex = mm->getMemory(hexSize);
-		memset(*hex, 0, hexSize);
+
+		memory::Block hex(hexSize);
 
 		size_t resultBinSize = 0;
-		sodium_bin2hex(*hex, hexSize, (const unsigned char*)binString->data(), binSize);
-		binString->assign((const char*)*hex, hexSize);
+		sodium_bin2hex((char*)hex.data(), hexSize, (const unsigned char*)binString->data(), binSize);
+		binString->assign((const char *)*hex, hexSize - 1);
 
-		mm->releaseMemory(hex);
 		return binString;
 	}
 
 	std::string pubkeyToHex(const unsigned char* pubkey)
 	{
-		auto mm = MemoryManager::getInstance();
 		size_t hexSize = crypto_sign_PUBLICKEYBYTES * 2 + 1;
 		size_t binSize = crypto_sign_PUBLICKEYBYTES;
 
-		MemoryBin* hex = mm->getMemory(hexSize);
-		memset(*hex, 0, hexSize);
+		memory::Block hex(hexSize);
 
 		size_t resultBinSize = 0;
 
-		sodium_bin2hex(*hex, hexSize, pubkey, binSize);
+		sodium_bin2hex((char*)hex.data(), hexSize, pubkey, binSize);
 
 		std::string hexString((const char*)*hex, hexSize-1);
-		mm->releaseMemory(hex);
 		return hexString;
 	}
 
-	std::string timespanToString(const Poco::Timespan pocoTimespan)
+	std::string timePointToString(const Timepoint& timepoint, const char* fmt /*= "%Y-%m-%d %H:%M:%S"*/)
 	{
-		std::string fmt;
-		if (pocoTimespan.days()) {
-			fmt = "%d days ";
+		return date::format(fmt, timepoint);
+	}
+
+	Timepoint dateTimeStringToTimePoint(const std::string& dateTimeString, const char* fmt /*= "%F %T"*/)
+	{
+		std::istringstream in{ dateTimeString };
+		date::sys_seconds tp;
+		in >> date::parse(fmt, tp);
+		return tp;
+	}
+
+	std::string timespanToString(const std::chrono::seconds timespan)
+	{
+		auto days = duration_cast<duration<int, std::ratio<86400>>>(timespan);
+		auto hours = duration_cast<std::chrono::hours>(timespan % std::chrono::duration<int, std::ratio<86400>>(1));
+		auto minutes = duration_cast<std::chrono::minutes>(timespan % std::chrono::hours(1));
+		auto seconds = duration_cast<std::chrono::seconds>(timespan % std::chrono::minutes(1));
+
+		std::ostringstream fmt;
+		if (days.count() != 0) {
+			fmt << days.count() << " days ";
 		}
-		if (pocoTimespan.hours()) {
-			fmt += "%H hours ";
-		} 
-		if (pocoTimespan.minutes()) {
-			fmt += "%M minutes ";
-		} 
-		if (pocoTimespan.seconds()) {
-			fmt += "%S seconds ";
+		if (hours.count() != 0) {
+			fmt << hours.count() << " hours ";
 		}
-		return Poco::DateTimeFormatter::format(pocoTimespan, fmt);
-	}
+		if (minutes.count() != 0) {
+			fmt << minutes.count() << " minutes ";
+		}
+		if (seconds.count() != 0) {
+			fmt << seconds.count() << " seconds ";
+		}
 
-	Poco::Timestamp convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp)
+		return fmt.str();
+	}
+	using namespace std::chrono;
+	/*
+	const Timepoint convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp)
 	{
-		// microseconds
-		google::protobuf::int64 microseconds = timestamp.seconds() * (google::protobuf::int64)10e5 + (google::protobuf::int64)(timestamp.nanos()) / (google::protobuf::int64)10e2;
-		return microseconds;
+		// Convert the seconds and nanoseconds to microseconds
+		int64_t microseconds = timestamp.seconds() * static_cast<int64_t>(1e6) + timestamp.nanos() / static_cast<int64_t>(1e3);
+		return system_clock::time_point(std::chrono::microseconds(microseconds));
 	}
-
-
-	void convertToProtoTimestamp(const Poco::Timestamp pocoTimestamp, proto::gradido::Timestamp* protoTimestamp)
+	void convertToProtoTimestamp(const Timepoint timestamp, proto::gradido::Timestamp* protoTimestamp)
 	{
-		auto microsecondsTotal = pocoTimestamp.epochMicroseconds();
-		auto secondsTotal = pocoTimestamp.epochTime();
-		protoTimestamp->set_seconds(secondsTotal);
-		protoTimestamp->set_nanos((microsecondsTotal - secondsTotal * pocoTimestamp.resolution()) * 1000);
-	}
+		// Convert time_point to duration since epoch
+		auto duration = timestamp.time_since_epoch();
 
-	Poco::Timestamp convertFromProtoTimestampSeconds(const proto::gradido::TimestampSeconds& timestampSeconds)
+		// Convert duration to seconds and nanoseconds
+		auto seconds = duration_cast<std::chrono::seconds>(duration);
+		auto nanos = duration_cast<std::chrono::nanoseconds>(duration) - duration_cast<std::chrono::nanoseconds>(seconds);
+
+		// Set the protobuf timestamp fields
+		protoTimestamp->set_seconds(seconds.count());
+		protoTimestamp->set_nanos(nanos.count());
+	}
+	Timepoint convertFromProtoTimestampSeconds(const proto::gradido::TimestampSeconds& timestampSeconds)
 	{
-		google::protobuf::int64 microseconds = timestampSeconds.seconds() * (google::protobuf::int64)10e5;
+		// Convert seconds to a duration
+		auto seconds = std::chrono::seconds{ timestampSeconds.seconds() };
 
-		return microseconds;
+		// Create a time_point from the duration
+		return system_clock::time_point{ seconds };
 	}
+	void convertToProtoTimestampSeconds(const Timepoint timestamp, proto::gradido::TimestampSeconds* protoTimestampSeconds)
+	{
+		// Get the duration since epoch
+		auto duration = timestamp.time_since_epoch();
 
+		// Convert the duration to seconds
+		auto seconds = duration_cast<std::chrono::seconds>(duration);
 
-
+		// Set the protobuf timestamp fields
+		protoTimestampSeconds->set_seconds(seconds.count());
+	}
+	//*/
 	int replaceBase64WithHex(rapidjson::Value& json, rapidjson::Document::AllocatorType& alloc)
 	{
 		int count_replacements = 0;
 
 		if (json.IsObject()) {
-			for (auto it = json.MemberBegin(); it != json.MemberEnd(); it++) 
+			for (auto it = json.MemberBegin(); it != json.MemberEnd(); it++)
 			{
 				if (it->value.IsString()) {
 					std::string name(it->name.GetString(), it->name.GetStringLength());
 					if ("amount" == name || "finalGdd" == name) continue;
 				}
-				
+
 				count_replacements += replaceBase64WithHex(it->value, alloc);
 			}
 		}
@@ -416,18 +361,14 @@ namespace DataTypeConverter
 				count_replacements += replaceBase64WithHex(*it, alloc);
 			}
 		}
-		else if (json.IsString()) 
+		else if (json.IsString())
 		{
 			std::string field_value(json.GetString(), json.GetStringLength());
-			if (!g_rexExpBase64.match(field_value)) return 0;
+			if (!std::regex_match(field_value, g_rexExpBase64)) return 0;
 
-			auto bin = base64ToBin(field_value);
+			auto bin = memory::Block::fromBase64(field_value);
 			if (!bin) return 0;
-
-			auto mm = MemoryManager::getInstance();
-
-			auto hex = binToHex(bin);
-			mm->releaseMemory(bin);
+			auto hex = bin.convertToHex();
 			json.SetString(hex.data(), hex.size() - 1, alloc);
 			return 1;
 		}
@@ -450,55 +391,6 @@ namespace DataTypeConverter
 			in.replace(pos, 1, "&nbsp;");
 		}
 		return in;
-	}
-
-	bool PocoDynVarToRapidjsonValue(const Poco::Dynamic::Var& pocoVar, rapidjson::Value& rapidjsonValue, rapidjson::Document::AllocatorType& alloc)
-	{
-		if (pocoVar.isString()) {
-			std::string str;
-			pocoVar.convert(str);
-			rapidjsonValue.SetString(str.data(), str.size(), alloc);
-			return true;
-		} 
-		else if (pocoVar.isInteger()) 
-		{
-			if (pocoVar.isSigned()) {
-				Poco::Int64 i = 0;
-				pocoVar.convert(i);
-				if (i == (Poco::Int64)((Poco::Int32)i)) {
-					rapidjsonValue.SetInt(i);
-				}
-				else {
-					rapidjsonValue.SetInt64(i);
-				}
-				return true;
-			}
-			else {
-				Poco::UInt64 i = 0;
-				pocoVar.convert(i);
-				if (i == (Poco::UInt64)((Poco::UInt32)i)) {
-					rapidjsonValue.SetUint(i);
-				}
-				else {
-					rapidjsonValue.SetUint64(i);
-				}
-				return true;
-			}
-		} 
-		else if (pocoVar.isBoolean()) {
-			bool b = false;
-			pocoVar.convert(b);
-			rapidjsonValue.SetBool(b);
-			return true;
-		}
-		else if (pocoVar.isNumeric()) {
-			double d = 0.0;
-			pocoVar.convert(d);
-			rapidjsonValue.SetDouble(d);
-			return true;
-		}
-
-		return false;
 	}
 
 	// Exceptions

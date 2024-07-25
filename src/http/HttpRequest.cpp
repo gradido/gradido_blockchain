@@ -1,78 +1,58 @@
 #include "gradido_blockchain/http/HttpRequest.h"
 #include "gradido_blockchain/http/RequestExceptions.h"
 
-#include "Poco/Net/HTTPSClientSession.h"
-#include "Poco/Net/HTTPRequest.h"
-#include "Poco/Net/HTTPResponse.h"
-#include "Poco/Exception.h"
-
 #include "gradido_blockchain/http/ServerConfig.h"
+#include "magic_enum/magic_enum.hpp"
 
+#include "furi/furi.hpp"
+
+#ifndef _DEBUG
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#endif
+#include "httplib.h"
 
 using namespace rapidjson;
 
 HttpRequest::HttpRequest(const std::string& url)
-	: mRequestUri(url)
+	: mUrl(url)
 {
 }
-HttpRequest::HttpRequest(const Poco::URI& requestUri)
-	: mRequestUri(requestUri)
-{
 
-}
 HttpRequest::HttpRequest(const std::string& host, int port, const char* path/* = nullptr*/, const char* query/* = nullptr*/)
-{
-	mRequestUri.setHost(host);
-	mRequestUri.setPort(port);
+{	
+	mUrl = host + ":" + std::to_string(port);
+
 	if (path) {
-		mRequestUri.setPath(path);
+		mUrl += "/" + std::string(path);
 	}
 	if (query) {
-		mRequestUri.setQuery(query);
+		mUrl += "?" + std::string(query);
 	}
 }
 
-Poco::SharedPtr<Poco::Net::HTTPClientSession> HttpRequest::createClientSession()
+std::string HttpRequest::GET(const std::string& _pathAndQuery)
 {
-	assert(!mRequestUri.getHost().empty() && mRequestUri.getPort());
+	auto uri = furi::uri_split::from_uri(mUrl);
+						// http | https
+	std::string host = uri.scheme.data();
+								// host:port
+	host += "://" + std::string(uri.authority.data());
+
+	httplib::Client cli(host);
+	std::string pathAndQuery;
 	
-	Poco::SharedPtr<Poco::Net::HTTPClientSession> clientSession;
-	if (mRequestUri.getPort() == 443) {
-		clientSession = new Poco::Net::HTTPSClientSession(mRequestUri.getHost(), mRequestUri.getPort(), ServerConfig::g_SSL_Client_Context);
-	}
-	else {
-		clientSession = new Poco::Net::HTTPClientSession(mRequestUri.getHost(), mRequestUri.getPort());
-	}
-	return clientSession;	
-}
-
-std::string HttpRequest::GET(const char* pathAndQuery/* = nullptr*/, const char* version/* = nullptr*/)
-{
-	auto clientSession = createClientSession();
-	
-	if (!pathAndQuery) {
-		pathAndQuery = mRequestUri.getPathAndQuery().data();
-	}
-	std::string _version = "HTTP/1.0";
-	if (version) _version = version;
-	Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, pathAndQuery, _version);
-
-	std::string responseString;
-	request.setChunkedTransferEncoding(true);
-	try {
-		std::ostream& request_stream = clientSession->sendRequest(request);
-
-		Poco::Net::HTTPResponse response;
-		std::istream& response_stream = clientSession->receiveResponse(response);
-
-		for (std::string line; std::getline(response_stream, line); ) {
-			responseString += line + "\n";
+	if (_pathAndQuery.empty()) {
+		
+		pathAndQuery = "/";
+		pathAndQuery += std::string(uri.path.data());
+		if (uri.query.size()) {
+			pathAndQuery += "?" + std::string(uri.query.data());
 		}
 	}
-	catch (Poco::Exception& ex) {
-		throw PocoNetException(ex, mRequestUri, pathAndQuery);
+	auto res = cli.Get(pathAndQuery);
+	if (res->status != 200) {
+		throw HttplibRequestException("status isn't 200 for GET", mUrl, res->status, magic_enum::enum_name(res.error()).data());
 	}
-
-	return responseString;
+	return res->body;
 }
 

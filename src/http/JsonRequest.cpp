@@ -1,14 +1,17 @@
 
 #include "gradido_blockchain/http/JsonRequest.h"
 
-#include "Poco/Net/HTTPRequest.h"
-#include "Poco/Net/HTTPResponse.h"
-#include "Poco/Exception.h"
-
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
 #include "gradido_blockchain/http/RequestExceptions.h"
+
+#include "furi/furi.hpp"
+#include "magic_enum/magic_enum.hpp"
+#ifndef _DEBUG
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#endif
+#include "httplib.h"
 
 using namespace rapidjson;
 
@@ -18,7 +21,7 @@ JsonRequest::JsonRequest(const std::string& serverHost, int serverPort)
 
 }
 
-JsonRequest::JsonRequest(const Poco::URI& requestUri)
+JsonRequest::JsonRequest(const std::string& requestUri)
 	: HttpRequest(requestUri), mJsonDocument(kObjectType)
 {
 
@@ -61,49 +64,47 @@ rapidjson::Document JsonRequest::postRequest(rapidjson::Value& payload)
 			mJsonDocument.AddMember(it->name, it->value, alloc);
 		}
 	}
-	auto responseString = POST(mRequestUri.getPath().data(), mJsonDocument);
+	auto uri = furi::uri_split::from_uri(mUrl);
+	auto responseString = POST(uri.path.data(), mJsonDocument);
 	auto responseJson = parseResponse(responseString);
 
 	return responseJson;
 }
 
 
-std::string JsonRequest::POST(const char* path, const rapidjson::Document& payload, const char* version/* = nullptr*/)
+std::string JsonRequest::POST(const char* path, const rapidjson::Document& payload)
 {
-	auto clientSession = createClientSession();
-	
-	std::string _version = "HTTP/1.0";
-	if (version) _version = version;
-	Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_POST, path, _version);
-
-	request.setChunkedTransferEncoding(true);
-	request.setContentType("application/json");
-	request.add("Accept", "*/*");
+	auto uri = furi::uri_split::from_uri(mUrl);
+	// http | https
+	std::string host = uri.scheme.data();
+	// host:port
+	host += "://" + std::string(uri.authority.data());
+	httplib::Client cli(host);
+		
+	// set Content-Type Header to application/json
+	httplib::Headers headers = {
+		{"Content-Type", "application/json"},
+		{"Accept", "*/*"}
+	};
 	if (mCookies.size()) {
-		request.setCookies(mCookies);
-	}
-
-	std::string responseString;
-	try {
-		std::ostream& request_stream = clientSession->sendRequest(request);
-
-		StringBuffer buffer;
-		Writer<StringBuffer> writer(buffer);
-		payload.Accept(writer);
-		request_stream << std::string(buffer.GetString(), buffer.GetSize());
-
-		Poco::Net::HTTPResponse response;
-		std::istream& response_stream = clientSession->receiveResponse(response);
-
-		for (std::string line; std::getline(response_stream, line); ) {
-			responseString += line + "\n";
+		std::ostringstream cookie_stream;
+		for (const auto& [key, value] : mCookies) {
+			cookie_stream << key << "=" << value << ";";
 		}
-	}
-	catch (Poco::Exception& ex) {
-		throw PocoNetException(ex, mRequestUri, path);
-	}
+		std::string cookie_header = cookie_stream.str();
+		cookie_header.pop_back(); // Entferne das letzte Semikolon
 
-	return responseString;
+		// Füge den Cookie-Header hinzu
+		headers.emplace("Cookie", cookie_header);
+	}
+	StringBuffer buffer;
+	Writer<StringBuffer> writer(buffer);
+	payload.Accept(writer);
+	auto res = cli.Post(path, headers, buffer.GetString(), buffer.GetSize(), "application/json");
+	if (res->status != 200) {
+		throw HttplibRequestException("status isn't 200 for POST", mUrl, res->status, magic_enum::enum_name(res.error()).data());
+	}
+	return res->body;
 }
 
 Document JsonRequest::parseResponse(std::string responseString)

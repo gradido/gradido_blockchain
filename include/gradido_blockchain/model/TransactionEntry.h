@@ -1,11 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_MODEL_TRANSACTION_ENTRY_H
 #define __GRADIDO_BLOCKCHAIN_MODEL_TRANSACTION_ENTRY_H
 
-#include "Poco/Types.h"
-#include "Poco/Mutex.h"
-#include "Poco/DateTime.h"
-
-#include "gradido_blockchain/model/protobufWrapper/GradidoBlock.h"
+#include "gradido_blockchain/model/protobufWrapper/ConfirmedTransaction.h"
 
 #include <vector>
 
@@ -23,15 +19,15 @@ namespace model {
 	{
 	public:
 		TransactionEntry()
-			: mTransactionNr(0) {}
+			: mTransactionNr(0), mMonth(0), mYear(0) {}
 
 		//! \brief init entry object from serialized transaction, deserialize transaction to get infos
 		TransactionEntry(std::unique_ptr<std::string> _serializedTransaction);
 
-		TransactionEntry(gradido::GradidoBlock* transaction);
+		TransactionEntry(gradido::ConfirmedTransaction* transaction);
 
 		//! \brief init entry object without indices
-		TransactionEntry(uint64_t transactionNr, uint8_t month, uint16_t year, std::string groupId);
+		TransactionEntry(uint64_t transactionNr, uint8_t month, uint16_t year, std::string communityId);
 
 		//! \brief operator for sorting by mTransactionNr in ascending order
 		bool operator < (const TransactionEntry& b) { return mTransactionNr < b.mTransactionNr; }		
@@ -40,17 +36,17 @@ namespace model {
 		inline const std::string* getSerializedTransaction() const { return mSerializedTransaction.get(); }
 		inline uint8_t getMonth() const { return mMonth; }
 		inline uint16_t getYear() const { return mYear; }
-		inline std::string getCoinGroupId() const { return mGroupId; }
 
-		static std::string getCoinGroupId(const gradido::TransactionBody* body);
+		inline std::string getCoinCommunityId() const { return mCommunityId; }
+		static std::string getCoinCommunityId(const gradido::TransactionBody* body);
 
 	protected:
 		uint64_t mTransactionNr;
 		std::unique_ptr<std::string> mSerializedTransaction;
 		uint8_t mMonth;
 		uint16_t mYear;
-		std::string mGroupId;
-		Poco::FastMutex mFastMutex;
+		std::string mCommunityId;
+		std::mutex mFastMutex;
 	};
 
 };

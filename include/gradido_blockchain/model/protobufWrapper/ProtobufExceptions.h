@@ -19,10 +19,10 @@ protected:
 class GRADIDOBLOCKCHAIN_EXPORT ProtobufJsonSerializationException : public ProtobufSerializationException
 {
 public: 
-	explicit ProtobufJsonSerializationException(const char* what, const google::protobuf::Message& message, google::protobuf::util::status_internal::Status status) noexcept;
+	explicit ProtobufJsonSerializationException(const char* what, const google::protobuf::Message& message, absl::Status status) noexcept;
 	std::string getFullString() const noexcept;
 protected:
-	google::protobuf::util::status_internal::Status mStatus;
+	absl::Status mStatus;
 };
 
 class GRADIDOBLOCKCHAIN_EXPORT ProtobufParseException : public GradidoBlockchainException

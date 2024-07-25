@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include "gradido_blockchain/export.h"
+#include "memory/Block.h"
 #include "rapidjson/error/error.h"
 
 #include "rapidjson/document.h"
@@ -84,18 +85,18 @@ protected:
 class GRADIDOBLOCKCHAIN_EXPORT GradidoUnknownEnumException : public GradidoBlockchainException
 {
 public:
-	explicit GradidoUnknownEnumException(const char* what, const char* enumName, int value) noexcept;
+	explicit GradidoUnknownEnumException(const char* what, const char* enumName, const char* enumValue) noexcept;
 	std::string getFullString() const;
 
 protected:
 	std::string mEnumName;
-	int mValue;
+	std::string mEnumValue;
 };
 
 class GRADIDOBLOCKCHAIN_EXPORT GradidoUnhandledEnum : public GradidoUnknownEnumException
 {
 public:
-	explicit GradidoUnhandledEnum(const char* what, const char* enumName, int value) noexcept
+	explicit GradidoUnhandledEnum(const char* what, const char* enumName, const char* value) noexcept
 		: GradidoUnknownEnumException(what, enumName, value) {}
 };
 
@@ -110,6 +111,15 @@ protected:
 
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT GradidoInvalidHexException : public GradidoBlockchainException
+{
+public:
+	explicit GradidoInvalidHexException(const char* what, const std::string& hex) noexcept;
+	std::string getFullString() const;
+protected:
+	std::string mHex;
+};
+
 class GRADIDOBLOCKCHAIN_EXPORT BlockchainOrderException : public GradidoBlockchainException
 {
 public:
@@ -117,34 +127,9 @@ public:
 	std::string getFullString() const;
 };
 
-namespace model {
-	namespace gradido {
-		enum TransactionType: uint8_t;
-		class TransactionBase;
-	}
-}
-
-class GRADIDOBLOCKCHAIN_EXPORT InvalidTransactionTypeOnBlockchain : public GradidoBlockchainException
-{
-public:
-	explicit InvalidTransactionTypeOnBlockchain(const char* what, model::gradido::TransactionType type) noexcept;
-
-	std::string getFullString() const;
-
-protected:
-	model::gradido::TransactionType mTransactionType;
-};
-
-class GRADIDOBLOCKCHAIN_EXPORT InvalidCrossGroupTransaction : public InvalidTransactionTypeOnBlockchain
-{
-public:
-	explicit InvalidCrossGroupTransaction(const char* what, model::gradido::TransactionType type) noexcept
-		: InvalidTransactionTypeOnBlockchain(what, type) {}
-};
-
 class GRADIDOBLOCKCHAIN_EXPORT GradidoNullPointerException : public GradidoBlockchainException
 {
-public: 
+public:
 	explicit GradidoNullPointerException(const char* what, const char* typeName, const char* functionName) noexcept;
 	std::string getFullString() const;
 
@@ -161,4 +146,47 @@ public:
 	std::string getFullString() const { return what(); }
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT InvalidSizeException : public GradidoBlockchainException
+{
+public:
+	explicit InvalidSizeException(const char* what, size_t expectedSize, size_t actualSize) noexcept
+		: GradidoBlockchainException(what), mExpectedSize(expectedSize), mActualSize(actualSize) {}
+
+	std::string getFullString() const;
+protected:
+	size_t mExpectedSize;
+	size_t mActualSize;
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT MissingSignatureException : public GradidoBlockchainException
+{
+public:
+	explicit MissingSignatureException(const char* what) noexcept
+		: GradidoBlockchainException(what) {}
+
+	std::string getFullString() const { return what(); }
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT InvalidGradidoTransaction: public GradidoBlockchainException
+{
+public:
+	explicit InvalidGradidoTransaction(const char* what, memory::ConstBlockPtr rawData) noexcept
+		: GradidoBlockchainException(what), mRawData(rawData) {}
+
+		std::string getFullString() const;
+protected:
+	memory::ConstBlockPtr mRawData;
+
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT GradidoAlreadyExist : public GradidoBlockchainException
+{
+public:
+	explicit GradidoAlreadyExist(const char* what) noexcept
+		: GradidoBlockchainException(what) {}
+
+	std::string getFullString() const {
+		return what();
+	}
+};
 #endif //__GRADIDO_BLOCKCHAIN_EXCEPTION_H

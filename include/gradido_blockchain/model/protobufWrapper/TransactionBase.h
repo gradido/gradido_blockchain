@@ -11,23 +11,27 @@
 
 #pragma warning(disable:4800)
 
-#include "proto/gradido/BasicTypes.pb.h"
-#include "gradido_blockchain/MemoryManager.h"
+#include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/lib/MultithreadContainer.h"
 #include "gradido_blockchain/export.h"
+#include "gradido_blockchain/types.h"
+#include "gradido_blockchain/data/Protocol.h"
+#ifdef USE_MPFR
+#include "mpfr.h"
+#endif // USE_MPFR
 
 /*!
 	@file 
 	contain enum definitions
  */
-
+namespace v3_3_data = gradido::data;
 namespace model {
 	class IGradidoBlockchain;
 
 	namespace gradido {
 
 		class GradidoTransaction;
-		class GradidoBlock;
+		class ConfirmedTransaction;
 
 		/*!
 		 *  \addtogroup enums
@@ -49,7 +53,9 @@ namespace model {
 			//! Register new address or sub address to group or move addres to another group
 			TRANSACTION_REGISTER_ADDRESS, 
 			//! Special Transfer Transaction with timeout used for Gradido Link
-			TRANSACTION_DEFERRED_TRANSFER 			
+			TRANSACTION_DEFERRED_TRANSFER,
+			//! First Transaction in Blockchain
+			TRANSACTION_COMMUNITY_ROOT
 		};
 	
 
@@ -89,15 +95,15 @@ namespace model {
 			virtual bool validate(
 				TransactionValidationLevel level = TRANSACTION_VALIDATION_SINGLE,
 				IGradidoBlockchain* blockchain = nullptr,
-				const GradidoBlock* parentGradidoBlock = nullptr
+				const ConfirmedTransaction* parentGradidoBlock = nullptr
 				) const = 0;
 			//! \return caller need to clean up memory bins
-			virtual std::vector<MemoryBin*> getInvolvedAddresses() const = 0;
-			virtual bool isInvolved(const std::string pubkeyString) const = 0;
+			virtual std::vector<std::string_view> getInvolvedAddresses() const = 0;
+			virtual bool isInvolved(const std::string& pubkeyString) const = 0;
 			virtual bool isBelongToUs(const TransactionBase* pairingTransaction) const = 0;
 	
 			//! \return true if all required signatures are found in signature pairs
-			bool checkRequiredSignatures(const proto::gradido::SignatureMap* sig_map) const;
+			bool checkRequiredSignatures(const v3_3_data::SignatureMap* sig_map) const;
 			//! \param pubkey pointer must point to valid unsigned char[KeyPairEd25519::getPublicKeySize()] array
 			bool isPublicKeyRequired(const unsigned char* pubkey) const;
 			//! \param pubkey pointer must point to valid unsigned char[KeyPairEd25519::getPublicKeySize()] array
@@ -108,14 +114,20 @@ namespace model {
 
 			static bool isValidGroupAlias(const std::string& groupAlias);
 			static const char* getTransactionTypeString(TransactionType type);
+#ifdef USE_MPFR
 			static void amountToString(std::string* strPointer, mpfr_ptr amount);
+#endif // USE_MPFR
 			virtual std::string toDebugString() const { return ""; }
+
+			//! throw if string has wrong size
+			//! throw if string is filled with zeros
+			static void validate25519PublicKey(const std::string& ed25519PublicKey, const char* name);
 
 		protected:
 			uint32_t mMinSignatureCount;
 			bool mIsPrepared;
-			std::vector<MemoryBin*> mRequiredSignPublicKeys;
-			std::vector<MemoryBin*> mForbiddenSignPublicKeys;
+			std::vector<std::string_view> mRequiredSignPublicKeys;
+			std::vector<std::string_view> mForbiddenSignPublicKeys;
 
 		};
 	}

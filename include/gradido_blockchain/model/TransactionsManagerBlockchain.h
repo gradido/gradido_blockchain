@@ -16,24 +16,34 @@ namespace model {
 		~TransactionsManagerBlockchain();
 
 		//! \param startTransactionNr only used on ascending order
-		std::vector<Poco::SharedPtr<TransactionEntry>> searchTransactions(
+		std::vector<std::shared_ptr<TransactionEntry>> searchTransactions(
 			uint64_t startTransactionNr = 0,
 			std::function<FilterResult(model::TransactionEntry*)> filter = nullptr,
 			SearchDirection order = SearchDirection::ASC
 		);
-		Poco::SharedPtr<gradido::GradidoBlock> getLastTransaction(std::function<bool(const gradido::GradidoBlock*)> filter = nullptr);
-		mpfr_ptr calculateAddressBalance(const std::string& address, const std::string& groupId, Poco::DateTime date);
+		std::shared_ptr<gradido::ConfirmedTransaction> getLastTransaction(std::function<bool(const gradido::ConfirmedTransaction*)> filter = nullptr);
+		mpfr_ptr calculateAddressBalance(
+			const std::string& address,
+			const std::string& groupId,
+			Timepoint date,
+			uint64_t ownTransactionNr
+		);
 		proto::gradido::RegisterAddress_AddressType getAddressType(const std::string& address);
-		Poco::SharedPtr<TransactionEntry> getTransactionForId(uint64_t transactionId);
-		Poco::SharedPtr<TransactionEntry> findLastTransactionForAddress(const std::string& address, const std::string& groupId = "");
-		Poco::SharedPtr<TransactionEntry> findByMessageId(const MemoryBin* messageId, bool cachedOnly = true);
-		std::vector<Poco::SharedPtr<TransactionEntry>> findTransactions(const std::string& address);
-		std::vector<Poco::SharedPtr<model::TransactionEntry>> findTransactions(const std::string& address, int month, int year);
-		void calculateCreationSum(const std::string& address, int month, int year, Poco::DateTime received, mpfr_ptr sum);
-		const std::string& getGroupId() const;
+		std::shared_ptr<TransactionEntry> getTransactionForId(uint64_t transactionId);
+		std::shared_ptr<TransactionEntry> findLastTransactionForAddress(const std::string& address, const std::string& groupId = "");
+		std::shared_ptr<TransactionEntry> findByMessageId(const MemoryBin* messageId, bool cachedOnly = true);
+		std::vector<std::shared_ptr<TransactionEntry>> findTransactions(const std::string& address);
+		std::vector<std::shared_ptr<model::TransactionEntry>> findTransactions(const std::string& address, int month, int year);
+		void calculateCreationSum(
+			const std::string& address,
+			int month, int year,
+			Timepoint received,
+			mpfr_ptr sum
+		);
+		const std::string& getCommunityId() const;
 	protected:
 
-		static Poco::SharedPtr<model::gradido::GradidoBlock> createBlockFromTransaction(
+		static std::shared_ptr<model::gradido::ConfirmedTransaction> createBlockFromTransaction(
 			std::shared_ptr<model::gradido::GradidoTransaction> transaction, uint64_t transactionNr
 		);
 

@@ -1,10 +1,8 @@
 #ifndef __GRADIDO_LOGIN_SERVER_CRYPTO_SECRET_KEY_CRYPTOGRAPHY_H
 #define __GRADIDO_LOGIN_SERVER_CRYPTO_SECRET_KEY_CRYPTOGRAPHY_H
 
-
-#include "gradido_blockchain/MemoryManager.h"
-
-
+#include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain/memory/Block.h"
 #include <shared_mutex>
 #include <vector>
 #include <mutex>
@@ -26,16 +24,6 @@ typedef uint64_t KeyHashed;
 class GRADIDOBLOCKCHAIN_EXPORT SecretKeyCryptography
 {
 public:
-
-	enum ResultType {
-		AUTH_ENCRYPT_OK,
-		AUTH_DECRYPT_OK,
-		AUTH_CREATE_ENCRYPTION_KEY_SUCCEED,
-		AUTH_CREATE_ENCRYPTION_KEY_FAILED,
-		AUTH_NO_KEY,
-		AUTH_ENCRYPT_MESSAGE_FAILED,
-		AUTH_DECRYPT_MESSAGE_FAILED
-	};
 
 	//! \brief init with default algorithms parameter
 	SecretKeyCryptography();
@@ -66,23 +54,20 @@ public:
 	//! 
 	//! should be call from task, running in g_CryptoCPUScheduler, lock shared mutex for writing
 	//! \param salt_parameter for example email 
-	//! \return AUTH_CREATE_ENCRYPTION_KEY_FAILED call strerror(errno) for more details 
-	ResultType createKey(const std::string& salt_parameter, const std::string& passwd);
+	void createKey(const std::string& salt_parameter, const std::string& passwd);
 
-	ResultType encrypt(const MemoryBin* message, MemoryBin** encryptedMessage) const;
+	memory::Block encrypt(const memory::Block& message) const;
 
-	inline ResultType decrypt(const MemoryBin* encryptedMessage, MemoryBin** message) const {
-		return decrypt(encryptedMessage->data(), encryptedMessage->size(), message);
+	memory::Block decrypt(const memory::Block& encryptedMessage) const {
+		return decrypt(encryptedMessage, encryptedMessage.size());
 	}
 	//! \brief same as the other decrypt only in other format
 	//! \param encryptedMessage format from Poco Binary Data from DB, like returned from model/table/user for encrypted private key
-	inline ResultType decrypt(const std::vector<unsigned char>& encryptedMessage, MemoryBin** message) const {
-		return decrypt(encryptedMessage.data(), encryptedMessage.size(), message);
+	memory::Block decrypt(const std::vector<unsigned char>& encryptedMessage) const {
+		return decrypt(encryptedMessage.data(), encryptedMessage.size());
 	}
 	//! \brief raw decrypt function, actual implementation
-	ResultType decrypt(const unsigned char* encryptedMessage, size_t encryptedMessageSize, MemoryBin** message) const;
-
-	static const char* getErrorMessage(ResultType type);
+	memory::Block decrypt(const unsigned char* encryptedMessage, size_t encryptedMessageSize) const;
 
 protected:
 	// algorithms parameter
@@ -91,17 +76,53 @@ protected:
 	int				   mAlgo;
 
 	// encryption key and hash
-	MemoryBin* mEncryptionKey;
+	memory::BlockPtr mEncryptionKey;
 	KeyHashed  mEncryptionKeyHash;
 
 	mutable std::shared_mutex mWorkingMutex;
 };
 
-class GRADIDOBLOCKCHAIN_EXPORT DecryptionFailedException : public GradidoBlockchainException
+class GRADIDOBLOCKCHAIN_EXPORT SecretKeyCryptographyException : public GradidoBlockchainException
 {
-public: 
-	explicit DecryptionFailedException(const char* what) noexcept: GradidoBlockchainException(what) {}
+public:
+	explicit SecretKeyCryptographyException(const char* what) noexcept 
+		: GradidoBlockchainException(what) {}
 	std::string getFullString() const { return what(); }
 };
+
+class GRADIDOBLOCKCHAIN_EXPORT MissingEncryptionException : public SecretKeyCryptographyException
+{
+public:
+	explicit MissingEncryptionException(const char* what) noexcept 
+		: SecretKeyCryptographyException(what) {}
+};
+
+// don't reveal message with should be encrypted on error
+class GRADIDOBLOCKCHAIN_EXPORT EncryptionException : public SecretKeyCryptographyException
+{
+public:
+	explicit EncryptionException(const char* what) noexcept 
+		: SecretKeyCryptographyException(what) {}
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT DecryptionException : public SecretKeyCryptographyException
+{
+public:
+	explicit DecryptionException(const char* what, memory::ConstBlockPtr message) noexcept;
+	std::string getFullString() const;
+
+protected:
+	memory::ConstBlockPtr mMessage;
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT EncryptionKeyException : public SecretKeyCryptographyException
+{
+public:
+	explicit EncryptionKeyException(const char* what) noexcept;
+	std::string getFullString() const;
+protected:
+	std::string mDetails;
+};
+
 
 #endif //__GRADIDO_LOGIN_SERVER_CRYPTO_SECRET_KEY_CRYPTOGRAPHY_H

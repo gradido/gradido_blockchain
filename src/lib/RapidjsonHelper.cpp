@@ -1,8 +1,9 @@
 #include "gradido_blockchain/lib/RapidjsonHelper.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
-#include "Poco/DateTimeParser.h"
-#include "Poco/Timezone.h"
+#include "magic_enum/magic_enum.hpp"
+
+using namespace magic_enum;
 
 using namespace rapidjson;
 
@@ -17,7 +18,7 @@ namespace rapidjson_helper
 		case MemberType::NUMBER: return "number";
 		case MemberType::DATETIME: return "date time";
 		case MemberType::ARRAY: return "array";
-		default: throw GradidoUnknownEnumException("unknown enum value in model::graphql::Base", "MemberType", static_cast<int>(type));
+		default: throw GradidoUnknownEnumException("unknown enum value in model::graphql::Base", "MemberType", enum_name(type).data());
 		}
 	}
 
@@ -39,7 +40,7 @@ namespace rapidjson_helper
 
 		bool wrongType = false;
 
-		int timezoneDifferential = Poco::Timezone::tzd();
+		// int timezoneDifferential = Poco::Timezone::tzd();
 
 		switch (type) {
 		case MemberType::STRING:
@@ -47,7 +48,6 @@ namespace rapidjson_helper
 			break;
 		case MemberType::DATETIME:
 			if (!obj[memberName].IsString()) wrongType = true;
-			Poco::DateTimeParser::parse(obj[memberName].GetString(), timezoneDifferential);
 			break;
 		case MemberType::INTEGER:
 			if (!obj[memberName].IsInt()) wrongType = true;
@@ -61,7 +61,7 @@ namespace rapidjson_helper
 		case MemberType::ARRAY:
 			if (!obj[memberName].IsArray()) wrongType = true;
 			break;
-		default: throw GradidoUnknownEnumException("unknown enum value in model::graphql::Base", "MemberType", static_cast<int>(type));
+		default: throw GradidoUnknownEnumException("unknown enum value in model::graphql::Base", "MemberType", enum_name(type).data());
 		}
 
 		if (wrongType) {

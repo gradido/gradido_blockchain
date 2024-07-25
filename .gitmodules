@@ -12,7 +12,7 @@
 	url = https://github.com/Tencent/rapidjson.git
 [submodule "gradido_protocol"]
 	path = gradido_protocol
-	url = https://github.com/gradido/gradido_protocol.git
+	url = git@github.com:gradido/gradido_protocol.git
 [submodule "doc/doxygen-awesome-css"]
 	path = doc/doxygen_awesome_css
 	url = https://github.com/jothepro/doxygen-awesome-css.git
@@ -22,3 +22,24 @@
 [submodule "dependencies/ed25519_bip32_c_interface"]
 	path = dependencies/ed25519_bip32_c_interface
 	url = https://github.com/gradido/ed25519_bip32_c_interface.git
+[submodule "dependencies/date"]
+        path = dependencies/date
+        url = https://github.com/HowardHinnant/date.git
+[submodule "dependencies/cpp-httplib"]
+	path = dependencies/cpp-httplib
+	url = https://github.com/yhirose/cpp-httplib.git
+[submodule "dependencies/furi"]
+	path = dependencies/furi
+	url = https://github.com/iboB/furi.git
+[submodule "dependencies/magic_enum"]
+	path = dependencies/magic_enum
+	url = https://github.com/Neargye/magic_enum.git
+[submodule "dependencies/loguru"]
+	path = dependencies/loguru
+	url = https://github.com/emilk/loguru.git
+[submodule "dependencies/protopuf"]
+	path = dependencies/protopuf
+	url = https://github.com/PragmaTwice/protopuf
+[submodule "dependencies/Memory-Pool"]
+	path = dependencies/Memory-Pool
+	url = https://github.com/LLLida/Memory-Pool.git

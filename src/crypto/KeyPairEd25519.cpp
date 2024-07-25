@@ -6,59 +6,34 @@
 #include "ed25519_bip32_c_interface.h"
 
 
-KeyPairEd25519::KeyPairEd25519(MemoryBin* privateKey, MemoryBin* chainCode/* = nullptr*/)
-	: mSodiumSecret(privateKey), mChainCode(chainCode)
+KeyPairEd25519::KeyPairEd25519(memory::ConstBlockPtr publicKey, memory::ConstBlockPtr privateKey/* = nullptr*/, memory::ConstBlockPtr chainCode/* = nullptr*/)
+	:  mSodiumSecret(privateKey), mChainCode(chainCode), mSodiumPublic(publicKey)
 {
-	//memcpy(mSodiumPublic, publicKey, crypto_sign_PUBLICKEYBYTES);
-	// read pubkey from private key, so we are sure it is the correct pubkey for the private key
-
-	if(!privateKey || privateKey->size() != crypto_sign_SECRETKEYBYTES) {
-		throw Ed25519InvalidKeyException("invalid private key", privateKey, crypto_sign_SECRETKEYBYTES);
+	checkKeySizes();
+	if (privateKey) {
+		auto calculatedPublicKey = calculatePublicKey(privateKey);
+		if (!calculatedPublicKey.isTheSame(*publicKey)) {
+			throw ED25519InvalidPrivateKeyForPublicKey("public key don't belong to private key", publicKey->convertToHex());
+		}
 	}
-	crypto_sign_ed25519_sk_to_pk(mSodiumPublic, *privateKey);
-
 }
 
-KeyPairEd25519::KeyPairEd25519(const unsigned char* publicKey, MemoryBin* chainCode/* = nullptr*/)
-	: mSodiumSecret(nullptr), mChainCode(chainCode)
-{
-	memcpy(mSodiumPublic, publicKey, crypto_sign_PUBLICKEYBYTES);
-}
-
-KeyPairEd25519::KeyPairEd25519()
-	: mSodiumSecret(nullptr), mChainCode(nullptr)
-{
-	memset(mSodiumPublic, 0, crypto_sign_PUBLICKEYBYTES);
-}
 
 KeyPairEd25519::~KeyPairEd25519()
 {
-	auto mm = MemoryManager::getInstance();
-	if (mSodiumSecret) {
-		mm->releaseMemory(mSodiumSecret);
-		mSodiumSecret = nullptr;
-	}
-	if (mChainCode) {
-		mm->releaseMemory(mChainCode);
-		mChainCode = nullptr;
-	}
 }
 
-std::unique_ptr<KeyPairEd25519> KeyPairEd25519::create(const std::shared_ptr<Passphrase> passphrase)
+std::shared_ptr<KeyPairEd25519> KeyPairEd25519::create(const std::shared_ptr<Passphrase> passphrase)
 {
 	//auto er = ErrorManager::getInstance();
-	auto mm = MemoryManager::getInstance();
 	assert(passphrase);
 	// libsodium doc: https://libsodium.gitbook.io/doc/advanced/hmac-sha2
 	// https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 	
 	auto word_indices = passphrase->getWordIndices();
 	
-	if (!word_indices || (!word_indices[0] && !word_indices[1] && !word_indices[2] && !word_indices[3])) {
-		return nullptr;
-	}
+	assert(word_indices[0] && word_indices[1] && word_indices[2] && word_indices[3]);
 	std::string clear_passphrase = passphrase->createClearPassphrase();
-	
 
 	unsigned char hash[crypto_hash_sha512_BYTES];
 
@@ -67,8 +42,8 @@ std::unique_ptr<KeyPairEd25519> KeyPairEd25519::create(const std::shared_ptr<Pas
 
 	// ****  convert word indices into uint64  ****
 	// To prevent breaking existing passphrase-hash combinations word indices will be put into 64 Bit Variable to mimic first implementation of algorithms
-	auto valueSize = sizeof(Poco::UInt64);
-	Poco::UInt64 value = 0;
+	auto valueSize = sizeof(uint64_t);
+	uint64_t value = 0;
 	for (int i = 0; i < PHRASE_WORD_COUNT; i++) {
 		value = word_indices[i];
 		crypto_hash_sha512_update(&state, (const unsigned char*)&value, valueSize);
@@ -84,7 +59,7 @@ std::unique_ptr<KeyPairEd25519> KeyPairEd25519::create(const std::shared_ptr<Pas
 	std::string word_indicesHex = getHex(*word_indices, word_indices->size());
 	printf("word_indices: \n%s\n", word_indicesHex.data());
 	printf("word_indices: \n");
-	Poco::UInt64* word_indices_p = (Poco::UInt64*)(word_indices->data());
+	uint64_t* word_indices_p = (uint64_t*)(word_indices->data());
 	for (int i = 0; i < PHRASE_WORD_COUNT; i++) {
 	if (i > 0) printf(" ");
 	printf("%4hu", word_indices_p[i]);
@@ -96,20 +71,14 @@ std::unique_ptr<KeyPairEd25519> KeyPairEd25519::create(const std::shared_ptr<Pas
 	printf("passphrase bin: \n%s\n\n", hex_clearPassphrase.data());
 
 	//*/
+	auto chainCode = std::make_shared<memory::Block>(ED25519_CHAIN_CODE_SIZE);
+	auto publicKey = std::make_shared<memory::Block>(ED25519_PUBLIC_KEY_SIZE);
+	auto privateKey = std::make_shared<memory::Block>(ED25519_PRIVATE_KEY_SIZE);
+	crypto_sign_seed_keypair(*publicKey, *privateKey, hash);
 
-	std::unique_ptr<KeyPairEd25519> key_pair(new KeyPairEd25519);
-	if (!key_pair->mSodiumSecret) {
-		key_pair->mSodiumSecret = mm->getMemory(crypto_sign_SECRETKEYBYTES);
-	}
-	if (!key_pair->mChainCode) {
-		key_pair->mChainCode = mm->getMemory(32);
-	}
-
-	crypto_sign_seed_keypair(key_pair->mSodiumPublic, *key_pair->mSodiumSecret, hash);
-
-	memcpy(key_pair->mChainCode->data(), &hash[32], 32);
+	memcpy(*chainCode, &hash[32], 32);
 	
-	return std::move(key_pair);
+	return std::make_shared<KeyPairEd25519>(publicKey, privateKey, chainCode);
 
 	// print hex for all keys for debugging
 	/*	printf("// ********** Keys ************* //\n");
@@ -121,88 +90,92 @@ std::unique_ptr<KeyPairEd25519> KeyPairEd25519::create(const std::shared_ptr<Pas
 	// using 
 }
 
+memory::Block KeyPairEd25519::calculatePublicKey(memory::ConstBlockPtr privateKey)
+{
+	memory::Block pubkey(ED25519_PUBLIC_KEY_SIZE);
+	crypto_sign_ed25519_sk_to_pk(pubkey.data(), *privateKey);
+	return pubkey;
+}
 
-DerivationType KeyPairEd25519::getDerivationType(Poco::UInt32 index)
+Ed25519DerivationType KeyPairEd25519::getDerivationType(uint32_t index)
 {
 	if (index >= 0x80000000) {
-		return DERIVATION_HARD;
+		return Ed25519DerivationType::HARD;
 	}
 	else {
-		return DERIVATION_SOFT;
+		return Ed25519DerivationType::SOFT;
 	}
 }
 
-KeyPairEd25519Ex* KeyPairEd25519::deriveChild(Poco::UInt32 index)
+std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::deriveChild(uint32_t index)
 {
-	auto mm = MemoryManager::getInstance();
-	auto temp_key = mm->getMemory(32);
-	auto temp_chain_code = mm->getMemory(32);
-
-	KeyPairEd25519Ex* result = nullptr;
-
+	if (!mChainCode) {
+		throw Ed25519DeriveException("derivation without chain code not possible", mSodiumPublic);
+	}
+	auto chainCode = std::make_shared<memory::Block>(ED25519_CHAIN_CODE_SIZE);
+	
 	if (hasPrivateKey()) {
-		derivePrivateKey(mSodiumPublic, *mChainCode, index, *temp_key, *temp_chain_code);
-		result = new KeyPairEd25519Ex(temp_key, temp_chain_code, index);
+		auto privateKey = std::make_shared<memory::Block>(ED25519_PRIVATE_KEY_SIZE);
+		derivePrivateKey(*mSodiumPublic, *mChainCode, index, *privateKey, *chainCode);
+		auto publicKey = std::make_shared<memory::Block>(calculatePublicKey(privateKey));
+		return std::make_shared<KeyPairEd25519Ex>(publicKey, privateKey, chainCode, index);
 	}
 	else {
-		if (derivePublicKey(*mSodiumSecret, *mChainCode, index, *temp_key, *temp_chain_code)) {
-			result = new KeyPairEd25519Ex(*temp_key, temp_chain_code, index);
+		auto publicKey = std::make_shared<memory::Block>(ED25519_PUBLIC_KEY_SIZE);
+		if (derivePublicKey(*mSodiumSecret, *mChainCode, index, *publicKey, *chainCode)) {
+			return std::make_shared<KeyPairEd25519Ex>(publicKey, nullptr, chainCode, index);
 		}
 		else {
-			if (getDerivationType(index) == DERIVATION_HARD) {
-				throw Ed25519DeriveException("hard derivation with public key not possible", getPublicKeyCopy());
+			if (getDerivationType(index) == Ed25519DerivationType::HARD) {
+				throw Ed25519DeriveException("hard derivation with public key not possible", mSodiumPublic);
 			}
 			else {
-				throw Ed25519DeriveException("derivePublicKey failed", getPublicKeyCopy());
+				throw Ed25519DeriveException("derivePublicKey failed", mSodiumPublic);
 			}
 		}
-		if (!result) {
-			mm->releaseMemory(temp_chain_code);
-		}
-		mm->releaseMemory(temp_key);
 	}
-	return result;
 }
 
-MemoryBin* KeyPairEd25519::sign(const unsigned char* message, size_t messageSize) const
+memory::Block KeyPairEd25519::sign(const unsigned char* message, size_t messageSize) const
 {
-	
-	if (!message || !messageSize) return nullptr;
-	if (!mSodiumSecret) return nullptr;
-	auto mm = MemoryManager::getInstance();
+	assert(message && messageSize);
+	if (!mSodiumSecret) {
+		throw Ed25519SignException("missing secret key for sign", mSodiumPublic, std::string((const char*)message, messageSize));
+	}
 
-	const static char functionName[] = "KeyPairEd25519::sign";
-
-	auto signBinBuffer = mm->getMemory(crypto_sign_BYTES);
+	memory::Block signature(ED25519_SIGNATURE_SIZE);
 	unsigned long long actualSignLength = 0;
 
 	// TODO: Add Exceptions
-	if (crypto_sign_detached(*signBinBuffer, &actualSignLength, message, messageSize, *mSodiumSecret)) {
-		mm->releaseMemory(signBinBuffer);
+	if (crypto_sign_detached(signature, &actualSignLength, message, messageSize, *mSodiumSecret)) {
 		throw Ed25519SignException("cannot sign", getPublicKey(), std::string((const char*)message, messageSize));
 	}
-
-	if (crypto_sign_verify_detached(*signBinBuffer, message, messageSize, mSodiumPublic) != 0) {
-		mm->releaseMemory(signBinBuffer);
+#ifdef NDEBUG 
+	if (crypto_sign_verify_detached(signature, message, messageSize, *mSodiumPublic) != 0) {
+		//
+		auto calculatedPublicKey = calculatePublicKey(mSodiumSecret);
+		if (!calculatedPublicKey.isTheSame(*mSodiumPublic)) {
+			throw ED25519InvalidPrivateKeyForPublicKey("sign verify failed, public key don't belong to private key", mSodiumPublic->convertToHex());
+		}
 		throw Ed25519SignException("sign verify failed", getPublicKey(), std::string((const char*)message, messageSize));
 	}
+#endif
 
-	return signBinBuffer;
-
+	return signature;
 }
 
 bool KeyPairEd25519::verify(const std::string& message, const std::string& signature) const
 {
 	if (message == "" || signature == "") return false;
-	if (crypto_sign_verify_detached((const unsigned char*)signature.data(), (const unsigned char*)message.data(), message.size(), mSodiumPublic) != 0) {
+	if (crypto_sign_verify_detached((const unsigned char*)signature.data(), (const unsigned char*)message.data(), message.size(), *mSodiumPublic) != 0) {
 		return false;
 	}
 	return true;
 }
-bool KeyPairEd25519::verify(const MemoryBin* message, const MemoryBin* signature) const
+bool KeyPairEd25519::verify(const memory::Block& message, const memory::Block& signature) const
 {
 	if(!message || !signature) return false;
-	if(crypto_sign_verify_detached(signature->data(), message->data(), message->size(), mSodiumPublic) != 0) {
+	if(crypto_sign_verify_detached(signature, message, message.size(), *mSodiumPublic) != 0) {
 		return false;
 	}
 	return true;
@@ -215,53 +188,48 @@ bool KeyPairEd25519::is3rdHighestBitClear() const
 	return is_3rd_highest_bit_clear(*mSodiumSecret, *mChainCode);
 }
 
-MemoryBin* KeyPairEd25519::getPublicKeyCopy() const
+memory::Block KeyPairEd25519::getCryptedPrivKey(const std::shared_ptr<SecretKeyCryptography> password) const
 {
-	auto pubkey = MemoryManager::getInstance()->getMemory(getPublicKeySize());
-	pubkey->copyFrom(mSodiumPublic);
-	return pubkey;
+	assert(password);
+	if (!mSodiumSecret) {
+		throw Ed25519MissingKeyException("missing secret key");
+	}
+	return password->encrypt(*mSodiumSecret);
 }
 
-MemoryBin* KeyPairEd25519::getCryptedPrivKey(const std::shared_ptr<SecretKeyCryptography> password) const
+void KeyPairEd25519::checkKeySizes()
 {
-	if (!password) return nullptr;
-	if (!mSodiumSecret) return nullptr;
-
-	MemoryBin* encryptedKey = nullptr;
-	if (SecretKeyCryptography::AUTH_ENCRYPT_OK == password->encrypt(mSodiumSecret, &encryptedKey)) {
-		return encryptedKey;
+	if (mSodiumSecret && mSodiumSecret->size() != ED25519_PRIVATE_KEY_SIZE) {
+		throw Ed25519InvalidKeyException("invalid private key size", mSodiumSecret, ED25519_PRIVATE_KEY_SIZE);
 	}
-	else {
-		return nullptr;
+	if (!mSodiumPublic || mSodiumPublic->size() != ED25519_PUBLIC_KEY_SIZE) {
+		throw Ed25519InvalidKeyException("invalid public key size or missing public key", mSodiumPublic, ED25519_PUBLIC_KEY_SIZE);
 	}
-
+	if (mChainCode && mChainCode->size() != ED25519_CHAIN_CODE_SIZE) {
+		throw Ed25519InvalidKeyException("invalid chain code size", mChainCode, ED25519_CHAIN_CODE_SIZE);
+	}
 }
 
 // ********************** Exceptions *************************************
-Ed25519SignException::Ed25519SignException(const char* what, MemoryBin* pubkey, const std::string& message) noexcept
+Ed25519SignException::Ed25519SignException(const char* what, memory::ConstBlockPtr pubkey, const std::string& message) noexcept
 	: GradidoBlockchainException(what), mPubkey(pubkey), mMessage(message)
 {
 
 }
 
 Ed25519SignException::Ed25519SignException(const char* what, const unsigned char* pubkey, const std::string& message) noexcept
-	: GradidoBlockchainException(what), mMessage(message)
+	: GradidoBlockchainException(what), mPubkey(std::make_shared<memory::Block>(ED25519_PUBLIC_KEY_SIZE, pubkey)), mMessage(message)
 {
-	mPubkey = MemoryManager::getInstance()->getMemory(KeyPairEd25519::getPublicKeySize());
-	mPubkey->copyFrom(pubkey);
 }
 
 Ed25519SignException::~Ed25519SignException()
 {
-	if (mPubkey) {
-		MemoryManager::getInstance()->releaseMemory(mPubkey);
-	}
 }
 
 std::string Ed25519SignException::getFullString() const
 {
 	std::string mResult(what());
-	mResult += ", with pubkey: " + DataTypeConverter::binToHex(mPubkey);
+	mResult += ", with pubkey: " + mPubkey->convertToHex();
 	mResult += ", with message: " + DataTypeConverter::binToHex(mMessage);
 	return mResult;
 }
@@ -295,7 +263,7 @@ rapidjson::Value Ed25519VerifyException::getDetails(rapidjson::Document::Allocat
 
 // -----------------------------------------------------------------------------------------
 
-Ed25519DeriveException::Ed25519DeriveException(const char* what, MemoryBin* pubkey) noexcept
+Ed25519DeriveException::Ed25519DeriveException(const char* what, memory::ConstBlockPtr pubkey) noexcept
 	: GradidoBlockchainException(what), mPubkey(pubkey)
 {
 
@@ -303,21 +271,17 @@ Ed25519DeriveException::Ed25519DeriveException(const char* what, MemoryBin* pubk
 
 Ed25519DeriveException::~Ed25519DeriveException()
 {
-	if (mPubkey) {
-		MemoryManager::getInstance()->releaseMemory(mPubkey);
-		mPubkey = nullptr;
-	}
 }
 
 std::string Ed25519DeriveException::getFullString() const
 {
 	std::string mResult(what());
-	mResult += ", with pubkey: " + DataTypeConverter::binToHex(mPubkey);
+	mResult += ", with pubkey: " + mPubkey->convertToHex();
 	return mResult;
 }
 
 // ------------------------------------------------------------------------------------------------
-Ed25519InvalidKeyException::Ed25519InvalidKeyException(const char* what, MemoryBin* invalidKey, size_t expectedKeySize /* = 0 */) noexcept
+Ed25519InvalidKeyException::Ed25519InvalidKeyException(const char* what, memory::ConstBlockPtr invalidKey, size_t expectedKeySize /* = 0 */) noexcept
 : GradidoBlockchainException(what), mKey(invalidKey), mExpectedKeySize(expectedKeySize)
 {
 
@@ -325,17 +289,13 @@ Ed25519InvalidKeyException::Ed25519InvalidKeyException(const char* what, MemoryB
 
 Ed25519InvalidKeyException::~Ed25519InvalidKeyException()
 {
-	if(mKey) {
-		MemoryManager::getInstance()->releaseMemory(mKey);
-		mKey = nullptr;
-	}
 }
 
 std::string Ed25519InvalidKeyException::getFullString() const
 {
 	std::string mResult(what());
 	if(mKey && mKey->size() > 0) {
-	 	mResult += ", with pubkey: " + DataTypeConverter::binToHex(mKey);
+	 	mResult += ", with pubkey: " + mKey->convertToHex();
 	}
 	if(mExpectedKeySize) {
 		mResult += ", expected key size: " + std::to_string(mExpectedKeySize);

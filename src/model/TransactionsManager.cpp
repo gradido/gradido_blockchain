@@ -1,3 +1,6 @@
+#include "date/date.h"
+#include "date/tz.h"
+
 #include "gradido_blockchain/model/protobufWrapper/TransactionValidationExceptions.h"
 #include "gradido_blockchain/model/TransactionsManager.h"
 #include "gradido_blockchain/MemoryManager.h"
@@ -5,17 +8,27 @@
 
 #include <algorithm>
 
+using namespace std::chrono;
+
 namespace model {
 
 	TransactionsManager::TransactionsManager()
 	{
 		std::string decayStartTimeString = "2021-05-13 17:46:31";
+/*		
 		int timezoneDifferential = Poco::DateTimeFormatter::UTC; // + GMT 0
 		mDecayStartTime = Poco::DateTimeParser::parse(
 			Poco::DateTimeFormat::SORTABLE_FORMAT,
 			decayStartTimeString,
 			timezoneDifferential
 		);
+		*/
+		std::istringstream in{ decayStartTimeString };
+		date::sys_seconds tp;
+		in >> date::parse("%F %T", tp);
+
+		// Zeit in std::chrono::system_clock::time_point umwandeln
+		mDecayStartTime = tp;
 	}
 
 	TransactionsManager::~TransactionsManager()
@@ -48,7 +61,7 @@ namespace model {
 		auto sharedTransaction = std::shared_ptr<model::gradido::GradidoTransaction>(transaction.release());
 		auto transactionBody = sharedTransaction->getTransactionBody();
 		groupTransactionsIt->second.transactionsByReceived.insert({
-			transactionBody->getCreated(),
+			transactionBody->getCreatedAt(),
 			sharedTransaction
 		});
 		groupTransactionsIt->second.dirty = true;
@@ -82,7 +95,7 @@ namespace model {
 		if (groupTransactionsIt == mAllTransactions.end()) {
 			throw GroupNotFoundException("[TransactionsManager::removeGradidoTransaction]", groupAlias);
 		}
-		auto byReceivedIt = groupTransactionsIt->second.transactionsByReceived.equal_range(transaction->getTransactionBody()->getCreated());
+		auto byReceivedIt = groupTransactionsIt->second.transactionsByReceived.equal_range(transaction->getTransactionBody()->getCreatedAt());
 		auto transactionBodyBytes = transaction->getTransactionBody()->getBodyBytes();
 		for (auto it = byReceivedIt.first; it != byReceivedIt.second; ++it)
 		{
@@ -115,7 +128,11 @@ namespace model {
 
 	}
 
-	TransactionsManager::UserBalance TransactionsManager::calculateUserBalanceUntil(const std::string& groupAlias, const std::string& pubkeyHex, Poco::DateTime date)
+	TransactionsManager::UserBalance TransactionsManager::calculateUserBalanceUntil(
+		const std::string& groupAlias,
+		const std::string& pubkeyHex,
+		Timepoint date
+	)
 	{
 		auto transactions = getSortedTransactionsForUser(groupAlias, pubkeyHex);
 		auto mm = MemoryManager::getInstance();
@@ -123,11 +140,11 @@ namespace model {
 		DecayDecimal amount;
 		auto pubkeyBinString = DataTypeConverter::hexToBinString(pubkeyHex.substr(0, 64));
 
-		Poco::DateTime now;
-		Poco::DateTime lastBalanceDate(now);
+		Timepoint now = system_clock::now();
+		Timepoint lastBalanceDate(now);
 		for (auto it = transactions.begin(); it != transactions.end(); it++) {
 			auto transactionBody = (*it)->getTransactionBody();
-			Poco::DateTime localDate = Poco::Timestamp((Poco::UInt64)transactionBody->getCreatedSeconds() * Poco::Timestamp::resolution());
+			Timepoint localDate(std::chrono::seconds(transactionBody->getCreatedAtSeconds()));
 			if (localDate > date) break;
 			if (localDate > lastBalanceDate && lastBalanceDate != now) {
 				balance.applyDecay(lastBalanceDate, localDate);
@@ -181,19 +198,19 @@ namespace model {
 		auto decayForDuration = mm->getMathMemory();
 		std::string balanceString;
 
-		Poco::DateTime now;
-		Poco::DateTime lastBalanceDate(now);
+		Timepoint now = system_clock::now();
+		Timepoint lastBalanceDate(now);
 		for (auto it = transactions.begin(); it != transactions.end(); it++) {
 			auto transactionBody = (*it)->getTransactionBody();
-			Poco::DateTime createdDate = Poco::Timestamp((Poco::UInt64)transactionBody->getCreatedSeconds() * Poco::Timestamp::resolution());
+			Timepoint createdDate(std::chrono::seconds{ transactionBody->getCreatedAtSeconds() });
 			if (lastBalanceDate != now && createdDate != lastBalanceDate) {
 				// gDecayFactorGregorianCalender
 				// gDecayFactor356Days
 				calculateDecayFactorForDuration(decayForDuration, gDecayFactorGregorianCalender, lastBalanceDate, createdDate);
 				std::string decayForDurationString;
 				model::gradido::TransactionBase::amountToString(&decayForDurationString, decayForDuration);
-				Poco::Timespan duration = createdDate - lastBalanceDate;
-				std::string durationString = Poco::DateTimeFormatter::format(duration);
+				Duration duration = createdDate - lastBalanceDate;
+				std::string durationString = DataTypeConverter::timespanToString(duration_cast<std::chrono::seconds>(duration));
 				mpfr_set(amount, balance, gDefaultRound);
 				calculateDecayFast(decayForDuration, balance);
 				mpfr_sub(amount, amount, balance, gDefaultRound);
@@ -238,7 +255,10 @@ namespace model {
 		return std::move(result);
 	}
 
-	std::list<TransactionsManager::UserBalance> TransactionsManager::calculateFinalUserBalances(const std::string& groupAlias, Poco::DateTime date)
+	std::list<TransactionsManager::UserBalance> TransactionsManager::calculateFinalUserBalances(
+		const std::string& groupAlias,
+		Timepoint date
+	)
 	{
 		auto it = mAllTransactions.find(groupAlias);
 		if (it == mAllTransactions.end()) {
@@ -305,7 +325,7 @@ namespace model {
 			const std::shared_ptr<model::gradido::GradidoTransaction>&a,
 			const std::shared_ptr<model::gradido::GradidoTransaction>&b
 			) {
-			return a->getTransactionBody()->getCreatedSeconds() < b->getTransactionBody()->getCreatedSeconds();
+			return a->getTransactionBody()->getCreatedAtSeconds() < b->getTransactionBody()->getCreatedAtSeconds();
 		});
 		return std::move(resultList);
 	}

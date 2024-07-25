@@ -7,11 +7,11 @@ using namespace rapidjson;
 RequestException::RequestException(const char* what, const char* host, int port) noexcept
 	: GradidoBlockchainException(what)
 {
-	mUri.setHost(host);
-	mUri.setPort(port);
+	mUri = std::string(host);
+	mUri += ':' + std::to_string(port);
 }
 
-RequestException::RequestException(const char* what, const Poco::URI& uri) noexcept
+RequestException::RequestException(const char* what, const std::string& uri) noexcept
 	: GradidoBlockchainException(what), mUri(uri)
 {
 
@@ -20,11 +20,10 @@ RequestException::RequestException(const char* what, const Poco::URI& uri) noexc
 std::string RequestException::getFullString() const
 {
 	std::string result;
-	std::string portString = std::to_string(mUri.getPort());
-	size_t resultSize = strlen(what()) + portString.size() + mUri.getHost().size() + 16;
+	size_t resultSize = strlen(what()) + mUri.size() + 15;
 	result.reserve(resultSize);
 	result = what();
-	result += " by calling: " + mUri.getHost() + ":" + portString;
+	result += " by calling: " + mUri;
 	return result;
 }
 
@@ -35,14 +34,14 @@ RequestEmptyResponseException::RequestEmptyResponseException(const char* what, c
 
 }
 
-RequestEmptyResponseException::RequestEmptyResponseException(const char* what, const Poco::URI& uri) noexcept
+RequestEmptyResponseException::RequestEmptyResponseException(const char* what, const std::string& uri) noexcept
 	: RequestException(what, uri)
 {
 
 }
 
 // **************************** invalid json response ************************************
-RequestResponseInvalidJsonException::RequestResponseInvalidJsonException(const char* what, const Poco::URI& uri, const std::string& rawText) noexcept
+RequestResponseInvalidJsonException::RequestResponseInvalidJsonException(const char* what, const std::string& uri, const std::string& rawText) noexcept
 	: RequestException(what, uri), mRawText(rawText)
 {
 
@@ -69,7 +68,7 @@ bool RequestResponseInvalidJsonException::containRawHtmlClosingTag() const
 }
 
 // ************************** error in json request ***************************************
-RequestResponseErrorException::RequestResponseErrorException(const char* what, const Poco::URI& uri, const std::string& msg) noexcept
+RequestResponseErrorException::RequestResponseErrorException(const char* what, const std::string& uri, const std::string& msg) noexcept
 	: RequestException(what, uri), mErrorMessage(msg)
 {
 
@@ -135,7 +134,7 @@ Value RequestResponseErrorException::getDetails(Document::AllocatorType& alloc) 
 {
 	Value result(kObjectType);
 	result.AddMember("what", Value(what(), alloc), alloc);
-	result.AddMember("uri", Value(mUri.toString().data(), alloc), alloc);
+	result.AddMember("uri", Value(mUri.data(), alloc), alloc);
 	result.AddMember("msg", Value(mErrorMessage.data(), alloc), alloc);
 	if (mErrorDetails.size()) {
 		result.AddMember("details", Value(mErrorDetails.data(), alloc), alloc);
@@ -143,8 +142,23 @@ Value RequestResponseErrorException::getDetails(Document::AllocatorType& alloc) 
 	return result;
 }
 
+// **************** HttplibRequestException **************************************
+HttplibRequestException::HttplibRequestException(const char* what, const std::string& uri, int status, const char* error) noexcept
+	: RequestException(what, uri), mStatus(status), mError(error)
+{
+	
+}
+
+std::string HttplibRequestException::getFullString() const
+{
+	auto resultString = RequestException::getFullString();
+	resultString += ", status: " + std::to_string(mStatus);
+	resultString += ", error enum: " + mError;
+	return resultString;
+}
+
 // ******************* CakePHP Exception *****************************************
-RequestResponseCakePHPException::RequestResponseCakePHPException(const char* what, const Poco::URI& uri, const std::string& msg) noexcept
+RequestResponseCakePHPException::RequestResponseCakePHPException(const char* what, const std::string& uri, const std::string& msg) noexcept
 	: RequestResponseErrorException(what, uri, msg)
 {
 
@@ -185,26 +199,6 @@ std::string HandleRequestException::getFullString() const
 	return what();
 }
 
-// ********************** Poco Net Exception *******************************************
-PocoNetException::PocoNetException(Poco::Exception& ex, const Poco::URI& uri, const char* query) noexcept
-	: GradidoBlockchainException(ex.displayText().data()), mRequestUri(uri), mQuery(query)
-{
-
-}
-
-std::string PocoNetException::getFullString() const
-{
-	std::string resultString;
-	std::string host = mRequestUri.getHost();
-	size_t resultSize = 2 + 17 + strlen(what()) + 17 + host.size() + mQuery.size();
-	resultString.reserve(resultSize);
-
-	resultString = "Poco Exception: ";
-	resultString += what();
-	resultString += " by calling url: " + host + mQuery;
-	return resultString;
-}
-	
 
 // *********************** JSON RPC Request Exceptions *************************************
 JsonRPCException::JsonRPCException(const char* what, JsonRPCErrorCodes errorCode) noexcept

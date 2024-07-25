@@ -7,8 +7,7 @@
 #include "gradido_blockchain/MemoryManager.h"
 #include "gradido_blockchain/model/protobufWrapper/GradidoTransaction.h"
 
-#include "Poco/DateTime.h"
-#include "proto/gradido/RegisterAddress.pb.h"
+#include "proto/gradido/register_address.pb.h"
 
 namespace model {
 	namespace gradido {
@@ -103,7 +102,7 @@ namespace model {
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationRequiredSignMissingException : public TransactionValidationException
 		{
 		public:
-			explicit TransactionValidationRequiredSignMissingException(const std::vector<MemoryBin*>& missingPublicKeys) noexcept;
+			explicit TransactionValidationRequiredSignMissingException(const std::vector<memory::Block>& missingPublicKeys) noexcept;
 
 		protected:
 			std::vector<std::string> mMissingPublicKeysHex;

@@ -2,24 +2,25 @@
 #include "gradido_blockchain/http/IotaRequestExceptions.h"
 #include "gradido_blockchain/http/RequestExceptions.h"
 #include "gradido_blockchain/http/ServerConfig.h"
+#include "gradido_blockchain/ServerApplication.h"
 
 #include "gradido_blockchain/lib/Profiler.h"
-#include "gradido_blockchain/lib/DataTypeConverter.h"
 
 #include <algorithm>
 #include <cctype>
-
-#include "Poco/Net/HTTPSClientSession.h"
-#include "Poco/Net/HTTPRequest.h"
-#include "Poco/Net/HTTPResponse.h"
-#include "Poco/Util/ServerApplication.h"
 
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/pointer.h"
 
-#include "iota_rust_clib.h"
+#include "furi/furi.hpp"
+#ifndef _DEBUG
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#endif
+#include "httplib.h"
+#include "loguru/loguru.hpp"
 
+#include "iota_rust_clib.h"
 
 using namespace rapidjson;
 
@@ -27,7 +28,7 @@ using namespace rapidjson;
 IotaRequest::IotaRequest(const std::string& serverHost, int serverPort, const std::string& urlPath)
 	: JsonRequest(serverHost, serverPort)
 {
-	mRequestUri.setPath(urlPath);
+	mUrl += urlPath;
 }
 
 IotaRequest::~IotaRequest()
@@ -37,9 +38,9 @@ IotaRequest::~IotaRequest()
 
 std::vector<std::string> IotaRequest::getTips()
 {
-	std::string fullPath = mRequestUri.getPath() + "tips";
-	auto responseString = GET(fullPath.data(), "HTTP/1.1");
-		
+	auto fullPath = buildFullPath("tips");
+	auto responseString = GET(fullPath);
+
 	auto json = parseResponse(responseString);
 
 	if (!json.HasMember("data")) {
@@ -56,23 +57,23 @@ std::vector<std::string> IotaRequest::getTips()
 	for (auto it = tips.Begin(); it != tips.End(); it++) {
 		parentIds.push_back(it->GetString());
 	}
-	
+
 	return parentIds;
 }
 
 
 
-std::string IotaRequest::sendMessage(const std::string& indexHex, const std::string& messageHex)
-{	
+std::string IotaRequest::sendMessage(const iota::TopicIndex& index, const std::string& messageHex)
+{
 	if (ServerConfig::g_IotaLocalPow) {
-		auto index = DataTypeConverter::hexToBinString(indexHex.substr(0, indexHex.size()-1));
+		//auto index = DataTypeConverter::hexToBinString(indexHex.substr(0, indexHex.size()-1));
 		//auto message = DataTypeConverter::hexToBinString(messageHex.substr(0, messageHex.size()-1));
 		//printf("message hex: %s\n", messageHex.data());
-		return sendMessageViaRustIotaClient(*index, messageHex);
+		return sendMessageViaRustIotaClient(index.getBinString(), messageHex);
 	}
 	auto tips = getTips();
 	if (!tips.size()) {
-		throw IotaRequestException("no tips", mRequestUri.getPath() + "tips");
+		throw IotaRequestException("no tips", buildFullPath("tips"));
 	}
 
 	Document requestJson(kObjectType);
@@ -89,24 +90,17 @@ std::string IotaRequest::sendMessage(const std::string& indexHex, const std::str
 	Value payload(kObjectType);
 	payload.AddMember("type", 2, alloc);
 	std::string upperIndex;
-	for (int i = 0; i < indexHex.size(); i++) {
-		upperIndex.push_back((std::toupper(indexHex.data()[i])));
-	}
-	std::string upperMessage;
-	for (int i = 0; i < messageHex.size(); i++) {
-		upperMessage.push_back((std::toupper(messageHex.data()[i])));
-	}
 
-	payload.AddMember("index", Value(indexHex.data(), alloc), alloc);
+	payload.AddMember("index", Value(index.getHexString().data(), alloc), alloc);
 	payload.AddMember("data", Value(messageHex.data(), alloc), alloc);
 
 	requestJson.AddMember("payload", payload, alloc);
 	// TODO: calculate nonce
 	requestJson.AddMember("nonce", "", alloc);
 
-	auto fullPath = mRequestUri.getPath() + "messages";
-	auto responseString = POST(fullPath.data(), requestJson, "HTTP/1.1");
-	
+	auto fullPath = buildFullPath("messages");
+	auto responseString = POST(fullPath.data(), requestJson);
+
 	auto json = parseResponse(responseString);
 	if (!json.HasMember("data")) {
 		throw IotaPostRequestException("data member in response missing", fullPath)
@@ -122,24 +116,24 @@ std::string IotaRequest::sendMessage(const std::string& indexHex, const std::str
 
 rapidjson::Document IotaRequest::getMessageJson(const std::string& messageIdHex)
 {
-	// GET /api/v1/messages/{messageId} 
-	
-	std::string fullPath;
-	fullPath.reserve(mRequestUri.getPath().size() + 9 + messageIdHex.size());
-	fullPath = mRequestUri.getPath() + "messages/";
-	fullPath += messageIdHex;
-	return parseResponse(GET(fullPath.data(), "HTTP/1.1"));
+	// GET /api/v1/messages/{messageId}
+
+	std::string fullPath = buildFullPath(std::string("messages", 8), messageIdHex);
+	return parseResponse(GET(fullPath.data()));
 }
 
 std::pair<std::unique_ptr<std::string>, std::unique_ptr<std::string>> IotaRequest::getIndexiationMessageDataIndex(const std::string& messageIdHex)
 {
 	auto json = getMessageJson(messageIdHex);
 	if (!json.IsObject() || json.FindMember("data") == json.MemberEnd()) {
-		throw IotaRequestException("error calling messages from iota, no valid json or no data member found", mRequestUri.getPath() + "messages/" + messageIdHex);
+		throw IotaRequestException("error calling messages from iota, no valid json or no data member found", buildFullPath(std::string("messages", 8), messageIdHex));
 	}
 	auto payload = Pointer("/data/payload").Get(json);
 	if (!payload->HasMember("data") || !payload->HasMember("index")) {
-		throw IotaRequestException("json field data.payload.data or data.payload.index missing", mRequestUri.getPath() + "messages/" + messageIdHex);
+		throw IotaRequestException("json field data.payload.data or data.payload.index missing", buildFullPath(std::string("messages", 8), messageIdHex));
+	}
+	if (!(*payload)["data"].GetStringLength()) {
+		return { std::make_unique<std::string>(), DataTypeConverter::hexToBinString((*payload)["index"].GetString())};
 	}
 	return { DataTypeConverter::hexToBinString((*payload)["data"].GetString()), DataTypeConverter::hexToBinString((*payload)["index"].GetString()) };
 }
@@ -147,11 +141,9 @@ std::pair<std::unique_ptr<std::string>, std::unique_ptr<std::string>> IotaReques
 uint32_t IotaRequest::getMessageMilestoneId(const std::string& messageIdHex)
 {
 	// GET /api/v1/messages/{messageId}/metadata
-	std::string fullPath;
-	fullPath.reserve(mRequestUri.getPath().size() + 18 + messageIdHex.size());
-	fullPath = mRequestUri.getPath() + "messages/" + messageIdHex + "/metadata";
+	std::string fullPath = buildFullPath(std::string("messages", 8), messageIdHex, std::string("metadata", 8));
 
-	auto json = parseResponse(GET(fullPath.data(), "HTTP/1.1"));
+	auto json = parseResponse(GET(fullPath.data()));
 
 	if (!json.IsObject() || json.FindMember("data") == json.MemberEnd()) {
 		throw IotaRequestException("error calling for message metadata", fullPath);
@@ -164,17 +156,17 @@ uint32_t IotaRequest::getMessageMilestoneId(const std::string& messageIdHex)
 	return 0;
 }
 
-std::vector<MemoryBin*> IotaRequest::findByIndex(const std::string& index)
+std::vector<memory::Block> IotaRequest::findByIndex(const iota::TopicIndex& index)
 {
 	// GET /api/v1/messages?index=4752414449444f2e7079746861676f726173
+	auto pathView = extractPathFromUrl();
 	std::string fullPath;
-	auto indexHex = DataTypeConverter::binToHex(index);
-	fullPath.reserve(mRequestUri.getPath().size() + 18 + indexHex.size());
-	fullPath = mRequestUri.getPath() + "messages?index=" + indexHex;
+	auto indexHex = index.getHexString();
+	fullPath.reserve(pathView.size() + 18 + indexHex.size());
+	fullPath = std::string(pathView) + "messages?index=" + indexHex;
+	std::vector<memory::Block> result;
 
-	std::vector<MemoryBin*> result;
-
-	auto json = parseResponse(GET(fullPath.data(), "HTTP/1.1"));
+	auto json = parseResponse(GET(fullPath.data()));
 	if (!json.IsObject() || !json.HasMember("data")) {
 		throw IotaRequestException("findByIndex failed or data not set", fullPath);
 	}
@@ -185,21 +177,18 @@ std::vector<MemoryBin*> IotaRequest::findByIndex(const std::string& index)
 	}
 	auto messageIds = data["messageIds"].GetArray();
 	for (auto it = messageIds.Begin(); it != messageIds.End(); ++it) {
-		result.push_back(DataTypeConverter::hexToBin(it->GetString()));
+		result.push_back(memory::Block::fromHex(it->GetString(), data["messageId"].GetStringLength()));
 	}
 
 	return result;
 }
 
-MemoryBin* IotaRequest::getMilestoneByIndex(int32_t milestoneIndex)
+memory::Block IotaRequest::getMilestoneByIndex(int32_t milestoneIndex)
 {
 	// GET api/v1/milestones/909039
-	std::string fullPath;
-	auto milestoneIndexString = std::to_string(milestoneIndex);
-	fullPath.reserve(mRequestUri.getPath().size() + 11 + milestoneIndexString.size());
-	fullPath = mRequestUri.getPath() + "milestones/" + milestoneIndexString;
+	std::string fullPath = buildFullPath(std::string("milestones", 10), std::to_string(milestoneIndex));
 
-	auto json = parseResponse(GET(fullPath.data(), "HTTP/1.1"));
+	auto json = parseResponse(GET(fullPath.data()));
 	if (!json.IsObject() || !json.HasMember("data")) {
 		throw IotaRequestException("getMilestoneByIndex failed or data not set", fullPath);
 	}
@@ -207,18 +196,15 @@ MemoryBin* IotaRequest::getMilestoneByIndex(int32_t milestoneIndex)
 	if (!data.HasMember("messageId") || !data["messageId"].IsString()) {
 		throw IotaRequestException("messageId field not set or not string", fullPath);
 	}
-	return DataTypeConverter::hexToBin(data["messageId"].GetString());
+	return memory::Block::fromHex(data["messageId"].GetString(), data["messageId"].GetStringLength());
 }
 
 uint64_t IotaRequest::getMilestoneTimestamp(int32_t milestoneIndex)
 {
 	// GET api/v1/milestones/909039
-	std::string fullPath;
-	auto milestoneIndexString = std::to_string(milestoneIndex);
-	fullPath.reserve(mRequestUri.getPath().size() + 11 + milestoneIndexString.size());
-	fullPath = mRequestUri.getPath() + "milestones/" + milestoneIndexString;
+	std::string fullPath = buildFullPath(std::string("milestones", 10), std::to_string(milestoneIndex));
 
-	auto json = parseResponse(GET(fullPath.data(), "HTTP/1.1"));
+	auto json = parseResponse(GET(fullPath.data()));
 	if (!json.IsObject() || !json.HasMember("data")) {
 		throw IotaRequestException("getMilestoneByIndex failed or data not set", fullPath);
 	}
@@ -232,10 +218,10 @@ uint64_t IotaRequest::getMilestoneTimestamp(int32_t milestoneIndex)
 iota::NodeInfo IotaRequest::getNodeInfo()
 {
 	iota::NodeInfo result;
-	auto fullPath = mRequestUri.getPath() + "info";
-	auto json = parseResponse(GET(fullPath.data(), "HTTP/1.1"));
+	auto fullPath = buildFullPath(std::string("info", 4));
+	auto json = parseResponse(GET(fullPath.data()));
 	if (!json.IsObject()) return result;
-	
+
 	if (!json.HasMember("data")) {
 		throw IotaRequestException("data member in response missing", fullPath);
 	}
@@ -264,12 +250,12 @@ iota::NodeInfo IotaRequest::getNodeInfo()
 		throw IotaRequestException("latestMilestoneTimestamp in response missing or not a int64", fullPath);
 	}
 	result.lastMilestoneTimestamp = data["latestMilestoneTimestamp"].GetInt64();
-	
+
 	return result;
 }
 
 
-void IotaRequest::defaultExceptionHandler(Poco::Logger& errorLog, bool terminate/* = true*/)
+void IotaRequest::defaultExceptionHandler(bool terminate/* = true*/)
 {
 	std::pair<std::string, std::unique_ptr<std::string>> dataIndex;
 	try {
@@ -277,28 +263,21 @@ void IotaRequest::defaultExceptionHandler(Poco::Logger& errorLog, bool terminate
 	}
 	catch (IotaRequestException& ex) {
 		// terminate application
-		errorLog.critical("Iota Request exception, has the API changed? More details: %s", ex.getFullString());
+		ABORT_F("Iota Request exception, has the API changed? More details: %s", ex.getFullString().data());
 		if (terminate) {
-			Poco::Util::ServerApplication::terminate();
+			ServerApplication::terminate();
 		}
 	}
 	catch (RapidjsonParseErrorException& ex) {
-		errorLog.error("Json parse error by calling Iota API: %s", ex.getFullString());
+		LOG_F(ERROR, "Json parse error by calling Iota API: %s", ex.getFullString().data());
 		if (terminate) {
-			Poco::Util::ServerApplication::terminate();
-		}
-		
-	}
-	catch (PocoNetException& ex) {
-		errorLog.error("Poco Net Exception by calling Iota Request: %s", ex.getFullString());
-		if (terminate) {
-			Poco::Util::ServerApplication::terminate();
+			ServerApplication::terminate();
 		}
 	}
-	catch (Poco::Exception& ex) {
-		errorLog.error("Poco Exception by calling Iota Request: %s", ex.displayText());
+	catch (HttplibRequestException& ex) {
+		LOG_F(ERROR, "Http lib error by calling Iota API: %s", ex.getFullString().data());
 		if (terminate) {
-			Poco::Util::ServerApplication::terminate();
+			ServerApplication::terminate();
 		}
 	}
 }
@@ -306,13 +285,15 @@ void IotaRequest::defaultExceptionHandler(Poco::Logger& errorLog, bool terminate
 std::string IotaRequest::sendMessageViaRustIotaClient(const std::string& index, const std::string& message)
 {
 	std::string iotaUrl;
-	if (mRequestUri.getPort() == 443) {
+	auto uri = furi::uri_split::from_uri(mUrl);
+	auto authority = furi::authority_split::from_authority(uri.authority);
+	if (authority.port == "443") {
 		iotaUrl = "https://";
 	}
 	else {
 		iotaUrl = "http://";
 	}
-	iotaUrl += mRequestUri.getHost() + ":" + std::to_string(mRequestUri.getPort());
+	iotaUrl += uri.authority;
 	auto result = iota_send_indiced_transaction(iotaUrl.data(), index.data(), message.data());
 	std::string resultJsonString = result;
 	Document resultJson;
@@ -329,4 +310,33 @@ std::string IotaRequest::sendMessageViaRustIotaClient(const std::string& index, 
 		throw IotaRequestException(resultJson["msg"].GetString(), iotaUrl);
 	}
 	return std::move(std::string(resultJson["message_id"].GetString()));
+}
+
+std::string_view IotaRequest::extractPathFromUrl()
+{
+	auto uri = furi::uri_split::from_uri(mUrl);
+	return uri.path;
+}
+
+std::string IotaRequest::buildFullPath(const std::string& first, const std::string& second/* = ""*/, const std::string& third /*= ""*/)
+{
+	auto pathView = extractPathFromUrl();
+	int stringSize = pathView.size() + first.size();
+	if (second.size()) {
+		stringSize += second.size() + 1;
+	}
+	if (third.size()) {
+		stringSize += third.size() + 1;
+	}
+	std::string result;
+	result.reserve(stringSize);
+	result = std::string(pathView);
+	result += first;
+	if (second.size()) {
+		result += '/' + second;
+	}
+	if (third.size()) {
+		result += '/' + third;
+	}
+	return result;
 }

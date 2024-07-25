@@ -1,10 +1,11 @@
 #ifndef __GRADIDO_BLOCKCHAIN_MODEL_I_GRADIDO_BLOCKCHAIN_H
 #define __GRADIDO_BLOCKCHAIN_MODEL_I_GRADIDO_BLOCKCHAIN_H
 
-//#include "protobufWrapper/GradidoBlock.h"
+#include "gradido_blockchain/types.h"
+#include "protobufWrapper/ConfirmedTransaction.h"
 #include "protobufWrapper/TransactionBase.h"
 #include "TransactionEntry.h"
-#include "Poco/SharedPtr.h"
+
 #include <vector>
 
 namespace model {
@@ -32,26 +33,33 @@ namespace model {
 			DESC
 		};
 
-		virtual std::vector<Poco::SharedPtr<TransactionEntry>> searchTransactions(
+		virtual std::vector<std::shared_ptr<TransactionEntry>> searchTransactions(
 			uint64_t startTransactionNr = 0,
 			std::function<FilterResult(model::TransactionEntry*)> filter = nullptr,
 			SearchDirection order = SearchDirection::ASC
 		) = 0;
-		virtual Poco::SharedPtr<gradido::GradidoBlock> getLastTransaction(std::function<bool(const gradido::GradidoBlock*)> filter = nullptr) = 0;
-		virtual mpfr_ptr calculateAddressBalance(const std::string& address, const std::string& groupId, Poco::DateTime date) = 0;
+		virtual std::shared_ptr<gradido::ConfirmedTransaction> getLastTransaction(std::function<bool(const gradido::ConfirmedTransaction*)> filter = nullptr) = 0;
+		virtual mpfr_ptr calculateAddressBalance(
+			const std::string& address, 
+			const std::string& groupId, 
+			Timepoint date, 
+			uint64_t ownTransactionNr
+		) = 0;
 		virtual proto::gradido::RegisterAddress_AddressType getAddressType(const std::string& address) = 0;
-		virtual Poco::SharedPtr<TransactionEntry> getTransactionForId(uint64_t transactionId) = 0;
-		virtual Poco::SharedPtr<TransactionEntry> findLastTransactionForAddress(const std::string& address, const std::string& groupId = "") = 0;
-		virtual Poco::SharedPtr<TransactionEntry> findByMessageId(const MemoryBin* messageId, bool cachedOnly = true) = 0;
+		virtual std::shared_ptr<TransactionEntry> getTransactionForId(uint64_t transactionId) = 0;
+		virtual std::shared_ptr<TransactionEntry> findLastTransactionForAddress(const std::string& address, const std::string& groupId = "") = 0;
+		virtual std::shared_ptr<TransactionEntry> findByMessageId(const MemoryBin* messageId, bool cachedOnly = true) = 0;
 		//! \brief Find every transaction belonging to address account in memory or block chain, expensive.
 		//!
 		//! Use with care, can need some time and return huge amount of data.
 		//! \param address Address = user account public key.
-		virtual std::vector<Poco::SharedPtr<TransactionEntry>> findTransactions(const std::string& address) = 0;
+		virtual std::vector<std::shared_ptr<TransactionEntry>> findTransactions(const std::string& address) = 0;
 		//! \brief Find transactions of account from a specific month.
 		//! \param address User account public key.
-		virtual std::vector<Poco::SharedPtr<model::TransactionEntry>> findTransactions(const std::string& address, int month, int year) = 0;
-		virtual const std::string& getGroupId() const = 0;
+		virtual std::vector<std::shared_ptr<model::TransactionEntry>> findTransactions(const std::string& address, int month, int year) = 0;
+		virtual const std::string& getCommunityId() const = 0;
+		[[deprecated("Replaced by getCommunityId, changed name according to Gradido Apollo implementation")]]
+		inline const std::string& getGroupId() const { return getCommunityId();}
 
 	protected:
 	};

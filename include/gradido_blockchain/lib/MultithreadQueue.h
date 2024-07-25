@@ -43,40 +43,33 @@ public:
 		clear();
 	}
 	void clear() {
-		lock();
+		LOCK_RECURSIVE;
 		while (!std::queue<ResourceType>::empty()) std::queue<ResourceType>::pop();
-		unlock();
 	}
 	void push(ResourceType val) 
 	{
-		lock();
+		LOCK_RECURSIVE;
 		std::queue<ResourceType>::push(val);
-		unlock();
 	}
 	bool empty()
 	{
-		bool result = false;
-		lock();
-		result = std::queue<ResourceType>::empty();
-		unlock();
-		return result;
+		LOCK_RECURSIVE;
+		return std::queue<ResourceType>::empty();
 	}
 	//! \return false if no values are there
 	//! \return true if value is there, gave val a copy from the value on top of queue
 	bool pop(ResourceType& val) 
 	{
-		lock();
+		LOCK_RECURSIVE;
 		if(!std::queue<ResourceType>::empty()) {
 			val = std::queue<ResourceType>::front();
 			std::queue<ResourceType>::pop();
-			unlock();
 			return true;
 		}
-		unlock();
 		return false;
 	}
 
-	inline size_t size() { lock(); size_t _size = std::queue<ResourceType>::size();  unlock(); return _size; }
+	inline size_t size() { LOCK_RECURSIVE; return std::queue<ResourceType>::size(); }
 
 };
 

@@ -6,7 +6,7 @@
 class GRADIDOBLOCKCHAIN_EXPORT GraphQLRequest : public JsonRequest
 {
 public:
-	GraphQLRequest(const Poco::URI& requestUri);
+	GraphQLRequest(const std::string& requestUri);
 
 	rapidjson::Document POST(const std::string& graphqlQuery);
 

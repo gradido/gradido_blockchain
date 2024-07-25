@@ -3,9 +3,12 @@
 #include "rapidjson/error/en.h"
 
 #include <string>
+#include <sstream>
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
+#include "magic_enum/magic_enum.hpp"
 
+using namespace magic_enum;
 using namespace rapidjson;
 
 GradidoBlockchainTransactionNotFoundException::GradidoBlockchainTransactionNotFoundException(const char* what) noexcept
@@ -135,8 +138,8 @@ std::string GradidoInvalidEnumException::getFullString() const
 }
 
 // ***************** it an enuam value is unknown by code ***************************
-GradidoUnknownEnumException::GradidoUnknownEnumException(const char* what, const char* enumName, int value) noexcept
-	: GradidoBlockchainException(what), mEnumName(enumName), mValue(value)
+GradidoUnknownEnumException::GradidoUnknownEnumException(const char* what, const char* enumName, const char* enumValue) noexcept
+	: GradidoBlockchainException(what), mEnumName(enumName), mEnumValue(enumValue)
 {
 
 }
@@ -144,12 +147,11 @@ GradidoUnknownEnumException::GradidoUnknownEnumException(const char* what, const
 std::string GradidoUnknownEnumException::getFullString() const
 {
 	std::string resultString;
-	auto valueString = std::to_string(mValue);
-	size_t resultSize = strlen(what()) + mEnumName.size() + valueString.size() + 2 + 13 + 9;
+	size_t resultSize = strlen(what()) + mEnumName.size() + mEnumValue.size() + 2 + 13 + 9;
 	resultString.reserve(resultSize);
 	resultString = what();
 	resultString += ", enum name: " + mEnumName;
-	resultString += ", value: " + valueString;
+	resultString += ", value: " + mEnumValue;
 	return resultString;
 }
 
@@ -171,6 +173,24 @@ std::string GradidoInvalidBase64Exception::getFullString() const
 	return resultString;
 }
 
+// ********************************* Invalid Hex **********************************************
+GradidoInvalidHexException::GradidoInvalidHexException(const char* what, const std::string& hex) noexcept
+	: GradidoBlockchainException(what), mHex(hex)
+{
+
+}
+
+std::string GradidoInvalidHexException::getFullString() const
+{
+	std::string resultString;
+	size_t resultSize = strlen(what()) + mHex.size() + 10;
+	resultString.reserve(resultSize);
+	resultString = what();
+	resultString += ", with: " + mHex;
+	return resultString;
+}
+
+
 // ######################### Blockchain Order Exception ####################################
 BlockchainOrderException::BlockchainOrderException(const char* what) noexcept
 	: GradidoBlockchainException(what)
@@ -183,23 +203,6 @@ std::string BlockchainOrderException::getFullString() const
 	return what();
 }
 
-// *************************** Invalid Transaction Type on Blockchain
-InvalidTransactionTypeOnBlockchain::InvalidTransactionTypeOnBlockchain(const char* what, model::gradido::TransactionType type) noexcept
-	: GradidoBlockchainException(what), mTransactionType(type)
-{
-
-}
-
-std::string InvalidTransactionTypeOnBlockchain::getFullString() const
-{
-	auto transactionTypeString = model::gradido::TransactionBase::getTransactionTypeString(mTransactionType);
-	std::string resultString;
-	resultString.reserve(strlen(what()) + strlen(transactionTypeString) + 2 + 20);
-	resultString = what();
-	resultString += ", transaction type: ";
-	resultString += transactionTypeString;
-	return resultString;
-}
 
 // ****************************** Null Pointer Exception **********************************************
 GradidoNullPointerException::GradidoNullPointerException(const char* what, const char* typeName, const char* functionName) noexcept
@@ -213,4 +216,27 @@ std::string GradidoNullPointerException::getFullString() const
 	std::string resulString = what();
 	resulString += ", type name: " + mTypeName + ", function name: " + mFunctionName;
 	return resulString;
+}
+
+// ****************************** Invalid Size Exception **********************************************
+
+std::string InvalidSizeException::getFullString() const
+{
+	std::string result = what();
+	result += ", expected size: " + std::to_string(mExpectedSize);
+	result += ", actual size: " + std::to_string(mActualSize);
+	return result;
+}
+
+// **************************** Invalid Gradido Transaction Exception **********************************
+
+std::string InvalidGradidoTransaction::getFullString() const 
+{
+	std::stringstream ss;
+	ss << what();
+	if(mRawData) {
+		ss << ", raw data in hex for analysis with protoscope" << std::endl;
+		ss << "xxd -r -ps <<< \"" << mRawData->convertToHex() << "\" | protoscope";
+	}
+	return ss.str();
 }

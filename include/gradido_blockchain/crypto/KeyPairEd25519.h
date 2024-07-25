@@ -11,68 +11,67 @@
  * TODO: add verify method
 */
 
-
+#include "gradido_blockchain/memory/Block.h"
 #include "sodium.h"
 #include "SecretKeyCryptography.h"
 #include "Passphrase.h"
 #include "../lib/DataTypeConverter.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
-enum DerivationType {
-	DERIVATION_SOFT,
-	DERIVATION_HARD
+enum class Ed25519DerivationType {
+	SOFT,
+	HARD
 };
 
 class KeyPairEd25519Ex;
+#define ED25519_PRIVATE_KEY_SIZE crypto_sign_SECRETKEYBYTES
+#define ED25519_PUBLIC_KEY_SIZE crypto_sign_PUBLICKEYBYTES
+#define ED25519_SIGNATURE_SIZE crypto_sign_BYTES
+#define ED25519_CHAIN_CODE_SIZE 32
+
+using namespace memory;
+
 class GRADIDOBLOCKCHAIN_EXPORT KeyPairEd25519
 {
+	friend class AuthenticatedEncryption;
 public:
-	//! \param privateKey: take ownership, release after object destruction
-	//! \param publicKey: copy
-	KeyPairEd25519(MemoryBin* privateKey, MemoryBin* chainCode = nullptr);
-	KeyPairEd25519(const unsigned char* publicKey, MemoryBin* chainCode = nullptr);
-
+	KeyPairEd25519(memory::ConstBlockPtr publicKey, memory::ConstBlockPtr privateKey = nullptr, memory::ConstBlockPtr chainCode = nullptr);
 	~KeyPairEd25519();
 
 	//! \param passphrase must contain word indices
-	//! \return create KeyPairEd25519, caller muss call delete at return after finish
-	static std::unique_ptr<KeyPairEd25519> create(const std::shared_ptr<Passphrase> passphrase);
+	static std::shared_ptr<KeyPairEd25519> create(const std::shared_ptr<Passphrase> passphrase);
+	static memory::Block calculatePublicKey(memory::ConstBlockPtr privateKey);
 
-	KeyPairEd25519Ex* deriveChild(Poco::UInt32 index);
-	static DerivationType getDerivationType(Poco::UInt32 index);
+	std::shared_ptr<KeyPairEd25519Ex> deriveChild(uint32_t index);
+	static Ed25519DerivationType getDerivationType(uint32_t index);
 
-	//! \return caller take ownership of return value
-	MemoryBin* sign(const MemoryBin* message) const { return sign(message->data(), message->size()); }
-	inline MemoryBin* sign(const std::string& bodyBytes) const { return sign((const unsigned char*)bodyBytes.data(), bodyBytes.size()); }
-	MemoryBin* sign(const unsigned char* message, size_t messageSize) const;
+	memory::Block sign(const memory::Block& message) const { return sign(message.data(), message.size()); }
+	inline memory::Block sign(const std::string& bodyBytes) const { return sign((const unsigned char*)bodyBytes.data(), bodyBytes.size()); }
+	memory::Block sign(const unsigned char* message, size_t messageSize) const;
 
 	//! \return true if signature is valid
 	bool verify(const std::string& message, const std::string& signature) const;
-	bool verify(const MemoryBin* message, const MemoryBin* signature) const;
+	bool verify(const memory::Block& message, const memory::Block& signature) const;
 	virtual bool is3rdHighestBitClear() const;
 
-	inline const unsigned char* getPublicKey() const { return mSodiumPublic; }
-	inline MemoryBin* getChainCode() const { return mChainCode; }
-	MemoryBin* getPublicKeyCopy() const;
-	inline std::string getPublicKeyHex() const { return DataTypeConverter::binToHex(mSodiumPublic, getPublicKeySize()); }
-	inline std::string getChainCodeHex() const { return DataTypeConverter::binToHex(mChainCode); }
-	const static size_t getPublicKeySize() { return crypto_sign_PUBLICKEYBYTES; }
+	inline memory::ConstBlockPtr getPublicKey() const { return mSodiumPublic; }
+	inline memory::ConstBlockPtr getChainCode() const { return mChainCode; }
 
 	inline bool isTheSame(const KeyPairEd25519& b) const {
-		return 0 == sodium_memcmp(mSodiumPublic, b.mSodiumPublic, crypto_sign_PUBLICKEYBYTES);
+		return *b.mSodiumPublic == *mSodiumPublic;
 	}
 	inline bool isTheSame(const unsigned char* pubkey) const {
 		if (!pubkey)
 			return false;
-		return 0 == sodium_memcmp(mSodiumPublic, pubkey, crypto_sign_PUBLICKEYBYTES);
+		return 0 == sodium_memcmp(*mSodiumPublic, pubkey, ED25519_PUBLIC_KEY_SIZE);
 	}
 	//! \return 0 if the same
 	//! \return -1 if not the same
 	//! \return 1 if hasn't private key
-	inline int isTheSame(const MemoryBin* privkey) const {
+	inline int isTheSame(memory::ConstBlockPtr privkey) const {
 		if (!mSodiumSecret) return 1;
 		if (privkey->size() != mSodiumSecret->size()) return -1;
-		return sodium_memcmp(*mSodiumSecret, *privkey, privkey->size());
+		return sodium_memcmp(mSodiumSecret->data(), privkey->data(), privkey->size());
 	}
 
 	inline bool operator == (const KeyPairEd25519& b) const { return isTheSame(b);  }
@@ -81,44 +80,40 @@ public:
 	inline bool operator == (const unsigned char* b) const { return isTheSame(b); }
 	inline bool operator != (const unsigned char* b) const { return !isTheSame(b); }
 
-	inline bool hasPrivateKey() const { return mSodiumSecret != nullptr; }
-	inline const MemoryBin* getPrivateKey() const { return mSodiumSecret; }
-
-	MemoryBin* getCryptedPrivKey(const std::shared_ptr<SecretKeyCryptography> password) const;
+	inline bool hasPrivateKey() const { return static_cast<bool>(mSodiumSecret); }
+	memory::Block getCryptedPrivKey(const std::shared_ptr<SecretKeyCryptography> password) const;
 
 protected:
-
-	KeyPairEd25519();
-
-
+	inline memory::ConstBlockPtr getPrivateKey() const { return mSodiumSecret; }
+	//! check if all keys have the correct sizes (if present)
+	//! throw if not
+	void checkKeySizes();
 private:
-	// 64 Byte
-	//! \brief ed25519 libsodium private key
 	//!
-	//! Why it is a pointer and the public is an array?
-	//! Because MemoryBin should be replaced by a memory obfuscation class which make it harder to steal the private key from computer memory
-	//! And because private key can be nullptr for example to verify a signed message
-
-	//! TODO: replace MemoryBin by a memory obfuscation class which make it hard to steal the private key from memory
-	MemoryBin* mSodiumSecret;
-	MemoryBin* mChainCode;
-
 	// 32 Byte
 	//! \brief ed25519 libsodium public key
-	unsigned char mSodiumPublic[crypto_sign_PUBLICKEYBYTES];
+	memory::ConstBlockPtr mSodiumPublic;
+
+	//! TODO: replace MemoryBin by a memory obfuscation class which make it hard to steal the private key from memory
+	//! // 64 Byte
+	//! \brief ed25519 libsodium private key
+	memory::ConstBlockPtr mSodiumSecret;
+
+	// 32 Byte
+	memory::ConstBlockPtr mChainCode;
 };
 
 // *********************** Exceptions ****************************
 class GRADIDOBLOCKCHAIN_EXPORT Ed25519SignException : public GradidoBlockchainException
 {
 public:
-	explicit Ed25519SignException(const char* what, MemoryBin* pubkey, const std::string& message) noexcept;
-	explicit Ed25519SignException(const char* what, const unsigned char* pubkey, const std::string& message) noexcept;
+	explicit Ed25519SignException(const char* what, memory::ConstBlockPtr pubkey, const std::string& message) noexcept;
+	Ed25519SignException(const char* what, const unsigned char* pubkey, const std::string& message) noexcept;
 	~Ed25519SignException();
 	std::string getFullString() const;
 
 protected:
-	MemoryBin* mPubkey;
+	memory::ConstBlockPtr mPubkey;
 	std::string mMessage;
 };
 
@@ -137,25 +132,35 @@ protected:
 class GRADIDOBLOCKCHAIN_EXPORT Ed25519DeriveException : public GradidoBlockchainException
 {
 public:
-	explicit Ed25519DeriveException(const char* what, MemoryBin* pubkey) noexcept;
+	explicit Ed25519DeriveException(const char* what, memory::ConstBlockPtr pubkey) noexcept;
 	~Ed25519DeriveException();
 	std::string getFullString() const;
 
 protected:
-	MemoryBin* mPubkey;
+	memory::ConstBlockPtr mPubkey;
 };
 
 class GRADIDOBLOCKCHAIN_EXPORT Ed25519InvalidKeyException: public GradidoBlockchainException
 {
 public:
 	//! \param invalidKey move key and free up memory on exception deconstruct
-	explicit Ed25519InvalidKeyException(const char* what, MemoryBin* invalidKey, size_t expectedKeySize = 0) noexcept;
+	explicit Ed25519InvalidKeyException(const char* what, memory::ConstBlockPtr invalidKey, size_t expectedKeySize = 0) noexcept;
 	~Ed25519InvalidKeyException();
 	std::string getFullString() const;
 
 protected:
-	MemoryBin* mKey;
+	memory::ConstBlockPtr mKey;
 	size_t mExpectedKeySize;
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT Ed25519MissingKeyException : public GradidoBlockchainException
+{
+public:
+	//! \param invalidKey move key and free up memory on exception deconstruct
+	explicit Ed25519MissingKeyException(const char* what) noexcept : GradidoBlockchainException(what) {};
+	~Ed25519MissingKeyException() {};
+	std::string getFullString() const { return what(); };
+protected:
 };
 
 

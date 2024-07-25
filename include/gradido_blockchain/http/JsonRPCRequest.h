@@ -10,6 +10,8 @@
 
 #include "JsonRequest.h"
 
+#include <vector>
+
 #ifndef __GRADIDO_LOGIN_SERVER_LIB_JSON_RPC_REQUEST_
 #define __GRADIDO_LOGIN_SERVER_LIB_JSON_RPC_REQUEST_
 
@@ -20,6 +22,7 @@ enum GRADIDOBLOCKCHAIN_EXPORT JsonRPCErrorCodes : int
 	JSON_RPC_ERROR_GRADIDO_NODE_ERROR = -10000,
 	JSON_RPC_ERROR_UNKNOWN_GROUP = -10001,
 	JSON_RPC_ERROR_NOT_IMPLEMENTED = -10002,
+	JSON_RPC_ERROR_TRANSACTION_NOT_FOUND = -10003,
 	// default errors from json rpc standard: https://www.jsonrpc.org/specification
 	// -32700 	Parse error 	Invalid JSON was received by the server.
 	JSON_RPC_ERROR_PARSE_ERROR = -32700,
@@ -39,7 +42,7 @@ class GRADIDOBLOCKCHAIN_EXPORT JsonRPCRequest : public JsonRequest
 {
 public:
 	JsonRPCRequest(const std::string& serverHost, int serverPort);
-	JsonRPCRequest(const Poco::URI& serverHost);
+	JsonRPCRequest(const std::string& uri);
 	~JsonRPCRequest();
 
 	rapidjson::Document request(const char* methodName, rapidjson::Value& params);

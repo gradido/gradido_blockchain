@@ -1,6 +1,5 @@
 #include "gradido_blockchain/http/JsonRPCRequest.h"
 
-#include "gradido_blockchain/http/JsonRequestHandler.h"
 #include "gradido_blockchain/http/RequestExceptions.h"
 
 #include "rapidjson/prettywriter.h"
@@ -8,16 +7,18 @@
 #include "rapidjson/pointer.h"
 #include "gradido_blockchain/lib/Profiler.h"
 
+#include <iostream>
+
 using namespace rapidjson;
 
 JsonRPCRequest::JsonRPCRequest(const std::string& serverHost, int serverPort)
-	: JsonRequest(Poco::URI(serverHost).getHost(), serverPort)
+	: JsonRequest(serverHost, serverPort)
 {
 
 }
 
-JsonRPCRequest::JsonRPCRequest(const Poco::URI& serverHost)
-	: JsonRequest(serverHost)
+JsonRPCRequest::JsonRPCRequest(const std::string& uri)
+	: JsonRequest(uri)
 {
 
 }
@@ -39,16 +40,16 @@ Document JsonRPCRequest::request(const char* methodName, Value& params)
 
 	// TODO: use group alias instead of /
 	
-	auto responseString = POST("/", requestJson, "HTTP/1.1");
+	auto responseString = POST("/", requestJson);
 	// debugging answer
 	if (responseString.size() == 0) {
-		throw RequestEmptyResponseException("methodName", mRequestUri);
+		throw RequestEmptyResponseException("methodName", mUrl);
 	}
 
 	auto jsonAnswear = parseResponse(responseString);
 
 	if (!jsonAnswear.IsObject()) {
-		throw RequestResponseInvalidJsonException(methodName, mRequestUri, responseString);
+		throw RequestResponseInvalidJsonException(methodName, mUrl, responseString);
 	}
 		
 	if (jsonAnswear.FindMember("error") != jsonAnswear.MemberEnd()) {
@@ -83,16 +84,16 @@ Document& JsonRPCRequest::batchRequest(std::vector<std::string> methods, rapidjs
 		mJsonDocument.PushBack(requestJson, alloc);
 	}
 
-	auto responseString = POST("/", mJsonDocument, "HTTP/1.1");
+	auto responseString = POST("/", mJsonDocument);
 	// debugging answer
 	if (responseString.size() == 0) {
-		throw RequestEmptyResponseException("methodName", mRequestUri);
+		throw RequestEmptyResponseException("methodName", mUrl);
 	}
 
 	auto jsonAnswearBatch = parseResponse(responseString);
 
 	if (!jsonAnswearBatch.IsArray()) {
-		throw RequestResponseInvalidJsonException("batch", mRequestUri, responseString);
+		throw RequestResponseInvalidJsonException("batch", mUrl, responseString);
 	}
 
 	for (auto& jsonAnswear : jsonAnswearBatch.GetArray())

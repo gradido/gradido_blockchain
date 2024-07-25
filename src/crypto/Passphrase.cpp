@@ -1,16 +1,21 @@
-#include "Poco/Types.h"
-#include "Poco/Tuple.h"
-
 #include "gradido_blockchain/crypto/Passphrase.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 #include "gradido_blockchain/crypto/CryptoConfig.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain/crypto/MnemonicType.h"
+#ifdef _DEBUG
+#include "gradido_blockchain/crypto/CryptoConfig.h"
+#endif
+#include "loguru/loguru.hpp"
+#include "magic_enum/magic_enum_utility.hpp"
 
 #include <sstream>
 
 #define STR_BUFFER_SIZE 25
 
-static std::vector<Poco::Tuple<int, std::string>> g_specialChars = {
+using namespace magic_enum;
+
+static std::vector<std::pair<int, std::string>> g_specialChars = {
 	{ 0xa4, "auml" },{ 0x84, "Auml" },
 	{ 0xbc, "uuml" },{ 0x9c, "Uuml" },
 	{ 0xb6, "ouml" },{ 0x96, "Ouml" },
@@ -20,8 +25,8 @@ static std::vector<Poco::Tuple<int, std::string>> g_specialChars = {
 Passphrase::Passphrase(const std::string& passphrase, const Mnemonic* wordSource)
 	: mPassphraseString(filter(passphrase)), mWordSource(wordSource)
 {
-	memset(mWordIndices, 0, PHRASE_WORD_COUNT * sizeof(Poco::UInt16));
-	getWordIndices();
+	mWordIndices.fill(0);
+	createWordIndices();
 }
 
 
@@ -52,8 +57,8 @@ std::string Passphrase::filter(const std::string& passphrase)
 				unsigned char c2 = passphrase.data()[i + 1];
 				bool insertedHtmlEntitie = false;
 				for (auto it = g_specialChars.begin(); it != g_specialChars.end(); it++) {
-					if (c2 == it->get<0>()) {
-						auto htmlEntitie = it->get<1>();
+					if (c2 == it->first) {
+						auto htmlEntitie = it->second;
 						filteredPassphrase += "&";
 						filteredPassphrase += htmlEntitie;
 						filteredPassphrase += ";";
@@ -100,37 +105,17 @@ std::string Passphrase::filter(const std::string& passphrase)
 
 std::shared_ptr<Passphrase> Passphrase::transform(const Mnemonic* targetWordSource)
 {
-
 	if (!targetWordSource || !mWordSource) {
 		return nullptr;
 	}
-
-	if (createWordIndices()) {
-		return create(mWordIndices, targetWordSource);
-	}
-	return nullptr;
-}
-
-std::shared_ptr<Passphrase> Passphrase::create(const std::string& passphrase, const Mnemonic* wordSource)
-{
-	return std::shared_ptr<Passphrase>(new Passphrase(passphrase, wordSource));
-}
-
-std::shared_ptr<Passphrase> Passphrase::create(const MemoryBin* wordIndices, const Mnemonic* wordSource)
-{
-	if (PHRASE_WORD_COUNT * sizeof(uint16_t) >= wordIndices->size()) {
-		return nullptr;
-	}
-
-	const uint16_t* word_indices_p = (const uint16_t*)wordIndices->data();
-	return create(word_indices_p, wordSource);
+	return create(mWordIndices, targetWordSource);
 }
 
 std::string Passphrase::createClearPassphrase() const
 {
 	auto word_indices = getWordIndices();
 	std::string clear_passphrase;
-	auto word_source = &CryptoConfig::g_Mnemonic_WordLists[CryptoConfig::MNEMONIC_BIP0039_SORTED_ORDER];
+	auto word_source = &CryptoConfig::g_Mnemonic_WordLists[enum_integer(MnemonicType::BIP0039_SORTED_ORDER)];
 	for (int i = 0; i < PHRASE_WORD_COUNT; i++) {
 		auto word = word_source->getWord(word_indices[i]);
 		if (word) {
@@ -141,7 +126,7 @@ std::string Passphrase::createClearPassphrase() const
 	return clear_passphrase;
 }
 
-std::shared_ptr<Passphrase> Passphrase::create(const uint16_t wordIndices[PHRASE_WORD_COUNT], const Mnemonic* wordSource)
+std::shared_ptr<Passphrase> Passphrase::create(const std::array<uint16_t, PHRASE_WORD_COUNT>& wordIndices, const Mnemonic* wordSource)
 {
 	std::string clearPassphrase;
 	for (int i = 0; i < PHRASE_WORD_COUNT; i++) {
@@ -159,122 +144,106 @@ std::shared_ptr<Passphrase> Passphrase::create(const uint16_t wordIndices[PHRASE
 
 std::shared_ptr<Passphrase> Passphrase::generate(const Mnemonic* wordSource)
 {
-	auto mm = MemoryManager::getInstance();
-	auto word_indices = mm->getMemory(PHRASE_WORD_COUNT * sizeof(Poco::UInt16));
-	uint16_t* word_indices_p = (uint16_t*)word_indices->data();
-
+	std::array<uint16_t, PHRASE_WORD_COUNT> word_indices;
 	for (int i = 0; i < PHRASE_WORD_COUNT; i++) {
-		word_indices_p[i] = randombytes_random() % 2048;
+		word_indices[i] = randombytes_random() % 2048;
 	}
-	auto result_passphrase = create(word_indices_p, wordSource);
-	mm->releaseMemory(word_indices);
-
-	return result_passphrase;
+	return create(word_indices, wordSource);
 }
 
-bool Passphrase::createWordIndices()
+void Passphrase::createWordIndices()
 {
-	auto mm = MemoryManager::getInstance();
-	const char* functionName = "Passphrase::createWordIndices";
-
 	if (!mWordSource) {
 		throw PassphraseEmptyWordSourceException();
 	}
+	size_t passphraseSize = mPassphraseString.size();
 
-	//DHASH key = DRMakeStringHash(passphrase);
-	size_t pass_phrase_size = mPassphraseString.size();
-
-	char acBuffer[STR_BUFFER_SIZE]; memset(acBuffer, 0, STR_BUFFER_SIZE);
-	size_t buffer_cursor = 0;
+	std::array<char, STR_BUFFER_SIZE> buffer;
+	buffer.fill(0);
+	size_t bufferCursor = 0;
 
 	// get word indices for hmac key
 	unsigned char word_cursor = 0;
 	for (auto it = mPassphraseString.begin(); it != mPassphraseString.end(); it++)
 	{
 		if (*it == ' ') {
-			if (buffer_cursor < 3) {
+			if (bufferCursor < 3) {
 				continue;
 			}
-			if (PHRASE_WORD_COUNT > word_cursor && mWordSource->isWordExist(acBuffer)) {
-				mWordIndices[word_cursor] = mWordSource->getWordIndex(acBuffer);
-				//word_indices_old[word_cursor] = word_source->getWordIndex(acBuffer);
+			if (PHRASE_WORD_COUNT > word_cursor && mWordSource->isWordExist(buffer.data())) {
+				mWordIndices[word_cursor] = mWordSource->getWordIndex(buffer.data());
 			}
 			else {
-				MnemonicException exception("word don't exist", acBuffer);
+				MnemonicException exception("word don't exist", buffer.data());
 				exception.setMnemonic(mWordSource);
 				throw exception;
 			}
 			word_cursor++;
-			memset(acBuffer, 0, STR_BUFFER_SIZE);
-			buffer_cursor = 0;
+			buffer.fill(0);
+			bufferCursor = 0;
 
 		}
 		else {
-			acBuffer[buffer_cursor++] = *it;
+			assert(bufferCursor < buffer.size());
+			buffer[bufferCursor++] = *it;
 		}
 	}
-	if (PHRASE_WORD_COUNT > word_cursor && mWordSource->isWordExist(acBuffer)) {
-		mWordIndices[word_cursor] = mWordSource->getWordIndex(acBuffer);
-		//word_indices_old[word_cursor] = word_source->getWordIndex(acBuffer);
-		word_cursor++;
+	if (PHRASE_WORD_COUNT > word_cursor && mWordSource->isWordExist(buffer.data())) {
+		mWordIndices[word_cursor] = mWordSource->getWordIndex(buffer.data());
 	}
-
-	return true;
-}
-
-const Poco::UInt16* Passphrase::getWordIndices()
-{
-	if (!(mWordIndices[0] | mWordIndices[1] | mWordIndices[2] | mWordIndices[3])) {
-		if (createWordIndices()) return mWordIndices;
-	}
-	return mWordIndices;
-}
-
-const Poco::UInt16* Passphrase::getWordIndices() const
-{
-	return mWordIndices;
 }
 
 bool Passphrase::checkIfValid()
 {
 	if (!mWordSource) return false;
 	std::istringstream iss(mPassphraseString);
-	std::vector<std::string> results(std::istream_iterator<std::string>{iss},
-	std::istream_iterator<std::string>());
+	std::vector<std::string> results(
+		std::istream_iterator<std::string>{iss},
+		std::istream_iterator<std::string>()
+	);
 
 	bool existAll = true;
 	for (auto it = results.begin(); it != results.end(); it++) {
 		if (*it == "\0" || *it == "" || it->size() < 3) continue;
-		if (!mWordSource->isWordExist(*it)) {
+		if (!mWordSource->isWordExist(it->data())) {
 			return false;
 		}
 	}
 	return true;
 }
-const Mnemonic* Passphrase::detectMnemonic(const std::string& passphrase, const KeyPairEd25519* keyPair /* = nullptr*/)
+const Mnemonic* Passphrase::detectMnemonic(const std::string& passphrase, const KeyPairEd25519* userKeyPair /* = nullptr*/)
 {
 	std::istringstream iss(passphrase);
-	std::vector<std::string> results(std::istream_iterator<std::string>{iss},
-		std::istream_iterator<std::string>());
+	std::vector<std::string> results(
+		std::istream_iterator<std::string>{iss},
+		std::istream_iterator<std::string>()
+	);
 
-
-	std::string user_public_key_hex;
-
-	if (keyPair) {
-		user_public_key_hex = DataTypeConverter::pubkeyToHex(keyPair->getPublicKey());
-		//printf("user public key hex: %s\n", user_public_key_hex.data());
+#ifdef _DEBUG
+	std::string userPublicKeyHex;
+	if (userKeyPair)
+	{
+	    LOG_SCOPE_F(9, __FUNCTION__);
+		userPublicKeyHex = userKeyPair->getPublicKey()->convertToHex();
+		LOG_F(9, "user public key hex: %s\n", userPublicKeyHex.data());
 	}
-    std::string last_words_not_found[CryptoConfig::Mnemonic_Types::MNEMONIC_MAX];
-	for (int i = 0; i < CryptoConfig::Mnemonic_Types::MNEMONIC_MAX; i++) {
+#endif
+    std::string last_words_not_found[enum_integer(MnemonicType::MAX)];
+	Mnemonic* result = nullptr;
+	enum_for_each<MnemonicType>([&](auto val) {
+		if (result)  return;
+		constexpr MnemonicType type = val;
+		if(type == MnemonicType::MAX) return;
+		int i = enum_integer(type);
 		Mnemonic& m = CryptoConfig::g_Mnemonic_WordLists[i];
 		bool existAll = true;
 		int count = 0;
 		for (auto it = results.begin(); it != results.end(); it++) {
 			if (count >= PHRASE_WORD_COUNT) break;
 			if (*it == "\0" || *it == "" || it->size() < 3) continue;
-			if (!m.isWordExist(*it)) {
+			if (!m.isWordExist(it->data())) {
 				existAll = false;
-				if (i == CryptoConfig::Mnemonic_Types::MNEMONIC_BIP0039_SORTED_ORDER) {
+				if (i == enum_integer(MnemonicType::BIP0039_SORTED_ORDER)) {
 					printf("couldn't find word: %s\n", (*it).data());
 				}
 				last_words_not_found[i] = (*it);
@@ -283,28 +252,39 @@ const Mnemonic* Passphrase::detectMnemonic(const std::string& passphrase, const 
 			}
 			count++;
 		}
-		if (existAll) {
-			if (keyPair) {
+		if (existAll)
+		{
+			if (userKeyPair)
+			{
 				std::shared_ptr<Passphrase> test_passphrase(new Passphrase(passphrase, &m));
 				test_passphrase->createWordIndices();
-				auto key_pair = KeyPairEd25519::create(test_passphrase);
-				if (key_pair) {
-
-					if (*key_pair != *keyPair) {
-#ifdef _TEST_BUILD // additional infos for debugging if error occure in test
-						printf("public key mismatch\n");
-						std::string generated_key_pair_hex = DataTypeConverter::pubkeyToHex(key_pair->getPublicKey());
-						std::string parameter_key_pair_hex = DataTypeConverter::pubkeyToHex(keyPair->getPublicKey());
-						printf("parameter: %s, generated: %s\n", parameter_key_pair_hex.data(), generated_key_pair_hex.data());
+				auto keyPairFromPassphrase = KeyPairEd25519::create(test_passphrase);
+				if (keyPairFromPassphrase)
+				{
+					if (!keyPairFromPassphrase->isTheSame(*userKeyPair))
+					{
+#ifdef _DEBUG  // additional infos for debugging if error occure in test
+                        LOG_SCOPE_F(9, __FUNCTION__);
+						LOG_F(9, "public key mismatch");
+						LOG_F(9, "user public key: %s, public key from passphrase: %s\n",
+							userPublicKeyHex.data(),
+							keyPairFromPassphrase->getPublicKey()->convertToHex().data()
+						);
 #endif
-						continue;
+						// continue;
+						return;
 					}
 				}
 			}
-			return &CryptoConfig::g_Mnemonic_WordLists[i];
+			result = &CryptoConfig::g_Mnemonic_WordLists[i];
+			// return &CryptoConfig::g_Mnemonic_WordLists[i];
 		}
-		//printf("last word not found: %s in %s\n", last_words_not_found[i].data(), ServerConfig::mnemonicTypeToString((ServerConfig::Mnemonic_Types)i));
-	}
-	
-	return nullptr;
+#ifdef _DEBUG
+		LOG_F(9, "last word not found: %s in %s",
+			last_words_not_found[i].data(),
+			enum_name(type).data()
+		);
+#endif
+	});
+	return result;
 }

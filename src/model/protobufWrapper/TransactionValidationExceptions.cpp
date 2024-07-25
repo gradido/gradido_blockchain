@@ -90,7 +90,7 @@ namespace model {
 			result.reserve(pubkeyHex.size() + signatureHex.size() + bodyBytesBase64.size() + strlen(whatString) + staticTextSize);
 			result = whatString;
 			result += " with pubkey: " + pubkeyHex.substr(0, 64);
-			result += ", signature: " + signatureHex.substr(0, 64);
+			result += ", signature: " + signatureHex.substr(0, 128);
 			if (mBodyBytes.size()) {
 				result += ", body bytes: " + bodyBytesBase64;
 			}
@@ -220,11 +220,11 @@ namespace model {
 		}
 
 		// ******************************* Missing required sign *****************************************************
-		TransactionValidationRequiredSignMissingException::TransactionValidationRequiredSignMissingException(const std::vector<MemoryBin*>& missingPublicKeys) noexcept
+		TransactionValidationRequiredSignMissingException::TransactionValidationRequiredSignMissingException(const std::vector<memory::Block>& missingPublicKeys) noexcept
 			: TransactionValidationException("missing required sign")
 		{
-			std::for_each(missingPublicKeys.begin(), missingPublicKeys.end(), [&](MemoryBin* pubkey) {
-				mMissingPublicKeysHex.push_back(DataTypeConverter::binToHex(pubkey));
+			std::for_each(missingPublicKeys.begin(), missingPublicKeys.end(), [&](memory::Block pubkey) {
+				mMissingPublicKeysHex.push_back(pubkey.convertToHexString());
 			});
 		}
 
