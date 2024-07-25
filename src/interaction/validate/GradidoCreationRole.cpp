@@ -227,7 +227,6 @@ namespace gradido {
 				// check that is is indeed an old transaction from before Sun May 03 2020 11:00:08 GMT+0000
 				auto algo = getCorrectCreationMaxAlgo(received);
 				assert(CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == algo);
-				auto searchDate = date::year_month_day{ date::floor<date::days>(received) };
 				GradidoUnit sum; // default initialized with zero
 
 				// received = max
@@ -241,7 +240,7 @@ namespace gradido {
 					TimepointInterval(beforeReceived, received),
 					// dynamic filter
 					// called for each transaction which fulfills the static filters
-					[&sum, &searchDate](const blockchain::TransactionEntry& entry) -> blockchain::FilterResult
+					[&sum](const blockchain::TransactionEntry& entry) -> blockchain::FilterResult
 					{
 						auto body = entry.getTransactionBody();
 						if (body->isCreation())

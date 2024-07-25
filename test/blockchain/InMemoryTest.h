@@ -19,6 +19,13 @@ protected:
 
     void createRegisterAddress();
     void createRegisterAddress(int keyPairIndexStart);
+    bool createGradidoCreation(
+        int recipientKeyPairIndex,
+        int signerKeyPairIndex,
+        GradidoUnit amount, 
+        Timepoint createdAt,
+        Timepoint targetDate
+    );
 
     std::mt19937 gen; // seed the generator with a random value
     std::uniform_int_distribution<int> randTimeRange; // distribution for seconds between 120 and 2 days
@@ -36,9 +43,10 @@ protected:
         int pubkeyIndex;
         GradidoUnit balance;
         Timepoint balanceDate;
+
         
     };
-    std::vector<Account> mAccountKeyPairIndices;
+    std::map<int, Account> mKeyPairIndexAccountMap;
 
 public:
    

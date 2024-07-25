@@ -118,3 +118,4 @@ TEST(ValidateGradidoCreationTest, invalidPubkey) {
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
 
+// TODO: invalid target date with both algos
