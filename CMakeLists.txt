@@ -133,12 +133,8 @@ endif()
 include_directories(
 	"dependencies"
 	"dependencies/tinf/src/" 
-	"dependencies/protobuf/src"
 	"dependencies/protopuf/include"
-	#"dependencies/loguru"
 	"dependencies/rapidjson/include"
-	#"dependencies/rapidyaml/src"
-	#"dependencies/rapidyaml/ext/c4core/src"
 	"dependencies/furi/code/"
 	"dependencies/magic_enum/include"
 	"dependencies/cpp-httplib"
