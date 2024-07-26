@@ -1,21 +1,12 @@
-[submodule "dependencies/poco"]
-	path = dependencies/poco
-	url = https://github.com/pocoproject/poco.git
 [submodule "dependencies/tinf"]
 	path = dependencies/tinf
 	url = https://github.com/jibsen/tinf.git
-[submodule "dependencies/protobuf"]
-	path = dependencies/protobuf
-	url = https://github.com/protocolbuffers/protobuf.git
 [submodule "dependencies/rapidjson"]
 	path = dependencies/rapidjson
 	url = https://github.com/Tencent/rapidjson.git
 [submodule "gradido_protocol"]
 	path = gradido_protocol
 	url = git@github.com:gradido/gradido_protocol.git
-[submodule "doc/doxygen-awesome-css"]
-	path = doc/doxygen_awesome_css
-	url = https://github.com/jothepro/doxygen-awesome-css.git
 [submodule "doc/doxygen_awesome_css"]
 	path = doc/doxygen_awesome_css
 	url = https://github.com/jothepro/doxygen-awesome-css.git
@@ -40,6 +31,4 @@
 [submodule "dependencies/protopuf"]
 	path = dependencies/protopuf
 	url = https://github.com/PragmaTwice/protopuf
-[submodule "dependencies/Memory-Pool"]
-	path = dependencies/Memory-Pool
-	url = https://github.com/LLLida/Memory-Pool.git
+
