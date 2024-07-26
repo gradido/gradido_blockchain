@@ -14,8 +14,8 @@
 	path = dependencies/ed25519_bip32_c_interface
 	url = https://github.com/gradido/ed25519_bip32_c_interface.git
 [submodule "dependencies/date"]
-        path = dependencies/date
-        url = https://github.com/HowardHinnant/date.git
+  path = dependencies/date
+  url = https://github.com/HowardHinnant/date.git
 [submodule "dependencies/cpp-httplib"]
 	path = dependencies/cpp-httplib
 	url = https://github.com/yhirose/cpp-httplib.git
