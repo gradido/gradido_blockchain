@@ -63,5 +63,30 @@ public:
 	}
 };
 
+class AuthenticatedDecryptionException : public GradidoBlockchainException
+{
+public:
+	explicit AuthenticatedDecryptionException(const char* message) noexcept : GradidoBlockchainException(message) {}
+	std::string getFullString() const {
+		return what();
+	}
+};
 
+class AuthenticatedKeyTransformationException : public GradidoBlockchainException
+{
+public:
+	explicit AuthenticatedKeyTransformationException(const char* message) noexcept : GradidoBlockchainException(message) {}
+	std::string getFullString() const {
+		return what();
+	}
+};
+
+class AuthenticatedPrepareException : public GradidoBlockchainException
+{
+public:
+	explicit AuthenticatedPrepareException(const char* message) noexcept : GradidoBlockchainException(message) {}
+	std::string getFullString() const {
+		return what();
+	}
+};
 #endif //GRADIDO_NODE_LIB_AUTHENTICATED_ENCRYPTION_H

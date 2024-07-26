@@ -62,19 +62,19 @@ void InMemoryTest::createRegisterAddress(int keyPairIndexStart)
 	}
 	TransactionBody body("", generateNewCreatedAt(), VERSION_STRING);
 	auto userPubkeyIndex = keyPairIndexStart;
-	auto accountPubkeyÍndex = keyPairIndexStart + 1;
+	auto accountPubkeyIndex = keyPairIndexStart + 1;
 	body.registerAddress = make_shared<RegisterAddress>(
 		AddressType::COMMUNITY_HUMAN,
 		1,
 		g_KeyPairs[userPubkeyIndex].publicKey,
 		nullptr,
-		g_KeyPairs[accountPubkeyÍndex].publicKey
+		g_KeyPairs[accountPubkeyIndex].publicKey
 	);
-	mKeyPairIndexAccountMap.insert({ accountPubkeyÍndex, accountPubkeyÍndex });
+	mKeyPairIndexAccountMap.insert({ accountPubkeyIndex, accountPubkeyIndex });
 	serialize::Context c(body);
 	auto transaction = make_shared<GradidoTransaction>();
 	transaction->bodyBytes = c.run();
-	sign(*transaction, g_KeyPairs[accountPubkeyÍndex]);
+	sign(*transaction, g_KeyPairs[accountPubkeyIndex]);
 	// sign with community root key
 	sign(*transaction, g_KeyPairs[0]);
 	ASSERT_TRUE(mBlockchain->addGradidoTransaction(transaction, nullptr, mLastCreatedAt));
