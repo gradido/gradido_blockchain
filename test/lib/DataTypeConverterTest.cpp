@@ -36,7 +36,7 @@ TEST(DataTypeConverterTest, BinToBase64UniqueString)
 TEST(DataTypeConverterTest, TimePointToString)
 {
 	auto firstAppleReleaseDate = system_clock::time_point(seconds{ 443770227 });
-	ASSERT_EQ(timePointToString(firstAppleReleaseDate, "%Y-%m-%d %H:%M:%S"), "1984-01-24 05:30:27.0000000");
+	ASSERT_EQ(timePointToString(firstAppleReleaseDate, "%Y-%m-%d %H:%M:%S"), "1984-01-24 05:30:27.0000");
 }
 
 TEST(DataTypeConverterTest, DateTimeStringToTimePoint)

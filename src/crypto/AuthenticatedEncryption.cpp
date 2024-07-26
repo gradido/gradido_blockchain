@@ -24,7 +24,9 @@ AuthenticatedEncryption::AuthenticatedEncryption(KeyPairEd25519* ed25519KeyPair)
 		mPrivkey = std::make_shared<memory::Block>(privkey);
 	}
 	else if (ed25519KeyPair->getPublicKey()) {
-		crypto_sign_ed25519_pk_to_curve25519(pubkey, *ed25519KeyPair->getPublicKey());
+		if(crypto_sign_ed25519_pk_to_curve25519(pubkey, *ed25519KeyPair->getPublicKey())) {
+			throw AuthenticatedKeyTransformationException("error transforming ed25519 key to curve25519");
+		}
 	}
 	mPubkey = std::make_shared<memory::Block>(pubkey);
 }
@@ -84,9 +86,11 @@ memory::Block AuthenticatedEncryption::encrypt(const memory::Block& message, int
 		/*int crypto_box_easy_afternm(unsigned char* c, const unsigned char* m,
 		unsigned long long mlen, const unsigned char* n,
 		const unsigned char* k);*/
-		crypto_box_easy_afternm(&result.data()[crypto_box_NONCEBYTES], message.data(),
+		if(crypto_box_easy_afternm(&result.data()[crypto_box_NONCEBYTES], message.data(),
 			message.size(), result.data(),
-			sharedSecret->second->data());
+			sharedSecret->second->data())) {
+				throw AuthenticatedEncryptionException("error by encrypt message");
+			}
 	} 	
 	return result;
 }
@@ -105,6 +109,7 @@ memory::Block AuthenticatedEncryption::decrypt(const memory::Block& encryptedMes
 	if (crypto_box_open_easy(result.data(), &encryptedMessage.data()[crypto_box_NONCEBYTES],
 		encryptedMessage.size() - crypto_box_NONCEBYTES, encryptedMessage.data(),
 		*senderKey->mPubkey, mPrivkey->data())) {
+			throw AuthenticatedDecryptionException("error by decrypt message");
 	}
 	return result;
 }
@@ -124,9 +129,11 @@ memory::Block AuthenticatedEncryption::decrypt(const memory::Block& encryptedMes
 		unsigned long long clen, const unsigned char* n,
 		const unsigned char* k); */
 		// The function returns -1 if the verification fails, and 0 on success. On success, the decrypted message is stored into m.
-		crypto_box_open_easy_afternm(result.data(), &encryptedMessage.data()[crypto_box_NONCEBYTES],
+		if(crypto_box_open_easy_afternm(result.data(), &encryptedMessage.data()[crypto_box_NONCEBYTES],
 			encryptedMessage.size() - crypto_box_NONCEBYTES, encryptedMessage.data(),
-			sharedSecret->second->data());
+			sharedSecret->second->data())) {
+				throw AuthenticatedDecryptionException("error by decrypt message");
+			}
 	}
 
 	return result;
@@ -139,7 +146,9 @@ int AuthenticatedEncryption::precalculateSharedSecret(AuthenticatedEncryption* r
 	/*int crypto_box_beforenm(unsigned char* k, const unsigned char* pk,
 		const unsigned char* sk);*/
 	auto sharedSecret = std::make_unique<memory::Block>(crypto_box_BEFORENMBYTES);
-	crypto_box_beforenm(sharedSecret->data(), *recipiantKey->mPubkey, mPrivkey->data());
+	if(crypto_box_beforenm(sharedSecret->data(), *recipiantKey->mPubkey, mPrivkey->data())) {
+		throw AuthenticatedPrepareException("error in precalculateSharedSecret");
+	};
 	mPrecalculatedSharedSecretLastIndex++;
 	mPrecalculatedSharedSecrets.insert({ mPrecalculatedSharedSecretLastIndex, std::move(sharedSecret) });
 	return mPrecalculatedSharedSecretLastIndex;

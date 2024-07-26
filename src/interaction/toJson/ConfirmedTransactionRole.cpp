@@ -23,10 +23,13 @@ namespace gradido {
 				d.AddMember("confirmedAt", Value(DataTypeConverter::timePointToString(mTransaction.confirmedAt).data(), alloc), alloc);
 				d.AddMember("versionNumber", Value(mTransaction.versionNumber.data(), alloc), alloc);
 				if (mTransaction.runningHash) {
-					d.AddMember("runningHash", Value(mTransaction.runningHash->convertToHex().data(), alloc), alloc);
+					auto hashHex = mTransaction.runningHash->convertToHex();
+					printf("running hash hex size: %d\n", hashHex.size());
+					d.AddMember("runningHash", Value(hashHex.data(), hashHex.size(), alloc), alloc);
 				}
 				if (mTransaction.messageId) {
-					d.AddMember("messageId", Value(mTransaction.messageId->convertToHex().data(), alloc), alloc);
+					auto messageIdHex = mTransaction.messageId->convertToHex();
+					d.AddMember("messageId", Value(messageIdHex.data(), messageIdHex.size(), alloc), alloc);
 				}
 				d.AddMember("accountBalance", Value(mTransaction.accountBalance.toString().data(), alloc), alloc);
 					

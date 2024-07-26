@@ -231,7 +231,7 @@ namespace DataTypeConverter
 
 		sodium_bin2hex((char*)hex.data(), hexSize, data, binSize);
 
-		std::string hexString((const char*)*hex, hexSize - 1);
+		std::string hexString((const char*)hex.data(), hexSize - 1);
 		return hexString;
 	}
 
@@ -244,7 +244,7 @@ namespace DataTypeConverter
 
 		size_t resultBinSize = 0;
 		sodium_bin2hex((char*)hex.data(), hexSize, (const unsigned char*)binString->data(), binSize);
-		binString->assign((const char *)*hex, hexSize - 1);
+		binString->assign((const char*)hex.data(), hexSize - 1);
 
 		return binString;
 	}
@@ -260,13 +260,22 @@ namespace DataTypeConverter
 
 		sodium_bin2hex((char*)hex.data(), hexSize, pubkey, binSize);
 
-		std::string hexString((const char*)*hex, hexSize-1);
+		std::string hexString((const char*)hex.data(), hexSize-1);
 		return hexString;
 	}
 
 	std::string timePointToString(const Timepoint& timepoint, const char* fmt /*= "%Y-%m-%d %H:%M:%S"*/)
 	{
-		return date::format(fmt, timepoint);
+		// First, format the time without the fractional seconds
+    auto timepointSeconds = date::floor<seconds>(timepoint);
+
+		// Get the fractional seconds part
+    auto seconds = duration_cast<duration<double>>(timepoint - timepointSeconds).count();
+    std::stringstream fractional_ss;
+    fractional_ss << std::fixed << std::setprecision(4) << seconds;
+
+    // Append the fractional part
+    return date::format(fmt, timepointSeconds) + fractional_ss.str().substr(1);  // Skip the leading zero
 	}
 
 	Timepoint dateTimeStringToTimePoint(const std::string& dateTimeString, const char* fmt /*= "%F %T"*/)

@@ -166,6 +166,7 @@ TEST(BlockTest, isEmpty) {
 	Block emptyBlock(10);
 	EXPECT_TRUE(emptyBlock.isEmpty());
 	EXPECT_FALSE(block.isEmpty());
+	EXPECT_EQ(emptyBlock.convertToHex(), "00000000000000000000");
 }
 
 TEST(BlockTest, CopyAsString) {
