@@ -27,6 +27,8 @@ protected:
         Timepoint targetDate
     );
 
+    void logBlockchain();
+
     std::mt19937 gen; // seed the generator with a random value
     std::uniform_int_distribution<int> randTimeRange; // distribution for seconds between 120 and 2 days
 

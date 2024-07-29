@@ -2,10 +2,13 @@
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
+#include "gradido_blockchain/interaction/toJson/Context.h"
 #include "gradido_blockchain/lib/Profiler.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 
 #include "date/date.h"
 #include "date/tz.h"
+#include "loguru/loguru.hpp"
 
 using namespace std;
 using namespace gradido;
@@ -124,6 +127,16 @@ bool InMemoryTest::createGradidoCreation(
 	return false;
 }
 
+void InMemoryTest::logBlockchain()
+{
+	auto transactions = dynamic_cast<InMemory*>(mBlockchain.get())->getSortedTransactions();
+
+	for (auto transaction : transactions) {
+		toJson::Context c(*transaction->getConfirmedTransaction());
+		LOG_F(INFO, c.run(true).data());
+	}
+}
+
 TEST_F(InMemoryTest, FindCommunityRootTransactionByType)
 {
 	Filter f;
@@ -209,8 +222,24 @@ TEST_F(InMemoryTest, CreationTransactions)
 	EXPECT_GT(accountIt->second.balanceDate, createdAt);
 
 	createdAt += chrono::hours{ 23 };
-	targetDate = getPreviousNMonth2(createdAt, 2);
-	ASSERT_TRUE(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate));
+
+	auto newTargetDate = getPreviousNMonth2(createdAt, 2);
+	if (date::year_month_day(floor<days>(newTargetDate)).month() == date::year_month_day(floor<days>(targetDate)).month()) {
+		newTargetDate = getPreviousNMonth2(createdAt, 1);
+	}
+	try {
+		ASSERT_TRUE(createGradidoCreation(6, 4, 1000.0, createdAt, newTargetDate));
+	}
+	catch (GradidoBlockchainException& ex) {
+		loguru::g_stderr_verbosity = loguru::Verbosity_INFO;
+		logBlockchain();
+		auto createAtString = DataTypeConverter::timePointToString(createdAt);
+		auto targetDateString = DataTypeConverter::timePointToString(newTargetDate);
+		LOG_F(INFO, "createdAt: %s, targetDate: %s", createAtString.data(), targetDateString.data());
+		LOG_F(ERROR, ex.getFullString().data());
+	}
+	
+	
 	// 1000.0000 decayed for 23 hours => 998.1829
 	EXPECT_EQ(accountIt->second.balance, GradidoUnit(1998.1829));
 	EXPECT_GT(accountIt->second.balanceDate, createdAt);

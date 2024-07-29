@@ -1,6 +1,6 @@
 [requires]
 libsodium/1.0.18
-gtest/1.10.0
+gtest/1.14.0
 
 [options]
 #*:shared=False

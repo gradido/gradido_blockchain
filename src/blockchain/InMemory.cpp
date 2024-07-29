@@ -106,7 +106,11 @@ namespace gradido {
 		const TransactionEntries& InMemory::getSortedTransactions()
 		{
 			if (mSortedDirty) {
-				mSortedTransactions.sort();
+				std::lock_guard _lock(mWorkMutex);
+				mSortedTransactions.clear();
+				for (auto transactionNrEntryPair : mTransactionsByNr) {
+					mSortedTransactions.push_back(transactionNrEntryPair.second);
+				}
 				mSortedDirty = false;
 			}
 			return mSortedTransactions;
@@ -114,6 +118,7 @@ namespace gradido {
 
 		TransactionEntries InMemory::findAll(const Filter& filter/* = Filter::ALL_TRANSACTIONS*/) const
 		{
+			std::lock_guard _lock(mWorkMutex);
 			// find smallest start set
 			auto startSetType = findSmallestPrefilteredTransactionList(filter);
 			if (FilterCriteria::NONE == startSetType) {

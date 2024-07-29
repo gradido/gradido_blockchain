@@ -13,18 +13,18 @@ using namespace date;
 Timepoint getPreviousNMonth(const Timepoint& startDate, int monthsAgo) {
     auto ymd = date::year_month_day(floor<days>(startDate));
     auto month = ymd.month() - date::months(monthsAgo);
-		ymd -= date::months(monthsAgo);
+	ymd -= date::months(monthsAgo);
     int subtractDays = 1;
     while(!ymd.ok()) {
       ymd = date::year_month_day(floor<days>(startDate) - days{subtractDays++});
       ymd -= date::months(monthsAgo);
     }
-		return date::sys_days(ymd);
+	return date::sys_days(ymd);
 }
 TEST(PreviousNMonthTest, CalculateThreeMonthsPrior) {
     auto startDate = sys_days{year{2024}/March/31};
     auto result = getPreviousNMonth(startDate, 3);
-    EXPECT_EQ(result, sys_days{year{2023}/December/31});
+    EXPECT_EQ(result, date::sys_days{year{2023}/December/31});
 }
 
 TEST(PreviousNMonthTest, CalculateOneMonthsPrior) {
