@@ -7,8 +7,8 @@ namespace memory {
 	BlockStack::BlockStack(size_t size)
 		: mSize(size)
 	{
-		mBlockStack.push(static_cast<uint8_t*>(malloc(size)));
 	}
+	
 	BlockStack::~BlockStack()
 	{
 		LOG_F(INFO, "release memory page stack: %d, stack size: %d", static_cast<int>(mSize), static_cast<int>(mBlockStack.size()));
@@ -22,11 +22,13 @@ namespace memory {
 		if (!mSize) {
 			return nullptr;
 		}
+		uint8_t* block = nullptr;
 		if (mBlockStack.size() == 0) {
-			return static_cast<uint8_t*>(malloc(mSize));
+			block = static_cast<uint8_t*>(malloc(mSize));
+		} else {
+			block = mBlockStack.top();
+			mBlockStack.pop();
 		}
-		auto block = mBlockStack.top();
-		mBlockStack.pop();
 		memset(block, 0, mSize);
 		return block;
 	}

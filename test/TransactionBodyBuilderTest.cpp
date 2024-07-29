@@ -27,7 +27,7 @@ TEST(TransactionBodyBuilderTest, CommunityRoot) {
 	EXPECT_EQ(*communityRoot->pubkey, *g_KeyPairs[0].publicKey);
 	EXPECT_EQ(*communityRoot->gmwPubkey, *g_KeyPairs[1].publicKey);
 	EXPECT_EQ(*communityRoot->aufPubkey, *g_KeyPairs[2].publicKey);
-	EXPECT_GT((Timepoint)transactionBody->createdAt, now);
+	EXPECT_GT(transactionBody->createdAt, Timestamp(now));
 }
 
 TEST(TransactionBodyBuilderTest, RegisterAddressUserOnly) {

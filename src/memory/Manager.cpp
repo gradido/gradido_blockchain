@@ -1,5 +1,6 @@
 #include "gradido_blockchain/memory/Manager.h"
 #include <cassert>
+#include <cstring>
 
 namespace memory {
 	Manager::Manager() : mInitalized(true)
@@ -19,7 +20,9 @@ namespace memory {
 	{
 		assert(size > 0);
 		if (!mInitalized) {
-			return (uint8_t*)malloc(size);
+			auto block = (uint8_t*)malloc(size);
+			std::memset(block, 0, size);
+			return block;
 		}
 		std::lock_guard _lock(mBlockStacksMutex);
 		auto it = mBlockStacks.find(size);

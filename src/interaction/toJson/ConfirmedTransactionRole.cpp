@@ -24,7 +24,6 @@ namespace gradido {
 				d.AddMember("versionNumber", Value(mTransaction.versionNumber.data(), alloc), alloc);
 				if (mTransaction.runningHash) {
 					auto hashHex = mTransaction.runningHash->convertToHex();
-					printf("running hash hex size: %d\n", hashHex.size());
 					d.AddMember("runningHash", Value(hashHex.data(), hashHex.size(), alloc), alloc);
 				}
 				if (mTransaction.messageId) {

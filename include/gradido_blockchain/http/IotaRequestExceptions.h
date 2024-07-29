@@ -26,4 +26,12 @@ protected:
 	std::string mRequestJsonPrettyString;
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT IotaRustClientMissingException : public GradidoBlockchainException
+{
+public:
+	explicit IotaRustClientMissingException(const char* what) noexcept : GradidoBlockchainException(what) {};
+	std::string getFullString() const { return what();}
+};
+
+
 #endif //__GRADIDO_BLOCKCHAIN_HTTP_IOTA_REQUEST_EXCEPTIONS_H

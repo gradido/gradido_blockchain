@@ -20,7 +20,9 @@
 #include "httplib.h"
 #include "loguru/loguru.hpp"
 
+#ifdef ENABLE_IOTA_RUST_CLIENT
 #include "iota_rust_clib.h"
+#endif
 
 using namespace rapidjson;
 
@@ -69,7 +71,11 @@ std::string IotaRequest::sendMessage(const iota::TopicIndex& index, const std::s
 		//auto index = DataTypeConverter::hexToBinString(indexHex.substr(0, indexHex.size()-1));
 		//auto message = DataTypeConverter::hexToBinString(messageHex.substr(0, messageHex.size()-1));
 		//printf("message hex: %s\n", messageHex.data());
+#ifdef ENABLE_IOTA_RUST_CLIENT
 		return sendMessageViaRustIotaClient(index.getBinString(), messageHex);
+#else 
+		throw IotaRustClientMissingException("Gradido Blockchain was builded without iota rust client, please set iota.local_pow to false or rebuild with iota rust client");
+#endif 
 	}
 	auto tips = getTips();
 	if (!tips.size()) {
@@ -281,7 +287,7 @@ void IotaRequest::defaultExceptionHandler(bool terminate/* = true*/)
 		}
 	}
 }
-
+#ifdef ENABLE_IOTA_RUST_CLIENT
 std::string IotaRequest::sendMessageViaRustIotaClient(const std::string& index, const std::string& message)
 {
 	std::string iotaUrl;
@@ -311,6 +317,7 @@ std::string IotaRequest::sendMessageViaRustIotaClient(const std::string& index, 
 	}
 	return std::move(std::string(resultJson["message_id"].GetString()));
 }
+#endif
 
 std::string_view IotaRequest::extractPathFromUrl()
 {

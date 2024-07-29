@@ -3,7 +3,9 @@
 cmake_minimum_required(VERSION 3.18.2)
 cmake_policy(VERSION 3.18.2)
 project(GradidoBlockchain VERSION 2.0.0)
-#project(GradidoBlockchain C CXX)
+
+option(ENABLE_IOTA_RUST_CLIENT "switch for include rust iota client into build, increase build time and size a lot" OFF)
+
 IF(WIN32)
 	set(CMAKE_CXX_FLAGS         "/MP /EHsc /std:c++20")
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
@@ -13,7 +15,11 @@ ELSE()
 ENDIF()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 add_definitions(-DNOMINMAX)
+if(ENABLE_IOTA_RUST_CLIENT)
+    add_definitions(-DENABLE_IOTA_RUST_CLIENT)
+endif()
 
 set(INSTALL_BINDIR "bin")
 set(INSTALL_PLUGINDIR "bin")
@@ -33,7 +39,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # using conan on windows
 IF(WIN32)
-  	find_package(libsodium REQUIRED)
+  find_package(libsodium REQUIRED)
 	include_directories(${libsodium_INCLUDE_DIR})
 	find_package(openssl)
 	if(openssl_FOUND)
@@ -140,10 +146,12 @@ include_directories(
 	"dependencies/cpp-httplib"
 	"dependencies/date/include"
 	"include"
-	"iota_rust_clib/include"	
 	"dependencies/ed25519_bip32_c_interface/include"	
 )
 
+if(ENABLE_IOTA_RUST_CLIENT)
+  include_directories("iota_rust_clib/include")
+ENDIF()
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 IF(WIN32)
@@ -157,7 +165,9 @@ ENDIF()
 #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/")
 enable_language(Rust)
 include(CMakeCargo)
-add_subdirectory(iota_rust_clib)
+if(ENABLE_IOTA_RUST_CLIENT)
+	add_subdirectory(iota_rust_clib)
+endif()
 add_subdirectory(dependencies/ed25519_bip32_c_interface)
 
 ############################ small libraries as subproject ###########
@@ -173,44 +183,43 @@ set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP})
 add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
-if(BUILD_SHARED_LIBS) 
-	target_link_libraries(GradidoBlockchain loguru::loguru)
-	IF(WIN32) 
-	  if(openssl_FOUND) 
-	  	target_link_libraries(GradidoBlockchain openssl::openssl)
-	  endif()
-	  target_link_libraries(GradidoBlockchain libsodium::libsodium)
-		# needed for windows if linking to a rust lib
+target_link_libraries(GradidoBlockchain loguru::loguru)
+IF(WIN32) 
+	if(openssl_FOUND) 
+		target_link_libraries(GradidoBlockchain openssl::openssl)
+	endif()
+	target_link_libraries(GradidoBlockchain libsodium::libsodium)
+	# needed for windows if linking to a rust lib
+	if(ENABLE_IOTA_RUST_CLIENT)
 		find_library(IOTA_RUST_C_LIB iota_rust_clib.dll.lib PATHS 
 			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
 			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/debug"
 			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/release"
 		)
-		find_library(ED25519_BIP32_RUST_C_LIB ed25519_bip32_c_interface.dll.lib PATHS 
-			"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
-			"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/debug"
-			"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/release"
-		)
-		IF(ED25519_BIP32_RUST_C_LIB STREQUAL "ED25519_BIP32_RUST_C_LIB-NOTFOUND" ) 
-        	message("[GradidoBlockchain] !!!!!!\nplease build target ed25519_bip32_c_interface_target and call again `cmake`\n!!!!!!")
-		ELSE()
-			target_link_libraries(GradidoBlockchain ${ED25519_BIP32_RUST_C_LIB})
-		ENDIF()
-
 		IF(IOTA_RUST_C_LIB STREQUAL "IOTA_RUST_C_LIB-NOTFOUND" ) 
-        	message("[GradidoBlockchain] !!!!!!\nplease build target iota_rust_clib_target and call again `cmake`\n!!!!!!")
+				message("[GradidoBlockchain] !!!!!!\nplease build target iota_rust_clib_target and call again `cmake`\n!!!!!!")
 		ELSE()
 			target_link_libraries(GradidoBlockchain ${IOTA_RUST_C_LIB})
 		ENDIF()
-		target_link_libraries(GradidoBlockchain ws2_32 userenv)
+	endif()
+	find_library(ED25519_BIP32_RUST_C_LIB ed25519_bip32_c_interface.dll.lib PATHS 
+		"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
+		"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/debug"
+		"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/release"
+	)
+	IF(ED25519_BIP32_RUST_C_LIB STREQUAL "ED25519_BIP32_RUST_C_LIB-NOTFOUND" ) 
+		message("[GradidoBlockchain] !!!!!!\nplease build target ed25519_bip32_c_interface_target and call again `cmake`\n!!!!!!")
 	ELSE()
-		target_link_libraries(GradidoBlockchain iota_rust_clib ed25519_bip32_c_interface)
-	ENDIF()
-else()
-# static build
-  target_link_libraries(GradidoBlockchain)
-  target_link_libraries(GradidoBlockchain iota_rust_clib ed25519_bip32_c_interface)
-endif()
+		target_link_libraries(GradidoBlockchain ${ED25519_BIP32_RUST_C_LIB})
+	ENDIF()		
+	target_link_libraries(GradidoBlockchain ws2_32 userenv)
+ELSE()
+	if(ENABLE_IOTA_RUST_CLIENT)
+		target_link_libraries(GradidoBlockchain iota_rust_clib)	
+	endif()
+	target_link_libraries(GradidoBlockchain ed25519_bip32_c_interface)
+ENDIF()
+
 set_target_properties(GradidoBlockchain PROPERTIES
                       VERSION ${GradidoBlockchain_VERSION}
                       SOVERSION ${GradidoBlockchain_VERSION_MAJOR})

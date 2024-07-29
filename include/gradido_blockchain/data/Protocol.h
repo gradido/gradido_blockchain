@@ -78,7 +78,9 @@ namespace gradido {
 			}
 			inline bool operator==(const Timestamp& other) const { return seconds == other.seconds && nanos == other.nanos; }
 			inline bool operator<(const Timestamp& other) const { return seconds < other.seconds || (seconds == other.seconds && nanos < other.nanos); }
+			inline bool operator>(const Timestamp& other) const { return seconds > other.seconds || (seconds == other.seconds && nanos > other.nanos); }
 			inline bool operator<(const TimestampSeconds& other) const { return seconds < other.seconds; }
+			inline bool operator>(const TimestampSeconds& other) const { return seconds > other.seconds; }
 
 			int64_t seconds;
 			int32_t nanos;

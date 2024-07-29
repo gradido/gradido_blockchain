@@ -4,14 +4,29 @@
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/lib/Profiler.h"
 
+#include "date/date.h"
+#include "date/tz.h"
+
 using namespace std;
 using namespace gradido;
 using namespace data;
 using namespace blockchain;
 using namespace interaction;
+using namespace date;
 
 #define VERSION_STRING "3.3"
 
+Timepoint getPreviousNMonth2(const Timepoint& startDate, int monthsAgo) {
+    auto ymd = date::year_month_day(floor<days>(startDate));
+    auto month = ymd.month() - date::months(monthsAgo);
+		ymd -= date::months(monthsAgo);
+    int subtractDays = 1;
+    while(!ymd.ok()) {
+      ymd = date::year_month_day(floor<days>(startDate) - days{subtractDays++});
+      ymd -= date::months(monthsAgo);
+    }
+		return date::sys_days(ymd);
+}
 
 void InMemoryTest::SetUp()
 {
@@ -187,14 +202,14 @@ TEST_F(InMemoryTest, CreationTransactions)
 	ASSERT_NO_THROW(createRegisterAddress(3));
 	ASSERT_NO_THROW(createRegisterAddress(5));
 	auto createdAt = generateNewCreatedAt();
-	auto targetDate = createdAt - chrono::months{ 1 };
+	auto targetDate = getPreviousNMonth2(createdAt, 1);
 	ASSERT_TRUE(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate));
 	auto accountIt = mKeyPairIndexAccountMap.find(6);
 	EXPECT_EQ(accountIt->second.balance, GradidoUnit(1000.0));
 	EXPECT_GT(accountIt->second.balanceDate, createdAt);
 
 	createdAt += chrono::hours{ 23 };
-	targetDate = createdAt - chrono::months{ 2 };
+	targetDate = getPreviousNMonth2(createdAt, 2);
 	ASSERT_TRUE(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate));
 	// 1000.0000 decayed for 23 hours => 998.1829
 	EXPECT_EQ(accountIt->second.balance, GradidoUnit(1998.1829));
@@ -202,7 +217,7 @@ TEST_F(InMemoryTest, CreationTransactions)
 
 	ASSERT_NO_THROW(createRegisterAddress(7));
 	createdAt = generateNewCreatedAt();
-	targetDate = createdAt - chrono::months{ 2 };
+	targetDate = getPreviousNMonth2(createdAt, 2);
 	ASSERT_TRUE(createGradidoCreation(8, 4, 1000.0, createdAt, targetDate));
 	accountIt = mKeyPairIndexAccountMap.find(8);
 	EXPECT_EQ(accountIt->second.balance, GradidoUnit(1000.0));
@@ -215,13 +230,14 @@ TEST_F(InMemoryTest, InvalidCreationTransactions)
 	ASSERT_NO_THROW(createRegisterAddress(3));
 	ASSERT_NO_THROW(createRegisterAddress(5));
 	auto createdAt = generateNewCreatedAt();
-	auto targetDate = createdAt - chrono::months{ 1 };
+	auto targetDate = getPreviousNMonth2(createdAt, 1);
 	auto succedCreatedAd = createdAt;
 	ASSERT_TRUE(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate));
 	createdAt += chrono::seconds{ 120 };
 	ASSERT_THROW(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate), validate::InvalidCreationException);
 	createdAt += chrono::hours{ 10 };
-	targetDate = createdAt + chrono::months{ 2 };
+	targetDate = getPreviousNMonth2(createdAt, 3);
+	//std::cout << "createdAt: " << createdAt << ", targetDate: " << targetDate << std::endl;
 	ASSERT_THROW(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate), validate::TransactionValidationInvalidInputException);
 	auto accountIt = mKeyPairIndexAccountMap.find(6);
 	EXPECT_EQ(accountIt->second.balance, GradidoUnit(1000.0));
@@ -229,7 +245,7 @@ TEST_F(InMemoryTest, InvalidCreationTransactions)
 
 	ASSERT_NO_THROW(createRegisterAddress(7));
 	createdAt = generateNewCreatedAt();
-	targetDate = createdAt - chrono::months{ 3 };
+	targetDate = getPreviousNMonth2(createdAt, 3);
 	ASSERT_THROW(createGradidoCreation(8, 4, 1000.0, createdAt, targetDate), validate::TransactionValidationInvalidInputException);
 	accountIt = mKeyPairIndexAccountMap.find(8);
 	EXPECT_EQ(accountIt->second.balance, GradidoUnit(0.0));

@@ -13,7 +13,7 @@ else()
     include(FetchContent)
     FetchContent_Declare(
       googletest
-      URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
+      URL https://github.com/google/googletest/releases/download/v1.15.0/googletest-1.15.0.tar.gz
     )
     # For Windows: Prevent overriding the parent project's compiler/linker settings
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -29,7 +29,6 @@ FILE(GLOB TEST_LIB "lib/*.cpp" "lib/*.h")
 FILE(GLOB TEST_MAIN "*.cpp" "*.h")
 FILE(GLOB TEST_MODEL "model/*.cpp" "model/*.h")
 FILE(GLOB TEST_MODEL_PROTOPUF "model/protopuf/*.cpp" "model/protopuf/*.h")
-FILE(GLOB TEST_SEEDING "seeding/*.cpp" "seeding/*.h")
 
 
 SET(TEST_SRC 
@@ -40,18 +39,17 @@ SET(TEST_SRC
   #${TEST_MODEL}
   #${TEST_MODEL_PROTOPUF} 
   ${TEST_INTERACTION}
-  ${TEST_SEEDING}
 )
 
 if(MSVC)
 	# src
 	source_group("lib" FILES ${TEST_LIB})
-    source_group("blockchain" FILES ${TEST_BLOCKCHAIN})
-    source_group("crypto" FILES ${TEST_CRYPTO})
-    source_group("model\\protopuf" FILES ${TEST_MODEL_PROTOPUF})
-    source_group("model" FILES ${TEST_MODEL})
-    source_group("interaction" FILES ${TEST_INTERACTION})    
-    source_group("seeding" FILES ${TEST_SEEDING})    
+  source_group("blockchain" FILES ${TEST_BLOCKCHAIN})
+  source_group("crypto" FILES ${TEST_CRYPTO})
+  source_group("model\\protopuf" FILES ${TEST_MODEL_PROTOPUF})
+  source_group("model" FILES ${TEST_MODEL})
+  source_group("interaction" FILES ${TEST_INTERACTION})    
+  source_group("seeding" FILES ${TEST_SEEDING})    
 endif()
 
 IF(WIN32)
@@ -82,6 +80,9 @@ ELSE()
     target_link_libraries(GradidoBlockchainTest ed25519_bip32_c_interface gtest)
 ENDIF()
 
+include_directories(
+	"../dependencies/date/include"
+)
 
 IF(WIN32)
   add_custom_command(TARGET GradidoBlockchainTest POST_BUILD
@@ -89,7 +90,6 @@ IF(WIN32)
     COMMAND_EXPAND_LISTS
   )
 ENDIF()
-
 
 include(GoogleTest)
 gtest_discover_tests(GradidoBlockchainTest)

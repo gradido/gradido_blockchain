@@ -43,9 +43,9 @@ public:
 protected:
 	// Iota get parent message ids for own message
 	std::vector<std::string> getTips();
-
+#ifdef ENABLE_IOTA_RUST_CLIENT
 	std::string sendMessageViaRustIotaClient(const std::string& index, const std::string& message);
-
+#endif
 	std::string_view extractPathFromUrl();
 	std::string buildFullPath(const std::string& first, const std::string& second = "", const std::string& third = "");
 

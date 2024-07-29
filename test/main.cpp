@@ -37,7 +37,7 @@
 extern "C" {
 #endif
 	void setup() {
-	    generateKeyPairs();
+	  generateKeyPairs();
 		testing::InitGoogleTest();
 	}
 
