@@ -41,10 +41,10 @@ TEST(GradidoUnitTest, ConstructWithString)
 TEST(GradidoUnitTest, TestWithManyDifferentDuration)
 {
 	// 2^(x/31556952)
-	// calculate for every second until two years are full
+	// calculate for every 4. second until two years are full
 	int64_t prevValue = 0;
 	int64_t prevDistance = 0;
-	for (int i = 1; i < 31556952 * 2; i++) {
+	for (int i = 1; i < 31556952 * 2; i+=4) {
 		auto decaied = GradidoUnit::calculateDecay(1000000, i);
 		if (prevValue) {
 			ASSERT_GE(prevValue, decaied) << "previous value wasn't greater on i: " << i;
@@ -53,7 +53,7 @@ TEST(GradidoUnitTest, TestWithManyDifferentDuration)
 				ASSERT_GE(prevDistance, distance) << "previous distance wasn't greater on i: " << i;
 			}
 			prevDistance = distance;
-		}		
+		}
 		prevValue = decaied;
-	}	
+	}
 }

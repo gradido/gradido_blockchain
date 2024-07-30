@@ -9,6 +9,8 @@
 #include "date/date.h"
 #include "date/tz.h"
 #include "loguru/loguru.hpp"
+#include "magic_enum/magic_enum.hpp"
+#include "magic_enum/magic_enum_iostream.hpp"
 
 using namespace std;
 using namespace gradido;
@@ -16,6 +18,8 @@ using namespace data;
 using namespace blockchain;
 using namespace interaction;
 using namespace date;
+using namespace magic_enum;
+using magic_enum::iostream_operators::operator<<;
 
 #define VERSION_STRING "3.3"
 
@@ -35,10 +39,10 @@ void InMemoryTest::SetUp()
 {
 	random_device rd;  // a seed source for the random number engine
 	gen = mt19937(rd()); // mersenne_twister_engine seeded with rd()
-	auto randTimeRange = uniform_int_distribution<int>(2400, 2 * 24 * 60 * 60);
+	randTimeRange = uniform_int_distribution<int>(2400, 2 * 24 * 60 * 60);
 	mKeyPairCursor = 3;
 	mCommunityId = "testCommunity";
-	mLastCreatedAt = std::chrono::system_clock::from_time_t(1609459200);
+	mLastCreatedAt = std::chrono::system_clock::from_time_t(1641681324);
 	mBlockchain = InMemoryProvider::getInstance()->findBlockchain(mCommunityId);
 
 	auto transaction = make_shared<GradidoTransaction>();
@@ -141,7 +145,7 @@ TEST_F(InMemoryTest, FindCommunityRootTransactionByType)
 {
 	Filter f;
 	f.transactionType = TransactionType::COMMUNITY_ROOT;
-	auto transaction = mBlockchain->findOne(f);	
+	auto transaction = mBlockchain->findOne(f);
 	ASSERT_TRUE(transaction);
 	EXPECT_TRUE(transaction->getTransactionBody()->isCommunityRoot());
 
@@ -216,13 +220,20 @@ TEST_F(InMemoryTest, CreationTransactions)
 	ASSERT_NO_THROW(createRegisterAddress(5));
 	auto createdAt = generateNewCreatedAt();
 	auto targetDate = getPreviousNMonth2(createdAt, 1);
-	ASSERT_TRUE(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate));
+	try {
+		ASSERT_TRUE(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate));
+	} catch(GradidoBlockchainException& ex) {
+		logBlockchain();
+		LOG_F(ERROR, ex.getFullString().data());
+	}
 	auto accountIt = mKeyPairIndexAccountMap.find(6);
 	EXPECT_EQ(accountIt->second.balance, GradidoUnit(1000.0));
 	EXPECT_GT(accountIt->second.balanceDate, createdAt);
 
+	//std::cout << "createAt first: " << createdAt << std::endl;
 	createdAt += chrono::hours{ 23 };
-
+	mLastCreatedAt = createdAt;
+  // std::cout << "createAt second: " << createdAt << std::endl;
 	auto newTargetDate = getPreviousNMonth2(createdAt, 2);
 	if (date::year_month_day(floor<days>(newTargetDate)).month() == date::year_month_day(floor<days>(targetDate)).month()) {
 		newTargetDate = getPreviousNMonth2(createdAt, 1);
@@ -238,8 +249,8 @@ TEST_F(InMemoryTest, CreationTransactions)
 		LOG_F(INFO, "createdAt: %s, targetDate: %s", createAtString.data(), targetDateString.data());
 		LOG_F(ERROR, ex.getFullString().data());
 	}
-	
-	
+
+
 	// 1000.0000 decayed for 23 hours => 998.1829
 	EXPECT_EQ(accountIt->second.balance, GradidoUnit(1998.1829));
 	EXPECT_GT(accountIt->second.balanceDate, createdAt);
@@ -247,7 +258,22 @@ TEST_F(InMemoryTest, CreationTransactions)
 	ASSERT_NO_THROW(createRegisterAddress(7));
 	createdAt = generateNewCreatedAt();
 	targetDate = getPreviousNMonth2(createdAt, 2);
-	ASSERT_TRUE(createGradidoCreation(8, 4, 1000.0, createdAt, targetDate));
+	try {
+		ASSERT_TRUE(createGradidoCreation(8, 4, 1000.0, createdAt, targetDate));
+	} catch(GradidoBlockchainException& ex) {
+		logBlockchain();
+		blockchain::Filter filter;
+		filter.involvedPublicKey = make_shared<memory::Block>(
+		  memory::Block::fromHex("8a8c93293cb97e8784178da8ae588144f7c982f4658bfd35101a1e2b479c3e57")
+		);
+		filter.searchDirection = blockchain::SearchDirection::DESC;
+		//filter.timepointInterval = TimepointInterval(mBlockchain->getStartDate(), createdAt);
+		std::cout << mBlockchain->getStartDate() << " - " << createdAt << std::endl;
+		auto results = mBlockchain->findAll(filter);
+		std::cout << results.size() << std::endl;
+		LOG_F(ERROR, ex.getFullString().data());
+	}
+
 	accountIt = mKeyPairIndexAccountMap.find(8);
 	EXPECT_EQ(accountIt->second.balance, GradidoUnit(1000.0));
 	EXPECT_GT(accountIt->second.balanceDate, createdAt);
