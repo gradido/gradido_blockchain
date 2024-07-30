@@ -63,7 +63,7 @@ void InMemoryTest::TearDown()
 
 Timepoint InMemoryTest::generateNewCreatedAt()
 {
-	mLastCreatedAt += std::chrono::seconds{ randTimeRange(gen) };; // generate a random duration
+	mLastCreatedAt += std::chrono::seconds{ randTimeRange(gen) }; // generate a random duration
 	return mLastCreatedAt;
 }
 
@@ -230,10 +230,10 @@ TEST_F(InMemoryTest, CreationTransactions)
 	EXPECT_EQ(accountIt->second.balance, GradidoUnit(1000.0));
 	EXPECT_GT(accountIt->second.balanceDate, createdAt);
 
-	std::cout << "createAt first: " << createdAt << std::endl;
+	//std::cout << "createAt first: " << createdAt << std::endl;
 	createdAt += chrono::hours{ 23 };
 	mLastCreatedAt = createdAt;
-  std::cout << "createAt second: " << createdAt << std::endl;
+  // std::cout << "createAt second: " << createdAt << std::endl;
 	auto newTargetDate = getPreviousNMonth2(createdAt, 2);
 	if (date::year_month_day(floor<days>(newTargetDate)).month() == date::year_month_day(floor<days>(targetDate)).month()) {
 		newTargetDate = getPreviousNMonth2(createdAt, 1);
@@ -264,7 +264,8 @@ TEST_F(InMemoryTest, CreationTransactions)
 		logBlockchain();
 		blockchain::Filter filter;
 		filter.involvedPublicKey = make_shared<memory::Block>(
-			memory::Block::fromHex("8a8c93293cb97e8784178da8ae588144f7c982f4658bfd35101a1e2b479c3e57"));
+		  memory::Block::fromHex("8a8c93293cb97e8784178da8ae588144f7c982f4658bfd35101a1e2b479c3e57")
+		);
 		filter.searchDirection = blockchain::SearchDirection::DESC;
 		//filter.timepointInterval = TimepointInterval(mBlockchain->getStartDate(), createdAt);
 		std::cout << mBlockchain->getStartDate() << " - " << createdAt << std::endl;
@@ -291,7 +292,7 @@ TEST_F(InMemoryTest, InvalidCreationTransactions)
 	ASSERT_THROW(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate), validate::InvalidCreationException);
 	createdAt += chrono::hours{ 10 };
 	targetDate = getPreviousNMonth2(createdAt, 3);
-	std::cout << "createdAt: " << createdAt << ", targetDate: " << targetDate << std::endl;
+	//std::cout << "createdAt: " << createdAt << ", targetDate: " << targetDate << std::endl;
 	ASSERT_THROW(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate), validate::TransactionValidationInvalidInputException);
 	auto accountIt = mKeyPairIndexAccountMap.find(6);
 	EXPECT_EQ(accountIt->second.balance, GradidoUnit(1000.0));
