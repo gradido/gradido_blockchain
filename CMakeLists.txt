@@ -171,11 +171,14 @@ endif()
 add_subdirectory(dependencies/ed25519_bip32_c_interface)
 
 ############################ small libraries as subproject ###########
-set(LOGURU_INSTALL ON)
-set(BUILD_SHARED_LIBS_TEMP ${BUILD_SHARED_LIBS})
-set(BUILD_SHARED_LIBS OFF)
+#option(LOGURU_INSTALL ON)
+#set(BUILD_SHARED_LIBS_TEMP ${BUILD_SHARED_LIBS})
+#set(BUILD_SHARED_LIBS OFF)
+#message(${LOGURU_INSTALL})
 add_subdirectory(dependencies/loguru)
-set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP})
+# Exportiere loguru target in ein Set
+#message(${LOGURU_INSTALL})
+#set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP})
 
 
 ######################################################################
@@ -183,12 +186,12 @@ set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP})
 add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
-target_link_libraries(GradidoBlockchain loguru::loguru)
+target_link_libraries(GradidoBlockchain PRIVATE loguru::loguru)
 IF(WIN32) 
 	if(openssl_FOUND) 
-		target_link_libraries(GradidoBlockchain openssl::openssl)
+		target_link_libraries(GradidoBlockchain PRIVATE openssl::openssl)
 	endif()
-	target_link_libraries(GradidoBlockchain libsodium::libsodium)
+	target_link_libraries(GradidoBlockchain PRIVATE libsodium::libsodium)
 	# needed for windows if linking to a rust lib
 	if(ENABLE_IOTA_RUST_CLIENT)
 		find_library(IOTA_RUST_C_LIB iota_rust_clib.dll.lib PATHS 
@@ -199,7 +202,7 @@ IF(WIN32)
 		IF(IOTA_RUST_C_LIB STREQUAL "IOTA_RUST_C_LIB-NOTFOUND" ) 
 				message("[GradidoBlockchain] !!!!!!\nplease build target iota_rust_clib_target and call again `cmake`\n!!!!!!")
 		ELSE()
-			target_link_libraries(GradidoBlockchain ${IOTA_RUST_C_LIB})
+			target_link_libraries(GradidoBlockchain PRIVATE ${IOTA_RUST_C_LIB})
 		ENDIF()
 	endif()
 	find_library(ED25519_BIP32_RUST_C_LIB ed25519_bip32_c_interface.dll.lib PATHS 
@@ -210,14 +213,14 @@ IF(WIN32)
 	IF(ED25519_BIP32_RUST_C_LIB STREQUAL "ED25519_BIP32_RUST_C_LIB-NOTFOUND" ) 
 		message("[GradidoBlockchain] !!!!!!\nplease build target ed25519_bip32_c_interface_target and call again `cmake`\n!!!!!!")
 	ELSE()
-		target_link_libraries(GradidoBlockchain ${ED25519_BIP32_RUST_C_LIB})
+		target_link_libraries(GradidoBlockchain PRIVATE ${ED25519_BIP32_RUST_C_LIB})
 	ENDIF()		
-	target_link_libraries(GradidoBlockchain ws2_32 userenv)
+	target_link_libraries(GradidoBlockchain PRIVATE ws2_32 userenv)
 ELSE()
 	if(ENABLE_IOTA_RUST_CLIENT)
-		target_link_libraries(GradidoBlockchain iota_rust_clib)	
+		target_link_libraries(GradidoBlockchain PRIVATE iota_rust_clib)	
 	endif()
-	target_link_libraries(GradidoBlockchain ed25519_bip32_c_interface)
+	target_link_libraries(GradidoBlockchain PRIVATE ed25519_bip32_c_interface)
 ENDIF()
 
 set_target_properties(GradidoBlockchain PROPERTIES
@@ -226,7 +229,35 @@ set_target_properties(GradidoBlockchain PROPERTIES
 target_include_directories(
     GradidoBlockchain PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 target_compile_features(GradidoBlockchain PUBLIC cxx_std_17)
-target_compile_definitions(GradidoBlockchain PUBLIC -DRYML_SINGLE_HEADER)
+
+
+install(TARGETS loguru
+    EXPORT LoguruTargets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+)
+
+install(TARGETS GradidoBlockchain
+    EXPORT GradidoBlockchainTargets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+)
+
+# add loguru to GradidoBlockchain Export-Set
+install(EXPORT LoguruTargets
+    FILE LoguruTargets.cmake
+    NAMESPACE Loguru::
+    DESTINATION lib/cmake/Loguru
+)
+
+# add GradidoBlockchain to Export-Set and link to LoguruTargets
+install(EXPORT GradidoBlockchainTargets
+    FILE GradidoBlockchainTargets.cmake
+    NAMESPACE GradidoBlockchain::
+    DESTINATION lib/cmake/GradidoBlockchain
+)
 
 include(GenerateExportHeader)
 generate_export_header(GradidoBlockchain EXPORT_FILE_NAME include/gradido_blockchain/export.h)

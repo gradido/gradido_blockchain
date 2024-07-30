@@ -2,6 +2,7 @@
 #include "loguru/loguru.hpp"
 
 #include <cstring>
+#include <cstdlib>
 
 namespace memory {
 	BlockStack::BlockStack(size_t size)
