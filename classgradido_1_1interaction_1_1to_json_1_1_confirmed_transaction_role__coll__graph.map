@@ -1,0 +1,7 @@
+<map id="gradido::interaction::toJson::ConfirmedTransactionRole" name="gradido::interaction::toJson::ConfirmedTransactionRole">
+<area shape="rect" id="node1" title=" " alt="" coords="5,213,231,255"/>
+<area shape="rect" id="node2" href="$classgradido_1_1interaction_1_1to_json_1_1_abstract_role.html" title=" " alt="" coords="23,109,171,151"/>
+<area shape="rect" id="node3" href="$structgradido_1_1data_1_1_confirmed_transaction.html" title=" " alt="" coords="195,109,353,151"/>
+<area shape="rect" id="node4" href="$class_gradido_unit.html" title=" " alt="" coords="153,13,243,39"/>
+<area shape="rect" id="node5" href="$structgradido_1_1data_1_1_timestamp_seconds.html" title=" " alt="" coords="268,5,435,47"/>
+</map>

@@ -1,0 +1,12 @@
+<map id="gradido::interaction::validate::AbstractRole" name="gradido::interaction::validate::AbstractRole">
+<area shape="rect" id="node1" title=" " alt="" coords="5,280,160,321"/>
+<area shape="rect" id="node2" href="$classgradido_1_1interaction_1_1validate_1_1_community_root_role.html" title=" " alt="" coords="225,5,422,47"/>
+<area shape="rect" id="node3" href="$classgradido_1_1interaction_1_1validate_1_1_confirmed_transaction_role.html" title=" " alt="" coords="208,71,439,112"/>
+<area shape="rect" id="node4" href="$classgradido_1_1interaction_1_1validate_1_1_gradido_creation_role.html" title=" " alt="" coords="224,136,423,177"/>
+<area shape="rect" id="node5" href="$classgradido_1_1interaction_1_1validate_1_1_gradido_deferred_transfer_role.html" title=" " alt="" coords="237,201,410,257"/>
+<area shape="rect" id="node6" href="$classgradido_1_1interaction_1_1validate_1_1_gradido_transaction_role.html" title=" " alt="" coords="214,280,433,321"/>
+<area shape="rect" id="node7" href="$classgradido_1_1interaction_1_1validate_1_1_gradido_transfer_role.html" title=" " alt="" coords="224,345,423,387"/>
+<area shape="rect" id="node8" href="$classgradido_1_1interaction_1_1validate_1_1_register_address_role.html" title=" " alt="" coords="223,411,424,452"/>
+<area shape="rect" id="node9" href="$classgradido_1_1interaction_1_1validate_1_1_transaction_body_role.html" title=" " alt="" coords="222,476,425,517"/>
+<area shape="rect" id="node10" href="$classgradido_1_1interaction_1_1validate_1_1_transfer_amount_role.html" title=" " alt="" coords="224,541,423,583"/>
+</map>

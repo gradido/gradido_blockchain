@@ -1,0 +1,5 @@
+var classgradido_1_1interaction_1_1validate_1_1_transaction_validation_required_sign_missing_exception =
+[
+    [ "TransactionValidationRequiredSignMissingException", "classgradido_1_1interaction_1_1validate_1_1_transaction_validation_required_sign_missing_exception.html#a397e66f9b1ef5288682e0689dd20cf4e", null ],
+    [ "mMissingPublicKeysHex", "classgradido_1_1interaction_1_1validate_1_1_transaction_validation_required_sign_missing_exception.html#ab24fa917b2d1df4ed33bf09af8547b18", null ]
+];

@@ -1,0 +1,17 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$class_multithread_container.html" title=" " alt="" coords="5,187,147,214"/>
+<area shape="rect" id="node2" href="$classgradido_1_1protocol_1_1_transaction_base.html" title=" " alt="" coords="238,5,361,47"/>
+<area shape="rect" id="node3" href="$classmodel_1_1gradido_1_1_confirmed_transaction.html" title="The Final Blockformat on Blockchain." alt="" coords="215,71,384,112"/>
+<area shape="rect" id="node4" href="$classmodel_1_1gradido_1_1_request_body.html" title="Basic Class for requests (like transactions but not stored in blockchain, requests are more temporary..." alt="" coords="205,137,393,163"/>
+<area shape="rect" id="node5" href="$classmodel_1_1gradido_1_1_transaction_base.html" title=" " alt="" coords="195,187,404,214"/>
+<area shape="rect" id="node12" href="$classmodel_1_1gradido_1_1_transaction_body.html" title="Contain the actuall transaction details." alt="" coords="195,238,403,265"/>
+<area shape="rect" id="node13" href="$classmodel_1_1_transactions_manager.html" title="A easy system for holding transactions and check them." alt="" coords="205,289,393,315"/>
+<area shape="rect" id="node14" href="$class_multithread_queue.html" title=" " alt="" coords="204,340,395,381"/>
+<area shape="rect" id="node6" href="$classmodel_1_1gradido_1_1_community_friends_update.html" title=" " alt="" coords="465,63,641,104"/>
+<area shape="rect" id="node7" href="$classmodel_1_1gradido_1_1_community_root.html" title=" " alt="" coords="452,129,655,155"/>
+<area shape="rect" id="node8" href="$classmodel_1_1gradido_1_1_register_address.html" title=" " alt="" coords="474,180,633,221"/>
+<area shape="rect" id="node9" href="$classmodel_1_1gradido_1_1_transaction_creation.html" title=" " alt="" coords="464,245,643,287"/>
+<area shape="rect" id="node10" href="$classmodel_1_1gradido_1_1_transaction_transfer.html" title=" " alt="" coords="464,311,643,352"/>
+<area shape="rect" id="node11" href="$classmodel_1_1gradido_1_1_deferred_transfer.html" title=" " alt="" coords="703,311,863,352"/>
+<area shape="rect" id="node15" title=" " alt="" coords="47,347,105,374"/>
+</map>

@@ -1,0 +1,27 @@
+var structgradido_1_1data_1_1_transaction_body =
+[
+    [ "TransactionBody", "structgradido_1_1data_1_1_transaction_body.html#aa24791a32b0e8266df44f3f6fca3bbb2", null ],
+    [ "TransactionBody", "structgradido_1_1data_1_1_transaction_body.html#a5f1698dba7d324c4c9e87ec5e2eb18ec", null ],
+    [ "getInvolvedAddresses", "structgradido_1_1data_1_1_transaction_body.html#a870eb988690f744b0bc4a921bbed4be8", null ],
+    [ "getTransactionType", "structgradido_1_1data_1_1_transaction_body.html#abcaf7917fc4bf4a17f53e560ddd10dbc", null ],
+    [ "getTransferAmount", "structgradido_1_1data_1_1_transaction_body.html#a80afcc7497ec423ebb2626eb352a875b", null ],
+    [ "isCommunityFriendsUpdate", "structgradido_1_1data_1_1_transaction_body.html#a2d17fdb03e74627ceaff79faf6fb5754", null ],
+    [ "isCommunityRoot", "structgradido_1_1data_1_1_transaction_body.html#a68dc6638990e19da4428864d507e324d", null ],
+    [ "isCreation", "structgradido_1_1data_1_1_transaction_body.html#a555c110c0fee81267c07207e34751120", null ],
+    [ "isDeferredTransfer", "structgradido_1_1data_1_1_transaction_body.html#a88a9013b28d4c0fb01ce93eb319c9ec7", null ],
+    [ "isInvolved", "structgradido_1_1data_1_1_transaction_body.html#a53824d838b56fdf5865425544c0ae9c1", null ],
+    [ "isPairing", "structgradido_1_1data_1_1_transaction_body.html#adbe147a5d78cb0cfa717a64d74759fb0", null ],
+    [ "isRegisterAddress", "structgradido_1_1data_1_1_transaction_body.html#af9041a2a6181269a733d3b3385a82b47", null ],
+    [ "isTransfer", "structgradido_1_1data_1_1_transaction_body.html#a63e4c7436c029046bba11c7b38e35e60", null ],
+    [ "communityFriendsUpdate", "structgradido_1_1data_1_1_transaction_body.html#a21d42ac3b0bb71970ab73ff51fe37fbd", null ],
+    [ "communityRoot", "structgradido_1_1data_1_1_transaction_body.html#a767e0f7e5c90329b1a07b7eab7bd8b8a", null ],
+    [ "createdAt", "structgradido_1_1data_1_1_transaction_body.html#ad9fe340ae8763374be8a72f5da34a64a", null ],
+    [ "creation", "structgradido_1_1data_1_1_transaction_body.html#a8cdb114f8872d9d52f856ce3c36ee8da", null ],
+    [ "deferredTransfer", "structgradido_1_1data_1_1_transaction_body.html#a08d15c2553133faa135f8ad1f417b638", null ],
+    [ "memo", "structgradido_1_1data_1_1_transaction_body.html#a054a358ac84111431e415717b03b55d3", null ],
+    [ "otherGroup", "structgradido_1_1data_1_1_transaction_body.html#a8e16a153de2fa4e6a6e4dd852f726b68", null ],
+    [ "registerAddress", "structgradido_1_1data_1_1_transaction_body.html#a3a6d81afbc5038ca3f9052642b105c02", null ],
+    [ "transfer", "structgradido_1_1data_1_1_transaction_body.html#a42c19f928d291c8ea4a206eda84a1141", null ],
+    [ "type", "structgradido_1_1data_1_1_transaction_body.html#a5b1b60b38ed5caa8bd60bb77a1714c98", null ],
+    [ "versionNumber", "structgradido_1_1data_1_1_transaction_body.html#adb744ce6c635639972ac5a75bf4bb876", null ]
+];

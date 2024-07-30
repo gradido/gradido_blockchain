@@ -1,15 +1,6 @@
 var searchData=
 [
-  ['gradidoblock_0',['GradidoBlock',['../classmodel_1_1gradido_1_1_gradido_block.html',1,'model::gradido']]],
-  ['gradidoblockchainexception_1',['GradidoBlockchainException',['../class_gradido_blockchain_exception.html',1,'']]],
-  ['gradidoblockchaintransactionalreadyexistexception_2',['GradidoBlockchainTransactionAlreadyExistException',['../class_gradido_blockchain_transaction_already_exist_exception.html',1,'']]],
-  ['gradidoblockchaintransactionnotfoundexception_3',['GradidoBlockchainTransactionNotFoundException',['../class_gradido_blockchain_transaction_not_found_exception.html',1,'']]],
-  ['gradidoinvalidbase64exception_4',['GradidoInvalidBase64Exception',['../class_gradido_invalid_base64_exception.html',1,'']]],
-  ['gradidoinvalidenumexception_5',['GradidoInvalidEnumException',['../class_gradido_invalid_enum_exception.html',1,'']]],
-  ['gradidotransaction_6',['GradidoTransaction',['../classmodel_1_1gradido_1_1_gradido_transaction.html',1,'model::gradido']]],
-  ['gradidounknownenumexception_7',['GradidoUnknownEnumException',['../class_gradido_unknown_enum_exception.html',1,'']]],
-  ['graphqlrequest_8',['GraphQLRequest',['../class_graph_q_l_request.html',1,'']]],
-  ['groupfriendsupdate_9',['GroupFriendsUpdate',['../classmodel_1_1gradido_1_1_group_friends_update.html',1,'model::gradido']]],
-  ['groupnotfoundexception_10',['GroupNotFoundException',['../classmodel_1_1_transactions_manager_1_1_group_not_found_exception.html',1,'model::TransactionsManager']]],
-  ['grouptransactions_11',['GroupTransactions',['../structmodel_1_1_transactions_manager_1_1_group_transactions.html',1,'model::TransactionsManager']]]
+  ['filter_334',['Filter',['../structgradido_1_1blockchain_1_1_filter.html',1,'gradido::blockchain']]],
+  ['filterbuilder_335',['FilterBuilder',['../classgradido_1_1blockchain_1_1_filter_builder.html',1,'gradido::blockchain']]],
+  ['fixedpointedarithmetikoverflowexception_336',['FixedPointedArithmetikOverflowException',['../class_fixed_pointed_arithmetik_overflow_exception.html',1,'']]]
 ];

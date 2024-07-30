@@ -9,6 +9,15 @@ var classmodel_1_1_i_gradido_blockchain =
       [ "ASC", "classmodel_1_1_i_gradido_blockchain.html#ac7fe3ddbc6c0d1d3d704c1474de7d305ac6e421eaad140c1bc1a39980502df80c", null ],
       [ "DESC", "classmodel_1_1_i_gradido_blockchain.html#ac7fe3ddbc6c0d1d3d704c1474de7d305a65a6d757dbb571ccc3af9706e9a5f607", null ]
     ] ],
-    [ "findTransactions", "classmodel_1_1_i_gradido_blockchain.html#a477e7003f33570f4439a06b001176fa3", null ],
-    [ "findTransactions", "classmodel_1_1_i_gradido_blockchain.html#a59296be26401bdde5e773ffbc35ddef9", null ]
+    [ "calculateAddressBalance", "classmodel_1_1_i_gradido_blockchain.html#a9d74d4754ffd312b2c0250d41543e014", null ],
+    [ "findByMessageId", "classmodel_1_1_i_gradido_blockchain.html#a7b41d5667efea0eb8aaf6d4b81e0a27e", null ],
+    [ "findLastTransactionForAddress", "classmodel_1_1_i_gradido_blockchain.html#ab87f6ca314834e0feca1bc7177e67896", null ],
+    [ "findTransactions", "classmodel_1_1_i_gradido_blockchain.html#ad0f23375d09dfb831ac876f87bb5cf12", null ],
+    [ "findTransactions", "classmodel_1_1_i_gradido_blockchain.html#a09eb8d053137958efa3aaee768a4ab46", null ],
+    [ "getAddressType", "classmodel_1_1_i_gradido_blockchain.html#abadeaa06c7877758d59d4144314c5ba1", null ],
+    [ "getCommunityId", "classmodel_1_1_i_gradido_blockchain.html#a2a50df4cfb8f87b8ea0f8cb951d13f43", null ],
+    [ "getGroupId", "classmodel_1_1_i_gradido_blockchain.html#af27e6f5408e889dd3bd7c21e6ffbca7b", null ],
+    [ "getLastTransaction", "classmodel_1_1_i_gradido_blockchain.html#adfbd41facf6c02be96aa34534105e03d", null ],
+    [ "getTransactionForId", "classmodel_1_1_i_gradido_blockchain.html#abe341bfb4385c6a7a324530a52cbc9b8", null ],
+    [ "searchTransactions", "classmodel_1_1_i_gradido_blockchain.html#a392ae3ca09959d445d50b6f46a454c9f", null ]
 ];

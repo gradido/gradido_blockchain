@@ -1,4 +1,4 @@
 <map id="KeyPairEd25519" name="KeyPairEd25519">
-<area shape="rect" id="node1" title=" " alt="" coords="13,5,140,32"/>
-<area shape="rect" id="node2" href="$class_key_pair_ed25519_ex.html" title=": Key Pairs class for ed25519 extended keys, mainly used for derivation" alt="" coords="5,80,148,107"/>
+<area shape="rect" id="node1" title=" " alt="" coords="12,5,129,32"/>
+<area shape="rect" id="node2" href="$class_key_pair_ed25519_ex.html" title=": Key Pairs class for ed25519 extended keys, mainly used for derivation" alt="" coords="5,80,136,107"/>
 </map>

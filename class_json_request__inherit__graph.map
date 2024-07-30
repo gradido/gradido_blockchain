@@ -1,8 +1,8 @@
 <map id="JsonRequest" name="JsonRequest">
-<area shape="rect" id="node1" title=": Class for Json Requests to php server" alt="" coords="234,80,337,107"/>
-<area shape="rect" id="node3" href="$class_graph_q_l_request.html" title=" " alt="" coords="5,155,136,181"/>
-<area shape="rect" id="node4" href="$class_iota_request.html" title="different iota calls" alt="" coords="159,155,259,181"/>
-<area shape="rect" id="node5" href="$class_json_cake_p_h_p_request.html" title=" " alt="" coords="283,155,443,181"/>
-<area shape="rect" id="node6" href="$class_json_r_p_c_request.html" title=" " alt="" coords="467,155,595,181"/>
-<area shape="rect" id="node2" href="$class_http_request.html" title=" " alt="" coords="234,5,337,32"/>
+<area shape="rect" id="node1" title=": Class for Json Requests to php server" alt="" coords="223,80,321,107"/>
+<area shape="rect" id="node3" href="$class_graph_q_l_request.html" title=" " alt="" coords="5,155,128,181"/>
+<area shape="rect" id="node4" href="$class_iota_request.html" title="different iota calls" alt="" coords="153,155,245,181"/>
+<area shape="rect" id="node5" href="$class_json_cake_p_h_p_request.html" title=" " alt="" coords="269,155,425,181"/>
+<area shape="rect" id="node6" href="$class_json_r_p_c_request.html" title=" " alt="" coords="449,155,575,181"/>
+<area shape="rect" id="node2" href="$class_http_request.html" title=" " alt="" coords="225,5,319,32"/>
 </map>

@@ -8,7 +8,9 @@ var dir_c73eaaa624cc295cd121a08ba9240453 =
     [ "mnemonic_bip0039.h", "mnemonic__bip0039_8h_source.html", null ],
     [ "mnemonic_german.h", "mnemonic__german_8h_source.html", null ],
     [ "mnemonic_german2.h", "mnemonic__german2_8h_source.html", null ],
+    [ "MnemonicType.h", "_mnemonic_type_8h_source.html", null ],
     [ "Passphrase.h", "_passphrase_8h_source.html", null ],
     [ "SealedBoxes.h", "_sealed_boxes_8h_source.html", null ],
-    [ "SecretKeyCryptography.h", "_secret_key_cryptography_8h_source.html", null ]
+    [ "SecretKeyCryptography.h", "_secret_key_cryptography_8h_source.html", null ],
+    [ "SignatureOctet.h", "_signature_octet_8h_source.html", null ]
 ];

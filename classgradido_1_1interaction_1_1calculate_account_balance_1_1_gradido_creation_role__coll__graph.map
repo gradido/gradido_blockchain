@@ -1,0 +1,8 @@
+<map id="gradido::interaction::calculateAccountBalance::GradidoCreationRole" name="gradido::interaction::calculateAccountBalance::GradidoCreationRole">
+<area shape="rect" id="node1" title=" " alt="" coords="803,37,977,93"/>
+<area shape="rect" id="node2" href="$classgradido_1_1interaction_1_1calculate_account_balance_1_1_abstract_role.html" title=" " alt="" coords="507,5,682,61"/>
+<area shape="rect" id="node3" href="$structgradido_1_1data_1_1_gradido_creation.html" title=" " alt="" coords="497,85,692,112"/>
+<area shape="rect" id="node4" href="$structgradido_1_1data_1_1_timestamp_seconds.html" title=" " alt="" coords="205,49,371,90"/>
+<area shape="rect" id="node5" href="$structgradido_1_1data_1_1_transfer_amount.html" title=" " alt="" coords="191,115,385,141"/>
+<area shape="rect" id="node6" href="$class_gradido_unit.html" title=" " alt="" coords="5,115,96,141"/>
+</map>

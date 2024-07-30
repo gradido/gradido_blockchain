@@ -1,0 +1,8 @@
+<map id="model::gradido::ConfirmedTransaction::validate" name="model::gradido::ConfirmedTransaction::validate">
+<area shape="rect" id="node1" title="Check if Transaction is valid, calls validate from GradidoTransaction." alt="" coords="5,39,175,80"/>
+<area shape="rect" id="node2" href="$classmodel_1_1gradido_1_1_confirmed_transaction.html#a2bc3b99dc5e07ac438af0db3d4a17702" title=" " alt="" coords="238,5,431,47"/>
+<area shape="rect" id="node3" href="$classmodel_1_1gradido_1_1_gradido_transaction.html#ae3ab66d74d570a6c0e5cb34c2bb53958" title=" " alt="" coords="223,71,447,112"/>
+<area shape="rect" id="node4" href="$classmodel_1_1gradido_1_1_transaction_base.html#a0142d8bd55837c5228bcad7db1ff1185" title=" " alt="" coords="503,37,710,79"/>
+<area shape="rect" id="node6" href="$classmodel_1_1gradido_1_1_gradido_transaction.html#acd8f6c9b697653f10ba274698f728020" title=" " alt="" coords="495,103,719,144"/>
+<area shape="rect" id="node5" href="$classmodel_1_1gradido_1_1_transaction_base.html#a5df8da4c51e847f46cdcab718ce5e23c" title=" " alt="" coords="767,37,949,79"/>
+</map>

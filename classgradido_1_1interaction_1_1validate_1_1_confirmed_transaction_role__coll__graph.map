@@ -1,0 +1,8 @@
+<map id="gradido::interaction::validate::ConfirmedTransactionRole" name="gradido::interaction::validate::ConfirmedTransactionRole">
+<area shape="rect" id="node1" title=" " alt="" coords="144,213,375,255"/>
+<area shape="rect" id="node2" href="$classgradido_1_1interaction_1_1validate_1_1_abstract_role.html" title=" " alt="" coords="93,109,247,151"/>
+<area shape="rect" id="node3" href="$structgradido_1_1data_1_1_timestamp.html" title=" " alt="" coords="5,13,172,39"/>
+<area shape="rect" id="node4" href="$structgradido_1_1data_1_1_timestamp_seconds.html" title=" " alt="" coords="196,5,363,47"/>
+<area shape="rect" id="node5" href="$structgradido_1_1data_1_1_confirmed_transaction.html" title=" " alt="" coords="272,109,431,151"/>
+<area shape="rect" id="node6" href="$class_gradido_unit.html" title=" " alt="" coords="387,13,478,39"/>
+</map>

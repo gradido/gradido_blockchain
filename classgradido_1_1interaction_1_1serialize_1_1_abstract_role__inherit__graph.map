@@ -1,0 +1,7 @@
+<map id="gradido::interaction::serialize::AbstractRole" name="gradido::interaction::serialize::AbstractRole">
+<area shape="rect" id="node1" title=" " alt="" coords="5,104,161,145"/>
+<area shape="rect" id="node2" href="$classgradido_1_1interaction_1_1serialize_1_1_confirmed_transaction_role.html" title=" " alt="" coords="209,5,443,47"/>
+<area shape="rect" id="node3" href="$classgradido_1_1interaction_1_1serialize_1_1_gradido_transaction_role.html" title=" " alt="" coords="216,71,436,112"/>
+<area shape="rect" id="node4" href="$classgradido_1_1interaction_1_1serialize_1_1_signature_map_role.html" title=" " alt="" coords="233,136,419,177"/>
+<area shape="rect" id="node5" href="$classgradido_1_1interaction_1_1serialize_1_1_transaction_body_role.html" title=" " alt="" coords="224,201,428,243"/>
+</map>

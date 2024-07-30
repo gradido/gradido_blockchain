@@ -1,0 +1,11 @@
+<map id="include/gradido_blockchain/model/protocol/3_3/TransactionBase.h" name="include/gradido_blockchain/model/protocol/3_3/TransactionBase.h">
+<area shape="rect" id="node1" title=": Interface for Transaction Objects" alt="" coords="361,5,569,61"/>
+<area shape="rect" id="node2" href="$protocol_23__3_2_community_friends_update_8h_source.html" title=" " alt="" coords="5,213,253,269"/>
+<area shape="rect" id="node6" href="$protocol_23__3_2_transaction_transfer_8h_source.html" title=" " alt="" coords="236,109,444,165"/>
+<area shape="rect" id="node8" href="$protocol_23__3_2_register_address_8h_source.html" title=" " alt="" coords="469,117,715,158"/>
+<area shape="rect" id="node9" href="$protocol_23__3_2_transaction_creation_8h_source.html" title=" " alt="" coords="648,213,856,269"/>
+<area shape="rect" id="node3" href="$protocol_23__3_2_transaction_body_8h_source.html" title=" " alt="" coords="347,317,555,373"/>
+<area shape="rect" id="node4" href="$protocol_23__3_2_gradido_transaction_8h_source.html" title=" " alt="" coords="319,421,582,463"/>
+<area shape="rect" id="node5" href="$protocol_23__3_2_confirmed_transaction_8h_source.html" title=" " alt="" coords="313,511,589,552"/>
+<area shape="rect" id="node7" href="$protocol_23__3_2_deferred_transfer_8h_source.html" title=" " alt="" coords="327,221,574,262"/>
+</map>

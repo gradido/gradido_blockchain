@@ -1,6 +1,29 @@
 var searchData=
 [
-  ['handlerequestexception_0',['HandleRequestException',['../class_handle_request_exception.html',1,'']]],
-  ['hashcollisionwords_1',['HashCollisionWords',['../struct_mnemonic_1_1_hash_collision_words.html',1,'Mnemonic']]],
-  ['httprequest_2',['HttpRequest',['../class_http_request.html',1,'']]]
+  ['gradidoalreadyexist_337',['GradidoAlreadyExist',['../class_gradido_already_exist.html',1,'']]],
+  ['gradidoblockchainexception_338',['GradidoBlockchainException',['../class_gradido_blockchain_exception.html',1,'']]],
+  ['gradidoblockchaintransactionalreadyexistexception_339',['GradidoBlockchainTransactionAlreadyExistException',['../class_gradido_blockchain_transaction_already_exist_exception.html',1,'']]],
+  ['gradidoblockchaintransactionnotfoundexception_340',['GradidoBlockchainTransactionNotFoundException',['../class_gradido_blockchain_transaction_not_found_exception.html',1,'']]],
+  ['gradidocreation_341',['GradidoCreation',['../structgradido_1_1data_1_1_gradido_creation.html',1,'gradido::data::GradidoCreation'],['../classmodel_1_1protopuf_1_1_gradido_creation.html',1,'model::protopuf::GradidoCreation']]],
+  ['gradidocreationrole_342',['GradidoCreationRole',['../classgradido_1_1interaction_1_1validate_1_1_gradido_creation_role.html',1,'gradido::interaction::validate::GradidoCreationRole'],['../classgradido_1_1interaction_1_1calculate_account_balance_1_1_gradido_creation_role.html',1,'gradido::interaction::calculateAccountBalance::GradidoCreationRole']]],
+  ['gradidodeferredtransfer_343',['GradidoDeferredTransfer',['../structgradido_1_1data_1_1_gradido_deferred_transfer.html',1,'gradido::data::GradidoDeferredTransfer'],['../classmodel_1_1protopuf_1_1_gradido_deferred_transfer.html',1,'model::protopuf::GradidoDeferredTransfer']]],
+  ['gradidodeferredtransferrole_344',['GradidoDeferredTransferRole',['../classgradido_1_1interaction_1_1validate_1_1_gradido_deferred_transfer_role.html',1,'gradido::interaction::validate::GradidoDeferredTransferRole'],['../classgradido_1_1interaction_1_1calculate_account_balance_1_1_gradido_deferred_transfer_role.html',1,'gradido::interaction::calculateAccountBalance::GradidoDeferredTransferRole']]],
+  ['gradidoinvalidbase64exception_345',['GradidoInvalidBase64Exception',['../class_gradido_invalid_base64_exception.html',1,'']]],
+  ['gradidoinvalidenumexception_346',['GradidoInvalidEnumException',['../class_gradido_invalid_enum_exception.html',1,'']]],
+  ['gradidoinvalidhexexception_347',['GradidoInvalidHexException',['../class_gradido_invalid_hex_exception.html',1,'']]],
+  ['gradidonodeinvaliddataexception_348',['GradidoNodeInvalidDataException',['../class_gradido_node_invalid_data_exception.html',1,'']]],
+  ['gradidonullpointerexception_349',['GradidoNullPointerException',['../class_gradido_null_pointer_exception.html',1,'']]],
+  ['gradidorequest_350',['GradidoRequest',['../classmodel_1_1gradido_1_1_gradido_request.html',1,'model::gradido']]],
+  ['gradidotransaction_351',['GradidoTransaction',['../classmodel_1_1protopuf_1_1_gradido_transaction.html',1,'model::protopuf::GradidoTransaction'],['../classmodel_1_1gradido_1_1_gradido_transaction.html',1,'model::gradido::GradidoTransaction'],['../structgradido_1_1data_1_1_gradido_transaction.html',1,'gradido::data::GradidoTransaction']]],
+  ['gradidotransactionbuilder_352',['GradidoTransactionBuilder',['../classgradido_1_1_gradido_transaction_builder.html',1,'gradido']]],
+  ['gradidotransactionbuilderexception_353',['GradidoTransactionBuilderException',['../classgradido_1_1_gradido_transaction_builder_exception.html',1,'gradido']]],
+  ['gradidotransactionrole_354',['GradidoTransactionRole',['../classgradido_1_1interaction_1_1validate_1_1_gradido_transaction_role.html',1,'gradido::interaction::validate::GradidoTransactionRole'],['../classgradido_1_1interaction_1_1deserialize_1_1_gradido_transaction_role.html',1,'gradido::interaction::deserialize::GradidoTransactionRole'],['../classgradido_1_1interaction_1_1serialize_1_1_gradido_transaction_role.html',1,'gradido::interaction::serialize::GradidoTransactionRole'],['../classgradido_1_1interaction_1_1to_json_1_1_gradido_transaction_role.html',1,'gradido::interaction::toJson::GradidoTransactionRole']]],
+  ['gradidotransfer_355',['GradidoTransfer',['../structgradido_1_1data_1_1_gradido_transfer.html',1,'gradido::data::GradidoTransfer'],['../classmodel_1_1protopuf_1_1_gradido_transfer.html',1,'model::protopuf::GradidoTransfer']]],
+  ['gradidotransferrole_356',['GradidoTransferRole',['../classgradido_1_1interaction_1_1validate_1_1_gradido_transfer_role.html',1,'gradido::interaction::validate::GradidoTransferRole'],['../classgradido_1_1interaction_1_1calculate_account_balance_1_1_gradido_transfer_role.html',1,'gradido::interaction::calculateAccountBalance::GradidoTransferRole'],['../classgradido_1_1interaction_1_1deserialize_1_1_gradido_transfer_role.html',1,'gradido::interaction::deserialize::GradidoTransferRole']]],
+  ['gradidounhandledenum_357',['GradidoUnhandledEnum',['../class_gradido_unhandled_enum.html',1,'']]],
+  ['gradidounit_358',['GradidoUnit',['../class_gradido_unit.html',1,'']]],
+  ['gradidounknownenumexception_359',['GradidoUnknownEnumException',['../class_gradido_unknown_enum_exception.html',1,'']]],
+  ['graphqlrequest_360',['GraphQLRequest',['../class_graph_q_l_request.html',1,'']]],
+  ['groupnotfoundexception_361',['GroupNotFoundException',['../classmodel_1_1_transactions_manager_1_1_group_not_found_exception.html',1,'model::TransactionsManager::GroupNotFoundException'],['../classgradido_1_1blockchain_1_1_group_not_found_exception.html',1,'gradido::blockchain::GroupNotFoundException']]],
+  ['grouptransactions_362',['GroupTransactions',['../structmodel_1_1_transactions_manager_1_1_group_transactions.html',1,'model::TransactionsManager']]]
 ];

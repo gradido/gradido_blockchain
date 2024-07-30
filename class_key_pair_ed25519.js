@@ -1,7 +1,26 @@
 var class_key_pair_ed25519 =
 [
-    [ "KeyPairEd25519", "class_key_pair_ed25519.html#a6bb407268dc34273a02b8e3e1f4c698f", null ],
-    [ "isTheSame", "class_key_pair_ed25519.html#a48e7c3f19ee5eb357be846c16a1dcb0a", null ],
-    [ "sign", "class_key_pair_ed25519.html#a3b02c3df480cc943a3fccced4fecd1b8", null ],
-    [ "verify", "class_key_pair_ed25519.html#a507ecc0cc31ddb6b628ccef5f24994e7", null ]
+    [ "KeyPairEd25519", "class_key_pair_ed25519.html#ac218f7223043b2c062f3ca62dcbbe73d", null ],
+    [ "~KeyPairEd25519", "class_key_pair_ed25519.html#a058f6eedff1c8c8650b9bbbe880de210", null ],
+    [ "checkKeySizes", "class_key_pair_ed25519.html#aad726185d64e2c556e1722812700f938", null ],
+    [ "deriveChild", "class_key_pair_ed25519.html#aea412d002f527e0051dd0beede00e4cd", null ],
+    [ "getChainCode", "class_key_pair_ed25519.html#a3a4d77efd06b5f1c020ee8cb4fc55734", null ],
+    [ "getCryptedPrivKey", "class_key_pair_ed25519.html#a596da95f2111907a870543fc6d7cf95f", null ],
+    [ "getPrivateKey", "class_key_pair_ed25519.html#add01ff187b4432af99b641e232cdab9e", null ],
+    [ "getPublicKey", "class_key_pair_ed25519.html#a9a90c063a9db8da3a4260eb3a0bdc4c5", null ],
+    [ "hasPrivateKey", "class_key_pair_ed25519.html#a445d0b75bd3665eb9c54ad6389a8a157", null ],
+    [ "is3rdHighestBitClear", "class_key_pair_ed25519.html#a82a8081253ce1b946da196f801da4157", null ],
+    [ "isTheSame", "class_key_pair_ed25519.html#a00c498075d41ad4d14d5fb3341f711aa", null ],
+    [ "isTheSame", "class_key_pair_ed25519.html#afe6baa74e6fdf473c49fde457ce79171", null ],
+    [ "isTheSame", "class_key_pair_ed25519.html#ae4aa7092c35c7f5f0ee86efb8e48eebe", null ],
+    [ "operator!=", "class_key_pair_ed25519.html#a628e92fe3dc7e31c2bc98f38357a1438", null ],
+    [ "operator!=", "class_key_pair_ed25519.html#a25aa5a6c8f2e7089a7543892b7654408", null ],
+    [ "operator==", "class_key_pair_ed25519.html#a0769aa759869be840225c322331393ae", null ],
+    [ "operator==", "class_key_pair_ed25519.html#a9e107ce3122bc2a46739dfa685504302", null ],
+    [ "sign", "class_key_pair_ed25519.html#a1fee3b4c6a4f5600fc984b60d5dbfdae", null ],
+    [ "sign", "class_key_pair_ed25519.html#a5a98b047fda15e06cc2bbe54f0be6694", null ],
+    [ "sign", "class_key_pair_ed25519.html#a55f11bffc0038ac49e2bbf561d95d6ae", null ],
+    [ "verify", "class_key_pair_ed25519.html#a3e7699ac099dd43773f499917c7acc6b", null ],
+    [ "verify", "class_key_pair_ed25519.html#a507ecc0cc31ddb6b628ccef5f24994e7", null ],
+    [ "AuthenticatedEncryption", "class_key_pair_ed25519.html#afb885464869d28c798abc018da030382", null ]
 ];

@@ -1,5 +1,5 @@
 <map id="model::TransactionsManager::AccountInGroupNotFoundException" name="model::TransactionsManager::AccountInGroupNotFoundException">
-<area shape="rect" id="node1" title=" " alt="" coords="5,155,264,196"/>
-<area shape="rect" id="node2" href="$class_gradido_blockchain_exception.html" title=" " alt="" coords="31,80,239,107"/>
-<area shape="rect" id="node3" title=" " alt="" coords="65,5,204,32"/>
+<area shape="rect" id="node1" title=" " alt="" coords="5,155,240,196"/>
+<area shape="rect" id="node2" href="$class_gradido_blockchain_exception.html" title=" " alt="" coords="29,80,216,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="61,5,184,32"/>
 </map>

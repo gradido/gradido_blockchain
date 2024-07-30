@@ -1,6 +1,6 @@
 <map id="IotaPostRequestException" name="IotaPostRequestException">
-<area shape="rect" id="node1" title=" " alt="" coords="13,229,205,256"/>
-<area shape="rect" id="node2" href="$class_iota_request_exception.html" title=" " alt="" coords="27,155,191,181"/>
-<area shape="rect" id="node3" href="$class_gradido_blockchain_exception.html" title=" " alt="" coords="5,80,213,107"/>
-<area shape="rect" id="node4" title=" " alt="" coords="40,5,179,32"/>
+<area shape="rect" id="node1" title=" " alt="" coords="11,229,186,256"/>
+<area shape="rect" id="node2" href="$class_iota_request_exception.html" title=" " alt="" coords="25,155,173,181"/>
+<area shape="rect" id="node3" href="$class_gradido_blockchain_exception.html" title=" " alt="" coords="5,80,192,107"/>
+<area shape="rect" id="node4" title=" " alt="" coords="37,5,160,32"/>
 </map>

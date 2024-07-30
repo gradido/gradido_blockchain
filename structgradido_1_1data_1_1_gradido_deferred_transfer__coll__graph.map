@@ -1,0 +1,7 @@
+<map id="gradido::data::GradidoDeferredTransfer" name="gradido::data::GradidoDeferredTransfer">
+<area shape="rect" id="node1" title=" " alt="" coords="30,288,225,329"/>
+<area shape="rect" id="node2" href="$structgradido_1_1data_1_1_timestamp_seconds.html" title=" " alt="" coords="5,184,172,225"/>
+<area shape="rect" id="node3" href="$structgradido_1_1data_1_1_gradido_transfer.html" title=" " alt="" coords="197,191,391,218"/>
+<area shape="rect" id="node4" href="$structgradido_1_1data_1_1_transfer_amount.html" title=" " alt="" coords="197,95,391,121"/>
+<area shape="rect" id="node5" href="$class_gradido_unit.html" title=" " alt="" coords="249,5,339,32"/>
+</map>

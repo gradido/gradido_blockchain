@@ -1,5 +1,3 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$class_decimal.html" title="Container for mpfr values, for easy convertion between string and mpfr." alt="" coords="5,31,81,57"/>
-<area shape="rect" id="node2" href="$class_cached_decimal.html" title="cache string representation of decimal" alt="" coords="129,5,253,32"/>
-<area shape="rect" id="node3" href="$class_decay_decimal.html" title=" " alt="" coords="133,56,250,83"/>
+<area shape="rect" id="node1" href="$class_authenticated_encryption.html" title=" " alt="" coords="5,5,168,32"/>
 </map>

@@ -1,9 +1,10 @@
 <map id="model::gradido::TransactionBase" name="model::gradido::TransactionBase">
-<area shape="rect" id="node1" title=" " alt="" coords="213,111,448,138"/>
-<area shape="rect" id="node3" href="$classmodel_1_1gradido_1_1_group_friends_update.html" title=" " alt="" coords="496,5,711,47"/>
-<area shape="rect" id="node4" href="$classmodel_1_1gradido_1_1_register_address.html" title=" " alt="" coords="512,71,695,112"/>
-<area shape="rect" id="node5" href="$classmodel_1_1gradido_1_1_transaction_creation.html" title=" " alt="" coords="502,136,705,177"/>
-<area shape="rect" id="node6" href="$classmodel_1_1gradido_1_1_transaction_transfer.html" title=" " alt="" coords="502,201,705,243"/>
-<area shape="rect" id="node2" href="$class_multithread_container.html" title=" " alt="" coords="5,111,165,138"/>
-<area shape="rect" id="node7" href="$classmodel_1_1gradido_1_1_deferred_transfer.html" title=" " alt="" coords="759,201,944,243"/>
+<area shape="rect" id="node1" title=" " alt="" coords="195,130,404,157"/>
+<area shape="rect" id="node3" href="$classmodel_1_1gradido_1_1_community_friends_update.html" title=" " alt="" coords="465,5,641,47"/>
+<area shape="rect" id="node4" href="$classmodel_1_1gradido_1_1_community_root.html" title=" " alt="" coords="452,71,655,98"/>
+<area shape="rect" id="node5" href="$classmodel_1_1gradido_1_1_register_address.html" title=" " alt="" coords="474,123,633,164"/>
+<area shape="rect" id="node6" href="$classmodel_1_1gradido_1_1_transaction_creation.html" title=" " alt="" coords="464,188,643,229"/>
+<area shape="rect" id="node7" href="$classmodel_1_1gradido_1_1_transaction_transfer.html" title=" " alt="" coords="464,253,643,295"/>
+<area shape="rect" id="node2" href="$class_multithread_container.html" title=" " alt="" coords="5,130,147,157"/>
+<area shape="rect" id="node8" href="$classmodel_1_1gradido_1_1_deferred_transfer.html" title=" " alt="" coords="703,253,863,295"/>
 </map>

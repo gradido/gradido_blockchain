@@ -1,0 +1,4 @@
+<map id="model::gradido::RequestBody" name="model::gradido::RequestBody">
+<area shape="rect" id="node1" title="Basic Class for requests (like transactions but not stored in blockchain, requests are more temporary..." alt="" coords="5,80,193,107"/>
+<area shape="rect" id="node2" href="$class_multithread_container.html" title=" " alt="" coords="29,5,170,32"/>
+</map>

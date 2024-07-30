@@ -1,9 +1,10 @@
 <map id="RequestException" name="RequestException">
-<area shape="rect" id="node1" title=" " alt="" coords="448,56,587,83"/>
-<area shape="rect" id="node4" href="$class_request_empty_response_exception.html" title=" " alt="" coords="635,5,879,32"/>
-<area shape="rect" id="node5" href="$class_request_response_error_exception.html" title=" " alt="" coords="640,56,873,83"/>
-<area shape="rect" id="node7" href="$class_request_response_invalid_json_exception.html" title=" " alt="" coords="652,107,861,149"/>
-<area shape="rect" id="node2" href="$class_gradido_blockchain_exception.html" title=" " alt="" coords="192,56,400,83"/>
-<area shape="rect" id="node3" title=" " alt="" coords="5,56,144,83"/>
-<area shape="rect" id="node6" href="$class_request_response_cake_p_h_p_exception.html" title=" " alt="" coords="927,56,1187,83"/>
+<area shape="rect" id="node1" title=" " alt="" coords="411,81,537,108"/>
+<area shape="rect" id="node4" href="$class_httplib_request_exception.html" title=" " alt="" coords="613,5,777,32"/>
+<area shape="rect" id="node5" href="$class_request_empty_response_exception.html" title=" " alt="" coords="585,56,805,83"/>
+<area shape="rect" id="node6" href="$class_request_response_error_exception.html" title=" " alt="" coords="590,107,801,133"/>
+<area shape="rect" id="node8" href="$class_request_response_invalid_json_exception.html" title=" " alt="" coords="598,158,793,199"/>
+<area shape="rect" id="node2" href="$class_gradido_blockchain_exception.html" title=" " alt="" coords="176,81,363,108"/>
+<area shape="rect" id="node3" title=" " alt="" coords="5,81,128,108"/>
+<area shape="rect" id="node7" href="$class_request_response_cake_p_h_p_exception.html" title=" " alt="" coords="853,107,1096,133"/>
 </map>
