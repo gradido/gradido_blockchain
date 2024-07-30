@@ -1,6 +1,7 @@
 #include "gradido_blockchain/memory/Manager.h"
 #include <cassert>
 #include <cstring>
+#include <cstdlib>
 
 namespace memory {
 	Manager::Manager() : mInitalized(true)
