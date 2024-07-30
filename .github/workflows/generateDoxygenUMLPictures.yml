@@ -23,12 +23,12 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4.1.7
     - name: Checkout doxygen style 
       run: git submodule update --init -- ./doc/doxygen_awesome_css
         
     - name: Doxygen Action
-      uses: einhornimmond/doxygen-plantuml-action@v2.0
+      uses: einhornimmond/doxygen-plantuml-action@v2.3
       with:
         # Path to Doxyfile
         doxyfile-path: "./Doxyfile" # default is ./Doxyfile
