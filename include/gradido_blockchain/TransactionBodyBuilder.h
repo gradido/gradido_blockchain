@@ -66,7 +66,7 @@ namespace gradido {
 		}
 
 		//! only needed for cross group transactions
-		inline TransactionBodyBuilder& setOtherGroup(std::string&& otherGroup) {
+		inline TransactionBodyBuilder& setOtherGroup(std::string& otherGroup) {
 			mBody->otherGroup = otherGroup;
 			return *this;
 		}
