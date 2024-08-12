@@ -19,6 +19,7 @@ namespace gradido {
 		//  ----------------  basic_types.proto -----------------------------------
 		struct GRADIDOBLOCKCHAIN_EXPORT SignaturePair
 		{
+			SignaturePair() {}
 			// throw InvalidSizeException
 			SignaturePair(memory::ConstBlockPtr pubkeyPtr, memory::ConstBlockPtr signaturePtr)
 				: pubkey(pubkeyPtr), signature(signaturePtr) {}
