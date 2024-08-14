@@ -3,7 +3,7 @@
 
 #include "gradido_blockchain/crypto/CryptoConfig.h"
 #include "gradido_blockchain/crypto/MnemonicType.h"
-#include "gradido_blockchain/Const.h"
+#include "gradido_blockchain/const.h"
 #include "gtest/gtest.h"
 
 #include "magic_enum/magic_enum.hpp"

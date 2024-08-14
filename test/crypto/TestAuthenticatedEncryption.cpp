@@ -7,8 +7,12 @@
 
 void TestAuthenticatedEncryption::SetUp()
 {
-	CryptoConfig::g_CryptoAppSecret = std::make_shared<memory::Block>(memory::Block::fromHex("21ffbbc616fe"));
-	CryptoConfig::g_ServerCryptoKey = std::make_shared<memory::Block>(memory::Block::fromHex("a51ef8ac7ef1abf162fb7a65261acd7a"));
+	CryptoConfig::g_CryptoAppSecret = std::make_shared<memory::Block>(
+		memory::Block::fromHex("21ffbbc616fe")
+	);
+	CryptoConfig::g_ServerCryptoKey = std::make_shared<memory::Block>(
+		memory::Block::fromHex("a51ef8ac7ef1abf162fb7a65261acd7a")
+	);
 }
 
 void TestAuthenticatedEncryption::TearDown()
@@ -30,8 +34,11 @@ TEST_F(TestAuthenticatedEncryption, encryptDecryptTest) {
 	memcpy(test_message_bin, test_message.data(), test_message.size());
 
 	auto encrypted_message = authenticated_encryption.encrypt(test_message_bin);
-	EXPECT_TRUE(encrypted_message);
-	//printf("encrypt message duration: %s\n", time_used.string().data());
+	EXPECT_TRUE(encrypted_message);	
+	EXPECT_EQ(
+		encrypted_message.convertToHex(), 
+		"46844ac9906132f8c40d8165e6d426a84b7e507175b327ba8bea9789470e1b61501c3b29fe62071ed76a97f433b70e69ffccded2f089c6ccc2"
+	);
 	
 	auto decrypted_message = authenticated_encryption.decrypt(encrypted_message);
 	EXPECT_TRUE(decrypted_message);
