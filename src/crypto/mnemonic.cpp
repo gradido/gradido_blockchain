@@ -58,6 +58,7 @@ void Mnemonic::init(void(*fill_words_func)(unsigned char*), unsigned int origina
 
 		//printf("c[Mnemonic::%s] uncompressing success\n", __FUNCTION__);
 		// fill words in array and hashList
+		/*
 		std::string uncompressed_file_name = "uncompressed_buffer";
 		uncompressed_file_name += std::to_string(original_size);
 		uncompressed_file_name += ".txt";
@@ -66,7 +67,7 @@ void Mnemonic::init(void(*fill_words_func)(unsigned char*), unsigned int origina
 			fwrite(uncompressed_buffer, sizeof(char), original_size, f);
 			fclose(f);
 		}
-
+		*/	
 		unsigned short cursor = 0;
 		u32 word_begin = 0, word_end = 0;
 
