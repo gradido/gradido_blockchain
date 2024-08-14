@@ -10,4 +10,7 @@
 
 #define GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL std::chrono::months(3)
 
+// passphrase word count
+#define PHRASE_WORD_COUNT 24
+
 #endif //__GRADIDO_BLOCKCHAIN_CONST_H

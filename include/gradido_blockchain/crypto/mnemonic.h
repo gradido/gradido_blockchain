@@ -12,14 +12,12 @@
  */
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/lib/DRHashList.h"
+#include "MnemonicType.h"
 #include <string>
 #include <shared_mutex>
 #include <map>
 #include <list>
 #include <vector>
-
-#define PHRASE_WORD_COUNT 24
-
 
 class GRADIDOBLOCKCHAIN_EXPORT Mnemonic
 {
@@ -65,12 +63,12 @@ public:
 	explicit MnemonicException(const char* what, const char* word = nullptr);
 	std::string getFullString() const noexcept;
 
-	MnemonicException& setMnemonic(const Mnemonic* mnemonic);
-	inline int getMnemonicIndex() { return mMnemonicIndex; }
+	MnemonicException& setWordListType(MnemonicType type) { mMnemonicType = type; return *this; }
+	inline MnemonicType getWordListType() { return mMnemonicType; }
 
 protected:
 	std::string mWord;
-	int mMnemonicIndex;
+	MnemonicType mMnemonicType;
 };
 
 
