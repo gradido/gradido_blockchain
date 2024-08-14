@@ -2,8 +2,9 @@
 #define __GRADIDO_LOGIN_SERVER_CRYPTO_PASSPHRASE_H
 
 #include "gradido_blockchain/memory/Block.h"
-#include "mnemonic.h"
+#include "MnemonicType.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain/const.h"
 
 #include <memory>
 #include <array>
@@ -14,17 +15,17 @@ class GRADIDOBLOCKCHAIN_EXPORT Passphrase
 {
 public:
 	Passphrase() = delete;
-	Passphrase(const std::string& passphrase, const Mnemonic* wordSource);
+	Passphrase(const std::string& passphrase, MnemonicType wordListType);
 
-	static std::shared_ptr<Passphrase> create(const std::array<uint16_t, PHRASE_WORD_COUNT>& wordIndices, const Mnemonic* wordSource);
+	static std::shared_ptr<Passphrase> create(const std::array<uint16_t, PHRASE_WORD_COUNT>& wordIndices, MnemonicType wordListType);
 	//! \brief generate new passphrase with random
-	static std::shared_ptr<Passphrase> generate(const Mnemonic* wordSource);
+	static std::shared_ptr<Passphrase> generate(MnemonicType wordListType);
 
-	static const Mnemonic* detectMnemonic(const std::string& passphrase, const KeyPairEd25519* userKeyPair = nullptr);
+	static MnemonicType detectMnemonic(const std::string& passphrase, const KeyPairEd25519* userKeyPair = nullptr);
 
 	//! \brief transform passphrase into another language/mnemonic source
 	//! \return this if targetWordSource is the same as mWordSource
-	std::shared_ptr<Passphrase> transform(const Mnemonic* targetWordSource);
+	std::shared_ptr<Passphrase> transform(MnemonicType wordListType);
 
 	//! \brief create clear passphrase from word indices from bitcoin word list (bip0039)
 	//!
@@ -49,7 +50,7 @@ protected:
 	void createWordIndices();
 
 	std::string			mPassphraseString;
-	const Mnemonic*		mWordSource;
+	MnemonicType		mWordListType;
 	std::array<uint16_t, PHRASE_WORD_COUNT> mWordIndices;
 };
 

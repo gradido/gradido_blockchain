@@ -19,12 +19,14 @@ namespace CryptoConfig
 	GRADIDOBLOCKCHAIN_EXPORT extern memory::BlockPtr g_SupportPublicKey;
 	GRADIDOBLOCKCHAIN_EXPORT extern Mnemonic g_Mnemonic_WordLists[magic_enum::enum_integer(MnemonicType::MAX)];
 
+
 	// throw exception on error
 	//!
 	//! \param printToFile if true, print every word list in a separat txt file for debugging
 	GRADIDOBLOCKCHAIN_EXPORT void loadMnemonicWordLists(bool printToFile = false);
 	GRADIDOBLOCKCHAIN_EXPORT bool loadCryptoKeys(const MapEnvironmentToConfig& cfg);
 	GRADIDOBLOCKCHAIN_EXPORT void unload();
+	GRADIDOBLOCKCHAIN_EXPORT const Mnemonic* getWordList(MnemonicType type);
 
 	class GRADIDOBLOCKCHAIN_EXPORT MissingKeyException : GradidoBlockchainException
 	{

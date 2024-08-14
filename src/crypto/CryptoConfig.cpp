@@ -45,7 +45,7 @@ namespace CryptoConfig
 			}
 			catch (MnemonicException& ex) {
 				// add info and rethrow
-				throw ex.setMnemonic(&g_Mnemonic_WordLists[i]);
+				throw ex.setWordListType(type);
 			}
 			if (printToFile) {
 				std::string fileName(enum_name(type));
@@ -89,6 +89,11 @@ namespace CryptoConfig
 		g_CryptoAppSecret.reset();
 		g_ServerCryptoKey.reset();
 		g_SupportPublicKey.reset();
+	}
+
+	const Mnemonic* getWordList(MnemonicType type)
+	{
+		return &CryptoConfig::g_Mnemonic_WordLists[enum_integer(type)];
 	}
 
 	// ####################### exception ##################################

@@ -1,7 +1,7 @@
 
 #include "gradido_blockchain/crypto/CryptoConfig.h"
-#include "gradido_blockchain/crypto/MnemonicType.h"
 #include "gradido_blockchain/crypto/mnemonic.h"
+#include "gradido_blockchain/const.h"
 
 #include "tinf.h"
 #include "magic_enum/magic_enum_utility.hpp"
@@ -340,27 +340,11 @@ std::string Mnemonic::getSortedWordListJsonString()
 
 
 MnemonicException::MnemonicException(const char* what, const char* word/* = nullptr*/) :
-	GradidoBlockchainException(what), mMnemonicIndex(-1)
+	GradidoBlockchainException(what), mMnemonicType(MnemonicType::BIP0039_SORTED_ORDER)
 {
 	if (word) {
 		mWord = word;
 	}
-}
-
-MnemonicException& MnemonicException::setMnemonic(const Mnemonic* mnemonic)
-{
-	int mnemonicIndex = 0;
-	enum_for_each<MnemonicType>([&mnemonicIndex, mnemonic](auto val) {
-		if (mnemonicIndex) return;
-		constexpr MnemonicType type = val;
-		int i = enum_integer(type);
-		if (&CryptoConfig::g_Mnemonic_WordLists[i] == mnemonic) {
-			mnemonicIndex = i;
-			return;
-		}
-	});
-	mMnemonicIndex = mnemonicIndex;
-	return *this;
 }
 
 std::string MnemonicException::getFullString() const noexcept
