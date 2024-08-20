@@ -145,6 +145,12 @@ TEST(BlockTest, ConvertToAndFromBase64) {
 
 	// invalid base64
 	EXPECT_THROW(Block::fromBase64("AAECAwQFBgcICQ"), GradidoInvalidBase64Exception);
+	try {
+		Block::fromBase64("AAECAwQFBgc");
+		printf("valid\n");
+	} catch(GradidoInvalidBase64Exception& ex) {
+		printf("invalid base64: %s\n", ex.getFullString().data());
+	}
 }
 
 TEST(BlockTest, Blake2bHash) {

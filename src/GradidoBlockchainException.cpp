@@ -156,20 +156,24 @@ std::string GradidoUnknownEnumException::getFullString() const
 }
 
 // **************************** Invalid Base64 ****************************************
-GradidoInvalidBase64Exception::GradidoInvalidBase64Exception(const char* what, const std::string& base64, int lastValidCharacter) noexcept
-	: GradidoBlockchainException(what), mBase64(base64), mLastValidCharacter(lastValidCharacter)
+GradidoInvalidBase64Exception::GradidoInvalidBase64Exception(const char* what, const std::string& base64, size_t lastValidCharacterIndex) noexcept
+	: GradidoBlockchainException(what), mBase64(base64), mLastValidCharacterIndex(lastValidCharacterIndex)
 {
-
 }
 
 std::string GradidoInvalidBase64Exception::getFullString() const
 {
-	std::string resultString;
-	std::string lastValidCharacterString = std::to_string(mLastValidCharacter);
-	size_t resultSize = strlen(what()) + mBase64.size() + 10 + lastValidCharacterString.size() + 19;
+	std::string resultString;	
+	size_t resultSize = strlen(what()) + 8 + mBase64.size() + 14 + mLastValidCharacterIndex + 2;
 	resultString.reserve(resultSize);
 	resultString = what();
-	resultString += ", with: " + mBase64 + ", last valid char: " + lastValidCharacterString;
+	resultString += ", with: " + mBase64 + ", valid part: ";
+	if(mLastValidCharacterIndex < mBase64.size()) {
+		resultString += mBase64.substr(0, mLastValidCharacterIndex);
+	} else {
+		resultString += mBase64;
+	}
+	
 	return resultString;
 }
 

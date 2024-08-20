@@ -103,11 +103,11 @@ public:
 class GRADIDOBLOCKCHAIN_EXPORT GradidoInvalidBase64Exception : public GradidoBlockchainException
 {
 public:
-	explicit GradidoInvalidBase64Exception(const char* what, const std::string& base64, int lastValidCharacter) noexcept;
+	explicit GradidoInvalidBase64Exception(const char* what, const std::string& base64, size_t lastValidCharacterIndex) noexcept;
 	std::string getFullString() const;
 protected:
 	std::string mBase64;
-	int         mLastValidCharacter;
+	size_t mLastValidCharacterIndex;
 
 };
 
