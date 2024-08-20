@@ -139,7 +139,7 @@ namespace memory {
 		const char* firstInvalidByte = nullptr;
 		auto convertResult = sodium_base642bin(bin, binSize, base64String, size, nullptr, &resultBinSize, &firstInvalidByte, variant);
 		if (0 != convertResult) {
-			throw GradidoInvalidBase64Exception("invalid base64", base64String, (int)*firstInvalidByte);
+			throw GradidoInvalidBase64Exception("invalid base64", base64String, firstInvalidByte - base64String);
 		}
 		if (resultBinSize < binSize) {
 			memory::Block bin_real(resultBinSize, bin);
