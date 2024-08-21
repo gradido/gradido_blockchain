@@ -118,8 +118,8 @@ TEST(DeserializeTest, GradidoCreationBody) {
 	EXPECT_FALSE(body->isTransfer());
 
 	auto creation = body->creation;
-	EXPECT_EQ(creation->recipient.amount.toString(), "1000.0000");
-	EXPECT_TRUE(creation->recipient.pubkey->isTheSame(g_KeyPairs[4].publicKey));
+	EXPECT_EQ(creation->recipient.mAmount.toString(), "1000.0000");
+	EXPECT_TRUE(creation->recipient.mPubkey->isTheSame(g_KeyPairs[4].publicKey));
 	EXPECT_EQ(creation->targetDate, targetDate);
 }
 
@@ -149,8 +149,8 @@ TEST(DeserializeTest, GradidoTransferBody) {
 	ASSERT_TRUE(body->isTransfer());
 
 	auto transfer = body->transfer;
-	EXPECT_EQ(transfer->sender.amount.toString(), "500.5500");
-	EXPECT_TRUE(transfer->sender.pubkey->isTheSame(g_KeyPairs[4].publicKey));
+	EXPECT_EQ(transfer->sender.mAmount.toString(), "500.5500");
+	EXPECT_TRUE(transfer->sender.mPubkey->isTheSame(g_KeyPairs[4].publicKey));
 	EXPECT_TRUE(transfer->recipient->isTheSame(g_KeyPairs[5].publicKey));
 }
 
@@ -180,8 +180,8 @@ TEST(DeserializeTest, GradidoDeferredTransferBody) {
 
 	auto deferredTransfer = body->deferredTransfer;
 	auto transfer = deferredTransfer->transfer;
-	EXPECT_EQ(transfer.sender.amount.toString(), "555.5500");
-	EXPECT_TRUE(transfer.sender.pubkey->isTheSame(g_KeyPairs[4].publicKey));
+	EXPECT_EQ(transfer.sender.mAmount.toString(), "555.5500");
+	EXPECT_TRUE(transfer.sender.mPubkey->isTheSame(g_KeyPairs[4].publicKey));
 	EXPECT_TRUE(transfer.recipient->isTheSame(g_KeyPairs[5].publicKey));
 	EXPECT_EQ(deferredTransfer->timeout, timeout);
 }
@@ -300,8 +300,8 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_TRUE(body->isTransfer());
 	
 	auto transfer = body->transfer;
-	EXPECT_EQ(transfer->sender.amount.toString(), "100.2516");
-	EXPECT_TRUE(transfer->sender.pubkey->isTheSame(g_KeyPairs[4].publicKey));
+	EXPECT_EQ(transfer->sender.mAmount.toString(), "100.2516");
+	EXPECT_TRUE(transfer->sender.mPubkey->isTheSame(g_KeyPairs[4].publicKey));
 	EXPECT_TRUE(transfer->recipient->isTheSame(g_KeyPairs[5].publicKey));
 	
 }

@@ -108,9 +108,9 @@ TEST(TransactionBodyBuilderTest, GradidoCreation) {
 	EXPECT_EQ(transactionBody->createdAt, Timestamp(now));
 
 	auto creation = transactionBody->creation;
-	EXPECT_EQ(*creation->recipient.pubkey, *g_KeyPairs[4].publicKey);
-	EXPECT_EQ(creation->recipient.communityId, "");
-	EXPECT_EQ(creation->recipient.amount.toString(), "1000.0000");
+	EXPECT_EQ(*creation->recipient.mPubkey, *g_KeyPairs[4].publicKey);
+	EXPECT_EQ(creation->recipient.mCommunityId, "");
+	EXPECT_EQ(creation->recipient.mAmount.toString(), "1000.0000");
 	EXPECT_EQ(creation->targetDate, TimestampSeconds(1660953712));
 }
 
@@ -141,9 +141,9 @@ TEST(TransactionBodyBuilderTest, GradidoTransfer) {
 	EXPECT_EQ(transactionBody->createdAt, Timestamp(now));
 
 	auto transfer = transactionBody->transfer;
-	EXPECT_EQ(*transfer->sender.pubkey, *g_KeyPairs[4].publicKey);
-	EXPECT_EQ(transfer->sender.communityId, "");
-	EXPECT_EQ(transfer->sender.amount.toString(), "100.2516");
+	EXPECT_EQ(*transfer->sender.mPubkey, *g_KeyPairs[4].publicKey);
+	EXPECT_EQ(transfer->sender.mCommunityId, "");
+	EXPECT_EQ(transfer->sender.mAmount.toString(), "100.2516");
 	EXPECT_EQ(*transfer->recipient, *g_KeyPairs[5].publicKey);
 }
 
@@ -174,9 +174,9 @@ TEST(TransactionBodyBuilderTest, GradidoDeferredTransfer) {
 	EXPECT_EQ(transactionBody->createdAt, Timestamp(now));
 
 	auto deferredTransfer = transactionBody->deferredTransfer;
-	EXPECT_EQ(*deferredTransfer->transfer.sender.pubkey, *g_KeyPairs[4].publicKey);
-	EXPECT_EQ(deferredTransfer->transfer.sender.communityId, "");
-	EXPECT_EQ(deferredTransfer->transfer.sender.amount.toString(), "100.2516");
+	EXPECT_EQ(*deferredTransfer->transfer.sender.mPubkey, *g_KeyPairs[4].publicKey);
+	EXPECT_EQ(deferredTransfer->transfer.sender.mCommunityId, "");
+	EXPECT_EQ(deferredTransfer->transfer.sender.mAmount.toString(), "100.2516");
 	EXPECT_EQ(*deferredTransfer->transfer.recipient, *g_KeyPairs[5].publicKey);
 	EXPECT_EQ(deferredTransfer->timeout, now + days(5));
 }
