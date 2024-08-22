@@ -2,7 +2,6 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_CALCULATE_ACCOUNT_BALANCE_REGISTER_ADDRESS_ROLE_H
 
 #include "AbstractRole.h"
-#include "gradido_blockchain/data/Protocol.h"
 
 namespace gradido {
 	namespace interaction {
@@ -20,7 +19,7 @@ namespace gradido {
 					return 0.0;
 				}
 				inline memory::ConstBlockPtr getFinalBalanceAddress() const {
-					return mRegisterAddress.accountPubkey;
+					return mRegisterAddress.getAccountPublicKey();
 				}
 			protected:
 				const data::RegisterAddress& mRegisterAddress;

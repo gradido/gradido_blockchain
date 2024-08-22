@@ -29,7 +29,7 @@ namespace gradido {
 						throw TransactionValidationInvalidInputException("timeout is to far away from confirmed date", "timeout", "timestamp");
 					}
 					if (senderPreviousConfirmedTransaction) {
-						if (senderPreviousConfirmedTransaction->confirmedAt >= mDeferredTransfer->timeout) {
+						if (senderPreviousConfirmedTransaction->mConfirmedAt >= mDeferredTransfer->timeout) {
 							throw TransactionValidationInvalidInputException("timeout is already in the past", "timeout", "timestamp");
 						}
 					}

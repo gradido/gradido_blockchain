@@ -61,7 +61,7 @@ namespace gradido {
 							mGradidoCreation->recipient.pubkey,
 							mConfirmedAt,
 							blockchain,
-							recipientPreviousConfirmedTransaction->id
+							recipientPreviousConfirmedTransaction->mId
 						);
 					}
 					else if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo) {
@@ -69,7 +69,7 @@ namespace gradido {
 							mGradidoCreation->recipient.pubkey,
 							ymd.month(), ymd.year(),
 							mConfirmedAt, blockchain,
-							recipientPreviousConfirmedTransaction->id
+							recipientPreviousConfirmedTransaction->mId
 						);
 					}
 					sum += recipient.amount;

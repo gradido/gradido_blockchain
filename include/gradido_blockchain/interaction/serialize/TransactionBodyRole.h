@@ -1,7 +1,6 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_TRANSACTION_BODY_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_TRANSACTION_BODY_ROLE_H
 
-#include "gradido_blockchain/data/Protocol.h"
 #include "Protopuf.h"
 #include "gradido_blockchain/data/CrossGroupType.h"
 #include "AbstractRole.h"

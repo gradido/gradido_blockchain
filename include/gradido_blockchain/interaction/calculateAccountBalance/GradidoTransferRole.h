@@ -2,7 +2,6 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_CALCULATE_ACCOUNT_BALANCE_GRADIDO_TRANSFER_ROLE_H
 
 #include "AbstractRole.h"
-#include "gradido_blockchain/data/Protocol.h"
 
 namespace gradido {
 	namespace interaction {
@@ -14,13 +13,13 @@ namespace gradido {
 					: mTransfer(transfer) {}
 
 				inline bool isFinalBalanceForAccount(memory::ConstBlockPtr accountPublicKey) const {
-					return mTransfer.sender.pubkey->isTheSame(accountPublicKey);
+					return mTransfer.getSender().getPubkey()->isTheSame(accountPublicKey);
 				}
 				inline GradidoUnit getAmount() const {
-					return mTransfer.sender.amount;
+					return mTransfer.getSender().getAmount();
 				}
 				inline memory::ConstBlockPtr getFinalBalanceAddress() const {
-					return mTransfer.sender.pubkey;
+					return mTransfer.getSender().getPubkey();
 				}
 			protected:
 				const data::GradidoTransfer& mTransfer;

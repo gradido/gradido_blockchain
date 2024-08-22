@@ -68,7 +68,7 @@ namespace gradido {
 							if (!pairTransactionEntry) {
 								throw TransactionValidationException("pairing transaction not found");
 							}
-							const auto& pairingTransaction = pairTransactionEntry->getConfirmedTransaction()->gradidoTransaction;
+							const auto& pairingTransaction = pairTransactionEntry->getConfirmedTransaction()->mGradidoTransaction;
 							if(!mGradidoTransaction.isPairing(*pairingTransaction)) {
 								throw PairingTransactionNotMatchException(
 									"pairing transaction not matching",

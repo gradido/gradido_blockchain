@@ -13,23 +13,23 @@ namespace gradido {
 		{
 			auto confirmedTransaction = getConfirmedTransaction();
 
-			mTransactionNr = confirmedTransaction->id;
-			auto receivedDate = date::year_month_day{ date::floor<date::days>(confirmedTransaction->confirmedAt.getAsTimepoint()) };
+			mTransactionNr = confirmedTransaction->mId;
+			auto receivedDate = date::year_month_day{ date::floor<date::days>(confirmedTransaction->mConfirmedAt.getAsTimepoint()) };
 			mMonth = receivedDate.month();
 			mYear = receivedDate.year();
-			mTransactionType = confirmedTransaction->gradidoTransaction->getTransactionBody()->getTransactionType();
-			mCoinCommunityId = getCoinCommunityId(*confirmedTransaction->gradidoTransaction->getTransactionBody());
+			mTransactionType = confirmedTransaction->mGradidoTransaction->getTransactionBody()->getTransactionType();
+			mCoinCommunityId = getCoinCommunityId(*confirmedTransaction->mGradidoTransaction->getTransactionBody());
 		}
 
 		TransactionEntry::TransactionEntry(data::ConstConfirmedTransactionPtr confirmedTransaction)
-			: mTransactionNr(confirmedTransaction->id),
+			: mTransactionNr(confirmedTransaction->mId),
 			mSerializedTransaction(interaction::serialize::Context(*confirmedTransaction).run()),
 			mConfirmedTransaction(confirmedTransaction)
 		{
-			auto receivedDate = date::year_month_day{ date::floor<date::days>(confirmedTransaction->confirmedAt.getAsTimepoint()) };
+			auto receivedDate = date::year_month_day{ date::floor<date::days>(confirmedTransaction->mConfirmedAt.getAsTimepoint()) };
 			mMonth = receivedDate.month();
 			mYear = receivedDate.year();
-			auto body = confirmedTransaction->gradidoTransaction->getTransactionBody();
+			auto body = confirmedTransaction->mGradidoTransaction->getTransactionBody();
 			mTransactionType = body->getTransactionType();
 			mCoinCommunityId = getCoinCommunityId(*body);
 		}

@@ -15,17 +15,17 @@ namespace gradido {
 				data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
 				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 			) {
-				auto body = mConfirmedTransaction.gradidoTransaction->getTransactionBody();
-				auto createdAt = mConfirmedTransaction.gradidoTransaction->getTransactionBody()->createdAt.getAsTimepoint();
-				auto confirmedAt = mConfirmedTransaction.confirmedAt.getAsTimepoint();
+				auto body = mConfirmedTransaction.mGradidoTransaction->getTransactionBody();
+				auto createdAt = mConfirmedTransaction.mGradidoTransaction->getTransactionBody()->createdAt.getAsTimepoint();
+				auto confirmedAt = mConfirmedTransaction.mConfirmedAt.getAsTimepoint();
 
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					if (mConfirmedTransaction.versionNumber != GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING) {
+					if (mConfirmedTransaction.mVersionNumber != GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING) {
 						TransactionValidationInvalidInputException exception("wrong version in gradido block", "version_number", "uint64");
 						exception.setTransactionBody(*body);
 						throw exception;
 					}	// with iota it is a BLAKE2b-256 hash with 256 Bits or 32 Bytes
-					if (mConfirmedTransaction.messageId && mConfirmedTransaction.messageId->size() != 32) {
+					if (mConfirmedTransaction.mMessageId && mConfirmedTransaction.mMessageId->size() != 32) {
 						TransactionValidationInvalidInputException exception("wrong size", "message_id", "binary");
 						exception.setTransactionBody(*body);
 						throw exception;
@@ -35,7 +35,7 @@ namespace gradido {
 						TransactionValidationInvalidInputException exception(
 							"timespan between created and received are negative",
 							"iota milestone timestamp",
-							std::to_string(mConfirmedTransaction.confirmedAt.seconds).data()
+							std::to_string(mConfirmedTransaction.mConfirmedAt.seconds).data()
 						);
 						exception.setTransactionBody(*body);
 						throw exception;
@@ -43,8 +43,8 @@ namespace gradido {
 				}
 
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS) {
-					if (mConfirmedTransaction.id > 1) {
-						auto previousTransactionId = mConfirmedTransaction.id - 1;
+					if (mConfirmedTransaction.mId > 1) {
+						auto previousTransactionId = mConfirmedTransaction.mId - 1;
 						auto blockchain = blockchainProvider->findBlockchain(communityId);
 						assert(blockchain);
 						auto previousTransaction = blockchain->getTransactionForId(previousTransactionId);
@@ -53,10 +53,10 @@ namespace gradido {
 							throw exception.setTransactionId(previousTransactionId);
 						}
 						auto previousConfirmedTransaction = previousTransaction->getConfirmedTransaction();
-						if (previousConfirmedTransaction->confirmedAt > mConfirmedTransaction.confirmedAt) {
+						if (previousConfirmedTransaction->mConfirmedAt > mConfirmedTransaction.mConfirmedAt) {
 							throw BlockchainOrderException("previous transaction is younger");
 						}
-						auto previousCreated = previousConfirmedTransaction->gradidoTransaction->getTransactionBody()->createdAt.getAsTimepoint();
+						auto previousCreated = previousConfirmedTransaction->mGradidoTransaction->getTransactionBody()->createdAt.getAsTimepoint();
 						// if previous transaction was created after this transaction we make sure that creation date and received/confirmation date are not 
 						// to far apart
 						// it is possible that they where created nearly at the same time but sorted from iota swapped
@@ -73,15 +73,15 @@ namespace gradido {
 							}
 						}
 						auto txHash = mConfirmedTransaction.calculateRunningHash(previousConfirmedTransaction);
-						if (!mConfirmedTransaction.runningHash || txHash.size() != mConfirmedTransaction.runningHash->size()) {
+						if (!mConfirmedTransaction.mRunningHash || txHash.size() != mConfirmedTransaction.mRunningHash->size()) {
 							throw TransactionValidationException("tx hash size isn't equal");
 						}
-						if(!txHash.isTheSame(mConfirmedTransaction.runningHash)) {
+						if(!txHash.isTheSame(mConfirmedTransaction.mRunningHash)) {
 							throw TransactionValidationInvalidInputException("stored tx hash isn't equal to calculated txHash", "txHash", "binary");
 						}
 					}
 				}
-				GradidoTransactionRole(*mConfirmedTransaction.gradidoTransaction).run(
+				GradidoTransactionRole(*mConfirmedTransaction.mGradidoTransaction).run(
 					type,
 					communityId,
 					blockchainProvider,

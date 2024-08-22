@@ -14,35 +14,35 @@ namespace gradido {
 			memory::ConstBlockPtr runningHash,
 			memory::ConstBlockPtr messageId,
 			const std::string& accountBalanceString
-		) : id(id),
-			gradidoTransaction(std::move(gradidoTransaction)),
-			confirmedAt(confirmedAt),
-			versionNumber(versionNumber),
-			runningHash(runningHash),
-			messageId(messageId),
-			accountBalance(accountBalanceString) 
+		) : mId(id),
+			mGradidoTransaction(std::move(gradidoTransaction)),
+			mConfirmedAt(confirmedAt),
+			mVersionNumber(versionNumber),
+			mRunningHash(runningHash),
+			mMessageId(messageId),
+			mAccountBalance(accountBalanceString) 
 		{
 		}
 
 
 		memory::Block ConfirmedTransaction::calculateRunningHash(std::shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction/* = nullptr*/) const
 		{
-			std::string transactionIdString = std::to_string(id);
-			auto confirmedAtString = DataTypeConverter::timePointToString(confirmedAt, "%Y-%m-%d %H:%M:%S");
+			std::string transactionIdString = std::to_string(mId);
+			auto confirmedAtString = DataTypeConverter::timePointToString(mConfirmedAt, "%Y-%m-%d %H:%M:%S");
 			std::string signatureMapString;
-			if (gradidoTransaction->getSignatureMap().getSignaturePairs().size()) {
-				serialize::Context serializeContext(gradidoTransaction->getSignatureMap());
+			if (mGradidoTransaction->getSignatureMap().getSignaturePairs().size()) {
+				serialize::Context serializeContext(mGradidoTransaction->getSignatureMap());
 				signatureMapString = serializeContext.run()->copyAsString();
 			}
-			std::string accountBalanceString = accountBalance.toString();
+			std::string accountBalanceString = mAccountBalance.toString();
 
 			memory::Block hash(crypto_generichash_BYTES);
 
 			// Sodium use for the generic hash function BLAKE2b today (11.11.2019), maybe change in the future
 			crypto_generichash_state state;
 			crypto_generichash_init(&state, nullptr, 0, crypto_generichash_BYTES);
-			if (previousConfirmedTransaction && previousConfirmedTransaction->runningHash) {
-				auto prevHashHex = previousConfirmedTransaction->runningHash->convertToHex();
+			if (previousConfirmedTransaction && previousConfirmedTransaction->mRunningHash) {
+				auto prevHashHex = previousConfirmedTransaction->mRunningHash->convertToHex();
 				crypto_generichash_update(&state, (const unsigned char*)prevHashHex.data(), prevHashHex.size());
 			}
 			crypto_generichash_update(&state, (const unsigned char*)transactionIdString.data(), transactionIdString.size());

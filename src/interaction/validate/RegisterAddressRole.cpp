@@ -69,7 +69,7 @@ namespace gradido {
 						transactionWithSameAddress = blockchain->findOne(
 							filterBuilder
 							.setInvolvedPublicKey(mRegisterAddress->userPubkey)
-							.setMaxTransactionNr(senderPreviousConfirmedTransaction->id)
+							.setMaxTransactionNr(senderPreviousConfirmedTransaction->mId)
 							.setSearchDirection(blockchain::SearchDirection::DESC)
 							.build()
 						);
@@ -105,7 +105,7 @@ namespace gradido {
 					transactionWithSameAddress = blockchain->findOne(
 						filterBuilder
 						.setInvolvedPublicKey(address)
-						.setMaxTransactionNr(senderPreviousConfirmedTransaction->id)
+						.setMaxTransactionNr(senderPreviousConfirmedTransaction->mId)
 						.setSearchDirection(blockchain::SearchDirection::DESC)
 						.setPagination({1})
 						.build()

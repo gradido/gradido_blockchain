@@ -83,7 +83,7 @@ namespace gradido {
 				auto finalBalance = c.run(
 					mGradidoTransfer->sender.pubkey,
 					mConfirmedAt, // calculate decay after last transaction balance until confirmation date
-					previousConfirmedTransaction.id, // calculate until this transaction nr
+					previousConfirmedTransaction.mId, // calculate until this transaction nr
 					mGradidoTransfer->sender.communityId
 				);
 					
@@ -106,7 +106,7 @@ namespace gradido {
 				auto senderAddressType = senderBlockchain->getAddressType(
 					filterBuilder
 					.setInvolvedPublicKey(mGradidoTransfer->sender.pubkey)
-					.setMaxTransactionNr(senderPreviousConfirmedTransaction.id)
+					.setMaxTransactionNr(senderPreviousConfirmedTransaction.mId)
 					.build()
 				);
 				if (data::AddressType::NONE == senderAddressType) {
@@ -117,7 +117,7 @@ namespace gradido {
 				auto recipientAddressType = recipientBlockchain->getAddressType(
 					filterBuilder
 					.setInvolvedPublicKey(mGradidoTransfer->recipient)
-					.setMaxTransactionNr(recipientPreviousConfirmedTransaction.id)
+					.setMaxTransactionNr(recipientPreviousConfirmedTransaction.mId)
 					.build()
 				);
 				if (data::AddressType::NONE == recipientAddressType && !mDeferredTransfer) {

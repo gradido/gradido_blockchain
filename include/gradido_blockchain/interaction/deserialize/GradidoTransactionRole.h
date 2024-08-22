@@ -1,7 +1,6 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_GRADIDO_TRANSACTION_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_GRADIDO_TRANSACTION_ROLE_H
 
-#include "gradido_blockchain/data/Protocol.h"
 #include "Protopuf.h"
 
 namespace gradido {

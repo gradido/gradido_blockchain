@@ -51,7 +51,7 @@ namespace gradido {
 						return result;
 					}
 				}
-				if (messageId->isTheSame(entry.getConfirmedTransaction()->messageId)) {
+				if (messageId->isTheSame(entry.getConfirmedTransaction()->mMessageId)) {
 					return FilterResult::USE | FilterResult::STOP;
 				}
 				return FilterResult::DISMISS;

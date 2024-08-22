@@ -77,11 +77,11 @@ namespace gradido {
 			data::ConstConfirmedTransactionPtr lastConfirmedTransaction;
 			if (lastTransaction) {
 				lastConfirmedTransaction = lastTransaction->getConfirmedTransaction();
-				if (confirmedAt < lastConfirmedTransaction->confirmedAt.getAsTimepoint()) {
+				if (confirmedAt < lastConfirmedTransaction->mConfirmedAt.getAsTimepoint()) {
 					throw BlockchainOrderException("previous transaction is younger");
 				}
 			}
-			confirmedTransaction->runningHash = std::make_shared<memory::Block>(confirmedTransaction->calculateRunningHash(lastConfirmedTransaction));
+			confirmedTransaction->mRunningHash = std::make_shared<memory::Block>(confirmedTransaction->calculateRunningHash(lastConfirmedTransaction));
 			// important! validation
 			interaction::validate::Context validate(*confirmedTransaction);
 			interaction::validate::Type level =
@@ -98,7 +98,7 @@ namespace gradido {
 
 			auto transactionEntry = std::make_shared<TransactionEntry>(confirmedTransaction);
 			pushTransactionEntry(transactionEntry);
-			mTransactionFingerprintTransactionEntry.insert({ confirmedTransaction->gradidoTransaction->getFingerprint(), transactionEntry });
+			mTransactionFingerprintTransactionEntry.insert({ confirmedTransaction->mGradidoTransaction->getFingerprint(), transactionEntry });
 
 			return true;
 		}
@@ -297,21 +297,21 @@ namespace gradido {
 			std::lock_guard _lock(mWorkMutex);
 			mSortedDirty = true;
 			auto confirmedTransaction = transactionEntry->getConfirmedTransaction();
-			auto involvedAddresses = confirmedTransaction->gradidoTransaction->getInvolvedAddresses();
+			auto involvedAddresses = confirmedTransaction->mGradidoTransaction->getInvolvedAddresses();
 
-			mTransactionsByConfirmedAt.insert({ confirmedTransaction->confirmedAt, transactionEntry });
+			mTransactionsByConfirmedAt.insert({ confirmedTransaction->mConfirmedAt, transactionEntry });
 			for (auto involvedAddress : involvedAddresses) {
 				mTransactionsByPubkey.insert({ involvedAddress, transactionEntry });
 			}
 			mMessageIdTransactionNrs.insert({
-				iota::MessageId::fromMemoryBlock(*confirmedTransaction->messageId),
-				confirmedTransaction->id
+				iota::MessageId::fromMemoryBlock(*confirmedTransaction->mMessageId),
+				confirmedTransaction->mId
 				});
 			mTransactionsByNr.insert({
-				confirmedTransaction->id,
+				confirmedTransaction->mId,
 				transactionEntry
 				});
-			auto body = confirmedTransaction->gradidoTransaction->getTransactionBody();
+			auto body = confirmedTransaction->mGradidoTransaction->getTransactionBody();
 			// add deferred transfer to special deferred transfer map
 			if (body->isDeferredTransfer()) {
 				mTimeoutDeferredRedeemedTransferPairs.insert({ body->deferredTransfer->timeout.getAsTimepoint(), {transactionEntry, nullptr} });
@@ -323,7 +323,7 @@ namespace gradido {
 				auto lastFromSameSender = findOne(
 					filterBuilder
 					.setInvolvedPublicKey(body->transfer->sender.pubkey)
-					.setMaxTransactionNr(confirmedTransaction->id - 1)
+					.setMaxTransactionNr(confirmedTransaction->mId - 1)
 					.setSearchDirection(SearchDirection::DESC)
 					.setPagination(Pagination(1))
 					.build()
@@ -350,7 +350,7 @@ namespace gradido {
 			std::lock_guard _lock(mWorkMutex);
 			mSortedDirty = true;
 			auto confirmedTransaction = transactionEntry->getConfirmedTransaction();
-			auto byReceivedIt = mTransactionsByConfirmedAt.equal_range(confirmedTransaction->confirmedAt);
+			auto byReceivedIt = mTransactionsByConfirmedAt.equal_range(confirmedTransaction->mConfirmedAt);
 			auto serializedTransaction = transactionEntry->getSerializedTransaction();
 			for (auto it = byReceivedIt.first; it != byReceivedIt.second; ++it)
 			{
@@ -362,7 +362,7 @@ namespace gradido {
 					}
 				}
 			}
-			auto involvedAddresses = confirmedTransaction->gradidoTransaction->getInvolvedAddresses();
+			auto involvedAddresses = confirmedTransaction->mGradidoTransaction->getInvolvedAddresses();
 			for (auto involvedAddress : involvedAddresses)
 			{
 				auto byPublicKeyIt = mTransactionsByPubkey.equal_range(involvedAddress);
@@ -377,10 +377,10 @@ namespace gradido {
 					}
 				}
 			}
-			mMessageIdTransactionNrs.erase(iota::MessageId::fromMemoryBlock(*confirmedTransaction->messageId));
-			mTransactionsByNr.erase(confirmedTransaction->id);
+			mMessageIdTransactionNrs.erase(iota::MessageId::fromMemoryBlock(*confirmedTransaction->mMessageId));
+			mTransactionsByNr.erase(confirmedTransaction->mId);
 
-			auto body = confirmedTransaction->gradidoTransaction->getTransactionBody();
+			auto body = confirmedTransaction->mGradidoTransaction->getTransactionBody();
 			// remove deferred transfer from special deferred transfer map
 			if (body->isDeferredTransfer()) {
 				auto byTimeoutDeferredRedeemedPairsIt = mTimeoutDeferredRedeemedTransferPairs.equal_range(body->deferredTransfer->timeout.getAsTimepoint());
@@ -432,7 +432,7 @@ namespace gradido {
 			auto signature = gradidoTransaction->getFingerprint();
 			auto range = mTransactionFingerprintTransactionEntry.equal_range(signature);
 			for (auto it = range.first; it != range.second; ++it) {
-				if (it->second->getConfirmedTransaction()->gradidoTransaction->getFingerprint()->isTheSame(signature)) {
+				if (it->second->getConfirmedTransaction()->mGradidoTransaction->getFingerprint()->isTheSame(signature)) {
 					return true;
 				}
 			}	

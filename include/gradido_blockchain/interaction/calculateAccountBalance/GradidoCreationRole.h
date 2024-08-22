@@ -2,7 +2,6 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_CALCULATE_ACCOUNT_BALANCE_GRADIDO_CREATION_ROLE_H
 
 #include "AbstractRole.h"
-#include "gradido_blockchain/data/Protocol.h"
 
 namespace gradido {
 	namespace interaction {
@@ -17,10 +16,10 @@ namespace gradido {
 					return true;
 				}
 				inline GradidoUnit getAmount() const {
-					return mCreation.recipient.amount;
+					return mCreation.getRecipient().getAmount();
 				}
 				inline memory::ConstBlockPtr getFinalBalanceAddress() const {
-					return mCreation.recipient.pubkey;
+					return mCreation.getRecipient().getPubkey();
 				}
 			protected:
 				const data::GradidoCreation& mCreation;
