@@ -1,13 +1,15 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_ABSTRACT_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_ABSTRACT_ROLE_H
 
+#include "gradido_blockchain/GradidoUnit.h"
+#include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/memory/VectorCacheAllocator.h"
-#include "sodium.h"
 
 #include <bit>
 #include <array>
 #include <vector>
 #include "protopuf/message.h"
+#include "sodium.h"
 
 namespace gradido {
 	namespace interaction {

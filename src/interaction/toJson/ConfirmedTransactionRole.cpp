@@ -15,22 +15,22 @@ namespace gradido {
 			{
 				Value d(kObjectType);
 				auto& alloc = rootDocument.GetAllocator();
-				d.AddMember("id", mTransaction.id, alloc);
-				if (mTransaction.gradidoTransaction) {
-					GradidoTransactionRole gradidoTransactionToJson(*mTransaction.gradidoTransaction.get(), mFormat);
+				d.AddMember("id", mTransaction.getId(), alloc);
+				if (mTransaction.getGradidoTransaction()) {
+					GradidoTransactionRole gradidoTransactionToJson(*mTransaction.getGradidoTransaction().get(), mFormat);
 					d.AddMember("gradidoTransaction", gradidoTransactionToJson.composeJson(rootDocument), alloc);
 				}
-				d.AddMember("confirmedAt", Value(DataTypeConverter::timePointToString(mTransaction.confirmedAt).data(), alloc), alloc);
-				d.AddMember("versionNumber", Value(mTransaction.versionNumber.data(), alloc), alloc);
-				if (mTransaction.runningHash) {
-					auto hashHex = mTransaction.runningHash->convertToHex();
+				d.AddMember("confirmedAt", Value(DataTypeConverter::timePointToString(mTransaction.getConfirmedAt()).data(), alloc), alloc);
+				d.AddMember("versionNumber", Value(mTransaction.getVersionNumber().data(), alloc), alloc);
+				if (mTransaction.getRunningHash()) {
+					auto hashHex = mTransaction.getRunningHash()->convertToHex();
 					d.AddMember("runningHash", Value(hashHex.data(), hashHex.size(), alloc), alloc);
 				}
-				if (mTransaction.messageId) {
-					auto messageIdHex = mTransaction.messageId->convertToHex();
+				if (mTransaction.getMessageId()) {
+					auto messageIdHex = mTransaction.getMessageId()->convertToHex();
 					d.AddMember("messageId", Value(messageIdHex.data(), messageIdHex.size(), alloc), alloc);
 				}
-				d.AddMember("accountBalance", Value(mTransaction.accountBalance.toString().data(), alloc), alloc);
+				d.AddMember("accountBalance", Value(mTransaction.getAccountBalance().toString().data(), alloc), alloc);
 					
 				return d;
 			}

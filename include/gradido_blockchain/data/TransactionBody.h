@@ -12,9 +12,11 @@
 #include "TransactionType.h"
 
 namespace gradido {
+	class TransactionBodyBuilder;
 	namespace data {
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionBody
 		{
+			friend TransactionBodyBuilder;
 		public:
 			TransactionBody() : mType(CrossGroupType::LOCAL) {}
 			TransactionBody(
@@ -41,7 +43,7 @@ namespace gradido {
 			const TransferAmount* getTransferAmount() const;
 
 			std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
-			inline const std::string& getMemor() const { return mMemo; }
+			inline const std::string& getMemo() const { return mMemo; }
 			inline Timestamp getCreatedAt() const { return mCreatedAt; }
 			inline const std::string& getVersionNumber() const { return mVersionNumber; }
 			inline CrossGroupType getType() const { return mType; }

@@ -31,7 +31,7 @@ namespace gradido {
 			f.pagination.size = 1;
 			auto transactionEntry = findOne(f);
 			if (transactionEntry) {
-				return transactionEntry->getTransactionBody()->registerAddress->addressType;
+				return transactionEntry->getTransactionBody()->getRegisterAddress()->getAddressType();
 			}
 			return data::AddressType::NONE;
 		}
@@ -51,7 +51,7 @@ namespace gradido {
 						return result;
 					}
 				}
-				if (messageId->isTheSame(entry.getConfirmedTransaction()->mMessageId)) {
+				if (messageId->isTheSame(entry.getConfirmedTransaction()->getMessageId())) {
 					return FilterResult::USE | FilterResult::STOP;
 				}
 				return FilterResult::DISMISS;

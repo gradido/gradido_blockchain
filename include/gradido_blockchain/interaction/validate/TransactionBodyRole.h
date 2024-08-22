@@ -2,7 +2,6 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_TRANSACTION_BODY_ROLE_H
 
 #include "AbstractRole.h"
-#include "gradido_blockchain/data/Protocol.h"
 
 namespace gradido {
 	namespace interaction {

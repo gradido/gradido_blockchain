@@ -53,8 +53,6 @@ namespace gradido {
 			return nullptr;
 		}
 
-
-
 		std::vector<memory::ConstBlockPtr> TransactionBody::getInvolvedAddresses() const
 		{
 			if (isCommunityFriendsUpdate()) return {};

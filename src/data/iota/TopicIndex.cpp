@@ -1,4 +1,4 @@
-#include "gradido_blockchain/model/iota/TopicIndex.h"
+#include "gradido_blockchain/data/iota/TopicIndex.h"
 #include <algorithm>
 
 namespace iota

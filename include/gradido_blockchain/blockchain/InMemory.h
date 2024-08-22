@@ -3,7 +3,6 @@
 
 #include "Abstract.h"
 #include "FilterResult.h"
-#include "../data/Protocol.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/crypto/SignatureOctet.h"
 #include "gradido_blockchain/memory/BlockKey.h"

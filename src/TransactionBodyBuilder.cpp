@@ -11,7 +11,7 @@ namespace gradido {
 			"", chrono::system_clock::now(), GRADIDO_TRANSACTION_BODY_V3_3_VERSION_STRING, CrossGroupType::LOCAL
 		)), mSpecificTransactionChoosen(false)
 	{
-		mBody->createdAt = Timestamp(chrono::system_clock::now());
+		mBody->mCreatedAt = Timestamp(chrono::system_clock::now());
 	}
 
 	TransactionBodyBuilder::~TransactionBodyBuilder()
@@ -46,7 +46,7 @@ namespace gradido {
 			throw TransactionBodyBuilderException("specific transaction already choosen, only one is possible!");
 		}
 
-		mBody->deferredTransfer = make_shared<GradidoDeferredTransfer>(
+		mBody->mDeferredTransfer = make_shared<GradidoDeferredTransfer>(
 			GradidoTransfer(
 				TransferAmount(
 					senderPubkey,
@@ -60,13 +60,54 @@ namespace gradido {
 		return *this;
 	}
 
+	TransactionBodyBuilder& TransactionBodyBuilder::setDeferredTransfer(
+		std::unique_ptr<data::GradidoTransfer> transactionTransfer,
+		Timepoint timeout
+	)
+	{
+		if (mSpecificTransactionChoosen) {
+			throw TransactionBodyBuilderException("specific transaction already choosen, only one is possible!");
+		}
+		mBody->mDeferredTransfer = make_shared<GradidoDeferredTransfer>(
+			*transactionTransfer,
+			timeout
+		);
+
+		mSpecificTransactionChoosen = true;
+		return *this;
+	}
+
+	TransactionBodyBuilder& TransactionBodyBuilder::setDeferredTransfer(std::unique_ptr<data::GradidoDeferredTransfer> deferredTransfer)
+	{
+		if (mSpecificTransactionChoosen) {
+			throw TransactionBodyBuilderException("specific transaction already choosen, only one is possible!");
+		}
+
+		mBody->mDeferredTransfer = std::move(deferredTransfer);
+
+		mSpecificTransactionChoosen = true;
+		return *this;
+	}
+
 	TransactionBodyBuilder& TransactionBodyBuilder::setCommunityFriendsUpdate(bool colorFusion)
 	{
 		if (mSpecificTransactionChoosen) {
 			throw TransactionBodyBuilderException("specific transaction already choosen, only one is possible!");
 		}
 
-		mBody->communityFriendsUpdate = make_shared<CommunityFriendsUpdate>(colorFusion);
+		mBody->mCommunityFriendsUpdate = make_shared<CommunityFriendsUpdate>(colorFusion);
+
+		mSpecificTransactionChoosen = true;
+		return *this;
+	}
+
+	TransactionBodyBuilder& TransactionBodyBuilder::setCommunityFriendsUpdate(std::unique_ptr<data::CommunityFriendsUpdate> communityFriendsUpdate)
+	{
+		if (mSpecificTransactionChoosen) {
+			throw TransactionBodyBuilderException("specific transaction already choosen, only one is possible!");
+		}
+
+		mBody->mCommunityFriendsUpdate = std::move(communityFriendsUpdate);
 
 		mSpecificTransactionChoosen = true;
 		return *this;
@@ -82,9 +123,21 @@ namespace gradido {
 			throw TransactionBodyBuilderException("specific transaction already choosen, only one is possible!");
 		}
 
-		mBody->registerAddress = make_shared<RegisterAddress>(
+		mBody->mRegisterAddress = make_shared<RegisterAddress>(
 			type, 1, userPubkey, nameHash, accountPubkey
 		);
+
+		mSpecificTransactionChoosen = true;
+		return *this;
+	}
+
+	TransactionBodyBuilder& TransactionBodyBuilder::setRegisterAddress(std::unique_ptr<data::RegisterAddress> registerAddress) 
+	{
+		if (mSpecificTransactionChoosen) {
+			throw TransactionBodyBuilderException("specific transaction already choosen, only one is possible!");
+		}
+
+		mBody->mRegisterAddress = std::move(registerAddress);
 
 		mSpecificTransactionChoosen = true;
 		return *this;
@@ -100,9 +153,32 @@ namespace gradido {
 		}
 
 		// const TransferAmount & _recipient, Timepoint _targetDate
-		mBody->creation = make_shared<GradidoCreation>(
+		mBody->mCreation = make_shared<GradidoCreation>(
 			TransferAmount(recipientPubkey, amountGddCent), targetDate
 		);
+
+		mSpecificTransactionChoosen = true;
+		return *this;
+	}
+	TransactionBodyBuilder& TransactionBodyBuilder::setTransactionCreation(
+		const TransferAmount& recipient,
+		Timepoint targetDate
+	) {
+		if (mSpecificTransactionChoosen) {
+			throw TransactionBodyBuilderException("specific transaction already choosen, only one is possible!");
+		}
+
+		mBody->mCreation = make_shared<GradidoCreation>(recipient, targetDate);
+
+		mSpecificTransactionChoosen = true;
+		return *this;
+	}
+
+	TransactionBodyBuilder& TransactionBodyBuilder::setTransactionCreation(std::unique_ptr<data::GradidoCreation> creation) {
+		if (mSpecificTransactionChoosen) {
+			throw TransactionBodyBuilderException("specific transaction already choosen, only one is possible!");
+		}
+		mBody->mCreation = std::move(creation);
 
 		mSpecificTransactionChoosen = true;
 		return *this;
@@ -118,13 +194,25 @@ namespace gradido {
 			throw TransactionBodyBuilderException("specific transaction already choosen, only one is possible!");
 		}
 
-		mBody->transfer = make_shared<GradidoTransfer>(
+		mBody->mTransfer = make_shared<GradidoTransfer>(
 			TransferAmount(
 				senderPubkey,
 				amountGddCent,
 				communityId
 			), recipientPubkey
 		);
+
+		mSpecificTransactionChoosen = true;
+		return *this;
+	}
+
+	TransactionBodyBuilder& TransactionBodyBuilder::setTransactionTransfer(std::unique_ptr<data::GradidoTransfer> transfer)
+	{
+		if (mSpecificTransactionChoosen) {
+			throw TransactionBodyBuilderException("specific transaction already choosen, only one is possible!");
+		}
+
+		mBody->mTransfer = std::move(transfer);
 
 		mSpecificTransactionChoosen = true;
 		return *this;
@@ -139,9 +227,21 @@ namespace gradido {
 			throw TransactionBodyBuilderException("specific transaction already choosen, only one is possible!");
 		}
 
-		mBody->communityRoot = make_shared<CommunityRoot>(
+		mBody->mCommunityRoot = make_shared<CommunityRoot>(
 			pubkey, gmwPubkey, aufPubkey
 		);
+
+		mSpecificTransactionChoosen = true;
+		return *this;
+	}
+
+	TransactionBodyBuilder& TransactionBodyBuilder::setCommunityRoot(std::unique_ptr<data::CommunityRoot> communityRoot)
+	{
+		if (mSpecificTransactionChoosen) {
+			throw TransactionBodyBuilderException("specific transaction already choosen, only one is possible!");
+		}
+
+		mBody->mCommunityRoot = std::move(communityRoot);
 
 		mSpecificTransactionChoosen = true;
 		return *this;

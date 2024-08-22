@@ -26,31 +26,32 @@ namespace gradido {
 			) {
 				// when we don't know the confirmation date yet, we estimate
 				// normally it should be maximal 2 minutes after createdAt if the system clock is correct
-				if (!mConfirmedAt.seconds) {
-					mConfirmedAt.seconds = mBody.createdAt.seconds + 120;
+				if (!mConfirmedAt.getSeconds()) {
+					mConfirmedAt = mBody.getCreatedAt().getSeconds() + 120;
 				}
 				try {
 					if ((type & Type::SINGLE) == Type::SINGLE) {
-						if (mBody.versionNumber != GRADIDO_TRANSACTION_BODY_V3_3_VERSION_STRING) {
+						if (mBody.getVersionNumber() != GRADIDO_TRANSACTION_BODY_V3_3_VERSION_STRING) {
 							throw TransactionValidationInvalidInputException("wrong version", "version_number", "string");
 						}
 						// memo is only mandatory for transfer and creation transactions
 						if (mBody.isDeferredTransfer() || mBody.isTransfer() || mBody.isCreation()) {
-							if (mBody.memo.size() < 5 || mBody.memo.size() > 450) {
+							auto memoSize = mBody.getMemo().size();
+							if (memoSize < 5 || memoSize > 450) {
 								throw TransactionValidationInvalidInputException("not in expected range [5;450]", "memo", "string");
 							}
 						}
-						auto otherGroup = mBody.otherGroup;
+						auto& otherGroup = mBody.getOtherGroup();
 						if (!otherGroup.empty() && !isValidCommunityAlias(otherGroup)) {
 							throw TransactionValidationInvalidInputException("invalid character, only ascii", "other_group", "string");
 						}
 					}
 
 					auto& specificRole = getSpecificTransactionRole();
-					if (!mBody.otherGroup.empty() && !recipientPreviousConfirmedTransaction) {
+					if (!mBody.getOtherGroup().empty() && !recipientPreviousConfirmedTransaction) {
 						recipientPreviousConfirmedTransaction = 
 							blockchainProvider
-							->findBlockchain(mBody.otherGroup)
+							->findBlockchain(mBody.getOtherGroup())
 							->findOne(blockchain::Filter::LAST_TRANSACTION)
 							->getConfirmedTransaction();
 					}
@@ -69,13 +70,13 @@ namespace gradido {
 					return *mSpecificTransactionRole;
 				}
 				if (mBody.isTransfer()) {
-					mSpecificTransactionRole = std::make_unique<GradidoTransferRole>(mBody.transfer, mBody.otherGroup);
+					mSpecificTransactionRole = std::make_unique<GradidoTransferRole>(mBody.getTransfer(), mBody.getOtherGroup());
 				}
 				else if (mBody.isCreation()) 
 				{
-					mSpecificTransactionRole = std::make_unique<GradidoCreationRole>(mBody.creation);
+					mSpecificTransactionRole = std::make_unique<GradidoCreationRole>(mBody.getCreation());
 					// check target date for creation transactions
-					dynamic_cast<GradidoCreationRole*>(mSpecificTransactionRole.get())->validateTargetDate(mBody.createdAt.getAsTimepoint());
+					dynamic_cast<GradidoCreationRole*>(mSpecificTransactionRole.get())->validateTargetDate(mBody.getCreatedAt().getAsTimepoint());
 				} 
 				else if (mBody.isCommunityFriendsUpdate()) 
 				{
@@ -84,24 +85,24 @@ namespace gradido {
 				}
 				else if (mBody.isRegisterAddress()) 
 				{
-					mSpecificTransactionRole = std::make_unique<RegisterAddressRole>(mBody.registerAddress);
+					mSpecificTransactionRole = std::make_unique<RegisterAddressRole>(mBody.getRegisterAddress());
 				}
 				else if (mBody.isDeferredTransfer()) 
 				{
-					auto deferredTransfer = mBody.deferredTransfer;
-					if (mBody.createdAt.getAsTimepoint() >= deferredTransfer->timeout.getAsTimepoint()) {
+					auto deferredTransfer = mBody.getDeferredTransfer();
+					if (mBody.getCreatedAt().getAsTimepoint() >= deferredTransfer->getTimeout().getAsTimepoint()) {
 						throw TransactionValidationInvalidInputException("already reached", "timeout", "Timestamp");
 					}
-					mSpecificTransactionRole = std::make_unique<GradidoDeferredTransferRole>(mBody.deferredTransfer);
+					mSpecificTransactionRole = std::make_unique<GradidoDeferredTransferRole>(mBody.getDeferredTransfer());
 				}
 				else if (mBody.isCommunityRoot()) 
 				{
-					mSpecificTransactionRole = std::make_unique<CommunityRootRole>(mBody.communityRoot);
+					mSpecificTransactionRole = std::make_unique<CommunityRootRole>(mBody.getCommunityRoot());
 				}
 				if (!mSpecificTransactionRole) {
 					throw TransactionValidationException("body without specific transaction");
 				}
-				mSpecificTransactionRole->setCreatedAt(mBody.createdAt);
+				mSpecificTransactionRole->setCreatedAt(mBody.getCreatedAt());
 				return *mSpecificTransactionRole;
 			}
 		}

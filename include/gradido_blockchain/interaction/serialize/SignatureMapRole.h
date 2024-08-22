@@ -1,6 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_SIGNATURE_MAP_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_SIGNATURE_MAP_ROLE_H
 
+#include "gradido_blockchain/data/SignatureMap.h"
 #include "AbstractRole.h"
 #include "Protopuf.h"
 

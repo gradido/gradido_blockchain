@@ -27,17 +27,17 @@ namespace gradido {
 
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
-					for (auto& sigPair : mGradidoTransaction.signatureMap.signaturePairs) {
-						validateEd25519PublicKey(sigPair.pubkey, __FUNCTION__);
-						validateEd25519Signature(sigPair.signature, __FUNCTION__);
+					for (auto& sigPair : mGradidoTransaction.getSignatureMap().getSignaturePairs()) {
+						validateEd25519PublicKey(sigPair.getPubkey(), __FUNCTION__);
+						validateEd25519Signature(sigPair.getSignature(), __FUNCTION__);
 							
-						KeyPairEd25519 key_pair(sigPair.pubkey);
-						if (!key_pair.verify(*mGradidoTransaction.bodyBytes, *sigPair.signature)) {
+						KeyPairEd25519 key_pair(sigPair.getPubkey());
+						if (!key_pair.verify(*mGradidoTransaction.getBodyBytes(), *sigPair.getSignature())) {
 							throw TransactionValidationInvalidSignatureException(
 								"pubkey don't belong to body bytes", 
-								sigPair.pubkey,
-								sigPair.signature, 
-								mGradidoTransaction.bodyBytes
+								sigPair.getPubkey(),
+								sigPair.getSignature(),
+								mGradidoTransaction.getBodyBytes()
 							);
 						}
 					}
@@ -47,28 +47,28 @@ namespace gradido {
 				if (blockchainProvider && !communityId.empty()) {
 					blockchain = blockchainProvider->findBlockchain(communityId);
 				}
-				bodyRole.checkRequiredSignatures(mGradidoTransaction.signatureMap, blockchain);				
+				bodyRole.checkRequiredSignatures(mGradidoTransaction.getSignatureMap(), blockchain);
 
 				if ((type & Type::PAIRED) == Type::PAIRED) {
 					assert(blockchainProvider);
-					auto otherBlockchain = blockchainProvider->findBlockchain(body->otherGroup);
+					auto otherBlockchain = blockchainProvider->findBlockchain(body->getOtherGroup());
 					assert(otherBlockchain);
 
 					std::shared_ptr<blockchain::TransactionEntry> pairTransactionEntry;
-					switch (body->type) {
+					switch (body->getType()) {
 					case data::CrossGroupType::LOCAL: break; // no cross group
 					case data::CrossGroupType::INBOUND: break; // happen before OUTBOUND, can only be checked after both transactions are written to blockchain
 					case data::CrossGroupType::OUTBOUND:
 					case data::CrossGroupType::CROSS:
-						if (!mGradidoTransaction.paringMessageId) {
+						if (!mGradidoTransaction.getParingMessageId()) {
 							throw TransactionValidationInvalidInputException("paring message id not set for outbound", "paring message id", "binary");
 						}
 						else {
-							pairTransactionEntry = otherBlockchain->findByMessageId(mGradidoTransaction.paringMessageId);
+							pairTransactionEntry = otherBlockchain->findByMessageId(mGradidoTransaction.getParingMessageId());
 							if (!pairTransactionEntry) {
 								throw TransactionValidationException("pairing transaction not found");
 							}
-							const auto& pairingTransaction = pairTransactionEntry->getConfirmedTransaction()->mGradidoTransaction;
+							const auto& pairingTransaction = pairTransactionEntry->getConfirmedTransaction()->getGradidoTransaction();
 							if(!mGradidoTransaction.isPairing(*pairingTransaction)) {
 								throw PairingTransactionNotMatchException(
 									"pairing transaction not matching",
@@ -78,7 +78,7 @@ namespace gradido {
 							}
 						}
 						break;
-					default: throw GradidoUnknownEnumException("unknown cross group type", "data::CrossGroupType", enum_name(body->type).data());
+					default: throw GradidoUnknownEnumException("unknown cross group type", "data::CrossGroupType", enum_name(body->getType()).data());
 					}
 				}				
 			}

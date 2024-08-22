@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_GRADIDO_TRANSACTION_BUILDER_H
 
 #include "TransactionBodyBuilder.h"
+#include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 
 namespace gradido {

@@ -5,9 +5,11 @@
 #include "SignatureMap.h"
 
 namespace gradido {
+	class GradidoTransactionBuilder;
 	namespace data {
 		class GRADIDOBLOCKCHAIN_EXPORT GradidoTransaction
 		{
+			friend GradidoTransactionBuilder;
 		public:
 			GradidoTransaction() {}
 			GradidoTransaction(
@@ -36,8 +38,8 @@ namespace gradido {
 
 			inline const SignatureMap& getSignatureMap() const { return mSignatureMap; }
 			inline SignatureMap& getSignatureMap() { return mSignatureMap; }
-			inline memory::ConstBlockPtr getBodyBytes() { return mBodyBytes; }
-			inline memory::ConstBlockPtr getParingMessageId() { return mParingMessageId; }
+			inline memory::ConstBlockPtr getBodyBytes() const { return mBodyBytes; }
+			inline memory::ConstBlockPtr getParingMessageId() const { return mParingMessageId; }
 
 		protected:
 			SignatureMap			mSignatureMap;

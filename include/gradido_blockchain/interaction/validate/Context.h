@@ -2,7 +2,6 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_CONTEXT_H
 
 #include "gradido_blockchain/export.h"
-#include "gradido_blockchain/data/Protocol.h"
 #include "TransactionBodyRole.h"
 #include "ConfirmedTransactionRole.h"
 #include "GradidoTransactionRole.h"

@@ -1,6 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_CONFIRMED_TRANSACTION_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_CONFIRMED_TRANSACTION_ROLE_H
 
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/serialize/GradidoTransactionRole.h"
 #include "Protopuf.h"
 #include "AbstractRole.h"

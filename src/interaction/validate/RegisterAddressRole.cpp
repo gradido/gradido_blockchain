@@ -14,11 +14,11 @@ namespace gradido {
 			RegisterAddressRole::RegisterAddressRole(std::shared_ptr<const data::RegisterAddress> registerAddress)
 				: mRegisterAddress(registerAddress) 
 			{
-				if (registerAddress->accountPubkey) {
-					mRequiredSignPublicKeys.push_back(registerAddress->accountPubkey);
+				if (registerAddress->getAccountPublicKey()) {
+					mRequiredSignPublicKeys.push_back(registerAddress->getAccountPublicKey());
 				}
-				else if (registerAddress->userPubkey) {
-					mRequiredSignPublicKeys.push_back(registerAddress->userPubkey);
+				else if (registerAddress->getUserPublicKey()) {
+					mRequiredSignPublicKeys.push_back(registerAddress->getUserPublicKey());
 				}
 				mMinSignatureCount = 2;
 			}
@@ -30,25 +30,29 @@ namespace gradido {
 				data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
 				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 			) {
-				if (data::AddressType::COMMUNITY_PROJECT == mRegisterAddress->addressType ||
-					data::AddressType::COMMUNITY_HUMAN == mRegisterAddress->addressType) {
+				auto addressType = mRegisterAddress->getAddressType();
+				auto accountPubkey = mRegisterAddress->getAccountPublicKey();
+				auto userPubkey = mRegisterAddress->getUserPublicKey();
+
+				if (data::AddressType::COMMUNITY_PROJECT == addressType ||
+					data::AddressType::COMMUNITY_HUMAN == addressType) {
 				}
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					if (data::AddressType::COMMUNITY_GMW == mRegisterAddress->addressType ||
-						data::AddressType::COMMUNITY_AUF == mRegisterAddress->addressType ||
-						data::AddressType::NONE == mRegisterAddress->addressType) {
+					if (data::AddressType::COMMUNITY_GMW == addressType ||
+						data::AddressType::COMMUNITY_AUF == addressType ||
+						data::AddressType::NONE == addressType) {
 						throw WrongAddressTypeException(
 							"register address transaction not allowed with community auf or gmw account or None",
-							mRegisterAddress->addressType, mRegisterAddress->userPubkey
+							addressType, 
+							mRegisterAddress->getUserPublicKey()
 						);
 					}
-					auto& accountPubkey = mRegisterAddress->accountPubkey;
+					
 					if (accountPubkey) {
 						validateEd25519PublicKey(accountPubkey, "accountPubkey");
-					}
-					auto& userPubkey = mRegisterAddress->userPubkey;
+					}					
 					if (userPubkey) {
-						validateEd25519PublicKey(mRegisterAddress->userPubkey, "userPubkey");
+						validateEd25519PublicKey(userPubkey, "userPubkey");
 					}
 					if (accountPubkey && userPubkey && accountPubkey->isTheSame(userPubkey)) {
 						throw TransactionValidationException("accountPubkey and userPubkey are the same");
@@ -65,19 +69,19 @@ namespace gradido {
 					blockchain::FilterBuilder filterBuilder;
 
 					std::shared_ptr<blockchain::TransactionEntry> transactionWithSameAddress;
-					if (data::AddressType::SUBACCOUNT == mRegisterAddress->addressType) {
+					if (data::AddressType::SUBACCOUNT == addressType) {
 						transactionWithSameAddress = blockchain->findOne(
 							filterBuilder
-							.setInvolvedPublicKey(mRegisterAddress->userPubkey)
-							.setMaxTransactionNr(senderPreviousConfirmedTransaction->mId)
+							.setInvolvedPublicKey(userPubkey)
+							.setMaxTransactionNr(senderPreviousConfirmedTransaction->getId())
 							.setSearchDirection(blockchain::SearchDirection::DESC)
 							.build()
 						);
 						if (!transactionWithSameAddress) {
 							throw AddressAlreadyExistException(
 								"cannot register sub address because user is missing",
-								mRegisterAddress->userPubkey->convertToHex(),
-								mRegisterAddress->addressType
+								userPubkey->convertToHex(),
+								addressType
 							);
 						}
 						transactionWithSameAddress.reset();
@@ -85,27 +89,27 @@ namespace gradido {
 
 					memory::ConstBlockPtr address;
 
-					switch (mRegisterAddress->addressType) {
+					switch (addressType) {
 					case data::AddressType::COMMUNITY_HUMAN:
 					case data::AddressType::COMMUNITY_PROJECT:
 					case data::AddressType::CRYPTO_ACCOUNT:
-						address = mRegisterAddress->userPubkey;
+						address = userPubkey;
 						break;
 					case data::AddressType::SUBACCOUNT:
-						address = mRegisterAddress->accountPubkey;
+						address = mRegisterAddress->getAccountPublicKey();
 						break;
 					}
 					if (!address) {
 						throw GradidoUnhandledEnum(
 							"register address has invalid type for account validation",
-							enum_type_name<decltype(mRegisterAddress->addressType)>().data(),
-							enum_name(mRegisterAddress->addressType).data()
+							enum_type_name<decltype(addressType)>().data(),
+							enum_name(addressType).data()
 						);
 					}
 					transactionWithSameAddress = blockchain->findOne(
 						filterBuilder
 						.setInvolvedPublicKey(address)
-						.setMaxTransactionNr(senderPreviousConfirmedTransaction->mId)
+						.setMaxTransactionNr(senderPreviousConfirmedTransaction->getId())
 						.setSearchDirection(blockchain::SearchDirection::DESC)
 						.setPagination({1})
 						.build()
@@ -114,7 +118,7 @@ namespace gradido {
 						throw AddressAlreadyExistException(
 							"cannot register address because it already exist",
 							address->convertToHex(),
-							mRegisterAddress->addressType
+							addressType
 						);
 					}
 				}
@@ -127,7 +131,7 @@ namespace gradido {
 			{
 				AbstractRole::checkRequiredSignatures(signatureMap, blockchain);
 				if (!blockchain) return;
-				auto& signPairs = signatureMap.signaturePairs;
+				auto& signPairs = signatureMap.getSignaturePairs();
 
 				// get community root transaction
 				blockchain::Filter filter;
@@ -141,17 +145,17 @@ namespace gradido {
 
 				// check for account type
 				for (auto& signPair : signPairs) {
-					if(signPair.pubkey->isTheSame(mRegisterAddress->accountPubkey) ||
-					   signPair.pubkey->isTheSame(mRegisterAddress->userPubkey)) {
+					if(signPair.getPubkey()->isTheSame(mRegisterAddress->getAccountPublicKey()) ||
+					   signPair.getPubkey()->isTheSame(mRegisterAddress->getUserPublicKey())) {
 						continue;
 					}
-					if (signPair.pubkey->isTheSame(communityRoot->getTransactionBody()->communityRoot->pubkey)) {
+					if (signPair.getPubkey()->isTheSame(communityRoot->getTransactionBody()->getCommunityRoot()->getPubkey())) {
 						foundCommunityRootSigner = true;
 						break;
 					}
 				}
 				if (!foundCommunityRootSigner) {
-					throw TransactionValidationRequiredSignMissingException({ communityRoot->getTransactionBody()->communityRoot->pubkey });
+					throw TransactionValidationRequiredSignMissingException({ communityRoot->getTransactionBody()->getCommunityRoot()->getPubkey()});
 				}
 			}
 		}

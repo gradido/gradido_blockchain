@@ -18,7 +18,7 @@ namespace gradido {
 			{
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mRequiredSignPublicKeys.push_back(gradidoTransfer->sender.pubkey);
+				mRequiredSignPublicKeys.push_back(gradidoTransfer->getSender().getPubkey());
 			}
 
 			void GradidoTransferRole::run(
@@ -28,15 +28,15 @@ namespace gradido {
 				data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
 				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 			) {
-				TransferAmountRole transferAmountRole(mGradidoTransfer->sender);
+				TransferAmountRole transferAmountRole(mGradidoTransfer->getSender());
 				transferAmountRole.run(type, communityId, blockchainProvider, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
-				auto sender = mGradidoTransfer->sender;
+				auto& sender = mGradidoTransfer->getSender();
 
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
-					validateEd25519PublicKey(mGradidoTransfer->recipient, "recipient");
+					validateEd25519PublicKey(mGradidoTransfer->getRecipient(), "recipient");
 
-					if (mGradidoTransfer->recipient->isTheSame(sender.pubkey)) {
+					if (mGradidoTransfer->getRecipient()->isTheSame(sender.getPubkey())) {
 						throw TransactionValidationException("sender and recipient are the same");
 					}
 				}
@@ -80,15 +80,16 @@ namespace gradido {
 				assert(blockchain);
 				assert(mConfirmedAt.seconds);
 				calculateAccountBalance::Context c(*blockchain);
+				auto& sender = mGradidoTransfer->getSender();
 				auto finalBalance = c.run(
-					mGradidoTransfer->sender.pubkey,
+					sender.getPubkey(),
 					mConfirmedAt, // calculate decay after last transaction balance until confirmation date
-					previousConfirmedTransaction.mId, // calculate until this transaction nr
-					mGradidoTransfer->sender.communityId
+					previousConfirmedTransaction.getId(), // calculate until this transaction nr
+					sender.getCommunityId()
 				);
 					
-				if (mGradidoTransfer->sender.amount > finalBalance) {
-					throw InsufficientBalanceException("not enough Gradido Balance for send coins", mGradidoTransfer->sender.amount, finalBalance);
+				if (sender.getAmount() > finalBalance) {
+					throw InsufficientBalanceException("not enough Gradido Balance for send coins", sender.getAmount(), finalBalance);
 				}
 			}
 
@@ -105,27 +106,31 @@ namespace gradido {
 				// check if sender address was registered
 				auto senderAddressType = senderBlockchain->getAddressType(
 					filterBuilder
-					.setInvolvedPublicKey(mGradidoTransfer->sender.pubkey)
-					.setMaxTransactionNr(senderPreviousConfirmedTransaction.mId)
+					.setInvolvedPublicKey(mGradidoTransfer->getSender().getPubkey())
+					.setMaxTransactionNr(senderPreviousConfirmedTransaction.getId())
 					.build()
 				);
 				if (data::AddressType::NONE == senderAddressType) {
-					throw WrongAddressTypeException("sender address not registered", senderAddressType, mGradidoTransfer->sender.pubkey);
+					throw WrongAddressTypeException(
+						"sender address not registered", 
+						senderAddressType, 
+						mGradidoTransfer->getSender().getPubkey()
+					);
 				}
 
 				// check if recipient address was registered
 				auto recipientAddressType = recipientBlockchain->getAddressType(
 					filterBuilder
-					.setInvolvedPublicKey(mGradidoTransfer->recipient)
-					.setMaxTransactionNr(recipientPreviousConfirmedTransaction.mId)
+					.setInvolvedPublicKey(mGradidoTransfer->getRecipient())
+					.setMaxTransactionNr(recipientPreviousConfirmedTransaction.getId())
 					.build()
 				);
 				if (data::AddressType::NONE == recipientAddressType && !mDeferredTransfer) {
-					throw WrongAddressTypeException("recipient address not registered", recipientAddressType, mGradidoTransfer->recipient);
+					throw WrongAddressTypeException("recipient address not registered", recipientAddressType, mGradidoTransfer->getRecipient());
 				}
 				// with deferred transfer recipient address is completely new 
 				else if(data::AddressType::NONE != recipientAddressType && mDeferredTransfer) {
-					throw WrongAddressTypeException("deferred transfer address already exist", recipientAddressType, mGradidoTransfer->recipient);
+					throw WrongAddressTypeException("deferred transfer address already exist", recipientAddressType, mGradidoTransfer->getRecipient());
 				}
 			}
 		}

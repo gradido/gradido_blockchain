@@ -9,11 +9,11 @@ namespace gradido {
 			{
 				GradidoTransactionMessage gradidoTransactionMessage;
 					
-				if (mGradidoTransaction.bodyBytes) {
-					gradidoTransactionMessage["body_bytes"_f] = mGradidoTransaction.bodyBytes->copyAsVector();
+				if (mGradidoTransaction.getBodyBytes()) {
+					gradidoTransactionMessage["body_bytes"_f] = mGradidoTransaction.getBodyBytes()->copyAsVector();
 				}
-				if (mGradidoTransaction.paringMessageId) {
-					gradidoTransactionMessage["parent_message_id"_f] = mGradidoTransaction.paringMessageId->copyAsVector();
+				if (mGradidoTransaction.getParingMessageId()) {
+					gradidoTransactionMessage["parent_message_id"_f] = mGradidoTransaction.getParingMessageId()->copyAsVector();
 				}					
 				gradidoTransactionMessage["sig_map"_f] = mSigantureMapRole.getMessage();
 				return gradidoTransactionMessage;
@@ -22,11 +22,11 @@ namespace gradido {
 			size_t GradidoTransactionRole::calculateSerializedSize() const
 			{
 				size_t size = mSigantureMapRole.calculateSerializedSize();
-				if (mGradidoTransaction.bodyBytes) {
-					size += mGradidoTransaction.bodyBytes->size();
+				if (mGradidoTransaction.getBodyBytes()) {
+					size += mGradidoTransaction.getBodyBytes()->size();
 				}
-				if (mGradidoTransaction.paringMessageId) {
-					size += mGradidoTransaction.paringMessageId->size();
+				if (mGradidoTransaction.getParingMessageId()) {
+					size += mGradidoTransaction.getParingMessageId()->size();
 				}
 				return size;
 			}

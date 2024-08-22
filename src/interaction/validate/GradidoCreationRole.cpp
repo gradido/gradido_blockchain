@@ -14,7 +14,7 @@ namespace gradido {
 			{
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mForbiddenSignPublicKeys.push_back(mGradidoCreation->recipient.pubkey);
+				mForbiddenSignPublicKeys.push_back(mGradidoCreation->getRecipient().getPubkey());
 			}
 
 			void GradidoCreationRole::run(
@@ -24,14 +24,14 @@ namespace gradido {
 				data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
 				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 			) {
-				const auto& recipient = mGradidoCreation->recipient;
-				TransferAmountRole transferAmountRole(mGradidoCreation->recipient);
+				const auto& recipient = mGradidoCreation->getRecipient();
+				TransferAmountRole transferAmountRole(mGradidoCreation->getRecipient());
 				transferAmountRole.run(type, communityId, blockchainProvider, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
 
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
-					validateEd25519PublicKey(recipient.pubkey, "recipient pubkey");
-					auto recipientAmount = recipient.amount;
+					validateEd25519PublicKey(recipient.getPubkey(), "recipient pubkey");
+					auto recipientAmount = recipient.getAmount();
 					if (recipientAmount > GradidoUnit(1000.0)) {
 						throw TransactionValidationInvalidInputException("creation amount to high, max 1000 per month", "amount", "string");
 					}
@@ -53,42 +53,43 @@ namespace gradido {
 
 					GradidoUnit sum;
 					auto creationMaxAlgo = getCorrectCreationMaxAlgo(mConfirmedAt);
-					auto ymd = date::year_month_day{ date::floor<date::days>(mGradidoCreation->targetDate.getAsTimepoint()) };
-					auto targetCreationMaxAlgo = getCorrectCreationMaxAlgo(mGradidoCreation->targetDate);
+					auto targetDate = mGradidoCreation->getTargetDate();
+					auto ymd = date::year_month_day{ date::floor<date::days>(targetDate.getAsTimepoint())};
+					auto targetCreationMaxAlgo = getCorrectCreationMaxAlgo(targetDate);
 
 					if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo) {
 						sum = calculateCreationSumLegacy(
-							mGradidoCreation->recipient.pubkey,
+							mGradidoCreation->getRecipient().getPubkey(),
 							mConfirmedAt,
 							blockchain,
-							recipientPreviousConfirmedTransaction->mId
+							recipientPreviousConfirmedTransaction->getId()
 						);
 					}
 					else if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo) {
 						sum = calculateCreationSum(
-							mGradidoCreation->recipient.pubkey,
+							mGradidoCreation->getRecipient().getPubkey(),
 							ymd.month(), ymd.year(),
 							mConfirmedAt, blockchain,
-							recipientPreviousConfirmedTransaction->mId
+							recipientPreviousConfirmedTransaction->getId()
 						);
 					}
-					sum += recipient.amount;
+					sum += recipient.getAmount();
 					// first max creation check algo
 					if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo && sum > GradidoUnit(3000.0)) {
-						sum -= recipient.amount;
+						sum -= recipient.getAmount();
 						throw InvalidCreationException(
 							"creation more than 3.000 GDD in 3 month not allowed",
 							static_cast<uint32_t>(ymd.month()), static_cast<int>(ymd.year()),
-							recipient.amount, sum
+							recipient.getAmount(), sum
 						);
 					}
 					// second max creation check algo
 					else if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo && sum > GradidoUnit(1000.0)) {
-						sum -= recipient.amount;
+						sum -= recipient.getAmount();
 						throw InvalidCreationException(
 							"creation more than 1.000 GDD per month not allowed",
 							static_cast<uint32_t>(ymd.month()), static_cast<int>(ymd.year()),
-							recipient.amount, sum
+							recipient.getAmount(), sum
 						);
 					}
 				}
@@ -98,12 +99,12 @@ namespace gradido {
 					assert(blockchain);
 
 					blockchain::Filter filter;
-					filter.involvedPublicKey = mGradidoCreation->recipient.pubkey;
+					filter.involvedPublicKey = mGradidoCreation->getRecipient().getPubkey();
 					auto addressType = blockchain->getAddressType(filter);
 					if (data::AddressType::COMMUNITY_HUMAN != addressType &&
 						data::AddressType::COMMUNITY_AUF != addressType &&
 						data::AddressType::COMMUNITY_GMW != addressType) {
-						throw WrongAddressTypeException("wrong address type for creation", addressType, mGradidoCreation->recipient.pubkey);
+						throw WrongAddressTypeException("wrong address type for creation", addressType, mGradidoCreation->getRecipient().getPubkey());
 					}
 				}
 			}
@@ -115,11 +116,11 @@ namespace gradido {
 			{
 				AbstractRole::checkRequiredSignatures(signatureMap, blockchain);
 				if (!blockchain) return;
-				auto& signPairs = signatureMap.signaturePairs;
+				auto& signPairs = signatureMap.getSignaturePairs();
 				// check for account type
 				for (auto& signPair : signPairs) {
 					blockchain::Filter filter;
-					filter.involvedPublicKey = signPair.pubkey;
+					filter.involvedPublicKey = signPair.getPubkey();
 					filter.searchDirection = blockchain::SearchDirection::DESC;
 					filter.timepointInterval = TimepointInterval(blockchain->getStartDate(), mCreatedAt);
 					auto signerAccountType = blockchain->getAddressType(filter);
@@ -127,7 +128,7 @@ namespace gradido {
 						throw WrongAddressTypeException(
 							"signer for creation doesn't have a community human account",
 							signerAccountType,
-							signPair.pubkey
+							signPair.getPubkey()
 						);
 					}
 				}
@@ -135,7 +136,7 @@ namespace gradido {
 
 			void GradidoCreationRole::validateTargetDate(Timepoint createdAtTimePoint)
 			{
-				auto target_date = date::year_month_day{ date::floor<date::days>(mGradidoCreation->targetDate.getAsTimepoint()) };
+				auto target_date = date::year_month_day{ date::floor<date::days>(mGradidoCreation->getTargetDate().getAsTimepoint())};
 				auto received = date::year_month_day{ date::floor<date::days>(createdAtTimePoint) };
 
 				auto targetDateReceivedDistanceMonth = getTargetDateReceivedDistanceMonth(createdAtTimePoint);
@@ -203,10 +204,10 @@ namespace gradido {
 						auto body = entry.getTransactionBody();
 						if (body->isCreation())
 						{
-							auto creation = body->creation;
-							auto targetDate = date::year_month_day{ date::floor<date::days>(creation->targetDate.getAsTimepoint()) };
+							auto creation = body->getCreation();
+							auto targetDate = date::year_month_day{ date::floor<date::days>(creation->getTargetDate().getAsTimepoint())};
 							if (targetDate.month() == month && targetDate.year() == year) {
-								sum += creation->recipient.amount;
+								sum += creation->getRecipient().getAmount();
 							}
 						}
 						// we don't need any of it in our result set
@@ -245,7 +246,7 @@ namespace gradido {
 						auto body = entry.getTransactionBody();
 						if (body->isCreation())
 						{
-							sum += body->creation->recipient.amount;
+							sum += body->getCreation()->getRecipient().getAmount();
 						}
 						// we don't need any of it in our result set
 						return blockchain::FilterResult::DISMISS;
@@ -270,7 +271,7 @@ namespace gradido {
 
 			CreationMaxAlgoVersion GradidoCreationRole::getCorrectCreationMaxAlgo(const data::TimestampSeconds& timepoint)
 			{
-				if (timepoint.seconds < 1588503608) {
+				if (timepoint.getSeconds() < 1588503608) {
 					return CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD;
 				}
 				return CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE;

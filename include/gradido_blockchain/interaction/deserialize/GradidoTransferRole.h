@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_GRADIDO_TRANSFER_ROLE_H
 
 #include "Protopuf.h"
-#include "gradido_blockchain/data/Protocol.h"
+#include "gradido_blockchain/data/GradidoTransfer.h"
 
 namespace gradido {
     namespace interaction {
@@ -11,10 +11,10 @@ namespace gradido {
             {
             public:
                 GradidoTransferRole(const GradidoTransferMessage& gradidoTransfer);
-                inline operator const data::GradidoTransfer&() const { return *mGradidoTransfer.get(); }
-                inline const data::GradidoTransfer& data() const { return *mGradidoTransfer.get(); }
+                ~GradidoTransferRole() {}
+                std::unique_ptr<data::GradidoTransfer> run() const;
             protected:
-                std::unique_ptr<data::GradidoTransfer> mGradidoTransfer;
+                const GradidoTransferMessage& mGradidoTransferMessage;
             };
         }
     }
