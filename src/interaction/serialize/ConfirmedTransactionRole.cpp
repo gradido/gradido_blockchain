@@ -7,21 +7,21 @@ namespace gradido {
 
 			ConfirmedTransactionMessage ConfirmedTransactionRole::getMessage() const
 			{
-				if (!mConfirmedTransaction.runningHash) {
+				if (!mConfirmedTransaction.getRunningHash()) {
 					throw MissingMemberException("missing member by serializing ConfirmedTransaction", "runningHash");
 				}
-				if (!mConfirmedTransaction.messageId) {
+				if (!mConfirmedTransaction.getMessageId()) {
 					throw MissingMemberException("missing member by serializing ConfirmedTransaction", "messageId");
 				}
 				ConfirmedTransactionMessage confirmedTransactionMessage;
 				return ConfirmedTransactionMessage{
-					mConfirmedTransaction.id,
+					mConfirmedTransaction.getId(),
 					mGradidoTransactionRole.getMessage(),
-					TimestampSecondsMessage { mConfirmedTransaction.confirmedAt.seconds },
-					mConfirmedTransaction.versionNumber,
-					mConfirmedTransaction.runningHash->copyAsVector(),
-					mConfirmedTransaction.messageId->copyAsVector(),
-					GradidoUnitToStringTrimTrailingZeros(mConfirmedTransaction.accountBalance)
+					TimestampSecondsMessage { mConfirmedTransaction.getConfirmedAt().getSeconds()},
+					mConfirmedTransaction.getVersionNumber(),
+					mConfirmedTransaction.getRunningHash()->copyAsVector(),
+					mConfirmedTransaction.getMessageId()->copyAsVector(),
+					GradidoUnitToStringTrimTrailingZeros(mConfirmedTransaction.getAccountBalance())
 				};
 				return confirmedTransactionMessage;
 			}
@@ -29,10 +29,10 @@ namespace gradido {
 			size_t ConfirmedTransactionRole::calculateSerializedSize() const
 			{
 				size_t size = 8 + 8 
-					+ mConfirmedTransaction.versionNumber.size() 
+					+ mConfirmedTransaction.getVersionNumber().size()
 					+ crypto_generichash_BYTES 
 					+ 32 
-					+ mConfirmedTransaction.accountBalance.toString().size() 
+					+ mConfirmedTransaction.getAccountBalance().toString().size()
 					+ 10;
 				size += mGradidoTransactionRole.calculateSerializedSize();
 				//printf("calculated confirmed transaction size: %lld\n", size);

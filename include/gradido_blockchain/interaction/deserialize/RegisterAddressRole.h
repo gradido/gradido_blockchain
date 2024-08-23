@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_REGISTER_ADDRESS_ROLE_H
 
 #include "Protopuf.h"
-#include "gradido_blockchain/data/Protocol.h"
+#include "gradido_blockchain/data/RegisterAddress.h"
 
 namespace gradido {
     namespace interaction {
@@ -11,10 +11,9 @@ namespace gradido {
             {
             public:
                 RegisterAddressRole(const RegisterAddressMessage& registerAddressMessage);
-                inline operator const data::RegisterAddress&() const { return *mRegisterAddress.get(); }
-                inline const data::RegisterAddress& data() const { return *mRegisterAddress.get(); }
+                std::unique_ptr<data::RegisterAddress> run() const;
             protected:
-                std::unique_ptr<data::RegisterAddress> mRegisterAddress;
+                const RegisterAddressMessage& mRegisterAddressMessage;
             };
         }
     }

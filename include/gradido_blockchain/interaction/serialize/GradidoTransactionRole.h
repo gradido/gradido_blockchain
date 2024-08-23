@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_GRADIDO_TRANSACTION_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_GRADIDO_TRANSACTION_ROLE_H
 
-#include "gradido_blockchain/data/Protocol.h"
+#include "gradido_blockchain/data/GradidoTransaction.h"
 #include "Protopuf.h"
 #include "AbstractRole.h"
 #include "SignatureMapRole.h"
@@ -14,7 +14,7 @@ namespace gradido {
 			{
 			public:
 				GradidoTransactionRole(const data::GradidoTransaction& gradidoTransaction) 
-					: mGradidoTransaction(gradidoTransaction), mSigantureMapRole(gradidoTransaction.signatureMap) {}
+					: mGradidoTransaction(gradidoTransaction), mSigantureMapRole(gradidoTransaction.getSignatureMap()) {}
 				~GradidoTransactionRole() {};
 
 				RUM_IMPLEMENTATION

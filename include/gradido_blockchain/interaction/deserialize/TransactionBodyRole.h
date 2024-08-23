@@ -1,9 +1,8 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_TRANSACTION_BODY_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_TRANSACTION_BODY_ROLE_H
 
-#include "gradido_blockchain/data/Protocol.h"
 #include "Protopuf.h"
-#include "gradido_blockchain/data/CrossGroupType.h"
+#include "gradido_blockchain/TransactionBodyBuilder.h"
 
 namespace gradido {
 	namespace interaction {
@@ -15,10 +14,10 @@ namespace gradido {
 				TransactionBodyRole(const TransactionBodyMessage& bodyMessage);
 				~TransactionBodyRole() {};
 
-				inline data::ConstTransactionBodyPtr getTransactionBody() { return mBody; }
+				inline TransactionBodyBuilder& getBodyBuilder() { return mBodyBuilder; }
 
 			protected:
-				std::shared_ptr<data::TransactionBody> mBody;
+				TransactionBodyBuilder mBodyBuilder;
 			};
 		}
 	}

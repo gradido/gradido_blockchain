@@ -1,9 +1,8 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_TO_JSON_ABSTRACT_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_TO_JSON_ABSTRACT_ROLE_H
 
-#include "gradido_blockchain/data/Protocol.h"
-#include "AbstractRole.h"
 #include "rapidjson/document.h"
+#include <string>
 
 namespace gradido {
 	namespace interaction {

@@ -12,6 +12,7 @@ namespace memory {
 	Block::Block(size_t size, const unsigned char* data)
 		: Block(size)
 	{
+		if (!size) return;
 		memcpy(mData, data, size);
 	}
 
@@ -77,6 +78,7 @@ namespace memory {
 
 	std::string Block::convertToHex() const
 	{
+		if (!mSize) return "";
 		uint32_t hexSize = mSize * 2 + 1;
 		Block hexMem(hexSize);
 		sodium_bin2hex((char*)hexMem.data(), hexSize, mData, mSize);
@@ -86,6 +88,7 @@ namespace memory {
 
 	std::string Block::convertToBase64(int variant/* = sodium_base64_VARIANT_ORIGINAL*/) const
 	{
+		if (!mSize) return "";
 		size_t encodedSize = sodium_base64_encoded_len(mSize, variant);
 		memory::Block base64(encodedSize);
 
@@ -99,11 +102,13 @@ namespace memory {
 
 	std::string Block::copyAsString() const
 	{
+		if (!mSize) return "";
 		return { (char*)mData, mSize };
 	}
 
 	std::vector<uint8_t> Block::copyAsVector() const
 	{
+		if (!mSize) return {};
 		return { mData, mData + mSize };
 	}
 

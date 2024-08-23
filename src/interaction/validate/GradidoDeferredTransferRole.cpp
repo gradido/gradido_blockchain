@@ -14,7 +14,7 @@ namespace gradido {
 			{
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mRequiredSignPublicKeys.push_back(deferredTransfer->transfer.sender.pubkey);
+				mRequiredSignPublicKeys.push_back(deferredTransfer->getTransfer().getSender().getPubkey());
 			}
 
 			void GradidoDeferredTransferRole::run(
@@ -25,17 +25,17 @@ namespace gradido {
 				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 			) {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					if (mDeferredTransfer->timeout.getAsTimepoint() - mConfirmedAt.getAsTimepoint() > GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL) {
+					if (mDeferredTransfer->getTimeout().getAsTimepoint() - mConfirmedAt.getAsTimepoint() > GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL) {
 						throw TransactionValidationInvalidInputException("timeout is to far away from confirmed date", "timeout", "timestamp");
 					}
 					if (senderPreviousConfirmedTransaction) {
-						if (senderPreviousConfirmedTransaction->confirmedAt >= mDeferredTransfer->timeout) {
+						if (senderPreviousConfirmedTransaction->getConfirmedAt() >= mDeferredTransfer->getTimeout()) {
 							throw TransactionValidationInvalidInputException("timeout is already in the past", "timeout", "timestamp");
 						}
 					}
 				}
 				// make copy from GradidoTransfer
-				auto transfer = std::make_shared<data::GradidoTransfer>(mDeferredTransfer->transfer);
+				auto transfer = std::make_shared<data::GradidoTransfer>(mDeferredTransfer->getTransfer());
 				GradidoTransferRole transferRole(transfer, "");
 				transferRole.setConfirmedAt(mConfirmedAt);
 				transferRole.setCreatedAt(mCreatedAt);

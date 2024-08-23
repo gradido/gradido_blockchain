@@ -1,5 +1,4 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
-#include "gradido_blockchain/model/protobufWrapper/TransactionBase.h"
 #include "rapidjson/error/en.h"
 
 #include <string>

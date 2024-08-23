@@ -8,7 +8,7 @@
 
 #include "furi/furi.hpp"
 #include "magic_enum/magic_enum.hpp"
-#ifndef _DEBUG
+#ifdef USE_HTTPS
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #endif
 #include "httplib.h"

@@ -6,8 +6,8 @@
 #include "rapidjson/document.h"
 
 #include "gradido_blockchain/lib/DataTypeConverter.h"
-#include "gradido_blockchain/model/iota/NodeInfo.h"
-#include "gradido_blockchain/model/iota/TopicIndex.h"
+#include "gradido_blockchain/data/iota/NodeInfo.h"
+#include "gradido_blockchain/data/iota/TopicIndex.h"
 
 /*!		
 	@author einhornimmond

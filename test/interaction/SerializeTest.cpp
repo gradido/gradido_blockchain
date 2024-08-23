@@ -1,5 +1,6 @@
 ﻿#include "gtest/gtest.h"
 #include "../KeyPairs.h"
+#include "../serializedTransactions.h"
 #include "const.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/TransactionBodyBuilder.h"
@@ -12,14 +13,13 @@ using namespace interaction;
 
 TEST(SerializeTest, TransactionBodyWithoutMemo)
 {
-	TransactionBody body("", createdAt, VERSION_STRING);
+	TransactionBody body(std::string(), createdAt, VERSION_STRING);
 	serialize::Context c(body);
 	auto serialized = c.run();
-	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
-	//printf("hex: %s\n", serialized->convertToHex().data());
+	// printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
+	// printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(), "CgASCAiAzLn/BRAAGgMzLjMgAA==");
 }
-
 
 TEST(SerializeTest, TransactionBody)
 {
@@ -32,127 +32,142 @@ TEST(SerializeTest, TransactionBody)
 
 TEST(SerializeTest, CommunityRootBody) 
 {
-	TransactionBody body("", createdAt, VERSION_STRING);
-	body.communityRoot = make_shared<CommunityRoot>(
-		g_KeyPairs[0].publicKey,
-		g_KeyPairs[1].publicKey,
-		g_KeyPairs[2].publicKey
-	);
-	ASSERT_TRUE(body.isCommunityRoot());
-	serialize::Context c(body);
+	TransactionBodyBuilder builder;
+	builder
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setCommunityRoot(
+			g_KeyPairs[0].publicKey,
+			g_KeyPairs[1].publicKey,
+			g_KeyPairs[2].publicKey
+		)
+	;
+	auto body = builder.build();
+	ASSERT_TRUE(body->isCommunityRoot());
+	serialize::Context c(*body);
 	auto serialized = c.run();
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
 	//printf("hex: %s\n", serialized->convertToHex().data());
-	ASSERT_EQ(serialized->convertToBase64(),
-		"CgASCAiAzLn/BRAAGgMzLjMgAFpmCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hIgUfmx6NmEdjrdTZDMZCLx/UoJxne5jksZjAVbwpQg9Y4aILuZSh1i57PKe586fpKo7WESpT92xJWVtRfMdFClC3pa"
-	);
+	ASSERT_EQ(serialized->convertToBase64(), communityRootTransactionBase64);
 }
 
 TEST(SerializeTest, RegisterAddressBody) {
-	TransactionBody body("", createdAt, VERSION_STRING);
-	body.registerAddress = make_shared<RegisterAddress>(
-		AddressType::COMMUNITY_HUMAN,
-		1,
-		g_KeyPairs[3].publicKey,
-		nullptr,
-		g_KeyPairs[4].publicKey
-	);
-	ASSERT_TRUE(body.isRegisterAddress());
-	serialize::Context c(body);
+	TransactionBodyBuilder builder;
+	builder
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setRegisterAddress(
+			g_KeyPairs[3].publicKey,
+			AddressType::COMMUNITY_HUMAN,
+			nullptr,
+			g_KeyPairs[4].publicKey
+		)
+	;
+	auto body = builder.build();
+	ASSERT_TRUE(body->isRegisterAddress());
+	serialize::Context c(*body);
 	auto serialized = c.run();
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
-	ASSERT_EQ(serialized->convertToBase64(),
-		"CgASCAiAzLn/BRAAGgMzLjMgAEpICiAllxqg50IhRNzCRIh+Ke8WDVR5sSGemBfKbs44sJ83wBABIiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VygB"
-	);
-
+	ASSERT_EQ(serialized->convertToBase64(), registeAddressTransactionBase64);
 }
 
 TEST(SerializeTest, GradidoCreationBody) {
-	TransactionBody body("Deine erste Schoepfung ;)", createdAt, VERSION_STRING);
-	body.creation = make_shared<GradidoCreation>(
-		TransferAmount(g_KeyPairs[4].publicKey, "1000.00"),
-		TimestampSeconds(1609459000)
-	);
-	ASSERT_TRUE(body.isCreation());
-	serialize::Context c(body);
+	TransactionBodyBuilder builder;
+	builder
+		.setMemo("Deine erste Schoepfung ;)")
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setTransactionCreation(
+			TransferAmount(g_KeyPairs[4].publicKey, "1000.00"),
+			TimestampSeconds(1609459000)
+		)
+	;
+	auto body = builder.build();
+	ASSERT_TRUE(body->isCreation());
+	serialize::Context c(*body);
 	auto serialized = c.run();
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 
-	ASSERT_EQ(serialized->convertToBase64(),
-		"ChlEZWluZSBlcnN0ZSBTY2hvZXBmdW5nIDspEggIgMy5/wUQABoDMy4zIAA6NAoqCiCKjJMpPLl+h4QXjaiuWIFE98mC9GWL/TUQGh4rR5w+VxIEMTAwMBoAGgYIuMq5/wU="
-	);
-
+	ASSERT_EQ(serialized->convertToBase64(), creationTransactionBase64);
 }
 
 TEST(SerializeTest, GradidoTransferBody) {
-	TransactionBody body("Ich teile mit dir", createdAt, VERSION_STRING);
-	body.transfer = make_shared<GradidoTransfer>(
-		TransferAmount(g_KeyPairs[4].publicKey, "500.55"),
-		g_KeyPairs[5].publicKey
-	);
-	ASSERT_TRUE(body.isTransfer());
-	serialize::Context c(body);
+	TransactionBodyBuilder builder;
+	builder
+		.setMemo("Ich teile mit dir")
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setTransactionTransfer(
+			TransferAmount(g_KeyPairs[4].publicKey, "500.55"),
+			g_KeyPairs[5].publicKey
+		)
+	;
+	auto body = builder.build();
+	ASSERT_TRUE(body->isTransfer());
+	serialize::Context c(*body);
 	auto serialized = c.run();
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 
-	ASSERT_EQ(serialized->convertToBase64(),
-		"ChFJY2ggdGVpbGUgbWl0IGRpchIICIDMuf8FEAAaAzMuMyAAMlAKLAogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSBjUwMC41NRoAEiDRqVgkyEhZACebkqYBdfxnb4kUxh1zmcZsLQy2+p7Fdg=="
-	);
+	ASSERT_EQ(serialized->convertToBase64(), transferTransactionBase64);
 }
 
 TEST(SerializeTest, GradidoDeferredTransferBody) {
-	TransactionBody body("Link zum einloesen", createdAt, VERSION_STRING);
-	body.deferredTransfer = make_shared<GradidoDeferredTransfer>(
-		GradidoTransfer(
-			TransferAmount(g_KeyPairs[4].publicKey, "555.55"),
-			g_KeyPairs[5].publicKey
-		), 
-		timeout
-	);
-	ASSERT_TRUE(body.isDeferredTransfer());
-	serialize::Context c(body);
+	TransactionBodyBuilder builder;
+	builder
+		.setMemo("Link zum einloesen")
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setDeferredTransfer(
+			GradidoTransfer(
+				TransferAmount(g_KeyPairs[4].publicKey, "555.55"),
+				g_KeyPairs[5].publicKey
+			),
+			timeout
+		)
+	;
+	auto body = builder.build();
+	ASSERT_TRUE(body->isDeferredTransfer());
+	serialize::Context c(*body);
 	auto serialized = c.run();
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 
-	ASSERT_EQ(serialized->convertToBase64(),
-		"ChJMaW5rIHp1bSBlaW5sb2VzZW4SCAiAzLn/BRAAGgMzLjMgAFJaClAKLAogioyTKTy5foeEF42orliBRPfJgvRli/01EBoeK0ecPlcSBjU1NS41NRoAEiDRqVgkyEhZACebkqYBdfxnb4kUxh1zmcZsLQy2+p7FdhIGCKj5uf8F"
-	);
+	ASSERT_EQ(serialized->convertToBase64(), deferredTransferTransactionBase64);
 }
 
 TEST(SerializeTest, CommunityFriendsUpdateBody) {
-	TransactionBody body("", createdAt, VERSION_STRING);
-	body.communityFriendsUpdate = make_shared<CommunityFriendsUpdate>(true);
-	ASSERT_TRUE(body.isCommunityFriendsUpdate());
-	serialize::Context c(body);
+	TransactionBodyBuilder builder;
+	builder
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setCommunityFriendsUpdate(true)
+	;
+	auto body = builder.build();
+
+	ASSERT_TRUE(body->isCommunityFriendsUpdate());
+	serialize::Context c(*body);
 	auto serialized = c.run();
 	// printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 	// printf("hex: %s\n", serialized->convertToHex().data());
-	ASSERT_EQ(serialized->convertToBase64(),
-		"CgASCAiAzLn/BRAAGgMzLjMgAEICCAE="
-	);
+	ASSERT_EQ(serialized->convertToBase64(), communityFriendsUpdateBase64);
 }
 
 TEST(SerializeTest, GradidoTransaction) {
-	GradidoTransaction transaction;
-	auto bodyBytes = make_shared<memory::Block>(
-		"''To be yourself in a world that is constantly trying to make you something else is the greatest accomplishment.''\n - Ralph Waldo Emerson "
-	);
+	auto bodyBytes = make_shared<memory::Block>(invalidBodyTestPayload);
 	auto sign = make_shared<memory::Block>(crypto_sign_BYTES);
 	auto& keyPair = g_KeyPairs[3];
 	unsigned long long actualSignLength = 0;
 	crypto_sign_detached(*sign, &actualSignLength, *bodyBytes, bodyBytes->size(), *keyPair.privateKey);
 	ASSERT_EQ(actualSignLength, crypto_sign_BYTES);
 	//printf("signature: %s\n", sign->convertToHex().data());
-	transaction.signatureMap.push({ keyPair.publicKey, sign });
-	transaction.bodyBytes = bodyBytes;
+	SignatureMap signatureMap;
+	signatureMap.push({ keyPair.publicKey, sign });
+	GradidoTransaction transaction(signatureMap, bodyBytes);
 
 	serialize::Context c(transaction);
 	auto serialized = c.run();
 	// printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 	//printf("hex: %s\n", serialized->convertToHex().data());
-	ASSERT_EQ(serialized->convertToBase64(),
-		"CmYKZAogJZcaoOdCIUTcwkSIfinvFg1UebEhnpgXym7OOLCfN8ASQNnYDRZmlKkhvEiea/cRiqwr2bExLlkQxcbwjDYXy3nC3Ggin7Jous8li9gLfQpnUX9FzhrbqOiMEvQqVisNHQUSigEnJ1RvIGJlIHlvdXJzZWxmIGluIGEgd29ybGQgdGhhdCBpcyBjb25zdGFudGx5IHRyeWluZyB0byBtYWtlIHlvdSBzb21ldGhpbmcgZWxzZSBpcyB0aGUgZ3JlYXRlc3QgYWNjb21wbGlzaG1lbnQuJycKIC0gUmFscGggV2FsZG8gRW1lcnNvbiA="
-	);
+	ASSERT_EQ(serialized->convertToBase64(), gradidoTransactionSignedInvalidBody);
 }
 
 TEST(SerializeTest, SignatureMap) {
@@ -191,9 +206,7 @@ TEST(SerializeTest, MinimalConfirmedTransaction) {
 	auto serialized = c.run();
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 	//printf("hex: %s\n", serialized->convertToHex().data());
-	ASSERT_EQ(serialized->convertToBase64(),
-		"CAcSAgoAGgYIwvK5/wUiAzMuMyogAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOgMxNzk="
-	);
+	ASSERT_EQ(serialized->convertToBase64(), minimalConfirmedTransaction);
 }
 
 TEST(SerializeTest, CompleteConfirmedTransaction) {
@@ -201,14 +214,15 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 	TransactionBodyBuilder bodyBuilder;
 	auto transactionBody = bodyBuilder
 		.setTransactionTransfer(
-			g_KeyPairs[4].publicKey, // sender
-			"100.251621",
-			"",
-			g_KeyPairs[5].publicKey // recipient
+			TransferAmount(
+				g_KeyPairs[4].publicKey, // sender
+				"100.251621"
+			), g_KeyPairs[5].publicKey // recipient
 		)
 		.setCreatedAt(createdAt)
 		.setMemo(memo)
-		.build();
+		.build()
+	;
 
 	GradidoTransactionBuilder builder;
 	auto keyPair = make_shared<KeyPairEd25519>(g_KeyPairs[0].publicKey, g_KeyPairs[0].privateKey);
@@ -222,16 +236,13 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		std::move(gradidoTransaction),
 		confirmedAt,
 		VERSION_STRING,
-		nullptr,
 		make_shared<memory::Block>(32),
 		"899.748379"
 	);
-	confirmedTransaction.runningHash = std::make_shared<memory::Block>(confirmedTransaction.calculateRunningHash());
 	serialize::Context c(confirmedTransaction);
 	auto serialized = c.run();
+	// printf("running hash: %s\n", confirmedTransaction.getRunningHash()->convertToHex().data());
 	// printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 	// printf("hex: %s\n", serialized->convertToHex().data());
-	ASSERT_EQ(serialized->convertToBase64(),
-		"CAcS5gEKZgpkCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hJABLGV+LKPuwm777Y98sSKCJjyT764T0LkK9JMAlH8McVfE4a58QJDRkRVVw8s+97770Ecu41wN699/2dl2bMyCRJ8ChVEYW5rZSBmdWVyIGRlaW4gU2VpbiESCAiAzLn/BRAAGgMzLjMgADJSCi4KIIqMkyk8uX6HhBeNqK5YgUT3yYL0ZYv9NRAaHitHnD5XEggxMDAuMjUxNhoAEiDRqVgkyEhZACebkqYBdfxnb4kUxh1zmcZsLQy2+p7FdhoGCMLyuf8FIgMzLjMqIIgnAMXVrMc4Gp2khh7bkK27q8fWQoaf3VcrNF5WZdhaMiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADoIODk5Ljc0ODQ="
-	);
+	ASSERT_EQ(serialized->convertToBase64(), completeConfirmedTransaction);
 }

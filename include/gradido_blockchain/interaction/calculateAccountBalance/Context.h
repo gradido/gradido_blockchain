@@ -3,7 +3,6 @@
 
 #include "gradido_blockchain/export.h"
 #include "AbstractRole.h"
-#include "gradido_blockchain/data/Protocol.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 
 namespace gradido {

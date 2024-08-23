@@ -25,7 +25,7 @@ namespace gradido {
 
 			TransactionValidationException& TransactionValidationException::setTransactionBody(const data::TransactionBody& transactionBody)
 			{
-				mTransactionMemo = transactionBody.memo;
+				mTransactionMemo = transactionBody.getMemo();
 				mType = transactionBody.getTransactionType();
 				return *this;
 			}

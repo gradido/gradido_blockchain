@@ -18,7 +18,7 @@ namespace memory {
 
 	uint8_t* Manager::getBlock(size_t size)
 	{
-		assert(size > 0);
+		if (size == 0) return nullptr;
 		if (!mInitalized) {
 			auto block = (uint8_t*)malloc(size);
 			std::memset(block, 0, size);

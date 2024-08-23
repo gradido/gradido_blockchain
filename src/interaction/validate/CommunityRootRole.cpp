@@ -12,7 +12,7 @@ namespace gradido {
 			{
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mRequiredSignPublicKeys.push_back(mCommunityRoot->pubkey);
+				mRequiredSignPublicKeys.push_back(mCommunityRoot->getPubkey());
 			}
 
 			void CommunityRootRole::run(
@@ -23,13 +23,13 @@ namespace gradido {
 				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 			) {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					validateEd25519PublicKey(mCommunityRoot->pubkey, "pubkey");
-					validateEd25519PublicKey(mCommunityRoot->gmwPubkey, "gmwPubkey");
-					validateEd25519PublicKey(mCommunityRoot->aufPubkey, "aufPubkey");
+					validateEd25519PublicKey(mCommunityRoot->getPubkey(), "pubkey");
+					validateEd25519PublicKey(mCommunityRoot->getGmwPubkey(), "gmwPubkey");
+					validateEd25519PublicKey(mCommunityRoot->getAufPubkey(), "aufPubkey");
 
-					const auto& pubkey = *mCommunityRoot->pubkey;
-					const auto& gmwPubkey = *mCommunityRoot->gmwPubkey;
-					const auto& aufPubkey = *mCommunityRoot->aufPubkey;
+					const auto& pubkey = *mCommunityRoot->getPubkey();
+					const auto& gmwPubkey = *mCommunityRoot->getGmwPubkey();
+					const auto& aufPubkey = *mCommunityRoot->getAufPubkey();
 
 					if (gmwPubkey == aufPubkey) { throw TransactionValidationException("gmw and auf are the same"); }
 					if (pubkey == gmwPubkey) { throw TransactionValidationException("gmw and pubkey are the same"); }

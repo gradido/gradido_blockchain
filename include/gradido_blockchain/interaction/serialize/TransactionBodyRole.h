@@ -1,10 +1,10 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_TRANSACTION_BODY_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_TRANSACTION_BODY_ROLE_H
 
-#include "gradido_blockchain/data/Protocol.h"
-#include "Protopuf.h"
 #include "gradido_blockchain/data/CrossGroupType.h"
+#include "gradido_blockchain/data/TransactionBody.h"
 #include "AbstractRole.h"
+#include "Protopuf.h"
 
 namespace gradido {
 	namespace interaction {
@@ -18,10 +18,11 @@ namespace gradido {
 
 				RUM_IMPLEMENTATION
 				TransactionBodyMessage getMessage() const;
-				size_t calculateSerializedSize() const;					
-				size_t calculateTransferAmountSerializedSize(const data::TransferAmount& amount) const;
+				size_t calculateSerializedSize() const;		
 
 			protected:
+				size_t calculateTransferAmountSerializedSize(const data::TransferAmount& amount) const;
+				TransferAmountMessage createTransferAmountMessage(const data::TransferAmount& amount) const;
 				const data::TransactionBody& mBody;
 			};
 		}

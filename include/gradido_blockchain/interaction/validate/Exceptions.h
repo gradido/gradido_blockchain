@@ -2,9 +2,10 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_EXCEPTIONS_H
 
 #include "gradido_blockchain/GradidoBlockchainException.h"
-#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/data/AddressType.h"
-#include "gradido_blockchain/data/Protocol.h"
+#include "gradido_blockchain/data/GradidoTransaction.h"
+#include "gradido_blockchain/data/TransactionType.h"
+
 #include "gradido_blockchain/GradidoUnit.h"
 
 #include "magic_enum/magic_enum.hpp"

@@ -44,6 +44,7 @@ IF(WIN32)
 	find_package(openssl)
 	if(openssl_FOUND)
 		include_directories(${OPENSSL_INCLUDE_DIR})
+		add_compile_definitions(USE_HTTPS)
 	endif()
 ELSE()
   find_package(Sodium)
@@ -59,10 +60,6 @@ FILE(GLOB INTERACTION "include/gradido_blockchain/interaction/*.h" "src/interact
 FILE(GLOB LIB_SRC "include/gradido_blockchain/lib/*.h" "src/lib/*.cpp")
 FILE(GLOB MAIN "src/*.cpp" "src/*.c"  "include/gradido_blockchain/*.h")
 FILE(GLOB MEMORY "include/gradido_blockchain/memory/*.h" "src/memory/*.cpp")
-FILE(GLOB MODEL "include/gradido_blockchain/model/*.h" "src/model/*.cpp")
-#FILE(GLOB MODEL_PROTOBUF_WRAPPER "include/gradido_blockchain/model/protobufWrapper/*.h" "src/model/protobufWrapper/*.cpp")
-FILE(GLOB MODEL_PROTOPUF "include/gradido_blockchain/model/protopuf/*.h" "src/model/protopuf/*.cpp")
-FILE(GLOB MODEL_IOTA "include/gradido_blockchain/model/iota/*.h" "src/model/iota/*.cpp")
 FILE(GLOB PROTO_GRADIDO "build/proto/gradido/*.cc" "build/proto/gradido/*.h")
 FILE(GLOB TINF "dependencies/tinf/src/*.c" "dependencies/tinf/src/*.h")
 FIlE(GLOB THREADING "include/gradido_blockchain/threading/*.h" "src/threading/*.cpp")
@@ -93,15 +90,12 @@ SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${BLOCKCHAIN}
 	${CRYPTO}
 	${DATA} ${DATA_IOTA}
-	#${HTTP}
+	${HTTP}
 	${INTERACTION}
 	${LIB_SRC} 
 	${MAIN}
 	${MEMORY}
-	#${MODEL} ${MODEL_PROTOBUF_WRAPPER} 
 	${MODEL_IOTA} 
-	#${MODEL_PROTOPUF} 
-	#${PROTO_GRADIDO}
 	${TINF} 
 	${THREADING}
 	${INTERACTION_CALCULATE_ACCOUNT_BALANCE}
@@ -121,12 +115,6 @@ if(MSVC)
 	source_group("interaction" FILES ${INTERACTION})
 	source_group("lib" FILES ${LIB_SRC})	
 	source_group("memory" FILES ${MEMORY})
-	source_group("model\\iota" FILES ${MODEL_IOTA})
-	source_group("model\\protocol\\3_3" FILES ${MODEL_PROTOCOL_3_3})
-	source_group("model\\protobufWrapper" FILES ${MODEL_PROTOBUF_WRAPPER})
-	#source_group("model\\protopuf" FILES ${MODEL_PROTOPUF})	
-	source_group("model" FILES ${MODEL})
-	#source_group("proto\\gradido" FILES ${PROTO_GRADIDO})
 	source_group("tinf" FILES ${TINF})
 	source_group("threading" FILES ${THREADING})	
 	source_group("interaction\\calculateAccountBalance" FILES ${INTERACTION_CALCULATE_ACCOUNT_BALANCE})

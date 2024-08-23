@@ -133,7 +133,7 @@ namespace gradido {
 						return FilterResult::DISMISS;
 					}
 					// change to need deserialized transaction
-					if (!timepointInterval.isInsideInterval(entry->getConfirmedTransaction()->confirmedAt.getAsTimepoint())) {
+					if (!timepointInterval.isInsideInterval(entry->getConfirmedTransaction()->getConfirmedAt().getAsTimepoint())) {
 						return FilterResult::DISMISS;
 					}
 				}

@@ -1,5 +1,5 @@
-#ifndef __GRADIDO_BLOCKCHAIN_TEST_V3_3_INTERACTION_CONST_H
-#define __GRADIDO_BLOCKCHAIN_TEST_V3_3_INTERACTION_CONST_H
+#ifndef __GRADIDO_BLOCKCHAIN_TEST_INTERACTION_CONST_H
+#define __GRADIDO_BLOCKCHAIN_TEST_INTERACTION_CONST_H
 
 #include <chrono>
 
@@ -10,4 +10,4 @@ const auto targetDate = std::chrono::system_clock::from_time_t(1609459000);
 const auto timeout = std::chrono::system_clock::from_time_t(1609465000);
 
 
-#endif
+#endif //__GRADIDO_BLOCKCHAIN_TEST_INTERACTION_CONST_H

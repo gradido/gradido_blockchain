@@ -12,19 +12,20 @@ namespace gradido {
 				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
 			) {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					if (!mTransferAmount.communityId.empty() && !isValidCommunityAlias(mTransferAmount.communityId)) {
+					auto& coinCommunityId = mTransferAmount.getCommunityId();
+					if (!coinCommunityId.empty() && !isValidCommunityAlias(coinCommunityId)) {
 						throw TransactionValidationInvalidInputException("invalid character, only ascii", "coinCommunityId", "string");
 					}
-					if (!communityId.empty() && mTransferAmount.communityId == communityId) {
+					if (!communityId.empty() && coinCommunityId == communityId) {
 						throw TransactionValidationInvalidInputException(
 							"coin communityId shouldn't be set if it is the same as blockchain communityId",
 							"communityId", "hex"
 						);
 					}
-					if (mTransferAmount.amount <= GradidoUnit(0.0)) {
+					if (mTransferAmount.getAmount() <= GradidoUnit(0.0)) {
 						throw TransactionValidationInvalidInputException("zero or negative amount", "amount", "GradidoUnit");
 					}
-					validateEd25519PublicKey(mTransferAmount.pubkey, "sender");
+					validateEd25519PublicKey(mTransferAmount.getPubkey(), "sender");
 				}
 			}
 		}

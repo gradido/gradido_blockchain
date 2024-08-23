@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_TRANSACTION_ENTRY_H
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_TRANSACTION_ENTRY_H
 
-#include "gradido_blockchain/data/Protocol.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/TransactionType.h"
 
 #include "date/date.h"
@@ -52,7 +52,7 @@ namespace gradido {
 			inline data::TransactionType getTransactionType() const { return mTransactionType; }
 			inline std::string_view getCoinCommunityId() const { return mCoinCommunityId; }
 			static std::string getCoinCommunityId(const data::TransactionBody& body);
-			inline data::ConstTransactionBodyPtr getTransactionBody() const { return getConfirmedTransaction()->gradidoTransaction->getTransactionBody(); }
+			inline data::ConstTransactionBodyPtr getTransactionBody() const { return getConfirmedTransaction()->getGradidoTransaction()->getTransactionBody(); }
 
 			inline bool isTransfer() const { return mTransactionType == data::TransactionType::TRANSFER; }
 			inline bool isCreation() const { return mTransactionType == data::TransactionType::CREATION; }

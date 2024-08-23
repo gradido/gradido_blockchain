@@ -1,7 +1,6 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_CONTEXT_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_CONTEXT_H
 
-#include "gradido_blockchain/data/Protocol.h"
 #include "AbstractRole.h"
 #include "TransactionBodyRole.h"
 #include "GradidoTransactionRole.h"
