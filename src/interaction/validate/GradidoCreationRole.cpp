@@ -49,7 +49,7 @@ namespace gradido {
 						recipientPreviousConfirmedTransaction = senderPreviousConfirmedTransaction;
 					}
 					assert(recipientPreviousConfirmedTransaction);
-					assert(mConfirmedAt.seconds);
+					assert(mConfirmedAt.getSeconds());
 
 					GradidoUnit sum;
 					auto creationMaxAlgo = getCorrectCreationMaxAlgo(mConfirmedAt);

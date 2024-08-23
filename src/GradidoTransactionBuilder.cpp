@@ -36,6 +36,12 @@ namespace gradido {
 		return *this;
 	}
 
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setTransactionBody(memory::ConstBlockPtr bodyBytes)
+	{
+		mGradidoTransaction->mBodyBytes = bodyBytes;
+		return *this;
+	}
+
 	GradidoTransactionBuilder& GradidoTransactionBuilder::addSignaturePair(memory::ConstBlockPtr publicKey, memory::ConstBlockPtr signature)
 	{
 		mGradidoTransaction->mSignatureMap.push(SignaturePair(publicKey, signature));

@@ -43,17 +43,23 @@ namespace gradido {
 				else if (mBody.isRegisterAddress()) 
 				{
 					auto registerAddress = mBody.getRegisterAddress();
-					auto pubkey = registerAddress->getUserPublicKey();
+					auto userPubkey = registerAddress->getUserPublicKey();
 					auto nameHash = registerAddress->getNameHash();
 					auto accountPubkey = registerAddress->getAccountPublicKey();
 
-					message["register_address"_f] = RegisterAddressMessage{
-						pubkey ? pubkey->copyAsVector() : vector<uint8_t>(),
-						registerAddress->getAddressType(),
-						nameHash ? nameHash->copyAsVector() : vector<uint8_t>(),
-						accountPubkey ? accountPubkey->copyAsVector() : vector<uint8_t>(),
-						registerAddress->getDerivationIndex()
-					};
+					RegisterAddressMessage registerAddressMessage;
+					if (userPubkey) {
+						registerAddressMessage["user_pubkey"_f] = userPubkey->copyAsVector();
+					}
+					registerAddressMessage["address_type"_f] = registerAddress->getAddressType();
+					if (nameHash) {
+						registerAddressMessage["name_hash"_f] = nameHash->copyAsVector();
+					}
+					if (accountPubkey) {
+						registerAddressMessage["account_pubkey"_f] = accountPubkey->copyAsVector();
+					}
+					registerAddressMessage["derivation_index"_f] = registerAddress->getDerivationIndex();
+					message["register_address"_f] = registerAddressMessage;
 				}
 				else if (mBody.isCreation())
 				{

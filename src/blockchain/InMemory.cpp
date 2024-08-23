@@ -65,15 +65,6 @@ namespace gradido {
 			interaction::calculateAccountBalance::Context finalBalanceCalculate(*this);
 			auto finalBalance = finalBalanceCalculate.run(gradidoTransaction, confirmedAt, id);
 
-			auto confirmedTransaction = std::make_shared<data::ConfirmedTransaction>(
-				id,
-				gradidoTransaction,
-				confirmedAt,
-				GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING,
-				nullptr,
-				messageId,
-				finalBalance
-			);
 			data::ConstConfirmedTransactionPtr lastConfirmedTransaction;
 			if (lastTransaction) {
 				lastConfirmedTransaction = lastTransaction->getConfirmedTransaction();
@@ -81,7 +72,17 @@ namespace gradido {
 					throw BlockchainOrderException("previous transaction is younger");
 				}
 			}
-			confirmedTransaction->getRunningHash() = std::make_shared<memory::Block>(confirmedTransaction->calculateRunningHash(lastConfirmedTransaction));
+
+			auto confirmedTransaction = std::make_shared<data::ConfirmedTransaction>(
+				id,
+				gradidoTransaction,
+				confirmedAt,
+				GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING,
+				messageId,
+				finalBalance,
+				lastConfirmedTransaction
+			);
+			
 			// important! validation
 			interaction::validate::Context validate(*confirmedTransaction);
 			interaction::validate::Type level =

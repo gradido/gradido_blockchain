@@ -1,10 +1,15 @@
 #include "InMemoryTest.h"
+#include "../serializedTransactions.h"
+
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/toJson/Context.h"
 #include "gradido_blockchain/lib/Profiler.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain/GradidoTransactionBuilder.h"
+#include "gradido_blockchain/TransactionBodyBuilder.h"
+
 
 #include "date/date.h"
 #include "date/tz.h"
@@ -44,15 +49,18 @@ void InMemoryTest::SetUp()
 	mCommunityId = "testCommunity";
 	mLastCreatedAt = std::chrono::system_clock::from_time_t(1641681324);
 	mBlockchain = InMemoryProvider::getInstance()->findBlockchain(mCommunityId);
+		
+	auto bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
 
-	auto transaction = make_shared<GradidoTransaction>();
 	// keyPair 0 is public of this community root Transaction
-	transaction->bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(
-		"CgASCAiAzLn/BRAAGgMzLjMgAFpmCiBkPEOHdvwmNPr4h9+EhbntWAcpwgmeAOTU1TzXRiag1hIgUfmx6NmEdjrdTZDMZCLx/UoJxne5jksZjAVbwpQg9Y4aILuZSh1i57PKe586fpKo7WESpT92xJWVtRfMdFClC3pa"
-	));
-	sign(*transaction, g_KeyPairs[0]);
-	mBlockchain->addGradidoTransaction(transaction, nullptr, mLastCreatedAt);
-
+	auto signature = sign(bodyBytes, g_KeyPairs[0]);
+	auto transaction = make_shared<GradidoTransaction>();
+	GradidoTransactionBuilder builder;
+	builder
+		.setTransactionBody(bodyBytes)
+		.addSignaturePair(g_KeyPairs[0].publicKey, signature)
+	;
+	mBlockchain->addGradidoTransaction(builder.build(), nullptr, mLastCreatedAt);
 }
 
 void InMemoryTest::TearDown()
@@ -82,24 +90,33 @@ void InMemoryTest::createRegisterAddress(int keyPairIndexStart)
 	if (keyPairIndexStart + 1 >= g_KeyPairs.size()) {
 		throw std::runtime_error("not enough key pairs");
 	}
-	TransactionBody body("", generateNewCreatedAt(), VERSION_STRING);
+
 	auto userPubkeyIndex = keyPairIndexStart;
 	auto accountPubkeyIndex = keyPairIndexStart + 1;
-	body.registerAddress = make_shared<RegisterAddress>(
-		AddressType::COMMUNITY_HUMAN,
-		1,
-		g_KeyPairs[userPubkeyIndex].publicKey,
-		nullptr,
-		g_KeyPairs[accountPubkeyIndex].publicKey
-	);
+	TransactionBodyBuilder bodyBuilder;
+	bodyBuilder
+		.setCreatedAt(generateNewCreatedAt())
+		.setVersionNumber(VERSION_STRING)
+		.setRegisterAddress(
+			g_KeyPairs[userPubkeyIndex].publicKey,
+			AddressType::COMMUNITY_HUMAN,
+			nullptr,
+			g_KeyPairs[accountPubkeyIndex].publicKey
+		)
+	;
+	auto body = bodyBuilder.build();
+	serialize::Context c(*body);
+	auto bodyBytes = c.run();
+	GradidoTransactionBuilder builder;
+	builder
+		.setTransactionBody(bodyBytes)
+		.addSignaturePair(g_KeyPairs[accountPubkeyIndex].publicKey, sign(bodyBytes, g_KeyPairs[accountPubkeyIndex]))
+		// sign with community root key
+		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
+	;	
 	mKeyPairIndexAccountMap.insert({ accountPubkeyIndex, accountPubkeyIndex });
-	serialize::Context c(body);
-	auto transaction = make_shared<GradidoTransaction>();
-	transaction->bodyBytes = c.run();
-	sign(*transaction, g_KeyPairs[accountPubkeyIndex]);
-	// sign with community root key
-	sign(*transaction, g_KeyPairs[0]);
-	ASSERT_TRUE(mBlockchain->addGradidoTransaction(transaction, nullptr, mLastCreatedAt));
+		
+	ASSERT_TRUE(mBlockchain->addGradidoTransaction(builder.build(), nullptr, mLastCreatedAt));
 }
 
 bool InMemoryTest::createGradidoCreation(
@@ -111,21 +128,30 @@ bool InMemoryTest::createGradidoCreation(
 ) {
 	assert(recipientKeyPairIndex > 0 && recipientKeyPairIndex < g_KeyPairs.size());
 	assert(signerKeyPairIndex > 0 && signerKeyPairIndex < g_KeyPairs.size());
-	TransactionBody body("dummy memo", createdAt, VERSION_STRING);
-	body.creation = make_shared<GradidoCreation>(
-		TransferAmount(g_KeyPairs[recipientKeyPairIndex].publicKey, amount),
-		targetDate
-	);
+	TransactionBodyBuilder bodyBuilder;
+	bodyBuilder
+		.setMemo("dummy memo")
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setTransactionCreation(
+			TransferAmount(g_KeyPairs[recipientKeyPairIndex].publicKey, amount),
+			targetDate
+		)
+		;
+	auto body = bodyBuilder.build();
 
-	serialize::Context c(body);
-	auto transaction = make_shared<GradidoTransaction>();
-	transaction->bodyBytes = c.run();
-	sign(*transaction, g_KeyPairs[signerKeyPairIndex]);
-	if (mBlockchain->addGradidoTransaction(transaction, nullptr, createdAt + chrono::seconds{ 45 })) {
+	serialize::Context c(*body);
+	auto bodyBytes = c.run();
+	GradidoTransactionBuilder builder;
+	builder
+		.setTransactionBody(bodyBytes)
+		.addSignaturePair(g_KeyPairs[signerKeyPairIndex].publicKey, sign(bodyBytes, g_KeyPairs[signerKeyPairIndex]))
+	;	
+	if (mBlockchain->addGradidoTransaction(builder.build(), nullptr, createdAt + chrono::seconds{45})) {
 		auto lastTransaction = mBlockchain->findOne(Filter::LAST_TRANSACTION)->getConfirmedTransaction();
 		auto accountIt = mKeyPairIndexAccountMap.find(recipientKeyPairIndex);
-		accountIt->second.balance = lastTransaction->accountBalance;
-		accountIt->second.balanceDate = lastTransaction->confirmedAt;
+		accountIt->second.balance = lastTransaction->getAccountBalance();
+		accountIt->second.balanceDate = lastTransaction->getConfirmedAt();
 		return true;
 	}
 	return false;

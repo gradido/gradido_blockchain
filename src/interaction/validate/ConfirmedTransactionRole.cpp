@@ -75,10 +75,10 @@ namespace gradido {
 							}
 						}
 						auto txHash = mConfirmedTransaction.calculateRunningHash(previousConfirmedTransaction);
-						if (!mConfirmedTransaction.getRunningHash() || txHash.size() != mConfirmedTransaction.getRunningHash()->size()) {
+						if (!mConfirmedTransaction.getRunningHash() || txHash->size() != mConfirmedTransaction.getRunningHash()->size()) {
 							throw TransactionValidationException("tx hash size isn't equal");
 						}
-						if(!txHash.isTheSame(mConfirmedTransaction.getRunningHash())) {
+						if(!txHash->isTheSame(mConfirmedTransaction.getRunningHash())) {
 							throw TransactionValidationInvalidInputException("stored tx hash isn't equal to calculated txHash", "txHash", "binary");
 						}
 					}

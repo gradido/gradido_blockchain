@@ -23,10 +23,10 @@ TEST(GradidoTransactionBuilderTest, SignTransaction) {
 		.sign(keyPair)
 		.build();
 
-	ASSERT_EQ(gradidoTransaction->bodyBytes->convertToBase64(),
+	ASSERT_EQ(gradidoTransaction->getBodyBytes()->convertToBase64(),
 		"CgASCAiAzLn/BRAAGgMzLjMgAA=="
 	);
-	ASSERT_EQ(gradidoTransaction->signatureMap.signaturePairs.front().signature->convertToHex(), 
+	ASSERT_EQ(gradidoTransaction->getSignatureMap().getSignaturePairs().front().getSignature()->convertToHex(),
 		"1ebd44c1d9e2033c0422d40157f5976f95c5c40c78058306e66185393686d5abe8140d87eb29103816f2772ead804b4a072415c5ab78f28d2aa99246a7229604"
 	);
 

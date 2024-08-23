@@ -74,7 +74,7 @@ namespace gradido {
 						throw MissingMemberException(exceptionMessage, "timeout");
 					}
 					mBodyBuilder.setDeferredTransfer(
-						GradidoTransferRole(deferredTransferMessage["transfer"_f].value()).run(),
+						*GradidoTransferRole(deferredTransferMessage["transfer"_f].value()).run().get(),
 						TimestampSecondsRole(deferredTransferMessage["timeout"_f].value()).data()
 					);
 				}

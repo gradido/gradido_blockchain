@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_TEST_KEY_PAIRS_H
 
 #include "gradido_blockchain/memory/Block.h"
-#include "gradido_blockchain/data/Protocol.h"
+#include "gradido_blockchain/data/GradidoTransaction.h"
 
 #include <vector>
 #include <memory>
@@ -18,6 +18,6 @@ struct KeyPair
 
 extern std::vector<KeyPair> g_KeyPairs;
 void generateKeyPairs();
-void sign(gradido::data::GradidoTransaction& transaction, const KeyPair& keyPair);
+memory::ConstBlockPtr sign(memory::ConstBlockPtr bodyBytes, const KeyPair& keyPair);
 
 #endif //__GRADIDO_BLOCKCHAIN_TEST_KEY_PAIRS_H

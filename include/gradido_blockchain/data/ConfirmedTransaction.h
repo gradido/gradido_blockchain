@@ -9,6 +9,18 @@ namespace gradido {
 		class GRADIDOBLOCKCHAIN_EXPORT ConfirmedTransaction
 		{
 		public:
+			//! calculate running hash
+			//! \param previousConfirmedTransaction needed for running hash calculation
+			ConfirmedTransaction(
+				uint64_t id,
+				std::shared_ptr<const GradidoTransaction> gradidoTransaction,
+				Timepoint confirmedAt,
+				const std::string& versionNumber,
+				memory::ConstBlockPtr messageId,
+				const std::string& accountBalanceString,
+				std::shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction = nullptr
+			);
+			//! copy running hash
 			ConfirmedTransaction(
 				uint64_t id,
 				std::shared_ptr<const GradidoTransaction> gradidoTransaction,
@@ -21,7 +33,9 @@ namespace gradido {
 
 			~ConfirmedTransaction() {}
 
-			memory::Block calculateRunningHash(std::shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction = nullptr) const;
+			memory::ConstBlockPtr calculateRunningHash(
+				std::shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction = nullptr
+			) const;
 
 			inline uint64_t getId() const { return  mId; }
 			inline std::shared_ptr<const data::GradidoTransaction> getGradidoTransaction() const { return mGradidoTransaction; }

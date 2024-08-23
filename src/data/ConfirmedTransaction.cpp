@@ -11,6 +11,24 @@ namespace gradido {
 			std::shared_ptr<const GradidoTransaction> gradidoTransaction,
 			Timepoint confirmedAt,
 			const std::string& versionNumber,
+			memory::ConstBlockPtr messageId,
+			const std::string& accountBalanceString,
+			std::shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction/* = nullptr */
+		) : mId(id),
+			mGradidoTransaction(std::move(gradidoTransaction)),
+			mConfirmedAt(confirmedAt),
+			mVersionNumber(versionNumber),
+			mMessageId(messageId),
+			mAccountBalance(accountBalanceString) 
+		{
+			mRunningHash = calculateRunningHash(previousConfirmedTransaction);
+		}
+
+		ConfirmedTransaction::ConfirmedTransaction(
+			uint64_t id,
+			std::shared_ptr<const GradidoTransaction> gradidoTransaction,
+			Timepoint confirmedAt,
+			const std::string& versionNumber,
 			memory::ConstBlockPtr runningHash,
 			memory::ConstBlockPtr messageId,
 			const std::string& accountBalanceString
@@ -20,13 +38,15 @@ namespace gradido {
 			mVersionNumber(versionNumber),
 			mRunningHash(runningHash),
 			mMessageId(messageId),
-			mAccountBalance(accountBalanceString) 
+			mAccountBalance(accountBalanceString)
 		{
+
 		}
 
 
-		memory::Block ConfirmedTransaction::calculateRunningHash(std::shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction/* = nullptr*/) const
-		{
+		memory::ConstBlockPtr ConfirmedTransaction::calculateRunningHash(
+			std::shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction/* = nullptr*/
+		) const {
 			std::string transactionIdString = std::to_string(mId);
 			auto confirmedAtString = DataTypeConverter::timePointToString(mConfirmedAt, "%Y-%m-%d %H:%M:%S");
 			std::string signatureMapString;
@@ -36,7 +56,7 @@ namespace gradido {
 			}
 			std::string accountBalanceString = mAccountBalance.toString();
 
-			memory::Block hash(crypto_generichash_BYTES);
+			auto hash = make_shared<memory::Block>(crypto_generichash_BYTES);
 
 			// Sodium use for the generic hash function BLAKE2b today (11.11.2019), maybe change in the future
 			crypto_generichash_state state;
@@ -52,7 +72,7 @@ namespace gradido {
 			crypto_generichash_update(&state, (const unsigned char*)signatureMapString.data(), signatureMapString.size());
 			//printf("signature map serialized: %s\n", convertBinToHex(signatureMapString).data());
 			crypto_generichash_update(&state, (const unsigned char*)accountBalanceString.data(), accountBalanceString.size());
-			crypto_generichash_final(&state, hash, hash.size());
+			crypto_generichash_final(&state, hash->data(), hash->size());
 			return hash;
 		}
 	}

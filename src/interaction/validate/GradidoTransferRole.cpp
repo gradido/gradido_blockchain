@@ -78,7 +78,7 @@ namespace gradido {
 				std::shared_ptr<blockchain::Abstract> blockchain
 			) {
 				assert(blockchain);
-				assert(mConfirmedAt.seconds);
+				assert(mConfirmedAt.getSeconds());
 				calculateAccountBalance::Context c(*blockchain);
 				auto& sender = mGradidoTransfer->getSender();
 				auto finalBalance = c.run(
