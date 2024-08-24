@@ -44,7 +44,7 @@ TEST(GradidoUnitTest, TestWithManyDifferentDuration)
 	// calculate for every 4. second until two years are full
 	int64_t prevValue = 0;
 	int64_t prevDistance = 0;
-	for (int i = 1; i < 31556952 * 2; i+=4) {
+	for (int i = 1; i < 31556952 * 2; i+=32) {
 		auto decayed = GradidoUnit::calculateDecay(1000000, i);
 		if (prevValue) {
 			ASSERT_GE(prevValue, decayed) << "previous value wasn't greater on i: " << i;

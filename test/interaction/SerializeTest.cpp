@@ -174,20 +174,27 @@ TEST(SerializeTest, SignatureMap) {
 	memory::Block message(
 		"Human nature is a complex interplay of light and shadow, where our greatest strengths often emerge from our deepest vulnerabilities. To be human is to strive for connection, seek meaning, and continuously evolve through both triumphs and trials."
 	);
-	auto sign = make_shared<memory::Block>(64);
+	
 	unsigned long long actualSignLength = 0;
 	SignatureMap signatureMap;
 	for (int i = 0; i < 2; i++) {
-		crypto_sign_detached(*sign, &actualSignLength, message, message.size(), *g_KeyPairs[i].privateKey);
-		signatureMap.push({ g_KeyPairs[i].publicKey, g_KeyPairs[i].privateKey });
+		auto sign = make_shared<memory::Block>(crypto_sign_BYTES);
+		crypto_sign_detached(
+			sign->data(), 
+			&actualSignLength, 
+			message.data(), 
+			message.size(), 
+			g_KeyPairs[i].privateKey->data()
+		);
+		signatureMap.push({ g_KeyPairs[i].publicKey, sign });
 	}
 
 	serialize::Context c(signatureMap);
 	auto serialized = c.run();
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
-	//printf("hex: %s\n", serialized->convertToHex().data());
+	printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(),
-		"CmQKIGQ8Q4d2/CY0+viH34SFue1YBynCCZ4A5NTVPNdGJqDWEkAVfmpfqv7OHLnp5DqPU7RQngLBjAal/jGbcwsNtPh022Q8Q4d2/CY0+viH34SFue1YBynCCZ4A5NTVPNdGJqDWCmQKIFH5sejZhHY63U2QzGQi8f1KCcZ3uY5LGYwFW8KUIPWOEkDC/SCM7JsboMSTRqH1iIFiX0RaMV/YuMUtk1q+KyoReVH5sejZhHY63U2QzGQi8f1KCcZ3uY5LGYwFW8KUIPWO"
+		"CmQKIGQ8Q4d2/CY0+viH34SFue1YBynCCZ4A5NTVPNdGJqDWEkD2NqoGVja1mXQoKEneXryWf7flL8JpiBMwRN3sbSTcncJXQqrZ8/5yb83u8EPPJRL7zXj660DD1z6RQDw3ekIJCmQKIFH5sejZhHY63U2QzGQi8f1KCcZ3uY5LGYwFW8KUIPWOEkDkQn2qJW38uEFO8YnX8U/1/OSrI/DYSeTqTaecDDe4SyM/yKsPqcLZ54Lzv1Nba/ckiImrDBseH8d/EJTi57IH"
 	);
 }
 
@@ -221,6 +228,7 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		)
 		.setCreatedAt(createdAt)
 		.setMemo(memo)
+		.setVersionNumber(VERSION_STRING)
 		.build()
 	;
 

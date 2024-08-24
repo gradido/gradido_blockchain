@@ -13,9 +13,9 @@ namespace gradido {
 			public:
 				Context(const data::TransactionBody& body)
 					: mRole(std::make_unique<TransactionBodyRole>(body)) {}
-				Context(const data::GradidoTransaction& gradidoTransaction, BodyBytesFormat format = BodyBytesFormat::JSON)
+				Context(const data::GradidoTransaction& gradidoTransaction, BodyBytesType format = BodyBytesType::JSON)
 					: mRole(std::make_unique<GradidoTransactionRole>(gradidoTransaction, format)) {}
-				Context(const data::ConfirmedTransaction& confirmedTransaction, BodyBytesFormat format = BodyBytesFormat::JSON)
+				Context(const data::ConfirmedTransaction& confirmedTransaction, BodyBytesType format = BodyBytesType::JSON)
 					: mRole(std::make_unique<ConfirmedTransactionRole>(confirmedTransaction, format)) {}
 
 				inline std::string run(bool pretty = false) { return mRole->run(pretty);}

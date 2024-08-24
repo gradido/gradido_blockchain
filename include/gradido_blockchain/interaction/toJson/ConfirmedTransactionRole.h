@@ -11,13 +11,13 @@ namespace gradido {
 			class ConfirmedTransactionRole : public AbstractRole
 			{
 			public:
-				ConfirmedTransactionRole(const data::ConfirmedTransaction& transaction, BodyBytesFormat format = BodyBytesFormat::JSON)
+				ConfirmedTransactionRole(const data::ConfirmedTransaction& transaction, BodyBytesType format = BodyBytesType::JSON)
 					: mTransaction(transaction), mFormat(format) {}
 
 				rapidjson::Value composeJson(rapidjson::Document& rootDocument) const;
 			protected:
 				const data::ConfirmedTransaction& mTransaction;
-				BodyBytesFormat mFormat;
+				BodyBytesType mFormat;
 			};
 		}
 	}
