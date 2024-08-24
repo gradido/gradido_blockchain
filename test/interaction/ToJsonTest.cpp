@@ -236,7 +236,7 @@ TEST(ToJsonTest, CompleteConfirmedTransaction) {
 		make_shared<memory::Block>(32),
 		"899.748379"
 	);
-	toJson::Context c(confirmedTransaction, toJson::BodyBytesFormat::BASE64 | toJson::BodyBytesFormat::HEX | toJson::BodyBytesFormat::JSON);
+	toJson::Context c(confirmedTransaction, toJson::BodyBytesType::BASE64 | toJson::BodyBytesType::HEX | toJson::BodyBytesType::JSON);
 
 	auto json = c.run();
 	//printf("json: %s\n", json.data());

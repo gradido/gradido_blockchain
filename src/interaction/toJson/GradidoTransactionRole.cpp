@@ -27,13 +27,13 @@ namespace gradido {
 				}
 				d.AddMember("signatureMap", signatures, alloc);
 				Value bodyBytes(kObjectType);
-				if ((enum_integer(BodyBytesFormat::BASE64) & enum_integer(mFormat)) == enum_integer(BodyBytesFormat::BASE64)) {
+				if ((enum_integer(BodyBytesType::BASE64) & enum_integer(mFormat)) == enum_integer(BodyBytesType::BASE64)) {
 					bodyBytes.AddMember("base64", Value(mTransaction.getBodyBytes()->convertToBase64().data(), alloc), alloc);
 				}
-				if ((enum_integer(BodyBytesFormat::HEX) & enum_integer(mFormat)) == enum_integer(BodyBytesFormat::HEX)) {
+				if ((enum_integer(BodyBytesType::HEX) & enum_integer(mFormat)) == enum_integer(BodyBytesType::HEX)) {
 					bodyBytes.AddMember("hex", Value(mTransaction.getBodyBytes()->convertToHex().data(), alloc), alloc);
 				}
-				if ((enum_integer(BodyBytesFormat::JSON) & enum_integer(mFormat)) == enum_integer(BodyBytesFormat::JSON)) {
+				if ((enum_integer(BodyBytesType::JSON) & enum_integer(mFormat)) == enum_integer(BodyBytesType::JSON)) {
 					try {
 						TransactionBodyRole bodyBytesToJson(*mTransaction.getTransactionBody());
 						bodyBytes.AddMember("json", bodyBytesToJson.composeJson(rootDocument), alloc);
