@@ -4,6 +4,8 @@
 #include "Protopuf.h"
 #include "gradido_blockchain/data/Timestamp.h"
 
+#include <memory>
+
 namespace gradido {
     namespace interaction {
         namespace deserialize {
