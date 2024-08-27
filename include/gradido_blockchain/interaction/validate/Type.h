@@ -1,7 +1,9 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_TYPE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_TYPE_H
 
+#ifndef SWIG
 #include "magic_enum/magic_enum_flags.hpp"
+#endif
 
 namespace gradido {
 	namespace interaction {
@@ -48,11 +50,11 @@ namespace gradido {
         }
     }
 }
+#ifndef SWIG
 template <>
 struct magic_enum::customize::enum_range<gradido::interaction::validate::Type> {
 	static constexpr bool is_flags = true;
 };
-
-
+#endif
 
 #endif //__GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_TYPE_H
