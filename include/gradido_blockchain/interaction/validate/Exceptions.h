@@ -38,7 +38,13 @@ namespace gradido {
 			class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationInvalidInputException : public TransactionValidationException
 			{
 			public:
-				explicit TransactionValidationInvalidInputException(const char* what, const char* fieldname, const char* fieldType = nullptr) noexcept;
+				explicit TransactionValidationInvalidInputException(
+					const char* what,
+					const char* fieldName,
+					const char* fieldType = nullptr,
+					const char* expected = nullptr,
+					const char* actual = nullptr
+				) noexcept;
 				std::string getFullString() const noexcept;
 				//! mainly for return as details for json requests
 				rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
@@ -48,6 +54,8 @@ namespace gradido {
 			protected:
 				std::string mFieldName;
 				std::string mFieldType;
+				std::string mExpected;
+				std::string mActual;
 			};
 
 			class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationInvalidSignatureException : public TransactionValidationException

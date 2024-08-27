@@ -1,7 +1,8 @@
-#include "gradido_blockchain/interaction/validate/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/const.h"
+#include "gradido_blockchain/interaction/validate/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransactionRole.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 
 using namespace std::chrono;
 
@@ -21,23 +22,38 @@ namespace gradido {
 
 				if ((type & Type::SINGLE) == Type::SINGLE) {
 					if (mConfirmedTransaction.getVersionNumber() != GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING) {
-						TransactionValidationInvalidInputException exception("wrong version in gradido block", "version_number", "uint64");
+						TransactionValidationInvalidInputException exception(
+							"wrong version",
+							"version_number",
+							"string",
+							GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING,
+							mConfirmedTransaction.getVersionNumber().data()
+						);
 						exception.setTransactionBody(*body);
 						throw exception;
 					}	
 					auto messageId = mConfirmedTransaction.getMessageId();
 					// with iota it is a BLAKE2b-256 hash with 256 Bits or 32 Bytes
 					if (messageId && messageId->size() != 32) {
-						TransactionValidationInvalidInputException exception("wrong size", "message_id", "binary");
+						TransactionValidationInvalidInputException exception(
+							"wrong size",
+							"message_id",
+							"bytes",
+							"32",
+							std::to_string(messageId->size()).data()
+						);
 						exception.setTransactionBody(*body);
 						throw exception;
 					}						
 						
 					if (confirmedAt - createdAt < duration<int>::zero()) {
+						std::string expected = ">= " + DataTypeConverter::timePointToString(createdAt);
 						TransactionValidationInvalidInputException exception(
 							"timespan between created and received are negative",
-							"iota milestone timestamp",
-							std::to_string(mConfirmedTransaction.getConfirmedAt().getSeconds()).data()
+							"confirmed_at",
+							"TimestampSeconds",
+							expected.data(),
+							DataTypeConverter::timePointToString(confirmedAt).data()
 						);
 						exception.setTransactionBody(*body);
 						throw exception;
@@ -65,21 +81,48 @@ namespace gradido {
 						if (previousCreated > createdAt) {
 							auto timespanBetweenCreatedAndReceived = duration_cast<seconds>(confirmedAt - createdAt);
 							if (timespanBetweenCreatedAndReceived > MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION) {
+								std::string message = "timespan between created and received are more than " + DataTypeConverter::timespanToString(MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION);
+								std::string expected = "<= (" + DataTypeConverter::timePointToString(createdAt) + " + " + DataTypeConverter::timespanToString(MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION) + ")";
 								TransactionValidationInvalidInputException exception(
-									"timespan between created and received are more than 2 minutes",
-									"received/iota milestone timestamp",
-									"int64"
+									message.data(),
+									"confirmed_at",
+									"TimestampSeconds",
+									expected.data(),
+									DataTypeConverter::timePointToString(confirmedAt).data()
 								);
 								exception.setTransactionBody(*body);
 								throw exception;
 							}
 						}
-						auto txHash = mConfirmedTransaction.calculateRunningHash(previousConfirmedTransaction);
-						if (!mConfirmedTransaction.getRunningHash() || txHash->size() != mConfirmedTransaction.getRunningHash()->size()) {
-							throw TransactionValidationException("tx hash size isn't equal");
+						auto runningHash = mConfirmedTransaction.calculateRunningHash(previousConfirmedTransaction);
+						if (!mConfirmedTransaction.getRunningHash() || runningHash->size() != mConfirmedTransaction.getRunningHash()->size()) {
+							std::string fieldTypeWithSize = "binary[" + std::to_string(crypto_generichash_BYTES) + "]";
+							std::string actual = "0";
+							if(mConfirmedTransaction.getRunningHash()) {
+								actual = std::to_string(mConfirmedTransaction.getRunningHash()->size());
+							}
+							throw TransactionValidationInvalidInputException(
+								"stored running hash size isn't equal to calculated running hash size",
+								"running_hash",
+								fieldTypeWithSize.data(),
+								std::to_string(runningHash->size()).data(),
+								actual.data()
+							);
 						}
-						if(!txHash->isTheSame(mConfirmedTransaction.getRunningHash())) {
-							throw TransactionValidationInvalidInputException("stored tx hash isn't equal to calculated txHash", "txHash", "binary");
+						if(!runningHash->isTheSame(mConfirmedTransaction.getRunningHash())) {
+							std::string fieldTypeWithSize = "binary[" + std::to_string(crypto_generichash_BYTES) + "]";
+							std::string actual = "";
+							if(mConfirmedTransaction.getRunningHash()) {
+								actual = mConfirmedTransaction.getRunningHash()->convertToHex();
+							}
+							
+							throw TransactionValidationInvalidInputException(
+								"stored tx hash isn't equal to calculated txHash",
+								"running_hash",
+								fieldTypeWithSize.data(),
+								runningHash->convertToHex().data(),
+								actual.data()
+							);
 						}
 					}
 				}

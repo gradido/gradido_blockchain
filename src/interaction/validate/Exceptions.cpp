@@ -33,12 +33,22 @@ namespace gradido {
 			//************* Invalid Input *******************
 
 			TransactionValidationInvalidInputException::TransactionValidationInvalidInputException(
-				const char* what, const char* fieldname, const char* fieldType/* = nullptr*/
+				const char* what,
+				const char* fieldName,
+				const char* fieldType/* = nullptr*/,
+				const char* expected/* = nullptr*/,
+				const char* actual/* = nullptr*/
 			) noexcept
-				: TransactionValidationException(what), mFieldName(fieldname)
+				: TransactionValidationException(what), mFieldName(fieldName)
 			{
 				if (fieldType) {
 					mFieldType = fieldType;
+				}
+				if(expected) {
+					mExpected = expected;
+				}
+				if(actual) {
+					mActual = actual;
 				}
 			}
 
@@ -46,17 +56,50 @@ namespace gradido {
 			{
 				std::string result;
 				auto whatString = what();
-				result.reserve(mFieldName.size() + mFieldType.size() + strlen(whatString) + 10);
+				size_t stringSize = mFieldName.size() + mFieldType.size() + strlen(whatString) + 10;
+				if(!mTransactionMemo.empty()) {
+					stringSize += mTransactionMemo.size() + 17;
+				}
+				if(!mExpected.empty()) {
+					stringSize += mExpected.size() + 10 + 2;
+				}
+				if(!mActual.empty()) {
+					stringSize += mActual.size() + 8 + 2;
+				}
+				result.reserve(stringSize);
 				result = whatString;
+				if(!mTransactionMemo.empty()) {
+					result += " with memo: " + mTransactionMemo + " and ";
+				}
 				result += " with " + mFieldName + ": " + mFieldType;
+				if(!mExpected.empty()) {
+					if(!result.empty()) result += ", ";
+					result += "expected: " + mExpected;
+				}
+				if(!mActual.empty()) {
+					if(!result.empty()) result += ", ";
+					result += "actual: " + mActual;
+				}
 				return result;
 			}
 				Value TransactionValidationInvalidInputException::getDetails(Document::AllocatorType& alloc) const
 			{
 				Value detailsObjs(kObjectType);
 				detailsObjs.AddMember("what", Value(what(), alloc), alloc);
+				if(!mTransactionMemo.empty()) {
+					detailsObjs.AddMember("memo", Value(mTransactionMemo.data(), alloc), alloc);
+				}
 				detailsObjs.AddMember("fieldName", Value(mFieldName.data(), alloc), alloc);
-				detailsObjs.AddMember("fieldType", Value(mFieldType.data(), alloc), alloc);
+				if(!mFieldType.empty()) {
+					detailsObjs.AddMember("fieldType", Value(mFieldType.data(), alloc), alloc);
+				}
+				if(!mExpected.empty()) {
+					detailsObjs.AddMember("expected", Value(mExpected.data(), alloc), alloc);
+				}
+				if(!mActual.empty()) {
+					detailsObjs.AddMember("actual", Value(mActual.data(), alloc), alloc);
+				}
+				
 				return std::move(detailsObjs);
 			}
 
@@ -137,7 +180,10 @@ namespace gradido {
 					result += "transaction with memo: " + mTransactionMemo;
 				}
 				if (forbiddenPubkeyHex.size()) {
-					result += ", this forbidden pubkey was used for signing: " + forbiddenPubkeyHex;
+					if(result.size()) {
+						result += ", ";
+					}
+					result += "this forbidden pubkey was used for signing: " + forbiddenPubkeyHex;
 				}
 				return result;
 			}

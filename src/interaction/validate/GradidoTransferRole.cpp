@@ -1,9 +1,8 @@
+#include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/interaction/validate/TransferAmountRole.h"
-
-#include "gradido_blockchain/blockchain/FilterBuilder.h"
 
 #include <cassert>
 

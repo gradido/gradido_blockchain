@@ -9,7 +9,9 @@ namespace gradido {
 	namespace interaction {
 		namespace validate {
 			
-			std::regex g_RegExCommunityAlias("^[a-z0-9-]{3,120}$");
+			#define COMMUNITY_ID_REGEX_STRING "^[a-z0-9-]{3,120}$"
+			const std::string AbstractRole::mCommunityIdRegexString = COMMUNITY_ID_REGEX_STRING;
+			std::regex g_RegExCommunityAlias(COMMUNITY_ID_REGEX_STRING);
 
 			bool AbstractRole::isValidCommunityAlias(std::string_view communityAlias) const
 			{

@@ -37,17 +37,6 @@ namespace gradido {
 			//! \return false if transaction already exist
 			bool addGradidoTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt);
 
-			struct UserBalance
-			{
-				UserBalance(memory::ConstBlockPtr _userPubkey, GradidoUnit _balance, Timepoint _balanceDate)
-					: userPubkey(_userPubkey), balance(_balance), balanceDate(_balanceDate) {}
-				memory::ConstBlockPtr userPubkey;
-				GradidoUnit balance;
-				Timepoint balanceDate;
-			};
-
-			//std::string getUserTransactionsDebugString(const std::string& groupAlias, const std::string& pubkeyHex);
-
 			// get all transactions sorted by id
 			const TransactionEntries& getSortedTransactions();
 
