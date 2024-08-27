@@ -28,7 +28,7 @@ namespace CryptoConfig
 	GRADIDOBLOCKCHAIN_EXPORT void unload();
 	GRADIDOBLOCKCHAIN_EXPORT const Mnemonic* getWordList(MnemonicType type);
 
-	class GRADIDOBLOCKCHAIN_EXPORT MissingKeyException : GradidoBlockchainException
+	class GRADIDOBLOCKCHAIN_EXPORT MissingKeyException : public GradidoBlockchainException
 	{
 	public:
 		explicit MissingKeyException(const char* what, const char* keyName) noexcept;

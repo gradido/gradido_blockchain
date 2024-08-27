@@ -5,7 +5,7 @@
 
 namespace gradido {
 	namespace blockchain {
-		class ConstructBlockchainException : GradidoBlockchainException
+		class ConstructBlockchainException : public GradidoBlockchainException
 		{
 		public:
 			explicit ConstructBlockchainException(const char* what, std::string_view communityId) noexcept
