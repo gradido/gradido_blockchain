@@ -1,12 +1,13 @@
-﻿#include "gradido_blockchain/interaction/validate/TransactionBodyRole.h"
-
+﻿#include "gradido_blockchain/const.h"
+#include "gradido_blockchain/interaction/validate/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/validate/CommunityRootRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/validate/GradidoCreationRole.h"
 #include "gradido_blockchain/interaction/validate/GradidoDeferredTransferRole.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
 #include "gradido_blockchain/interaction/validate/RegisterAddressRole.h"
-#include "gradido_blockchain/const.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
+
 
 #include "magic_enum/magic_enum.hpp"
 #include "magic_enum/magic_enum_flags.hpp"
@@ -32,18 +33,36 @@ namespace gradido {
 				try {
 					if ((type & Type::SINGLE) == Type::SINGLE) {
 						if (mBody.getVersionNumber() != GRADIDO_TRANSACTION_BODY_V3_3_VERSION_STRING) {
-							throw TransactionValidationInvalidInputException("wrong version", "version_number", "string");
+							throw TransactionValidationInvalidInputException(
+								"wrong version",
+								"version_number",
+								"string",
+								GRADIDO_TRANSACTION_BODY_V3_3_VERSION_STRING,
+								mBody.getVersionNumber().data()
+							);
 						}
 						// memo is only mandatory for transfer and creation transactions
 						if (mBody.isDeferredTransfer() || mBody.isTransfer() || mBody.isCreation()) {
 							auto memoSize = mBody.getMemo().size();
 							if (memoSize < 5 || memoSize > 450) {
-								throw TransactionValidationInvalidInputException("not in expected range [5;450]", "memo", "string");
+								throw TransactionValidationInvalidInputException(
+									"not in expected range [5;450]",
+									"memo",
+									"string",
+									">= 5 && <= 450",
+									std::to_string(memoSize).data()
+								);
 							}
 						}
 						auto& otherGroup = mBody.getOtherGroup();
 						if (!otherGroup.empty() && !isValidCommunityAlias(otherGroup)) {
-							throw TransactionValidationInvalidInputException("invalid character, only ascii", "other_group", "string");
+							throw TransactionValidationInvalidInputException(
+								"invalid character, only lowercase english latin letter, numbers and -",
+								"other_group", 
+								"string",
+								mCommunityIdRegexString.data(),
+								otherGroup.data()
+							);
 						}
 					}
 
@@ -91,7 +110,14 @@ namespace gradido {
 				{
 					auto deferredTransfer = mBody.getDeferredTransfer();
 					if (mBody.getCreatedAt().getAsTimepoint() >= deferredTransfer->getTimeout().getAsTimepoint()) {
-						throw TransactionValidationInvalidInputException("already reached", "timeout", "Timestamp");
+						std::string expected = "> " + DataTypeConverter::timePointToString(mBody.getCreatedAt().getAsTimepoint());
+						throw TransactionValidationInvalidInputException(
+							"already reached", 
+							"timeout", 
+							"TimestampSeconds",
+							expected.data(),
+							DataTypeConverter::timePointToString(deferredTransfer->getTimeout().getAsTimepoint()).data()
+						);
 					}
 					mSpecificTransactionRole = std::make_unique<GradidoDeferredTransferRole>(mBody.getDeferredTransfer());
 				}

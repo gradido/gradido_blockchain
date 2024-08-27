@@ -7,7 +7,7 @@
 namespace gradido {
 	namespace interaction {
 		namespace validate {
-
+            
             class AbstractRole 
             {
             public:
@@ -38,6 +38,7 @@ namespace gradido {
 
 				void isPublicKeyForbidden(memory::ConstBlockPtr pubkey) const;
 
+                const static std::string mCommunityIdRegexString;
                 data::TimestampSeconds mConfirmedAt;
                 data::Timestamp mCreatedAt;
 				uint32_t mMinSignatureCount;

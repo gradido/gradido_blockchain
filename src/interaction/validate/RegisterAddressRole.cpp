@@ -1,6 +1,6 @@
+#include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/interaction/validate/RegisterAddressRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
-#include "gradido_blockchain/blockchain/FilterBuilder.h"
 
 #include "date/date.h"
 #include "magic_enum/magic_enum.hpp"

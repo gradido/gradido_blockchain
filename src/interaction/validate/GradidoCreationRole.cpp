@@ -1,7 +1,8 @@
+#include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/interaction/validate/GradidoCreationRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/validate/TransferAmountRole.h"
-#include "gradido_blockchain/blockchain/FilterBuilder.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 
 #include "date/date.h"
 
@@ -33,10 +34,22 @@ namespace gradido {
 					validateEd25519PublicKey(recipient.getPubkey(), "recipient pubkey");
 					auto recipientAmount = recipient.getAmount();
 					if (recipientAmount > GradidoUnit(1000.0)) {
-						throw TransactionValidationInvalidInputException("creation amount to high, max 1000 per month", "amount", "string");
+						throw TransactionValidationInvalidInputException(
+							"creation amount to high, max 1000 per month",
+							"amount",
+							"string",
+							"<= 10000",
+							recipientAmount.toString().data()
+						);
 					}
 					if (recipientAmount < GradidoUnit(1.0)) {
-						throw TransactionValidationInvalidInputException("creation amount to low, min 1 GDD", "amount", "string");
+						throw TransactionValidationInvalidInputException(
+							"creation amount to low, min 1 GDD",
+							"amount",
+							"string",
+							">= 1",
+							recipientAmount.toString().data()
+						);
 					}
 				}
 
@@ -144,33 +157,70 @@ namespace gradido {
 				if (target_date.year() == received.year())
 				{
 					if (static_cast<unsigned>(target_date.month()) + targetDateReceivedDistanceMonth < static_cast<unsigned>(received.month())) {
-						std::string errorMessage =
-							"year is the same, target date month is more than "
+						std::string expected = ">= " 
+							+ DataTypeConverter::timePointToString(createdAtTimePoint)
+							+ " - "
 							+ std::to_string(static_cast<unsigned>(targetDateReceivedDistanceMonth))
-							+ " month in past";
-						throw TransactionValidationInvalidInputException(errorMessage.data(), "target_date", "date time");
+							+ " months"
+						;
+						throw TransactionValidationInvalidInputException(
+							"year is the same, target date month is invalid", 
+							"target_date",
+							"TimestampSeconds",
+							expected.data(),
+							DataTypeConverter::timePointToString(mGradidoCreation->getTargetDate().getAsTimepoint()).data()
+						);
 					}
 					if (target_date.month() > received.month()) {
-						throw TransactionValidationInvalidInputException("year is the same, target date month is in future", "target_date", "date time");
+						std::string expected = "<= " + std::to_string(static_cast<unsigned>(received.month()));
+						throw TransactionValidationInvalidInputException(
+							"year is the same, target date month is invalid",
+						 	"target_date",
+						  "TimestampSeconds",
+							expected.data(),
+							std::to_string(static_cast<unsigned>(target_date.month())).data()
+						);
 					}
 				}
 				else if (target_date.year() > received.year())
 				{
-					throw TransactionValidationInvalidInputException("target date year is in future", "target_date", "date time");
+					std::string expected = "<= " + std::to_string(static_cast<int>(received.year()));
+					throw TransactionValidationInvalidInputException(
+						"target date year is in future",
+						"target_date",
+						"TimestampSeconds",
+						expected.data(),
+						std::to_string(static_cast<int>(target_date.year())).data()
+					);
 				}
 				else if (static_cast<int>(target_date.year()) + 1 < static_cast<int>(received.year()))
 				{
-					throw TransactionValidationInvalidInputException("target date year is in past", "target_date", "date time");
+					std::string expected = " >= " + std::to_string(static_cast<int>(received.year())) + " - 1 year";
+					throw TransactionValidationInvalidInputException(
+						"target date year is in past",
+						"target_date",
+						"TimestampSeconds",
+						expected.data(),
+						std::to_string(static_cast<int>(target_date.year())).data()
+					);
 				}
 				else
 				{
 					// target_date.year +1 == now.year
 					if (static_cast<unsigned>(target_date.month()) + targetDateReceivedDistanceMonth < static_cast<unsigned>(received.month()) + 12) {
-						std::string errorMessage =
-							"target date month is more than "
+						std::string expected = ">= " 
+							+ DataTypeConverter::timePointToString(createdAtTimePoint)
+							+ " - "
 							+ std::to_string(static_cast<unsigned>(targetDateReceivedDistanceMonth))
-							+ " month in past";
-						throw TransactionValidationInvalidInputException(errorMessage.data(), "target_date", "date time");
+							+ " months"
+						;
+						throw TransactionValidationInvalidInputException(
+							"target date month is invalid",
+							"target_date",
+							"TimestampSeconds",
+							expected.data(),
+							DataTypeConverter::timePointToString(mGradidoCreation->getTargetDate().getAsTimepoint()).data()
+						);
 					}
 				}
 			}

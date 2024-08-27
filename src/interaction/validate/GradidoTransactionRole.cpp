@@ -1,8 +1,8 @@
-﻿#include "gradido_blockchain/interaction/validate/GradidoTransactionRole.h"
+﻿#include "gradido_blockchain/blockchain/TransactionEntry.h"
+#include "gradido_blockchain/crypto/KeyPairEd25519.h"
+#include "gradido_blockchain/interaction/validate/GradidoTransactionRole.h"
 #include "gradido_blockchain/interaction/validate/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
-#include "gradido_blockchain/blockchain/TransactionEntry.h"
-#include "gradido_blockchain/crypto/KeyPairEd25519.h"
 
 #include "magic_enum/magic_enum.hpp"
 
@@ -61,7 +61,11 @@ namespace gradido {
 					case data::CrossGroupType::OUTBOUND:
 					case data::CrossGroupType::CROSS:
 						if (!mGradidoTransaction.getParingMessageId()) {
-							throw TransactionValidationInvalidInputException("paring message id not set for outbound", "paring message id", "binary");
+							throw TransactionValidationInvalidInputException(
+								"parent message id not set for outbound or cross",
+								"parent_message_id",
+								"bytes[32]"
+							);
 						}
 						else {
 							pairTransactionEntry = otherBlockchain->findByMessageId(mGradidoTransaction.getParingMessageId());

@@ -14,12 +14,22 @@ namespace gradido {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
 					auto& coinCommunityId = mTransferAmount.getCommunityId();
 					if (!coinCommunityId.empty() && !isValidCommunityAlias(coinCommunityId)) {
-						throw TransactionValidationInvalidInputException("invalid character, only ascii", "coinCommunityId", "string");
+						throw TransactionValidationInvalidInputException(
+								"invalid character, only lowercase english latin letter, numbers and -",
+								"community_id", 
+								"string",
+								mCommunityIdRegexString.data(),
+								coinCommunityId.data()
+							);
 					}
 					if (!communityId.empty() && coinCommunityId == communityId) {
+						std::string expected = "!= " + std::string(communityId);
 						throw TransactionValidationInvalidInputException(
 							"coin communityId shouldn't be set if it is the same as blockchain communityId",
-							"communityId", "hex"
+							"community_id",
+							"string",
+							expected.data(),
+							coinCommunityId.data()
 						);
 					}
 					if (mTransferAmount.getAmount() <= GradidoUnit(0.0)) {
