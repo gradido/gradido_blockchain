@@ -33,7 +33,7 @@ namespace gradido {
 						);
 					}
 					if (mTransferAmount.getAmount() <= GradidoUnit(0.0)) {
-						throw TransactionValidationInvalidInputException("zero or negative amount", "amount", "GradidoUnit");
+						throw TransactionValidationInvalidInputException("zero or negative amount", "amount", "string");
 					}
 					validateEd25519PublicKey(mTransferAmount.getPubkey(), "sender");
 				}
