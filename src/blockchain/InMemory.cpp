@@ -6,6 +6,8 @@
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 
+#include "gradido_blockchain/interaction/toJson/Context.h"
+
 #include <algorithm>
 
 namespace gradido {
@@ -125,8 +127,10 @@ namespace gradido {
 			if (FilterCriteria::NONE == startSetType) {
 				return {};
 			}
+			printf("[InMemory::findAll] pagination size: %d\n", filter.pagination.size);
 			auto processEntry = [&](auto& start, auto& end, FilterCriteria toFilter, const Filter& filter) -> TransactionEntries 
 			{
+				printf("[InMemory::findAll::processEntry] pagination size: %d\n", filter.pagination.size);
 				end--;
 				TransactionEntries transactionEntries;
 				bool revert = SearchDirection::DESC == filter.searchDirection;
@@ -138,6 +142,9 @@ namespace gradido {
 						if (paginationCursor >= filter.pagination.skipEntriesCount()) {
 							transactionEntries.push_back(it->second);
 							if (filter.pagination.size && transactionEntries.size() >= filter.pagination.size) {
+								if(transactionEntries.size() > 1) {
+									printf("transaction size: %d, pagination size: %d\n", transactionEntries.size(), filter.pagination.size);
+								}
 								return transactionEntries;
 							}
 						}
@@ -180,8 +187,9 @@ namespace gradido {
 				// disable pagination for prefilter round
 				partFilter.pagination = Pagination();				
 				auto prefilteredTransactions = processEntry(range.first, range.second, notYetFiltered, partFilter);
-				// and if a filter function exist we sort and call it in correct order
-				if (filter.filterFunction && !prefilteredTransactions.empty()) {
+
+				// we need to call processEntry again for filterFunction, searchDirection and/or pagination
+				if (!prefilteredTransactions.empty()) {
 					std::map<uint64_t, std::shared_ptr<TransactionEntry>> sortedTransactions;
 					for (std::shared_ptr<TransactionEntry> entry : prefilteredTransactions) {
 						sortedTransactions.insert({ entry->getTransactionNr(), entry });

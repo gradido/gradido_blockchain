@@ -157,6 +157,44 @@ bool InMemoryTest::createGradidoCreation(
 	return false;
 }
 
+bool InMemoryTest::createGradidoTransfer(
+	int senderKeyPairIndex,
+	int recipientKeyPairIndex,
+	GradidoUnit amount, 
+	Timepoint createdAt
+) {
+	assert(senderKeyPairIndex > 0 && senderKeyPairIndex < g_KeyPairs.size());
+	assert(recipientKeyPairIndex > 0 && recipientKeyPairIndex < g_KeyPairs.size());
+
+	TransactionBodyBuilder bodyBuilder;
+	bodyBuilder
+		.setMemo("dummy memo")
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setTransactionTransfer(
+			TransferAmount(g_KeyPairs[senderKeyPairIndex].publicKey, amount),
+			g_KeyPairs[recipientKeyPairIndex].publicKey
+		)
+		;
+	auto body = bodyBuilder.build();
+
+	serialize::Context c(*body);
+	auto bodyBytes = c.run();
+	GradidoTransactionBuilder builder;
+	builder
+		.setTransactionBody(bodyBytes)
+		.addSignaturePair(g_KeyPairs[senderKeyPairIndex].publicKey, sign(bodyBytes, g_KeyPairs[senderKeyPairIndex]))
+	;	
+	if (mBlockchain->addGradidoTransaction(builder.build(), nullptr, createdAt + chrono::seconds{45})) {
+		auto lastTransaction = mBlockchain->findOne(Filter::LAST_TRANSACTION)->getConfirmedTransaction();
+		auto accountIt = mKeyPairIndexAccountMap.find(senderKeyPairIndex);
+		accountIt->second.balance = lastTransaction->getAccountBalance();
+		accountIt->second.balanceDate = lastTransaction->getConfirmedAt();
+		return true;
+	}
+	return false;
+}
+
 void InMemoryTest::logBlockchain()
 {
 	auto transactions = dynamic_cast<InMemory*>(mBlockchain.get())->getSortedTransactions();
@@ -330,5 +368,29 @@ TEST_F(InMemoryTest, InvalidCreationTransactions)
 	ASSERT_THROW(createGradidoCreation(8, 4, 1000.0, createdAt, targetDate), validate::TransactionValidationInvalidInputException);
 	accountIt = mKeyPairIndexAccountMap.find(8);
 	EXPECT_EQ(accountIt->second.balance, GradidoUnit(0.0));
+}
+
+TEST_F(InMemoryTest, ValidTransferTransaction)
+{
+	ASSERT_NO_THROW(createRegisterAddress(3));
+	ASSERT_NO_THROW(createRegisterAddress(5));
+	auto createdAt = generateNewCreatedAt();
+	auto targetDate = getPreviousNMonth2(createdAt, 1);
+	try {
+		ASSERT_TRUE(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate));
+	} catch(GradidoBlockchainException& ex) {
+		logBlockchain();
+		LOG_F(ERROR, ex.getFullString().data());
+	}
+	auto accountIt = mKeyPairIndexAccountMap.find(6);
+	EXPECT_EQ(accountIt->second.balance, GradidoUnit(1000.0));
+	EXPECT_GT(accountIt->second.balanceDate, createdAt);
+
+	try {
+		ASSERT_TRUE(createGradidoTransfer(6, 4, 500.10, generateNewCreatedAt()));
+	} catch(GradidoBlockchainException& ex) {
+		logBlockchain();
+		LOG_F(ERROR, ex.getFullString().data());
+	}
 }
 
