@@ -17,7 +17,6 @@ namespace gradido {
 				return nullptr; 
 			}
 			if (results.size() > 1) {
-				printf("filter pagination size: %d\n", filter.pagination.size);
 				throw TransactionResultCountException("to many transactions found with blockchain::Abstract::findOne", 1, results.size());
 			}
 			return results.front();
