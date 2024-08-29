@@ -6,6 +6,8 @@
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 
+#include "gradido_blockchain/interaction/toJson/Context.h"
+
 #include <algorithm>
 
 namespace gradido {
@@ -180,8 +182,9 @@ namespace gradido {
 				// disable pagination for prefilter round
 				partFilter.pagination = Pagination();				
 				auto prefilteredTransactions = processEntry(range.first, range.second, notYetFiltered, partFilter);
-				// and if a filter function exist we sort and call it in correct order
-				if (filter.filterFunction && !prefilteredTransactions.empty()) {
+
+				// we need to call processEntry again for filterFunction, searchDirection and/or pagination
+				if (!prefilteredTransactions.empty()) {
 					std::map<uint64_t, std::shared_ptr<TransactionEntry>> sortedTransactions;
 					for (std::shared_ptr<TransactionEntry> entry : prefilteredTransactions) {
 						sortedTransactions.insert({ entry->getTransactionNr(), entry });
@@ -331,17 +334,19 @@ namespace gradido {
 				);
 				if (lastFromSameSender) {
 					auto lastFromSameSenderBody = lastFromSameSender->getTransactionBody();
-					auto lastFromSameSenderRecipient = lastFromSameSenderBody->getDeferredTransfer()->getTransfer().getRecipient();
+					
 					auto pubkey = body->getTransfer()->getSender().getPubkey();
-					if (lastFromSameSenderBody->isDeferredTransfer() &&
-						lastFromSameSenderRecipient->isTheSame(pubkey)) {
-						auto lastFromSameSenderTimeout = lastFromSameSenderBody->getDeferredTransfer()->getTimeout();
-						// seems we found a matching deferred transfer transaction
-						auto byTimeoutDeferredRedeemedPairsIt = mTimeoutDeferredRedeemedTransferPairs.equal_range(lastFromSameSenderTimeout.getAsTimepoint());
-						for (auto it = byTimeoutDeferredRedeemedPairsIt.first; it != byTimeoutDeferredRedeemedPairsIt.second; ++it) {
-							if (lastFromSameSender->getSerializedTransaction()->isTheSame(it->second.first->getSerializedTransaction())) {
-								it->second.second = transactionEntry;
-								break;
+					if (lastFromSameSenderBody->isDeferredTransfer()) {
+						auto lastFromSameSenderRecipient = lastFromSameSenderBody->getDeferredTransfer()->getTransfer().getRecipient();
+						if (lastFromSameSenderRecipient->isTheSame(pubkey)) {
+							auto lastFromSameSenderTimeout = lastFromSameSenderBody->getDeferredTransfer()->getTimeout();
+							// seems we found a matching deferred transfer transaction
+							auto byTimeoutDeferredRedeemedPairsIt = mTimeoutDeferredRedeemedTransferPairs.equal_range(lastFromSameSenderTimeout.getAsTimepoint());
+							for (auto it = byTimeoutDeferredRedeemedPairsIt.first; it != byTimeoutDeferredRedeemedPairsIt.second; ++it) {
+								if (lastFromSameSender->getSerializedTransaction()->isTheSame(it->second.first->getSerializedTransaction())) {
+									it->second.second = transactionEntry;
+									break;
+								}
 							}
 						}
 					}

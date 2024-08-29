@@ -26,6 +26,12 @@ protected:
         Timepoint createdAt,
         Timepoint targetDate
     );
+    bool createGradidoTransfer(
+        int senderKeyPairIndex,
+        int recipientKeyPairIndex,
+        GradidoUnit amount, 
+        Timepoint createdAt
+    );
 
     void logBlockchain();
 
