@@ -359,7 +359,7 @@ TEST_F(InMemoryTest, InvalidCreationTransactions)
 	ASSERT_NO_THROW(createRegisterAddress(7));
 	createdAt = generateNewCreatedAt();
 	targetDate = getPreviousNMonth2(createdAt, 3);
-	ASSERT_THROW(createGradidoCreation(8, 4, 1000.0, createdAt, targetDate), InsufficientBalanceException);
+	ASSERT_THROW(createGradidoCreation(8, 4, 1000.0, createdAt, targetDate), gradido::interaction::validate::TransactionValidationInvalidInputException);
 	EXPECT_EQ(getBalance(8, mLastConfirmedAt), GradidoUnit(0.0));
 }
 
@@ -376,7 +376,8 @@ TEST_F(InMemoryTest, ValidTransferTransaction)
 		LOG_F(ERROR, ex.getFullString().data());
 	}
 	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit(1000.0));
-
+	auto creationConfirmedAt = mLastConfirmedAt;
+	
 	try {
 		ASSERT_TRUE(createGradidoTransfer(6, 4, 500.10, generateNewCreatedAt()));
 	} catch(GradidoBlockchainException& ex) {
@@ -385,7 +386,9 @@ TEST_F(InMemoryTest, ValidTransferTransaction)
 	}
 
 	EXPECT_EQ(getBalance(4, mLastConfirmedAt), GradidoUnit(500.1));
-	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit(496.1116));
+	auto decayed = GradidoUnit(1000.0).calculateDecay(creationConfirmedAt, mLastConfirmedAt) - GradidoUnit(500.1);
+	EXPECT_LE(decayed, GradidoUnit(499.90));
+	EXPECT_EQ(getBalance(6, mLastConfirmedAt), decayed);
 }
 
 TEST_F(InMemoryTest, InvalidTransferTransaction)
