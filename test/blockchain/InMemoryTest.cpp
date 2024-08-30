@@ -186,6 +186,40 @@ bool InMemoryTest::createGradidoTransfer(
 	return mBlockchain->addGradidoTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
 }
 
+bool InMemoryTest::createGradidoDeferredTransfer( 
+		int senderKeyPairIndex,
+		int recipientKeyPairIndex,
+		GradidoUnit amount,
+		Timepoint createdAt,
+		Timepoint timeout
+) {
+	assert(senderKeyPairIndex > 0 && senderKeyPairIndex < g_KeyPairs.size());
+	assert(recipientKeyPairIndex > 0 && recipientKeyPairIndex < g_KeyPairs.size());
+
+	TransactionBodyBuilder bodyBuilder;
+	bodyBuilder
+		.setMemo("dummy memo")
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setDeferredTransfer(
+			GradidoTransfer(
+				TransferAmount(g_KeyPairs[senderKeyPairIndex].publicKey, amount),
+				g_KeyPairs[recipientKeyPairIndex].publicKey
+			), timeout
+		)
+		;
+	auto body = bodyBuilder.build();
+
+	serialize::Context c(*body);
+	auto bodyBytes = c.run();
+	GradidoTransactionBuilder builder;
+	builder
+		.setTransactionBody(bodyBytes)
+		.addSignaturePair(g_KeyPairs[senderKeyPairIndex].publicKey, sign(bodyBytes, g_KeyPairs[senderKeyPairIndex]))
+	;	
+	return mBlockchain->addGradidoTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
+}
+
 void InMemoryTest::logBlockchain()
 {
 	auto transactions = dynamic_cast<InMemory*>(mBlockchain.get())->getSortedTransactions();
@@ -360,7 +394,7 @@ TEST_F(InMemoryTest, InvalidCreationTransactions)
 	createdAt = generateNewCreatedAt();
 	targetDate = getPreviousNMonth2(createdAt, 3);
 	ASSERT_THROW(createGradidoCreation(8, 4, 1000.0, createdAt, targetDate), gradido::interaction::validate::TransactionValidationInvalidInputException);
-	EXPECT_EQ(getBalance(8, mLastConfirmedAt), GradidoUnit(0.0));
+	EXPECT_EQ(getBalance(8, mLastConfirmedAt), GradidoUnit::zero());
 }
 
 TEST_F(InMemoryTest, ValidTransferTransaction)
@@ -400,5 +434,48 @@ TEST_F(InMemoryTest, InvalidTransferTransaction)
 
 	EXPECT_EQ(getBalance(4, mLastConfirmedAt), GradidoUnit::zero());
 	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit::zero());
+}
+
+TEST_F(InMemoryTest, ValidDeferredTransferTransaction)
+{
+	ASSERT_NO_THROW(createRegisterAddress(3));
+	ASSERT_NO_THROW(createRegisterAddress(5));
+
+	// first creation
+	auto createdAt = generateNewCreatedAt();
+	auto targetDate = getPreviousNMonth2(createdAt, 1);
+	try {
+		ASSERT_TRUE(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate));
+	} catch(GradidoBlockchainException& ex) {
+		logBlockchain();
+		LOG_F(ERROR, ex.getFullString().data());
+	}
+	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit(1000.0));
+	auto creationConfirmedAt = mLastConfirmedAt;
+
+	// deferred transfer
+	createdAt = mLastCreatedAt + chrono::hours{10};
+	auto timeout = mLastCreatedAt + chrono::hours{60 * 24};
+	auto recipientKeyPairIndex = mKeyPairCursor++;
+	try {
+		ASSERT_TRUE(createGradidoDeferredTransfer(6, recipientKeyPairIndex, 500.10, createdAt, timeout));
+	} catch(GradidoBlockchainException& ex) {
+		logBlockchain();
+		LOG_F(ERROR, ex.getFullString().data());
+	}
+	// check account
+	auto deferredTransferBalance = getBalance(recipientKeyPairIndex, mLastConfirmedAt);
+	auto sourceAccountBalance = getBalance(6, mLastConfirmedAt);
+	EXPECT_EQ(sourceAccountBalance, GradidoUnit(499.1095));
+	printf("deferred balance: %s, sourceAccountBalance: %s\n", deferredTransferBalance.toString().data(), sourceAccountBalance.toString().data());
+	printf("combined balance, should be < 1000: %s\n", (sourceAccountBalance + deferredTransferBalance).toString().data());
+	EXPECT_LT(sourceAccountBalance + deferredTransferBalance, GradidoUnit(1000.0));
+
+	try {
+		ASSERT_TRUE(createGradidoTransfer(recipientKeyPairIndex, 4, 500.0, generateNewCreatedAt()));
+	} catch(GradidoBlockchainException& ex) {
+		logBlockchain();
+		LOG_F(ERROR, ex.getFullString().data());
+	}
 }
 
