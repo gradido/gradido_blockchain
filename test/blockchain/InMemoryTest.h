@@ -16,6 +16,7 @@ protected:
     void TearDown() override;
 
     Timepoint generateNewCreatedAt();
+    Timepoint generateNewConfirmedAt(Timepoint createdAt);
 
     void createRegisterAddress();
     void createRegisterAddress(int keyPairIndexStart);
@@ -34,27 +35,16 @@ protected:
     );
 
     void logBlockchain();
+    GradidoUnit getBalance(int keyPairIndex, Timepoint date);
 
     std::mt19937 gen; // seed the generator with a random value
     std::uniform_int_distribution<int> randTimeRange; // distribution for seconds between 120 and 2 days
 
     Timepoint mLastCreatedAt;
+    Timepoint mLastConfirmedAt;
     int mKeyPairCursor;
     std::string mCommunityId;
     std::shared_ptr<gradido::blockchain::Abstract> mBlockchain;
-
-    struct Account 
-    {
-        Account(int _pubkeyIndex)
-            : pubkeyIndex(_pubkeyIndex)
-        {}
-        int pubkeyIndex;
-        GradidoUnit balance;
-        Timepoint balanceDate;
-
-        
-    };
-    std::map<int, Account> mKeyPairIndexAccountMap;
 
 public:
    
