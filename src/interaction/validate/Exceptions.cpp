@@ -310,33 +310,6 @@ namespace gradido {
 				return std::move(detailsObjs);
 			}
 
-			// *************************** Insufficient Balance Exception ************************************************
-			InsufficientBalanceException::InsufficientBalanceException(const char* what, GradidoUnit needed, GradidoUnit exist) noexcept
-				: TransactionValidationException(what), mNeeded(needed.toString()), mExist(exist.toString())
-			{
-			}
-
-			std::string InsufficientBalanceException::getFullString() const noexcept
-			{
-				std::string resultString;
-				size_t resultSize = strlen(what()) + mNeeded.size() + mExist.size() + 2 + 10;
-				resultString.reserve(resultSize);
-				resultString = what();
-				resultString += ", needed: " + mNeeded;
-				resultString += ", exist: " + mExist;
-
-				return resultString;
-			}
-
-			Value InsufficientBalanceException::getDetails(Document::AllocatorType& alloc) const
-			{
-				Value detailsObjs(kObjectType);
-				detailsObjs.AddMember("what", Value(what(), alloc), alloc);
-				detailsObjs.AddMember("needed", Value(mNeeded.data(), alloc), alloc);
-				detailsObjs.AddMember("exist", Value(mExist.data(), alloc), alloc);
-				return std::move(detailsObjs);
-			}
-
 			// **************************** Invalid Creation Exception *************************************
 			InvalidCreationException::InvalidCreationException(
 				const char* what,

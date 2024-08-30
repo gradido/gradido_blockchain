@@ -143,18 +143,6 @@ namespace gradido {
 				data::AddressType mAddressType;
 			};
 
-			class GRADIDOBLOCKCHAIN_EXPORT InsufficientBalanceException : public TransactionValidationException
-			{
-			public:
-				explicit InsufficientBalanceException(const char* what, GradidoUnit needed, GradidoUnit exist) noexcept;
-				std::string getFullString() const noexcept;
-				rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
-
-			protected:
-				std::string mNeeded;
-				std::string mExist;
-			};
-
 			class GRADIDOBLOCKCHAIN_EXPORT InvalidCreationException : public TransactionValidationException
 			{
 			public:
