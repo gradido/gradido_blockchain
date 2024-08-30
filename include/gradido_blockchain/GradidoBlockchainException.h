@@ -8,6 +8,8 @@
 
 #include "rapidjson/document.h"
 
+class GradidoUnit;
+
 class GRADIDOBLOCKCHAIN_EXPORT GradidoBlockchainException : public std::runtime_error
 {
 public:
@@ -125,6 +127,18 @@ class GRADIDOBLOCKCHAIN_EXPORT BlockchainOrderException : public GradidoBlockcha
 public:
 	explicit BlockchainOrderException(const char* what) noexcept;
 	std::string getFullString() const;
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT InsufficientBalanceException : public GradidoBlockchainException
+{
+public:
+	explicit InsufficientBalanceException(const char* what, GradidoUnit needed, GradidoUnit exist) noexcept;
+	std::string getFullString() const noexcept;
+	rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
+
+protected:
+	std::string mNeeded;
+	std::string mExist;
 };
 
 class GRADIDOBLOCKCHAIN_EXPORT GradidoNullPointerException : public GradidoBlockchainException

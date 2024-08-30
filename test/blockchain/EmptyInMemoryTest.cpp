@@ -86,7 +86,7 @@ TEST_F(EmptyInMemoryTest, InvalidGradidoTransferAsFirst) {
 	;
 	EXPECT_THROW(
 		mBlockchain->addGradidoTransaction(builder.build(), nullptr, confirmedAt),
-		InvalidGradidoTransaction
+		InsufficientBalanceException
 	);
 }
 
@@ -99,6 +99,6 @@ TEST_F(EmptyInMemoryTest, InvalidGradidoDeferredTransferAsFirst) {
 		;
 	EXPECT_THROW(
 		mBlockchain->addGradidoTransaction(builder.build(), nullptr, confirmedAt),
-		InvalidGradidoTransaction
+		InsufficientBalanceException
 	);
 }

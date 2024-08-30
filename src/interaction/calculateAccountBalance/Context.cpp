@@ -28,7 +28,11 @@ namespace gradido {
 					}
 					else if (transactionBody->isTransfer() || transactionBody->isDeferredTransfer()) {
 						if (balance < amount) {
-							throw InvalidGradidoTransaction("not enough gdd for transfer or deferred transfer", gradidoTransaction->getSerializedTransaction());
+							throw InsufficientBalanceException(
+								"not enough gdd for transfer or deferred transfer",
+								amount,
+								balance
+							);
 						}
 						balance -= amount;
 					}
