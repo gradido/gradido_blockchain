@@ -11,7 +11,7 @@ namespace gradido {
 			class GRADIDOBLOCKCHAIN_EXPORT Context 
 			{
 			public:
-				Context(blockchain::Abstract& blockchain)
+				Context(const blockchain::Abstract& blockchain)
 					: mBlockchain(blockchain) {}
 
 				Context(const Context&) = delete;

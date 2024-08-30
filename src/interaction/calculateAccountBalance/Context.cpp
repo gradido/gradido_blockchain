@@ -150,10 +150,10 @@ namespace gradido {
 					gdd += receiveTransfer.second;
 				}
 				// cmp return 0 if gdd == 0
-				if (gdd == GradidoUnit(0.0)) {
+				if (gdd == GradidoUnit(0.0) || balanceDate == lastDate) {
 					return gdd;
 				}
-				assert(balanceDate >= lastDate);
+				assert(balanceDate > lastDate);
 				gdd = gdd.calculateDecay(lastDate, balanceDate);
 
 				return gdd;

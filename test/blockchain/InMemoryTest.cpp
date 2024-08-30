@@ -5,6 +5,7 @@
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/toJson/Context.h"
+#include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/lib/Profiler.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
@@ -66,13 +67,18 @@ void InMemoryTest::SetUp()
 void InMemoryTest::TearDown()
 {
 	InMemoryProvider::getInstance()->clear();
-	mKeyPairIndexAccountMap.clear();
 }
 
 Timepoint InMemoryTest::generateNewCreatedAt()
 {
 	mLastCreatedAt += std::chrono::seconds{ randTimeRange(gen) }; // generate a random duration
 	return mLastCreatedAt;
+}
+
+Timepoint InMemoryTest::generateNewConfirmedAt(Timepoint createdAt)
+{
+	mLastConfirmedAt = createdAt + chrono::minutes{1};
+	return mLastConfirmedAt;
 }
 
 void InMemoryTest::createRegisterAddress()
@@ -113,10 +119,9 @@ void InMemoryTest::createRegisterAddress(int keyPairIndexStart)
 		.addSignaturePair(g_KeyPairs[accountPubkeyIndex].publicKey, sign(bodyBytes, g_KeyPairs[accountPubkeyIndex]))
 		// sign with community root key
 		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
-	;	
-	mKeyPairIndexAccountMap.insert({ accountPubkeyIndex, accountPubkeyIndex });
+	;
 		
-	ASSERT_TRUE(mBlockchain->addGradidoTransaction(builder.build(), nullptr, mLastCreatedAt));
+	ASSERT_TRUE(mBlockchain->addGradidoTransaction(builder.build(), nullptr, generateNewConfirmedAt(mLastCreatedAt)));
 }
 
 bool InMemoryTest::createGradidoCreation(
@@ -147,14 +152,7 @@ bool InMemoryTest::createGradidoCreation(
 		.setTransactionBody(bodyBytes)
 		.addSignaturePair(g_KeyPairs[signerKeyPairIndex].publicKey, sign(bodyBytes, g_KeyPairs[signerKeyPairIndex]))
 	;	
-	if (mBlockchain->addGradidoTransaction(builder.build(), nullptr, createdAt + chrono::seconds{45})) {
-		auto lastTransaction = mBlockchain->findOne(Filter::LAST_TRANSACTION)->getConfirmedTransaction();
-		auto accountIt = mKeyPairIndexAccountMap.find(recipientKeyPairIndex);
-		accountIt->second.balance = lastTransaction->getAccountBalance();
-		accountIt->second.balanceDate = lastTransaction->getConfirmedAt();
-		return true;
-	}
-	return false;
+	return mBlockchain->addGradidoTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
 }
 
 bool InMemoryTest::createGradidoTransfer(
@@ -185,14 +183,7 @@ bool InMemoryTest::createGradidoTransfer(
 		.setTransactionBody(bodyBytes)
 		.addSignaturePair(g_KeyPairs[senderKeyPairIndex].publicKey, sign(bodyBytes, g_KeyPairs[senderKeyPairIndex]))
 	;	
-	if (mBlockchain->addGradidoTransaction(builder.build(), nullptr, createdAt + chrono::seconds{45})) {
-		auto lastTransaction = mBlockchain->findOne(Filter::LAST_TRANSACTION)->getConfirmedTransaction();
-		auto accountIt = mKeyPairIndexAccountMap.find(senderKeyPairIndex);
-		accountIt->second.balance = lastTransaction->getAccountBalance();
-		accountIt->second.balanceDate = lastTransaction->getConfirmedAt();
-		return true;
-	}
-	return false;
+	return mBlockchain->addGradidoTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
 }
 
 void InMemoryTest::logBlockchain()
@@ -203,6 +194,15 @@ void InMemoryTest::logBlockchain()
 		toJson::Context c(*transaction->getConfirmedTransaction());
 		LOG_F(INFO, c.run(true).data());
 	}
+}
+
+GradidoUnit InMemoryTest::getBalance(int keyPairIndex, Timepoint date)
+{
+	if(keyPairIndex < 0 || keyPairIndex >= g_KeyPairs.size()) {
+		throw std::runtime_error("invalid key pair index");
+	}
+	interaction::calculateAccountBalance::Context c(*mBlockchain);
+	return c.run(g_KeyPairs[keyPairIndex].publicKey, date);
 }
 
 TEST_F(InMemoryTest, FindCommunityRootTransactionByType)
@@ -290,14 +290,10 @@ TEST_F(InMemoryTest, CreationTransactions)
 		logBlockchain();
 		LOG_F(ERROR, ex.getFullString().data());
 	}
-	auto accountIt = mKeyPairIndexAccountMap.find(6);
-	EXPECT_EQ(accountIt->second.balance, GradidoUnit(1000.0));
-	EXPECT_GT(accountIt->second.balanceDate, createdAt);
-
-	//std::cout << "createAt first: " << createdAt << std::endl;
+	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit(1000.0));
+	
 	createdAt += chrono::hours{ 23 };
 	mLastCreatedAt = createdAt;
-  // std::cout << "createAt second: " << createdAt << std::endl;
 	auto newTargetDate = getPreviousNMonth2(createdAt, 2);
 	if (date::year_month_day(floor<days>(newTargetDate)).month() == date::year_month_day(floor<days>(targetDate)).month()) {
 		newTargetDate = getPreviousNMonth2(createdAt, 1);
@@ -314,10 +310,8 @@ TEST_F(InMemoryTest, CreationTransactions)
 		LOG_F(ERROR, ex.getFullString().data());
 	}
 
-
 	// 1000.0000 decayed for 23 hours => 998.1829
-	EXPECT_EQ(accountIt->second.balance, GradidoUnit(1998.1829));
-	EXPECT_GT(accountIt->second.balanceDate, createdAt);
+	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit(1998.1829));
 
 	ASSERT_NO_THROW(createRegisterAddress(7));
 	createdAt = generateNewCreatedAt();
@@ -337,10 +331,7 @@ TEST_F(InMemoryTest, CreationTransactions)
 		std::cout << results.size() << std::endl;
 		LOG_F(ERROR, ex.getFullString().data());
 	}
-
-	accountIt = mKeyPairIndexAccountMap.find(8);
-	EXPECT_EQ(accountIt->second.balance, GradidoUnit(1000.0));
-	EXPECT_GT(accountIt->second.balanceDate, createdAt);
+	EXPECT_EQ(getBalance(8, mLastConfirmedAt), GradidoUnit(1000.0));
 }
 
 
@@ -351,23 +342,25 @@ TEST_F(InMemoryTest, InvalidCreationTransactions)
 	auto createdAt = generateNewCreatedAt();
 	auto targetDate = getPreviousNMonth2(createdAt, 1);
 	auto succedCreatedAd = createdAt;
+	// valid creation
 	ASSERT_TRUE(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate));
+	auto confirmedAtValidCreation = mLastConfirmedAt;
 	createdAt += chrono::seconds{ 120 };
 	ASSERT_THROW(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate), validate::InvalidCreationException);
 	createdAt += chrono::hours{ 10 };
 	targetDate = getPreviousNMonth2(createdAt, 3);
 	//std::cout << "createdAt: " << createdAt << ", targetDate: " << targetDate << std::endl;
 	ASSERT_THROW(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate), validate::TransactionValidationInvalidInputException);
-	auto accountIt = mKeyPairIndexAccountMap.find(6);
-	EXPECT_EQ(accountIt->second.balance, GradidoUnit(1000.0));
-	EXPECT_GT(accountIt->second.balanceDate, succedCreatedAd);
+	// balance from first creation, but 10 hours and 3 minutes later
+	auto decayed = GradidoUnit(1000.0).calculateDecay(confirmedAtValidCreation, mLastConfirmedAt);
+	EXPECT_EQ(decayed, GradidoUnit(999.2069));
+	EXPECT_EQ(getBalance(6, mLastConfirmedAt), decayed);
 
 	ASSERT_NO_THROW(createRegisterAddress(7));
 	createdAt = generateNewCreatedAt();
 	targetDate = getPreviousNMonth2(createdAt, 3);
-	ASSERT_THROW(createGradidoCreation(8, 4, 1000.0, createdAt, targetDate), validate::TransactionValidationInvalidInputException);
-	accountIt = mKeyPairIndexAccountMap.find(8);
-	EXPECT_EQ(accountIt->second.balance, GradidoUnit(0.0));
+	ASSERT_THROW(createGradidoCreation(8, 4, 1000.0, createdAt, targetDate), gradido::interaction::validate::TransactionValidationInvalidInputException);
+	EXPECT_EQ(getBalance(8, mLastConfirmedAt), GradidoUnit(0.0));
 }
 
 TEST_F(InMemoryTest, ValidTransferTransaction)
@@ -382,15 +375,30 @@ TEST_F(InMemoryTest, ValidTransferTransaction)
 		logBlockchain();
 		LOG_F(ERROR, ex.getFullString().data());
 	}
-	auto accountIt = mKeyPairIndexAccountMap.find(6);
-	EXPECT_EQ(accountIt->second.balance, GradidoUnit(1000.0));
-	EXPECT_GT(accountIt->second.balanceDate, createdAt);
-
+	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit(1000.0));
+	auto creationConfirmedAt = mLastConfirmedAt;
+	
 	try {
 		ASSERT_TRUE(createGradidoTransfer(6, 4, 500.10, generateNewCreatedAt()));
 	} catch(GradidoBlockchainException& ex) {
 		logBlockchain();
 		LOG_F(ERROR, ex.getFullString().data());
 	}
+
+	EXPECT_EQ(getBalance(4, mLastConfirmedAt), GradidoUnit(500.1));
+	auto decayed = GradidoUnit(1000.0).calculateDecay(creationConfirmedAt, mLastConfirmedAt) - GradidoUnit(500.1);
+	EXPECT_LE(decayed, GradidoUnit(499.90));
+	EXPECT_EQ(getBalance(6, mLastConfirmedAt), decayed);
+}
+
+TEST_F(InMemoryTest, InvalidTransferTransaction)
+{
+	ASSERT_NO_THROW(createRegisterAddress(3));
+	ASSERT_NO_THROW(createRegisterAddress(5));
+
+	ASSERT_THROW(createGradidoTransfer(6, 4, 500.10, generateNewCreatedAt()), InsufficientBalanceException);
+
+	EXPECT_EQ(getBalance(4, mLastConfirmedAt), GradidoUnit::zero());
+	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit::zero());
 }
 
