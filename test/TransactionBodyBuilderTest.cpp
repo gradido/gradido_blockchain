@@ -110,6 +110,14 @@ TEST(TransactionBodyBuilderTest, GradidoCreation) {
 	EXPECT_EQ(transactionBody->getMemo(), memo);
 	EXPECT_EQ(transactionBody->getCreatedAt(), Timestamp(now));
 
+	auto transferAmount = transactionBody->getTransferAmount();
+	if(!transferAmount) {
+		printf("transfer amount is null\n");
+	} else {
+		EXPECT_TRUE(transferAmount);
+		EXPECT_EQ(transferAmount->getAmount().toString(), "1000.0000");
+	}
+
 	auto creation = transactionBody->getCreation();
 	auto recipient = creation->getRecipient();
 	EXPECT_EQ(*recipient.getPubkey(), *g_KeyPairs[4].publicKey);
