@@ -2,6 +2,7 @@
 #define __GRADIDO_POCO_HTTP_REQUEST
 
 #include <string>
+
 #include "Poco/Net/NameValueCollection.h"
 #include "Poco/Net/HTTPClientSession.h"
 #include "Poco/URI.h"

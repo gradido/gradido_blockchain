@@ -18,7 +18,7 @@ std::string ProtobufSerializationException::getFullString() const noexcept
 }
 
 // ****************** Protobuf serialize to json exception **************
-ProtobufJsonSerializationException::ProtobufJsonSerializationException(const char* what, const google::protobuf::Message& message, google::protobuf::util::status_internal::Status status) noexcept
+ProtobufJsonSerializationException::ProtobufJsonSerializationException(const char* what, const google::protobuf::Message& message, absl::Status status) noexcept
 	: ProtobufSerializationException(what, &message), mStatus(status)
 {
 

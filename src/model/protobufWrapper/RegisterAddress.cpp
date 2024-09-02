@@ -80,7 +80,7 @@ namespace model {
 		{
 			return 
 				mProtoRegisterAddress.user_pubkey() == pubkeyString ||
-				mProtoRegisterAddress.subaccount_pubkey() == pubkeyString
+				mProtoRegisterAddress.account_pubkey() == pubkeyString
 				;
 		}
 
@@ -123,7 +123,7 @@ namespace model {
 		const std::string& RegisterAddress::getSubaccountPubkeyString() const
 		{
 			// cannot inline, because this doens't work in dll build
-			return mProtoRegisterAddress.subaccount_pubkey();
+			return mProtoRegisterAddress.account_pubkey();
 		}
 
 		proto::gradido::RegisterAddress_AddressType RegisterAddress::getAddressTypeFromString(const std::string& addressType)

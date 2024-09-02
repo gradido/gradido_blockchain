@@ -8,6 +8,8 @@
 #include "rapidjson/pointer.h"
 #include "gradido_blockchain/lib/Profiler.h"
 
+#include <iostream>
+
 using namespace rapidjson;
 
 JsonRPCRequest::JsonRPCRequest(const std::string& serverHost, int serverPort)

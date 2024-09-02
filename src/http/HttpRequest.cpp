@@ -8,7 +8,6 @@
 
 #include "gradido_blockchain/http/ServerConfig.h"
 
-
 using namespace rapidjson;
 
 HttpRequest::HttpRequest(const std::string& url)

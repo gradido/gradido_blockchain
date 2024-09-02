@@ -96,7 +96,7 @@ namespace model {
 			const MemoryBin* userPubkey,
 			proto::gradido::RegisterAddress_AddressType type,
 			const MemoryBin* nameHash,
-			const MemoryBin* subaccountPubkey
+			const MemoryBin* accountPubkey
 		)
 		{
 			auto obj = new TransactionBody;
@@ -108,8 +108,8 @@ namespace model {
 			if (nameHash) {
 				registerAddress->set_allocated_name_hash(nameHash->copyAsString().release());
 			}
-			if (subaccountPubkey) {
-				registerAddress->set_allocated_subaccount_pubkey(subaccountPubkey->copyAsString().release());
+			if (accountPubkey) {
+				registerAddress->set_allocated_account_pubkey(accountPubkey->copyAsString().release());
 			}
 			obj->initSpecificTransaction();
 			return obj;
