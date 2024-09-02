@@ -37,10 +37,22 @@ endif()
 ############################## find dependencies ###################################
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-# using conan on windows
+include(FetchContent)
+# using fetch content under windows
 IF(WIN32)
-  find_package(libsodium REQUIRED)
-	include_directories(${libsodium_INCLUDE_DIR})
+	FetchContent_Declare(
+		libsodium
+		URL https://download.libsodium.org/libsodium/releases/libsodium-1.0.20-stable-msvc.zip
+		URL_HASH SHA256=f2d99445f944e5d70e946664fb3a28317dc0e3e089ef18bc7f6200b9f4ac7a5f
+		DOWNLOAD_EXTRACT_TIMESTAMP true
+	)
+	FetchContent_MakeAvailable(libsodium)
+	message(STATUS "Libsodium targets: ${libsodium_TARGETS}")
+	message(STATUS "Libsodium binary directory: ${libsodium_BINARY_DIR}")
+	message(STATUS "Libsodium include directories: ${libsodium_INCLUDE_DIRS}")
+
+  	#find_package(libsodium REQUIRED)
+	include_directories(${libsodium_SOURCE_DIR}/include)
 	find_package(openssl)
 	if(openssl_FOUND)
 		include_directories(${OPENSSL_INCLUDE_DIR})
@@ -176,7 +188,8 @@ IF(WIN32)
 	if(openssl_FOUND) 
 		target_link_libraries(GradidoBlockchain openssl::openssl)
 	endif()
-	target_link_libraries(GradidoBlockchain libsodium::libsodium)
+	message(STATUS "libsodium libraries: ${libsodium_LIBRARIES}")
+	target_link_libraries(GradidoBlockchain libsodium)
 	# needed for windows if linking to a rust lib
 	if(ENABLE_IOTA_RUST_CLIENT)
 		find_library(IOTA_RUST_C_LIB iota_rust_clib.dll.lib PATHS 
