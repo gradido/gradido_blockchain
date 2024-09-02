@@ -67,7 +67,7 @@ namespace gradido {
 					}
 
 					auto& specificRole = getSpecificTransactionRole();
-					if (!mBody.getOtherGroup().empty() && !recipientPreviousConfirmedTransaction) {
+					if (!mBody.getOtherGroup().empty() && !recipientPreviousConfirmedTransaction && blockchainProvider) {
 						recipientPreviousConfirmedTransaction = 
 							blockchainProvider
 							->findBlockchain(mBody.getOtherGroup())

@@ -30,6 +30,26 @@ TEST(ValidateGradidoTransferTest, Valid) {
 	EXPECT_NO_THROW(c.run());
 }
 
+TEST(ValidateGradidoTransferTest, Outbound) {
+	TransactionBodyBuilder builder;
+	builder
+		.setMemo(memo)
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setCrossGroupType(CrossGroupType::OUTBOUND)
+		.setOtherGroup("gratitude")
+		.setTransactionTransfer(
+			TransferAmount(g_KeyPairs[4].publicKey, "500.55"),
+			g_KeyPairs[5].publicKey
+		)
+		;
+	auto body = builder.build();
+
+	ASSERT_TRUE(body->isTransfer());
+	validate::Context c(*body);
+	EXPECT_NO_THROW(c.run());
+}
+
 TEST(ValidateGradidoTransferTest, invalidMemoEmpty) {
 	TransactionBodyBuilder builder;
 	builder
