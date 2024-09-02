@@ -23,6 +23,9 @@ TEST(TransactionBodyBuilderTest, CommunityRoot) {
 	EXPECT_FALSE(transactionBody->isRegisterAddress());
 	EXPECT_FALSE(transactionBody->isTransfer());
 
+	auto transferAmount = transactionBody->getTransferAmount();
+	EXPECT_FALSE(transferAmount);
+
 	auto communityRoot = transactionBody->getCommunityRoot();
 	
 	EXPECT_EQ(*communityRoot->getPubkey(), *g_KeyPairs[0].publicKey);
@@ -49,6 +52,9 @@ TEST(TransactionBodyBuilderTest, RegisterAddressUserOnly) {
 
 	EXPECT_EQ(transactionBody->getMemo(), "");
 	EXPECT_EQ(transactionBody->getCreatedAt(), Timestamp(now));
+
+	auto transferAmount = transactionBody->getTransferAmount();
+	EXPECT_FALSE(transferAmount);
 
 	auto registerAddress = transactionBody->getRegisterAddress();
 	EXPECT_EQ(registerAddress->getAddressType(), AddressType::COMMUNITY_HUMAN);
@@ -80,6 +86,9 @@ TEST(TransactionBodyBuilderTest, RegisterAddressUserAndAccount) {
 	EXPECT_EQ(transactionBody->getMemo(), "");
 	EXPECT_EQ(transactionBody->getCreatedAt(), Timestamp(now));
 
+	auto transferAmount = transactionBody->getTransferAmount();
+	EXPECT_FALSE(transferAmount);
+
 	auto registerAddress = transactionBody->getRegisterAddress();
 	EXPECT_EQ(registerAddress->getAddressType(), AddressType::COMMUNITY_HUMAN);
 	EXPECT_EQ(*registerAddress->getUserPublicKey(), *g_KeyPairs[3].publicKey);
@@ -110,8 +119,14 @@ TEST(TransactionBodyBuilderTest, GradidoCreation) {
 	EXPECT_EQ(transactionBody->getMemo(), memo);
 	EXPECT_EQ(transactionBody->getCreatedAt(), Timestamp(now));
 
+	auto transferAmount = transactionBody->getTransferAmount();
+	ASSERT_TRUE(transferAmount);
+	EXPECT_EQ(*transferAmount->getPubkey(), *g_KeyPairs[4].publicKey);
+	EXPECT_EQ(transferAmount->getCommunityId(), "");
+	EXPECT_EQ(transferAmount->getAmount().toString(), "1000.0000");
+	
 	auto creation = transactionBody->getCreation();
-	auto recipient = creation->getRecipient();
+	auto& recipient = creation->getRecipient();
 	EXPECT_EQ(*recipient.getPubkey(), *g_KeyPairs[4].publicKey);
 	EXPECT_EQ(recipient.getCommunityId(), "");
 	EXPECT_EQ(recipient.getAmount().toString(), "1000.0000");
@@ -145,6 +160,12 @@ TEST(TransactionBodyBuilderTest, GradidoTransfer) {
 
 	EXPECT_EQ(transactionBody->getMemo(), memo);
 	EXPECT_EQ(transactionBody->getCreatedAt(), Timestamp(now));
+
+	auto transferAmount = transactionBody->getTransferAmount();
+	ASSERT_TRUE(transferAmount);
+	EXPECT_EQ(*transferAmount->getPubkey(), *g_KeyPairs[4].publicKey);
+	EXPECT_EQ(transferAmount->getCommunityId(), "");
+	EXPECT_EQ(transferAmount->getAmount().toString(), "100.2516");
 
 	auto transfer = transactionBody->getTransfer();
 	auto sender = transfer->getSender();
@@ -182,6 +203,12 @@ TEST(TransactionBodyBuilderTest, GradidoDeferredTransfer) {
 
 	EXPECT_EQ(transactionBody->getMemo(), memo);
 	EXPECT_EQ(transactionBody->getCreatedAt(), Timestamp(now));
+
+	auto transferAmount = transactionBody->getTransferAmount();
+	ASSERT_TRUE(transferAmount);
+	EXPECT_EQ(*transferAmount->getPubkey(), *g_KeyPairs[4].publicKey);
+	EXPECT_EQ(transferAmount->getCommunityId(), "");
+	EXPECT_EQ(transferAmount->getAmount().toString(), "100.2516");
 
 	auto deferredTransfer = transactionBody->getDeferredTransfer();
 	auto transfer = deferredTransfer->getTransfer();

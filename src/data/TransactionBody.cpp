@@ -49,7 +49,7 @@ namespace gradido {
 		{
 			if (isTransfer()) { return &mTransfer->getSender(); }
 			else if (isDeferredTransfer()) { return &mDeferredTransfer->getTransfer().getSender(); }
-			else if (isCreation()) { &mCreation->getRecipient(); }
+			else if (isCreation()) { return &mCreation->getRecipient(); }
 			return nullptr;
 		}
 
