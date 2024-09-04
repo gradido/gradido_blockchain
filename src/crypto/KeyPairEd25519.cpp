@@ -1,10 +1,12 @@
 
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519Ex.h"
+#include "gradido_blockchain/crypto/keyDerivation.h"
 #include <assert.h>
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "ed25519_bip32_c_interface.h"
 
+using namespace keyDerivation;
 
 KeyPairEd25519::KeyPairEd25519(memory::ConstBlockPtr publicKey, memory::ConstBlockPtr privateKey/* = nullptr*/, memory::ConstBlockPtr chainCode/* = nullptr*/)
 	:  mSodiumSecret(privateKey), mChainCode(chainCode), mSodiumPublic(publicKey)
@@ -117,28 +119,12 @@ std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::deriveChild(uint32_t index)
 {
 	if (!mChainCode) {
 		throw Ed25519DeriveException("derivation without chain code not possible", mSodiumPublic);
-	}
-	auto chainCode = std::make_shared<memory::Block>(ED25519_CHAIN_CODE_SIZE);
-	
+	}	
 	if (hasPrivateKey()) {
-		auto privateKey = std::make_shared<memory::Block>(ED25519_PRIVATE_KEY_SIZE);
-		derivePrivateKey(*mSodiumPublic, *mChainCode, index, *privateKey, *chainCode);
-		auto publicKey = std::make_shared<memory::Block>(calculatePublicKey(*privateKey));
-		return std::make_shared<KeyPairEd25519Ex>(publicKey, privateKey, chainCode, index);
+		return derivePrivateKey(index);
 	}
 	else {
-		auto publicKey = std::make_shared<memory::Block>(ED25519_PUBLIC_KEY_SIZE);
-		if (derivePublicKey(*mSodiumSecret, *mChainCode, index, *publicKey, *chainCode)) {
-			return std::make_shared<KeyPairEd25519Ex>(publicKey, nullptr, chainCode, index);
-		}
-		else {
-			if (getDerivationType(index) == Ed25519DerivationType::HARD) {
-				throw Ed25519DeriveException("hard derivation with public key not possible", mSodiumPublic);
-			}
-			else {
-				throw Ed25519DeriveException("derivePublicKey failed", mSodiumPublic);
-			}
-		}
+		return derivePublicKey(index);
 	}
 }
 
@@ -234,16 +220,127 @@ void KeyPairEd25519::checkKeySizes()
 		throw Ed25519InvalidKeyException("invalid chain code size", *mChainCode, ED25519_CHAIN_CODE_SIZE);
 	}
 }
-/*
-memory::Block KeyPairEd25519::derivePrivateKey(uint32_t index)
-{
 
-}
-memory::Block KeyPairEd25519::derivePublicKey(uint32_t index)
+std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePrivateKey(uint32_t index)
 {
+	// translated from https://docs.rs/ed25519-bip32/latest/src/ed25519_bip32/derivation/mod.rs.html
+	// 41: pub fn private(xprv: &XPrv, index: DerivationIndex, scheme: DerivationScheme) -> XPrv 
+	/*
+	 * If so (hardened child):
+	 *    let Z = HMAC-SHA512(Key = cpar, Data = 0x00 || ser256(left(kpar)) || ser32(i)).
+	 *    let I = HMAC-SHA512(Key = cpar, Data = 0x01 || ser256(left(kpar)) || ser32(i)).
+	 * If not (normal child):
+	 *    let Z = HMAC-SHA512(Key = cpar, Data = 0x02 || serP(point(kpar)) || ser32(i)).
+	 *    let I = HMAC-SHA512(Key = cpar, Data = 0x03 || serP(point(kpar)) || ser32(i)).
+	 **/
+	auto& ekey = *mSodiumSecret;
+	auto kl = std::span<const uint8_t, 32>{ ekey.data(0), ekey.data(32) };
+	auto kr = std::span<const uint8_t, 32>{ ekey.data(32), ekey.data(64) };
+	auto& chaincode = *mChainCode;
+	crypto_auth_hmacsha512_state zmac, imac;
+	crypto_auth_hmacsha512_init(&zmac, chaincode, chaincode.size());
+	crypto_auth_hmacsha512_init(&imac, chaincode, chaincode.size());
+	auto seri = le32(index);
 
+	auto derivationType = getDerivationType(index);
+	if (Ed25519DerivationType::SOFT == derivationType) {
+		auto& pk = *mSodiumPublic;
+		uint8_t byteX2[] = {0x2};
+		crypto_auth_hmacsha512_update(&zmac, byteX2, 1);
+		crypto_auth_hmacsha512_update(&zmac, pk, pk.size());
+		crypto_auth_hmacsha512_update(&zmac, seri.data(), 4);
+
+		uint8_t byteX3[] = { 0x3 };
+		crypto_auth_hmacsha512_update(&imac, byteX3, 1);
+		crypto_auth_hmacsha512_update(&imac, pk, pk.size());
+		crypto_auth_hmacsha512_update(&imac, seri.data(), 4);
+	}
+	else if (Ed25519DerivationType::HARD == derivationType) {
+		uint8_t byteX0[] = { 0x0 };
+		crypto_auth_hmacsha512_update(&zmac, byteX0, 1);
+		crypto_auth_hmacsha512_update(&zmac, ekey, ekey.size());
+		crypto_auth_hmacsha512_update(&zmac, seri.data(), 4);
+
+		uint8_t byteX1[] = { 0x1 };
+		crypto_auth_hmacsha512_update(&imac, byteX1, 1);
+		crypto_auth_hmacsha512_update(&imac, ekey, ekey.size());
+		crypto_auth_hmacsha512_update(&imac, seri.data(), 4);
+	}
+	memory::Block zout(64);
+	crypto_auth_hmacsha512_final(&zmac, zout);
+	auto zl = std::span<const uint8_t, 32>{ zout.data(0), zout.data(32) };
+	auto zr = std::span<const uint8_t, 32>{ zout.data(32), zout.data(64) };
+	
+	// write directly into result memory space
+	auto secretOut = std::make_shared<memory::Block>(64);
+	// left = kl + 8 * trunc28(zl)
+	auto left = std::span<uint8_t, 32>{ secretOut->data(0), 32 };
+	add28Mul8(left, kl, zl);
+	// right = zr + kr
+	auto right = std::span<uint8_t, 32>{ secretOut->data(32), 32 };
+	add256Bits(right, kr, zr);
+
+	// note: we don't perform the check for curve order divisibility because it will not happen:
+	// 1. all keys are in the range K=2^254 .. 2^255 (actually the even smaller range 2^254+2^253)
+	// 2. all keys are also multiple of 8
+	// 3. all existing multiple of the curve order n in the range of K are not multiple of 8
+
+	memory::Block iout(64);
+	crypto_auth_hmacsha512_final(&imac, zout);
+	auto cc = std::make_shared<memory::Block>(32, iout.data(32));
+
+	auto publicKey = std::make_shared<memory::Block>(calculatePublicKey(*secretOut));
+	return std::make_shared<KeyPairEd25519Ex>(publicKey, secretOut, cc, index);
 }
-*/
+
+std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePublicKey(uint32_t index)
+{
+	// translated from https://docs.rs/ed25519-bip32/latest/src/ed25519_bip32/derivation/mod.rs.html
+	// 133: pub fn public(
+    // 134:		xpub: &XPub,
+	// 135:		index : DerivationIndex,
+	// 136:		scheme : DerivationScheme,
+	// 137: ) -> Result<XPub, DerivationError> 
+
+	auto pk = std::span<const uint8_t, 32>{ mSodiumPublic->data(0), mSodiumPublic->data(32) };
+	auto& chaincode = *mChainCode;
+
+	crypto_auth_hmacsha512_state zmac, imac;
+	crypto_auth_hmacsha512_init(&zmac, chaincode, chaincode.size());
+	crypto_auth_hmacsha512_init(&imac, chaincode, chaincode.size());
+	auto seri = le32(index);
+	auto derivationType = getDerivationType(index);
+	if (Ed25519DerivationType::HARD == derivationType) {
+		throw Ed25519DeriveException("trying to hard derive with public key", mSodiumPublic);
+	}
+	// SOFT Derivation:
+	uint8_t byteX2[] = { 0x2 };
+	crypto_auth_hmacsha512_update(&zmac, byteX2, 1);
+	crypto_auth_hmacsha512_update(&zmac, pk.data(), pk.size());
+	crypto_auth_hmacsha512_update(&zmac, seri.data(), 4);
+
+	uint8_t byteX3[] = { 0x3 };
+	crypto_auth_hmacsha512_update(&imac, byteX3, 1);
+	crypto_auth_hmacsha512_update(&imac, pk.data(), pk.size());
+	crypto_auth_hmacsha512_update(&imac, seri.data(), 4);
+
+	memory::Block zout(64);
+	crypto_auth_hmacsha512_final(&zmac, zout);
+	auto zl = std::span<const uint8_t, 32>{ zout.data(0), zout.data(32) };
+	auto _zr = std::span<const uint8_t, 32>{ zout.data(32), zout.data(64) };
+
+	// left = kl + 8 * trunc28(zl)
+	auto p2 = pointOfTrunc32Mul8(zl);
+	auto p2Span = std::span<const uint8_t, 32>{ p2.data(0), p2.data(32) };
+	auto publicKey = std::make_shared<memory::Block>(pointPlus(pk, p2Span));
+
+	memory::Block iout(64);
+	crypto_auth_hmacsha512_final(&imac, zout);
+	auto cc = std::make_shared<memory::Block>(32, iout.data(32));
+
+	return std::make_shared<KeyPairEd25519Ex>(publicKey, nullptr, cc, index);
+}
+
 // ********************** Exceptions *************************************
 Ed25519SignException::Ed25519SignException(const char* what, memory::ConstBlockPtr pubkey, const std::string& message) noexcept
 	: GradidoBlockchainException(what), mPubkey(pubkey), mMessage(message)
@@ -310,7 +407,9 @@ Ed25519DeriveException::~Ed25519DeriveException()
 std::string Ed25519DeriveException::getFullString() const
 {
 	std::string mResult(what());
-	mResult += ", with pubkey: " + mPubkey->convertToHex();
+	if (mPubkey) {
+		mResult += ", with pubkey: " + mPubkey->convertToHex();
+	}
 	return mResult;
 }
 

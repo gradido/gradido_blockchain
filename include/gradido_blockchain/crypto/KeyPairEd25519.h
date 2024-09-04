@@ -98,8 +98,8 @@ protected:
 	//! check if all keys have the correct sizes (if present)
 	//! throw if not
 	void checkKeySizes();
-	//memory::Block derivePrivateKey(uint32_t index);
-	//memory::Block derivePublicKey(uint32_t index);
+	std::shared_ptr<KeyPairEd25519Ex> derivePrivateKey(uint32_t index);
+	std::shared_ptr<KeyPairEd25519Ex> derivePublicKey(uint32_t index);
 
 private:
 	//!
