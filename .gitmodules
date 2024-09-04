@@ -31,4 +31,3 @@
 [submodule "dependencies/protopuf"]
 	path = dependencies/protopuf
 	url = https://github.com/PragmaTwice/protopuf
-
