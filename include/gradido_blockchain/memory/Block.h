@@ -45,6 +45,8 @@ namespace memory {
 		inline operator const uint8_t* () const { return mData; }
 		inline unsigned char* data(size_t startIndex) { assert(startIndex < mSize); return &mData[startIndex]; }
 		inline const unsigned char* data(size_t startIndex) const { assert(startIndex < mSize); return &mData[startIndex]; }
+		uint8_t& operator [](int idx) { return mData[idx];}
+		uint8_t  operator [](int idx) const { return mData[idx];}
 		std::string convertToHex() const;
 		std::string convertToBase64(int variant = sodium_base64_VARIANT_ORIGINAL) const;
 		std::string copyAsString() const;

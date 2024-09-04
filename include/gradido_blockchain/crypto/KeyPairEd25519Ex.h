@@ -8,7 +8,7 @@
  *
  * \date: 2021-07-01
  *
- * \brief: Key Pairs class for ed25519 extended keys, mainly used for derivation
+ * \brief: Key Pairs class for ed25519 extended keys, mainly used for derivation, bip32
 */
 
 class KeyPairEd25519Ex: public KeyPairEd25519

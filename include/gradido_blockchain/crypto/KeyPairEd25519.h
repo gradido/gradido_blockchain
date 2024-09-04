@@ -31,6 +31,10 @@ class KeyPairEd25519Ex;
 
 using namespace memory;
 
+/*
+* ed25519-bip32 based on: https://input-output-hk.github.io/adrestia/static/Ed25519_BIP.pdf and https://github.com/typed-io/rust-ed25519-bip32
+*/
+
 class GRADIDOBLOCKCHAIN_EXPORT KeyPairEd25519
 {
 	friend class AuthenticatedEncryption;
@@ -40,7 +44,7 @@ public:
 
 	//! \param passphrase must contain word indices
 	static std::shared_ptr<KeyPairEd25519> create(const std::shared_ptr<Passphrase> passphrase);
-	static memory::Block calculatePublicKey(memory::ConstBlockPtr privateKey);
+	static memory::Block calculatePublicKey(const memory::Block& privateKey);
 
 	std::shared_ptr<KeyPairEd25519Ex> deriveChild(uint32_t index);
 	static Ed25519DerivationType getDerivationType(uint32_t index);
@@ -83,11 +87,20 @@ public:
 	inline bool hasPrivateKey() const { return static_cast<bool>(mSodiumSecret); }
 	memory::Block getCryptedPrivKey(const std::shared_ptr<SecretKeyCryptography> password) const;
 
+	/// takes the given raw bytes and perform some modifications to normalize
+	/// to a valid Ed25519 extended key, but it does also force
+	/// the 3rd highest bit to be cleared too.
+	static void normalizeBytesForce3rd(memory::Block& key);
+	static bool isNormalized(const memory::Block& key);
+
 protected:
 	inline memory::ConstBlockPtr getPrivateKey() const { return mSodiumSecret; }
 	//! check if all keys have the correct sizes (if present)
 	//! throw if not
 	void checkKeySizes();
+	//memory::Block derivePrivateKey(uint32_t index);
+	//memory::Block derivePublicKey(uint32_t index);
+
 private:
 	//!
 	// 32 Byte
@@ -144,12 +157,12 @@ class GRADIDOBLOCKCHAIN_EXPORT Ed25519InvalidKeyException: public GradidoBlockch
 {
 public:
 	//! \param invalidKey move key and free up memory on exception deconstruct
-	explicit Ed25519InvalidKeyException(const char* what, memory::ConstBlockPtr invalidKey, size_t expectedKeySize = 0) noexcept;
+	explicit Ed25519InvalidKeyException(const char* what, const memory::Block& invalidKey, size_t expectedKeySize = 0) noexcept;
 	~Ed25519InvalidKeyException();
 	std::string getFullString() const;
 
 protected:
-	memory::ConstBlockPtr mKey;
+	std::string mKeyHex;
 	size_t mExpectedKeySize;
 };
 
