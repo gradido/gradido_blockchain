@@ -332,7 +332,7 @@ std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePublicKey(uint32_t index
 	// left = kl + 8 * trunc28(zl)
 	auto p2 = pointOfTrunc32Mul8(zl);
 	auto p2Span = std::span<const uint8_t, 32>{ p2.data(0), p2.data(32) };
-	auto publicKey = std::make_shared<memory::Block>(pointPlus(pk, p2Span));
+	auto publicKey = std::make_shared<memory::Block>(std::move(pointPlus(pk, p2Span)));
 
 	memory::Block iout(64);
 	crypto_auth_hmacsha512_final(&imac, zout);
