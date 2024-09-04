@@ -11,6 +11,12 @@ IF(WIN32)
     )
 else()
     include(FetchContent)
+    option(DOWNLOAD_EXTRACT_TIMESTAMP "" ON)
+    # Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
+	  if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
+      cmake_policy(SET CMP0135 NEW)
+    endif()
+    
     FetchContent_Declare(
       googletest
       URL https://github.com/google/googletest/releases/download/v1.15.0/googletest-1.15.0.tar.gz

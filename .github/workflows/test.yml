@@ -1,0 +1,21 @@
+name: tests
+
+on: push
+
+jobs:
+  build_test:
+   name: Build and Test library
+   runs-on: ubuntu-latest
+   steps:
+     - name: Checkout code
+       uses: actions/checkout@v4.1.7
+       with:
+        submodules: recursive
+    
+     - name: Build Docker Image
+       run: docker build --target test_debug -t "gradido_blockchain:test" .
+
+     - name: Run Docker Image with Test
+       run: docker run "gradido_blockchain:test"
+
+
