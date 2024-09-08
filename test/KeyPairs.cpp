@@ -42,9 +42,7 @@ void generateKeyPairs()
 		crypto_hash_sha512(hash, (const unsigned char*)seed, strlen(seed));
 		crypto_sign_seed_keypair(*keyPair.publicKey, *keyPair.privateKey, hash);
 		g_KeyPairs.push_back(keyPair);
-
 	}
-
 }
 
 memory::ConstBlockPtr sign(memory::ConstBlockPtr bodyBytes, const KeyPair& keyPair)

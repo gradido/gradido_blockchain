@@ -86,7 +86,7 @@ memory::Block KeyPairEd25519::calculatePublicKey(const memory::Block& privateKey
 		throw Ed25519InvalidKeyException("invalid key size", privateKey, ED25519_PRIVATE_KEY_SIZE);
 	}
 	memory::Block pubkey(ED25519_PUBLIC_KEY_SIZE);
-	crypto_scalarmult_ed25519_base(pubkey.data(), privateKey);
+	crypto_scalarmult_ed25519_base(pubkey, privateKey);
 	return pubkey;
 }
 
@@ -117,26 +117,48 @@ memory::Block KeyPairEd25519::sign(const unsigned char* message, size_t messageS
 {
 	assert(message && messageSize);
 	if (!mExtendedSecret) {
-		throw Ed25519SignException("missing secret key for sign", mSodiumPublic, std::string((const char*)message, messageSize));
+		throw Ed25519MissingKeyException("missing secret key for sign");
+	}
+	if (mExtendedSecret->size() != ED25519_PRIVATE_KEY_SIZE) {
+		throw Ed25519InvalidKeyException("invalid secrect key", *mExtendedSecret, ED25519_PRIVATE_KEY_SIZE);
+	}
+	if (!mSodiumPublic) {
+		throw Ed25519MissingKeyException("missing public key for sign");
+	}
+	if (mSodiumPublic->size() != ED25519_PUBLIC_KEY_SIZE) {
+		throw Ed25519InvalidKeyException("invalid public key", *mSodiumPublic, ED25519_PUBLIC_KEY_SIZE);
 	}
 
 	memory::Block signature(ED25519_SIGNATURE_SIZE);
+	unsigned char tmp[64];
+	unsigned char nonce[32];
+	unsigned char hram[32];
 	unsigned long long actualSignLength = 0;
 
-	// TODO: Add Exceptions
-	if (crypto_sign_detached(signature, &actualSignLength, message, messageSize, *mExtendedSecret)) {
-		throw Ed25519SignException("cannot sign", getPublicKey(), std::string((const char*)message, messageSize));
-	}
-#ifdef NDEBUG 
-	if (crypto_sign_verify_detached(signature, message, messageSize, *mSodiumPublic) != 0) {
-		//
-		auto calculatedPublicKey = calculatePublicKey(mSodiumSecret);
-		if (!calculatedPublicKey.isTheSame(*mSodiumPublic)) {
-			throw ED25519InvalidPrivateKeyForPublicKey("sign verify failed, public key don't belong to private key", mSodiumPublic->convertToHex());
-		}
-		throw Ed25519SignException("sign verify failed", getPublicKey(), std::string((const char*)message, messageSize));
-	}
-#endif
+	// because of using extended secrets instead of seed as secret key, we cannot use the default sign function from libsodium	
+	// so we reimplement sign like in cryptoxide-0.4.4 rust lib used from ed25519-bip32 rust lib but we use libsodium functions for the different steps
+	crypto_hash_sha512_state hs;
+	crypto_hash_sha512_init(&hs);
+	crypto_hash_sha512_update(&hs, mExtendedSecret->data(32), 32);
+	crypto_hash_sha512_final(&hs, tmp);
+	crypto_core_ed25519_scalar_reduce(nonce, tmp);
+
+	crypto_scalarmult_ed25519_base_noclamp(signature, nonce);
+	memmove(signature.data(32), *mSodiumPublic, 32);
+	
+	crypto_hash_sha512_init(&hs);
+	crypto_hash_sha512_update(&hs, signature, 64);
+	crypto_hash_sha512_update(&hs, message, messageSize);
+	crypto_hash_sha512_final(&hs, tmp);
+	crypto_core_ed25519_scalar_reduce(hram, tmp);
+
+	// muladd isn't exported so I must combine mult and add
+	crypto_core_ed25519_scalar_mul(tmp, hram, *mExtendedSecret);
+	crypto_core_ed25519_scalar_add(signature.data(32), tmp, nonce);
+
+	sodium_memzero(tmp, sizeof tmp);
+	sodium_memzero(nonce, sizeof nonce);
+	sodium_memzero(hram, sizeof hram);
 
 	return signature;
 }

@@ -156,3 +156,36 @@ TEST_F(TestEd25519Bip32, calculatePublicKey)
 	getPublicFromSeed(*mSeed, *keyPair->getChainCode(), rustPublic);
 	EXPECT_TRUE(keyPair->getPublicKey()->isTheSame(rustPublic));
 }
+
+TEST_F(TestEd25519Bip32, signVerifyTest)
+{
+	memory::Block message(
+		"Let the power of knowledge and innovation guide humanity towards a future where energy is infinite, borders are meaningless, and every mind is free to dream.Together, we can unlock the potential of this world and beyond. - Inspired by the vision of Nikola Tesla"
+	);
+	auto signature = mRootKeyPair->sign(message);
+	//printf("signature: %s\n", signature.convertToHex().data());
+	EXPECT_EQ(signature.convertToHex(), "c6486839dff5f568c5757cd22556a0df545c4c738ca87660b96721d0a8f7f897b7da062a7c1ba9c1209071a3282b882a10cf31c5b78ea9441f8cf606780a9a0d");
+	EXPECT_TRUE(mRootKeyPair->verify(message, signature));
+}
+
+TEST_F(TestEd25519Bip32, publicPrivateKeyDerivation)
+{
+	uint32_t index = 10;
+	auto child1 = mRootKeyPair->deriveChild(index);
+	KeyPairEd25519 publicParent(mPublicKey, nullptr, mChainCode);
+	auto child2 = publicParent.deriveChild(index);
+	EXPECT_EQ(child1->getPublicKey()->convertToHex(), child2->getPublicKey()->convertToHex());
+}
+
+TEST_F(TestEd25519Bip32, signVerifyWithChild)
+{
+	uint32_t index = 10;
+	auto child = mRootKeyPair->deriveChild(index);
+	memory::Block message(
+		"Let the power of knowledge and innovation guide humanity towards a future where energy is infinite, borders are meaningless, and every mind is free to dream.Together, we can unlock the potential of this world and beyond. - Inspired by the vision of Nikola Tesla"
+	);
+	auto signature = child->sign(message);
+	//printf("signature: %s\n", signature.convertToHex().data());
+	EXPECT_EQ(signature.convertToHex(), "bbb451ae7a0fda8fe7cafef02de27245e017579505c5df33fbc8a3191c8030eec4207f9cee44be513c67c03fe0866e38fd29f6fbef56f0304a5b96ec77db0e02");
+	EXPECT_TRUE(child->verify(message, signature));
+}

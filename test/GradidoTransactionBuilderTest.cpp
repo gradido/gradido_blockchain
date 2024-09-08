@@ -27,7 +27,7 @@ TEST(GradidoTransactionBuilderTest, SignTransaction) {
 		"CgASCAiAzLn/BRAAGgMzLjMgAA=="
 	);
 	ASSERT_EQ(gradidoTransaction->getSignatureMap().getSignaturePairs().front().getSignature()->convertToHex(),
-		"1ebd44c1d9e2033c0422d40157f5976f95c5c40c78058306e66185393686d5abe8140d87eb29103816f2772ead804b4a072415c5ab78f28d2aa99246a7229604"
+		"2d9ab75e055a4853ce3cf69b8a121b052b32a50332b87ee540c6e1cfd5914ef9e485366d779478f104a39eee79d907b3a9aae64b95878c812562b2cd4ae71504"
 	);
 
 	//EXPECT_EQ(*gradidoTransaction->mBodyBytes, )

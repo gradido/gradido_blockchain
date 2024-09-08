@@ -241,7 +241,7 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_EQ(confirmedTransaction->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(confirmedTransaction->getAccountBalance().toString(), "899.7484");
 	ASSERT_EQ(confirmedTransaction->getRunningHash()->size(), crypto_generichash_BYTES);
-	EXPECT_EQ(confirmedTransaction->getRunningHash()->convertToHex(), "882700c5d5acc7381a9da4861edb90adbbabc7d642869fdd572b345e5665d85a");
+	EXPECT_EQ(confirmedTransaction->getRunningHash()->convertToHex(), "7c8173198853521bf017bc47e8925d999b594b85a3c9635f4e2e46063ee7f8d1");
 
 	auto gradidoTransaction = confirmedTransaction->getGradidoTransaction();
 	auto firstSignature = gradidoTransaction->getSignatureMap().getSignaturePairs().front().getSignature();
