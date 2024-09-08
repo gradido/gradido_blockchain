@@ -8,7 +8,7 @@
 
 namespace keyDerivation {
 	std::array<uint8_t, 4> le32(uint32_t i);
-	void add28Mul8(std::span<uint8_t, 32> out, std::span<const uint8_t, 32> x, std::span<const uint8_t, 32> y);
+	GRADIDOBLOCKCHAIN_EXPORT void add28Mul8(std::span<uint8_t, 32> out, std::span<const uint8_t, 32> x, std::span<const uint8_t, 32> y);
 	void add256Bits(std::span<uint8_t, 32> out, std::span<const uint8_t, 32> x, std::span<const uint8_t, 32> y);
 	memory::Block pointPlus(std::span<const uint8_t, 32> p1, std::span<const uint8_t, 32> p2);
 	memory::Block pointOfTrunc32Mul8(std::span<const uint8_t, 32> sk);

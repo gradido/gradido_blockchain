@@ -9,15 +9,9 @@
 using namespace keyDerivation;
 
 KeyPairEd25519::KeyPairEd25519(memory::ConstBlockPtr publicKey, memory::ConstBlockPtr privateKey/* = nullptr*/, memory::ConstBlockPtr chainCode/* = nullptr*/)
-	:  mSodiumSecret(privateKey), mChainCode(chainCode), mSodiumPublic(publicKey)
+	:  mExtendedSecret(privateKey), mChainCode(chainCode), mSodiumPublic(publicKey)
 {
 	checkKeySizes();
-	if (privateKey) {
-		auto calculatedPublicKey = calculatePublicKey(*privateKey);
-		if (!calculatedPublicKey.isTheSame(*publicKey)) {
-			throw ED25519InvalidPrivateKeyForPublicKey("public key don't belong to private key", publicKey->convertToHex());
-		}
-	}
 }
 
 
@@ -53,46 +47,37 @@ std::shared_ptr<KeyPairEd25519> KeyPairEd25519::create(const std::shared_ptr<Pas
 	// **** end converting into uint64 *****
 	crypto_hash_sha512_update(&state, (unsigned char*)clear_passphrase.data(), clear_passphrase.size());
 	crypto_hash_sha512_final(&state, hash);
-	normalizeBytesForce3rd(hash);
-	/*
-	// debug passphrase
-	printf("\passsphrase: <%s>\n", passphrase);
-	printf("size word indices: %u\n", word_indices->size());
-	std::string word_indicesHex = getHex(*word_indices, word_indices->size());
-	printf("word_indices: \n%s\n", word_indicesHex.data());
-	printf("word_indices: \n");
-	uint64_t* word_indices_p = (uint64_t*)(word_indices->data());
-	for (int i = 0; i < PHRASE_WORD_COUNT; i++) {
-	if (i > 0) printf(" ");
-	printf("%4hu", word_indices_p[i]);
+	return create(hash);
+}
+
+// key generation according to https://input-output-hk.github.io/adrestia/static/Ed25519_BIP.pdf
+std::shared_ptr<KeyPairEd25519> KeyPairEd25519::create(const memory::Block& seed)
+{
+	if (seed.size() < 32) {
+		throw Ed25519InvalidSeedException("seed to short, need at least 32 Bytes, 64 Character as hex", seed.convertToHex());
 	}
-	printf("\n");
-
-	printf("\nclear passphrase: \n%s\n", clearPassphrase.data());
-	std::string hex_clearPassphrase = getHex((const unsigned char*)clearPassphrase.data(), clearPassphrase.size());
-	printf("passphrase bin: \n%s\n\n", hex_clearPassphrase.data());
-
-	//*/
 	auto chainCode = std::make_shared<memory::Block>(ED25519_CHAIN_CODE_SIZE);
-	auto publicKey = std::make_shared<memory::Block>(ED25519_PUBLIC_KEY_SIZE);
 	auto privateKey = std::make_shared<memory::Block>(ED25519_PRIVATE_KEY_SIZE);
-	memcpy(*chainCode, &hash[32], 32);
-	crypto_sign_seed_keypair(*publicKey, *privateKey, hash);
 
-	/*
-	// print hex for all keys for debugging
-	printf("// ********** Keys ************* //\n");
-	printf("public: \t%s\n", publicKey->convertToHex().data());
-	printf("secret: \t%s\n", privateKey->convertToHex().data());
-	printf("chain:  \t%s\n", chainCode->convertToHex().data());
-	printf("seed:   \t%s\n", hash.convertToHex().data());
-	printf("// ********* Keys End ************ //\n");
-	*/
-	
-	return std::make_shared<KeyPairEd25519>(publicKey, privateKey, chainCode);	
-	
-	//printf("[KeyPair::generateFromPassphrase] finished!\n");
-	// using 
+	// secret key: modified sha512(seed)
+	crypto_hash_sha512(*privateKey, seed, 32);
+	auto kl = std::span<uint8_t, 32>{ privateKey->data(0), 32 };
+	kl[0] &= 0b11111000;
+	kl[31] &= 0b00011111;
+	kl[31] |= 0b01000000;
+
+	// public key: scalar multiplication
+	auto publicKey = std::make_shared<memory::Block>(calculatePublicKey(*privateKey));
+
+	// chain code: sha256(seed) starting with 0x01
+	crypto_hash_sha256_state hash256;
+	crypto_hash_sha256_init(&hash256);
+	uint8_t byteX01 = 1; //0x01
+	crypto_hash_sha256_update(&hash256, &byteX01, 1);
+	crypto_hash_sha256_update(&hash256, seed, 32);
+	crypto_hash_sha256_final(&hash256, *chainCode);
+
+	return std::make_shared<KeyPairEd25519>(publicKey, privateKey, chainCode);
 }
 
 memory::Block KeyPairEd25519::calculatePublicKey(const memory::Block& privateKey)
@@ -101,7 +86,7 @@ memory::Block KeyPairEd25519::calculatePublicKey(const memory::Block& privateKey
 		throw Ed25519InvalidKeyException("invalid key size", privateKey, ED25519_PRIVATE_KEY_SIZE);
 	}
 	memory::Block pubkey(ED25519_PUBLIC_KEY_SIZE);
-	crypto_sign_ed25519_sk_to_pk(pubkey.data(), privateKey);
+	crypto_scalarmult_ed25519_base(pubkey.data(), privateKey);
 	return pubkey;
 }
 
@@ -131,7 +116,7 @@ std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::deriveChild(uint32_t index)
 memory::Block KeyPairEd25519::sign(const unsigned char* message, size_t messageSize) const
 {
 	assert(message && messageSize);
-	if (!mSodiumSecret) {
+	if (!mExtendedSecret) {
 		throw Ed25519SignException("missing secret key for sign", mSodiumPublic, std::string((const char*)message, messageSize));
 	}
 
@@ -139,7 +124,7 @@ memory::Block KeyPairEd25519::sign(const unsigned char* message, size_t messageS
 	unsigned long long actualSignLength = 0;
 
 	// TODO: Add Exceptions
-	if (crypto_sign_detached(signature, &actualSignLength, message, messageSize, *mSodiumSecret)) {
+	if (crypto_sign_detached(signature, &actualSignLength, message, messageSize, *mExtendedSecret)) {
 		throw Ed25519SignException("cannot sign", getPublicKey(), std::string((const char*)message, messageSize));
 	}
 #ifdef NDEBUG 
@@ -175,19 +160,18 @@ bool KeyPairEd25519::verify(const memory::Block& message, const memory::Block& s
 
 bool KeyPairEd25519::is3rdHighestBitClear() const
 {
-	if (!mSodiumSecret) {
+	if (!mExtendedSecret) {
 		throw Ed25519MissingKeyException("missing secret key");
 	}
-	return 0 == (*mSodiumSecret->data(31) & 0b00100000);
+	return 0 == (*mExtendedSecret->data(31) & 0b00100000);
 }
 
-memory::Block KeyPairEd25519::getCryptedPrivKey(const std::shared_ptr<SecretKeyCryptography> password) const
+memory::Block KeyPairEd25519::getCryptedPrivKey(const SecretKeyCryptography& password) const
 {
-	assert(password);
-	if (!mSodiumSecret) {
+	if (!mExtendedSecret) {
 		throw Ed25519MissingKeyException("missing secret key");
 	}
-	return password->encrypt(*mSodiumSecret);
+	return password.encrypt(*mExtendedSecret);
 }
 
 void KeyPairEd25519::normalizeBytesForce3rd(memory::Block& key)
@@ -196,6 +180,7 @@ void KeyPairEd25519::normalizeBytesForce3rd(memory::Block& key)
 	key[0]  &= 0b11111000;
 	key[31] &= 0b00011111;
 	key[31] |= 0b01000000;
+	printf("bit manipulationen: %d %d %d\n", 0b11111000, 0b00011111, 0b01000000);
 }
 
 bool KeyPairEd25519::isNormalized(const memory::Block& key)
@@ -204,11 +189,18 @@ bool KeyPairEd25519::isNormalized(const memory::Block& key)
 	return  (key[0]  & 0b11111000) == key[0] 
 		&& ((key[31] & 0b00011111) | 0b01000000) == key[31];
 }
+bool KeyPairEd25519::isNormalized()
+{
+	if (!mExtendedSecret) {
+		throw Ed25519MissingKeyException("missing secret key");
+	}	
+	return isNormalized(*mExtendedSecret);
+}
 
 void KeyPairEd25519::checkKeySizes()
 {
-	if (mSodiumSecret && mSodiumSecret->size() != ED25519_PRIVATE_KEY_SIZE) {
-		throw Ed25519InvalidKeyException("invalid private key size", *mSodiumSecret, ED25519_PRIVATE_KEY_SIZE);
+	if (mExtendedSecret && mExtendedSecret->size() != ED25519_PRIVATE_KEY_SIZE) {
+		throw Ed25519InvalidKeyException("invalid private key size", *mExtendedSecret, ED25519_PRIVATE_KEY_SIZE);
 	}
 	if (!mSodiumPublic) {
 		throw Ed25519MissingKeyException("missing public key");
@@ -233,9 +225,9 @@ std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePrivateKey(uint32_t inde
 	 *    let Z = HMAC-SHA512(Key = cpar, Data = 0x02 || serP(point(kpar)) || ser32(i)).
 	 *    let I = HMAC-SHA512(Key = cpar, Data = 0x03 || serP(point(kpar)) || ser32(i)).
 	 **/
-	auto& ekey = *mSodiumSecret;
-	auto kl = std::span<const uint8_t, 32>{ ekey.data(0), ekey.data(32) };
-	auto kr = std::span<const uint8_t, 32>{ ekey.data(32), ekey.data(64) };
+	auto& ekey = *mExtendedSecret;
+	auto kl = std::span<const uint8_t, 32>{ ekey.data(0), 32 };
+	auto kr = std::span<const uint8_t, 32>{ ekey.data(32), 32 };
 	auto& chaincode = *mChainCode;
 	crypto_auth_hmacsha512_state zmac, imac;
 	crypto_auth_hmacsha512_init(&zmac, chaincode, chaincode.size());
@@ -268,14 +260,15 @@ std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePrivateKey(uint32_t inde
 	}
 	memory::Block zout(64);
 	crypto_auth_hmacsha512_final(&zmac, zout);
-	auto zl = std::span<const uint8_t, 32>{ zout.data(0), zout.data(32) };
-	auto zr = std::span<const uint8_t, 32>{ zout.data(32), zout.data(64) };
+	auto zl = std::span<const uint8_t, 32>{ zout.data(0), 32 };
+	auto zr = std::span<const uint8_t, 32>{ zout.data(32), 32 };
 	
 	// write directly into result memory space
 	auto secretOut = std::make_shared<memory::Block>(64);
 	// left = kl + 8 * trunc28(zl)
 	auto left = std::span<uint8_t, 32>{ secretOut->data(0), 32 };
-	add28Mul8(left, kl, zl);
+	//add28Mul8(left, kl, zl);
+	add_28_mul8(ekey.data(0), zout.data(0), secretOut->data());
 	// right = zr + kr
 	auto right = std::span<uint8_t, 32>{ secretOut->data(32), 32 };
 	add256Bits(right, kr, zr);
@@ -286,7 +279,7 @@ std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePrivateKey(uint32_t inde
 	// 3. all existing multiple of the curve order n in the range of K are not multiple of 8
 
 	memory::Block iout(64);
-	crypto_auth_hmacsha512_final(&imac, zout);
+	crypto_auth_hmacsha512_final(&imac, iout);
 	auto cc = std::make_shared<memory::Block>(32, iout.data(32));
 
 	auto publicKey = std::make_shared<memory::Block>(calculatePublicKey(*secretOut));
@@ -302,7 +295,7 @@ std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePublicKey(uint32_t index
 	// 136:		scheme : DerivationScheme,
 	// 137: ) -> Result<XPub, DerivationError> 
 
-	auto pk = std::span<const uint8_t, 32>{ mSodiumPublic->data(0), mSodiumPublic->data(32) };
+	auto pk = std::span<const uint8_t, 32>{ mSodiumPublic->data(0), 32 };
 	auto& chaincode = *mChainCode;
 
 	crypto_auth_hmacsha512_state zmac, imac;
@@ -326,16 +319,16 @@ std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePublicKey(uint32_t index
 
 	memory::Block zout(64);
 	crypto_auth_hmacsha512_final(&zmac, zout);
-	auto zl = std::span<const uint8_t, 32>{ zout.data(0), zout.data(32) };
-	auto _zr = std::span<const uint8_t, 32>{ zout.data(32), zout.data(64) };
+	auto zl = std::span<const uint8_t, 32>{ zout.data(0), 32 };
+	auto _zr = std::span<const uint8_t, 32>{ zout.data(32), 32 };
 
 	// left = kl + 8 * trunc28(zl)
 	auto p2 = pointOfTrunc32Mul8(zl);
-	auto p2Span = std::span<const uint8_t, 32>{ p2.data(0), p2.data(32) };
+	auto p2Span = std::span<const uint8_t, 32>{ p2.data(0), 32 };
 	auto publicKey = std::make_shared<memory::Block>(std::move(pointPlus(pk, p2Span)));
 
 	memory::Block iout(64);
-	crypto_auth_hmacsha512_final(&imac, zout);
+	crypto_auth_hmacsha512_final(&imac, iout);
 	auto cc = std::make_shared<memory::Block>(32, iout.data(32));
 
 	return std::make_shared<KeyPairEd25519Ex>(publicKey, nullptr, cc, index);
@@ -447,5 +440,20 @@ std::string ED25519InvalidPrivateKeyForPublicKey::getFullString() const
 {
 	std::string result = what();
 	result += ", public key: " + mPublicKey;
+	return result;
+}
+
+// ------------------------------------------------------------------------------------------------
+
+Ed25519InvalidSeedException::Ed25519InvalidSeedException(const char* what, const std::string& seedHex) noexcept
+	: GradidoBlockchainException(what), mSeedHex(seedHex)
+{
+
+}
+
+std::string Ed25519InvalidSeedException::getFullString() const
+{
+	std::string result = what();
+	result += ", seed hex: " + mSeedHex;
 	return result;
 }

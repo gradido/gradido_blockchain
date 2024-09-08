@@ -39,11 +39,15 @@ class GRADIDOBLOCKCHAIN_EXPORT KeyPairEd25519
 {
 	friend class AuthenticatedEncryption;
 public:
+	//! \param private key = extended ed25519 secret, containing the normalized hash of seed only
 	KeyPairEd25519(memory::ConstBlockPtr publicKey, memory::ConstBlockPtr privateKey = nullptr, memory::ConstBlockPtr chainCode = nullptr);
 	~KeyPairEd25519();
 
 	//! \param passphrase must contain word indices
 	static std::shared_ptr<KeyPairEd25519> create(const std::shared_ptr<Passphrase> passphrase);
+	//! create ed25519 bip32 compatible key pair
+	//! \param seed 32 Byte seed
+	static std::shared_ptr<KeyPairEd25519> create(const memory::Block& seed);
 	static memory::Block calculatePublicKey(const memory::Block& privateKey);
 
 	std::shared_ptr<KeyPairEd25519Ex> deriveChild(uint32_t index);
@@ -73,9 +77,9 @@ public:
 	//! \return -1 if not the same
 	//! \return 1 if hasn't private key
 	inline int isTheSame(memory::ConstBlockPtr privkey) const {
-		if (!mSodiumSecret) return 1;
-		if (privkey->size() != mSodiumSecret->size()) return -1;
-		return sodium_memcmp(mSodiumSecret->data(), privkey->data(), privkey->size());
+		if (!mExtendedSecret) return 1;
+		if (privkey->size() != mExtendedSecret->size()) return -1;
+		return sodium_memcmp(mExtendedSecret->data(), privkey->data(), privkey->size());
 	}
 
 	inline bool operator == (const KeyPairEd25519& b) const { return isTheSame(b);  }
@@ -84,17 +88,18 @@ public:
 	inline bool operator == (const unsigned char* b) const { return isTheSame(b); }
 	inline bool operator != (const unsigned char* b) const { return !isTheSame(b); }
 
-	inline bool hasPrivateKey() const { return static_cast<bool>(mSodiumSecret); }
-	memory::Block getCryptedPrivKey(const std::shared_ptr<SecretKeyCryptography> password) const;
+	inline bool hasPrivateKey() const { return static_cast<bool>(mExtendedSecret); }
+	memory::Block getCryptedPrivKey(const SecretKeyCryptography& password) const;
 
 	/// takes the given raw bytes and perform some modifications to normalize
 	/// to a valid Ed25519 extended key, but it does also force
 	/// the 3rd highest bit to be cleared too.
 	static void normalizeBytesForce3rd(memory::Block& key);
 	static bool isNormalized(const memory::Block& key);
+	bool isNormalized();
 
 protected:
-	inline memory::ConstBlockPtr getPrivateKey() const { return mSodiumSecret; }
+	inline memory::ConstBlockPtr getPrivateKey() const { return mExtendedSecret; }
 	//! check if all keys have the correct sizes (if present)
 	//! throw if not
 	void checkKeySizes();
@@ -108,9 +113,10 @@ private:
 	memory::ConstBlockPtr mSodiumPublic;
 
 	//! TODO: replace MemoryBin by a memory obfuscation class which make it hard to steal the private key from memory
-	//! // 64 Byte
-	//! \brief ed25519 libsodium private key
-	memory::ConstBlockPtr mSodiumSecret;
+	//! ed25519 extended private key
+	//! contain only the normalized hash of the seed
+	//! seed isn't known in childs
+	memory::ConstBlockPtr mExtendedSecret;
 
 	// 32 Byte
 	memory::ConstBlockPtr mChainCode;
@@ -185,6 +191,16 @@ public:
 
 protected:
 	std::string mPublicKey;
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT Ed25519InvalidSeedException : public GradidoBlockchainException
+{
+public:
+	explicit Ed25519InvalidSeedException(const char* what, const std::string& seedHex) noexcept;
+	std::string getFullString() const;
+
+protected:
+	std::string mSeedHex;
 };
 
 #endif //__GRADIDO_LOGIN_SERVER_CRYPTO_ED25519_H

@@ -29,6 +29,10 @@ protected:
 
 private:
 	int        mDerivationIndex;
+	//! ed25519 extended private key
+	//! contain only the normalized hash of the seed
+	//! seed isn't known in childs
+	memory::ConstBlockPtr mExtendedSecret;
 };
 
 #endif //__GRADIDO_LOGIN_SERVER_CRYPTO_ED25519_EXTENDED_H

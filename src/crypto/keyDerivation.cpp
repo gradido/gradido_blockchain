@@ -57,7 +57,7 @@ namespace keyDerivation {
         // we use out here because it is currently empty, all values 0 
         auto outSpan = std::span<const uint8_t, 32>{ out.data(0), 32 };
         add28Mul8(copySpan, outSpan, sk);
-        crypto_scalarmult_base(out, copy);
+        auto result = crypto_scalarmult_ed25519_base_noclamp(out.data(), copy);
         return out;
     }
 }

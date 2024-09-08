@@ -11,18 +11,11 @@ protected:
 	void SetUp() override;
 	void TearDown() override;
 
-	struct KeyPair
-	{
-		KeyPair()
-			: publicKey(crypto_sign_PUBLICKEYBYTES),
-			privateKey(crypto_sign_SECRETKEYBYTES),
-			chainCode(32) {}
-		memory::Block publicKey;
-		memory::Block privateKey;
-		memory::Block chainCode;
-	};
-
-	std::list<KeyPair> mED25519KeyPairs;
+	memory::ConstBlockPtr mChainCode;
+	memory::ConstBlockPtr mPublicKey;
+	//memory::BlockPtr mPrivateKey;
+	memory::ConstBlockPtr mSeed;
+	std::shared_ptr<KeyPairEd25519> mRootKeyPair;
 };
 
 #endif //__GRADIDO_LOGIN_SERVER_TEST_CRYPTO_TEST_ED25519_BIP32_H
