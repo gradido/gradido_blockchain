@@ -41,7 +41,7 @@ class GRADIDOBLOCKCHAIN_EXPORT KeyPairEd25519
 public:
 	//! \param private key = extended ed25519 secret, containing the normalized hash of seed only
 	KeyPairEd25519(memory::ConstBlockPtr publicKey, memory::ConstBlockPtr privateKey = nullptr, memory::ConstBlockPtr chainCode = nullptr);
-	~KeyPairEd25519();
+	virtual ~KeyPairEd25519();
 
 	//! \param passphrase must contain word indices
 	static std::shared_ptr<KeyPairEd25519> create(const std::shared_ptr<Passphrase> passphrase);
@@ -50,7 +50,7 @@ public:
 	static std::shared_ptr<KeyPairEd25519> create(const memory::Block& seed);
 	static memory::Block calculatePublicKey(const memory::Block& privateKey);
 
-	std::shared_ptr<KeyPairEd25519Ex> deriveChild(uint32_t index);
+	std::shared_ptr<KeyPairEd25519Ex> deriveChild(uint32_t index) const;
 	static Ed25519DerivationType getDerivationType(uint32_t index);
 
 	memory::Block sign(const memory::Block& message) const { return sign(message.data(), message.size()); }
@@ -60,7 +60,7 @@ public:
 	//! \return true if signature is valid
 	bool verify(const std::string& message, const std::string& signature) const;
 	bool verify(const memory::Block& message, const memory::Block& signature) const;
-	virtual bool is3rdHighestBitClear() const;
+	bool is3rdHighestBitClear() const;
 
 	inline memory::ConstBlockPtr getPublicKey() const { return mSodiumPublic; }
 	inline memory::ConstBlockPtr getChainCode() const { return mChainCode; }
@@ -103,8 +103,8 @@ protected:
 	//! check if all keys have the correct sizes (if present)
 	//! throw if not
 	void checkKeySizes();
-	std::shared_ptr<KeyPairEd25519Ex> derivePrivateKey(uint32_t index);
-	std::shared_ptr<KeyPairEd25519Ex> derivePublicKey(uint32_t index);
+	std::shared_ptr<KeyPairEd25519Ex> derivePrivateKey(uint32_t index) const;
+	std::shared_ptr<KeyPairEd25519Ex> derivePublicKey(uint32_t index) const;
 
 private:
 	//!

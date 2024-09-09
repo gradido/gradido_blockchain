@@ -1,5 +1,4 @@
 #include "gradido_blockchain/crypto/KeyPairEd25519Ex.h"
-#include "ed25519_bip32_c_interface.h"
 
 KeyPairEd25519Ex::KeyPairEd25519Ex(memory::ConstBlockPtr publicKey, memory::ConstBlockPtr privateKey, memory::ConstBlockPtr chainCode, uint32_t derivationIndex)
 	: KeyPairEd25519(publicKey, privateKey, chainCode), mDerivationIndex(derivationIndex)

@@ -134,7 +134,6 @@ include_directories(
 	"dependencies/cpp-httplib"
 	"dependencies/date/include"
 	"include"
-	"dependencies/ed25519_bip32_c_interface/include"	
 )
 
 if(ENABLE_IOTA_RUST_CLIENT)
@@ -156,7 +155,6 @@ include(CMakeCargo)
 if(ENABLE_IOTA_RUST_CLIENT)
 	add_subdirectory(iota_rust_clib)
 endif()
-add_subdirectory(dependencies/ed25519_bip32_c_interface)
 
 ############################ small libraries as subproject ###########
 set(LOGURU_INSTALL ON)
@@ -190,22 +188,11 @@ IF(WIN32)
 			target_link_libraries(GradidoBlockchain ${IOTA_RUST_C_LIB})
 		ENDIF()
 	endif()
-	find_library(ED25519_BIP32_RUST_C_LIB ed25519_bip32_c_interface.dll.lib PATHS 
-		"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
-		"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/debug"
-		"${PROJECT_BINARY_DIR}/dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/release"
-	)
-	IF(ED25519_BIP32_RUST_C_LIB STREQUAL "ED25519_BIP32_RUST_C_LIB-NOTFOUND" ) 
-		message("[GradidoBlockchain] !!!!!!\nplease build target ed25519_bip32_c_interface_target and call again `cmake`\n!!!!!!")
-	ELSE()
-		target_link_libraries(GradidoBlockchain ${ED25519_BIP32_RUST_C_LIB})
-	ENDIF()		
 	target_link_libraries(GradidoBlockchain ws2_32 userenv)
 ELSE()
 	if(ENABLE_IOTA_RUST_CLIENT)
 		target_link_libraries(GradidoBlockchain iota_rust_clib)	
 	endif()
-	target_link_libraries(GradidoBlockchain ed25519_bip32_c_interface)
 ENDIF()
 
 set_target_properties(GradidoBlockchain PROPERTIES

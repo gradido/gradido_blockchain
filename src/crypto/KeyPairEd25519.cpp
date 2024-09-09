@@ -4,7 +4,6 @@
 #include "gradido_blockchain/crypto/keyDerivation.h"
 #include <assert.h>
 #include "gradido_blockchain/lib/DataTypeConverter.h"
-#include "ed25519_bip32_c_interface.h"
 
 using namespace keyDerivation;
 
@@ -100,7 +99,7 @@ Ed25519DerivationType KeyPairEd25519::getDerivationType(uint32_t index)
 	}
 }
 
-std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::deriveChild(uint32_t index)
+std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::deriveChild(uint32_t index) const
 {
 	if (!mChainCode) {
 		throw Ed25519DeriveException("derivation without chain code not possible", mSodiumPublic);
@@ -235,7 +234,7 @@ void KeyPairEd25519::checkKeySizes()
 	}
 }
 
-std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePrivateKey(uint32_t index)
+std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePrivateKey(uint32_t index) const
 {
 	// translated from https://docs.rs/ed25519-bip32/latest/src/ed25519_bip32/derivation/mod.rs.html
 	// 41: pub fn private(xprv: &XPrv, index: DerivationIndex, scheme: DerivationScheme) -> XPrv 
@@ -280,17 +279,17 @@ std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePrivateKey(uint32_t inde
 		crypto_auth_hmacsha512_update(&imac, ekey, ekey.size());
 		crypto_auth_hmacsha512_update(&imac, seri.data(), 4);
 	}
-	memory::Block zout(64);
+	unsigned char zout[64];
 	crypto_auth_hmacsha512_final(&zmac, zout);
-	auto zl = std::span<const uint8_t, 32>{ zout.data(0), 32 };
-	auto zr = std::span<const uint8_t, 32>{ zout.data(32), 32 };
+	auto zl = std::span<const uint8_t, 32>{ zout, 32 };
+	auto zr = std::span<const uint8_t, 32>{ &zout[32], 32 };
 	
 	// write directly into result memory space
 	auto secretOut = std::make_shared<memory::Block>(64);
 	// left = kl + 8 * trunc28(zl)
 	auto left = std::span<uint8_t, 32>{ secretOut->data(0), 32 };
-	//add28Mul8(left, kl, zl);
-	add_28_mul8(ekey.data(0), zout.data(0), secretOut->data());
+	add28Mul8(left, kl, zl);
+	//add_28_mul8(ekey.data(0), zout.data(0), secretOut->data());
 	// right = zr + kr
 	auto right = std::span<uint8_t, 32>{ secretOut->data(32), 32 };
 	add256Bits(right, kr, zr);
@@ -300,15 +299,15 @@ std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePrivateKey(uint32_t inde
 	// 2. all keys are also multiple of 8
 	// 3. all existing multiple of the curve order n in the range of K are not multiple of 8
 
-	memory::Block iout(64);
+	unsigned char iout[64];
 	crypto_auth_hmacsha512_final(&imac, iout);
-	auto cc = std::make_shared<memory::Block>(32, iout.data(32));
+	auto cc = std::make_shared<memory::Block>(32, &iout[32]);
 
 	auto publicKey = std::make_shared<memory::Block>(calculatePublicKey(*secretOut));
 	return std::make_shared<KeyPairEd25519Ex>(publicKey, secretOut, cc, index);
 }
 
-std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePublicKey(uint32_t index)
+std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePublicKey(uint32_t index) const
 {
 	// translated from https://docs.rs/ed25519-bip32/latest/src/ed25519_bip32/derivation/mod.rs.html
 	// 133: pub fn public(
@@ -339,19 +338,19 @@ std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePublicKey(uint32_t index
 	crypto_auth_hmacsha512_update(&imac, pk.data(), pk.size());
 	crypto_auth_hmacsha512_update(&imac, seri.data(), 4);
 
-	memory::Block zout(64);
+	unsigned char zout[64];
 	crypto_auth_hmacsha512_final(&zmac, zout);
-	auto zl = std::span<const uint8_t, 32>{ zout.data(0), 32 };
-	auto _zr = std::span<const uint8_t, 32>{ zout.data(32), 32 };
+	auto zl = std::span<const uint8_t, 32>{ zout, 32 };
+	auto _zr = std::span<const uint8_t, 32>{ &zout[32], 32 };
 
 	// left = kl + 8 * trunc28(zl)
 	auto p2 = pointOfTrunc32Mul8(zl);
 	auto p2Span = std::span<const uint8_t, 32>{ p2.data(0), 32 };
 	auto publicKey = std::make_shared<memory::Block>(std::move(pointPlus(pk, p2Span)));
 
-	memory::Block iout(64);
+	unsigned char iout[64];
 	crypto_auth_hmacsha512_final(&imac, iout);
-	auto cc = std::make_shared<memory::Block>(32, iout.data(32));
+	auto cc = std::make_shared<memory::Block>(32, &iout[32]);
 
 	return std::make_shared<KeyPairEd25519Ex>(publicKey, nullptr, cc, index);
 }
