@@ -234,9 +234,11 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 
 	GradidoTransactionBuilder builder;
 	auto keyPair = make_shared<KeyPairEd25519>(g_KeyPairs[0].publicKey, g_KeyPairs[0].privateKey);
+	serialize::Context bodyBytesContext(*transactionBody);
+	auto signature = sign(bodyBytesContext.run(), g_KeyPairs[0]);
 	auto gradidoTransaction = builder
 		.setTransactionBody(std::move(transactionBody))
-		.sign(keyPair)
+		.addSignaturePair(g_KeyPairs[0].publicKey, signature)
 		.build();
 
 	ConfirmedTransaction confirmedTransaction(

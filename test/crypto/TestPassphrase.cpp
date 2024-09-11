@@ -24,7 +24,7 @@ void PassphraseTest::SetUp()
 	mPassphrasesForTesting.push_back(PassphraseDataSet(
 			passphrases1,
 			MnemonicType::BIP0039_SORTED_ORDER,
-			"6fa7180b132e1248c649fc7b2e422ad57663299f85bd88b8b8031dce28b501a8",
+			"0f06a369f00dbafe69b447d7c0fc04ff78d7743c9aec2615e87259be7ae2d9f7",
 			wordIndices1));
 
 	uint16_t wordIndices2[] = {
@@ -36,7 +36,7 @@ void PassphraseTest::SetUp()
 	mPassphrasesForTesting.push_back(PassphraseDataSet(
 			passphrases2,
 			MnemonicType::GRADIDO_BOOK_GERMAN_RANDOM_ORDER,
-			"8943813a623863dd7c5e5b248e408ac8a8851ef758275b6043a06e9b5832c36c",
+			"0c5a0c82b93826b08d839309d3bdeafb4adb625b4ab62059be070261dd2951a3",
 			wordIndices2));
 
 	uint16_t wordIndices3[] = {
@@ -48,7 +48,7 @@ void PassphraseTest::SetUp()
 	mPassphrasesForTesting.push_back(PassphraseDataSet(
 			passphrases3,
 			MnemonicType::GRADIDO_BOOK_GERMAN_RANDOM_ORDER,
-			"d62f14173ae5d66b06753cc9d69d5471913ffc6053feedac2acf901eef3582a9",
+			"2d47cdf42691f56c0e25f4d8d10bc609c3ff75188174b9b581c007adf7cd7001",
 			wordIndices3));
 	CryptoConfig::loadMnemonicWordLists(true);
 }

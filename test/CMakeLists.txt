@@ -65,19 +65,9 @@ find_package(Sodium REQUIRED)
 add_executable(GradidoBlockchainTest ${TEST_SRC})
 target_link_libraries(GradidoBlockchainTest GradidoBlockchain sodium loguru::loguru) #libprotobuf
 IF(WIN32)    
-    find_library(ED25519_BIP32_RUST_C_LIB ed25519_bip32_c_interface.dll.lib PATHS 
-		"${PROJECT_BINARY_DIR}/../dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
-		"${PROJECT_BINARY_DIR}/../dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/debug"
-		"${PROJECT_BINARY_DIR}/../dependencies/ed25519_bip32_c_interface/x86_64-pc-windows-msvc/release"
-	)	
-    
-    IF(ED25519_BIP32_RUST_C_LIB STREQUAL "ED25519_BIP32_RUST_C_LIB-NOTFOUND" ) 
-        message("!!!!!!\nplease build target ed25519_bip32_c_interface_target and call again `cmake`\n!!!!!!")
-    ELSE()
-        target_link_libraries(GradidoBlockchainTest ${ED25519_BIP32_RUST_C_LIB} ${GTest_LIBRARIES})
-    ENDIF()
+    target_link_libraries(GradidoBlockchainTest ${GTest_LIBRARIES})
 ELSE()
-    target_link_libraries(GradidoBlockchainTest ed25519_bip32_c_interface gtest)
+    target_link_libraries(GradidoBlockchainTest gtest)
 ENDIF()
 
 include_directories(
