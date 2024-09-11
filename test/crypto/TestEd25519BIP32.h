@@ -8,19 +8,23 @@
 class TestKeyPairEd25519Ex: public KeyPairEd25519Ex
 {
 public:
-using KeyPairEd25519Ex::KeyPairEd25519Ex;
+	TestKeyPairEd25519Ex(const KeyPairEd25519Ex& other)
+		: KeyPairEd25519Ex(other) {}
 	inline memory::ConstBlockPtr getPrivateKey() const {return KeyPairEd25519::getPrivateKey(); }
 };
 
-class TestKeyPairEd25519: public KeyPairEd25519
+class TestKeyPairEd25519 : public KeyPairEd25519
 {
 public:
-  using KeyPairEd25519::KeyPairEd25519;
+	TestKeyPairEd25519(const KeyPairEd25519& other)
+		: KeyPairEd25519(other) {}
+	TestKeyPairEd25519(memory::ConstBlockPtr publicKey, memory::ConstBlockPtr privateKey = nullptr, memory::ConstBlockPtr chainCode = nullptr)
+		: KeyPairEd25519(publicKey, privateKey, chainCode) {}
 	static std::shared_ptr<TestKeyPairEd25519> create(const memory::Block& seed) {
-		return std::dynamic_pointer_cast<TestKeyPairEd25519>(KeyPairEd25519::create(seed));
+		return std::make_shared<TestKeyPairEd25519>(*KeyPairEd25519::create(seed));
 	}
 	std::shared_ptr<TestKeyPairEd25519Ex> deriveChild(uint32_t index) const {
-		return std::dynamic_pointer_cast<TestKeyPairEd25519Ex>(KeyPairEd25519::deriveChild(index));
+		return std::make_shared<TestKeyPairEd25519Ex>(*KeyPairEd25519::deriveChild(index));
 	}
 	inline memory::ConstBlockPtr getPrivateKey() const {return KeyPairEd25519::getPrivateKey(); }
 };

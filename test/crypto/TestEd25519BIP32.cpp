@@ -14,6 +14,7 @@ void TestEd25519Bip32::SetUp()
 {	
 	mSeed = std::make_shared<memory::Block>("Understanding different perspectives can lead to innovative solutions and personal growth.");
 	mRootKeyPair = TestKeyPairEd25519::create(*mSeed);
+	ASSERT_TRUE(mRootKeyPair);
 	mChainCode = mRootKeyPair->getChainCode();
 	mPublicKey = mRootKeyPair->getPublicKey();
 }
@@ -33,20 +34,20 @@ TEST_F(TestEd25519Bip32, TestPrivateDerivationSoft)
 {
 	int index = 1;
 	ASSERT_EQ(KeyPairEd25519::getDerivationType(index), Ed25519DerivationType::SOFT);
-	auto child1 = mRootKeyPair->deriveChild(index);
-	printf("public key: %s\n", child1->getPublicKey()->convertToHex().data());
-	printf("chain code: %s\n", child1->getChainCode()->convertToHex().data());
-	printf("private key: %s\n", child1->getPrivateKey()->convertToHex().data());
+	auto child = mRootKeyPair->deriveChild(index);
+	EXPECT_EQ(child->getPublicKey()->convertToHex(), "08074fb5fd5c630f0e56a08e1e2bd93a2d10e6edaeb56ca72ca1deb8d8363630");
+	EXPECT_EQ(child->getChainCode()->convertToHex(), "72f1fbf070eed9acbd40f3ba3998d985c734747afd4ffcd22824ceba9249ad71");
+	EXPECT_EQ(child->getPrivateKey()->convertToHex(), "e082429a76d41bb4698dc80102c816213493347c47c41023755e0a8cc0056c551943624dd91fe356a907e782bdd76fe3c3be105111987a6583b39df8bbaf7f05");
 }
 
 TEST_F(TestEd25519Bip32, TestPrivateDerivationHard)
 {
 	int index = 0x80000000;
 	ASSERT_EQ(KeyPairEd25519::getDerivationType(index), Ed25519DerivationType::HARD);
-	auto child1 = mRootKeyPair->deriveChild(index);
-	printf("public key: %s\n", child1->getPublicKey()->convertToHex().data());
-	printf("chain code: %s\n", child1->getChainCode()->convertToHex().data());
-	printf("private key: %s\n", child1->getPrivateKey()->convertToHex().data());
+	auto child = mRootKeyPair->deriveChild(index);
+	EXPECT_EQ(child->getPublicKey()->convertToHex(), "b4d9c264083b946b4d5525f9f73b0a0b8831901d6e16f6f5b374d30e4bdade99");
+	EXPECT_EQ(child->getChainCode()->convertToHex(), "a9a224d6930bb5578569cf11075fe46e0f349805877bc52fde67d27a4090f0ec");
+	EXPECT_EQ(child->getPrivateKey()->convertToHex(), "e09bff42f10e137f3ba97265d392115177d2560853e54083e1641246bc056c555b67ab56c125d513479efebf111497c934173bfa49b0d0ee4b79acea829b3c16");
 }
 
 TEST_F(TestEd25519Bip32, TestPublicDerivationSoft)
@@ -54,10 +55,10 @@ TEST_F(TestEd25519Bip32, TestPublicDerivationSoft)
 	int index = 1;
 	ASSERT_EQ(KeyPairEd25519::getDerivationType(index), Ed25519DerivationType::SOFT);
 	auto publicRootKey = std::make_shared<TestKeyPairEd25519>(mPublicKey, nullptr, mChainCode);
-	auto child1 = publicRootKey->deriveChild(index);
-	printf("public key: %s\n", child1->getPublicKey()->convertToHex().data());
-	printf("chain code: %s\n", child1->getChainCode()->convertToHex().data());
-	printf("private key: %s\n", child1->getPrivateKey()->convertToHex().data());
+	auto child = publicRootKey->deriveChild(index);
+	EXPECT_EQ(child->getPublicKey()->convertToHex(), "08074fb5fd5c630f0e56a08e1e2bd93a2d10e6edaeb56ca72ca1deb8d8363630");
+	EXPECT_EQ(child->getChainCode()->convertToHex(), "72f1fbf070eed9acbd40f3ba3998d985c734747afd4ffcd22824ceba9249ad71");
+	EXPECT_FALSE(child->getPrivateKey());
 }
 
 TEST_F(TestEd25519Bip32, TestPublicDerivationHard)
@@ -76,7 +77,7 @@ TEST_F(TestEd25519Bip32, TestLowLevelDerivationHelper)
 	auto kr = std::span<const uint8_t, 32>{ mSeed->data(32), 32 };
 
 	keyDerivation::add28Mul8(resultSpan, kl, kr);
-	printf("result: %s\n", resultLocal.convertToHex().data());
+	EXPECT_EQ(resultLocal.convertToHex(), "9d219000768c7fd471c594798a2305e569afd8e5e02180c3bb189e7671656374");
 }
 
 TEST_F(TestEd25519Bip32, TestFromRustLibrary)
@@ -111,9 +112,10 @@ TEST_F(TestEd25519Bip32, TestFromRustLibrary)
 	EXPECT_TRUE(publicKey->isTheSame(pubKey));
 	TestKeyPairEd25519 keyPair(publicKey, privKey, chainCode);
 	auto child = keyPair.deriveChild(0x80000000);
-	printf("public key: %s\n", child->getPublicKey()->convertToHex().data());
-	printf("chain code: %s\n", child->getChainCode()->convertToHex().data());
-	printf("private key: %s\n", child->getPrivateKey()->convertToHex().data());
+
+	EXPECT_EQ(child->getPublicKey()->convertToHex(), "9c99845ae0a60881decf7874b94ad02e7540628b588f8b4305d668cc53986978");
+	EXPECT_EQ(child->getChainCode()->convertToHex(), "608763770eddf77248ab652984b21b849760d1da74a6f5bd633ce41adceef07a");
+	EXPECT_EQ(child->getPrivateKey()->convertToHex(), "60d399da83ef80d8d4f8d223239efdc2b8fef387e1b5219137ffb4e8fbdea15adc9366b7d003af37c11396de9a83734e30e05e851efa32745c9cd7b42712c890");
 }
 
 TEST_F(TestEd25519Bip32, signVerifyTest)

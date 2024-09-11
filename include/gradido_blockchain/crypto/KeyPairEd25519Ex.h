@@ -11,14 +11,14 @@
  * \brief: Key Pairs class for ed25519 extended keys, mainly used for derivation, bip32
 */
 
-class KeyPairEd25519Ex: public KeyPairEd25519
+class GRADIDOBLOCKCHAIN_EXPORT KeyPairEd25519Ex: public KeyPairEd25519
 {
 public:
 	//! \param privateKey: take ownership, release after object destruction
 	//! \param publicKey: copy
 	KeyPairEd25519Ex(memory::ConstBlockPtr publicKey, memory::ConstBlockPtr privateKey, memory::ConstBlockPtr chainCode, uint32_t derivationIndex);
 
-	 ~KeyPairEd25519Ex();
+	virtual ~KeyPairEd25519Ex();
 
 	bool isChildOf(KeyPairEd25519* parent);
 
