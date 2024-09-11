@@ -27,8 +27,7 @@ FILE(GLOB TEST_CRYPTO "crypto/*.cpp" "crypto/*.h")
 FILE(GLOB TEST_INTERACTION "interaction/*.cpp" "interaction/*.h")
 FILE(GLOB TEST_LIB "lib/*.cpp" "lib/*.h")
 FILE(GLOB TEST_MAIN "*.cpp" "*.h")
-FILE(GLOB TEST_MODEL "model/*.cpp" "model/*.h")
-FILE(GLOB TEST_MODEL_PROTOPUF "model/protopuf/*.cpp" "model/protopuf/*.h")
+FILE(GLOB TEST_DATA "data/*.cpp" "data/*.h")
 
 
 SET(TEST_SRC 
@@ -36,8 +35,7 @@ SET(TEST_SRC
   ${TEST_MAIN}
   ${TEST_LIB} 
   ${TEST_CRYPTO}
-  #${TEST_MODEL}
-  #${TEST_MODEL_PROTOPUF} 
+  ${TEST_DATA}
   ${TEST_INTERACTION}
 )
 
@@ -46,8 +44,7 @@ if(MSVC)
 	source_group("lib" FILES ${TEST_LIB})
   source_group("blockchain" FILES ${TEST_BLOCKCHAIN})
   source_group("crypto" FILES ${TEST_CRYPTO})
-  source_group("model\\protopuf" FILES ${TEST_MODEL_PROTOPUF})
-  source_group("model" FILES ${TEST_MODEL})
+  source_group("data" FILES ${TEST_DATA})
   source_group("interaction" FILES ${TEST_INTERACTION})    
   source_group("seeding" FILES ${TEST_SEEDING})    
 endif()

@@ -284,7 +284,7 @@ namespace gradido {
 		) const
 		{
 			std::lock_guard _lock(mWorkMutex);
-			auto it = mMessageIdTransactionNrs.find(iota::MessageId::fromMemoryBlock(*messageId));
+			auto it = mMessageIdTransactionNrs.find(iota::MessageId(*messageId));
 			if (it != mMessageIdTransactionNrs.end()) {
 				return getTransactionForId(it->second);
 			}
@@ -308,7 +308,7 @@ namespace gradido {
 				mTransactionsByPubkey.insert({ involvedAddress, transactionEntry });
 			}
 			mMessageIdTransactionNrs.insert({
-				iota::MessageId::fromMemoryBlock(*confirmedTransaction->getMessageId()),
+				iota::MessageId(*confirmedTransaction->getMessageId()),
 				confirmedTransaction->getId()
 				});
 			mTransactionsByNr.insert({
@@ -386,7 +386,7 @@ namespace gradido {
 					}
 				}
 			}
-			mMessageIdTransactionNrs.erase(iota::MessageId::fromMemoryBlock(*confirmedTransaction->getMessageId()));
+			mMessageIdTransactionNrs.erase(iota::MessageId(*confirmedTransaction->getMessageId()));
 			mTransactionsByNr.erase(confirmedTransaction->getId());
 
 			auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();

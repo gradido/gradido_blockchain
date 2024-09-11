@@ -12,6 +12,12 @@ namespace iota
 	{
 	public:
 		MessageId();
+		//! \param messageId binary version of message id, 32 Bytes expected
+		MessageId(const memory::Block& messageId);
+		//! \param messageIdHex hex version of message id, 64 character expected
+		MessageId(const std::string& messageIdHex);
+
+		operator std::string() const { return toHex(); }
 
 		//! operator needed for MessageId as key in unordered map
 		bool operator==(const MessageId& other) const {
@@ -41,10 +47,9 @@ namespace iota
 						mMessageId[2] == ob.mMessageId[2] &&
 						mMessageId[3] < ob.mMessageId[3]
 						);
-		}
-
-		static MessageId fromMemoryBlock(const memory::Block& bin);
-		memory::Block toMemoryBin() const;
+		}		
+		memory::Block toMemoryBlock() const;
+		std::string toHex() const;
 		bool isEmpty() const;
 
 		inline uint64_t getMessageIdByte(uint8_t index) const { assert(index < 4); return mMessageId[index]; };

@@ -4,24 +4,35 @@
 #include <cassert>
 
 namespace iota {
-	MessageId::MessageId() 
+	MessageId::MessageId()
 	{
 		mMessageId.fill(0);
 	}
 
-	MessageId MessageId::fromMemoryBlock(const memory::Block& bin)
+	MessageId::MessageId(const memory::Block& messageId)
 	{
-		if (bin.size() != 4 * sizeof(uint64_t)) {
-			throw MessageIdFormatException("message id as bin has wrong size", bin);
+		if (messageId.size() != sizeof(uint64_t) * mMessageId.size()) {
+			throw InvalidSizeException("invalid input for message id", sizeof(uint64_t) * mMessageId.size(), messageId.size());
 		}
-		MessageId messageId;
-		memcpy(messageId.mMessageId.data(), bin, 4 * sizeof(uint64_t));
-		return messageId;
+		memcpy(mMessageId.data(), messageId, 4 * sizeof(uint64_t));
 	}
 
-	memory::Block MessageId::toMemoryBin() const
+	MessageId::MessageId(const std::string& messageIdHex)
+		: MessageId(memory::Block::fromHex(messageIdHex))
+	{
+
+	}
+
+	memory::Block MessageId::toMemoryBlock() const
 	{
 		return memory::Block(mMessageId.size() * sizeof(uint64_t), (unsigned char*)mMessageId.data());
+	}
+	std::string MessageId::toHex() const
+	{
+		const auto hexSize = 8 * sizeof(uint64_t) + 1;
+		char hexTmp[hexSize];
+		sodium_bin2hex(hexTmp, hexSize, reinterpret_cast<const unsigned char*>(mMessageId.data()), 4 * sizeof(uint64_t));
+		return std::string(hexTmp, hexSize - 1);
 	}
 
 	bool MessageId::isEmpty() const
