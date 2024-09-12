@@ -1,12 +1,13 @@
 #ifndef __GRADIDO_BLOCKCHAIN_EXCEPTION_H
 #define __GRADIDO_BLOCKCHAIN_EXCEPTION_H
 
-#include <stdexcept>
+#include "types.h"
 #include "gradido_blockchain/export.h"
 #include "memory/Block.h"
 #include "rapidjson/error/error.h"
-
 #include "rapidjson/document.h"
+
+#include <stdexcept>
 
 class GradidoUnit;
 
@@ -202,5 +203,17 @@ public:
 	std::string getFullString() const {
 		return what();
 	}
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT EndDateBeforeStartDateException : public GradidoBlockchainException
+{
+public:
+	explicit EndDateBeforeStartDateException(const char* what, Timepoint startDate, Timepoint endDate) noexcept
+		: GradidoBlockchainException(what), mStartDate(startDate), mEndDate(endDate) {}
+
+	std::string getFullString() const;
+protected:
+	Timepoint mStartDate;
+	Timepoint mEndDate;
 };
 #endif //__GRADIDO_BLOCKCHAIN_EXCEPTION_H

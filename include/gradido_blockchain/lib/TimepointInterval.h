@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_LIB_TIMEPOINT_INTERVAL_H
 
 #include "gradido_blockchain/types.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 #include "date/date.h"
 
 class TimepointInterval
@@ -10,7 +11,11 @@ public:
 	TimepointInterval() {}
 
 	TimepointInterval(Timepoint startDate, Timepoint endDate)
-		: mStartDate(startDate), mEndDate(endDate) {}
+		: mStartDate(startDate), mEndDate(endDate) {
+			if(startDate > endDate) {
+				throw EndDateBeforeStartDateException("end date for timepoint interval is before start date", startDate, endDate);
+			}
+		}
 
 	TimepointInterval(Timepoint date)
 		: mStartDate(date), mEndDate(date) {}
