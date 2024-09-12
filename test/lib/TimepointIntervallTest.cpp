@@ -99,3 +99,10 @@ TEST(TimepointIntervalTest, IteratorChangingYears)
 		++i;
 	}
 }
+
+TEST(TimepointIntervalTest, TestException)
+{
+	auto startDate = Timepoint(seconds{ 1612181859 }); 
+	auto endDate = Timepoint(seconds{ 1596284259 });   
+	EXPECT_THROW(TimepointInterval(startDate, endDate), EndDateBeforeStartDateException);
+}

@@ -86,7 +86,9 @@ int64_t GradidoUnit::calculateDecay(int64_t gradidoCent, int64_t seconds)
 
 Duration GradidoUnit::calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime)
 {
-	assert(endTime > startTime);
+	if(startTime > endTime) {
+		throw EndDateBeforeStartDateException("startTime is before endTime in decay duration", startTime, endTime);
+	}
 	Timepoint start = startTime > DECAY_START_TIME ? startTime : DECAY_START_TIME;
 	Timepoint end = endTime > DECAY_START_TIME ? endTime : DECAY_START_TIME;
 	if (start == end) return std::chrono::seconds{ 0 };

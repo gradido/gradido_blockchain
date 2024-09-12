@@ -1,5 +1,6 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/GradidoUnit.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "rapidjson/error/en.h"
 
 #include <string>
@@ -270,4 +271,13 @@ std::string InvalidGradidoTransaction::getFullString() const
 		ss << "xxd -r -ps <<< \"" << mRawData->convertToHex() << "\" | protoscope";
 	}
 	return ss.str();
+}
+
+// **************************** end date before start date exception **********************************
+std::string EndDateBeforeStartDateException::getFullString() const 
+{
+	std::string result = what();
+	result += ", start date: " + DataTypeConverter::timePointToString(mStartDate);
+	result += ", end date: " + DataTypeConverter::timePointToString(mEndDate);
+	return result;
 }
