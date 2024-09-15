@@ -1,11 +1,10 @@
 
 #include "KeyPairs.h"
-#include "sodium.h"
 
 #include <cstring>
 #include <array>
 
-std::vector<KeyPair> g_KeyPairs;
+std::vector<std::shared_ptr<KeyPairEd25519>> g_KeyPairs;
 
 void generateKeyPairs()
 {
@@ -37,19 +36,12 @@ void generateKeyPairs()
 
 	for (int i = 0; i < seeds.size(); i++)
     {
-		KeyPair keyPair;
-		auto& seed = seeds[i];
-		crypto_hash_sha512(hash, (const unsigned char*)seed, strlen(seed));
-		crypto_sign_seed_keypair(*keyPair.publicKey, *keyPair.privateKey, hash);
-		g_KeyPairs.push_back(keyPair);
+        memory::Block seed(seeds[i]);
+        try {
+            g_KeyPairs.push_back(KeyPairEd25519::create(seed.calculateHash()));
+        }
+        catch (std::exception& e) {
+            printf("exception calling KeyPairEd25519::create: %s\n", e.what());
+        }
 	}
-}
-
-memory::ConstBlockPtr sign(memory::ConstBlockPtr bodyBytes, const KeyPair& keyPair)
-{
-    auto sign = std::make_shared<memory::Block>(crypto_sign_BYTES);
-    unsigned long long actualSignLength = 0;
-    crypto_sign_detached(*sign, &actualSignLength, *bodyBytes, bodyBytes->size(), *keyPair.privateKey);
-    assert(actualSignLength == crypto_sign_BYTES);
-    return sign;
 }

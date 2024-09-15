@@ -9,8 +9,6 @@
 #include "gradido_blockchain/lib/Profiler.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
-#include "gradido_blockchain/TransactionBodyBuilder.h"
-
 
 #include "date/date.h"
 #include "date/tz.h"
@@ -54,12 +52,11 @@ void InMemoryTest::SetUp()
 	auto bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
 
 	// keyPair 0 is public of this community root Transaction
-	auto signature = sign(bodyBytes, g_KeyPairs[0]);
 	auto transaction = make_shared<GradidoTransaction>();
 	GradidoTransactionBuilder builder;
 	builder
 		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[0].publicKey, signature)
+		.sign(g_KeyPairs[0])
 	;
 	mBlockchain->addGradidoTransaction(builder.build(), nullptr, mLastCreatedAt);
 }
@@ -99,26 +96,20 @@ void InMemoryTest::createRegisterAddress(int keyPairIndexStart)
 
 	auto userPubkeyIndex = keyPairIndexStart;
 	auto accountPubkeyIndex = keyPairIndexStart + 1;
-	TransactionBodyBuilder bodyBuilder;
-	bodyBuilder
+
+	GradidoTransactionBuilder builder;
+	builder
 		.setCreatedAt(generateNewCreatedAt())
 		.setVersionNumber(VERSION_STRING)
 		.setRegisterAddress(
-			g_KeyPairs[userPubkeyIndex].publicKey,
+			g_KeyPairs[userPubkeyIndex]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
 			nullptr,
-			g_KeyPairs[accountPubkeyIndex].publicKey
+			g_KeyPairs[accountPubkeyIndex]->getPublicKey()
 		)
-	;
-	auto body = bodyBuilder.build();
-	serialize::Context c(*body);
-	auto bodyBytes = c.run();
-	GradidoTransactionBuilder builder;
-	builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[accountPubkeyIndex].publicKey, sign(bodyBytes, g_KeyPairs[accountPubkeyIndex]))
+		.sign(g_KeyPairs[accountPubkeyIndex])
 		// sign with community root key
-		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
+		.sign(g_KeyPairs[0])
 	;
 		
 	ASSERT_TRUE(mBlockchain->addGradidoTransaction(builder.build(), nullptr, generateNewConfirmedAt(mLastCreatedAt)));
@@ -133,24 +124,17 @@ bool InMemoryTest::createGradidoCreation(
 ) {
 	assert(recipientKeyPairIndex > 0 && recipientKeyPairIndex < g_KeyPairs.size());
 	assert(signerKeyPairIndex > 0 && signerKeyPairIndex < g_KeyPairs.size());
-	TransactionBodyBuilder bodyBuilder;
-	bodyBuilder
+	
+	GradidoTransactionBuilder builder;
+	builder
 		.setMemo("dummy memo")
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[recipientKeyPairIndex].publicKey, amount),
+			TransferAmount(g_KeyPairs[recipientKeyPairIndex]->getPublicKey(), amount),
 			targetDate
 		)
-		;
-	auto body = bodyBuilder.build();
-
-	serialize::Context c(*body);
-	auto bodyBytes = c.run();
-	GradidoTransactionBuilder builder;
-	builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[signerKeyPairIndex].publicKey, sign(bodyBytes, g_KeyPairs[signerKeyPairIndex]))
+		.sign(g_KeyPairs[signerKeyPairIndex])
 	;	
 	return mBlockchain->addGradidoTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
 }
@@ -164,24 +148,16 @@ bool InMemoryTest::createGradidoTransfer(
 	assert(senderKeyPairIndex > 0 && senderKeyPairIndex < g_KeyPairs.size());
 	assert(recipientKeyPairIndex > 0 && recipientKeyPairIndex < g_KeyPairs.size());
 
-	TransactionBodyBuilder bodyBuilder;
-	bodyBuilder
+	GradidoTransactionBuilder builder;
+	builder
 		.setMemo("dummy memo")
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[senderKeyPairIndex].publicKey, amount),
-			g_KeyPairs[recipientKeyPairIndex].publicKey
+			TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount),
+			g_KeyPairs[recipientKeyPairIndex]->getPublicKey()
 		)
-		;
-	auto body = bodyBuilder.build();
-
-	serialize::Context c(*body);
-	auto bodyBytes = c.run();
-	GradidoTransactionBuilder builder;
-	builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[senderKeyPairIndex].publicKey, sign(bodyBytes, g_KeyPairs[senderKeyPairIndex]))
+		.sign(g_KeyPairs[senderKeyPairIndex])
 	;	
 	return mBlockchain->addGradidoTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
 }
@@ -202,7 +178,7 @@ GradidoUnit InMemoryTest::getBalance(int keyPairIndex, Timepoint date)
 		throw std::runtime_error("invalid key pair index");
 	}
 	interaction::calculateAccountBalance::Context c(*mBlockchain);
-	return c.run(g_KeyPairs[keyPairIndex].publicKey, date);
+	return c.run(g_KeyPairs[keyPairIndex]->getPublicKey(), date);
 }
 
 TEST_F(InMemoryTest, FindCommunityRootTransactionByType)
@@ -226,7 +202,7 @@ TEST_F(InMemoryTest, FindCommunityRootTransactionByType)
 TEST_F(InMemoryTest, FindCommunityRootTransactionByPublicKey)
 {
 	Filter f;
-	f.involvedPublicKey = g_KeyPairs[0].publicKey;
+	f.involvedPublicKey = g_KeyPairs[0]->getPublicKey();
 	auto transaction = mBlockchain->findOne(f);
 	ASSERT_TRUE(transaction);
 	EXPECT_TRUE(transaction->getTransactionBody()->isCommunityRoot());
@@ -266,7 +242,7 @@ TEST_F(InMemoryTest, RegisterSomeAddresses)
 	ASSERT_NO_THROW(createRegisterAddress());
 	ASSERT_NO_THROW(createRegisterAddress());
 	Filter f;
-	f.involvedPublicKey = g_KeyPairs[8].publicKey;
+	f.involvedPublicKey = g_KeyPairs[8]->getPublicKey();
 	auto transaction = mBlockchain->findOne(f);
 	ASSERT_TRUE(transaction);
 	EXPECT_TRUE(transaction->getTransactionBody()->isRegisterAddress());

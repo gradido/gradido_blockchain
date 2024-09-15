@@ -15,7 +15,7 @@ namespace gradido {
 				if (Type::TRANSACTION_BODY == mType || Type::UNKNOWN == mType) {
 					try {
 						auto [body, bufferEnd2] = message_coder<TransactionBodyMessage>::decode(mData->span());
-						mTransactionBody = std::move(TransactionBodyRole(body).getBodyBuilder().build());
+						mTransactionBody = std::make_shared<data::TransactionBody>(TransactionBodyRole(body).getBody());
 						mType = Type::TRANSACTION_BODY;
 						return;
 					}

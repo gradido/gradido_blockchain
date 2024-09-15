@@ -33,7 +33,7 @@ TEST(ValidateGradidoTransaction, validCommunityRootGradidoTransaction) {
 
 	auto transaction = builder
 		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
+		.sign(g_KeyPairs[0])
 		.build()
 		;
 	validate::Context c(*transaction);
@@ -59,7 +59,7 @@ TEST(ValidateGradidoTransaction, invalidCommunityRootWrongSigner) {
 
 	auto transaction = builder
 		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[1].publicKey, sign(bodyBytes, g_KeyPairs[1]))
+		.sign(g_KeyPairs[1])
 		.build()
 		;
 	validate::Context c(*transaction);
@@ -74,8 +74,8 @@ TEST(ValidateGradidoTransaction, validRegisterAddressTransaction) {
 	// must be signed two times, with user or account pubkey and with community root pubkey
 	auto transaction = builder
 		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
-		.addSignaturePair(g_KeyPairs[4].publicKey, sign(bodyBytes, g_KeyPairs[4]))
+		.sign(g_KeyPairs[0])
+		.sign(g_KeyPairs[4])
 		.build()
 		;
 	validate::Context c(*transaction);
@@ -103,7 +103,7 @@ TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionMissingSignatu
 	// must be signed two times, with user or account pubkey and with community root pubkey
 	auto transaction = builder
 		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
+		.sign(g_KeyPairs[0])
 		.build()
 		;
 	validate::Context c(*transaction);
@@ -118,8 +118,8 @@ TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionMissingRequire
 	// must be signed two times, with user or account pubkey and with community root pubkey
 	auto transaction = builder
 		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
-		.addSignaturePair(g_KeyPairs[3].publicKey, sign(bodyBytes, g_KeyPairs[3]))
+		.sign(g_KeyPairs[0])
+		.sign(g_KeyPairs[3])
 		.build()
 		;
 	validate::Context c(*transaction);
@@ -134,7 +134,7 @@ TEST(ValidateGradidoTransaction, validGradidoCreationTransaction) {
 
 	auto transaction = builder
 		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[3].publicKey, sign(bodyBytes, g_KeyPairs[3]))
+		.sign(g_KeyPairs[3])
 		.build()
 		;
 	validate::Context c(*transaction);
@@ -161,7 +161,7 @@ TEST(ValidateGradidoTransaction, invalidGradidoCreationTransactionWrongSignature
 
 	auto transaction = builder
 		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[4].publicKey, sign(bodyBytes, g_KeyPairs[4]))
+		.sign(g_KeyPairs[4])
 		.build()
 		;
 	validate::Context c(*transaction);
@@ -175,7 +175,7 @@ TEST(ValidateGradidoTransaction, validGradidoTransferTransaction) {
 
 	auto transaction = builder
 		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[4].publicKey, sign(bodyBytes, g_KeyPairs[4]))
+		.sign(g_KeyPairs[4])
 		.build()
 		;
 	validate::Context c(*transaction);
@@ -201,7 +201,7 @@ TEST(ValidateGradidoTransaction, invalidGradidoTransferTransactionWrongSignature
 
 	auto transaction = builder
 		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[3].publicKey, sign(bodyBytes, g_KeyPairs[3]))
+		.sign(g_KeyPairs[3])
 		.build()
 		;
 	validate::Context c(*transaction);
@@ -215,7 +215,7 @@ TEST(ValidateGradidoTransaction, validGradidoDeferredTransferTransaction) {
 
 	auto transaction = builder
 		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[4].publicKey, sign(bodyBytes, g_KeyPairs[4]))
+		.sign(g_KeyPairs[4])
 		.build()
 		;
 	validate::Context c(*transaction);
@@ -241,7 +241,7 @@ TEST(ValidateGradidoTransaction, invalidGradidoDeferredTransferTransactionWrongS
 
 	auto transaction = builder
 		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[5].publicKey, sign(bodyBytes, g_KeyPairs[5]))
+		.sign(g_KeyPairs[5])
 		.build()
 		;
 	validate::Context c(*transaction);

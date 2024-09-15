@@ -12,13 +12,17 @@
 #include "TransactionType.h"
 
 namespace gradido {
-	class TransactionBodyBuilder;
 	class GradidoTransactionBuilder;
+	namespace interaction {
+		namespace deserialize {
+			class TransactionBodyRole;
+		}
+	}
 	namespace data {
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionBody
 		{
-			friend TransactionBodyBuilder;
 			friend GradidoTransactionBuilder;
+			friend interaction::deserialize::TransactionBodyRole;
 		public:
 			TransactionBody() : mType(CrossGroupType::LOCAL) {}
 			TransactionBody(

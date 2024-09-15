@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
+#include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
@@ -13,17 +14,14 @@ using namespace interaction;
 using namespace std;
 
 TEST(ValidateConfirmedTransactionTest, validCommunityRootGradidoTransaction) {
-	// keyPair 0 is public of this community root Transaction
-	auto bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
-	GradidoTransactionBuilder builder;
-	builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
-	;
+	auto communityRootRaw = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
+	interaction::deserialize::Context deserializer(communityRootRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
+	deserializer.run();
+	ASSERT_TRUE(deserializer.isGradidoTransaction());
 
 	ConfirmedTransaction confirmedTransaction(
 		7,
-		builder.build(),
+		deserializer.getGradidoTransaction(),
 		confirmedAt,
 		VERSION_STRING,
 		make_shared<memory::Block>(32),
@@ -35,17 +33,14 @@ TEST(ValidateConfirmedTransactionTest, validCommunityRootGradidoTransaction) {
 }
 
 TEST(ValidateConfirmedTransactionTest, invalidWrongVersion) {
-	// keyPair 0 is public of this community root Transaction
-	auto bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
-	GradidoTransactionBuilder builder;
-	builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
-		;
+	auto communityRootRaw = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
+	interaction::deserialize::Context deserializer(communityRootRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
+	deserializer.run();
+	ASSERT_TRUE(deserializer.isGradidoTransaction());
 
 	ConfirmedTransaction confirmedTransaction(
 		7,
-		builder.build(),
+		deserializer.getGradidoTransaction(),
 		confirmedAt,
 		"1",
 		make_shared<memory::Block>(32),
@@ -58,17 +53,14 @@ TEST(ValidateConfirmedTransactionTest, invalidWrongVersion) {
 
 
 TEST(ValidateConfirmedTransactionTest, invalidMessageID) {
-	// keyPair 0 is public of this community root Transaction
-	auto bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
-	GradidoTransactionBuilder builder;
-	builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
-		;
+	auto communityRootRaw = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
+	interaction::deserialize::Context deserializer(communityRootRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
+	deserializer.run();
+	ASSERT_TRUE(deserializer.isGradidoTransaction());
 
 	ConfirmedTransaction confirmedTransaction(
 		7,
-		builder.build(),
+		deserializer.getGradidoTransaction(),
 		confirmedAt,
 		VERSION_STRING,
 		make_shared<memory::Block>(10),
@@ -80,17 +72,14 @@ TEST(ValidateConfirmedTransactionTest, invalidMessageID) {
 }
 
 TEST(ValidateConfirmedTransactionTest, invalidConfirmedBeforeCreated) {
-	// keyPair 0 is public of this community root Transaction
-	auto bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
-	GradidoTransactionBuilder builder;
-	builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
-		;
+	auto communityRootRaw = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
+	interaction::deserialize::Context deserializer(communityRootRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
+	deserializer.run();
+	ASSERT_TRUE(deserializer.isGradidoTransaction());
 
 	ConfirmedTransaction confirmedTransaction(
 		7,
-		builder.build(),
+		deserializer.getGradidoTransaction(),
 		createdAt - chrono::seconds{ 1 },
 		VERSION_STRING,
 		make_shared<memory::Block>(32),

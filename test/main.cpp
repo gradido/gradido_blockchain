@@ -49,13 +49,16 @@ extern "C" {
 
 #else
 
-GTEST_API_ int main(int argc, char** argv) {
+// GTEST_API_ 
+int main(int argc, char** argv) {
+	testing::InitGoogleTest(&argc, argv);
 	generateKeyPairs();
 	CryptoConfig::g_ServerCryptoKey = std::make_shared<memory::Block>(memory::Block::fromHex("153afcd54ef316e45cd3e5ed4567cd21"));
 	//printf("Running main() from %s\n", __FILE__);
-	testing::InitGoogleTest(&argc, argv);
+	//
 	auto result = RUN_ALL_TESTS();
 	return result;
+//	return 0;
 }
 
 #endif

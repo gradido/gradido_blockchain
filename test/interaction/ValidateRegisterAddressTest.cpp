@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
-#include "gradido_blockchain/TransactionBodyBuilder.h"
+#include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "../KeyPairs.h"
 #include "const.h"
 
@@ -11,97 +11,97 @@ using namespace interaction;
 using namespace std;
 
 TEST(ValidateRegisterAddressTest, Valid) {
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setRegisterAddress(
-			g_KeyPairs[3].publicKey,
+			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
 			nullptr, 
-			g_KeyPairs[4].publicKey
+			g_KeyPairs[4]->getPublicKey()
 		)
 	;
 	auto body = builder.build();
-	ASSERT_TRUE(body->isRegisterAddress());
+	ASSERT_TRUE(body->getTransactionBody()->isRegisterAddress());
 	validate::Context c(*body);
 	EXPECT_NO_THROW(c.run());
 }
 
 TEST(ValidateRegisterAddressTest, InvalidAddressTypeGMW) {
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setRegisterAddress(
-			g_KeyPairs[3].publicKey,
+			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_GMW,
 			nullptr,
-			g_KeyPairs[4].publicKey
+			g_KeyPairs[4]->getPublicKey()
 		)
 		;
 	auto body = builder.build();
-	ASSERT_TRUE(body->isRegisterAddress());
+	ASSERT_TRUE(body->getTransactionBody()->isRegisterAddress());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::WrongAddressTypeException);
 }
 
 TEST(ValidateRegisterAddressTest, InvalidAddressTypeAUF) {
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setRegisterAddress(
-			g_KeyPairs[3].publicKey,
+			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_AUF,
 			nullptr,
-			g_KeyPairs[4].publicKey
+			g_KeyPairs[4]->getPublicKey()
 		)
 		;
 	auto body = builder.build();
-	ASSERT_TRUE(body->isRegisterAddress());
+	ASSERT_TRUE(body->getTransactionBody()->isRegisterAddress());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::WrongAddressTypeException);
 }
 
 TEST(ValidateRegisterAddressTest, InvalidAddressTypeNONE) {
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setRegisterAddress(
-			g_KeyPairs[3].publicKey,
+			g_KeyPairs[3]->getPublicKey(),
 			AddressType::NONE,
 			nullptr,
-			g_KeyPairs[4].publicKey
+			g_KeyPairs[4]->getPublicKey()
 		)
 		;
 	auto body = builder.build();
-	ASSERT_TRUE(body->isRegisterAddress());
+	ASSERT_TRUE(body->getTransactionBody()->isRegisterAddress());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::WrongAddressTypeException);
 }
 
 TEST(ValidateRegisterAddressTest, UserAndAccountPublicKeySame) {
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setRegisterAddress(
-			g_KeyPairs[3].publicKey,
+			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
 			nullptr,
-			g_KeyPairs[3].publicKey
+			g_KeyPairs[3]->getPublicKey()
 		)
 		;
 	auto body = builder.build();
-	ASSERT_TRUE(body->isRegisterAddress());
+	ASSERT_TRUE(body->getTransactionBody()->isRegisterAddress());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationException);
 }
 
 TEST(ValidateRegisterAddressTest, NullptrPublicKey) {
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
@@ -113,14 +113,14 @@ TEST(ValidateRegisterAddressTest, NullptrPublicKey) {
 		)
 		;
 	auto body = builder.build();
-	ASSERT_TRUE(body->isRegisterAddress());
+	ASSERT_TRUE(body->getTransactionBody()->isRegisterAddress());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationException);
 }
 
 TEST(ValidateRegisterAddressTest, EmptyUserPublicKey) {
 	auto emptyPublicKey = std::make_shared<memory::Block>(32);
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
@@ -128,30 +128,30 @@ TEST(ValidateRegisterAddressTest, EmptyUserPublicKey) {
 			emptyPublicKey,
 			AddressType::COMMUNITY_HUMAN,
 			nullptr,
-			g_KeyPairs[4].publicKey
+			g_KeyPairs[4]->getPublicKey()
 		)
 		;
 	auto body = builder.build();
-	ASSERT_TRUE(body->isRegisterAddress());
+	ASSERT_TRUE(body->getTransactionBody()->isRegisterAddress());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
 
 TEST(ValidateRegisterAddressTest, EmptyAccountPublicKey) {
 	auto emptyPublicKey = std::make_shared<memory::Block>(32);
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setRegisterAddress(
-			g_KeyPairs[3].publicKey,
+			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
 			nullptr,
 			emptyPublicKey
 		)
 		;
 	auto body = builder.build();
-	ASSERT_TRUE(body->isRegisterAddress());
+	ASSERT_TRUE(body->getTransactionBody()->isRegisterAddress());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
@@ -159,7 +159,7 @@ TEST(ValidateRegisterAddressTest, EmptyAccountPublicKey) {
 
 TEST(ValidateRegisterAddressTest, InvalidUserPublicKey) {
 	auto invalidPublicKey = std::make_shared<memory::Block>(10);
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
@@ -167,30 +167,30 @@ TEST(ValidateRegisterAddressTest, InvalidUserPublicKey) {
 			invalidPublicKey,
 			AddressType::COMMUNITY_HUMAN,
 			nullptr,
-			g_KeyPairs[4].publicKey
+			g_KeyPairs[4]->getPublicKey()
 		)
 		;
 	auto body = builder.build();
-	ASSERT_TRUE(body->isRegisterAddress());
+	ASSERT_TRUE(body->getTransactionBody()->isRegisterAddress());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
 
 TEST(ValidateRegisterAddressTest, InvalidAccountPublicKey) {
 	auto invalidPublicKey = std::make_shared<memory::Block>(10);
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setRegisterAddress(
-			g_KeyPairs[3].publicKey,
+			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
 			nullptr,
 			invalidPublicKey
 		)
 		;
 	auto body = builder.build();
-	ASSERT_TRUE(body->isRegisterAddress());
+	ASSERT_TRUE(body->getTransactionBody()->isRegisterAddress());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }

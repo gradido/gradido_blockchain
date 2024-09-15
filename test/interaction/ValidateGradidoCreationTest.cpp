@@ -2,7 +2,7 @@
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
-#include "gradido_blockchain/TransactionBodyBuilder.h"
+#include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "../KeyPairs.h"
 #include "const.h"
 
@@ -15,36 +15,36 @@ constexpr auto memo = "Deine erste Schoepfung;)";
 
 
 TEST(ValidateGradidoCreationTest, valid) {
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setMemo(memo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4].publicKey, "1000.00"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
 			TimestampSeconds(1609459000)
 		)
 	;
 	auto body = builder.build();
-	ASSERT_TRUE(body->isCreation());
+	ASSERT_TRUE(body->getTransactionBody()->isCreation());
 	validate::Context c(*body);
 	EXPECT_NO_THROW(c.run());
 }
 
 TEST(ValidateGradidoCreationTest, invalidMemoEmpty) {
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		// not set memo => empty memo
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4].publicKey, "1000.00"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
 			TimestampSeconds(1609459000)
 		)
 		;
 	auto body = builder.build();
 
-	ASSERT_TRUE(body->isCreation());
+	ASSERT_TRUE(body->getTransactionBody()->isCreation());
 	validate::Context c(*body);
 	// empty memo
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
@@ -52,19 +52,19 @@ TEST(ValidateGradidoCreationTest, invalidMemoEmpty) {
 
 
 TEST(ValidateGradidoCreationTest, invalidMemoToShort) {
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setMemo("hall")
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4].publicKey, "1000.00"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
 			TimestampSeconds(1609459000)
 		)
 		;
 	auto body = builder.build();
 
-	ASSERT_TRUE(body->isCreation());
+	ASSERT_TRUE(body->getTransactionBody()->isCreation());
 	validate::Context c(*body);
 	// to short
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
@@ -72,19 +72,19 @@ TEST(ValidateGradidoCreationTest, invalidMemoToShort) {
 
 
 TEST(ValidateGradidoCreationTest, invalidMemoToBig) {
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setMemo(std::string(451, 'a')) // fill with 451 x a
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4].publicKey, "1000.00"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
 			TimestampSeconds(1609459000)
 		)
 		;
 	auto body = builder.build();
 
-	ASSERT_TRUE(body->isCreation());
+	ASSERT_TRUE(body->getTransactionBody()->isCreation());
 	validate::Context c(*body);
 
 	// to big
@@ -92,55 +92,55 @@ TEST(ValidateGradidoCreationTest, invalidMemoToBig) {
 }
 
 TEST(ValidateGradidoCreationTest, invalidAmountNegative) {
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setMemo(memo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
 			// negative amount
-			TransferAmount(g_KeyPairs[4].publicKey, "-1000.00"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), "-1000.00"),
 			TimestampSeconds(1609459000)
 		)
 		;
 	auto body = builder.build();
-	ASSERT_TRUE(body->isCreation());
+	ASSERT_TRUE(body->getTransactionBody()->isCreation());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
 
 TEST(ValidateGradidoCreationTest, invalidAmountZero) {
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setMemo(memo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
 			// zero amount
-			TransferAmount(g_KeyPairs[4].publicKey, "0"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), "0"),
 			TimestampSeconds(1609459000)
 		)
 		;
 	auto body = builder.build();
-	ASSERT_TRUE(body->isCreation());
+	ASSERT_TRUE(body->getTransactionBody()->isCreation());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
 
 TEST(ValidateGradidoCreationTest, invalidAmountToBig) {
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setMemo(memo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
 			// to big amount, only 1000 per month allowed
-			TransferAmount(g_KeyPairs[4].publicKey, "2000.00"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), "2000.00"),
 			TimestampSeconds(1609459000)
 		)
 		;
 	auto body = builder.build();
-	ASSERT_TRUE(body->isCreation());
+	ASSERT_TRUE(body->getTransactionBody()->isCreation());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
@@ -148,44 +148,44 @@ TEST(ValidateGradidoCreationTest, invalidAmountToBig) {
 
 TEST(ValidateGradidoCreationTest, InvalidCoinCommunityIdIdenticalToBlockchainCommunityId) {
 	std::string communityId = "testGroup";
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setMemo(memo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
 			// coin community id is identical to blockchain community id to which transaction belong
-			TransferAmount(g_KeyPairs[4].publicKey, "1000.00", communityId),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00", communityId),
 			TimestampSeconds(1609459000)
 		)
 		;
 	auto body = builder.build();
-	ASSERT_TRUE(body->isCreation());
+	ASSERT_TRUE(body->getTransactionBody()->isCreation());
 
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(validate::Type::SINGLE, communityId), validate::TransactionValidationInvalidInputException);
 }
 
 TEST(ValidateGradidoCreationTest, InvalidCoinCommunityId) {
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setMemo(memo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4].publicKey, "1000.00", "<script>"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00", "<script>"),
 			TimestampSeconds(1609459000)
 		)
 		;
 	auto body = builder.build();
-	ASSERT_TRUE(body->isCreation());
+	ASSERT_TRUE(body->getTransactionBody()->isCreation());
 
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(validate::Type::SINGLE), validate::TransactionValidationInvalidInputException);
 }
 
 TEST(ValidateGradidoCreationTest, NullptrRecipientPublicKey) {
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setMemo(memo)
 		.setCreatedAt(createdAt)
@@ -197,14 +197,14 @@ TEST(ValidateGradidoCreationTest, NullptrRecipientPublicKey) {
 		;
 	auto body = builder.build();
 
-	ASSERT_TRUE(body->isCreation());
+	ASSERT_TRUE(body->getTransactionBody()->isCreation());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
 
 TEST(ValidateGradidoCreationTest, EmptyRecipientPublicKey) {
 	auto emptyPublicKey = std::make_shared<memory::Block>(32);
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setMemo(memo)
 		.setCreatedAt(createdAt)
@@ -216,7 +216,7 @@ TEST(ValidateGradidoCreationTest, EmptyRecipientPublicKey) {
 		;
 	auto body = builder.build();
 
-	ASSERT_TRUE(body->isCreation());
+	ASSERT_TRUE(body->getTransactionBody()->isCreation());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
@@ -224,7 +224,7 @@ TEST(ValidateGradidoCreationTest, EmptyRecipientPublicKey) {
 
 TEST(ValidateGradidoCreationTest, InvalidRecipientPublicKey) {
 	auto invalidPublicKey = std::make_shared<memory::Block>(18);
-	TransactionBodyBuilder builder;
+	GradidoTransactionBuilder builder;
 	builder
 		.setMemo(memo)
 		.setCreatedAt(createdAt)
@@ -236,7 +236,7 @@ TEST(ValidateGradidoCreationTest, InvalidRecipientPublicKey) {
 		;
 	auto body = builder.build();
 
-	ASSERT_TRUE(body->isCreation());
+	ASSERT_TRUE(body->getTransactionBody()->isCreation());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
