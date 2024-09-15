@@ -46,13 +46,7 @@ namespace gradido {
 		//! \param createAt timestamp when transaction where created
 		inline TransactionBodyBuilder& setCreatedAt(Timepoint createdAt);
 		inline TransactionBodyBuilder& setMemo(std::string_view memo);
-		inline TransactionBodyBuilder& setVersionNumber(std::string_view versionNumber);
-
-		//! LOCAL is default value, if this function isn't called
-		inline TransactionBodyBuilder& setCrossGroupType(data::CrossGroupType type);
-
-		//! only needed for cross group transactions
-		inline TransactionBodyBuilder& setOtherGroup(std::string_view otherGroup);
+		inline TransactionBodyBuilder& setVersionNumber(std::string_view versionNumber);		
 	protected:
 		std::unique_ptr<data::TransactionBody> mBody;
 		bool mSpecificTransactionChoosen;
@@ -159,17 +153,6 @@ namespace gradido {
 		mBody->mVersionNumber = versionNumber;
 		return *this;
 	}
-
-	TransactionBodyBuilder& TransactionBodyBuilder::setCrossGroupType(data::CrossGroupType type) {
-		mBody->mType = type;
-		return *this;
-	}
-
-	TransactionBodyBuilder& TransactionBodyBuilder::setOtherGroup(std::string_view otherGroup) {
-		mBody->mOtherGroup = otherGroup;
-		return *this;
-	}
-
 }
 
 #endif //__GRADIDO_BLOCKCHAIN_TRANSACTION_BODY_BUILDER_H

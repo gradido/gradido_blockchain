@@ -10,6 +10,9 @@ namespace gradido {
 		{
 			std::scoped_lock _lock(mTransactionBodyMutex);
 			if (mTransactionBody) return mTransactionBody;
+			if(!mBodyBytes || mBodyBytes->isEmpty()) {
+				throw GradidoNullPointerException("body bytes missing", "bodyBytes", __FUNCTION__);
+			}
 
 			deserialize::Context c(mBodyBytes, deserialize::Type::TRANSACTION_BODY);
 			c.run();

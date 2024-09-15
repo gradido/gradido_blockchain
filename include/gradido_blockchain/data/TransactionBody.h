@@ -13,10 +13,12 @@
 
 namespace gradido {
 	class TransactionBodyBuilder;
+	class GradidoTransactionBuilder;
 	namespace data {
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionBody
 		{
 			friend TransactionBodyBuilder;
+			friend GradidoTransactionBuilder;
 		public:
 			TransactionBody() : mType(CrossGroupType::LOCAL) {}
 			TransactionBody(
