@@ -15,6 +15,7 @@ namespace gradido {
 
 			//! attention! not thread safe
 			void push(const SignaturePair& signaturePair);
+			inline void clear() { mSignaturePairs.clear(); }
 			inline const std::vector<SignaturePair>& getSignaturePairs() const { return mSignaturePairs; }
 
 		protected:

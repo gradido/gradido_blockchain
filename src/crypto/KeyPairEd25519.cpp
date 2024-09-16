@@ -56,7 +56,7 @@ std::shared_ptr<KeyPairEd25519> KeyPairEd25519::create(const memory::Block& seed
 		throw Ed25519InvalidSeedException("seed to short, need at least 32 Bytes, 64 Character as hex", seed.convertToHex());
 	}
 	auto chainCode = std::make_shared<memory::Block>(ED25519_CHAIN_CODE_SIZE);
-	auto privateKey = std::make_shared<memory::Block>(ED25519_PRIVATE_KEY_SIZE);
+	auto privateKey = std::make_shared<memory::Block>(ED25519_PRIVATE_KEY_SIZE);	
 
 	// secret key: modified sha512(seed)
 	crypto_hash_sha512(*privateKey, seed, 32);
@@ -64,7 +64,7 @@ std::shared_ptr<KeyPairEd25519> KeyPairEd25519::create(const memory::Block& seed
 	kl[0] &= 0b11111000;
 	kl[31] &= 0b00011111;
 	kl[31] |= 0b01000000;
-
+	
 	// public key: scalar multiplication
 	auto publicKey = std::make_shared<memory::Block>(calculatePublicKey(*privateKey));
 
@@ -87,6 +87,19 @@ memory::Block KeyPairEd25519::calculatePublicKey(const memory::Block& privateKey
 	memory::Block pubkey(ED25519_PUBLIC_KEY_SIZE);
 	crypto_scalarmult_ed25519_base(pubkey, privateKey);
 	return pubkey;
+}
+
+void KeyPairEd25519::validatePublicKey(memory::ConstBlockPtr publicKey)
+{
+	if (!publicKey) {
+		throw GradidoNullPointerException("pubkey cannot be a nullptr", "memory::Block", __FUNCTION__);
+	}
+	if (publicKey->isEmpty()) {
+		throw GradidoNodeInvalidDataException("pubkey cannot be empty");
+	}
+	if (ED25519_PUBLIC_KEY_SIZE != publicKey->size()) {
+		throw Ed25519InvalidKeyException("invalid key size for public key", *publicKey, ED25519_PUBLIC_KEY_SIZE);
+	}
 }
 
 Ed25519DerivationType KeyPairEd25519::getDerivationType(uint32_t index)

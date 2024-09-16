@@ -49,6 +49,8 @@ public:
 	//! \param seed 32 Byte seed
 	static std::shared_ptr<KeyPairEd25519> create(const memory::Block& seed);
 	static memory::Block calculatePublicKey(const memory::Block& privateKey);
+	//! throw exception if public key is invalid
+	static void validatePublicKey(memory::ConstBlockPtr publicKey);
 
 	std::shared_ptr<KeyPairEd25519Ex> deriveChild(uint32_t index) const;
 	static Ed25519DerivationType getDerivationType(uint32_t index);

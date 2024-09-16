@@ -17,17 +17,16 @@ TEST(GradidoTransactionBuilderTest, SignTransaction) {
 		VERSION_STRING
 	);
 	GradidoTransactionBuilder builder;
-	auto keyPair = make_shared<KeyPairEd25519>(g_KeyPairs[0].publicKey, g_KeyPairs[0].privateKey);
 	auto gradidoTransaction = builder
 		.setTransactionBody(std::move(body))
-		.sign(keyPair)
+		.sign(g_KeyPairs[0])
 		.build();
 
 	ASSERT_EQ(gradidoTransaction->getBodyBytes()->convertToBase64(),
 		"CgASCAiAzLn/BRAAGgMzLjMgAA=="
 	);
 	ASSERT_EQ(gradidoTransaction->getSignatureMap().getSignaturePairs().front().getSignature()->convertToHex(),
-		"2d9ab75e055a4853ce3cf69b8a121b052b32a50332b87ee540c6e1cfd5914ef9e485366d779478f104a39eee79d907b3a9aae64b95878c812562b2cd4ae71504"
+		"04e0d0f6c4bbd2d87dc879fc5f72be48dbf682c888757fd5d3d6da0af4026fecc25edf7aeba19ced1e5f481d2619d4d62bf3bc357e93a053dde942a05584e400"
 	);
 
 	//EXPECT_EQ(*gradidoTransaction->mBodyBytes, )

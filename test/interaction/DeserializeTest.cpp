@@ -13,13 +13,16 @@ using namespace interaction;
 TEST(DeserializeTest, CommunityRootBody)
 {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
-	deserialize::Context context(rawData, deserialize::Type::TRANSACTION_BODY);
+	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
 	context.run();
-	ASSERT_TRUE(context.isTransactionBody());
+	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
-	EXPECT_FALSE(context.isGradidoTransaction());
+	ASSERT_TRUE(context.isGradidoTransaction());
 
-	auto body = context.getTransactionBody();
+	auto transaction = context.getGradidoTransaction();
+	ASSERT_TRUE(transaction);
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body);
 	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
@@ -32,21 +35,24 @@ TEST(DeserializeTest, CommunityRootBody)
 	EXPECT_FALSE(body->isTransfer());
 
 	auto communityRoot = body->getCommunityRoot();
-	EXPECT_TRUE(communityRoot->getPubkey()->isTheSame(g_KeyPairs[0].publicKey));
-	EXPECT_TRUE(communityRoot->getGmwPubkey()->isTheSame(g_KeyPairs[1].publicKey));
-	EXPECT_TRUE(communityRoot->getAufPubkey()->isTheSame(g_KeyPairs[2].publicKey));
+	EXPECT_TRUE(communityRoot->getPubkey()->isTheSame(g_KeyPairs[0]->getPublicKey()));
+	EXPECT_TRUE(communityRoot->getGmwPubkey()->isTheSame(g_KeyPairs[1]->getPublicKey()));
+	EXPECT_TRUE(communityRoot->getAufPubkey()->isTheSame(g_KeyPairs[2]->getPublicKey()));
 }
 
 
 TEST(DeserializeTest, RegisterAddressBody) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(registeAddressTransactionBase64));
-	deserialize::Context context(rawData, deserialize::Type::TRANSACTION_BODY);
+	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
 	context.run();
-	ASSERT_TRUE(context.isTransactionBody());
+	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
-	EXPECT_FALSE(context.isGradidoTransaction());
+	ASSERT_TRUE(context.isGradidoTransaction());
 
-	auto body = context.getTransactionBody();
+	auto transaction = context.getGradidoTransaction();
+	ASSERT_TRUE(transaction);
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body);
 	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
@@ -61,22 +67,25 @@ TEST(DeserializeTest, RegisterAddressBody) {
 	auto registerAddress = body->getRegisterAddress();
 	EXPECT_EQ(registerAddress->getAddressType(), AddressType::COMMUNITY_HUMAN);
 	EXPECT_EQ(registerAddress->getDerivationIndex(), 1);
-	EXPECT_TRUE(registerAddress->getUserPublicKey()->isTheSame(g_KeyPairs[3].publicKey));
+	EXPECT_TRUE(registerAddress->getUserPublicKey()->isTheSame(g_KeyPairs[3]->getPublicKey()));
 	EXPECT_FALSE(registerAddress->getNameHash());
-	EXPECT_TRUE(registerAddress->getAccountPublicKey()->isTheSame(g_KeyPairs[4].publicKey));
+	EXPECT_TRUE(registerAddress->getAccountPublicKey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
 }
 
 
 TEST(DeserializeTest, GradidoCreationBody) {
 
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(creationTransactionBase64));
-	deserialize::Context context(rawData, deserialize::Type::TRANSACTION_BODY);
+	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
 	context.run();
-	ASSERT_TRUE(context.isTransactionBody());
+	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
-	EXPECT_FALSE(context.isGradidoTransaction());
+	ASSERT_TRUE(context.isGradidoTransaction());
 
-	auto body = context.getTransactionBody();
+	auto transaction = context.getGradidoTransaction();
+	ASSERT_TRUE(transaction);
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body);
 	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
@@ -92,7 +101,7 @@ TEST(DeserializeTest, GradidoCreationBody) {
 	auto creation = body->getCreation();
 	auto& recipient = creation->getRecipient();
 	EXPECT_EQ(recipient.getAmount().toString(), "1000.0000");
-	EXPECT_TRUE(recipient.getPubkey()->isTheSame(g_KeyPairs[4].publicKey));
+	EXPECT_TRUE(recipient.getPubkey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
 	EXPECT_EQ(creation->getTargetDate(), targetDate);
 }
 
@@ -100,13 +109,16 @@ TEST(DeserializeTest, GradidoCreationBody) {
 
 TEST(DeserializeTest, GradidoTransferBody) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(transferTransactionBase64));
-	deserialize::Context context(rawData, deserialize::Type::TRANSACTION_BODY);
+	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
 	context.run();
-	ASSERT_TRUE(context.isTransactionBody());
+	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
-	EXPECT_FALSE(context.isGradidoTransaction());
+	ASSERT_TRUE(context.isGradidoTransaction());
 
-	auto body = context.getTransactionBody();
+	auto transaction = context.getGradidoTransaction();
+	ASSERT_TRUE(transaction);
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body);
 	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
@@ -122,20 +134,23 @@ TEST(DeserializeTest, GradidoTransferBody) {
 	auto transfer = body->getTransfer();
 	auto& sender = transfer->getSender();
 	EXPECT_EQ(sender.getAmount().toString(), "500.5500");
-	EXPECT_TRUE(sender.getPubkey()->isTheSame(g_KeyPairs[4].publicKey));
-	EXPECT_TRUE(transfer->getRecipient()->isTheSame(g_KeyPairs[5].publicKey));
+	EXPECT_TRUE(sender.getPubkey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
+	EXPECT_TRUE(transfer->getRecipient()->isTheSame(g_KeyPairs[5]->getPublicKey()));
 }
 
 
 TEST(DeserializeTest, GradidoDeferredTransferBody) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(deferredTransferTransactionBase64));
-	deserialize::Context context(rawData, deserialize::Type::TRANSACTION_BODY);
+	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
 	context.run();
-	ASSERT_TRUE(context.isTransactionBody());
+	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
-	EXPECT_FALSE(context.isGradidoTransaction());
+	ASSERT_TRUE(context.isGradidoTransaction());
 
-	auto body = context.getTransactionBody();
+	auto transaction = context.getGradidoTransaction();
+	ASSERT_TRUE(transaction);
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body);
 	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
@@ -152,21 +167,24 @@ TEST(DeserializeTest, GradidoDeferredTransferBody) {
 	auto& transfer = deferredTransfer->getTransfer();
 	auto& sender = transfer.getSender();
 	EXPECT_EQ(sender.getAmount().toString(), "555.5500");
-	EXPECT_TRUE(sender.getPubkey()->isTheSame(g_KeyPairs[4].publicKey));
-	EXPECT_TRUE(transfer.getRecipient()->isTheSame(g_KeyPairs[5].publicKey));
+	EXPECT_TRUE(sender.getPubkey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
+	EXPECT_TRUE(transfer.getRecipient()->isTheSame(g_KeyPairs[5]->getPublicKey()));
 	EXPECT_EQ(deferredTransfer->getTimeout(), timeout);
 }
 
 
 TEST(DeserializeTest, CommunityFriendsUpdateBody) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(communityFriendsUpdateBase64));
-	deserialize::Context context(rawData, deserialize::Type::TRANSACTION_BODY);
+	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
 	context.run();
-	ASSERT_TRUE(context.isTransactionBody());
+	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
-	EXPECT_FALSE(context.isGradidoTransaction());
+	ASSERT_TRUE(context.isGradidoTransaction());
 
-	auto body = context.getTransactionBody();
+	auto transaction = context.getGradidoTransaction();
+	ASSERT_TRUE(transaction);
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body);
 	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
@@ -185,7 +203,7 @@ TEST(DeserializeTest, CommunityFriendsUpdateBody) {
 
 TEST(DeserializeTest, GradidoTransaction) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(gradidoTransactionSignedInvalidBody));
-	deserialize::Context context(rawData, deserialize::Type::TRANSACTION_BODY);
+	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
 	context.run();
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
@@ -200,7 +218,7 @@ TEST(DeserializeTest, GradidoTransaction) {
 		*firstSignaturePair.getSignature(),
 		bodyBytes,
 		bodyBytes.size(),
-		*g_KeyPairs[3].publicKey
+		*g_KeyPairs[3]->getPublicKey()
 	), 0);
 }
 
@@ -241,15 +259,13 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_EQ(confirmedTransaction->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(confirmedTransaction->getAccountBalance().toString(), "899.7484");
 	ASSERT_EQ(confirmedTransaction->getRunningHash()->size(), crypto_generichash_BYTES);
-	EXPECT_EQ(confirmedTransaction->getRunningHash()->convertToHex(), "882700c5d5acc7381a9da4861edb90adbbabc7d642869fdd572b345e5665d85a");
+	EXPECT_EQ(confirmedTransaction->getRunningHash()->convertToHex(), "02c718c2d4154829e6e64ed4cb0aeebb5df4cb4f285f49cc299cb286da242afd");
 
 	auto gradidoTransaction = confirmedTransaction->getGradidoTransaction();
 	auto firstSignature = gradidoTransaction->getSignatureMap().getSignaturePairs().front().getSignature();
 	auto bodyBytes = gradidoTransaction->getBodyBytes();
-	KeyPairEd25519 keyPair(g_KeyPairs[0].publicKey, g_KeyPairs[0].privateKey);
-	EXPECT_TRUE(keyPair.verify(*bodyBytes, *firstSignature));
-	KeyPairEd25519 keyPair2(g_KeyPairs[2].publicKey, g_KeyPairs[2].privateKey);
-	EXPECT_FALSE(keyPair2.verify(*bodyBytes, *firstSignature));
+	EXPECT_TRUE(g_KeyPairs[0]->verify(*bodyBytes, *firstSignature));
+	EXPECT_FALSE(g_KeyPairs[2]->verify(*bodyBytes, *firstSignature));
 
 	deserialize::Context secondContext(bodyBytes);
 	secondContext.run();
@@ -266,6 +282,6 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	auto transfer = body->getTransfer();
 	auto& sender = transfer->getSender();
 	EXPECT_EQ(sender.getAmount().toString(), "100.2516");
-	EXPECT_TRUE(sender.getPubkey()->isTheSame(g_KeyPairs[4].publicKey));
-	EXPECT_TRUE(transfer->getRecipient()->isTheSame(g_KeyPairs[5].publicKey));	
+	EXPECT_TRUE(sender.getPubkey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
+	EXPECT_TRUE(transfer->getRecipient()->isTheSame(g_KeyPairs[5]->getPublicKey()));	
 }

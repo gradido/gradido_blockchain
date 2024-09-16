@@ -2,6 +2,7 @@
 #include "gradido_blockchain/interaction/validate/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
+#include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "../KeyPairs.h"
 #include "const.h"
@@ -14,236 +15,241 @@ using namespace std;
 using namespace memory;
 
 
-TEST(ValidateGradidoTransaction, invalidBody) {
+TEST(ValidateGradidoTransaction, invalidBody) 
+{
 	constexpr auto invalidBodyString =
 		"''To be yourself in a world that is constantly trying to make you something else is the greatest accomplishment.''\n - Ralph Waldo Emerson ";
 
 	GradidoTransactionBuilder builder;	
-	auto transaction = builder
-		.setTransactionBody(make_shared<Block>(invalidBodyString))
-		.build()
-	;
-	validate::Context c(*transaction);
-	EXPECT_THROW(c.run(), GradidoNullPointerException);
+	EXPECT_THROW(builder.setTransactionBody(make_shared<Block>(invalidBodyString)), GradidoTransactionBuilderException);
 }
 
-TEST(ValidateGradidoTransaction, validCommunityRootGradidoTransaction) {
+TEST(ValidateGradidoTransaction, validCommunityRootGradidoTransaction) 
+{
 	GradidoTransactionBuilder builder;
-	auto bodyBytes = make_shared<Block>(Block::fromBase64(communityRootTransactionBase64));
-
-	auto transaction = builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
-		.build()
+	builder
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setCommunityRoot(
+			g_KeyPairs[0]->getPublicKey(),
+			g_KeyPairs[1]->getPublicKey(),
+			g_KeyPairs[2]->getPublicKey()
+		)
+		.sign(g_KeyPairs[0])
 		;
+	auto transaction = builder.build();
+
 	validate::Context c(*transaction);
+	// no signature at all
 	EXPECT_NO_THROW(c.run());
 }
 
-TEST(ValidateGradidoTransaction, invalidCommunityRootNotSigned) {
+
+TEST(ValidateGradidoTransaction, invalidCommunityRootWrongSigner) 
+{
 	GradidoTransactionBuilder builder;
-	auto bodyBytes = make_shared<Block>(Block::fromBase64(communityRootTransactionBase64));
-
-	auto transaction = builder
-		.setTransactionBody(bodyBytes)
-		.build()
+	builder
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setCommunityRoot(
+			g_KeyPairs[0]->getPublicKey(),
+			g_KeyPairs[1]->getPublicKey(),
+			g_KeyPairs[2]->getPublicKey()
+		)
+		.sign(g_KeyPairs[1])
 		;
-	validate::Context c(*transaction);
-	// no signature at all
-	EXPECT_THROW(c.run(), validate::TransactionValidationMissingSignException);
-}
+	auto transaction = builder.build();
 
-TEST(ValidateGradidoTransaction, invalidCommunityRootWrongSigner) {
-	GradidoTransactionBuilder builder;
-	auto bodyBytes = make_shared<Block>(Block::fromBase64(communityRootTransactionBase64));
-
-	auto transaction = builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[1].publicKey, sign(bodyBytes, g_KeyPairs[1]))
-		.build()
-		;
 	validate::Context c(*transaction);
 	// no signature at all
 	EXPECT_THROW(c.run(), validate::TransactionValidationRequiredSignMissingException);
 }
 
-TEST(ValidateGradidoTransaction, validRegisterAddressTransaction) {
+TEST(ValidateGradidoTransaction, validRegisterAddressTransaction) 
+{
 	GradidoTransactionBuilder builder;
-	auto bodyBytes = make_shared<Block>(Block::fromBase64(registeAddressTransactionBase64));
-
-	// must be signed two times, with user or account pubkey and with community root pubkey
-	auto transaction = builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
-		.addSignaturePair(g_KeyPairs[4].publicKey, sign(bodyBytes, g_KeyPairs[4]))
-		.build()
+	builder
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setRegisterAddress(
+			g_KeyPairs[3]->getPublicKey(),
+			AddressType::COMMUNITY_HUMAN,
+			nullptr,
+			g_KeyPairs[4]->getPublicKey()
+		)
+		.sign(g_KeyPairs[0])
+		.sign(g_KeyPairs[4])
 		;
+	auto transaction = builder.build();
+
 	validate::Context c(*transaction);
 	EXPECT_NO_THROW(c.run());
 }
 
-TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionWithoutSignature) {
+TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionMissingSignature) 
+{
 	GradidoTransactionBuilder builder;
-	auto bodyBytes = make_shared<Block>(Block::fromBase64(registeAddressTransactionBase64));
-
-	// must be signed two times, with user or account pubkey and with community root pubkey
-	auto transaction = builder
-		.setTransactionBody(bodyBytes)
-		.build()
+	builder
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setRegisterAddress(
+			g_KeyPairs[3]->getPublicKey(),
+			AddressType::COMMUNITY_HUMAN,
+			nullptr,
+			g_KeyPairs[4]->getPublicKey()
+		)
+		.sign(g_KeyPairs[0])
 		;
-	validate::Context c(*transaction);
-	// missing signature
-	EXPECT_THROW(c.run(), validate::TransactionValidationMissingSignException);
-}
+	auto transaction = builder.build();
 
-TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionMissingSignature) {
-	GradidoTransactionBuilder builder;
-	auto bodyBytes = make_shared<Block>(Block::fromBase64(registeAddressTransactionBase64));
-
-	// must be signed two times, with user or account pubkey and with community root pubkey
-	auto transaction = builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
-		.build()
-		;
 	validate::Context c(*transaction);
 	// still missing signature
 	EXPECT_THROW(c.run(), validate::TransactionValidationMissingSignException);
 }
 
-TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionMissingRequiredSignature) {
-	GradidoTransactionBuilder builder;
-	auto bodyBytes = make_shared<Block>(Block::fromBase64(registeAddressTransactionBase64));
+TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionMissingRequiredSignature) 
+{
 
-	// must be signed two times, with user or account pubkey and with community root pubkey
-	auto transaction = builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
-		.addSignaturePair(g_KeyPairs[3].publicKey, sign(bodyBytes, g_KeyPairs[3]))
-		.build()
+	GradidoTransactionBuilder builder;
+	builder
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setRegisterAddress(
+			g_KeyPairs[3]->getPublicKey(),
+			AddressType::COMMUNITY_HUMAN,
+			nullptr,
+			g_KeyPairs[4]->getPublicKey()
+		)
+		.sign(g_KeyPairs[0])
+		.sign(g_KeyPairs[3])
 		;
+	auto transaction = builder.build();
+
 	validate::Context c(*transaction);
 	// account public key set but signed with user pubkey, so sign with account pubkey is still missing
 	EXPECT_THROW(c.run(), validate::TransactionValidationRequiredSignMissingException);
 }
 
 
-TEST(ValidateGradidoTransaction, validGradidoCreationTransaction) {
+TEST(ValidateGradidoTransaction, validGradidoCreationTransaction) 
+{
 	GradidoTransactionBuilder builder;
-	auto bodyBytes = make_shared<Block>(Block::fromBase64(creationTransactionBase64));
-
-	auto transaction = builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[3].publicKey, sign(bodyBytes, g_KeyPairs[3]))
-		.build()
+	builder
+		.setMemo("Deine erste Schoepfung ;)")
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setTransactionCreation(
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
+			TimestampSeconds(1609459000)
+		)
+		.sign(g_KeyPairs[6])
 		;
+	auto transaction = builder.build();
+
 	validate::Context c(*transaction);
 	EXPECT_NO_THROW(c.run());
 }
 
-TEST(ValidateGradidoTransaction, invalidGradidoCreationTransactionMissingSignature) {
-	GradidoTransactionBuilder builder;
-	auto bodyBytes = make_shared<Block>(Block::fromBase64(creationTransactionBase64));
-
-	auto transaction = builder
-		.setTransactionBody(bodyBytes)
-		.build()
-		;
-	validate::Context c(*transaction);
-	// no signature at all
-	EXPECT_THROW(c.run(), validate::TransactionValidationMissingSignException);
-}
-
 // creation transaction must be signed by another user
-TEST(ValidateGradidoTransaction, invalidGradidoCreationTransactionWrongSignature) {
+TEST(ValidateGradidoTransaction, invalidGradidoCreationTransactionWrongSignature) 
+{
 	GradidoTransactionBuilder builder;
-	auto bodyBytes = make_shared<Block>(Block::fromBase64(creationTransactionBase64));
-
-	auto transaction = builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[4].publicKey, sign(bodyBytes, g_KeyPairs[4]))
-		.build()
+	builder
+		.setMemo("Deine erste Schoepfung ;)")
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setTransactionCreation(
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
+			TimestampSeconds(1609459000)
+		)
+		.sign(g_KeyPairs[4])
 		;
+	auto transaction = builder.build();
+
 	validate::Context c(*transaction);
 	// wrong signer
 	EXPECT_THROW(c.run(), validate::TransactionValidationForbiddenSignException);
 }
 
-TEST(ValidateGradidoTransaction, validGradidoTransferTransaction) {
+TEST(ValidateGradidoTransaction, validGradidoTransferTransaction) 
+{
 	GradidoTransactionBuilder builder;
-	auto bodyBytes = make_shared<Block>(Block::fromBase64(transferTransactionBase64));
-
-	auto transaction = builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[4].publicKey, sign(bodyBytes, g_KeyPairs[4]))
-		.build()
+	builder
+		.setMemo("Ich teile mit dir")
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setTransactionTransfer(
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
+			g_KeyPairs[5]->getPublicKey()
+		)
+		.sign(g_KeyPairs[4])
 		;
+	auto transaction = builder.build();
+
 	validate::Context c(*transaction);
 	EXPECT_NO_THROW(c.run());
 }
 
-TEST(ValidateGradidoTransaction, invalidGradidoTransferTransactionMissingSignature) {
+TEST(ValidateGradidoTransaction, invalidGradidoTransferTransactionWrongSignature) 
+{
 	GradidoTransactionBuilder builder;
-	auto bodyBytes = make_shared<Block>(Block::fromBase64(transferTransactionBase64));
-
-	auto transaction = builder
-		.setTransactionBody(bodyBytes)
-		.build()
+	builder
+		.setMemo("Ich teile mit dir")
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setTransactionTransfer(
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
+			g_KeyPairs[5]->getPublicKey()
+		)
+		.sign(g_KeyPairs[3])
 		;
-	validate::Context c(*transaction);
-	// missing signer
-	EXPECT_THROW(c.run(), validate::TransactionValidationMissingSignException);
-}
+	auto transaction = builder.build();
 
-TEST(ValidateGradidoTransaction, invalidGradidoTransferTransactionWrongSignature) {
-	GradidoTransactionBuilder builder;
-	auto bodyBytes = make_shared<Block>(Block::fromBase64(transferTransactionBase64));
-
-	auto transaction = builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[3].publicKey, sign(bodyBytes, g_KeyPairs[3]))
-		.build()
-		;
 	validate::Context c(*transaction);
 	// wrong signer, missing required signer, the sender of transaction
 	EXPECT_THROW(c.run(), validate::TransactionValidationRequiredSignMissingException);
 }
 
-TEST(ValidateGradidoTransaction, validGradidoDeferredTransferTransaction) {
+TEST(ValidateGradidoTransaction, validGradidoDeferredTransferTransaction)
+{
 	GradidoTransactionBuilder builder;
-	auto bodyBytes = make_shared<Block>(Block::fromBase64(deferredTransferTransactionBase64));
-
-	auto transaction = builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[4].publicKey, sign(bodyBytes, g_KeyPairs[4]))
-		.build()
+	builder
+		.setMemo("Link zum einloesen")
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setDeferredTransfer(
+			GradidoTransfer(
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), "555.55"),
+				g_KeyPairs[5]->getPublicKey()
+			),
+			timeout
+		)
+		.sign(g_KeyPairs[4])
 		;
+	auto transaction = builder.build();
+
 	validate::Context c(*transaction);
 	EXPECT_NO_THROW(c.run());
 }
 
-TEST(ValidateGradidoTransaction, invalidGradidoDeferredTransferTransactionMissingSignature) {
+
+TEST(ValidateGradidoTransaction, invalidGradidoDeferredTransferTransactionWrongSignature) 
+{
 	GradidoTransactionBuilder builder;
-	auto bodyBytes = make_shared<Block>(Block::fromBase64(deferredTransferTransactionBase64));
-
-	auto transaction = builder
-		.setTransactionBody(bodyBytes)
-		.build()
+	builder
+		.setMemo("Link zum einloesen")
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setDeferredTransfer(
+			GradidoTransfer(
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), "555.55"),
+				g_KeyPairs[5]->getPublicKey()
+			),
+			timeout
+		)
+		.sign(g_KeyPairs[5])
 		;
-	validate::Context c(*transaction);
-	// missing signer
-	EXPECT_THROW(c.run(), validate::TransactionValidationMissingSignException);
-}
-
-TEST(ValidateGradidoTransaction, invalidGradidoDeferredTransferTransactionWrongSignature) {
-	GradidoTransactionBuilder builder;
-	auto bodyBytes = make_shared<Block>(Block::fromBase64(deferredTransferTransactionBase64));
-
-	auto transaction = builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[5].publicKey, sign(bodyBytes, g_KeyPairs[5]))
-		.build()
-		;
+	auto transaction = builder.build();
 	validate::Context c(*transaction);
 	// wrong signer, missing required signer, the sender of transaction
 	EXPECT_THROW(c.run(), validate::TransactionValidationRequiredSignMissingException);

@@ -16,8 +16,7 @@ namespace gradido {
 				memory::ConstBlockPtr userPubkeyPtr = nullptr,
 				memory::ConstBlockPtr nameHashPtr = nullptr,
 				memory::ConstBlockPtr accountPubkeyPtr = nullptr
-			) : mUserPubkey(userPubkeyPtr), mAddressType(_addressType), mNameHash(nameHashPtr),
-				mAccountPubkey(accountPubkeyPtr), mDerivationIndex(_derivationIndex) {}
+			);
 
 			~RegisterAddress() {}
 

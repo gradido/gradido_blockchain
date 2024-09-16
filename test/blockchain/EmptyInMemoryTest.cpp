@@ -1,6 +1,7 @@
 #include "EmptyInMemoryTest.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
+#include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "../KeyPairs.h"
 #include "../serializedTransactions.h"
@@ -29,76 +30,55 @@ void EmptyInMemoryTest::TearDown()
 TEST_F(EmptyInMemoryTest, AddCommunityRootAsFirst) {
 	
 	// keyPair 0 is public of this community root Transaction
-	auto bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
-	GradidoTransactionBuilder builder;
-	builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
-	;
-	
-	EXPECT_TRUE(mBlockchain->addGradidoTransaction(builder.build(), nullptr, confirmedAt));
-}
-
-TEST_F(EmptyInMemoryTest, InvalidMissingSignature) {
-	// keyPair 0 is public of this community root Transaction
-	auto bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
-	GradidoTransactionBuilder builder;
-	builder
-		.setTransactionBody(bodyBytes)
-	;
-	EXPECT_THROW(
-		mBlockchain->addGradidoTransaction(builder.build(), nullptr, confirmedAt),
-		validate::TransactionValidationMissingSignException
-	);
+	auto communityRootRaw = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
+	interaction::deserialize::Context deserializer(communityRootRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
+	deserializer.run();
+	ASSERT_TRUE(deserializer.isGradidoTransaction());	
+	EXPECT_TRUE(mBlockchain->addGradidoTransaction(deserializer.getGradidoTransaction(), nullptr, confirmedAt));
 }
 
 TEST_F(EmptyInMemoryTest, InvalidRegisterAddressAsFirst) {
-	auto bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(registeAddressTransactionBase64));
-	GradidoTransactionBuilder builder;
-	builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[0].publicKey, sign(bodyBytes, g_KeyPairs[0]))
-		.addSignaturePair(g_KeyPairs[4].publicKey, sign(bodyBytes, g_KeyPairs[4]))
-	;
+	auto registerAddressRaw = make_shared<memory::Block>(memory::Block::fromBase64(registeAddressTransactionBase64));
+	interaction::deserialize::Context deserializer(registerAddressRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
+	deserializer.run();
+	ASSERT_TRUE(deserializer.isGradidoTransaction());
+
 	EXPECT_THROW(
-		mBlockchain->addGradidoTransaction(builder.build(), nullptr, confirmedAt),
+		mBlockchain->addGradidoTransaction(deserializer.getGradidoTransaction(), nullptr, confirmedAt),
 		BlockchainOrderException
 	);
 }
 TEST_F(EmptyInMemoryTest, InvalidGradidoCreationAsFirst) {
-	auto bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(creationTransactionBase64));
-	GradidoTransactionBuilder builder;
-	builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[3].publicKey, sign(bodyBytes, g_KeyPairs[3]))
-	;
+	auto creationRaw = make_shared<memory::Block>(memory::Block::fromBase64(creationTransactionBase64));
+	interaction::deserialize::Context deserializer(creationRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
+	deserializer.run();
+	ASSERT_TRUE(deserializer.isGradidoTransaction());
+
 	EXPECT_THROW(
-		mBlockchain->addGradidoTransaction(builder.build(), nullptr, confirmedAt),
+		mBlockchain->addGradidoTransaction(deserializer.getGradidoTransaction(), nullptr, confirmedAt),
 		validate::WrongAddressTypeException
 	);
 }
 TEST_F(EmptyInMemoryTest, InvalidGradidoTransferAsFirst) {
-	auto bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(transferTransactionBase64));
-	GradidoTransactionBuilder builder;
-	builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[4].publicKey, sign(bodyBytes, g_KeyPairs[4]))
-	;
+	auto transferRaw = make_shared<memory::Block>(memory::Block::fromBase64(transferTransactionBase64));
+	interaction::deserialize::Context deserializer(transferRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
+	deserializer.run();
+	ASSERT_TRUE(deserializer.isGradidoTransaction());
+
 	EXPECT_THROW(
-		mBlockchain->addGradidoTransaction(builder.build(), nullptr, confirmedAt),
+		mBlockchain->addGradidoTransaction(deserializer.getGradidoTransaction(), nullptr, confirmedAt),
 		InsufficientBalanceException
 	);
 }
 
 TEST_F(EmptyInMemoryTest, InvalidGradidoDeferredTransferAsFirst) {
-	auto bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(deferredTransferTransactionBase64));
-	GradidoTransactionBuilder builder;
-	builder
-		.setTransactionBody(bodyBytes)
-		.addSignaturePair(g_KeyPairs[4].publicKey, sign(bodyBytes, g_KeyPairs[4]))
-		;
+	auto deferredTransferRaw = make_shared<memory::Block>(memory::Block::fromBase64(deferredTransferTransactionBase64));
+	interaction::deserialize::Context deserializer(deferredTransferRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
+	deserializer.run();
+	ASSERT_TRUE(deserializer.isGradidoTransaction());
+
 	EXPECT_THROW(
-		mBlockchain->addGradidoTransaction(builder.build(), nullptr, confirmedAt),
+		mBlockchain->addGradidoTransaction(deserializer.getGradidoTransaction(), nullptr, confirmedAt),
 		InsufficientBalanceException
 	);
 }
