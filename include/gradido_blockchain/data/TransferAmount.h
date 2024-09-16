@@ -14,7 +14,7 @@ namespace gradido {
 				memory::ConstBlockPtr pubkeyPtr,
 				const std::string& amountString,
 				const std::string& communityId = ""
-			) : mPubkey(pubkeyPtr), mAmount(amountString), mCommunityId(communityId) {}
+			);
 			~TransferAmount() {}
 
 			inline bool operator==(const TransferAmount& other) const {

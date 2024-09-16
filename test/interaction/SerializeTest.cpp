@@ -69,9 +69,10 @@ TEST(SerializeTest, RegisterAddressBody) {
 		.sign(g_KeyPairs[0])
 		.sign(g_KeyPairs[4])
 	;
-	auto body = builder.build();
-	ASSERT_TRUE(body->getTransactionBody()->isRegisterAddress());
-	serialize::Context c(*body);
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isRegisterAddress());
+	serialize::Context c(*transaction);
 	auto serialized = c.run();
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 	ASSERT_EQ(serialized->convertToBase64(), registeAddressTransactionBase64);
@@ -89,9 +90,10 @@ TEST(SerializeTest, GradidoCreationBody) {
 		)
 		.sign(g_KeyPairs[6])
 	;
-	auto body = builder.build();
-	ASSERT_TRUE(body->getTransactionBody()->isCreation());
-	serialize::Context c(*body);
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isCreation());
+	serialize::Context c(*transaction);
 	auto serialized = c.run();
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 
@@ -110,9 +112,10 @@ TEST(SerializeTest, GradidoTransferBody) {
 		)
 		.sign(g_KeyPairs[4])
 	;
-	auto body = builder.build();
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
-	serialize::Context c(*body);
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isTransfer());
+	serialize::Context c(*transaction);
 	auto serialized = c.run();
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 
@@ -134,9 +137,10 @@ TEST(SerializeTest, GradidoDeferredTransferBody) {
 		)
 		.sign(g_KeyPairs[4])
 	;
-	auto body = builder.build();
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
-	serialize::Context c(*body);
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isDeferredTransfer());
+	serialize::Context c(*transaction);
 	auto serialized = c.run();
 	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 
@@ -151,10 +155,10 @@ TEST(SerializeTest, CommunityFriendsUpdateBody) {
 		.setCommunityFriendsUpdate(true)
 		.sign(g_KeyPairs[0])
 	;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isCommunityFriendsUpdate());
-	serialize::Context c(*body);
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isCommunityFriendsUpdate());
+	serialize::Context c(*transaction);
 	auto serialized = c.run();
 	// printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
 	// printf("hex: %s\n", serialized->convertToHex().data());

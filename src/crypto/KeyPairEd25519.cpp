@@ -89,6 +89,19 @@ memory::Block KeyPairEd25519::calculatePublicKey(const memory::Block& privateKey
 	return pubkey;
 }
 
+void KeyPairEd25519::validatePublicKey(memory::ConstBlockPtr publicKey)
+{
+	if (!publicKey) {
+		throw GradidoNullPointerException("pubkey cannot be a nullptr", "memory::Block", __FUNCTION__);
+	}
+	if (publicKey->isEmpty()) {
+		throw GradidoNodeInvalidDataException("pubkey cannot be empty");
+	}
+	if (ED25519_PUBLIC_KEY_SIZE != publicKey->size()) {
+		throw Ed25519InvalidKeyException("invalid key size for public key", *publicKey, ED25519_PUBLIC_KEY_SIZE);
+	}
+}
+
 Ed25519DerivationType KeyPairEd25519::getDerivationType(uint32_t index)
 {
 	if (index >= 0x80000000) {

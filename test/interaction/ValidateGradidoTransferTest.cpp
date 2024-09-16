@@ -22,11 +22,12 @@ TEST(ValidateGradidoTransferTest, Valid) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
-	validate::Context c(*body);
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isTransfer());
+	validate::Context c(*transaction);
 	EXPECT_NO_THROW(c.run());
 }
 
@@ -42,10 +43,11 @@ TEST(ValidateGradidoTransferTest, Outbound) {
 		)
 		.setSenderCommunity("dummy-group")
 		.setRecipientCommunity("gratitude")
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.buildOutbound();
-
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
+	auto transaction = builder.buildOutbound();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isTransfer());
 	validate::Context c(*body);
 	EXPECT_NO_THROW(c.run());
 }
@@ -59,10 +61,11 @@ TEST(ValidateGradidoTransferTest, invalidMemoEmpty) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isTransfer());
 	validate::Context c(*body);
 	// empty memo
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
@@ -79,10 +82,11 @@ TEST(ValidateGradidoTransferTest, invalidMemoToShort) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isTransfer());
 	validate::Context c(*body);
 	// to short
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
@@ -99,10 +103,11 @@ TEST(ValidateGradidoTransferTest, invalidMemoToBig) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isTransfer());
 	validate::Context c(*body);
 
 	// to big
@@ -121,10 +126,11 @@ TEST(ValidateGradidoTransferTest, InvalidAmountZero) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "0"), // zero amount
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isTransfer());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
@@ -139,10 +145,11 @@ TEST(ValidateGradidoTransferTest, InvalidAmountNegative) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "-100.00"), // negative amount
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isTransfer());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
@@ -161,9 +168,11 @@ TEST(ValidateGradidoTransferTest, InvalidCoinCommunityIdIdenticalToBlockchainCom
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55", communityId),
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isTransfer());
 
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(validate::Type::SINGLE, communityId), validate::TransactionValidationInvalidInputException);
@@ -180,9 +189,11 @@ TEST(ValidateGradidoTransferTest, InvalidCoinCommunityId) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55", "<script>"),
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isTransfer());
 
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(validate::Type::SINGLE), validate::TransactionValidationInvalidInputException);
@@ -199,122 +210,36 @@ TEST(ValidateGradidoTransferTest, SenderAndRecipientIdentical) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
 			g_KeyPairs[4]->getPublicKey()
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isTransfer());
 
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationException);
 }
 
-TEST(ValidateGradidoTransferTest, NullptrSenderPublicKey) {
-	GradidoTransactionBuilder builder;
-	builder
-		.setMemo(memo)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setTransactionTransfer(
-			TransferAmount(nullptr, "500.55"),
-			g_KeyPairs[5]->getPublicKey()
-		)
-		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
-}
-
 TEST(ValidateGradidoTransferTest, NullptrRecipientPublicKey) {
-	GradidoTransactionBuilder builder;
-	builder
-		.setMemo(memo)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
-			nullptr
-		)
-		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+	EXPECT_THROW(
+		GradidoTransfer(TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"), nullptr),
+		GradidoNullPointerException
+	);
 }
 
-TEST(ValidateGradidoTransferTest, EmptySenderPublicKey) {
-	auto emptyPublicKey = std::make_shared<memory::Block>(32);
-	GradidoTransactionBuilder builder;
-	builder
-		.setMemo(memo)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setTransactionTransfer(
-			TransferAmount(emptyPublicKey, "500.55"),
-			g_KeyPairs[5]->getPublicKey()
-		)
-		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
-}
 
 TEST(ValidateGradidoTransferTest, EmptyRecipientPublicKey) {
-	auto emptyPublicKey = std::make_shared<memory::Block>(32);
-	GradidoTransactionBuilder builder;
-	builder
-		.setMemo(memo)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
-			emptyPublicKey
-		)
-		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
-}
-
-TEST(ValidateGradidoTransferTest, InvalidSenderPublicKey) {
-	auto invalidPublicKey = std::make_shared<memory::Block>(10);
-	GradidoTransactionBuilder builder;
-	builder
-		.setMemo(memo)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setTransactionTransfer(
-			TransferAmount(invalidPublicKey, "500.55"),
-			g_KeyPairs[5]->getPublicKey()
-		)
-		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+	EXPECT_THROW(
+		GradidoTransfer(TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"), std::make_shared<memory::Block>(32)),
+		GradidoNodeInvalidDataException
+	);
 }
 
 TEST(ValidateGradidoTransferTest, InvalidRecipientPublicKey) {
-	auto invalidPublicKey = std::make_shared<memory::Block>(10);
-	GradidoTransactionBuilder builder;
-	builder
-		.setMemo(memo)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setTransactionTransfer(
+	EXPECT_THROW(
+		GradidoTransfer(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
-			invalidPublicKey
-		)
-		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isTransfer());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+			std::make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a"))
+		), Ed25519InvalidKeyException
+	);
 }

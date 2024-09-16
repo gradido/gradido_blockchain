@@ -14,7 +14,7 @@ namespace gradido {
 				memory::ConstBlockPtr pubkeyPtr,
 				memory::ConstBlockPtr gmwPubkeyPtr,
 				memory::ConstBlockPtr aufPubkeyPtr
-			) : mPubkey(pubkeyPtr), mGmwPubkey(gmwPubkeyPtr), mAufPubkey(aufPubkeyPtr) {};
+			);
 
 			inline std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const { return { mPubkey, mGmwPubkey, mAufPubkey }; }
 			bool isInvolved(memory::ConstBlockPtr publicKey) const;

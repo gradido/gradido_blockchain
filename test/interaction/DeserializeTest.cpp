@@ -25,7 +25,6 @@ TEST(DeserializeTest, CommunityRootBody)
 	ASSERT_TRUE(body);
 	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
-	printf("type: %d\n", body->getType());
 	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
 
 	EXPECT_FALSE(body->isCommunityFriendsUpdate());

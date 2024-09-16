@@ -26,11 +26,12 @@ TEST(ValidateGradidoDeferredTransferTest, Valid) {
 				g_KeyPairs[5]->getPublicKey()
 			), timeout
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
-	validate::Context c(*body);
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isDeferredTransfer());
+	validate::Context c(*transaction);
 	EXPECT_NO_THROW(c.run());
 }
 
@@ -47,10 +48,11 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoEmpty) {
 				g_KeyPairs[5]->getPublicKey()
 			), timeout
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isDeferredTransfer());
 	validate::Context c(*body);
 	// empty memo
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
@@ -69,10 +71,11 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoToShort) {
 				g_KeyPairs[5]->getPublicKey()
 			), timeout
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isDeferredTransfer());
 	validate::Context c(*body);
 	// to short
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
@@ -91,10 +94,11 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoToBig) {
 				g_KeyPairs[5]->getPublicKey()
 			), timeout
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isDeferredTransfer());
 	validate::Context c(*body);
 
 	// to big
@@ -114,10 +118,11 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidAmountZero) {
 				g_KeyPairs[5]->getPublicKey()
 			), timeout
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isDeferredTransfer());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
@@ -134,10 +139,11 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidAmountNegative) {
 				g_KeyPairs[5]->getPublicKey()
 			), timeout
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isDeferredTransfer());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
@@ -157,9 +163,11 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityIdIdenticalToBlock
 				g_KeyPairs[5]->getPublicKey()
 			), timeout
 		)
+		.sign(g_KeyPairs[4])
 	;
-	auto body = builder.build();	
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isDeferredTransfer());
 
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(validate::Type::SINGLE, communityId), validate::TransactionValidationInvalidInputException);
@@ -178,158 +186,15 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityId) {
 				g_KeyPairs[5]->getPublicKey()
 			), timeout
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isDeferredTransfer());
 
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(validate::Type::SINGLE), validate::TransactionValidationInvalidInputException);
 }
-
-TEST(ValidateGradidoDeferredTransferTest, SenderAndRecipientIdentical) {
-	GradidoTransactionBuilder builder;
-	builder
-		.setMemo(memo)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setDeferredTransfer(
-			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"), 
-				g_KeyPairs[4]->getPublicKey()
-			), timeout
-		)
-		;
-	auto body = builder.build();
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
-
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationException);
-}
-
-TEST(ValidateGradidoDeferredTransferTest, NullptrSenderPublicKey) {
-	GradidoTransactionBuilder builder;
-	builder
-		.setMemo(memo)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setDeferredTransfer(
-			GradidoTransfer(
-				TransferAmount(nullptr, "500.55"),
-				g_KeyPairs[5]->getPublicKey()
-			), timeout
-		)
-		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
-}
-
-TEST(ValidateGradidoDeferredTransferTest, NullptrRecipientPublicKey) {
-	GradidoTransactionBuilder builder;
-	builder
-		.setMemo(memo)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setDeferredTransfer(
-			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
-				nullptr
-			), timeout
-		)
-		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
-}
-
-TEST(ValidateGradidoDeferredTransferTest, EmptySenderPublicKey) {
-	auto emptyPublicKey = std::make_shared<memory::Block>(32);
-	GradidoTransactionBuilder builder;
-	builder
-		.setMemo(memo)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setDeferredTransfer(
-			GradidoTransfer(
-				TransferAmount(emptyPublicKey, "500.55"),
-				g_KeyPairs[5]->getPublicKey()
-			), timeout
-		)
-		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
-}
-
-TEST(ValidateGradidoDeferredTransferTest, EmptyRecipientPublicKey) {
-	auto emptyPublicKey = std::make_shared<memory::Block>(32);
-	GradidoTransactionBuilder builder;
-	builder
-		.setMemo(memo)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setDeferredTransfer(
-			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
-				emptyPublicKey
-			), timeout
-		)
-		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
-}
-
-TEST(ValidateGradidoDeferredTransferTest, InvalidSenderPublicKey) {
-	auto invalidPublicKey = std::make_shared<memory::Block>(10);
-	GradidoTransactionBuilder builder;
-	builder
-		.setMemo(memo)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setDeferredTransfer(
-			GradidoTransfer(
-				TransferAmount(invalidPublicKey, "500.55"),
-				g_KeyPairs[5]->getPublicKey()
-			), timeout
-		)
-		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
-}
-
-TEST(ValidateGradidoDeferredTransferTest, InvalidRecipientPublicKey) {
-	auto invalidPublicKey = std::make_shared<memory::Block>(10);
-	GradidoTransactionBuilder builder;
-	builder
-		.setMemo(memo)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setDeferredTransfer(
-			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
-				invalidPublicKey
-			), timeout
-		)
-		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
-}
-
 
 TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutAboveMaxHardLimit) {
 	GradidoTransactionBuilder builder;
@@ -343,10 +208,11 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutAboveMaxHardLimit) {
 				g_KeyPairs[5]->getPublicKey()
 			), createdAt + chrono::seconds{ 7962400 }
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isDeferredTransfer());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
@@ -363,10 +229,11 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutIdenticalToCreatedAt) {
 				g_KeyPairs[5]->getPublicKey()
 			), createdAt
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isDeferredTransfer());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
@@ -383,10 +250,11 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutBeforeCreatedAt) {
 				g_KeyPairs[5]->getPublicKey()
 			), createdAt - chrono::seconds{ 1 }
 		)
+		.sign(g_KeyPairs[4])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isDeferredTransfer());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isDeferredTransfer());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }

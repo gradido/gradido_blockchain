@@ -24,10 +24,12 @@ TEST(ValidateGradidoCreationTest, valid) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
 			TimestampSeconds(1609459000)
 		)
+		.sign(g_KeyPairs[6])
 	;
-	auto body = builder.build();
-	ASSERT_TRUE(body->getTransactionBody()->isCreation());
-	validate::Context c(*body);
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isCreation());
+	validate::Context c(*transaction);
 	EXPECT_NO_THROW(c.run());
 }
 
@@ -41,10 +43,11 @@ TEST(ValidateGradidoCreationTest, invalidMemoEmpty) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
 			TimestampSeconds(1609459000)
 		)
+		.sign(g_KeyPairs[6])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isCreation());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isCreation());
 	validate::Context c(*body);
 	// empty memo
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
@@ -61,10 +64,11 @@ TEST(ValidateGradidoCreationTest, invalidMemoToShort) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
 			TimestampSeconds(1609459000)
 		)
+		.sign(g_KeyPairs[6])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isCreation());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isCreation());
 	validate::Context c(*body);
 	// to short
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
@@ -81,10 +85,11 @@ TEST(ValidateGradidoCreationTest, invalidMemoToBig) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
 			TimestampSeconds(1609459000)
 		)
+		.sign(g_KeyPairs[6])
 		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isCreation());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isCreation());
 	validate::Context c(*body);
 
 	// to big
@@ -102,9 +107,11 @@ TEST(ValidateGradidoCreationTest, invalidAmountNegative) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "-1000.00"),
 			TimestampSeconds(1609459000)
 		)
+		.sign(g_KeyPairs[6])
 		;
-	auto body = builder.build();
-	ASSERT_TRUE(body->getTransactionBody()->isCreation());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isCreation());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
@@ -120,9 +127,11 @@ TEST(ValidateGradidoCreationTest, invalidAmountZero) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "0"),
 			TimestampSeconds(1609459000)
 		)
+		.sign(g_KeyPairs[6])
 		;
-	auto body = builder.build();
-	ASSERT_TRUE(body->getTransactionBody()->isCreation());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isCreation());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
@@ -138,9 +147,11 @@ TEST(ValidateGradidoCreationTest, invalidAmountToBig) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "2000.00"),
 			TimestampSeconds(1609459000)
 		)
+		.sign(g_KeyPairs[6])
 		;
-	auto body = builder.build();
-	ASSERT_TRUE(body->getTransactionBody()->isCreation());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isCreation());
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
@@ -158,9 +169,11 @@ TEST(ValidateGradidoCreationTest, InvalidCoinCommunityIdIdenticalToBlockchainCom
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00", communityId),
 			TimestampSeconds(1609459000)
 		)
+		.sign(g_KeyPairs[6])
 		;
-	auto body = builder.build();
-	ASSERT_TRUE(body->getTransactionBody()->isCreation());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isCreation());
 
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(validate::Type::SINGLE, communityId), validate::TransactionValidationInvalidInputException);
@@ -176,69 +189,14 @@ TEST(ValidateGradidoCreationTest, InvalidCoinCommunityId) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00", "<script>"),
 			TimestampSeconds(1609459000)
 		)
+		.sign(g_KeyPairs[6])
 		;
-	auto body = builder.build();
-	ASSERT_TRUE(body->getTransactionBody()->isCreation());
+	auto transaction = builder.build();
+	auto body = transaction->getTransactionBody();
+	ASSERT_TRUE(body->isCreation());
 
 	validate::Context c(*body);
 	EXPECT_THROW(c.run(validate::Type::SINGLE), validate::TransactionValidationInvalidInputException);
-}
-
-TEST(ValidateGradidoCreationTest, NullptrRecipientPublicKey) {
-	GradidoTransactionBuilder builder;
-	builder
-		.setMemo(memo)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setTransactionCreation(
-			TransferAmount(nullptr, "1000.00"),
-			TimestampSeconds(1609459000)
-		)
-		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isCreation());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
-}
-
-TEST(ValidateGradidoCreationTest, EmptyRecipientPublicKey) {
-	auto emptyPublicKey = std::make_shared<memory::Block>(32);
-	GradidoTransactionBuilder builder;
-	builder
-		.setMemo(memo)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setTransactionCreation(
-			TransferAmount(emptyPublicKey, "1000.00"),
-			TimestampSeconds(1609459000)
-		)
-		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isCreation());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
-}
-
-
-TEST(ValidateGradidoCreationTest, InvalidRecipientPublicKey) {
-	auto invalidPublicKey = std::make_shared<memory::Block>(18);
-	GradidoTransactionBuilder builder;
-	builder
-		.setMemo(memo)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setTransactionCreation(
-			TransferAmount(invalidPublicKey, "1000.00"),
-			TimestampSeconds(1609459000)
-		)
-		;
-	auto body = builder.build();
-
-	ASSERT_TRUE(body->getTransactionBody()->isCreation());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
 
 // TODO: invalid target date with both algos

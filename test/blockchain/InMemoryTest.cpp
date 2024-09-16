@@ -49,15 +49,17 @@ void InMemoryTest::SetUp()
 	mLastCreatedAt = std::chrono::system_clock::from_time_t(1641681324);
 	mBlockchain = InMemoryProvider::getInstance()->findBlockchain(mCommunityId);
 		
-	auto bodyBytes = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
-
-	// keyPair 0 is public of this community root Transaction
-	auto transaction = make_shared<GradidoTransaction>();
 	GradidoTransactionBuilder builder;
 	builder
-		.setTransactionBody(bodyBytes)
+		.setCreatedAt(mLastCreatedAt)
+		.setVersionNumber(VERSION_STRING)
+		.setCommunityRoot(
+			g_KeyPairs[0]->getPublicKey(),
+			g_KeyPairs[1]->getPublicKey(),
+			g_KeyPairs[2]->getPublicKey()
+		)
 		.sign(g_KeyPairs[0])
-	;
+		;
 	mBlockchain->addGradidoTransaction(builder.build(), nullptr, mLastCreatedAt);
 }
 
@@ -192,9 +194,7 @@ TEST_F(InMemoryTest, FindCommunityRootTransactionByType)
 	// after adding two create addresses
 	createRegisterAddress();
 	createRegisterAddress();
-	Profiler timeUsed;
-	transaction = mBlockchain->findOne(f);
-	printf("time looking for transactionType: %s\n", timeUsed.string().c_str());
+	transaction = mBlockchain->findOne(f);	
 	ASSERT_TRUE(transaction);
 	EXPECT_TRUE(transaction->getTransactionBody()->isCommunityRoot());
 }
@@ -210,9 +210,7 @@ TEST_F(InMemoryTest, FindCommunityRootTransactionByPublicKey)
 	// after adding two create addresses
 	createRegisterAddress();
 	createRegisterAddress();
-	Profiler timeUsed;
 	transaction = mBlockchain->findOne(f);
-	printf("time looking for publicKey: %s\n", timeUsed.string().c_str());
 	ASSERT_TRUE(transaction);
 	EXPECT_TRUE(transaction->getTransactionBody()->isCommunityRoot());
 }
@@ -229,9 +227,7 @@ TEST_F(InMemoryTest, FindCommunityRootTransactionByTransactionNr)
 	// after adding two create addresses
 	createRegisterAddress();
 	createRegisterAddress();
-	Profiler timeUsed;
 	transaction = mBlockchain->findOne(f);
-	printf("time looking for transactionNr: %s\n", timeUsed.string().c_str());
 	ASSERT_TRUE(transaction);
 	EXPECT_TRUE(transaction->getTransactionBody()->isCommunityRoot());
 }

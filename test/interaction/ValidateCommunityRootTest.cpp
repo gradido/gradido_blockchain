@@ -27,223 +27,105 @@ TEST(ValidateCommunityRootTest, Valid)
 	auto transaction = builder.build();
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body->isCommunityRoot());
-	validate::Context c(*body);
-	// body only
+	validate::Context c(*transaction);
 	EXPECT_NO_THROW(c.run());
 }
 
 TEST(ValidateCommunityRootTest, InvalidGMWAndAUFSame)
 {
-	GradidoTransactionBuilder builder;
-	builder
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setCommunityRoot(
-			g_KeyPairs[0]->getPublicKey(),
-			g_KeyPairs[1]->getPublicKey(),
-			g_KeyPairs[1]->getPublicKey()
-		)
-		.sign(g_KeyPairs[0])
-		;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isCommunityRoot());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationException);
+	EXPECT_THROW(CommunityRoot(
+		g_KeyPairs[0]->getPublicKey(),
+		g_KeyPairs[1]->getPublicKey(),
+		g_KeyPairs[1]->getPublicKey()
+	), GradidoNodeInvalidDataException);
 }
 
 TEST(ValidateCommunityRootTest, InvalidPublicKeyAndAUFSame)
 {
-	GradidoTransactionBuilder builder;
-	builder
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setCommunityRoot(
-			g_KeyPairs[1]->getPublicKey(),
-			g_KeyPairs[0]->getPublicKey(),
-			g_KeyPairs[1]->getPublicKey()
-		)
-		.sign(g_KeyPairs[0])
-		;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isCommunityRoot());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationException);
+	EXPECT_THROW(CommunityRoot(
+		g_KeyPairs[1]->getPublicKey(),
+		g_KeyPairs[0]->getPublicKey(),
+		g_KeyPairs[1]->getPublicKey()
+	), GradidoNodeInvalidDataException);
 }
 
 TEST(ValidateCommunityRootTest, InvalidPublicKeyAndGMWSame)
 {
-	GradidoTransactionBuilder builder;
-	builder
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setCommunityRoot(
-			g_KeyPairs[0]->getPublicKey(),
-			g_KeyPairs[0]->getPublicKey(),
-			g_KeyPairs[1]->getPublicKey()
-		)
-		.sign(g_KeyPairs[0])
-		;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isCommunityRoot());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationException);
+	EXPECT_THROW(CommunityRoot(
+		g_KeyPairs[0]->getPublicKey(),
+		g_KeyPairs[0]->getPublicKey(),
+		g_KeyPairs[1]->getPublicKey()
+	), GradidoNodeInvalidDataException);
 }
 
 TEST(ValidateCommunityRootTest, InvalidPublicKeysAllSame)
 {
-	GradidoTransactionBuilder builder;
-	builder
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setCommunityRoot(
-			g_KeyPairs[0]->getPublicKey(),
-			g_KeyPairs[0]->getPublicKey(),
-			g_KeyPairs[0]->getPublicKey()
-		)
-		.sign(g_KeyPairs[0])
-		;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isCommunityRoot());
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::TransactionValidationException);
+	EXPECT_THROW(CommunityRoot(
+		g_KeyPairs[0]->getPublicKey(),
+		g_KeyPairs[0]->getPublicKey(),
+		g_KeyPairs[0]->getPublicKey()
+	), GradidoNodeInvalidDataException);
 }
 
 TEST(ValidateCommunityRootTest, EmptyPublicKey)
 {
-	GradidoTransactionBuilder builder;
-	builder
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setCommunityRoot(
-			make_shared<memory::Block>(32),
-			g_KeyPairs[1]->getPublicKey(),
-			g_KeyPairs[2]->getPublicKey()
-		)
-		.sign(g_KeyPairs[0])
-		;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isCommunityRoot());
-	validate::Context c(*body);
-	// body only
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+	EXPECT_THROW(CommunityRoot(
+		make_shared<memory::Block>(32),
+		g_KeyPairs[1]->getPublicKey(),
+		g_KeyPairs[2]->getPublicKey()
+	), GradidoNodeInvalidDataException);
 }
 
 TEST(ValidateCommunityRootTest, EmptyGMWKey)
 {
-	GradidoTransactionBuilder builder;
-	builder
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setCommunityRoot(
-			g_KeyPairs[0]->getPublicKey(),
-			make_shared<memory::Block>(32),
-			g_KeyPairs[2]->getPublicKey()
-		)
-		.sign(g_KeyPairs[0])
-		;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isCommunityRoot());
-	validate::Context c(*body);
-	// body only
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+	EXPECT_THROW(CommunityRoot(
+		g_KeyPairs[0]->getPublicKey(),
+		make_shared<memory::Block>(32),
+		g_KeyPairs[2]->getPublicKey()
+	), GradidoNodeInvalidDataException);
 }
 
 TEST(ValidateCommunityRootTest, EmptyAUFKey)
 {
-	GradidoTransactionBuilder builder;
-	builder
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setCommunityRoot(
-			g_KeyPairs[0]->getPublicKey(),
-			g_KeyPairs[1]->getPublicKey(),
-			make_shared<memory::Block>(32)
-		)
-		.sign(g_KeyPairs[0])
-		;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isCommunityRoot());
-	validate::Context c(*body);
-	// body only
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+	EXPECT_THROW(CommunityRoot(
+		g_KeyPairs[0]->getPublicKey(),
+		g_KeyPairs[1]->getPublicKey(),
+		make_shared<memory::Block>(32)
+	), GradidoNodeInvalidDataException);
 }
 
 
 TEST(ValidateCommunityRootTest, InvalidPublicKey)
 {
-	GradidoTransactionBuilder builder;
-	builder
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setCommunityRoot(
-			make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a")),
-			g_KeyPairs[1]->getPublicKey(),
-			g_KeyPairs[2]->getPublicKey()
-		)
-		.sign(g_KeyPairs[0])
-		;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isCommunityRoot());
-	validate::Context c(*body);
-	// body only
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+	EXPECT_THROW(CommunityRoot(
+		make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a")),
+		g_KeyPairs[1]->getPublicKey(),
+		g_KeyPairs[2]->getPublicKey()
+	), Ed25519InvalidKeyException);
 }
 
 TEST(ValidateCommunityRootTest, InvalidGMWKey)
 {
-	GradidoTransactionBuilder builder;
-	builder
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setCommunityRoot(
-			g_KeyPairs[0]->getPublicKey(),
-			make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a")),
-			g_KeyPairs[2]->getPublicKey()
-		)
-		.sign(g_KeyPairs[0])
-		;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isCommunityRoot());
-	validate::Context c(*body);
-	// body only
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+	EXPECT_THROW(CommunityRoot(
+		g_KeyPairs[0]->getPublicKey(),
+		make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a")),
+		g_KeyPairs[2]->getPublicKey()
+	), Ed25519InvalidKeyException);
 }
 
 TEST(ValidateCommunityRootTest, InvalidAUFKey)
 {
-	GradidoTransactionBuilder builder;
-	builder
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setCommunityRoot(
-			g_KeyPairs[0]->getPublicKey(),
-			g_KeyPairs[1]->getPublicKey(),
-			make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a"))
-		)
-		.sign(g_KeyPairs[0])
-		;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isCommunityRoot());
-	validate::Context c(*body);
-	// body only
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
+	EXPECT_THROW(CommunityRoot(
+		g_KeyPairs[0]->getPublicKey(),
+		g_KeyPairs[1]->getPublicKey(),
+		make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a"))
+	), Ed25519InvalidKeyException);
 }
 
 
 TEST(ValidateCommunityRootTest, NullptrPublicKey)
 {
-	GradidoTransactionBuilder builder;
-	EXPECT_THROW(builder.setCommunityRoot(
+	EXPECT_THROW(CommunityRoot(
 		nullptr,
 		g_KeyPairs[1]->getPublicKey(),
 		g_KeyPairs[2]->getPublicKey()
@@ -252,8 +134,7 @@ TEST(ValidateCommunityRootTest, NullptrPublicKey)
 
 TEST(ValidateCommunityRootTest, NullptrGMWKey)
 {
-	GradidoTransactionBuilder builder;
-	EXPECT_THROW(builder.setCommunityRoot(
+	EXPECT_THROW(CommunityRoot(
 		g_KeyPairs[0]->getPublicKey(),
 		nullptr,
 		g_KeyPairs[2]->getPublicKey()
@@ -262,8 +143,7 @@ TEST(ValidateCommunityRootTest, NullptrGMWKey)
 
 TEST(ValidateCommunityRootTest, NullptrAUFKey)
 {
-	GradidoTransactionBuilder builder;
-	EXPECT_THROW(builder.setCommunityRoot(
+	EXPECT_THROW(CommunityRoot(
 		g_KeyPairs[0]->getPublicKey(),
 		g_KeyPairs[1]->getPublicKey(),
 		nullptr

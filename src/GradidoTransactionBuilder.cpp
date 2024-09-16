@@ -213,9 +213,6 @@ namespace gradido {
 		memory::ConstBlockPtr gmwPubkey,
 		memory::ConstBlockPtr aufPubkey
 	) {
-		if (!pubkey || !gmwPubkey || !aufPubkey) {
-			throw GradidoNullPointerException("pubkey, gmwPubkey and/or aufPubkey a zero", "memory::Block", __FUNCTION__);
-		}
 		checkBuildState(BuildingState::BUILDING_BODY);
 		return setCommunityRoot(
 			make_unique<data::CommunityRoot>(

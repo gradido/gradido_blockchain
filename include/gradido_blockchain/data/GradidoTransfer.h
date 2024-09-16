@@ -8,8 +8,7 @@ namespace gradido {
 		class GRADIDOBLOCKCHAIN_EXPORT GradidoTransfer
 		{
 		public:
-			GradidoTransfer(const TransferAmount& _sender, memory::ConstBlockPtr recipientPtr)
-				: mSender(_sender), mRecipient(recipientPtr) {}
+			GradidoTransfer(const TransferAmount& _sender, memory::ConstBlockPtr recipientPtr);
 
 			~GradidoTransfer() {}
 
