@@ -22,20 +22,16 @@ namespace gradido {
 				if (transactionBody->isTransfer() || transactionBody->isCreation() || transactionBody->isDeferredTransfer()) {
 					auto role = getRole(*transactionBody);
 					auto balance = run(role->getFinalBalanceAddress(), confirmedAt, id - 1);
-					GradidoUnit amount = role->getAmount();
-					if (transactionBody->isCreation()) {
-						balance += amount;
+					balance += role->getAmountAdded(role->getFinalBalanceAddress());
+					GradidoUnit subtractAmount = role->getAmountCost(role->getFinalBalanceAddress());
+					if (balance < subtractAmount) {
+						throw InsufficientBalanceException(
+							"not enough gdd",
+							subtractAmount,
+							balance
+						);
 					}
-					else if (transactionBody->isTransfer() || transactionBody->isDeferredTransfer()) {
-						if (balance < amount) {
-							throw InsufficientBalanceException(
-								"not enough gdd for transfer or deferred transfer",
-								amount,
-								balance
-							);
-						}
-						balance -= amount;
-					}
+					balance -= subtractAmount;
 					return balance;
 				}
 				return 0.0;
@@ -49,7 +45,7 @@ namespace gradido {
 			{
 				// get last transaction entry with final balance
 				// collect balances with balance date from all received transactions which occurred after last transaction entry with final balance
-				std::map<Timepoint, GradidoUnit> dateAmount;
+				std::multimap<Timepoint, GradidoUnit> dateAmount;
 				auto lastTransactionEntryWithFinalBalance = mBlockchain.findOne(Filter(
 					maxTransactionNr,
 					publicKey,
@@ -67,8 +63,9 @@ namespace gradido {
 						if (role->isFinalBalanceForAccount(publicKey)) {
 							return FilterResult::USE | FilterResult::STOP;
 						}
-						auto amount = role->getAmount();
+						auto amount = role->getAmountAdded(publicKey);
 						if (amount > GradidoUnit::zero()) {
+							auto confirmedDate = confirmedTransaction->getConfirmedAt().getAsTimepoint();
 							if (transactionBody->isDeferredTransfer()) {
 								// if timeout is reached, balance is zero
 								// if deferred transfer wasn't redeemed, it was booked back to sender,
@@ -77,15 +74,8 @@ namespace gradido {
 								if (timeout <= balanceDate) {
 									return FilterResult::DISMISS;
 								}
-
-								// subtract decay from time: balanceDate -> timeout
-								// later in code the decay for: received -> balanceDate will be subtracted automatic
-								// deferred transfers contain redeemable amount + decay for createdAt -> timeout as fee
-								amount = amount.calculateDecay(balanceDate, timeout);
 							}
-
-							//receiveTransfers.push_front({ balance, confirmedTransaction->confirmedAt.getAsTimepoint() });
-							dateAmount.insert({ confirmedTransaction->getConfirmedAt().getAsTimepoint() , amount});
+							dateAmount.insert({ balanceDate, amount });
 						}
 
 						// publicKey must be the receive address from deferred transfer
@@ -113,6 +103,7 @@ namespace gradido {
 					auto firstReceived = dateAmount.begin();
 					gdd = firstReceived->second;
 					lastDate = firstReceived->first;
+					dateAmount.erase(firstReceived);
 				}
 
 				// check for time outed deferred transfers which will be automatic booked back
@@ -165,7 +156,7 @@ namespace gradido {
 					return std::make_shared<GradidoCreationRole>(*body.getCreation());
 				}
 				if (body.isDeferredTransfer()) {
-					return std::make_shared<GradidoDeferredTransferRole>(*body.getDeferredTransfer());
+					return std::make_shared<GradidoDeferredTransferRole>(body);
 				}
 				if (body.isTransfer()) {
 					return std::make_shared<GradidoTransferRole>(*body.getTransfer());
@@ -184,12 +175,10 @@ namespace gradido {
 				assert(body->isDeferredTransfer());
 
 				auto confirmedAt = confirmedTransaction->getConfirmedAt().getAsTimepoint();
-				// use this role for calculate decayed amount at timeout
-				// confirmedAt is used as start date in GradidoDeferredTransferRole.getAmount,
-				// timeout as end date
-				GradidoDeferredTransferRole deferredTransferRole(*body->getDeferredTransfer());
+				// get the amount put into deferredTransfer which we can get back at timeout when not redeemd
+				GradidoDeferredTransferRole deferredTransferRole(*body);
 				auto timeout = body->getDeferredTransfer()->getTimeout().getAsTimepoint();
-				return { timeout, deferredTransferRole.getAmount() };
+				return { timeout, deferredTransferRole.getAmountAdded(deferredTransferRole.getSender().getPubkey()) };
 			}
 
 			std::pair<Timepoint, GradidoUnit> Context::calculateRedeemedDeferredTransferChange(
@@ -200,13 +189,17 @@ namespace gradido {
 				auto deferredConfirmedAt = deferredConfirmedTransaction->getConfirmedAt().getAsTimepoint();
 				auto deferredBody = deferredConfirmedTransaction->getGradidoTransaction()->getTransactionBody();
 				assert(deferredBody->isDeferredTransfer());
-				auto deferredTransferAmount = deferredBody->getDeferredTransfer()->getTransfer().getSender().getAmount();
+				GradidoDeferredTransferRole deferredTransferRole(*deferredBody);
+				auto deferredTransferAmount = deferredTransferRole.getAmountCost(deferredBody->getDeferredTransfer()->getSenderPublicKey());
+				//auto deferredTransferAmount = deferredBody->getDeferredTransfer()->getTransfer().getSender().getAmount();
+
 
 				auto redeemingConfirmedTransaction = deferredRedeemingTransferPair.second->getConfirmedTransaction();
 				auto redeemingConfirmedAt = redeemingConfirmedTransaction->getConfirmedAt().getAsTimepoint();
 				auto redeemingBody = redeemingConfirmedTransaction->getGradidoTransaction()->getTransactionBody();
 				assert(redeemingBody->isTransfer());
-				auto redeemingTransferAmount = redeemingBody->getTransfer()->getSender().getAmount();
+				auto redeemingRole = getRole(*redeemingBody);
+				auto redeemingTransferAmount = redeemingRole->getAmountCost(deferredBody->getDeferredTransfer()->getRecipientPublicKey());
 
 				auto change = deferredTransferAmount.calculateDecay(deferredConfirmedAt, redeemingConfirmedAt);
 				change -= redeemingTransferAmount;

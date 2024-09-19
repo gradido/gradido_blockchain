@@ -407,10 +407,11 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 
 	auto createdAt = generateNewCreatedAt();
 	auto targetDate = getPreviousNMonth2(createdAt, 1);
+	// account 6 balance: 1000.0 at confirmed at date (confirmedAt = createdAt + 1 minute)
 	ASSERT_TRUE(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate));
 	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit(1000.0));
 
-	// deferred transfer
+	// deferred transfer from account 6 containing only creation transaction with 1000 - decay
 	createdAt = mLastCreatedAt + chrono::hours(10);
 	auto timeout = createdAt + chrono::hours(24 * 60);
 	auto recipientKeyPairIndex = mKeyPairCursor;
@@ -423,11 +424,31 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	}
 
 	// check account
+	auto blockedDeferredTransferBalance = GradidoUnit(500.10).calculateCompoundInterest(createdAt, timeout);	
 	auto deferredTransferBalance = getBalance(recipientKeyPairIndex, mLastConfirmedAt);
+	auto userBalanceAtDeferredTransferTime = getBalance(6, createdAt).calculateDecay(createdAt, mLastConfirmedAt);
 	auto userBalance = getBalance(6, mLastConfirmedAt);
-	EXPECT_EQ(userBalance, GradidoUnit(499.1095));
-	printf("user balance: %s\n", userBalance.toString().data());
-	printf("deferred transfer balance: %s\n", deferredTransferBalance.toString().data());
-	printf("summe: %s\n", GradidoUnit(userBalance + deferredTransferBalance).toString().data());
+	EXPECT_EQ(userBalance, GradidoUnit(464.6647));
+	auto diff = userBalance - (userBalanceAtDeferredTransferTime - blockedDeferredTransferBalance);
+	// the difference should be small, normaly it should be identical but we must account for rounding errors
+	EXPECT_LE(abs(diff.getGradidoCent()), 1);
+	EXPECT_LT(userBalance + deferredTransferBalance, GradidoUnit(1000.0));
+
+	// deferred transfer from deferred transfer account recipientKeyPairIndex to a new account
+	createdAt = mLastConfirmedAt + chrono::hours(36);
+	timeout = createdAt + chrono::hours(24 * 30);
+	auto newRecipientKeyPairIndex = mKeyPairCursor;
+	mKeyPairCursor++;
+	auto balanceWhenSecondsDeferredTransferStart = getBalance(recipientKeyPairIndex, createdAt);
+	ASSERT_EQ(balanceWhenSecondsDeferredTransferStart, GradidoUnit(500.10));
+	try {
+		ASSERT_TRUE(createGradidoDeferredTransfer(recipientKeyPairIndex, newRecipientKeyPairIndex, 483.0, createdAt, timeout));
+	}
+	catch (GradidoBlockchainException& ex) {
+		logBlockchain();
+		LOG_F(ERROR, ex.getFullString().data());
+	}
+
+	// check accounts
 
 }
