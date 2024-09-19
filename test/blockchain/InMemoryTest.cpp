@@ -164,6 +164,32 @@ bool InMemoryTest::createGradidoTransfer(
 	return mBlockchain->addGradidoTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
 }
 
+bool InMemoryTest::createGradidoDeferredTransfer(
+	int senderKeyPairIndex,
+	int recipientKeyPairIndex,
+	GradidoUnit amount, 
+	Timepoint createdAt,
+	Timepoint timeout
+) {
+	assert(senderKeyPairIndex > 0 && senderKeyPairIndex < g_KeyPairs.size());
+	assert(recipientKeyPairIndex > 0 && recipientKeyPairIndex < g_KeyPairs.size());
+
+	GradidoTransactionBuilder builder;
+	builder
+		.setMemo("dummy memo")
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setDeferredTransfer(
+			GradidoTransfer(
+				TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount),
+				g_KeyPairs[recipientKeyPairIndex]->getPublicKey()
+			), timeout
+		)
+		.sign(g_KeyPairs[senderKeyPairIndex])
+	;	
+	return mBlockchain->addGradidoTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
+}
+
 void InMemoryTest::logBlockchain()
 {
 	auto transactions = dynamic_cast<InMemory*>(mBlockchain.get())->getSortedTransactions();
@@ -374,3 +400,34 @@ TEST_F(InMemoryTest, InvalidTransferTransaction)
 	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit::zero());
 }
 
+TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
+{
+	ASSERT_NO_THROW(createRegisterAddress(3));
+	ASSERT_NO_THROW(createRegisterAddress(5));
+
+	auto createdAt = generateNewCreatedAt();
+	auto targetDate = getPreviousNMonth2(createdAt, 1);
+	ASSERT_TRUE(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate));
+	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit(1000.0));
+
+	// deferred transfer
+	createdAt = mLastCreatedAt + chrono::hours(10);
+	auto timeout = createdAt + chrono::hours(24 * 60);
+	auto recipientKeyPairIndex = mKeyPairCursor;
+	mKeyPairCursor++;
+	try {
+		ASSERT_TRUE(createGradidoDeferredTransfer(6, recipientKeyPairIndex, 500.10, createdAt, timeout));
+	} catch(GradidoBlockchainException& ex) {
+		logBlockchain();
+		LOG_F(ERROR, ex.getFullString().data());
+	}
+
+	// check account
+	auto deferredTransferBalance = getBalance(recipientKeyPairIndex, mLastConfirmedAt);
+	auto userBalance = getBalance(6, mLastConfirmedAt);
+	EXPECT_EQ(userBalance, GradidoUnit(499.1095));
+	printf("user balance: %s\n", userBalance.toString().data());
+	printf("deferred transfer balance: %s\n", deferredTransferBalance.toString().data());
+	printf("summe: %s\n", GradidoUnit(userBalance + deferredTransferBalance).toString().data());
+
+}

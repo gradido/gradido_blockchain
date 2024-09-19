@@ -33,6 +33,13 @@ protected:
         GradidoUnit amount, 
         Timepoint createdAt
     );
+    bool createGradidoDeferredTransfer(
+        int senderKeyPairIndex,
+        int recipientKeyPairIndex,
+        GradidoUnit amount, 
+        Timepoint createdAt,
+        Timepoint timeout
+    );
 
     void logBlockchain();
     GradidoUnit getBalance(int keyPairIndex, Timepoint date);
