@@ -5,6 +5,7 @@
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 
 #include "gradido_blockchain/interaction/toJson/Context.h"
 
@@ -252,6 +253,7 @@ namespace gradido {
 			// go back in time, deferred transfers older then GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL cannot be redeemed in timepointInterval
 			auto startDate = timepointInterval.getStartDate() - GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL;
 			auto it = mTimeoutDeferredRedeemedTransferPairs.lower_bound(startDate);
+			
 			while (it != mTimeoutDeferredRedeemedTransferPairs.upper_bound(timepointInterval.getEndDate())) {
 				auto deferredRedeemedPair = it->second;
 				assert(deferredRedeemedPair.first->isDeferredTransfer());
@@ -264,7 +266,6 @@ namespace gradido {
 				}
 				++it;
 			}
-
 			return result;
 		}
 
@@ -321,12 +322,13 @@ namespace gradido {
 				mTimeoutDeferredRedeemedTransferPairs.insert({ body->getDeferredTransfer()->getTimeout().getAsTimepoint(), {transactionEntry, nullptr}});
 			}
 			// find out if transaction redeem a deferred transfer
-			if (body->isTransfer()) {
+			if (body->isTransfer() || body->isDeferredTransfer()) {
 				FilterBuilder filterBuilder;
+				const auto& transfer = body->isTransfer() ? *body->getTransfer() : body->getDeferredTransfer()->getTransfer();
 				
 				auto lastFromSameSender = findOne(
 					filterBuilder
-					.setInvolvedPublicKey(body->getTransfer()->getSender().getPubkey())
+					.setInvolvedPublicKey(transfer.getSender().getPubkey())
 					.setMaxTransactionNr(confirmedTransaction->getId() - 1)
 					.setSearchDirection(SearchDirection::DESC)
 					.setPagination(Pagination(1))
@@ -335,7 +337,7 @@ namespace gradido {
 				if (lastFromSameSender) {
 					auto lastFromSameSenderBody = lastFromSameSender->getTransactionBody();
 					
-					auto pubkey = body->getTransfer()->getSender().getPubkey();
+					auto pubkey = transfer.getSender().getPubkey();
 					if (lastFromSameSenderBody->isDeferredTransfer()) {
 						auto lastFromSameSenderRecipient = lastFromSameSenderBody->getDeferredTransfer()->getTransfer().getRecipient();
 						if (lastFromSameSenderRecipient->isTheSame(pubkey)) {

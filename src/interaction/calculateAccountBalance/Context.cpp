@@ -119,7 +119,7 @@ namespace gradido {
 					dateAmount.insert(calculateBookBackTimeoutedDeferredTransfer(transactionEntry));
 				}
 
-				// check for redeemed deferred Transfer ins Range and book back the rest blocked gdd for decay
+				// check for redeemed deferred Transfer in Range and book back the rest blocked gdd for decay
 				// findRedeemedDeferredTransfersInRange
 				auto deferredRedeemingTransferPairs = mBlockchain.findRedeemedDeferredTransfersInRange(
 					publicKey,
@@ -191,13 +191,10 @@ namespace gradido {
 				assert(deferredBody->isDeferredTransfer());
 				GradidoDeferredTransferRole deferredTransferRole(*deferredBody);
 				auto deferredTransferAmount = deferredTransferRole.getAmountCost(deferredBody->getDeferredTransfer()->getSenderPublicKey());
-				//auto deferredTransferAmount = deferredBody->getDeferredTransfer()->getTransfer().getSender().getAmount();
-
 
 				auto redeemingConfirmedTransaction = deferredRedeemingTransferPair.second->getConfirmedTransaction();
 				auto redeemingConfirmedAt = redeemingConfirmedTransaction->getConfirmedAt().getAsTimepoint();
 				auto redeemingBody = redeemingConfirmedTransaction->getGradidoTransaction()->getTransactionBody();
-				assert(redeemingBody->isTransfer());
 				auto redeemingRole = getRole(*redeemingBody);
 				auto redeemingTransferAmount = redeemingRole->getAmountCost(deferredBody->getDeferredTransfer()->getRecipientPublicKey());
 
