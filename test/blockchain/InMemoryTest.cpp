@@ -164,6 +164,32 @@ bool InMemoryTest::createGradidoTransfer(
 	return mBlockchain->addGradidoTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
 }
 
+bool InMemoryTest::createGradidoDeferredTransfer(
+	int senderKeyPairIndex,
+	int recipientKeyPairIndex,
+	GradidoUnit amount, 
+	Timepoint createdAt,
+	Timepoint timeout
+) {
+	assert(senderKeyPairIndex > 0 && senderKeyPairIndex < g_KeyPairs.size());
+	assert(recipientKeyPairIndex > 0 && recipientKeyPairIndex < g_KeyPairs.size());
+
+	GradidoTransactionBuilder builder;
+	builder
+		.setMemo("dummy memo")
+		.setCreatedAt(createdAt)
+		.setVersionNumber(VERSION_STRING)
+		.setDeferredTransfer(
+			GradidoTransfer(
+				TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount),
+				g_KeyPairs[recipientKeyPairIndex]->getPublicKey()
+			), timeout
+		)
+		.sign(g_KeyPairs[senderKeyPairIndex])
+	;	
+	return mBlockchain->addGradidoTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
+}
+
 void InMemoryTest::logBlockchain()
 {
 	auto transactions = dynamic_cast<InMemory*>(mBlockchain.get())->getSortedTransactions();
@@ -374,3 +400,70 @@ TEST_F(InMemoryTest, InvalidTransferTransaction)
 	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit::zero());
 }
 
+TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
+{
+	ASSERT_NO_THROW(createRegisterAddress(3));
+	ASSERT_NO_THROW(createRegisterAddress(5));
+
+	auto createdAt = generateNewCreatedAt();
+	auto targetDate = getPreviousNMonth2(createdAt, 1);
+	// account 6 balance: 1000.0 at confirmed at date (confirmedAt = createdAt + 1 minute)
+	ASSERT_TRUE(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate));
+	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit(1000.0));
+
+	// deferred transfer from account 6 containing only creation transaction with 1000 - decay
+	createdAt = mLastCreatedAt + chrono::hours(10);
+	auto timeout = createdAt + chrono::hours(24 * 60);
+	const auto recipientKeyPairIndex = mKeyPairCursor;
+	mKeyPairCursor++;
+	try {
+		ASSERT_TRUE(createGradidoDeferredTransfer(6, recipientKeyPairIndex, 500.10, createdAt, timeout));
+	} catch(GradidoBlockchainException& ex) {
+		logBlockchain();
+		LOG_F(ERROR, ex.getFullString().data());
+	}
+
+	// check account
+	auto blockedDeferredTransferBalance = GradidoUnit(500.10).calculateCompoundInterest(createdAt, timeout);	
+	auto deferredTransferBalance = getBalance(recipientKeyPairIndex, mLastConfirmedAt);
+	auto userBalanceAtDeferredTransferTime = getBalance(6, createdAt).calculateDecay(createdAt, mLastConfirmedAt);
+	auto userBalance = getBalance(6, mLastConfirmedAt);
+	auto lastUserBalanceDate = mLastConfirmedAt;
+	EXPECT_EQ(userBalance, GradidoUnit(464.6647));
+	auto diff = userBalance - (userBalanceAtDeferredTransferTime - blockedDeferredTransferBalance);
+	// the difference should be small, normaly it should be identical but we must account for rounding errors
+	EXPECT_LE(abs(diff.getGradidoCent()), 1);
+	EXPECT_LT(userBalance + deferredTransferBalance, GradidoUnit(1000.0));
+
+	// deferred transfer from deferred transfer account recipientKeyPairIndex to a new account
+	createdAt = mLastConfirmedAt + chrono::hours(36);
+	mLastCreatedAt = createdAt;
+	auto secondTimeout = createdAt + chrono::hours(24 * 30);
+	auto newRecipientKeyPairIndex = mKeyPairCursor;
+	mKeyPairCursor++;
+	auto balanceWhenSecondsDeferredTransferStart = getBalance(recipientKeyPairIndex, createdAt);
+	ASSERT_EQ(balanceWhenSecondsDeferredTransferStart, GradidoUnit(500.10));
+	try {
+		ASSERT_TRUE(createGradidoDeferredTransfer(recipientKeyPairIndex, newRecipientKeyPairIndex, 483.0, createdAt, secondTimeout));
+	}
+	catch (GradidoBlockchainException& ex) {
+		logBlockchain();
+		LOG_F(ERROR, ex.getFullString().data());
+	}
+
+	// check accounts
+	blockedDeferredTransferBalance = GradidoUnit(483.0).calculateCompoundInterest(createdAt, secondTimeout);
+	deferredTransferBalance = getBalance(recipientKeyPairIndex, timeout + chrono::hours(1));
+	auto newDeferredTransferBalance = getBalance(newRecipientKeyPairIndex, mLastConfirmedAt);
+	auto userBalanceWithChange = getBalance(6, timeout + chrono::hours(1));
+	auto decayedUserBalance = userBalance.calculateDecay(lastUserBalanceDate, timeout + chrono::hours(1));
+	//EXPECT_EQ(getBalance(6, mLastConfirmedAt), decayedUserBalance);
+	//printf("user balance with change: %s, decayed user balance: %s\n", userBalanceWithChange.toString().data(), decayedUserBalance.toString().data());
+	//printf("deferred transfer balance: %s\n", deferredTransferBalance.toString().data());
+	//printf("new deferred transfer balance: %s\n", newDeferredTransferBalance.toString().data());
+
+	// try transfering gdd from deferred transfer again
+	createdAt = generateNewCreatedAt();
+	auto thirdTimeout = createdAt + chrono::hours(30 * 24);
+	EXPECT_THROW(createGradidoDeferredTransfer(recipientKeyPairIndex, 6, 400.0, createdAt, thirdTimeout), InsufficientBalanceException);
+}

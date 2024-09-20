@@ -15,7 +15,15 @@ namespace gradido {
 				inline bool isFinalBalanceForAccount(memory::ConstBlockPtr accountPublicKey) const {
 					return true;
 				}
-				inline GradidoUnit getAmount() const {
+				//! how much this transaction will add to the account balance
+				GradidoUnit getAmountAdded(memory::ConstBlockPtr accountPublicKey) const {
+					return 0.0;
+				};
+				//! how much this transaction will reduce the account balance
+				GradidoUnit getAmountCost(memory::ConstBlockPtr accountPublicKey) const {
+					return 0.0;
+				};
+				GradidoUnit getDecayedAmount(Timepoint startDate, Timepoint endDate) const {
 					return 0.0;
 				}
 				inline memory::ConstBlockPtr getFinalBalanceAddress() const {

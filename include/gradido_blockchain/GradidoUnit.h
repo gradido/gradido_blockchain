@@ -47,8 +47,17 @@ public:
 	inline bool operator==(const GradidoUnit& other) const { return mGradidoCent == other.mGradidoCent; }
 	inline bool operator!=(const GradidoUnit& other) const { return mGradidoCent != other.mGradidoCent; }
 
-	//! decay calculation with fixed point arithmetik for max grad of deterministic
+	//! decay calculation 
 	static int64_t calculateDecay(int64_t gradidoCent, int64_t seconds);
+	//! reverse decay calculation or original compund interest calculation
+	static int64_t calculateCompoundInterest(int64_t gradidoCent, int64_t seconds);
+	inline GradidoUnit calculateCompoundInterest(Duration duration) const {
+		uint64_t seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+		return calculateCompoundInterest(mGradidoCent, seconds);
+	}
+	inline GradidoUnit calculateCompoundInterest(Timepoint startTime, Timepoint endTime) const {
+		return calculateCompoundInterest(calculateDecayDurationSeconds(startTime, endTime));
+	}
 	
 	inline GradidoUnit calculateDecay(Duration duration) const {
 		uint64_t seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
