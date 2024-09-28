@@ -39,6 +39,7 @@ namespace gradido {
 				data::TransactionType transactionType,
 				std::string communityId
 			);
+			virtual ~TransactionEntry() {}
 
 			//! \brief operator for sorting by mTransactionNr in ascending order
 			bool operator < (const TransactionEntry& b) const { return mTransactionNr < b.mTransactionNr; }
