@@ -13,7 +13,7 @@ namespace iota
         // is already hex
         // Q: https://stackoverflow.com/questions/8899069/how-to-find-if-a-given-string-conforms-to-hex-notation-eg-0x34ff-without-regex
         if (std::all_of(alias.begin(), alias.end(), ::isxdigit)) {
-            index = std::move(*DataTypeConverter::hexToBinString(alias));
+            index = alias;
         }
         else {
             // is named
@@ -22,8 +22,8 @@ namespace iota
             index += alias;
         }
     }
-    TopicIndex::TopicIndex(const MemoryBin* rawIndex)
-        : index(std::string((const char*)rawIndex->data(), rawIndex->size()))
+    TopicIndex::TopicIndex(const memory::Block& rawIndex)
+        : index(rawIndex.copyAsString())
     {	
     }
 } // namespace iota

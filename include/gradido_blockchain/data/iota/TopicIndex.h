@@ -12,7 +12,7 @@ namespace iota {
     public:
 		TopicIndex(const std::string& alias);
 		TopicIndex(std::string_view alias);
-		TopicIndex(const MemoryBin* rawIndex);
+		TopicIndex(const memory::Block& rawIndex);
 
 		inline const std::string& getBinString() const { return index; }
 		inline std::string getHexString() const { return DataTypeConverter::binToHex(index); }
