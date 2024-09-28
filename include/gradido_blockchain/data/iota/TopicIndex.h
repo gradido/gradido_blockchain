@@ -11,6 +11,7 @@ namespace iota {
 	{
     public:
 		TopicIndex(const std::string& alias);
+		TopicIndex(std::string_view alias);
 		TopicIndex(const MemoryBin* rawIndex);
 
 		inline const std::string& getBinString() const { return index; }

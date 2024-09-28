@@ -4,7 +4,12 @@
 namespace iota
 {
     TopicIndex::TopicIndex(const std::string& alias)
+        : TopicIndex(std::string_view(alias))
     {
+    }
+    TopicIndex::TopicIndex(std::string_view alias)
+    {
+
         // is already hex
         // Q: https://stackoverflow.com/questions/8899069/how-to-find-if-a-given-string-conforms-to-hex-notation-eg-0x34ff-without-regex
         if (std::all_of(alias.begin(), alias.end(), ::isxdigit)) {
