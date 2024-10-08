@@ -22,6 +22,8 @@ public:
 
 	inline Timepoint getStartDate() const { return mStartDate; }
 	inline Timepoint getEndDate() const { return mEndDate; }
+	inline void setStartDate(Timepoint startDate) { mStartDate = startDate; }
+	inline void setEndDate(Timepoint endDate) { mEndDate = endDate; }
 
 	bool isEmpty() const { return mStartDate.time_since_epoch().count() == 0 && mEndDate.time_since_epoch().count() == 0; }
 	bool isInsideInterval(date::month month, date::year year) const
