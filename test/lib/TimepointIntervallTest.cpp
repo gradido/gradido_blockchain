@@ -39,22 +39,18 @@ TEST(TimepointIntervalTest, IteratorOnlyMonths)
 	auto startDate = Timepoint(seconds{ 1585743459 }); // 2020-04-01 12:17:39
 	auto endDate = Timepoint(seconds{ 1591013859 });   // 2020-06-01 12:17:39
 	TimepointInterval interval(startDate, endDate);
+
+	const std::vector<std::pair<date::month, date::year>> expectedDates = {
+		{ date::month(4), date::year(2020) },
+		{ date::month(5), date::year(2020) },
+		{ date::month(6), date::year(2020) }
+	};
+
 	int i = 0;
-	for (auto& date : interval) {
-		switch (i) {
-		case 0:
-			EXPECT_EQ(date.month(), date::month(4));
-			EXPECT_EQ(date.year(), date::year(2020));
-			break;
-		case 1:
-			EXPECT_EQ(date.month(), date::month(5));
-			EXPECT_EQ(date.year(), date::year(2020));
-			break;
-		case 2:
-			EXPECT_EQ(date.month(), date::month(6));
-			EXPECT_EQ(date.year(), date::year(2020));
-			break;
-		}
+	for (auto it = interval.begin(); it != interval.end(); ++it) {
+		auto& date = *it;
+		EXPECT_EQ(date.month(), expectedDates[i].first);
+		EXPECT_EQ(date.year(), expectedDates[i].second);
 		++i;
 	}
 }
@@ -64,38 +60,69 @@ TEST(TimepointIntervalTest, IteratorChangingYears)
 	auto startDate = Timepoint(seconds{ 1596284259 }); // 2020-08-01 12:17:39
 	auto endDate = Timepoint(seconds{ 1612181859 });   // 2021-02-01 12:17:39
 	TimepointInterval interval(startDate, endDate);
+
+	const std::vector<std::pair<date::month, date::year>> expectedDates = {
+		{ date::month(8), date::year(2020) },
+		{ date::month(9), date::year(2020) },
+		{ date::month(10), date::year(2020) },
+		{ date::month(11), date::year(2020) },
+		{ date::month(12), date::year(2020) },
+		{ date::month(1), date::year(2021) },
+		{ date::month(2), date::year(2021) }
+	};
+
 	int i = 0;
-	for (auto& date : interval) {
-		switch (i) {
-		case 0:
-			EXPECT_EQ(date.month(), date::month(8));
-			EXPECT_EQ(date.year(), date::year(2020));
-			break;
-		case 1:
-			EXPECT_EQ(date.month(), date::month(9));
-			EXPECT_EQ(date.year(), date::year(2020));
-			break;
-		case 2:
-			EXPECT_EQ(date.month(), date::month(10));
-			EXPECT_EQ(date.year(), date::year(2020));
-			break;
-		case 3:
-			EXPECT_EQ(date.month(), date::month(11));
-			EXPECT_EQ(date.year(), date::year(2020));
-			break;
-		case 4:
-			EXPECT_EQ(date.month(), date::month(12));
-			EXPECT_EQ(date.year(), date::year(2020));
-			break;
-		case 5:
-			EXPECT_EQ(date.month(), date::month(1));
-			EXPECT_EQ(date.year(), date::year(2021));
-			break;
-		case 6:
-			EXPECT_EQ(date.month(), date::month(2));
-			EXPECT_EQ(date.year(), date::year(2021));
-			break;
-		}
+	for (auto it = interval.begin(); it != interval.end(); ++it) {
+		auto& date = *it;
+		EXPECT_EQ(date.month(), expectedDates[i].first);
+		EXPECT_EQ(date.year(), expectedDates[i].second);
+		++i;
+	}
+}
+
+
+TEST(TimepointIntervalTest, IteratorOnlyMonthsReverse)
+{
+	auto startDate = Timepoint(seconds{ 1585743459 }); // 2020-04-01 12:17:39
+	auto endDate   = Timepoint(seconds{ 1591013859 }); // 2020-06-01 12:17:39
+	TimepointInterval interval(startDate, endDate);
+	
+	const std::vector<std::pair<date::month, date::year>> expectedDates = {
+		{ date::month(6), date::year(2020) },
+		{ date::month(5), date::year(2020) },
+		{ date::month(4), date::year(2020) }
+	};
+
+	int i = 0;
+	for (auto it = std::prev(interval.end()); it != interval.begin(); --it) {
+		auto& date = *it;
+		EXPECT_EQ(date.month(), expectedDates[i].first);
+		EXPECT_EQ(date.year(), expectedDates[i].second);
+		++i;
+	}
+}
+
+TEST(TimepointIntervalTest, IteratorChangingYearsReverse)
+{
+	auto startDate = Timepoint(seconds{ 1596284259 }); // 2020-08-01 12:17:39
+	auto endDate = Timepoint(seconds{ 1612181859 });   // 2021-02-01 12:17:39
+	TimepointInterval interval(startDate, endDate);
+
+	const std::vector<std::pair<date::month, date::year>> expectedDates = {
+		{ date::month( 2), date::year(2021) },
+		{ date::month( 1), date::year(2021) },
+		{ date::month(12), date::year(2020) },
+		{ date::month(11), date::year(2020) },
+		{ date::month(10), date::year(2020) },
+		{ date::month( 9), date::year(2020) },
+		{ date::month( 8), date::year(2020) }
+	};
+
+	int i = 0;
+	for (auto it = std::prev(interval.end()); it != interval.begin(); --it) {
+		auto& date = *it;
+		EXPECT_EQ(date.month(), expectedDates[i].first);
+		EXPECT_EQ(date.year(), expectedDates[i].second);
 		++i;
 	}
 }

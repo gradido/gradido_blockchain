@@ -43,17 +43,35 @@ public:
 	// source: https://internalpointers.com/post/writing-custom-iterators-modern-cpp
 	struct MonthYearIterator
 	{
-		using iterator_category = std::input_iterator_tag;
+		using iterator_category = std::bidirectional_iterator_tag;
 		using difference_type = std::ptrdiff_t; // a month is a iterator step
 		using value_type = date::year_month;
 		using pointer = value_type*;  // or also value_type*
 		using reference = value_type&;  // or also value_type&
 
 		MonthYearIterator(pointer ptr)
-			: m_ptr(ptr) {}
+			: m_ptr(ptr) 
+		{
+		}
 
-		~MonthYearIterator(){
-			if (m_ptr) delete m_ptr;
+		// Copy constructor
+		MonthYearIterator(const MonthYearIterator& other)
+			: m_ptr(new value_type(other.m_ptr->year(), other.m_ptr->month())) // Deep copy of the value
+		{
+		}
+
+		// Move constructor
+		MonthYearIterator(MonthYearIterator&& other) noexcept
+			: m_ptr(other.m_ptr)
+		{
+			other.m_ptr = nullptr; // Leave other in a valid state
+		}
+
+		~MonthYearIterator()
+		{
+			if (m_ptr) {
+				delete m_ptr;
+			}
 		}
 
 		reference operator*() const { return *m_ptr; }
@@ -62,8 +80,14 @@ public:
 		// Prefix increment
 		MonthYearIterator& operator++() { (*m_ptr) += date::months(1); return *this; }
 
+		// Prefix decrement
+		MonthYearIterator& operator--() { (*m_ptr) -= date::months(1); return *this; }
+
 		// Postfix increment
 		MonthYearIterator operator++(int) { MonthYearIterator tmp = *this; ++(*this); return tmp; }
+
+		// Postfix decrement 
+		MonthYearIterator operator--(int) { MonthYearIterator tmp = *this; --(*this); return tmp; }
 
 		friend bool operator== (const MonthYearIterator& a, const MonthYearIterator& b) { return *a.m_ptr == *b.m_ptr; };
 		friend bool operator!= (const MonthYearIterator& a, const MonthYearIterator& b) { return *a.m_ptr != *b.m_ptr; };
@@ -77,7 +101,7 @@ public:
 		return MonthYearIterator(new date::year_month(date.year(), date.month()));
 	}
 	MonthYearIterator end() { 
-		auto date = date::year_month_day{ date::floor<date::days>(mStartDate) };
+		auto date = date::year_month_day{ date::floor<date::days>(mEndDate) };
 		// +1 month to have end out of bounds
 		date += date::months(1);
 		return MonthYearIterator(new date::year_month(date.year(), date.month()));
