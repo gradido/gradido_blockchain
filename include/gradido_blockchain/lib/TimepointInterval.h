@@ -3,6 +3,7 @@
 
 #include "gradido_blockchain/types.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "date/date.h"
 
 class TimepointInterval
@@ -16,6 +17,10 @@ public:
 				throw EndDateBeforeStartDateException("end date for timepoint interval is before start date", startDate, endDate);
 			}
 		}
+	TimepointInterval(const date::year_month& startDate, const date::year_month& endDate)
+		: TimepointInterval(DataTypeConverter::monthYearToTimepoint(startDate), DataTypeConverter::monthYearToTimepoint(endDate))
+	{
+	}
 
 	TimepointInterval(Timepoint date)
 		: mStartDate(date), mEndDate(date) {}

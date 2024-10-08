@@ -309,47 +309,12 @@ namespace DataTypeConverter
 
 		return fmt.str();
 	}
-	using namespace std::chrono;
-	/*
-	const Timepoint convertFromProtoTimestamp(const proto::gradido::Timestamp& timestamp)
+	Timepoint monthYearToTimepoint(const date::year_month& ym)
 	{
-		// Convert the seconds and nanoseconds to microseconds
-		int64_t microseconds = timestamp.seconds() * static_cast<int64_t>(1e6) + timestamp.nanos() / static_cast<int64_t>(1e3);
-		return system_clock::time_point(std::chrono::microseconds(microseconds));
+		date::year_month_day ymd(ym.year(), ym.month(), date::day(1));
+		return std::chrono::sys_days{ ymd };
 	}
-	void convertToProtoTimestamp(const Timepoint timestamp, proto::gradido::Timestamp* protoTimestamp)
-	{
-		// Convert time_point to duration since epoch
-		auto duration = timestamp.time_since_epoch();
-
-		// Convert duration to seconds and nanoseconds
-		auto seconds = duration_cast<std::chrono::seconds>(duration);
-		auto nanos = duration_cast<std::chrono::nanoseconds>(duration) - duration_cast<std::chrono::nanoseconds>(seconds);
-
-		// Set the protobuf timestamp fields
-		protoTimestamp->set_seconds(seconds.count());
-		protoTimestamp->set_nanos(nanos.count());
-	}
-	Timepoint convertFromProtoTimestampSeconds(const proto::gradido::TimestampSeconds& timestampSeconds)
-	{
-		// Convert seconds to a duration
-		auto seconds = std::chrono::seconds{ timestampSeconds.seconds() };
-
-		// Create a time_point from the duration
-		return system_clock::time_point{ seconds };
-	}
-	void convertToProtoTimestampSeconds(const Timepoint timestamp, proto::gradido::TimestampSeconds* protoTimestampSeconds)
-	{
-		// Get the duration since epoch
-		auto duration = timestamp.time_since_epoch();
-
-		// Convert the duration to seconds
-		auto seconds = duration_cast<std::chrono::seconds>(duration);
-
-		// Set the protobuf timestamp fields
-		protoTimestampSeconds->set_seconds(seconds.count());
-	}
-	//*/
+	
 	int replaceBase64WithHex(rapidjson::Value& json, rapidjson::Document::AllocatorType& alloc)
 	{
 		int count_replacements = 0;

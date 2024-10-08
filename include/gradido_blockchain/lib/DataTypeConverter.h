@@ -10,6 +10,7 @@
 #include "rapidjson/document.h"
 
 #include <string>
+#include "date/date.h"
 
 namespace DataTypeConverter
 {
@@ -57,6 +58,7 @@ namespace DataTypeConverter
 	//! \param fmt: https://howardhinnant.github.io/date/date.html#from_stream_formatting
 	GRADIDOBLOCKCHAIN_EXPORT Timepoint dateTimeStringToTimePoint(const std::string &dateTimeString, const char *fmt = "%F %T");
 	GRADIDOBLOCKCHAIN_EXPORT std::string timespanToString(const std::chrono::seconds timespan);
+	GRADIDOBLOCKCHAIN_EXPORT Timepoint monthYearToTimepoint(const date::year_month& ym);
 
 	//! \brief go through json object and replace every string entry in base64 format into hex format
 	//! \return count of replaced strings
