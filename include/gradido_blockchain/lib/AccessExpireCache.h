@@ -1,3 +1,6 @@
+#ifndef __GRADIDO_BLOCKCHAIN_LIB_ACCESS_EXPIRE_CACHE_H
+#define __GRADIDO_BLOCKCHAIN_LIB_ACCESS_EXPIRE_CACHE_H
+
 #include <chrono>
 #include <map>
 #include <memory>
@@ -99,3 +102,4 @@ protected:
     mutable std::mutex mMutex;
 };
 
+#endif //__GRADIDO_BLOCKCHAIN_LIB_ACCESS_EXPIRE_CACHE_H
