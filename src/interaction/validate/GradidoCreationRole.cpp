@@ -1,4 +1,5 @@
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
+#include "gradido_blockchain/interaction/calculateCreationSum/Context.h"
 #include "gradido_blockchain/interaction/validate/GradidoCreationRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/validate/TransferAmountRole.h"
@@ -64,43 +65,24 @@ namespace gradido {
 					assert(recipientPreviousConfirmedTransaction);
 					assert(mConfirmedAt.getSeconds());
 
-					GradidoUnit sum;
-					auto creationMaxAlgo = getCorrectCreationMaxAlgo(mConfirmedAt);
-					auto targetDate = mGradidoCreation->getTargetDate();
-					auto ymd = date::year_month_day{ date::floor<date::days>(targetDate.getAsTimepoint())};
-					auto targetCreationMaxAlgo = getCorrectCreationMaxAlgo(targetDate);
+					calculateCreationSum::Context calculateCreationSum(
+						mConfirmedAt,
+						mGradidoCreation->getTargetDate(),
+						mGradidoCreation->getRecipient().getPubkey(),
+						recipientPreviousConfirmedTransaction->getId()
+					);
 
-					if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo) {
-						sum = calculateCreationSumLegacy(
-							mGradidoCreation->getRecipient().getPubkey(),
-							mConfirmedAt,
-							blockchain,
-							recipientPreviousConfirmedTransaction->getId()
-						);
-					}
-					else if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo) {
-						sum = calculateCreationSum(
-							mGradidoCreation->getRecipient().getPubkey(),
-							ymd.month(), ymd.year(),
-							mConfirmedAt, blockchain,
-							recipientPreviousConfirmedTransaction->getId()
-						);
-					}
+					GradidoUnit sum = calculateCreationSum.run(*blockchain);
 					sum += recipient.getAmount();
-					// first max creation check algo
-					if (CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == creationMaxAlgo && sum > GradidoUnit(3000.0)) {
+					if (sum > calculateCreationSum.getLimit()) {
+						auto targetDate = mGradidoCreation->getTargetDate();
+						auto ymd = date::year_month_day{ date::floor<date::days>(targetDate.getAsTimepoint()) };
 						sum -= recipient.getAmount();
+						std::string message = "creation more than ";						
+						message += calculateCreationSum.getLimit().toString() + " not allowed";
+
 						throw InvalidCreationException(
-							"creation more than 3.000 GDD in 3 month not allowed",
-							static_cast<uint32_t>(ymd.month()), static_cast<int>(ymd.year()),
-							recipient.getAmount(), sum
-						);
-					}
-					// second max creation check algo
-					else if (CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE == creationMaxAlgo && sum > GradidoUnit(1000.0)) {
-						sum -= recipient.getAmount();
-						throw InvalidCreationException(
-							"creation more than 1.000 GDD per month not allowed",
+							message.data(),
 							static_cast<uint32_t>(ymd.month()), static_cast<int>(ymd.year()),
 							recipient.getAmount(), sum
 						);
@@ -224,87 +206,7 @@ namespace gradido {
 					}
 				}
 			}
-
-			GradidoUnit GradidoCreationRole::calculateCreationSum(
-				memory::ConstBlockPtr accountPubkey,
-				date::month month,
-				date::year year,
-				Timepoint received,
-				std::shared_ptr<blockchain::Abstract> blockchain,
-				uint64_t maxTransactionNr
-			)
-			{
-				assert(blockchain);
-
-				GradidoUnit sum; // default initialized with zero
-
-				// received = max
-				// received - 2 month = min
-				auto beforeReceived = received - std::chrono::months(getTargetDateReceivedDistanceMonth(received));
-
-				blockchain->findAll(blockchain::Filter(
-					// static filter
-					maxTransactionNr,
-					accountPubkey,
-					TimepointInterval(beforeReceived, received),
-					// dynamic filter
-					// called for each transaction which fulfills the static filters
-					[&sum, month, year](const blockchain::TransactionEntry& entry) -> blockchain::FilterResult
-					{
-						auto body = entry.getTransactionBody();
-						if (body->isCreation())
-						{
-							auto creation = body->getCreation();
-							auto targetDate = date::year_month_day{ date::floor<date::days>(creation->getTargetDate().getAsTimepoint())};
-							if (targetDate.month() == month && targetDate.year() == year) {
-								sum += creation->getRecipient().getAmount();
-							}
-						}
-						// we don't need any of it in our result set
-						return blockchain::FilterResult::DISMISS;
-					}
-				));
-				return sum;
-			}
-
-			GradidoUnit GradidoCreationRole::calculateCreationSumLegacy(
-				memory::ConstBlockPtr accountPubkey,
-				Timepoint received,
-				std::shared_ptr<blockchain::Abstract> blockchain,
-				uint64_t maxTransactionNr
-			)
-			{
-				assert(blockchain);
-				// check that is is indeed an old transaction from before Sun May 03 2020 11:00:08 GMT+0000
-				auto algo = getCorrectCreationMaxAlgo(received);
-				assert(CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD == algo);
-				GradidoUnit sum; // default initialized with zero
-
-				// received = max
-				// received - 2 month = min
-				auto beforeReceived = received - std::chrono::months(2);
-
-				blockchain->findAll(blockchain::Filter(
-					// static filter
-					maxTransactionNr,
-					accountPubkey,
-					TimepointInterval(beforeReceived, received),
-					// dynamic filter
-					// called for each transaction which fulfills the static filters
-					[&sum](const blockchain::TransactionEntry& entry) -> blockchain::FilterResult
-					{
-						auto body = entry.getTransactionBody();
-						if (body->isCreation())
-						{
-							sum += body->getCreation()->getRecipient().getAmount();
-						}
-						// we don't need any of it in our result set
-						return blockchain::FilterResult::DISMISS;
-					}
-				));
-				return sum;
-			}
-
+			
 			unsigned GradidoCreationRole::getTargetDateReceivedDistanceMonth(Timepoint createdAt)
 			{
 				date::month targetDateReceivedDistanceMonth(2);
@@ -317,14 +219,6 @@ namespace gradido {
 					targetDateReceivedDistanceMonth = date::month(3);
 				}
 				return static_cast<unsigned>(targetDateReceivedDistanceMonth);
-			}
-
-			CreationMaxAlgoVersion GradidoCreationRole::getCorrectCreationMaxAlgo(const data::TimestampSeconds& timepoint)
-			{
-				if (timepoint.getSeconds() < 1588503608) {
-					return CreationMaxAlgoVersion::v01_THREE_MONTHS_3000_GDD;
-				}
-				return CreationMaxAlgoVersion::v02_ONE_MONTH_1000_GDD_TARGET_DATE;
 			}
 		}
 	}
