@@ -10,7 +10,7 @@ namespace gradido {
 			class AbstractRole
 			{
 			public:
-				// return json string
+				//! return json string
 				std::string run(bool pretty) const;
 				virtual rapidjson::Value composeJson(rapidjson::Document& rootDocument) const = 0;
 			protected:
