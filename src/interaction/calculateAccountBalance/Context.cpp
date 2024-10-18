@@ -168,7 +168,7 @@ namespace gradido {
 			}
 
 			std::pair<Timepoint, GradidoUnit> Context::calculateBookBackTimeoutedDeferredTransfer(
-				std::shared_ptr<blockchain::TransactionEntry> transactionEntry
+				std::shared_ptr<const blockchain::TransactionEntry> transactionEntry
 			) {
 				auto confirmedTransaction = transactionEntry->getConfirmedTransaction();
 				auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();

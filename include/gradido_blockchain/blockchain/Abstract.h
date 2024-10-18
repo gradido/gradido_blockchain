@@ -32,7 +32,7 @@ namespace gradido {
 			// main search function, do all the work, reference from other functions
 			virtual TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const = 0;
 			// only if you expect only one result
-			std::shared_ptr<TransactionEntry> findOne(const Filter& filter = Filter::LAST_TRANSACTION) const;
+			std::shared_ptr<const TransactionEntry> findOne(const Filter& filter = Filter::LAST_TRANSACTION) const;
 
 			//! find all deferred transfers which have the timeout in date range between start and end, have senderPublicKey and are not redeemed,
 			//! therefore boocked back to sender
@@ -57,10 +57,10 @@ namespace gradido {
 			//! \param use filter to check existing of a address in a subrange of transactions
 			//!        check for user and account public keys
 			data::AddressType getAddressType(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
-			virtual std::shared_ptr<TransactionEntry> getTransactionForId(uint64_t transactionId) const = 0;
+			virtual std::shared_ptr<const TransactionEntry> getTransactionForId(uint64_t transactionId) const = 0;
 
 			//! \param filter use to speed up search if infos exist to narrow down search transactions range
-			virtual std::shared_ptr<TransactionEntry> findByMessageId(
+			virtual std::shared_ptr<const TransactionEntry> findByMessageId(
 				memory::ConstBlockPtr messageId,
 				const Filter& filter = Filter::ALL_TRANSACTIONS
 			) const;
@@ -70,7 +70,7 @@ namespace gradido {
 			virtual AbstractProvider* getProvider() const = 0;
 
 		protected:
-			virtual void pushTransactionEntry(std::shared_ptr<TransactionEntry> transactionEntry) = 0;
+			virtual void pushTransactionEntry(std::shared_ptr<const TransactionEntry> transactionEntry) = 0;
 
 			std::string mCommunityId;
 			Timepoint mStartDate;

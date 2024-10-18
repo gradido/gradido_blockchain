@@ -60,10 +60,10 @@ namespace gradido {
 				uint64_t maxTransactionNr
 			) const;
 
-			std::shared_ptr<TransactionEntry> getTransactionForId(uint64_t transactionId) const;
+			std::shared_ptr<const TransactionEntry> getTransactionForId(uint64_t transactionId) const;
 
 			// this implementation use a map for direct search and don't use filter at all
-			std::shared_ptr<TransactionEntry> findByMessageId(
+			std::shared_ptr<const TransactionEntry> findByMessageId(
 				memory::ConstBlockPtr messageId,
 				const Filter& filter = Filter::ALL_TRANSACTIONS
 			) const;
@@ -74,8 +74,8 @@ namespace gradido {
 			InMemory(std::string_view communityId);
 
 			// if called, mWorkMutex should be locked exclusive
-			void pushTransactionEntry(std::shared_ptr<TransactionEntry> transactionEntry);
-			void removeTransactionEntry(std::shared_ptr<TransactionEntry> transactionEntry);
+			void pushTransactionEntry(std::shared_ptr<const TransactionEntry> transactionEntry);
+			void removeTransactionEntry(std::shared_ptr<const TransactionEntry> transactionEntry);
 
 			FilterCriteria findSmallestPrefilteredTransactionList(const Filter& filter) const;
 
@@ -85,17 +85,17 @@ namespace gradido {
 
 			// update map and multimap on every transaction add and remove
 			//! key is hash from pubkey, not collision resistent!
-			std::multimap<memory::BlockKey, std::shared_ptr<TransactionEntry>> mTransactionsByPubkey;
+			std::multimap<memory::BlockKey, std::shared_ptr<const TransactionEntry>> mTransactionsByPubkey;
 			//! key is transaction received date
-			std::multimap<data::TimestampSeconds, std::shared_ptr<TransactionEntry>> mTransactionsByConfirmedAt;
+			std::multimap<data::TimestampSeconds, std::shared_ptr<const TransactionEntry>> mTransactionsByConfirmedAt;
 			//! find transaction nr by iota message id
 			std::unordered_map<iota::MessageId, uint64_t> mMessageIdTransactionNrs;
 			//! find transactionEntry by transaction nr
-			std::map<uint64_t, std::shared_ptr<TransactionEntry>> mTransactionsByNr;
+			std::map<uint64_t, std::shared_ptr<const TransactionEntry>> mTransactionsByNr;
 			//! deferred transfers with redeem transfer if exist sorted by deferred transfer timeout
 			std::multimap<Timepoint, DeferredRedeemedTransferPair> mTimeoutDeferredRedeemedTransferPairs;
 			// for fast doublette check
-			std::unordered_map<SignatureOctet, std::shared_ptr<TransactionEntry>> mTransactionFingerprintTransactionEntry;
+			std::unordered_map<SignatureOctet, std::shared_ptr<const TransactionEntry>> mTransactionFingerprintTransactionEntry;
 			// because sorted transactions are not needed often, update list only if needed and mSortedDirty = true
 			bool mSortedDirty;
 			TransactionEntries mSortedTransactions;

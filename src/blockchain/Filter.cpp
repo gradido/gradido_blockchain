@@ -87,7 +87,7 @@ namespace gradido {
 			0, 0, nullptr, SearchDirection::DESC, Pagination(0, 0)
 		);
 
-		FilterResult Filter::matches(std::shared_ptr<TransactionEntry> entry, FilterCriteria type, std::string_view communityId) const
+		FilterResult Filter::matches(std::shared_ptr<const TransactionEntry> entry, FilterCriteria type, std::string_view communityId) const
 		{
 			// without needing deserialize transaction
 			if ((type & FilterCriteria::TRANSACTION_NR) == FilterCriteria::TRANSACTION_NR) 
