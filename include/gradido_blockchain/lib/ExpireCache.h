@@ -34,7 +34,7 @@ public:
         // it will be removed anyway on timeout
     }
 
-    std::optional<TValue> get(const TKey& key)
+    std::optional<TValue> get(const TKey& key) const
     {
         std::lock_guard lock(mMutex);
         auto it = mValues.find(key);
