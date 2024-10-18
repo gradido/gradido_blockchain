@@ -54,7 +54,7 @@ namespace gradido {
 					auto otherBlockchain = blockchainProvider->findBlockchain(body->getOtherGroup());
 					assert(otherBlockchain);
 
-					std::shared_ptr<blockchain::TransactionEntry> pairTransactionEntry;
+					std::shared_ptr<const blockchain::TransactionEntry> pairTransactionEntry;
 					switch (body->getType()) {
 					case data::CrossGroupType::LOCAL: break; // no cross group
 					case data::CrossGroupType::INBOUND: break; // happen before OUTBOUND, can only be checked after both transactions are written to blockchain

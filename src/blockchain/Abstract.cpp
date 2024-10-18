@@ -10,7 +10,7 @@ namespace gradido {
 
 		}
 
-		std::shared_ptr<TransactionEntry> Abstract::findOne(const Filter& filter/* = Filter::LAST_TRANSACTION*/) const
+		std::shared_ptr<const TransactionEntry> Abstract::findOne(const Filter& filter/* = Filter::LAST_TRANSACTION*/) const
 		{
 			auto results = findAll(filter);
 			if (!results.size()) { 
@@ -36,7 +36,7 @@ namespace gradido {
 			return data::AddressType::NONE;
 		}
 
-		std::shared_ptr<TransactionEntry> Abstract::findByMessageId(
+		std::shared_ptr<const TransactionEntry> Abstract::findByMessageId(
 			memory::ConstBlockPtr messageId,
 			const Filter& filter /*= Filter::ALL_TRANSACTIONS*/
 		) const

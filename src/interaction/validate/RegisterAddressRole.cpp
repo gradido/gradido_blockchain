@@ -68,7 +68,7 @@ namespace gradido {
 					assert(blockchain);
 					blockchain::FilterBuilder filterBuilder;
 
-					std::shared_ptr<blockchain::TransactionEntry> transactionWithSameAddress;
+					std::shared_ptr<const blockchain::TransactionEntry> transactionWithSameAddress;
 					if (data::AddressType::SUBACCOUNT == addressType) {
 						transactionWithSameAddress = blockchain->findOne(
 							filterBuilder

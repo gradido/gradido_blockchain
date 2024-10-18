@@ -35,7 +35,7 @@ namespace gradido {
 			protected:	
 				std::shared_ptr<AbstractRole> getRole(const data::TransactionBody& body);
 				std::pair<Timepoint, GradidoUnit> calculateBookBackTimeoutedDeferredTransfer(
-					std::shared_ptr<blockchain::TransactionEntry> transactionEntry
+					std::shared_ptr<const blockchain::TransactionEntry> transactionEntry
 				);
 				std::pair<Timepoint, GradidoUnit> calculateRedeemedDeferredTransferChange(
 					const blockchain::DeferredRedeemedTransferPair& deferredRedeemingTransferPair

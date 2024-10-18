@@ -74,7 +74,7 @@ namespace gradido {
 			//! check if transaction fulfill filter type
 			//! \param entry transaction to match
 			//! \param type filter criteria to check			
-			FilterResult matches(std::shared_ptr<TransactionEntry> entry, FilterCriteria type, std::string_view communityId) const;
+			FilterResult matches(std::shared_ptr<const TransactionEntry> entry, FilterCriteria type, std::string_view communityId) const;
 
 			static const Filter LAST_TRANSACTION;
 			static const Filter ALL_TRANSACTIONS;

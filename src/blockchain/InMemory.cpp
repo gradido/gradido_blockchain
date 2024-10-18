@@ -186,8 +186,8 @@ namespace gradido {
 
 				// we need to call processEntry again for filterFunction, searchDirection and/or pagination
 				if (!prefilteredTransactions.empty()) {
-					std::map<uint64_t, std::shared_ptr<TransactionEntry>> sortedTransactions;
-					for (std::shared_ptr<TransactionEntry> entry : prefilteredTransactions) {
+					std::map<uint64_t, std::shared_ptr<const TransactionEntry>> sortedTransactions;
+					for (std::shared_ptr<const TransactionEntry> entry : prefilteredTransactions) {
 						sortedTransactions.insert({ entry->getTransactionNr(), entry });
 					}
 					prefilteredTransactions.clear();
@@ -269,7 +269,7 @@ namespace gradido {
 			return result;
 		}
 
-		std::shared_ptr<TransactionEntry> InMemory::getTransactionForId(uint64_t transactionId) const
+		std::shared_ptr<const TransactionEntry> InMemory::getTransactionForId(uint64_t transactionId) const
 		{
 			std::lock_guard _lock(mWorkMutex);
 			auto it = mTransactionsByNr.find(transactionId);
@@ -279,7 +279,7 @@ namespace gradido {
 			return nullptr;
 		}
 
-		std::shared_ptr<TransactionEntry> InMemory::findByMessageId(
+		std::shared_ptr<const TransactionEntry> InMemory::findByMessageId(
 			memory::ConstBlockPtr messageId,
 			const Filter& filter/* = Filter::ALL_TRANSACTIONS*/
 		) const
@@ -297,7 +297,7 @@ namespace gradido {
 			return InMemoryProvider::getInstance();
 		}
 
-		void InMemory::pushTransactionEntry(std::shared_ptr<TransactionEntry> transactionEntry)
+		void InMemory::pushTransactionEntry(std::shared_ptr<const TransactionEntry> transactionEntry)
 		{
 			std::lock_guard _lock(mWorkMutex);
 			mSortedDirty = true;
@@ -356,7 +356,7 @@ namespace gradido {
 			}
 		}
 
-		void InMemory::removeTransactionEntry(std::shared_ptr<TransactionEntry> transactionEntry)
+		void InMemory::removeTransactionEntry(std::shared_ptr<const TransactionEntry> transactionEntry)
 		{
 			std::lock_guard _lock(mWorkMutex);
 			mSortedDirty = true;
