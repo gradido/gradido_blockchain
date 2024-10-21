@@ -9,12 +9,7 @@ using namespace rapidjson;
 Config::Config(const std::string& fileName)
 {
     std::ifstream fileStream(fileName);
-    IStreamWrapper isw(fileStream);
-    mJsonData.ParseStream(isw);
-    if (mJsonData.HasParseError()) {
-        throw RapidjsonParseErrorException("error parsing config", mJsonData.GetParseError(), mJsonData.GetErrorOffset())
-            .setRawText(std::string((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>()));
-    }
+    mRootNode = fkyaml::node::deserialize(fileStream);
 }
 
 Config::~Config()
@@ -24,24 +19,52 @@ Config::~Config()
 
 std::string Config::getString(const std::string& key, const std::string& defaultValue) const
 {
-    if (mJsonData.HasMember(key.data()) && mJsonData[key.data()].IsString()) {
-        return mJsonData[key.data()].GetString();
+    auto node = getNode(key);
+    if (!node) {
+        return defaultValue;
     }
-    return defaultValue;
+    return node->get_value<std::string>();
 }
 
 int Config::getInt(const std::string& key, int defaultValue) const
 {
-    if (mJsonData.HasMember(key.data()) && mJsonData[key.data()].IsInt()) {
-        return mJsonData[key.data()].GetInt();
+    auto node = getNode(key);
+    if (!node) {
+        return defaultValue;
     }
-    return defaultValue;
+    return node->get_value<int>();
 }
 
 bool Config::getBool(const std::string& key, bool defaultValue) const
 {
-    if (mJsonData.HasMember(key.data()) && mJsonData[key.data()].IsBool()) {
-        return mJsonData[key.data()].GetBool();
+    auto node = getNode(key);
+    if (!node) {
+        return defaultValue;
     }
-    return defaultValue;
+    return node->get_value<bool>();
+}
+
+std::vector<std::string> Config::splitKey(const std::string& key) const
+{
+    std::vector<std::string> tokens;
+    std::istringstream stream(key);
+    std::string token;
+
+    while (std::getline(stream, token, '.')) {
+        tokens.push_back(token);
+    }
+
+    return tokens;
+}
+
+const fkyaml::node* Config::getNode(const std::vector<std::string>& path) const
+{
+    const fkyaml::node* current = &mRootNode;
+    for (const auto& key : path) {
+        if ((*current)[key].is_null()) {
+            return nullptr;
+        }
+        current = &(*current)[key];
+    }
+    return current;
 }
