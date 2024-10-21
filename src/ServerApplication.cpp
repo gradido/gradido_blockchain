@@ -28,7 +28,10 @@ ServerApplication::ServerApplication()
 
 void ServerApplication::run()
 {
-	init();
+	if (!init()) {
+		exit();
+		return;
+	}
 	gRunning = true;
 	while (gRunning) {
 

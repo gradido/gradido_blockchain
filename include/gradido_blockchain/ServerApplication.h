@@ -9,6 +9,7 @@ class GRADIDOBLOCKCHAIN_EXPORT ServerApplication
 {
 public:
 	ServerApplication();
+	//! \return true on success, false on failure, if return false, exit will be called and program will end
 	virtual bool init() = 0;
 	void run();
 	virtual void exit() = 0;
