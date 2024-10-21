@@ -28,3 +28,6 @@
 [submodule "dependencies/protopuf"]
 	path = dependencies/protopuf
 	url = https://github.com/PragmaTwice/protopuf
+[submodule "dependencies/fkYAML"]
+	path = dependencies/fkYAML
+	url = https://github.com/fktn-k/fkYAML.git

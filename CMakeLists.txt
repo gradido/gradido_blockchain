@@ -132,13 +132,14 @@ endif()
 
 include_directories(
 	"dependencies"
-	"dependencies/tinf/src/" 
-	"dependencies/protopuf/include"
-	"dependencies/rapidjson/include"
-	"dependencies/furi/code/"
-	"dependencies/magic_enum/include"
 	"dependencies/cpp-httplib"
 	"dependencies/date/include"
+	"dependencies/fkYAML/single_include"
+	"dependencies/furi/code/"
+	"dependencies/magic_enum/include"
+	"dependencies/protopuf/include"
+	"dependencies/rapidjson/include"
+	"dependencies/tinf/src/" 
 	"include"
 )
 
@@ -168,14 +169,14 @@ set(BUILD_SHARED_LIBS_TEMP ${BUILD_SHARED_LIBS})
 set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(dependencies/loguru)
 set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP})
-
+add_subdirectory(dependencies/fkYAML)
 
 ######################################################################
 
 add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
-target_link_libraries(GradidoBlockchain loguru::loguru)
+target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML)
 IF(WIN32) 
 	if(openssl_FOUND) 
 		target_link_libraries(GradidoBlockchain openssl::openssl)
@@ -217,10 +218,10 @@ target_include_directories(
     GradidoBlockchain PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>")
 
 string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" is_top_level)
-option(GradidoBlockchain_INCLUDE_PACKAGING "Include packaging rules for GradidoBlockchain" "${is_top_level}")
-if (GradidoBlockchain_INCLUDE_PACKAGING)
-    add_subdirectory(packaging)
-endif ()
+#option(GradidoBlockchain_INCLUDE_PACKAGING "Include packaging rules for GradidoBlockchain" "${is_top_level}")
+#if (GradidoBlockchain_INCLUDE_PACKAGING)
+ #   add_subdirectory(packaging)
+#endif ()
 
 # add test
 include(CTest)

@@ -7,7 +7,7 @@
 /*!
   @author einhornimmond
   @date 06.09.2022
-  @brief Use Environment Variables if config option wasn't found in properties file
+  @brief Use Environment Variables if config option wasn't found in config file
  
 @startuml
 start
@@ -25,12 +25,12 @@ class GRADIDOBLOCKCHAIN_EXPORT MapEnvironmentToConfig : public Config
 public:
 	MapEnvironmentToConfig(const std::string& fileName);
 	~MapEnvironmentToConfig() {}
-	//! call getString from Poco::Util::LayeredConfiguration given on construction, and if that return defaultValue, 
-	//! call mapKey to translate the config key to an environment key and call again Poco::Util::LayeredConfiguration::getString but with the mapped key
+	//! call getString from Config, and if that return defaultValue, 
+	//! call mapKey to translate the config key to an environment key and call again getString but with the mapped key
 	std::string getString(const std::string& key, const std::string& defaultValue) const;
 
-	//! call getInt from Poco::Util::LayeredConfiguration given on construction, and if that return defaultValue, 
-	//! call mapKey to translate the config key to an environment key and call again Poco::Util::LayeredConfiguration::getInt but with the mapped key
+	//! call getInt from Config, and if that return defaultValue, 
+	//! call mapKey to translate the config key to an environment key and call again getInt but with the mapped key
 	int getInt(const std::string& key, int defaultValue) const;
 
 protected:
