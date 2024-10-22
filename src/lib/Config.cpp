@@ -3,13 +3,16 @@
 #include <rapidjson/istreamwrapper.h>
 
 #include <fstream>
+#include <filesystem>
 
 using namespace rapidjson;
 
 Config::Config(const std::string& fileName)
 {
-    std::ifstream fileStream(fileName);
-    mRootNode = fkyaml::node::deserialize(fileStream);
+    if (!fileName.empty() && std::filesystem::is_regular_file(fileName)) {
+        std::ifstream fileStream(fileName);
+        mRootNode = fkyaml::node::deserialize(fileStream);
+    }
 }
 
 Config::~Config()
