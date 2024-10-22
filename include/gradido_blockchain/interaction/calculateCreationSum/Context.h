@@ -1,12 +1,13 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_CALCULATE_CREATION_SUM_CONTEXT_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_CALCULATE_CREATION_SUM_CONTEXT_H
 
+#include "gradido_blockchain/export.h"
 #include "AbstractAlgoRole.h"
 
 namespace gradido {
 	namespace interaction {		
 		namespace calculateCreationSum {
-			class Context
+			class GRADIDOBLOCKCHAIN_EXPORT Context
 			{
 			public:
 				Context(Timepoint date, Timepoint targetDate, memory::ConstBlockPtr publicKey, uint64_t transactionNrMax = 0);
