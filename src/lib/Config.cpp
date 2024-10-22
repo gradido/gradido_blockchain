@@ -64,7 +64,7 @@ const fkyaml::node* Config::getNode(const std::vector<std::string>& path) const
 {
     const fkyaml::node* current = &mRootNode;
     for (const auto& key : path) {
-        if ((*current)[key].is_null()) {
+        if (current->is_null() || (*current)[key].is_null()) {
             return nullptr;
         }
         current = &(*current)[key];
