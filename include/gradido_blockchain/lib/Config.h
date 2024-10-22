@@ -1,10 +1,11 @@
 #ifndef __GRADIDO_BLOCKCHAIN_LIB_CONFIG_H
 #define __GRADIDO_BLOCKCHAIN_LIB_CONFIG_H
 
+#include "gradido_blockchain/export.h"
 #include "fkYAML/node.hpp"
 #include <string>
 
-class Config 
+class GRADIDOBLOCKCHAIN_EXPORT Config
 {
 public: 
 	Config(const std::string& fileName);
