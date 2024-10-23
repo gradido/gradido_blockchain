@@ -2,7 +2,7 @@
 #include "gradido_blockchain/http/IotaRequestExceptions.h"
 #include "gradido_blockchain/http/RequestExceptions.h"
 #include "gradido_blockchain/http/ServerConfig.h"
-#include "gradido_blockchain/ServerApplication.h"
+#include "gradido_blockchain/Application.h"
 
 #include "gradido_blockchain/lib/Profiler.h"
 
@@ -271,19 +271,19 @@ void IotaRequest::defaultExceptionHandler(bool terminate/* = true*/)
 		// terminate application
 		ABORT_F("Iota Request exception, has the API changed? More details: %s", ex.getFullString().data());
 		if (terminate) {
-			ServerApplication::terminate();
+			Application::terminate();
 		}
 	}
 	catch (RapidjsonParseErrorException& ex) {
 		LOG_F(ERROR, "Json parse error by calling Iota API: %s", ex.getFullString().data());
 		if (terminate) {
-			ServerApplication::terminate();
+			Application::terminate();
 		}
 	}
 	catch (HttplibRequestException& ex) {
 		LOG_F(ERROR, "Http lib error by calling Iota API: %s", ex.getFullString().data());
 		if (terminate) {
-			ServerApplication::terminate();
+			Application::terminate();
 		}
 	}
 }

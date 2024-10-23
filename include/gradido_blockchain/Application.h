@@ -5,16 +5,23 @@
 
 #include <atomic>
 
-class GRADIDOBLOCKCHAIN_EXPORT ServerApplication
+/*
+* Class with loop for longer running Apps
+*/
+class GRADIDOBLOCKCHAIN_EXPORT Application
 {
 public:
-	ServerApplication();
-	//! \return true on success, false on failure, if return false, exit will be called and program will end
-	virtual bool init() = 0;
-	void run();
-	virtual void exit() = 0;
+	Application();
+	virtual ~Application();
+	//! call init and start main loop if init return true
+	virtual void run();
+	
 	static void terminate() { gRunning = false; }
 protected:
+	//! \return true on success, false on failure, if return false, exit will be called and program will end
+	virtual bool init() = 0;
+	virtual void exit() = 0;
+
 	static std::atomic<bool> gRunning;
 };
 
