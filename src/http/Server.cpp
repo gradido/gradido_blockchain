@@ -21,7 +21,12 @@ Server::Server(
 	std::string_view name,
 	std::string_view sslCertificate,
 	std::string_view sslKey
-) : mHost(host), mPort(port), mName(name), mServer(new httplib::SSLServer(sslCertificate, sslKey)), mServerThread(nullptr)
+) : 
+	mHost(host),
+	mPort(port),
+	mName(name),
+	mServer(new httplib::SSLServer(sslCertificate.data(), sslKey.data())), 
+	mServerThread(nullptr)
 {
 
 }
