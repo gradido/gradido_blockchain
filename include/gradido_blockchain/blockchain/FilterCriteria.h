@@ -6,8 +6,8 @@
 namespace gradido {
 	namespace blockchain {
 		
-		//! One bit Filter Type so filter types can be combined in one variable
-		enum class FilterCriteria: uint16_t {
+		//! One byte Filter Type so filter types can be combined in one variable
+		enum class FilterCriteria: uint8_t {
 			NONE = 0,
 			TRANSACTION_NR = 1UL << 0,
 			INVOLVED_PUBLIC_KEY = 1UL << 1,
