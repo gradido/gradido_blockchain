@@ -457,10 +457,16 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	auto newDeferredTransferBalance = getBalance(newRecipientKeyPairIndex, mLastConfirmedAt);
 	auto userBalanceWithChange = getBalance(6, timeout + chrono::hours(1));
 	auto decayedUserBalance = userBalance.calculateDecay(lastUserBalanceDate, timeout + chrono::hours(1));
+	auto timeBetween = GradidoUnit::calculateDecayDurationSeconds(lastUserBalanceDate, timeout + chrono::hours(1));
+	printf("time between: %s\n", DataTypeConverter::timespanToString(chrono::duration_cast<chrono::seconds>(timeBetween)).data());
+	printf("userBalance: %s\n", userBalance.toString().data());
+	auto decayFactor = pow(2.0, (-chrono::duration_cast<chrono::seconds>(timeBetween).count()/31556952.0));
+	auto decay = userBalance * GradidoUnit(decayFactor);
+	printf("decay factor: %f, decay: %s\n", decayFactor, decay.toString().data());
 	//EXPECT_EQ(getBalance(6, mLastConfirmedAt), decayedUserBalance);
-	//printf("user balance with change: %s, decayed user balance: %s\n", userBalanceWithChange.toString().data(), decayedUserBalance.toString().data());
-	//printf("deferred transfer balance: %s\n", deferredTransferBalance.toString().data());
-	//printf("new deferred transfer balance: %s\n", newDeferredTransferBalance.toString().data());
+	printf("user balance with change: %s, decayed user balance: %s\n", userBalanceWithChange.toString().data(), decayedUserBalance.toString().data());
+	printf("deferred transfer balance: %s\n", deferredTransferBalance.toString().data());
+	printf("new deferred transfer balance: %s\n", newDeferredTransferBalance.toString().data());
 
 	// try transfering gdd from deferred transfer again
 	createdAt = generateNewCreatedAt();

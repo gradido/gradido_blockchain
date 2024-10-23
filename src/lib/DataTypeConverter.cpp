@@ -4,6 +4,7 @@
 #include "sodium.h"
 #include "date/date.h"
 
+#include <chrono>
 #include <stdexcept>
 #include <assert.h>
 #include <regex>
@@ -312,7 +313,7 @@ namespace DataTypeConverter
 	Timepoint monthYearToTimepoint(const date::year_month& ym)
 	{
 		date::year_month_day ymd(ym.year(), ym.month(), date::day(1));
-		return std::chrono::sys_days{ ymd };
+		return date::sys_days{ ymd };
 	}
 	
 	int replaceBase64WithHex(rapidjson::Value& json, rapidjson::Document::AllocatorType& alloc)
