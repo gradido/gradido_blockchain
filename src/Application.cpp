@@ -4,6 +4,7 @@
 
 #include <csignal>
 #include <cstdio>
+#include <thread>
 
 /*
 * Constant	Explanation
@@ -16,6 +17,8 @@ SIGFPE	erroneous arithmetic operation such as divide by zero
 */
 
 std::atomic<bool> Application::gRunning = true;
+std::mutex Application::mConditionMutex;
+std::condition_variable Application::mExitCondition;
 
 void signalHandler(int signum) {
 	switch (signum) {
@@ -34,7 +37,7 @@ Application::Application()
 	// make sure loop will canceled if sigint signal was send from os
 	std::signal(SIGTERM, signalHandler);
 	std::signal(SIGSEGV, signalHandler);
-	std::signal(SIGINT, signalHandler);	
+	std::signal(SIGINT, signalHandler);
 	std::signal(SIGILL, signalHandler);
 	std::signal(SIGABRT, signalHandler);
 	std::signal(SIGFPE, signalHandler);
@@ -53,7 +56,9 @@ void Application::run()
 	}
 	gRunning = true;
 	while (gRunning) {
-
+		// don't use up to much cpu power while idling, but react fast on terminate calls.
+		std::unique_lock lk(mConditionMutex);
+		mExitCondition.wait_for(lk, std::chrono::seconds(1));
 	}
 	exit();
 }
