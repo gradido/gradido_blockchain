@@ -14,10 +14,6 @@
 #include "rapidjson/pointer.h"
 
 #include "furi/furi.hpp"
-#ifdef USE_HTTPS
-#define CPPHTTPLIB_OPENSSL_SUPPORT
-#endif
-#include "httplib.h"
 #include "loguru/loguru.hpp"
 
 #ifdef ENABLE_IOTA_RUST_CLIENT
@@ -41,7 +37,7 @@ IotaRequest::~IotaRequest()
 std::vector<std::string> IotaRequest::getTips()
 {
 	auto fullPath = buildFullPath("tips");
-	auto responseString = GET(fullPath);
+	auto responseString = GET(fullPath.data());
 
 	auto json = parseResponse(responseString);
 

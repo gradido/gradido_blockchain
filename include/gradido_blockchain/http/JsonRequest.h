@@ -12,6 +12,9 @@
 #define __GRADIDO_LOGIN_SERVER_LIB_JSON_REQUEST_
 
 #include "HttpRequest.h"
+
+#include "rapidjson/document.h"
+
 #include <map>
 
 class GRADIDOBLOCKCHAIN_EXPORT JsonRequest : public HttpRequest
@@ -28,14 +31,11 @@ public:
 
 	rapidjson::Document::AllocatorType& getJsonAllocator() { return mJsonDocument.GetAllocator(); }
 
-	void addCookie(const std::string& name, const std::string& value) { mCookies.insert({ name, value }); }
-
 protected:
 	std::string POST(const char* path, const rapidjson::Document& payload);
 	rapidjson::Document parseResponse(std::string responseString);
 
 	rapidjson::Document mJsonDocument;
-	std::map<std::string, std::string> mCookies;
 };
 
 
