@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_HTTP_METHOD_TYPE_H
 #define __GRADIDO_BLOCKCHAIN_HTTP_METHOD_TYPE_H
 
-#include <typeinfo>
+#include <cstdint>
 
 enum class MethodType : uint8_t {
 	GET,
