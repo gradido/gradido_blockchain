@@ -29,11 +29,11 @@ namespace gradido {
                 );
 
                 //! set sender previous confirmed transaction manually, normally last transaction on blockchain will be used
-                inline void setSenderPreviousConfirmedTransaction(data::ConfirmedTransactionPtr senderPreviousConfirmedTransaction) {
+                inline void setSenderPreviousConfirmedTransaction(data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction) {
                     mSenderPreviousConfirmedTransaction = senderPreviousConfirmedTransaction;
                 }
 				//! set recipient previous confirmed transaction manually, normally last transaction on blockchain will be used, only for cross group transactions
-				inline void setRecipientPreviousConfirmedTransaction(data::ConfirmedTransactionPtr recipientPreviousConfirmedTransaction) {
+				inline void setRecipientPreviousConfirmedTransaction(data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction) {
                     mRecipientPreviousConfirmedTransaction = recipientPreviousConfirmedTransaction;
 				}
             protected:
