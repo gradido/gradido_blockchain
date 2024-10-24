@@ -70,8 +70,6 @@ namespace gradido {
 			virtual AbstractProvider* getProvider() const = 0;
 
 		protected:
-			virtual void pushTransactionEntry(std::shared_ptr<const TransactionEntry> transactionEntry) = 0;
-
 			std::string mCommunityId;
 			Timepoint mStartDate;
 			
