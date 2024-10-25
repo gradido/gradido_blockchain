@@ -103,6 +103,7 @@ void Server::exit()
 
 void Server::registerPath(const std::string& pathName)
 {
+
 	auto registerMethod = [](
 		const httplib::Request& req,
 		httplib::Response& res,
@@ -121,23 +122,22 @@ void Server::registerPath(const std::string& pathName)
 	mServer->Get(pathName, [&](const httplib::Request& req, httplib::Response& res) {
 		std::lock_guard _lock(mMapMutex);
 		registerMethod(req, res, MethodType::GET, mRegisteredResponseHandlers);
-		});
+	});
 	mServer->Post(pathName, [&](const httplib::Request& req, httplib::Response& res) {
 		std::lock_guard _lock(mMapMutex);
 		registerMethod(req, res, MethodType::POST, mRegisteredResponseHandlers);
-		});
+	});
 	mServer->Put(pathName, [&](const httplib::Request& req, httplib::Response& res) {
 		std::lock_guard _lock(mMapMutex);
 		registerMethod(req, res, MethodType::PUT, mRegisteredResponseHandlers);
-		});
+	});
 	mServer->Options(pathName, [&](const httplib::Request& req, httplib::Response& res) {
 		std::lock_guard _lock(mMapMutex);
 		registerMethod(req, res, MethodType::OPTIONS, mRegisteredResponseHandlers);
-		});
+	});
 	mServer->Delete(pathName, [&](const httplib::Request& req, httplib::Response& res) {
 		std::lock_guard _lock(mMapMutex);
 		registerMethod(req, res, MethodType::DEL, mRegisteredResponseHandlers);
-		});
-
+	});
 }
 

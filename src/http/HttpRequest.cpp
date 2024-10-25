@@ -133,10 +133,15 @@ std::string HttpRequest::GET(const char* path)
 
 	auto res = cli.Get(path, constructHeaders(mHeaders, mCookies));
 	if (!res) {
-		throw HttplibRequestException("no response", mUrl, 0, magic_enum::enum_name(res.error()).data());
+		std::string url = constructHostString();
+		url.append("/").append(path);
+		throw HttplibRequestException("no response", url, 0, magic_enum::enum_name(res.error()).data());
 	}
 	if (res->status != 200) {
-		throw HttplibRequestException("status isn't 200 for GET", mUrl, res->status, magic_enum::enum_name(res.error()).data());
+		auto host = constructHostString();
+		std::string url(host);
+		url.append("/").append(path);
+		throw HttplibRequestException("status isn't 200 for GET", url, res->status, magic_enum::enum_name(res.error()).data());
 	}
 	return res->body;
 }
@@ -145,7 +150,7 @@ std::string HttpRequest::constructHostString()
 {
 	auto uri = furi::uri_split::from_uri(mUrl);
 	// http | https
-	std::string host = uri.scheme.data();
+	std::string host(uri.scheme.data(), uri.scheme.size());
 	if (host.empty()) {
 		host += "http";
 	}
@@ -156,6 +161,6 @@ std::string HttpRequest::constructHostString()
 	}
 #endif
 	// host:port
-	host += "://" + std::string(uri.authority.data());
+	host += "://" + std::string(uri.authority.data(), uri.authority.size());
 	return host;
 }

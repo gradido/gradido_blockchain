@@ -33,6 +33,8 @@ public:
 	//! call mapKey to translate the config key to an environment key and call again getInt but with the mapped key
 	int getInt(const std::string& key, int defaultValue) const;
 
+	bool getBool(const std::string& key, bool defaultValue) const;
+
 protected:
 	//! replace all . with _ and make all letters uppercase
 	//! prepends system.env

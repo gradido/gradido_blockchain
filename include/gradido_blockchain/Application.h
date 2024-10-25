@@ -19,12 +19,13 @@ public:
 	virtual void run();
 
 	static void terminate() { gRunning = false; mExitCondition.notify_one(); }
+	static std::atomic<bool> gRunning;
 protected:
 	//! \return true on success, false on failure, if return false, exit will be called and program will end
 	virtual bool init() = 0;
 	virtual void exit() = 0;
 
-	static std::atomic<bool> gRunning;
+	
 	static std::mutex mConditionMutex;
 	static std::condition_variable mExitCondition;
 };

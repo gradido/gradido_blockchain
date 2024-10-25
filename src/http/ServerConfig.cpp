@@ -31,16 +31,16 @@ namespace ServerConfig {
 	{
 		// unsecure flags
 		//g_AllowUnsecureFlags
-		if (cfg.getInt("unsecure.allow_passwort_via_json_request", 0) == 1) {
+		if (cfg.getBool("unsecure.allow_passwort_via_json_request", false)) {
 			g_AllowUnsecureFlags = (AllowUnsecure)(g_AllowUnsecureFlags | UNSECURE_PASSWORD_REQUESTS);
 		}
-		if (cfg.getInt("unsecure.allow_auto_sign_transactions", 0) == 1) {
+		if (cfg.getBool("unsecure.allow_auto_sign_transactions", false)) {
 			g_AllowUnsecureFlags = (AllowUnsecure)(g_AllowUnsecureFlags | UNSECURE_AUTO_SIGN_TRANSACTIONS);
 		}
-		if (cfg.getInt("unsecure.allow_cors_all", 0) == 1) {
+		if (cfg.getBool("unsecure.allow_cors_all", false)) {
 			g_AllowUnsecureFlags = (AllowUnsecure)(g_AllowUnsecureFlags | UNSECURE_CORS_ALL);
 		}
-		if (cfg.getInt("unsecure.allow_all_passwords", 0) == 1) {
+		if (cfg.getBool("unsecure.allow_all_passwords", false)) {
 			g_AllowUnsecureFlags = (AllowUnsecure)(g_AllowUnsecureFlags | UNSECURE_ALLOW_ALL_PASSWORDS);
 		}
 		return true;

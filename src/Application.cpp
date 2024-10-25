@@ -21,6 +21,9 @@ std::mutex Application::mConditionMutex;
 std::condition_variable Application::mExitCondition;
 
 void signalHandler(int signum) {
+	if(!Application::gRunning) {
+		return;
+	}
 	switch (signum) {
 	case SIGTERM: LOG_F(INFO, "exit on termination request"); break;
 	case SIGSEGV: printf("exit because of segmentation fault\n"); break;
