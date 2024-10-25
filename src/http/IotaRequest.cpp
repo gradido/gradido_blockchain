@@ -164,11 +164,10 @@ std::vector<memory::Block> IotaRequest::findByIndex(const iota::TopicIndex& inde
 	auto pathView = extractPathFromUrl();
 	std::string fullPath;
 	auto indexHex = index.getHexString();
-	fullPath.reserve(pathView.size() + 18 + indexHex.size());
-	fullPath = std::string(pathView) + "messages?index=" + indexHex;
+	fullPath.reserve(pathView.size() + 19 + indexHex.size());
+	fullPath.append("/").append(pathView).append("messages?index=").append(indexHex);
 	std::vector<memory::Block> result;
-
-	auto json = parseResponse(GET(fullPath.data()));
+ 	auto json = parseResponse(GET(fullPath.data()));
 	if (!json.IsObject() || !json.HasMember("data")) {
 		throw IotaRequestException("findByIndex failed or data not set", fullPath);
 	}
@@ -317,14 +316,13 @@ std::string IotaRequest::sendMessageViaRustIotaClient(const std::string& index, 
 
 std::string_view IotaRequest::extractPathFromUrl()
 {
-	auto uri = furi::uri_split::from_uri(mUrl);
-	return uri.path;
+	return furi::uri_split::get_path_from_uri(mUrl);
 }
 
 std::string IotaRequest::buildFullPath(const std::string& first, const std::string& second/* = ""*/, const std::string& third /*= ""*/)
 {
 	auto pathView = extractPathFromUrl();
-	int stringSize = pathView.size() + first.size();
+	int stringSize = pathView.size() + first.size() + 1;
 	if (second.size()) {
 		stringSize += second.size() + 1;
 	}
@@ -333,7 +331,8 @@ std::string IotaRequest::buildFullPath(const std::string& first, const std::stri
 	}
 	std::string result;
 	result.reserve(stringSize);
-	result = std::string(pathView);
+	result = "/";
+	result += std::string(pathView);
 	result += first;
 	if (second.size()) {
 		result += '/' + second;
