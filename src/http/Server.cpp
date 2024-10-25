@@ -21,11 +21,11 @@ Server::Server(
 	std::string_view name,
 	std::string_view sslCertificate,
 	std::string_view sslKey
-) : 
+) :
 	mHost(host),
 	mPort(port),
 	mName(name),
-	mServer(new httplib::SSLServer(sslCertificate.data(), sslKey.data())), 
+	mServer(new httplib::SSLServer(sslCertificate.data(), sslKey.data())),
 	mServerThread(nullptr)
 {
 
@@ -34,7 +34,7 @@ Server::Server(
 
 Server::~Server()
 {
-	exit();		
+	exit();
 }
 
 void Server::registerResponseHandler(const std::string& pathName, AbstractResponseHandlerFactory* factory)
@@ -53,15 +53,22 @@ void Server::registerResponseHandler(const std::string& pathName, AbstractRespon
 bool Server::init()
 {
 	mServer->set_file_request_handler([](const httplib::Request& req, httplib::Response& res) {
+		//	LOG_F(INFO, "file requested: %s", req.path.data());
 		res.status = httplib::StatusCode::BadRequest_400;
 		res.set_content("File not Found", "text/plain");
-	});
+		});
 	mServer->set_logger([](const httplib::Request& req, const httplib::Response& res) {
-		printf("request: %s, response: %s\n", req.body.data(), res.body.data());
-	});
+		//LOG_F(INFO, "path requested: %s, method: %s", req.path.data(), req.method.data());
+		//printf("request: %s, response: %s\n", req.body.data(), res.body.data());
+		});
 	mServer->set_error_handler([](const auto& req, auto& res) {
-		LOG_F(ERROR, "error response for request: %s", req.body.data());
-	});	
+		std::string data = req.path;
+		if (!req.body.empty()) {
+			data = req.body;
+		}
+		LOG_F(ERROR, "error response for request: %s", data.data());
+		});
+
 	return true;
 }
 
@@ -69,13 +76,13 @@ void Server::run()
 {
 	mServerThread = new std::thread([&]() {
 		loguru::set_thread_name(mName.data());
-		mServer->listen(mHost, mPort); 
-	});
+		mServer->listen(mHost, mPort);
+		});
 }
 
 
 void Server::exit()
-{	
+{
 	if (mServer) {
 		mServer->stop();
 		if (mServerThread) {
@@ -94,35 +101,43 @@ void Server::exit()
 	mRegisteredResponseHandlers.clear();
 }
 
-
-
 void Server::registerPath(const std::string& pathName)
 {
-	auto registerMethod = [&](const httplib::Request& req, httplib::Response& res, MethodType methodType) {
-		std::lock_guard _lock(mMapMutex);
-		auto range = mRegisteredResponseHandlers.equal_range(pathName);
-		for (auto i = range.first; i != range.second; ++i) {
-			if (i->second->has(methodType)) {
-				auto handler = i->second->getResponseHandler(methodType);
-				handler->handleRequest(req, res, methodType);
+	auto registerMethod = [](
+		const httplib::Request& req,
+		httplib::Response& res,
+		MethodType methodType,
+		std::multimap<std::string, AbstractResponseHandlerFactory*> registeredResponseHandlers
+		) {
+			auto range = registeredResponseHandlers.equal_range(req.path);
+			for (auto i = range.first; i != range.second; ++i) {
+				if (i->second->has(methodType)) {
+					auto handler = i->second->getResponseHandler(methodType);
+					handler->handleRequest(req, res, methodType);
+					break;
+				}
 			}
-		}
-	};
+		};
 	mServer->Get(pathName, [&](const httplib::Request& req, httplib::Response& res) {
-		registerMethod(req, res, MethodType::GET);
-	});
+		std::lock_guard _lock(mMapMutex);
+		registerMethod(req, res, MethodType::GET, mRegisteredResponseHandlers);
+		});
 	mServer->Post(pathName, [&](const httplib::Request& req, httplib::Response& res) {
-		registerMethod(req, res, MethodType::POST);
-	});
+		std::lock_guard _lock(mMapMutex);
+		registerMethod(req, res, MethodType::POST, mRegisteredResponseHandlers);
+		});
 	mServer->Put(pathName, [&](const httplib::Request& req, httplib::Response& res) {
-		registerMethod(req, res, MethodType::PUT);
-	});
+		std::lock_guard _lock(mMapMutex);
+		registerMethod(req, res, MethodType::PUT, mRegisteredResponseHandlers);
+		});
 	mServer->Options(pathName, [&](const httplib::Request& req, httplib::Response& res) {
-		registerMethod(req, res, MethodType::OPTIONS);
-	});
+		std::lock_guard _lock(mMapMutex);
+		registerMethod(req, res, MethodType::OPTIONS, mRegisteredResponseHandlers);
+		});
 	mServer->Delete(pathName, [&](const httplib::Request& req, httplib::Response& res) {
-		registerMethod(req, res, MethodType::DEL);
-	});
-	
+		std::lock_guard _lock(mMapMutex);
+		registerMethod(req, res, MethodType::DEL, mRegisteredResponseHandlers);
+		});
+
 }
 
