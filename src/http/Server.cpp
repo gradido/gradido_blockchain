@@ -105,6 +105,7 @@ void Server::registerPath(const std::string& pathName)
 			if (i->second->has(methodType)) {
 				auto handler = i->second->getResponseHandler(methodType);
 				handler->handleRequest(req, res, methodType);
+				break;
 			}
 		}
 	};

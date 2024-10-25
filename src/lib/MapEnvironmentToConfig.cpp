@@ -33,6 +33,18 @@ int MapEnvironmentToConfig::getInt(const std::string& key, int defaultValue) con
 	return result;
 }
 
+bool MapEnvironmentToConfig::getBool(const std::string& key, bool defaultValue) const
+{
+	auto result = Config::getBool(key, defaultValue);
+	if (result == defaultValue) {
+		auto envValue = std::getenv(mapKey(key).c_str());
+		if (envValue) {
+			result = DataTypeConverter::strToInt(envValue);
+		}
+	}
+	return result;
+}
+
 std::string MapEnvironmentToConfig::mapKey(const std::string& key) const
 {
 	std::string result = key;
