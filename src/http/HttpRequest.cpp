@@ -139,10 +139,8 @@ std::string HttpRequest::GET(const char* path)
 	}
 	if (res->status != 200) {
 		auto host = constructHostString();
-		LOG_F(ERROR, "host string: %s, path: %s", host.data(), path);
 		std::string url(host);
 		url.append("/").append(path);
-		printf("result: %s\n", res->body.data());
 		throw HttplibRequestException("status isn't 200 for GET", url, res->status, magic_enum::enum_name(res.error()).data());
 	}
 	return res->body;
@@ -151,7 +149,6 @@ std::string HttpRequest::GET(const char* path)
 std::string HttpRequest::constructHostString()
 {
 	auto uri = furi::uri_split::from_uri(mUrl);
-
 	// http | https
 	std::string host(uri.scheme.data(), uri.scheme.size());
 	if (host.empty()) {
