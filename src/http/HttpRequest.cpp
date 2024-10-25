@@ -14,7 +14,7 @@
 
 using namespace rapidjson;
 
-static httplib::Headers constructHeaders(std::multimap<std::string, std::string> headers, std::multimap<std::string, std::string> cookies) 
+static httplib::Headers constructHeaders(std::multimap<std::string, std::string> headers, std::multimap<std::string, std::string> cookies)
 {
 	httplib::Headers httplib_headers;
 	for (auto& headerPair : headers) {
@@ -37,11 +37,26 @@ static httplib::Headers constructHeaders(std::multimap<std::string, std::string>
 HttpRequest::HttpRequest(const std::string& url)
 	: mUrl(url)
 {
+	auto uri = furi::uri_split::from_uri(mUrl);
+	if (uri.scheme != "http" && uri.scheme != "https") {
+		throw RequestException("cannot find scheme (http|https) in url", url);
+	}
+	if (uri.authority.empty()) {
+		throw RequestException("cannot find host in url, please use something like: http://server.com:80", url);
+	}
 }
 
 HttpRequest::HttpRequest(const std::string& host, int port, const char* path/* = nullptr*/, const char* query/* = nullptr*/)
-{	
-	mUrl = host + ":" + std::to_string(port);
+{
+	if (host.find("http") == std::string::npos) {
+		if (port == 443) {
+			mUrl = "https://";
+		}
+		else {
+			mUrl = "http://";
+		}
+	}
+	mUrl += host + ":" + std::to_string(port);
 
 	if (path) {
 		mUrl += "/" + std::string(path);
@@ -54,7 +69,7 @@ HttpRequest::HttpRequest(const std::string& host, int port, const char* path/* =
 std::string HttpRequest::POST(const std::string& body, const char* contentType/* = "application/json"*/, const char* path/* = nullptr*/)
 {
 	httplib::Client cli(constructHostString());
-	auto uri = furi::uri_split::from_uri(mUrl);	
+	auto uri = furi::uri_split::from_uri(mUrl);
 
 	std::string finalPath;
 	if (!path) {
@@ -65,6 +80,9 @@ std::string HttpRequest::POST(const std::string& body, const char* contentType/*
 	}
 
 	auto res = cli.Post(finalPath.data(), constructHeaders(mHeaders, mCookies), body, contentType);
+	if (!res) {
+		throw HttplibRequestException("no response", mUrl, 0, magic_enum::enum_name(res.error()).data());
+	}
 	if (res->status != 200) {
 		throw HttplibRequestException("status isn't 200 for POST", mUrl, res->status, magic_enum::enum_name(res.error()).data());
 	}
@@ -76,7 +94,7 @@ std::string HttpRequest::GET(const std::map<std::string, std::string> query, con
 	httplib::Client cli(constructHostString());
 	auto uri = furi::uri_split::from_uri(mUrl);
 	std::string pathAndQuery("/");
-	
+
 	if (!path) {
 		if (uri.path.size()) {
 			pathAndQuery += std::string(uri.path.data());
@@ -100,6 +118,9 @@ std::string HttpRequest::GET(const std::map<std::string, std::string> query, con
 		pathAndQuery.pop_back();
 	}
 	auto res = cli.Get(pathAndQuery, constructHeaders(mHeaders, mCookies));
+	if (!res) {
+		throw HttplibRequestException("no response", mUrl, 0, magic_enum::enum_name(res.error()).data());
+	}
 	if (res->status != 200) {
 		throw HttplibRequestException("status isn't 200 for GET", mUrl, res->status, magic_enum::enum_name(res.error()).data());
 	}
@@ -109,8 +130,11 @@ std::string HttpRequest::GET(const std::map<std::string, std::string> query, con
 std::string HttpRequest::GET(const char* path)
 {
 	httplib::Client cli(constructHostString());
-	
+
 	auto res = cli.Get(path, constructHeaders(mHeaders, mCookies));
+	if (!res) {
+		throw HttplibRequestException("no response", mUrl, 0, magic_enum::enum_name(res.error()).data());
+	}
 	if (res->status != 200) {
 		throw HttplibRequestException("status isn't 200 for GET", mUrl, res->status, magic_enum::enum_name(res.error()).data());
 	}
