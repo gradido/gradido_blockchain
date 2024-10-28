@@ -178,7 +178,7 @@ std::vector<memory::Block> IotaRequest::findByIndex(const iota::TopicIndex& inde
 	}
 	auto messageIds = data["messageIds"].GetArray();
 	for (auto it = messageIds.Begin(); it != messageIds.End(); ++it) {
-		result.push_back(memory::Block::fromHex(it->GetString(), data["messageId"].GetStringLength()));
+		result.push_back(memory::Block::fromHex(it->GetString(), it->GetStringLength()));
 	}
 
 	return result;

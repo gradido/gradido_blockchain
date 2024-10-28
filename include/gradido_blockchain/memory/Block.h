@@ -57,6 +57,9 @@ namespace memory {
 		static inline Block fromHex(const std::string& hex) {
 			return fromHex(hex.data(), hex.size());
 		}
+		static inline Block fromHex(std::string_view hex) {
+			return fromHex(hex.data(), hex.size());
+		}
 		static Block fromHex(const char* hexString, size_t stringSize);
 		static inline Block fromBase64(const std::string& base64, int variant = sodium_base64_VARIANT_ORIGINAL) {
 			return fromBase64(base64.data(), base64.size(), variant);
