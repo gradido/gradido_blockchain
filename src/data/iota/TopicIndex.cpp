@@ -1,5 +1,9 @@
 #include "gradido_blockchain/data/iota/TopicIndex.h"
+
+#include "loguru/loguru.hpp"
+
 #include <algorithm>
+
 
 namespace iota
 {
@@ -8,22 +12,24 @@ namespace iota
     {
     }
     TopicIndex::TopicIndex(std::string_view alias)
+        : mIndex(0)
     {
-
         // is already hex
         // Q: https://stackoverflow.com/questions/8899069/how-to-find-if-a-given-string-conforms-to-hex-notation-eg-0x34ff-without-regex
         if (std::all_of(alias.begin(), alias.end(), ::isxdigit)) {
-            index = alias;
+            mIndex = memory::Block::fromHex(alias);
         }
         else {
             // is named
-            index.reserve(alias.size() + 9);
-            index = "GRADIDO.";
-            index += alias;
+            std::string indexString;
+            indexString.reserve(alias.size() + 9);
+            indexString = "GRADIDO.";
+            indexString += alias;
+            mIndex = memory::Block(indexString);
         }
     }
     TopicIndex::TopicIndex(const memory::Block& rawIndex)
-        : index(rawIndex.copyAsString())
+        : mIndex(rawIndex)
     {	
     }
 } // namespace iota
