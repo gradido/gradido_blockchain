@@ -98,7 +98,7 @@ TEST(ValidateCommunityRootTest, EmptyAUFKey)
 TEST(ValidateCommunityRootTest, InvalidPublicKey)
 {
 	EXPECT_THROW(CommunityRoot(
-		make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a")),
+		make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a", 18)),
 		g_KeyPairs[1]->getPublicKey(),
 		g_KeyPairs[2]->getPublicKey()
 	), Ed25519InvalidKeyException);
@@ -108,7 +108,7 @@ TEST(ValidateCommunityRootTest, InvalidGMWKey)
 {
 	EXPECT_THROW(CommunityRoot(
 		g_KeyPairs[0]->getPublicKey(),
-		make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a")),
+		make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a", 18)),
 		g_KeyPairs[2]->getPublicKey()
 	), Ed25519InvalidKeyException);
 }
@@ -118,7 +118,7 @@ TEST(ValidateCommunityRootTest, InvalidAUFKey)
 	EXPECT_THROW(CommunityRoot(
 		g_KeyPairs[0]->getPublicKey(),
 		g_KeyPairs[1]->getPublicKey(),
-		make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a"))
+		make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a", 18))
 	), Ed25519InvalidKeyException);
 }
 

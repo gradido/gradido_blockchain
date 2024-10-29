@@ -9,7 +9,7 @@ const auto testHex2 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7
 
 TEST(MessageIdTest, Constructor)
 {
-	Block b(Block::fromHex(testHex1));
+	Block b(Block::fromHex(testHex1, 64));
 	MessageId idFromHex(testHex1);
 	MessageId idFromBlock(b);
 

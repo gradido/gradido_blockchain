@@ -53,7 +53,7 @@ extern "C" {
 int main(int argc, char** argv) {
 	testing::InitGoogleTest(&argc, argv);
 	generateKeyPairs();
-	CryptoConfig::g_ServerCryptoKey = std::make_shared<memory::Block>(memory::Block::fromHex("153afcd54ef316e45cd3e5ed4567cd21"));
+	CryptoConfig::g_ServerCryptoKey = std::make_shared<memory::Block>(memory::Block::fromHex("153afcd54ef316e45cd3e5ed4567cd21", 32));
 	//printf("Running main() from %s\n", __FILE__);
 	//
 	auto result = RUN_ALL_TESTS();

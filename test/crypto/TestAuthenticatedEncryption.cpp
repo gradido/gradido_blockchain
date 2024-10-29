@@ -8,10 +8,10 @@
 void TestAuthenticatedEncryption::SetUp()
 {
 	CryptoConfig::g_CryptoAppSecret = std::make_shared<memory::Block>(
-		memory::Block::fromHex("21ffbbc616fe")
+		memory::Block::fromHex("21ffbbc616fe", 12)
 	);
 	CryptoConfig::g_ServerCryptoKey = std::make_shared<memory::Block>(
-		memory::Block::fromHex("a51ef8ac7ef1abf162fb7a65261acd7a")
+		memory::Block::fromHex("a51ef8ac7ef1abf162fb7a65261acd7a", 32)
 	);
 }
 

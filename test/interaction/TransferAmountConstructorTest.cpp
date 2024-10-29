@@ -24,7 +24,7 @@ TEST(TransferAmountConstructorTest, EmptyPublicKey)
 TEST(TransferAmountConstructorTest, InvalidPublicKey)
 {
 	EXPECT_THROW(
-		TransferAmount(std::make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a")), "1000.00"),
+		TransferAmount(std::make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a", 18)), "1000.00"),
 		Ed25519InvalidKeyException
 	);
 }

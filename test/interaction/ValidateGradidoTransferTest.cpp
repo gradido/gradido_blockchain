@@ -239,7 +239,7 @@ TEST(ValidateGradidoTransferTest, InvalidRecipientPublicKey) {
 	EXPECT_THROW(
 		GradidoTransfer(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
-			std::make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a"))
+			std::make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a", 18))
 		), Ed25519InvalidKeyException
 	);
 }

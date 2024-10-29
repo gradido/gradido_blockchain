@@ -320,7 +320,7 @@ TEST_F(InMemoryTest, CreationTransactions)
 		logBlockchain();
 		blockchain::Filter filter;
 		filter.involvedPublicKey = make_shared<memory::Block>(
-		  memory::Block::fromHex("8a8c93293cb97e8784178da8ae588144f7c982f4658bfd35101a1e2b479c3e57")
+		  memory::Block::fromHex("8a8c93293cb97e8784178da8ae588144f7c982f4658bfd35101a1e2b479c3e57", 64)
 		);
 		filter.searchDirection = blockchain::SearchDirection::DESC;
 		//filter.timepointInterval = TimepointInterval(mBlockchain->getStartDate(), createdAt);

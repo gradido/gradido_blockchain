@@ -139,7 +139,7 @@ TEST(ValidateRegisterAddressTest, InvalidUserPublicKey) {
 	EXPECT_THROW(RegisterAddress(
 		AddressType::COMMUNITY_HUMAN,
 		1,
-		std::make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a")),
+		std::make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a", 18)),
 		nullptr,
 		g_KeyPairs[4]->getPublicKey()
 	), Ed25519InvalidKeyException);
@@ -151,6 +151,6 @@ TEST(ValidateRegisterAddressTest, InvalidAccountPublicKey) {
 		1,
 		g_KeyPairs[3]->getPublicKey(),
 		nullptr,
-		std::make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a"))
+		std::make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a", 18))
 	), Ed25519InvalidKeyException);
 }

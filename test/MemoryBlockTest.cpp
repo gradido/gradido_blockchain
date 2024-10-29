@@ -123,13 +123,13 @@ TEST(BlockTest, ConvertToAndFromHex) {
 	}
 	EXPECT_EQ(block.convertToHex(), resultHex);
 
-	Block hexBlock = Block::fromHex(resultHex);
+	Block hexBlock = Block::fromHex(resultHex, strlen(resultHex));
 	EXPECT_EQ(hexBlock, block);
 
 	// invalid hex
-	EXPECT_THROW(Block::fromHex("000102030405060708090a0b0c0d0e0f101"), GradidoInvalidHexException);
+	EXPECT_THROW(Block::fromHex("000102030405060708090a0b0c0d0e0f101", 35), GradidoInvalidHexException);
 	// invalid hex
-	EXPECT_THROW(Block::fromHex("abhz"), GradidoInvalidHexException);
+	EXPECT_THROW(Block::fromHex("abhz", 5), GradidoInvalidHexException);
 }
 
 TEST(BlockTest, ConvertToAndFromBase64) {
