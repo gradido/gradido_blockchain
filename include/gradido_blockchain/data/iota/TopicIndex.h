@@ -9,18 +9,18 @@
 namespace iota {
     class GRADIDOBLOCKCHAIN_EXPORT TopicIndex
 	{
-    public:
+	public:
 		TopicIndex(const std::string& alias);
 		TopicIndex(std::string_view alias);
 		TopicIndex(const memory::Block& rawIndex);
 
-		inline const std::string& getBinString() const { return index; }
-		inline std::string getHexString() const { return DataTypeConverter::binToHex(index); }
+		inline std::string getBinString() const { return mIndex.copyAsString(); }
+		inline std::string getHexString() const { return  mIndex.convertToHex(); }
 
-    protected:
-        // member variables
-        // index stored in string format, not hex
-		std::string index;
+	protected:
+    // member variables
+    // index stored in string format, not hex
+		memory::Block mIndex;
 	};
 }
 
