@@ -49,7 +49,7 @@ namespace gradido {
 				}
 				bodyRole.checkRequiredSignatures(mGradidoTransaction.getSignatureMap(), blockchain);
 
-				if ((type & Type::PAIRED) == Type::PAIRED) {
+				if ((type & Type::PAIRED) == Type::PAIRED && !body->getOtherGroup().empty()) {
 					assert(blockchainProvider);
 					auto otherBlockchain = blockchainProvider->findBlockchain(body->getOtherGroup());
 					assert(otherBlockchain);

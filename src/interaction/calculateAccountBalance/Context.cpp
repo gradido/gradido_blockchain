@@ -60,6 +60,9 @@ namespace gradido {
 						}
 						auto transactionBody = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
 						auto role = getRole(*transactionBody);
+						if (!role) {
+							return FilterResult::DISMISS;
+						}
 						if (role->isFinalBalanceForAccount(publicKey)) {
 							return FilterResult::USE | FilterResult::STOP;
 						}
