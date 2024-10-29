@@ -28,12 +28,12 @@ namespace gradido {
 			}
 		}
 
-		bool CommunityRoot::isInvolved(memory::ConstBlockPtr publicKey) const
+		bool CommunityRoot::isInvolved(const memory::Block& publicKey) const
 		{
 			return
-				publicKey->isTheSame(mPubkey) ||
-				publicKey->isTheSame(mGmwPubkey) ||
-				publicKey->isTheSame(mAufPubkey);
+				publicKey.isTheSame(mPubkey) ||
+				publicKey.isTheSame(mGmwPubkey) ||
+				publicKey.isTheSame(mAufPubkey);
 		}
 	}
 }

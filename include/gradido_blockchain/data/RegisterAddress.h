@@ -31,7 +31,7 @@ namespace gradido {
 			}
 
 			std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
-			bool isInvolved(memory::ConstBlockPtr publicKey) const;
+			bool isInvolved(const memory::Block& publicKey) const;
 
 			inline memory::ConstBlockPtr getUserPublicKey() const { return mUserPubkey; }
 			inline AddressType getAddressType() const { return mAddressType; }

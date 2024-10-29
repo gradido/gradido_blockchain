@@ -39,9 +39,9 @@ namespace gradido {
 			return result;
 		}
 
-		bool RegisterAddress::isInvolved(memory::ConstBlockPtr publicKey) const
+		bool RegisterAddress::isInvolved(const memory::Block& publicKey) const
 		{
-			if (publicKey->isTheSame(mUserPubkey) || publicKey->isTheSame(mAccountPubkey)) {
+			if (publicKey.isTheSame(mUserPubkey) || publicKey.isTheSame(mAccountPubkey)) {
 				return true;
 			}
 			return false;

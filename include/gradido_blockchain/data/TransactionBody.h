@@ -44,7 +44,7 @@ namespace gradido {
 			TransactionType getTransactionType() const;
 
 			bool isPairing(const TransactionBody& other) const;
-			bool isInvolved(memory::ConstBlockPtr publicKey) const;
+			bool isInvolved(const memory::Block& publicKey) const;
 			//! return nullptr, if transaction type doesn't have a transfer amount
 			const TransferAmount* getTransferAmount() const;
 

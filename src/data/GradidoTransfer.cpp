@@ -9,9 +9,9 @@ namespace gradido {
 			KeyPairEd25519::validatePublicKey(recipientPtr);
 		}
 
-		bool GradidoTransfer::isInvolved(memory::ConstBlockPtr publicKey) const
+		bool GradidoTransfer::isInvolved(const memory::Block& publicKey) const
 		{
-			return publicKey->isTheSame(mSender.getPubkey()) || publicKey->isTheSame(mRecipient);
+			return publicKey.isTheSame(mSender.getPubkey()) || publicKey.isTheSame(mRecipient);
 		}
 	}
 }

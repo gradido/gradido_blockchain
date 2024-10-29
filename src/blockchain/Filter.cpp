@@ -144,7 +144,7 @@ namespace gradido {
 			// needing deserialized transaction
 			if ((type & FilterCriteria::INVOLVED_PUBLIC_KEY) == FilterCriteria::INVOLVED_PUBLIC_KEY) 
 			{
-				if (involvedPublicKey && !body->isInvolved(involvedPublicKey)) {
+				if (involvedPublicKey && !body->isInvolved(*involvedPublicKey)) {
 					return FilterResult::DISMISS;
 				}				
 			}	

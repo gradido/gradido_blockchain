@@ -28,7 +28,7 @@ namespace gradido {
 			ConstTransactionBodyPtr getTransactionBody() const;
 			//! will deserialize transactionBody if not cached
 			bool isPairing(const GradidoTransaction& other) const;
-			bool isInvolved(memory::ConstBlockPtr publicKey) const;
+			bool isInvolved(const memory::Block& publicKey) const;
 			std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
 			//! will serialize just once and cache the result
 			memory::ConstBlockPtr getSerializedTransaction() const;

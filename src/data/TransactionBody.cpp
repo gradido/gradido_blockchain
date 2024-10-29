@@ -35,7 +35,7 @@ namespace gradido {
 			return false;
 		}
 
-		bool TransactionBody::isInvolved(memory::ConstBlockPtr publicKey) const
+		bool TransactionBody::isInvolved(const memory::Block& publicKey) const
 		{
 			if (isCommunityRoot()) return mCommunityRoot->isInvolved(publicKey);
 			if (isRegisterAddress()) return mRegisterAddress->isInvolved(publicKey);

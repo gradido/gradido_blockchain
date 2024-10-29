@@ -15,7 +15,7 @@ namespace gradido {
 			~GradidoDeferredTransfer() {}
 
 			inline std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const { return mTransfer.getInvolvedAddresses(); }
-			inline bool isInvolved(memory::ConstBlockPtr publicKey) const { return mTransfer.isInvolved(publicKey); }
+			inline bool isInvolved(const memory::Block& publicKey) const { return mTransfer.isInvolved(publicKey); }
 			inline memory::ConstBlockPtr getSenderPublicKey() const { return mTransfer.getSender().getPubkey(); }
 			inline memory::ConstBlockPtr getRecipientPublicKey() const { return mTransfer.getRecipient(); }
 

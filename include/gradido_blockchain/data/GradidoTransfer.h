@@ -17,7 +17,7 @@ namespace gradido {
 			}
 
 			inline std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const { return { mSender.getPubkey(), mRecipient}; }
-			bool isInvolved(memory::ConstBlockPtr publicKey) const;
+			bool isInvolved(const memory::Block& publicKey) const;
 
 			inline const TransferAmount& getSender() const { return mSender; }
 			inline memory::ConstBlockPtr getRecipient() const { return mRecipient; }

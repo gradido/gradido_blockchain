@@ -36,7 +36,7 @@ namespace gradido {
 			return getTransactionBody()->isPairing(*other.getTransactionBody());
 		}
 
-		bool GradidoTransaction::isInvolved(memory::ConstBlockPtr publicKey) const
+		bool GradidoTransaction::isInvolved(const memory::Block& publicKey) const
 		{
 			for (auto& signPair : mSignatureMap.getSignaturePairs()) {
 				if (signPair.getPubkey()->isTheSame(publicKey)) {
