@@ -110,6 +110,7 @@ namespace gradido {
 						filterBuilder
 						.setInvolvedPublicKey(address)
 						.setMaxTransactionNr(senderPreviousConfirmedTransaction->getId())
+						.setTransactionType(data::TransactionType::REGISTER_ADDRESS)
 						.setSearchDirection(blockchain::SearchDirection::DESC)
 						.setPagination({1})
 						.build()
