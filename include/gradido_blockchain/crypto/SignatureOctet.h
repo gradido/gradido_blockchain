@@ -17,7 +17,17 @@ struct GRADIDOBLOCKCHAIN_EXPORT SignatureOctet
 	SignatureOctet(memory::ConstBlockPtr signature)
 	: octet(0) {
 		if (signature && signature->size() >= sizeof(int64_t)) {
-			memcpy(&octet, *signature, sizeof(int64_t));
+			int32_t firstPart = 0;
+			int32_t lastPart = 0;
+
+			// Kopiere die ersten 32 Bit (4 Bytes)
+			memcpy(&firstPart, signature->data(), sizeof(int32_t));
+
+			// Kopiere die letzten 32 Bit (4 Bytes)
+			memcpy(&lastPart, signature->data() + signature->size() - sizeof(int32_t), sizeof(int32_t));
+
+			// Kombiniere die beiden 32-Bit-Werte zu einem 64-Bit-Wert
+			octet = (static_cast<int64_t>(firstPart) << 32) | (static_cast<int64_t>(lastPart) & 0xFFFFFFFF);
 		}
 	}
 
