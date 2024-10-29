@@ -116,11 +116,14 @@ namespace gradido {
 						.build()
 					);
 					if (transactionWithSameAddress) {
-						throw AddressAlreadyExistException(
-							"cannot register address because it already exist",
-							address->convertToHex(),
-							addressType
-						);
+						if (transactionWithSameAddress->getTransactionBody()->isInvolved(accountPubkey) ||
+							transactionWithSameAddress->getTransactionBody()->isInvolved(userPubkey)) {
+							throw AddressAlreadyExistException(
+								"cannot register address because it already exist",
+								address->convertToHex(),
+								addressType
+							);
+						}
 					}
 				}
 			}
