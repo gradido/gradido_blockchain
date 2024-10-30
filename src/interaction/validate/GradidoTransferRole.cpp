@@ -15,6 +15,7 @@ namespace gradido {
 			GradidoTransferRole::GradidoTransferRole(std::shared_ptr<const data::GradidoTransfer> gradidoTransfer, std::string_view otherCommunity)
 				: mGradidoTransfer(gradidoTransfer), mOtherCommunity(otherCommunity), mDeferredTransfer(false)
 			{
+				assert(gradidoTransfer);
 				// prepare for signature check
 				mMinSignatureCount = 1;
 				mRequiredSignPublicKeys.push_back(gradidoTransfer->getSender().getPubkey());
@@ -45,13 +46,13 @@ namespace gradido {
 					if (!senderPreviousConfirmedTransaction) {
 						throw BlockchainOrderException("transfer transaction not allowed as first transaction on blockchain");
 					}
-					validatePrevious(*senderPreviousConfirmedTransaction, blockchainProvider->findBlockchain(communityId));
+					validatePrevious(*senderPreviousConfirmedTransaction, findBlockchain(blockchainProvider, communityId, __FUNCTION__));
 				}
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
-					auto senderBlockchain = blockchainProvider->findBlockchain(communityId);
+					auto senderBlockchain = findBlockchain(blockchainProvider, communityId, __FUNCTION__);
 					std::shared_ptr<blockchain::Abstract> recipientBlockchain;
 					if (!mOtherCommunity.empty() && mOtherCommunity != communityId) {
-						recipientBlockchain = blockchainProvider->findBlockchain(mOtherCommunity);
+						recipientBlockchain = findBlockchain(blockchainProvider, mOtherCommunity, __FUNCTION__);
 					}
 					else {
 						recipientBlockchain = senderBlockchain;

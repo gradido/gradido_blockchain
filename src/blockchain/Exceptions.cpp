@@ -39,5 +39,20 @@ namespace gradido {
 			return result;
 		}
 
+
+
+		CommunityNotFoundException::CommunityNotFoundException(const char* what, std::string_view communityId) noexcept
+			: GradidoBlockchainException(what), mCommunityId(communityId)
+		{
+
+		}
+
+		std::string CommunityNotFoundException::getFullString() const
+		{
+			std::string result = what();
+			result += ", community: " + mCommunityId;
+			return result;
+		}
+
 	}
 }

@@ -13,6 +13,7 @@ namespace gradido {
 			GradidoDeferredTransferRole::GradidoDeferredTransferRole(std::shared_ptr<const data::GradidoDeferredTransfer> deferredTransfer)
 				: mDeferredTransfer(deferredTransfer) 
 			{
+				assert(deferredTransfer);
 				// prepare for signature check
 				mMinSignatureCount = 1;
 				mRequiredSignPublicKeys.push_back(deferredTransfer->getTransfer().getSender().getPubkey());

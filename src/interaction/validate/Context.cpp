@@ -1,5 +1,5 @@
 #include "gradido_blockchain/interaction/validate/Context.h"
-
+#include "gradido_blockchain/blockchain/Exceptions.h"
 
 namespace gradido {
 	namespace interaction {
@@ -10,7 +10,11 @@ namespace gradido {
 				blockchain::AbstractProvider* blockchainProvider /* = nullptr*/)
 			{
 				if (!mSenderPreviousConfirmedTransaction && blockchainProvider) {
-					auto transactionEntry = blockchainProvider->findBlockchain(communityId)->findOne(blockchain::Filter::LAST_TRANSACTION);
+					auto blockchain = blockchainProvider->findBlockchain(communityId);
+					if (!blockchain) {
+						throw blockchain::CommunityNotFoundException("missing blockchain for interaction::validate", communityId);
+					}
+					auto transactionEntry = blockchain->findOne(blockchain::Filter::LAST_TRANSACTION);
 					if (transactionEntry) {
 						mSenderPreviousConfirmedTransaction = transactionEntry->getConfirmedTransaction();
 					}

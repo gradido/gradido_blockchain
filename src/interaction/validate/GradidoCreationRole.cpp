@@ -1,3 +1,4 @@
+#include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/interaction/calculateCreationSum/Context.h"
 #include "gradido_blockchain/interaction/validate/GradidoCreationRole.h"
@@ -14,6 +15,7 @@ namespace gradido {
 			GradidoCreationRole::GradidoCreationRole(std::shared_ptr<const data::GradidoCreation> gradidoCreation)
 				: mGradidoCreation(gradidoCreation)
 			{
+				assert(gradidoCreation);
 				// prepare for signature check
 				mMinSignatureCount = 1;
 				mForbiddenSignPublicKeys.push_back(mGradidoCreation->getRecipient().getPubkey());
@@ -56,13 +58,17 @@ namespace gradido {
 
 				if ((type & Type::MONTH_RANGE) == Type::MONTH_RANGE)
 				{
-					assert(blockchainProvider);
-					auto blockchain = blockchainProvider->findBlockchain(communityId);
-					assert(blockchain);
-					if (!recipientPreviousConfirmedTransaction) {
+					auto blockchain = findBlockchain(blockchainProvider, communityId, __FUNCTION__);
+					if (!recipientPreviousConfirmedTransaction && senderPreviousConfirmedTransaction) {
 						recipientPreviousConfirmedTransaction = senderPreviousConfirmedTransaction;
 					}
-					assert(recipientPreviousConfirmedTransaction);
+					if (!recipientPreviousConfirmedTransaction) {
+						throw GradidoNullPointerException(
+							"missing previous confirmed transaction for interaction::validate Creation",
+							"data::ConstConfirmedTransactionPtr",
+							__FUNCTION__
+						);
+					}
 					assert(mConfirmedAt.getSeconds());
 
 					calculateCreationSum::Context calculateCreationSum(
@@ -89,10 +95,7 @@ namespace gradido {
 					}
 				}
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
-					assert(blockchainProvider);
-					auto blockchain = blockchainProvider->findBlockchain(communityId);
-					assert(blockchain);
-
+					auto blockchain = findBlockchain(blockchainProvider, communityId, __FUNCTION__);
 					blockchain::Filter filter;
 					filter.involvedPublicKey = mGradidoCreation->getRecipient().getPubkey();
 					auto addressType = blockchain->getAddressType(filter);
@@ -158,7 +161,7 @@ namespace gradido {
 						throw TransactionValidationInvalidInputException(
 							"year is the same, target date month is invalid",
 						 	"target_date",
-						  "TimestampSeconds",
+							"TimestampSeconds",
 							expected.data(),
 							std::to_string(static_cast<unsigned>(target_date.month())).data()
 						);

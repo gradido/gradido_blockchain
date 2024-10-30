@@ -52,6 +52,17 @@ namespace gradido {
 			int mExpectedResultCount;
 			int mActuallyResultCount;
 		};
+
+		class CommunityNotFoundException : GradidoBlockchainException
+		{
+		public:
+			explicit CommunityNotFoundException(const char* what, std::string_view communityId) noexcept;
+			std::string getFullString() const;
+
+		protected:
+			std::string mCommunityId;
+
+		};
 	}
 }
 #endif //__GRADIDO_BLOCKCHAIN_BLOCKCHAIN_EXCEPTIONS_H

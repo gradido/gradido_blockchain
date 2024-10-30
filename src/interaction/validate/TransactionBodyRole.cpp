@@ -69,8 +69,7 @@ namespace gradido {
 					auto& specificRole = getSpecificTransactionRole();
 					if (!mBody.getOtherGroup().empty() && !recipientPreviousConfirmedTransaction && blockchainProvider) {
 						recipientPreviousConfirmedTransaction = 
-							blockchainProvider
-							->findBlockchain(mBody.getOtherGroup())
+							findBlockchain(blockchainProvider, mBody.getOtherGroup(), __FUNCTION__)
 							->findOne(blockchain::Filter::LAST_TRANSACTION)
 							->getConfirmedTransaction();
 					}

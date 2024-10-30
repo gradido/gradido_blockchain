@@ -1,3 +1,4 @@
+#include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/interaction/validate/AbstractRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
@@ -124,6 +125,24 @@ namespace gradido {
 						throw TransactionValidationForbiddenSignException(pubkey);
 					}
 				}
+			}
+			std::shared_ptr<blockchain::Abstract> AbstractRole::findBlockchain(
+				blockchain::AbstractProvider* blockchainProvider,
+				std::string_view communityId,
+				const char* callerFunction
+			) {
+				if (!blockchainProvider) {
+					throw GradidoNullPointerException(
+						"missing blockchain provider for interaction::validate Type::MONTH_RANGE",
+						"blockchain::AbstractProvider*",
+						callerFunction
+					);
+				}
+				auto blockchain = blockchainProvider->findBlockchain(communityId);
+				if (!blockchain) {
+					throw blockchain::CommunityNotFoundException("missing blockchain for interaction::validate", communityId);
+				}
+				return blockchain;
 			}
 		}
 	}

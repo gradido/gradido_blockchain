@@ -10,6 +10,7 @@ namespace gradido {
 			CommunityRootRole::CommunityRootRole(std::shared_ptr<const data::CommunityRoot> communityRoot)
 				: mCommunityRoot(communityRoot) 
 			{
+				assert(communityRoot);
 				// prepare for signature check
 				mMinSignatureCount = 1;
 				mRequiredSignPublicKeys.push_back(mCommunityRoot->getPubkey());
