@@ -63,8 +63,7 @@ namespace gradido {
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS) {
 					if (mConfirmedTransaction.getId() > 1) {
 						auto previousTransactionId = mConfirmedTransaction.getId() - 1;
-						auto blockchain = blockchainProvider->findBlockchain(communityId);
-						assert(blockchain);
+						auto blockchain = findBlockchain(blockchainProvider, communityId, __FUNCTION__);
 						auto previousTransaction = blockchain->getTransactionForId(previousTransactionId);
 						if (!previousTransaction) {
 							GradidoBlockchainTransactionNotFoundException exception("previous transaction not found");

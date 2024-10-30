@@ -14,6 +14,7 @@ namespace gradido {
 			RegisterAddressRole::RegisterAddressRole(std::shared_ptr<const data::RegisterAddress> registerAddress)
 				: mRegisterAddress(registerAddress) 
 			{
+				assert(registerAddress);
 				if (registerAddress->getAccountPublicKey()) {
 					mRequiredSignPublicKeys.push_back(registerAddress->getAccountPublicKey());
 				}
@@ -37,7 +38,8 @@ namespace gradido {
 				if (data::AddressType::COMMUNITY_PROJECT == addressType ||
 					data::AddressType::COMMUNITY_HUMAN == addressType) {
 				}
-				if ((type & Type::SINGLE) == Type::SINGLE) {
+				if ((type & Type::SINGLE) == Type::SINGLE)
+				{
 					if (data::AddressType::COMMUNITY_GMW == addressType ||
 						data::AddressType::COMMUNITY_AUF == addressType ||
 						data::AddressType::NONE == addressType) {
@@ -62,14 +64,27 @@ namespace gradido {
 					}
 				}
 
-				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
-					assert(blockchainProvider);
-					auto blockchain = blockchainProvider->findBlockchain(communityId);
-					assert(blockchain);
+				if ((type & Type::ACCOUNT) == Type::ACCOUNT) 
+				{
+					auto blockchain = findBlockchain(blockchainProvider, communityId, __FUNCTION__);
 					blockchain::FilterBuilder filterBuilder;
 
 					std::shared_ptr<const blockchain::TransactionEntry> transactionWithSameAddress;
+					if (!senderPreviousConfirmedTransaction) {
+						throw GradidoNullPointerException(
+							"missing previous confirmed transaction for sender in interaction::validate RegisterAddress Type::ACCOUNT",
+							"data::ConstConfirmedTransactionPtr",
+							__FUNCTION__
+						);
+					}
 					if (data::AddressType::SUBACCOUNT == addressType) {
+						if (!userPubkey) {
+							throw GradidoNullPointerException(
+								"missing user pubkey for subaccount",
+								"memory::ConstBlockPtr",
+								__FUNCTION__
+							);
+						}						
 						transactionWithSameAddress = blockchain->findOne(
 							filterBuilder
 							.setInvolvedPublicKey(userPubkey)
@@ -86,45 +101,34 @@ namespace gradido {
 						}
 						transactionWithSameAddress.reset();
 					}
-
-					memory::ConstBlockPtr address;
-
-					switch (addressType) {
-					case data::AddressType::COMMUNITY_HUMAN:
-					case data::AddressType::COMMUNITY_PROJECT:
-					case data::AddressType::CRYPTO_ACCOUNT:
-						address = userPubkey;
-						break;
-					case data::AddressType::SUBACCOUNT:
-						address = mRegisterAddress->getAccountPublicKey();
-						break;
-					}
-					if (!address) {
-						throw GradidoUnhandledEnum(
-							"register address has invalid type for account validation",
-							enum_type_name<decltype(addressType)>().data(),
-							enum_name(addressType).data()
-						);
-					}
-					transactionWithSameAddress = blockchain->findOne(
-						filterBuilder
-						.setInvolvedPublicKey(address)
-						.setMaxTransactionNr(senderPreviousConfirmedTransaction->getId())
-						.setTransactionType(data::TransactionType::REGISTER_ADDRESS)
-						.setSearchDirection(blockchain::SearchDirection::DESC)
-						.setPagination({1})
-						.build()
-					);
-					if (transactionWithSameAddress) {
-						if (
-							(accountPubkey && transactionWithSameAddress->getTransactionBody()->isInvolved(*accountPubkey)) ||
-							(userPubkey && transactionWithSameAddress->getTransactionBody()->isInvolved(*userPubkey))
-						) {
-							throw AddressAlreadyExistException(
-								"cannot register address because it already exist",
-								address->convertToHex(),
-								addressType
+					else {
+						if (!userPubkey) {
+							throw GradidoUnhandledEnum(
+								"register address has invalid type for account validation",
+								enum_type_name<decltype(addressType)>().data(),
+								enum_name(addressType).data()
 							);
+						}
+						transactionWithSameAddress = blockchain->findOne(
+							filterBuilder
+							.setInvolvedPublicKey(userPubkey)
+							.setMaxTransactionNr(senderPreviousConfirmedTransaction->getId())
+							.setTransactionType(data::TransactionType::REGISTER_ADDRESS)
+							.setSearchDirection(blockchain::SearchDirection::DESC)
+							.setPagination({ 1 })
+							.build()
+						);
+						if (transactionWithSameAddress) {
+							if (
+								(accountPubkey && transactionWithSameAddress->getTransactionBody()->isInvolved(*accountPubkey)) ||
+								(userPubkey && transactionWithSameAddress->getTransactionBody()->isInvolved(*userPubkey))
+								) {
+								throw AddressAlreadyExistException(
+									"cannot register address because it already exist",
+									userPubkey->convertToHex(),
+									addressType
+								);
+							}
 						}
 					}
 				}

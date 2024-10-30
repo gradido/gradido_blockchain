@@ -38,6 +38,14 @@ namespace gradido {
 
 				void isPublicKeyForbidden(memory::ConstBlockPtr pubkey) const;
 
+                //! throw if blockchainProvider is null or no blockchain can be found for communityId
+                //! \return valid blockchain pointer
+                std::shared_ptr<blockchain::Abstract> findBlockchain(
+                    blockchain::AbstractProvider* blockchainProvider,
+                    std::string_view communityId,
+                    const char* callerFunction
+                );
+
                 const static std::string mCommunityIdRegexString;
                 data::TimestampSeconds mConfirmedAt;
                 data::Timestamp mCreatedAt;

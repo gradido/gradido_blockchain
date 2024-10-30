@@ -1,4 +1,5 @@
-﻿#include "gradido_blockchain/blockchain/TransactionEntry.h"
+﻿#include "gradido_blockchain/blockchain/Exceptions.h"
+#include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransactionRole.h"
 #include "gradido_blockchain/interaction/validate/TransactionBodyRole.h"
@@ -50,10 +51,8 @@ namespace gradido {
 				bodyRole.checkRequiredSignatures(mGradidoTransaction.getSignatureMap(), blockchain);
 
 				if ((type & Type::PAIRED) == Type::PAIRED && !body->getOtherGroup().empty()) {
-					assert(blockchainProvider);
-					auto otherBlockchain = blockchainProvider->findBlockchain(body->getOtherGroup());
-					assert(otherBlockchain);
-
+					auto otherBlockchain = findBlockchain(blockchainProvider, body->getOtherGroup(), __FUNCTION__);
+					
 					std::shared_ptr<const blockchain::TransactionEntry> pairTransactionEntry;
 					switch (body->getType()) {
 					case data::CrossGroupType::LOCAL: break; // no cross group

@@ -166,7 +166,7 @@ namespace gradido {
 
 			std::string TransactionValidationForbiddenSignException::getFullString() const noexcept
 			{
-				std::string forbiddenPubkeyHex = mForbiddenPubkey->convertToHex();
+				std::string forbiddenPubkeyHex = mForbiddenPubkey ? mForbiddenPubkey->convertToHex() : "";
 				size_t resultSize = 0;
 				if (mTransactionMemo.size()) {
 					resultSize += mTransactionMemo.size() + 25;
@@ -192,7 +192,9 @@ namespace gradido {
 			{
 				Value detailsObjs(kObjectType);
 				detailsObjs.AddMember("what", Value(what(), alloc), alloc);
-				detailsObjs.AddMember("forbiddenPubkey", Value(mForbiddenPubkey->convertToHex().data(), alloc), alloc);
+				if (mForbiddenPubkey) {
+					detailsObjs.AddMember("forbiddenPubkey", Value(mForbiddenPubkey->convertToHex().data(), alloc), alloc);
+				}
 				detailsObjs.AddMember("memo", Value(mTransactionMemo.data(), alloc), alloc);
 				return std::move(detailsObjs);
 			}
@@ -231,7 +233,9 @@ namespace gradido {
 				: TransactionValidationException("missing required sign")
 			{
 				for (auto pubkey : missingPublicKeys) {
-					mMissingPublicKeysHex.push_back(pubkey->convertToHex());
+					if (pubkey) {
+						mMissingPublicKeysHex.push_back(pubkey->convertToHex());
+					}
 				}
 			}
 
