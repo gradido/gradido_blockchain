@@ -1,11 +1,12 @@
 #ifndef __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_EXCEPTIONS_H
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_EXCEPTIONS_H
 
+#include "gradido_blockchain/export.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
 namespace gradido {
 	namespace blockchain {
-		class ConstructBlockchainException : public GradidoBlockchainException
+		class GRADIDOBLOCKCHAIN_EXPORT ConstructBlockchainException : public GradidoBlockchainException
 		{
 		public:
 			explicit ConstructBlockchainException(const char* what, std::string_view communityId) noexcept
@@ -20,7 +21,7 @@ namespace gradido {
 			std::string mCommunityId;
 		};
 
-		class AccountNotFoundException : public GradidoBlockchainException
+		class GRADIDOBLOCKCHAIN_EXPORT AccountNotFoundException : public GradidoBlockchainException
 		{
 		public:
 			explicit AccountNotFoundException(const char* what, const std::string& groupAlias, const std::string& pubkeyHex) noexcept;
@@ -30,7 +31,7 @@ namespace gradido {
 			std::string mPubkeyHex;
 		};
 
-		class MissingTransactionNrException : public GradidoBlockchainException
+		class GRADIDOBLOCKCHAIN_EXPORT MissingTransactionNrException : public GradidoBlockchainException
 		{
 		public:
 			explicit MissingTransactionNrException(const char* what, uint64_t lastTransactionNr, uint64_t nextTransactionNr) noexcept;
@@ -41,7 +42,7 @@ namespace gradido {
 			uint64_t mNextTransactionNr;
 		};
 
-		class TransactionResultCountException : public GradidoBlockchainException
+		class GRADIDOBLOCKCHAIN_EXPORT TransactionResultCountException : public GradidoBlockchainException
 		{
 		public:
 			explicit TransactionResultCountException(const char* what, int expectedResultCount, int actuallyResultCount) noexcept
@@ -53,7 +54,7 @@ namespace gradido {
 			int mActuallyResultCount;
 		};
 
-		class CommunityNotFoundException : GradidoBlockchainException
+		class GRADIDOBLOCKCHAIN_EXPORT CommunityNotFoundException : GradidoBlockchainException
 		{
 		public:
 			explicit CommunityNotFoundException(const char* what, std::string_view communityId) noexcept;
