@@ -2,9 +2,11 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_TRANSFER_AMOUNT_ROLE_H
 
 #include "Protopuf.h"
-#include "gradido_blockchain/data/TransferAmount.h"
 
 namespace gradido {
+    namespace data {
+        class TransferAmount;
+    }
     namespace interaction {
         namespace deserialize {
             class TransferAmountRole

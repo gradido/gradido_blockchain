@@ -1,3 +1,4 @@
+#include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/interaction/validate/GradidoDeferredTransferRole.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
@@ -23,8 +24,8 @@ namespace gradido {
 				Type type,
 				std::string_view communityId,
 				blockchain::AbstractProvider* blockchainProvider,
-				data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
-				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
+				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
 					if (mDeferredTransfer->getTimeout().getAsTimepoint() - mConfirmedAt.getAsTimepoint() > GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL) {

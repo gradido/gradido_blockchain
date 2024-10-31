@@ -1,7 +1,9 @@
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/interaction/deserialize/GradidoTransactionRole.h"
 #include "gradido_blockchain/interaction/deserialize/TimestampSecondsRole.h"
 #include "gradido_blockchain/interaction/deserialize/Exceptions.h"
+#include "gradido_blockchain/interaction/serialize/GradidoTransactionRole.h"
 
 namespace gradido {
 	namespace interaction {

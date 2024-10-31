@@ -1,9 +1,19 @@
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/serialize/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/interaction/serialize/Exceptions.h"
 
 namespace gradido {
 	namespace interaction {
 		namespace serialize {
+
+			ConfirmedTransactionRole::ConfirmedTransactionRole(const data::ConfirmedTransaction& confirmedTransaction)
+				: mConfirmedTransaction(confirmedTransaction), mGradidoTransactionRole(*mConfirmedTransaction.getGradidoTransaction()) 
+			{
+			}
+
+			ConfirmedTransactionRole::~ConfirmedTransactionRole() 
+			{
+			}
 
 			ConfirmedTransactionMessage ConfirmedTransactionRole::getMessage() const
 			{

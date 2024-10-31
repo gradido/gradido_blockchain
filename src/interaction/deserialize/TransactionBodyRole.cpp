@@ -26,18 +26,19 @@ namespace gradido {
 				if (!bodyMessage["type"_f].has_value()) {
 					throw MissingMemberException(rootExceptionMessage, "type");
 				}
-				mTransactionBody.mMemo = bodyMessage["memo"_f].value_or("");
-				mTransactionBody.mCreatedAt = TimestampRole(bodyMessage["created_at"_f].value()).data();
-				mTransactionBody.mVersionNumber = bodyMessage["version_number"_f].value();
-				mTransactionBody.mType = bodyMessage["type"_f].value();
-				mTransactionBody.mOtherGroup = bodyMessage["other_group"_f].value_or("");
+				mTransactionBody = std::make_unique<TransactionBody>();
+				mTransactionBody->mMemo = bodyMessage["memo"_f].value_or("");
+				mTransactionBody->mCreatedAt = TimestampRole(bodyMessage["created_at"_f].value()).data();
+				mTransactionBody->mVersionNumber = bodyMessage["version_number"_f].value();
+				mTransactionBody->mType = bodyMessage["type"_f].value();
+				mTransactionBody->mOtherGroup = bodyMessage["other_group"_f].value_or("");
 
 				if (bodyMessage["transfer"_f].has_value()) {
 					auto transferMessage = bodyMessage["transfer"_f].value();
 					if (!bodyMessage["transfer"_f].value()["sender"_f].has_value()) {
 						throw MissingMemberException("missing member on deserialize transaction body transfer transaction", "transfer.sender");
 					}
-					mTransactionBody.mTransfer = std::move(GradidoTransferRole(bodyMessage["transfer"_f].value()).run());
+					mTransactionBody->mTransfer = std::move(GradidoTransferRole(bodyMessage["transfer"_f].value()).run());
 				}
 				else if (bodyMessage["creation"_f].has_value()) {
 					auto creationMessage = bodyMessage["creation"_f].value();
@@ -48,7 +49,7 @@ namespace gradido {
 					if (!creationMessage["target_date"_f].has_value()) {
 						throw MissingMemberException(exceptionMessage, "target_date");
 					}
-					mTransactionBody.mCreation = make_shared<data::GradidoCreation>(
+					mTransactionBody->mCreation = make_shared<data::GradidoCreation>(
 						TransferAmountRole(creationMessage["recipient"_f].value()).data(),
 						TimestampSecondsRole(creationMessage["target_date"_f].value()).data()
 					);
@@ -58,12 +59,12 @@ namespace gradido {
 					if (!communityFriendsUpdateMessage["color_fusion"_f].has_value()) {
 						throw MissingMemberException("missing member on deserialize community friends update transaction", "color_fusion");
 					}
-					mTransactionBody.mCommunityFriendsUpdate = make_shared<data::CommunityFriendsUpdate>(
+					mTransactionBody->mCommunityFriendsUpdate = make_shared<data::CommunityFriendsUpdate>(
 						communityFriendsUpdateMessage["color_fusion"_f].value()
 					);
 				}
 				else if (bodyMessage["register_address"_f].has_value()) {
-					mTransactionBody.mRegisterAddress = std::move(
+					mTransactionBody->mRegisterAddress = std::move(
 						RegisterAddressRole(bodyMessage["register_address"_f].value()).run()
 					);
 				}
@@ -76,7 +77,7 @@ namespace gradido {
 					if (!deferredTransferMessage["timeout"_f].has_value()) {
 						throw MissingMemberException(exceptionMessage, "timeout");
 					}
-					mTransactionBody.mDeferredTransfer = make_shared<data::GradidoDeferredTransfer>(
+					mTransactionBody->mDeferredTransfer = make_shared<data::GradidoDeferredTransfer>(
 						*GradidoTransferRole(deferredTransferMessage["transfer"_f].value()).run().get(),
 						TimestampSecondsRole(deferredTransferMessage["timeout"_f].value()).data()
 					);
@@ -93,7 +94,7 @@ namespace gradido {
 					if (!communityRootMessage["auf_pubkey"_f].has_value()) {
 						throw MissingMemberException(exceptionMessage, "auf_pubkey");
 					}
-					mTransactionBody.mCommunityRoot = make_shared<data::CommunityRoot>(
+					mTransactionBody->mCommunityRoot = make_shared<data::CommunityRoot>(
 						std::make_shared<memory::Block>(communityRootMessage["pubkey"_f].value()),
 						std::make_shared<memory::Block>(communityRootMessage["gmw_pubkey"_f].value()),
 						std::make_shared<memory::Block>(communityRootMessage["auf_pubkey"_f].value())

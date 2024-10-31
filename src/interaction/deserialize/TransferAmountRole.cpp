@@ -1,3 +1,4 @@
+#include "gradido_blockchain/data/TransferAmount.h"
 #include "gradido_blockchain/interaction/deserialize/TransferAmountRole.h"
 #include "gradido_blockchain/interaction/deserialize/Exceptions.h"
 

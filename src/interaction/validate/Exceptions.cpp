@@ -1,3 +1,4 @@
+#include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/toJson/Context.h"

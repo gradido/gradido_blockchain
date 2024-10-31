@@ -3,7 +3,6 @@
 
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/data/AddressType.h"
-#include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/data/TransactionType.h"
 
 #include "gradido_blockchain/GradidoUnit.h"
@@ -12,6 +11,10 @@
 #include "rapidjson/document.h"
 
 namespace gradido {
+	namespace data {
+		class GradidoTransaction;
+		class TransactionBody;
+	}
 	namespace interaction {
 		namespace validate {
 			class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationException : public GradidoBlockchainException

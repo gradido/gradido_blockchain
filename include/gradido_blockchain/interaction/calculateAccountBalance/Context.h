@@ -2,12 +2,15 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_CALCULATE_ACCOUNT_BALANCE_CONTEXT_H
 
 #include "gradido_blockchain/export.h"
-#include "AbstractRole.h"
-#include "gradido_blockchain/blockchain/Abstract.h"
 
 namespace gradido {
+	namespace blockchain {
+		class Abstract;
+	}
 	namespace interaction {
 		namespace calculateAccountBalance {
+			class AbstractRole;
+
 			class GRADIDOBLOCKCHAIN_EXPORT Context 
 			{
 			public:

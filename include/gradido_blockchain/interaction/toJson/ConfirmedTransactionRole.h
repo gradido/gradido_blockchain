@@ -1,10 +1,12 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_TO_JSON_CONFIRMED_TRANSACTION_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_TO_JSON_CONFIRMED_TRANSACTION_ROLE_H
 
-#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "GradidoTransactionRole.h"
 
 namespace gradido {
+	namespace data {
+		class ConfirmedTransaction;
+	}
 	namespace interaction {
 		namespace toJson {
 				

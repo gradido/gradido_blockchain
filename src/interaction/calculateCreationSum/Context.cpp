@@ -1,3 +1,4 @@
+#include "gradido_blockchain/interaction/calculateCreationSum/AbstractAlgoRole.h"
 #include "gradido_blockchain/interaction/calculateCreationSum/Context.h"
 #include "gradido_blockchain/interaction/calculateCreationSum/V01_ThreeMonthsAlgoRole.h"
 #include "gradido_blockchain/interaction/calculateCreationSum/V02_TargetDateAlgoRole.h"

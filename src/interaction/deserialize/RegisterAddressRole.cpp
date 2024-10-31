@@ -1,3 +1,4 @@
+#include "gradido_blockchain/data/RegisterAddress.h"
 #include "gradido_blockchain/interaction/deserialize/RegisterAddressRole.h"
 #include "gradido_blockchain/interaction/deserialize/Exceptions.h"
 

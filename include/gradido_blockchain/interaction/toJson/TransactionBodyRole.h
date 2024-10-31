@@ -1,10 +1,14 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_TO_JSON_TRANSACTION_BODY_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_TO_JSON_TRANSACTION_BODY_ROLE_H
 
-#include "gradido_blockchain/data/TransactionBody.h"
 #include "AbstractRole.h"
 
 namespace gradido {
+	namespace data {
+		class TransactionBody;
+		class GradidoTransfer;
+		class TransferAmount;
+	}
 	namespace interaction {
 		namespace toJson {
 			class TransactionBodyRole : public AbstractRole

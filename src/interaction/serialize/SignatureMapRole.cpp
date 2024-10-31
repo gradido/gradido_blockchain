@@ -1,5 +1,5 @@
+#include "gradido_blockchain/data/SignatureMap.h"
 #include "gradido_blockchain/interaction/serialize/SignatureMapRole.h"
-
 
 namespace gradido {
 	namespace interaction {

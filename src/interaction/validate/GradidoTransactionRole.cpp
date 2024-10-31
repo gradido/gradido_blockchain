@@ -1,4 +1,6 @@
-﻿#include "gradido_blockchain/blockchain/Exceptions.h"
+﻿#include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/blockchain/AbstractProvider.h"
+#include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransactionRole.h"
@@ -17,8 +19,8 @@ namespace gradido {
 				Type type,
 				std::string_view communityId,
 				blockchain::AbstractProvider* blockchainProvider,
-				data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
-				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
+				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
 				const auto& body = mGradidoTransaction.getTransactionBody();
 				TransactionBodyRole bodyRole(*body);

@@ -2,9 +2,11 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_REGISTER_ADDRESS_ROLE_H
 
 #include "Protopuf.h"
-#include "gradido_blockchain/data/RegisterAddress.h"
 
 namespace gradido {
+    namespace data {
+        class RegisterAddress;
+    }
     namespace interaction {
         namespace deserialize {
             class RegisterAddressRole

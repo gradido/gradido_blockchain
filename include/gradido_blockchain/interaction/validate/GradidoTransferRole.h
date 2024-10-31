@@ -15,8 +15,8 @@ namespace gradido {
 					Type type,
 					std::string_view communityId,
 					blockchain::AbstractProvider* blockchainProvider,
-					data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
-					data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+					std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
+					std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 				);
 				//! call only if this transfer belong to a deferred transfer, changing validation rules a bit
 				inline void setDeferredTransfer() { mDeferredTransfer = true; }

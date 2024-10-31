@@ -1,3 +1,5 @@
+#include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/interaction/calculateAccountBalance/AbstractRole.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/GradidoCreationRole.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/GradidoDeferredTransferRole.h"

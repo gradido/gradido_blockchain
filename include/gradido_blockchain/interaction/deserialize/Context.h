@@ -1,12 +1,15 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_CONTEXT_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_CONTEXT_H
 
-#include "TransactionBodyRole.h"
-#include "GradidoTransactionRole.h"
-#include "ConfirmedTransactionRole.h"
 #include "Type.h"
+#include "gradido_blockchain/memory/Block.h"
 
 namespace gradido {
+	namespace data {
+		class GradidoTransaction;
+		class ConfirmedTransaction;
+		class TransactionBody;
+	}
 	namespace interaction {
 		namespace deserialize {
 			class GRADIDOBLOCKCHAIN_EXPORT Context
@@ -23,14 +26,14 @@ namespace gradido {
 				inline bool isConfirmedTransaction() const { return Type::CONFIRMED_TRANSACTION == mType; }
 				Type getType() const { return mType; }
 
-				inline data::ConstTransactionBodyPtr getTransactionBody() { return mTransactionBody; }
+				inline std::shared_ptr<const data::TransactionBody> getTransactionBody() { return mTransactionBody; }
 				inline std::shared_ptr<const data::GradidoTransaction> getGradidoTransaction() { return mGradidoTransaction; }
 				inline std::shared_ptr<const data::ConfirmedTransaction> getConfirmedTransaction() { return mConfirmedTransaction; }
 
 			protected:
 				memory::ConstBlockPtr mData;
 				Type mType;
-				data::ConstTransactionBodyPtr mTransactionBody;
+				std::shared_ptr<const data::TransactionBody> mTransactionBody;
 				std::shared_ptr<const data::GradidoTransaction> mGradidoTransaction;
 				std::shared_ptr<const data::ConfirmedTransaction> mConfirmedTransaction;
 			};

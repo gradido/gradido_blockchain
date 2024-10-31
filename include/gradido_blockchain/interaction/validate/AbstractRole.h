@@ -2,9 +2,18 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_ABSTRACT_ROLE_H
 
 #include "Type.h"
-#include "gradido_blockchain/blockchain/AbstractProvider.h"
+#include "gradido_blockchain/data/Timestamp.h"
+#include "gradido_blockchain/memory/Block.h"
 
 namespace gradido {
+    namespace blockchain {
+        class Abstract;
+        class AbstractProvider;
+    }
+    namespace data {
+        class ConfirmedTransaction;
+        class SignatureMap;
+    }
 	namespace interaction {
 		namespace validate {
             
@@ -18,8 +27,8 @@ namespace gradido {
                     Type type = Type::SINGLE,
                     std::string_view communityId = "",
                     blockchain::AbstractProvider* blockchainProvider = nullptr,
-                    data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction = nullptr,
-                    data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction = nullptr
+                    std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction = nullptr,
+                    std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction = nullptr
                 ) = 0;
 
                 inline void setConfirmedAt(data::TimestampSeconds confirmedAt) { mConfirmedAt = confirmedAt; }

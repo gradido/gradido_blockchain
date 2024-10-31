@@ -1,3 +1,4 @@
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/toJson/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/interaction/toJson/GradidoTransactionRole.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
