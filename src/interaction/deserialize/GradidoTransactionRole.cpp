@@ -1,5 +1,6 @@
-#include "gradido_blockchain/interaction/deserialize/GradidoTransactionRole.h"
+#include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain/interaction/deserialize/GradidoTransactionRole.h"
 
 namespace gradido {
 	namespace interaction {

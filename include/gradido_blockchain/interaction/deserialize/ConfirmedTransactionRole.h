@@ -1,11 +1,12 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_CONFIRMED_TRANSACTION_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_CONFIRMED_TRANSACTION_ROLE_H
 
-#include "gradido_blockchain/interaction/serialize/GradidoTransactionRole.h"
-#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "Protopuf.h"
 
 namespace gradido {
+	namespace data {
+		class ConfirmedTransaction;
+	}
 	namespace interaction {
 		namespace deserialize {
 
@@ -18,7 +19,7 @@ namespace gradido {
 				std::shared_ptr<const data::ConfirmedTransaction> getConfirmedTransaction() { return mConfirmedTransaction; }
 
 			protected:
-				data::ConfirmedTransactionPtr mConfirmedTransaction;
+				std::shared_ptr<data::ConfirmedTransaction> mConfirmedTransaction;
 			};
 
 		}

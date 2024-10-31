@@ -15,8 +15,8 @@ namespace gradido {
 					Type type,
 					std::string_view communityId,
 					blockchain::AbstractProvider* blockchainProvider,
-					data::ConstConfirmedTransactionPtr previousConfirmedTransaction,
-					data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+					std::shared_ptr<const data::ConfirmedTransaction> previousConfirmedTransaction,
+					std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 				);
 			protected:
 				std::shared_ptr<const data::CommunityRoot> mCommunityRoot;

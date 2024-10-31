@@ -1,3 +1,4 @@
+#include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/interaction/serialize/GradidoTransactionRole.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 

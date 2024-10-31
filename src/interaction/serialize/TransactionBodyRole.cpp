@@ -1,3 +1,4 @@
+#include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/interaction/serialize/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/serialize/Exceptions.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"

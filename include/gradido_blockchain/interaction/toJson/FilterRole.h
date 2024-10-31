@@ -1,10 +1,12 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_TO_JSON_FILTER_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_TO_JSON_FILTER_ROLE_H
 
-#include "gradido_blockchain/blockchain/Filter.h"
 #include "AbstractRole.h"
 
 namespace gradido {
+	namespace blockchain {
+		class Filter;
+	}
 	namespace interaction {
 		namespace toJson {
 			class FilterRole : public AbstractRole

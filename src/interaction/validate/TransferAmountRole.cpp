@@ -1,3 +1,4 @@
+#include "gradido_blockchain/data/TransferAmount.h"
 #include "gradido_blockchain/interaction/validate/TransferAmountRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 
@@ -8,8 +9,8 @@ namespace gradido {
 				Type type,
 				std::string_view communityId,
 				blockchain::AbstractProvider* blockchainProvider,
-				data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
-				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
+				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
 					auto& coinCommunityId = mTransferAmount.getCommunityId();

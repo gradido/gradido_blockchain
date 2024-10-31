@@ -1,3 +1,4 @@
+#include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/interaction/toJson/FilterRole.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 

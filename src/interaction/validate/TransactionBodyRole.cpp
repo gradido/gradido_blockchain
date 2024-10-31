@@ -1,4 +1,5 @@
-﻿#include "gradido_blockchain/const.h"
+﻿#include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/const.h"
 #include "gradido_blockchain/interaction/validate/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/validate/CommunityRootRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
@@ -22,8 +23,8 @@ namespace gradido {
 				Type type,
 				std::string_view communityId,
 				blockchain::AbstractProvider* blockchainProvider,
-				data::ConstConfirmedTransactionPtr previousConfirmedTransaction,
-				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+				std::shared_ptr<const data::ConfirmedTransaction> previousConfirmedTransaction,
+				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
 				// when we don't know the confirmation date yet, we estimate
 				// normally it should be maximal 2 minutes after createdAt if the system clock is correct

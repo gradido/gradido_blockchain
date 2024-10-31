@@ -5,6 +5,9 @@
 #include "gradido_blockchain/data/TransactionBody.h"
 
 namespace gradido {
+	namespace data {
+		TransactionBody;
+	}
 	namespace interaction {
 		namespace deserialize {
 
@@ -14,10 +17,10 @@ namespace gradido {
 				TransactionBodyRole(const TransactionBodyMessage& bodyMessage);
 				~TransactionBodyRole() {};
 
-				inline data::TransactionBody& getBody() { return mTransactionBody; }
+				inline data::TransactionBody& getBody() { return *mTransactionBody; }
 
 			protected:
-				data::TransactionBody mTransactionBody;
+				std::unique_ptr<data::TransactionBody> mTransactionBody;
 			};
 		}
 	}

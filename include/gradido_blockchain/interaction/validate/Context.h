@@ -2,24 +2,32 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_CONTEXT_H
 
 #include "gradido_blockchain/export.h"
-#include "TransactionBodyRole.h"
-#include "ConfirmedTransactionRole.h"
-#include "GradidoTransactionRole.h"
+#include "Type.h"
+#include <memory>
 
 namespace gradido {
+    namespace data {
+        class TransactionBody;
+        class GradidoTransaction;
+        class ConfirmedTransaction;
+    }
+    namespace blockchain {
+        class AbstractProvider;
+    }
 	namespace interaction {
 		namespace validate {
+            class AbstractRole;
+            class TransactionBodyRole;
+            class GradidoTransactionRole;
+            class ConfirmedTransactionRole;
+
             class GRADIDOBLOCKCHAIN_EXPORT Context 
             {
             public:
-                Context(const data::TransactionBody& body)
-                    : mRole(std::make_unique<TransactionBodyRole>(body)) {}
-
-                Context(const data::GradidoTransaction& body)
-                    : mRole(std::make_unique<GradidoTransactionRole>(body)) {}
-
-                Context(const data::ConfirmedTransaction& body)
-                    : mRole(std::make_unique<ConfirmedTransactionRole>(body)) {}
+                Context(const data::TransactionBody& body);
+                Context(const data::GradidoTransaction& body);
+                Context(const data::ConfirmedTransaction& body);
+                ~Context();
 
                 //! \param blockchainProvider provide Blockchain access to search for specific transactions
                 void run(
@@ -29,18 +37,18 @@ namespace gradido {
                 );
 
                 //! set sender previous confirmed transaction manually, normally last transaction on blockchain will be used
-                inline void setSenderPreviousConfirmedTransaction(data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction) {
+                inline void setSenderPreviousConfirmedTransaction(std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction) {
                     mSenderPreviousConfirmedTransaction = senderPreviousConfirmedTransaction;
                 }
 				//! set recipient previous confirmed transaction manually, normally last transaction on blockchain will be used, only for cross group transactions
-				inline void setRecipientPreviousConfirmedTransaction(data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction) {
+				inline void setRecipientPreviousConfirmedTransaction(std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction) {
                     mRecipientPreviousConfirmedTransaction = recipientPreviousConfirmedTransaction;
 				}
             protected:
                 std::unique_ptr<AbstractRole> mRole;
                 std::string mCommunityId;
-                data::ConstConfirmedTransactionPtr mSenderPreviousConfirmedTransaction;
-                data::ConstConfirmedTransactionPtr mRecipientPreviousConfirmedTransaction;
+                std::shared_ptr<const data::ConfirmedTransaction> mSenderPreviousConfirmedTransaction;
+                std::shared_ptr<const data::ConfirmedTransaction> mRecipientPreviousConfirmedTransaction;
             };
         }
     }

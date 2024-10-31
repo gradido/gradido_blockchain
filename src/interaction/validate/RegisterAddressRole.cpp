@@ -1,3 +1,4 @@
+#include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/interaction/validate/RegisterAddressRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
@@ -28,8 +29,8 @@ namespace gradido {
 				Type type,
 				std::string_view communityId,
 				blockchain::AbstractProvider* blockchainProvider,
-				data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
-				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
+				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
 				auto addressType = mRegisterAddress->getAddressType();
 				auto accountPubkey = mRegisterAddress->getAccountPublicKey();

@@ -7,12 +7,13 @@
 namespace gradido {
 	namespace interaction {		
 		namespace calculateCreationSum {
+
 			class GRADIDOBLOCKCHAIN_EXPORT Context
 			{
 			public:
 				Context(Timepoint date, Timepoint targetDate, memory::ConstBlockPtr publicKey, uint64_t transactionNrMax = 0);
-				inline GradidoUnit run(blockchain::Abstract& blockchain) { return mRole->run(blockchain); }
-				inline GradidoUnit getLimit() { return mRole->getLimit(); }
+				GradidoUnit run(blockchain::Abstract& blockchain) { return mRole->run(blockchain); }
+				GradidoUnit getLimit() { return mRole->getLimit(); }
 
 			protected:
 				std::unique_ptr<AbstractAlgoRole> mRole;

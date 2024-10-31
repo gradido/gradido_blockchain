@@ -1,4 +1,6 @@
 #include "gradido_blockchain/const.h"
+#include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/validate/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransactionRole.h"
@@ -13,8 +15,8 @@ namespace gradido {
 				Type type,
 				std::string_view communityId,
 				blockchain::AbstractProvider* blockchainProvider,
-				data::ConstConfirmedTransactionPtr senderPreviousConfirmedTransaction,
-				data::ConstConfirmedTransactionPtr recipientPreviousConfirmedTransaction
+				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
+				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
 				auto body = mConfirmedTransaction.getGradidoTransaction()->getTransactionBody();
 				auto createdAt = mConfirmedTransaction.getGradidoTransaction()->getTransactionBody()->getCreatedAt().getAsTimepoint();

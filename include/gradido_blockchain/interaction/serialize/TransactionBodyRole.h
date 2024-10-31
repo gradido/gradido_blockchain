@@ -2,11 +2,13 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_TRANSACTION_BODY_ROLE_H
 
 #include "gradido_blockchain/data/CrossGroupType.h"
-#include "gradido_blockchain/data/TransactionBody.h"
 #include "AbstractRole.h"
 #include "Protopuf.h"
 
 namespace gradido {
+	namespace data {
+		class TransactionBody;
+	}
 	namespace interaction {
 		namespace serialize {
 

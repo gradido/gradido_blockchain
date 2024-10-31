@@ -1,3 +1,4 @@
+#include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/interaction/toJson/GradidoTransactionRole.h"
 #include "gradido_blockchain/interaction/toJson/TransactionBodyRole.h"
 

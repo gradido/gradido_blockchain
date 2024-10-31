@@ -2,11 +2,11 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_TIMESTAMP_ROLE_H
 
 #include "Protopuf.h"
-#include "gradido_blockchain/data/Timestamp.h"
-
-#include <memory>
 
 namespace gradido {
+    namespace data {
+        class Timestamp;
+    }
     namespace interaction {
         namespace deserialize {
             class TimestampRole 

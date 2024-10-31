@@ -1,3 +1,4 @@
+#include "gradido_blockchain/data/TimestampSeconds.h"
 #include "gradido_blockchain/interaction/deserialize/TimestampSecondsRole.h"
 #include "gradido_blockchain/interaction/deserialize/Exceptions.h"
 

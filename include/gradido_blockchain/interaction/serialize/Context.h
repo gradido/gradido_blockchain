@@ -12,6 +12,7 @@
 namespace gradido {
 	namespace interaction {
 		namespace serialize {
+
 			class GRADIDOBLOCKCHAIN_EXPORT Context
 			{
 			public:
