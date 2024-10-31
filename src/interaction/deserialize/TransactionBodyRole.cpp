@@ -1,3 +1,4 @@
+#include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/interaction/deserialize/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/deserialize/TimestampRole.h"
 #include "gradido_blockchain/interaction/deserialize/TimestampSecondsRole.h"
@@ -12,7 +13,7 @@ namespace gradido {
 	using namespace data;
 	namespace interaction {
 		namespace deserialize {
-
+		
 			TransactionBodyRole::TransactionBodyRole(const TransactionBodyMessage& bodyMessage)
 			{
 				const char* rootExceptionMessage = "missing member on deserialize transaction body";
@@ -100,6 +101,11 @@ namespace gradido {
 						std::make_shared<memory::Block>(communityRootMessage["auf_pubkey"_f].value())
 					);
 				}
+			}
+
+			TransactionBodyRole::~TransactionBodyRole()
+			{
+
 			}
 		}
 	}
