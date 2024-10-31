@@ -1,3 +1,5 @@
+#include "gradido_blockchain/data/TransactionBody.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/deserialize/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/deserialize/GradidoTransactionRole.h"

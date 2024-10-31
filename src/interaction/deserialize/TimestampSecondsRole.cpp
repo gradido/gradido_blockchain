@@ -12,6 +12,11 @@ namespace gradido {
                 }
                 mTimestamp = std::make_unique<data::TimestampSeconds>(timestamp["seconds"_f].value());
             }
+
+            TimestampSecondsRole::~TimestampSecondsRole()
+            {
+                
+            }
         }
     }
 }

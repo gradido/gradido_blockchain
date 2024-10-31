@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_TIMESTAMP_ROLE_H
 
 #include "Protopuf.h"
+#include <memory>
 
 namespace gradido {
     namespace data {
@@ -13,6 +14,7 @@ namespace gradido {
             {
             public:
                 TimestampRole(const TimestampMessage& timestamp);
+                ~TimestampRole();
                 inline operator const data::Timestamp&() const { return *mTimestamp.get(); }
                 inline const data::Timestamp& data() const { return *mTimestamp.get(); }
             protected:
