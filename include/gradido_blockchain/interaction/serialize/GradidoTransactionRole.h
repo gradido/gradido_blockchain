@@ -15,8 +15,7 @@ namespace gradido {
 			class GradidoTransactionRole : public AbstractRole
 			{
 			public:
-				GradidoTransactionRole(const data::GradidoTransaction& gradidoTransaction) 
-					: mGradidoTransaction(gradidoTransaction), mSigantureMapRole(gradidoTransaction.getSignatureMap()) {}
+				GradidoTransactionRole(const data::GradidoTransaction& gradidoTransaction);
 				~GradidoTransactionRole() {};
 
 				RUM_IMPLEMENTATION

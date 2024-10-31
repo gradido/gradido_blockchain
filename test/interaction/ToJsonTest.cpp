@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "../KeyPairs.h"
 #include "const.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/toJson/Context.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"

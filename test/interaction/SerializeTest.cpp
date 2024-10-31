@@ -2,6 +2,7 @@
 #include "../KeyPairs.h"
 #include "../serializedTransactions.h"
 #include "const.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"

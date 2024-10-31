@@ -41,7 +41,7 @@ namespace gradido {
 					std::shared_ptr<const blockchain::TransactionEntry> transactionEntry
 				);
 				std::pair<Timepoint, GradidoUnit> calculateRedeemedDeferredTransferChange(
-					const blockchain::DeferredRedeemedTransferPair& deferredRedeemingTransferPair
+					const std::pair<std::shared_ptr<const blockchain::TransactionEntry>, std::shared_ptr<const blockchain::TransactionEntry>>& deferredRedeemingTransferPair
 				);
 				const blockchain::Abstract& mBlockchain;
 					

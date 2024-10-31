@@ -8,6 +8,7 @@
 namespace gradido {
 	namespace data {
 		class TransactionBody;
+		class TransferAmount;
 	}
 	namespace interaction {
 		namespace serialize {

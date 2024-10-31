@@ -187,7 +187,7 @@ namespace gradido {
 			}
 
 			std::pair<Timepoint, GradidoUnit> Context::calculateRedeemedDeferredTransferChange(
-				const blockchain::DeferredRedeemedTransferPair& deferredRedeemingTransferPair
+				const std::pair<std::shared_ptr<const blockchain::TransactionEntry>, std::shared_ptr<const blockchain::TransactionEntry>>& deferredRedeemingTransferPair
 			)
 			{
 				auto deferredConfirmedTransaction = deferredRedeemingTransferPair.first->getConfirmedTransaction();

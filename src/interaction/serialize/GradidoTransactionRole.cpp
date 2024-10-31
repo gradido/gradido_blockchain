@@ -6,6 +6,11 @@ namespace gradido {
 	namespace interaction {
 		namespace serialize {
 
+			GradidoTransactionRole::GradidoTransactionRole(const data::GradidoTransaction& gradidoTransaction)
+				: mGradidoTransaction(gradidoTransaction), mSigantureMapRole(gradidoTransaction.getSignatureMap())
+			{
+			}
+
 			GradidoTransactionMessage GradidoTransactionRole::getMessage() const
 			{
 				GradidoTransactionMessage gradidoTransactionMessage;
