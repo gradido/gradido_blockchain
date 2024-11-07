@@ -102,7 +102,7 @@ namespace gradido {
 
 			auto transactionEntry = std::make_shared<TransactionEntry>(confirmedTransaction);
 			pushTransactionEntry(transactionEntry);
-			mTransactionFingerprintTransactionEntry.insert({ confirmedTransaction->getGradidoTransaction()->getFingerprint(), transactionEntry});
+			mTransactionFingerprintTransactionEntry.insert({ *confirmedTransaction->getGradidoTransaction()->getFingerprint(), transactionEntry});
 
 			return true;
 		}
@@ -443,7 +443,7 @@ namespace gradido {
 		{
 			std::lock_guard _lock(mWorkMutex);
 			auto signature = gradidoTransaction->getFingerprint();
-			auto range = mTransactionFingerprintTransactionEntry.equal_range(signature);
+			auto range = mTransactionFingerprintTransactionEntry.equal_range(*signature);
 			for (auto it = range.first; it != range.second; ++it) {
 				if (it->second->getConfirmedTransaction()->getGradidoTransaction()->getFingerprint()->isTheSame(signature)) {
 					return true;
