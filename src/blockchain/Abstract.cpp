@@ -25,13 +25,32 @@ namespace gradido {
 			
 		data::AddressType Abstract::getAddressType(const Filter& filter/* = Filter::ALL_TRANSACTIONS */) const
 		{
+			if (!filter.involvedPublicKey) {
+				throw GradidoNodeInvalidDataException("involvedPublicKey must be set in filter for searching for address type");
+			}
 			// copy filter
 			Filter f(filter);
 			f.transactionType = data::TransactionType::REGISTER_ADDRESS;
 			f.pagination.size = 1;
+			// need be started from back because of moving
+			f.searchDirection = SearchDirection::DESC;
 			auto transactionEntry = findOne(f);
 			if (transactionEntry) {
 				return transactionEntry->getTransactionBody()->getRegisterAddress()->getAddressType();
+			}
+			// check for deferred transfer transaction
+			f.transactionType = data::TransactionType::DEFERRED_TRANSFER;
+			f.filterFunction = [f](const TransactionEntry& entry) -> FilterResult {
+				if (!f.involvedPublicKey->isTheSame(entry.getTransactionBody()->getDeferredTransfer()->getRecipientPublicKey())) {
+					return FilterResult::DISMISS;
+				}
+				else {
+					return FilterResult::USE;
+				}
+			};
+			transactionEntry = findOne(f);
+			if (transactionEntry) {
+				return data::AddressType::DEFERRED_TRANSFER;
 			}
 			return data::AddressType::NONE;
 		}

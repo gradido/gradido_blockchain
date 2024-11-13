@@ -14,7 +14,7 @@ namespace gradido {
 		namespace validate {
 
 			GradidoTransferRole::GradidoTransferRole(std::shared_ptr<const data::GradidoTransfer> gradidoTransfer, std::string_view otherCommunity)
-				: mGradidoTransfer(gradidoTransfer), mOtherCommunity(otherCommunity), mDeferredTransfer(false)
+				: mGradidoTransfer(gradidoTransfer), mOtherCommunity(otherCommunity)
 			{
 				assert(gradidoTransfer);
 				// prepare for signature check
@@ -42,13 +42,6 @@ namespace gradido {
 					}
 				}
 
-				if ((type & Type::PREVIOUS) == Type::PREVIOUS)
-				{
-					if (!senderPreviousConfirmedTransaction) {
-						throw BlockchainOrderException("transfer transaction not allowed as first transaction on blockchain");
-					}
-					validatePrevious(*senderPreviousConfirmedTransaction, findBlockchain(blockchainProvider, communityId, __FUNCTION__));
-				}
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
 					auto senderBlockchain = findBlockchain(blockchainProvider, communityId, __FUNCTION__);
 					std::shared_ptr<blockchain::Abstract> recipientBlockchain;
@@ -71,6 +64,14 @@ namespace gradido {
 						senderBlockchain,
 						recipientBlockchain
 					);
+				}
+
+				if ((type & Type::PREVIOUS) == Type::PREVIOUS)
+				{
+					if (!senderPreviousConfirmedTransaction) {
+						throw BlockchainOrderException("transfer transaction not allowed as first transaction on blockchain");
+					}
+					validatePrevious(*senderPreviousConfirmedTransaction, findBlockchain(blockchainProvider, communityId, __FUNCTION__));
 				}
 			}
 
@@ -126,12 +127,8 @@ namespace gradido {
 					.setMaxTransactionNr(recipientPreviousConfirmedTransaction.getId())
 					.build()
 				);
-				if (data::AddressType::NONE == recipientAddressType && !mDeferredTransfer) {
+				if (data::AddressType::NONE == recipientAddressType) {
 					throw WrongAddressTypeException("recipient address not registered", recipientAddressType, mGradidoTransfer->getRecipient());
-				}
-				// with deferred transfer recipient address is completely new 
-				else if(data::AddressType::NONE != recipientAddressType && mDeferredTransfer) {
-					throw WrongAddressTypeException("deferred transfer address already exist", recipientAddressType, mGradidoTransfer->getRecipient());
 				}
 			}
 		}

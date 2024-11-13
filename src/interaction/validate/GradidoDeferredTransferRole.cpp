@@ -1,4 +1,5 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/interaction/validate/GradidoDeferredTransferRole.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
@@ -54,12 +55,51 @@ namespace gradido {
 						}
 					}
 				}
+				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
+					auto senderBlockchain = findBlockchain(blockchainProvider, communityId, __FUNCTION__);
+					if (!senderPreviousConfirmedTransaction) {
+						throw BlockchainOrderException("deferred transfer transaction not allowed as first transaction on sender blockchain");
+					}
+					assert(senderBlockchain);
+					blockchain::FilterBuilder filterBuilder;
+
+					// check if sender address was registered
+					auto senderAddressType = senderBlockchain->getAddressType(
+						filterBuilder
+						.setInvolvedPublicKey(mDeferredTransfer->getSenderPublicKey())
+						.setMaxTransactionNr(senderPreviousConfirmedTransaction->getId())
+						.build()
+					);
+					if (data::AddressType::NONE == senderAddressType) {
+						throw WrongAddressTypeException(
+							"sender address not registered",
+							senderAddressType,
+							mDeferredTransfer->getSenderPublicKey()
+						);
+					}
+					// check if recipient address was registered
+					auto recipientAddressType = senderBlockchain->getAddressType(
+						filterBuilder
+						.setInvolvedPublicKey(mDeferredTransfer->getRecipientPublicKey())
+						.setMaxTransactionNr(senderPreviousConfirmedTransaction->getId())
+						.build()
+					);
+					// with deferred transfer recipient address is completely new 
+					if (data::AddressType::NONE != recipientAddressType) {
+						throw WrongAddressTypeException("deferred transfer address already exist", recipientAddressType, mDeferredTransfer->getRecipientPublicKey());
+					}
+				}
 				// make copy from GradidoTransfer
 				auto transfer = std::make_shared<data::GradidoTransfer>(mDeferredTransfer->getTransfer());
 				GradidoTransferRole transferRole(transfer, "");
 				transferRole.setConfirmedAt(mConfirmedAt);
 				transferRole.setCreatedAt(mCreatedAt);
-				transferRole.run(type, communityId, blockchainProvider, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
+				// transfer check without account check, account block differ to much
+				auto modifiedType = type;
+				if ((modifiedType & Type::ACCOUNT) == Type::ACCOUNT) {
+					modifiedType = modifiedType - Type::ACCOUNT;
+				}
+				transferRole.run(modifiedType, communityId, blockchainProvider, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
 			}
 
 		}

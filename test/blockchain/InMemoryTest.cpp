@@ -414,8 +414,7 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	// deferred transfer from account 6 containing only creation transaction with 1000 - decay
 	createdAt = mLastCreatedAt + chrono::hours(10);
 	auto timeout = createdAt + chrono::hours(24 * 60);
-	const auto recipientKeyPairIndex = mKeyPairCursor;
-	mKeyPairCursor++;
+	const auto recipientKeyPairIndex = 7;
 	try {
 		ASSERT_TRUE(createGradidoDeferredTransfer(6, recipientKeyPairIndex, 500.10, createdAt, timeout));
 	} catch(GradidoBlockchainException& ex) {
@@ -439,8 +438,7 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	createdAt = mLastConfirmedAt + chrono::hours(36);
 	mLastCreatedAt = createdAt;
 	auto secondTimeout = createdAt + chrono::hours(24 * 30);
-	auto newRecipientKeyPairIndex = mKeyPairCursor;
-	mKeyPairCursor++;
+	auto newRecipientKeyPairIndex = 8;
 	auto balanceWhenSecondsDeferredTransferStart = getBalance(recipientKeyPairIndex, createdAt);
 	ASSERT_EQ(balanceWhenSecondsDeferredTransferStart, GradidoUnit(500.10));
 	try {

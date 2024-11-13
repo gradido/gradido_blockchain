@@ -18,8 +18,6 @@ namespace gradido {
 					std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
 					std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 				);
-				//! call only if this transfer belong to a deferred transfer, changing validation rules a bit
-				inline void setDeferredTransfer() { mDeferredTransfer = true; }
 
 			protected:
 				void validatePrevious(
@@ -38,7 +36,6 @@ namespace gradido {
 
 				std::shared_ptr<const data::GradidoTransfer> mGradidoTransfer;
 				std::string_view mOtherCommunity;
-				bool mDeferredTransfer;
 			};
 		}
 	}

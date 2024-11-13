@@ -11,7 +11,8 @@ namespace gradido {
             COMMUNITY_AUF = 3, // community compensation and environment founds account
             COMMUNITY_PROJECT = 4, // no creations allowed
             SUBACCOUNT = 5, // no creations allowed
-            CRYPTO_ACCOUNT = 6 // user control his keys, no creations
+            CRYPTO_ACCOUNT = 6, // user control his keys, no creations
+            DEFERRED_TRANSFER = 7 // special type, no need for register address
         };
     }
 }
