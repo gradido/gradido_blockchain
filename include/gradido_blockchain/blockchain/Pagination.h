@@ -27,7 +27,7 @@ namespace gradido {
 			//! return entries to skip, only if page > 0, else return 0
 			inline unsigned int skipEntriesCount() const {
 				if (!page) return 0;
-				return page * size;
+				return (page-1) * size;
 			}
 		};
 	}
