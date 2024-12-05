@@ -27,7 +27,9 @@ namespace gradido {
 			//! Special Transfer Transaction with timeout used for Gradido Link
 			DEFERRED_TRANSFER,
 			//! First Transaction in Blockchain
-			COMMUNITY_ROOT
+			COMMUNITY_ROOT,
+			//! redeeming deferred transfer
+			REDEEM_DEFERRED_TRANSFER
 		};
 	}
 }

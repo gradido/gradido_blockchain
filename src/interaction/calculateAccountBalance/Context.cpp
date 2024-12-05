@@ -3,6 +3,7 @@
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/GradidoCreationRole.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/GradidoDeferredTransferRole.h"
+#include "gradido_blockchain/interaction/calculateAccountBalance/GradidoRedeemDeferredTransferRole.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/GradidoTransferRole.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/RegisterAddressRole.h"
 
@@ -162,6 +163,9 @@ namespace gradido {
 				}
 				if (body.isDeferredTransfer()) {
 					return std::make_shared<GradidoDeferredTransferRole>(body);
+				}
+				if (body.isRedeemDeferredTransfer()) {
+					return std::make_shared<GradidoRedeemDeferredTransferRole>(body);
 				}
 				if (body.isTransfer()) {
 					return std::make_shared<GradidoTransferRole>(*body.getTransfer());

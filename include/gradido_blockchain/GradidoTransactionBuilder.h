@@ -60,6 +60,9 @@ namespace gradido {
 		);
 		GradidoTransactionBuilder& setCommunityRoot(std::unique_ptr<data::CommunityRoot> communityRoot);
 
+		GradidoTransactionBuilder& setRedeemDeferredTransfer(data::GradidoTransfer transactionTransfer, uint64_t deferredTransferTransactionNr);
+		GradidoTransactionBuilder& setRedeemDeferredTransfer(std::unique_ptr<data::GradidoRedeemDeferredTransfer> redeemDeferredTransfer);
+
 		//! if not called, time from calling GradidoTransactionBuilder Constructor will be taken
 		//! \param createAt timestamp when transaction where created
 		GradidoTransactionBuilder& setCreatedAt(Timepoint createdAt);

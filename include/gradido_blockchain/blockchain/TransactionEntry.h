@@ -3,6 +3,7 @@
 
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/TransactionType.h"
+#include "../data/EventTriggeredTransaction.h"
 
 #include "date/date.h"
 
@@ -31,6 +32,8 @@ namespace gradido {
 
 			TransactionEntry(data::ConstConfirmedTransactionPtr confirmedTransaction);
 
+			TransactionEntry(std::shared_ptr<data::EventTriggeredTransaction> eventTriggeredTransaction);
+
 			//! \brief init entry object without indices
 			TransactionEntry(
 				uint64_t transactionNr,
@@ -55,12 +58,18 @@ namespace gradido {
 			static std::string getCoinCommunityId(const data::TransactionBody& body);
 			inline data::ConstTransactionBodyPtr getTransactionBody() const { return getConfirmedTransaction()->getGradidoTransaction()->getTransactionBody(); }
 
+			// default transactions
 			inline bool isTransfer() const { return mTransactionType == data::TransactionType::TRANSFER; }
 			inline bool isCreation() const { return mTransactionType == data::TransactionType::CREATION; }
 			inline bool isCommunityFriendsUpdate() const { return mTransactionType == data::TransactionType::COMMUNITY_FRIENDS_UPDATE; }
 			inline bool isRegisterAddress() const { return mTransactionType == data::TransactionType::REGISTER_ADDRESS; }
 			inline bool isDeferredTransfer() const { return mTransactionType == data::TransactionType::DEFERRED_TRANSFER; }
 			inline bool isCommunityRoot() const { return mTransactionType == data::TransactionType::COMMUNITY_ROOT; }
+			inline bool isRedeemDeferredTransfer() const { return mTransactionType == data::TransactionType::REDEEM_DEFERRED_TRANSFER; }
+
+			// event triggered transactions
+			inline bool isDeferredTimeoutReversal() const;
+			inline bool isDeferredRedeemReversal() const;
 
 		protected:
 			uint64_t mTransactionNr;
@@ -71,7 +80,19 @@ namespace gradido {
 			std::string mCoinCommunityId;
 			mutable std::mutex mFastMutex;
 			mutable data::ConstConfirmedTransactionPtr mConfirmedTransaction;
+			mutable std::shared_ptr<data::EventTriggeredTransaction> mEventTriggeredTransaction;
 		};
+
+		bool TransactionEntry::isDeferredTimeoutReversal() const {
+			return mEventTriggeredTransaction && 
+				mEventTriggeredTransaction->getType() == data::EventTriggeredTransactionType::DEFERRED_TIMEOUT_REVERSAL;
+		}
+
+		bool TransactionEntry::isDeferredRedeemReversal() const {
+			return mEventTriggeredTransaction &&
+				mEventTriggeredTransaction->getType() == data::EventTriggeredTransactionType::DEFERRED_REDEEM_REVERSAL;
+		}
+
 
 		typedef std::list<std::shared_ptr<const TransactionEntry>> TransactionEntries;
 		typedef std::pair<std::shared_ptr<const TransactionEntry>, std::shared_ptr<const TransactionEntry>> DeferredRedeemedTransferPair;

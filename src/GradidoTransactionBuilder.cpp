@@ -236,6 +236,30 @@ namespace gradido {
 		return *this;
 	}
 
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setRedeemDeferredTransfer(data::GradidoTransfer transactionTransfer, uint64_t deferredTransferTransactionNr)
+	{
+		checkBuildState(BuildingState::BUILDING_BODY);
+		return setRedeemDeferredTransfer(
+			std::make_unique<data::GradidoRedeemDeferredTransfer>(
+				transactionTransfer,
+				deferredTransferTransactionNr
+			)
+		);
+	}
+
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setRedeemDeferredTransfer(std::unique_ptr<data::GradidoRedeemDeferredTransfer> redeemDeferredTransfer)
+	{
+		checkBuildState(BuildingState::BUILDING_BODY);
+		if (mSpecificTransactionChoosen) {
+			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
+		}
+
+		mBody->mRedeemDeferredTransfer = move(redeemDeferredTransfer);
+
+		mSpecificTransactionChoosen = true;
+		return *this;
+	}
+
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setCreatedAt(Timepoint createdAt) {
 		checkBuildState(BuildingState::BUILDING_BODY);
 		mBody->mCreatedAt = data::Timestamp(createdAt);

@@ -3,6 +3,7 @@
 
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/types.h"
+#include "date/date.h"
 
 namespace gradido {
 	namespace data {

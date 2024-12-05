@@ -11,6 +11,7 @@ namespace gradido {
 			else if (isRegisterAddress()) return data::TransactionType::REGISTER_ADDRESS;
 			else if (isDeferredTransfer()) return data::TransactionType::DEFERRED_TRANSFER;
 			else if (isCommunityRoot()) return data::TransactionType::COMMUNITY_ROOT;
+			else if (isRedeemDeferredTransfer()) return data::TransactionType::REDEEM_DEFERRED_TRANSFER;
 			return data::TransactionType::NONE;
 		}
 
@@ -32,6 +33,9 @@ namespace gradido {
 			if (isTransfer() && other.isTransfer()) {
 				return *mTransfer == *other.mTransfer;
 			}
+			if (isRedeemDeferredTransfer() && other.isRedeemDeferredTransfer()) {
+				return *mRedeemDeferredTransfer == *other.getRedeemDeferredTransfer();
+			}
 			return false;
 		}
 
@@ -42,6 +46,7 @@ namespace gradido {
 			if (isTransfer()) return mTransfer->isInvolved(publicKey);
 			if (isCreation()) return mCreation->isInvolved(publicKey);
 			if (isDeferredTransfer()) return mDeferredTransfer->isInvolved(publicKey);
+			if (isRedeemDeferredTransfer()) return mRedeemDeferredTransfer->isInvolved(publicKey);
 			return false;
 		}
 
@@ -49,6 +54,7 @@ namespace gradido {
 		{
 			if (isTransfer()) { return &mTransfer->getSender(); }
 			else if (isDeferredTransfer()) { return &mDeferredTransfer->getTransfer().getSender(); }
+			else if (isRedeemDeferredTransfer()) { return &mRedeemDeferredTransfer->getTransfer().getSender(); }
 			else if (isCreation()) { return &mCreation->getRecipient(); }
 			return nullptr;
 		}
@@ -61,6 +67,7 @@ namespace gradido {
 			if (isTransfer()) return mTransfer->getInvolvedAddresses();
 			if (isCreation()) return mCreation->getInvolvedAddresses();
 			if (isDeferredTransfer()) return mDeferredTransfer->getInvolvedAddresses();
+			if (isRedeemDeferredTransfer()) return mRedeemDeferredTransfer->getInvolvedAddresses();
 			return {};
 		}
 	}

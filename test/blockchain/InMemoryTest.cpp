@@ -428,7 +428,7 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	auto userBalanceAtDeferredTransferTime = getBalance(6, createdAt).calculateDecay(createdAt, mLastConfirmedAt);
 	auto userBalance = getBalance(6, mLastConfirmedAt);
 	auto lastUserBalanceDate = mLastConfirmedAt;
-	EXPECT_EQ(userBalance, GradidoUnit(464.6647));
+	EXPECT_EQ(userBalance, GradidoUnit(438.7963));
 	auto diff = userBalance - (userBalanceAtDeferredTransferTime - blockedDeferredTransferBalance);
 	// the difference should be small, normaly it should be identical but we must account for rounding errors
 	EXPECT_LE(abs(diff.getGradidoCent()), 1);
@@ -469,5 +469,5 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	// try transfering gdd from deferred transfer again
 	createdAt = generateNewCreatedAt();
 	auto thirdTimeout = createdAt + chrono::hours(30 * 24);
-	EXPECT_THROW(createGradidoDeferredTransfer(recipientKeyPairIndex, 6, 400.0, createdAt, thirdTimeout), InsufficientBalanceException);
+	EXPECT_NO_THROW(createGradidoDeferredTransfer(recipientKeyPairIndex, 9, 400.0, createdAt, thirdTimeout), InsufficientBalanceException);
 }

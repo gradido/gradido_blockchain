@@ -59,6 +59,13 @@ namespace gradido {
 					v.AddMember("timeout", Value(DataTypeConverter::timePointToString(deferredTransfer->getTimeout()).data(), alloc), alloc);
 					d.AddMember("deferredTransfer", v, alloc);
 				}
+				else if (mBody.isRedeemDeferredTransfer()) {
+					auto redeemDeferredTransfer = mBody.getRedeemDeferredTransfer();
+					Value v(kObjectType);
+					v.AddMember("transfer", gradidoTransfer(redeemDeferredTransfer->getTransfer(), d, rootDocument), alloc);
+					v.AddMember("deferredTransferTransactionNr", redeemDeferredTransfer->getDeferredTransferTransactionNr(), alloc);
+					d.AddMember("redeemDeferredTransfer", v, alloc);
+				}
 				else if (mBody.isCommunityRoot()) {
 					auto communityRoot = mBody.getCommunityRoot();
 					Value v(kObjectType);

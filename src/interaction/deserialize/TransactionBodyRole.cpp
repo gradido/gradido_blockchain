@@ -83,6 +83,20 @@ namespace gradido {
 						TimestampSecondsRole(deferredTransferMessage["timeout"_f].value()).data()
 					);
 				}
+				else if (bodyMessage["redeem_deferred_transfer"_f].has_value()) {
+					auto deferredTransferMessage = bodyMessage["redeem_deferred_transfer"_f].value();
+					const char* exceptionMessage = "missing member on deserialize redeem deferred transfer transaction";
+					if (!deferredTransferMessage["transfer"_f].has_value()) {
+						throw MissingMemberException(exceptionMessage, "transfer");
+					}
+					if (!deferredTransferMessage["deferredTransferTransactionNr"_f].has_value()) {
+						throw MissingMemberException(exceptionMessage, "deferredTransferTransactionNr");
+					}
+					mTransactionBody->mRedeemDeferredTransfer = make_shared<data::GradidoRedeemDeferredTransfer>(
+						*GradidoTransferRole(deferredTransferMessage["transfer"_f].value()).run().get(),
+						deferredTransferMessage["deferredTransferTransactionNr"_f].value()
+					);
+				}
 				else if (bodyMessage["community_root"_f].has_value()) {
 					auto communityRootMessage = bodyMessage["community_root"_f].value();
 					const char* exceptionMessage = "missing member on deserialize community root transaction";

@@ -72,6 +72,11 @@ namespace gradido {
                 message_field<"timeout", 2, TimestampSecondsMessage>
             >;
 
+            using GradidoRedeemDeferredTransferMessage = message<
+                message_field<"transfer", 1, GradidoTransferMessage>,
+                uint64_field<"deferredTransferTransactionNr", 2>
+            >;
+
             // register_address.proto
             using RegisterAddressMessage = message <
                 bytes_field<"user_pubkey", 1>,// singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
@@ -96,7 +101,8 @@ namespace gradido {
                 message_field<"community_friends_update", 8, CommunityFriendsUpdateMessage>,
                 message_field<"register_address", 9, RegisterAddressMessage>,
                 message_field<"deferred_transfer", 10, GradidoDeferredTransferMessage>,
-                message_field<"community_root", 11, CommunityRootMessage>
+                message_field<"community_root", 11, CommunityRootMessage>,
+                message_field<"redeem_deferred_transfer", 12, GradidoRedeemDeferredTransferMessage>
             >;
 
             // gradido_transaction.proto

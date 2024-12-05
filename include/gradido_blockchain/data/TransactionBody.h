@@ -6,6 +6,7 @@
 #include "RegisterAddress.h"
 #include "CommunityFriendsUpdate.h"
 #include "CommunityRoot.h"
+#include "GradidoRedeemDeferredTransfer.h"
 #include "Timestamp.h"
 
 #include "CrossGroupType.h"
@@ -41,6 +42,7 @@ namespace gradido {
 			inline bool isRegisterAddress() const { return static_cast<bool>(mRegisterAddress); }
 			inline bool isDeferredTransfer() const { return static_cast<bool>(mDeferredTransfer); }
 			inline bool isCommunityRoot() const { return static_cast<bool>(mCommunityRoot); }
+			inline bool isRedeemDeferredTransfer() const { return static_cast<bool>(mRedeemDeferredTransfer); }
 			TransactionType getTransactionType() const;
 
 			bool isPairing(const TransactionBody& other) const;
@@ -61,6 +63,7 @@ namespace gradido {
 			inline std::shared_ptr<const RegisterAddress> getRegisterAddress() const { return mRegisterAddress; }
 			inline std::shared_ptr<const GradidoDeferredTransfer> getDeferredTransfer() const { return mDeferredTransfer; }
 			inline std::shared_ptr<const CommunityRoot> getCommunityRoot() const { return mCommunityRoot; }
+			inline std::shared_ptr<const GradidoRedeemDeferredTransfer> getRedeemDeferredTransfer() const { return mRedeemDeferredTransfer; }
 
 		protected:
 			std::string								mMemo;
@@ -75,6 +78,7 @@ namespace gradido {
 			std::shared_ptr<RegisterAddress>        mRegisterAddress;
 			std::shared_ptr<GradidoDeferredTransfer> mDeferredTransfer;
 			std::shared_ptr<CommunityRoot>          mCommunityRoot;
+			std::shared_ptr<GradidoRedeemDeferredTransfer> mRedeemDeferredTransfer;
 
 		};
 

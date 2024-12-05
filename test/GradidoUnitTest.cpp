@@ -57,3 +57,14 @@ TEST(GradidoUnitTest, TestWithManyDifferentDuration)
 		prevValue = decayed;
 	}
 }
+
+TEST(GradidoUnitTest, TestReverseDecay)
+{
+	const int64_t startValue = 1000000;
+	for (int i = 1; i < 31556952 * 2; i += 32) {
+		auto valueWithDecay = GradidoUnit::calculateCompoundInterest(startValue, i);
+		auto decay = GradidoUnit::calculateDecay(valueWithDecay, i);
+		EXPECT_LE(abs(startValue - GradidoUnit::calculateDecay(valueWithDecay, i)), 1);
+		
+	}
+}

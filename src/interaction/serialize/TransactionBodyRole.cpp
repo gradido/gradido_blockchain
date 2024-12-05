@@ -107,6 +107,23 @@ namespace gradido {
 						}, TimestampSecondsMessage{deferredTransfer->getTimeout().getSeconds()}
 					};
 				}
+				else if (mBody.isRedeemDeferredTransfer()) {
+					auto redeemDeferredTransfer = mBody.getRedeemDeferredTransfer();
+					auto& transfer = mBody.getRedeemDeferredTransfer()->getTransfer();
+					auto& amount = transfer.getSender();
+					if (!amount.getPubkey()) {
+						throw MissingMemberException("missing member by serializing Gradido Redeem Deferred Transfer Transaction", "transfer.sender.pubkey");
+					}
+					if (!transfer.getRecipient()) {
+						throw MissingMemberException("missing member by serializing Gradido Redeem Deferred Transfer Transaction", "transfer.recipient");
+					}
+					message["redeem_deferred_transfer"_f] = GradidoRedeemDeferredTransferMessage{
+						GradidoTransferMessage{
+							createTransferAmountMessage(amount),
+							transfer.getRecipient()->copyAsVector()
+						}, redeemDeferredTransfer->getDeferredTransferTransactionNr()
+					};
+				}
 				else if (mBody.isCommunityFriendsUpdate()) {
 					message["community_friends_update"_f] = CommunityFriendsUpdateMessage{
 						mBody.getCommunityFriendsUpdate()->getColorFusion()
