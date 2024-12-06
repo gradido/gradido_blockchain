@@ -34,6 +34,9 @@ namespace gradido {
 					uint64_t maxTransactionNr = 0, // last transaction nr to include
 					std::string_view coinCommunityId = std::string_view() // for calculate only a specific coin color
 				);
+
+				//! calculate balances for a asc list of transactions belongig to pubkey
+				std::vector<GradidoUnit> run(const blockchain::TransactionEntries& transactions, memory::ConstBlockPtr publicKey);
 					
 			protected:	
 				std::shared_ptr<AbstractRole> getRole(const data::TransactionBody& body);

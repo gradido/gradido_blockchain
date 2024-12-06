@@ -6,6 +6,10 @@
 #include "gradido_blockchain/interaction/calculateAccountBalance/GradidoTransferRole.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/RegisterAddressRole.h"
 
+#include "magic_enum/magic_enum.hpp"
+
+using namespace magic_enum;
+
 namespace gradido {
 	using namespace blockchain;
 
@@ -153,6 +157,58 @@ namespace gradido {
 				gdd = gdd.calculateDecay(lastDate, balanceDate);
 
 				return gdd;
+			}
+
+			std::vector<GradidoUnit> Context::run(const blockchain::TransactionEntries& transactions, memory::ConstBlockPtr publicKey)
+			{
+				std::vector<GradidoUnit> result;
+				bool bFirst = true;
+				GradidoUnit balance;
+				Timepoint previousBalanceDate;
+
+				auto firstConfirmedTransaction = transactions.front()->getConfirmedTransaction();
+				auto lastConfirmedTransaction = transactions.back()->getConfirmedTransaction();
+				TimepointInterval dateRange(
+					firstConfirmedTransaction->getConfirmedAt(),
+					lastConfirmedTransaction->getConfirmedAt()
+				);
+
+				// deferred transfers
+				// check for time outed deferred transfers which will be automatic booked back
+				// assume result sorted asc
+				auto timeoutedDeferredTransfers = mBlockchain.findTimeoutedDeferredTransfersInRange(
+					publicKey, dateRange, lastConfirmedTransaction->getId()
+				);
+
+				// check for redeemed deferred Transfer in Range and book back the rest blocked gdd for decay
+				auto deferredRedeemingTransferPairs = mBlockchain.findRedeemedDeferredTransfersInRange(
+					publicKey, dateRange, lastConfirmedTransaction->getId()
+				);
+				result.reserve(transactions.size() + timeoutedDeferredTransfers.size() + deferredRedeemingTransferPairs.size());
+
+				for (auto& transaction : transactions) {
+					auto confirmed = transaction->getConfirmedTransaction();
+					if (bFirst) {
+						balance = run(publicKey, firstConfirmedTransaction->getConfirmedAt(), firstConfirmedTransaction->getId());
+						bFirst = false;
+					}
+					else {
+						auto role = getRole(*transaction->getTransactionBody());
+						if (!role) {
+							throw GradidoUnhandledEnum(
+								"transaction type not valid for balance calculation",
+								"TransactionType",
+								enum_name(transaction->getTransactionType()).data()
+							);
+						}
+						balance = balance.calculateDecay(previousBalanceDate, confirmed->getConfirmedAt());
+						balance += role->getAmountAdded(publicKey);
+						balance -= role->getAmountCost(publicKey);
+					}
+					previousBalanceDate = confirmed->getConfirmedAt();
+					result.push_back(balance);
+				}
+				return result;
 			}
 
 			std::shared_ptr<AbstractRole> Context::getRole(const data::TransactionBody& body)
