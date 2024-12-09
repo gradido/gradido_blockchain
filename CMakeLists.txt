@@ -66,6 +66,10 @@ FILE(GLOB TINF "dependencies/tinf/src/*.c" "dependencies/tinf/src/*.h")
 FIlE(GLOB THREADING "include/gradido_blockchain/threading/*.h" "src/threading/*.cpp")
 FILE(GLOB BLOCKCHAIN "include/gradido_blockchain/blockchain/*.h" "src/blockchain/*.cpp")
 
+FILE(GLOB INTERACTION_ADD_GRADIDO_TRANSACTION 
+	"include/gradido_blockchain/interaction/addGradidoTransaction/*.h" 
+	"src/interaction/addGradidoTransaction/*.cpp"
+)
 FILE(GLOB INTERACTION_CALCULATE_ACCOUNT_BALANCE 
 	"include/gradido_blockchain/interaction/calculateAccountBalance/*.h" 
 	"src/interaction/calculateAccountBalance/*.cpp"
@@ -103,6 +107,7 @@ SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${MODEL_IOTA} 
 	${TINF} 
 	${THREADING}
+	${INTERACTION_ADD_GRADIDO_TRANSACTION}
 	${INTERACTION_CALCULATE_ACCOUNT_BALANCE}
 	${INTERACTION_CALCULATE_CREATION_SUM}
 	${INTERACTION_DESERIALIZE}
@@ -123,6 +128,7 @@ if(MSVC)
 	source_group("memory" FILES ${MEMORY})
 	source_group("tinf" FILES ${TINF})
 	source_group("threading" FILES ${THREADING})	
+	source_group("interaction\\addGradidoTransaction" FILES ${INTERACTION_ADD_GRADIDO_TRANSACTION})
 	source_group("interaction\\calculateAccountBalance" FILES ${INTERACTION_CALCULATE_ACCOUNT_BALANCE})
 	source_group("interaction\\calculateCreationSum" FILES ${INTERACTION_CALCULATE_CREATION_SUM})
 	source_group("interaction\\deserialize" FILES ${INTERACTION_DESERIALIZE})
