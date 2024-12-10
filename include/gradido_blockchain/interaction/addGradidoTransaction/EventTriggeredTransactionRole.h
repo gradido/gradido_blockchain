@@ -1,0 +1,12 @@
+#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_EVENT_TRIGGERED_TRANSACTION_ROLE_H
+#define __GRADIDO_BLOCKCHAIN_INTERACTION_EVENT_TRIGGERED_TRANSACTION_ROLE_H
+
+
+namespace gradido {
+    namespace interaction {
+        namespace addGradidoTransaction {
+        }
+    }
+}
+
+#endif //__GRADIDO_BLOCKCHAIN_INTERACTION_EVENT_TRIGGERED_TRANSACTION_ROLE_H

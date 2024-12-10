@@ -1,13 +1,12 @@
-#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_DEFERRED_TRANSFER_TRANSACTION_ROLE_H
-#define __GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_DEFERRED_TRANSFER_TRANSACTION_ROLE_H
+#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_REDEEM_DEFERRED_TRANSFER_TRANSACTION_ROLE_H
+#define __GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_REDEEM_DEFERRED_TRANSFER_TRANSACTION_ROLE_H
 
 #include "TransactionBodyRole.h"
-#include "gradido_blockchain/data/EventTriggeredTransaction.h"
 
 namespace gradido {
     namespace interaction {
         namespace addGradidoTransaction {
-            class GRADIDOBLOCKCHAIN_EXPORT DeferredTransferTransactionRole : public TransactionBodyRole
+            class GRADIDOBLOCKCHAIN_EXPORT RedeemDeferredTransferTransactionRole : public TransactionBodyRole
             {
             public:
                 using TransactionBodyRole::TransactionBodyRole;
@@ -21,4 +20,4 @@ namespace gradido {
     }
 }
 
-#endif //__GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_DEFERRED_TRANSFER_TRANSACTION_ROLE_H
+#endif //__GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_REDEEM_DEFERRED_TRANSFER_TRANSACTION_ROLE_H

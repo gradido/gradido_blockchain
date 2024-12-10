@@ -1,81 +1,96 @@
 #include "gradido_blockchain/interaction/addGradidoTransaction/Context.h"
-#include "gradido_blockchain/interaction/validate/Context.h"
+
 #include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/interaction/addGradidoTransaction/CommunityRootTransactionRole.h"
+#include "gradido_blockchain/interaction/addGradidoTransaction/CreationTransactionRole.h"
+#include "gradido_blockchain/interaction/addGradidoTransaction/DeferredTransferTransactionRole.h"
+#include "gradido_blockchain/interaction/addGradidoTransaction/RedeemDeferredTransferTransactionRole.h"
+#include "gradido_blockchain/interaction/addGradidoTransaction/RegisterAddressRole.h"
+#include "gradido_blockchain/interaction/addGradidoTransaction/TransactionBodyRole.h"
+#include "gradido_blockchain/interaction/addGradidoTransaction/TransferTransactionRole.h"
+#include "gradido_blockchain/interaction/validate/Context.h"
+
+#include "magic_enum/magic_enum.hpp"
+
+using namespace magic_enum;
 
 namespace gradido {
 	using namespace data;
+	using namespace blockchain;
 
     namespace interaction {
         namespace addGradidoTransaction {
 
-            bool Context::run(std::shared_ptr<const data::GradidoTransaction> gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt)
+			std::shared_ptr<AbstractRole> Context::createRole(
+				std::shared_ptr<data::GradidoTransaction> gradidoTransaction,
+				memory::ConstBlockPtr messageId,
+				Timepoint confirmedAt
+			) const {
+				auto body = gradidoTransaction->getTransactionBody();
+				if (body->isTransfer()) {
+					return std::make_shared<TransferTransactionRole>(gradidoTransaction, messageId, confirmedAt);
+				} else if (body->isCreation()) {
+					return std::make_shared<CreationTransactionRole>(gradidoTransaction, messageId, confirmedAt);
+				} else if (body->isRegisterAddress()) {
+					return std::make_shared<RegisterAddressRole>(gradidoTransaction, messageId, confirmedAt);
+				} else if (body->isDeferredTransfer()) {
+					return std::make_shared<DeferredTransferTransactionRole>(gradidoTransaction, messageId, confirmedAt);
+				} else if (body->isRedeemDeferredTransfer()) {
+					return std::make_shared<RedeemDeferredTransferTransactionRole>(gradidoTransaction, messageId, confirmedAt);
+				} else if (body->isCommunityRoot()) {
+					return std::make_shared<CommunityRootTransactionRole>(gradidoTransaction, messageId, confirmedAt);
+				}
+				throw GradidoUnhandledEnum(
+					"adding transaction of this type currently not implemented",
+					"TransactionType",
+					enum_name(body->getTransactionType()).data()
+				);
+			}
+
+			ResultType Context::run(std::shared_ptr<AbstractRole> role)
             {
 				auto provider = mBlockchain->getProvider();
 				auto communityId = mBlockchain->getCommunityId();
 
-				interaction::validate::Context validateGradidoTransaction(*gradidoTransaction);
+				interaction::validate::Context validateGradidoTransaction(*role->getGradidoTransaction());
 				validateGradidoTransaction.run(interaction::validate::Type::SINGLE, communityId, provider);
 				
-				if (isTransactionExist(gradidoTransaction)) {
-					return false;
+				if (isExisting(role)) {
+					return ResultType::ALREADY_EXIST;
 				}
+
 				uint64_t id = 1;
-				auto lastTransaction = findOne(Filter::LAST_TRANSACTION);
+				auto lastTransaction = mBlockchain->findOne(Filter::LAST_TRANSACTION);
 				if (lastTransaction) {
 					id = lastTransaction->getTransactionNr() + 1;
 				}
-				else {
-					mStartDate = gradidoTransaction->getTransactionBody()->getCreatedAt();
-				}
-
-				auto serializedTransaction = gradidoTransaction->getSerializedTransaction();
-				auto body = gradidoTransaction->getTransactionBody();
-				if (!messageId) {
-					// fake message id simply with taking hash from serialized transaction,
-					// iota message id will normally calculated with same algorithmus but with additional data 
-					messageId = std::make_shared<memory::Block>(serializedTransaction->calculateHash());
-				}
-
-				interaction::calculateAccountBalance::Context finalBalanceCalculate(*this);
-				auto finalBalance = finalBalanceCalculate.run(gradidoTransaction, confirmedAt, id);
-
+				
 				data::ConstConfirmedTransactionPtr lastConfirmedTransaction;
 				if (lastTransaction) {
 					lastConfirmedTransaction = lastTransaction->getConfirmedTransaction();
-					if (confirmedAt < lastConfirmedTransaction->getConfirmedAt().getAsTimepoint()) {
-						throw BlockchainOrderException("previous transaction is younger");
+					if (role->getConfirmedAt() < lastConfirmedTransaction->getConfirmedAt().getAsTimepoint()) {
+						return ResultType::INVALID_PREVIOUS_TRANSACTION_IS_YOUNGER;
 					}
 				}
 
-				auto confirmedTransaction = std::make_shared<data::ConfirmedTransaction>(
-					id,
-					gradidoTransaction,
-					confirmedAt,
-					GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING,
-					messageId,
-					finalBalance,
-					lastConfirmedTransaction
-				);
+				auto confirmedTransaction = role->createConfirmedTransaction(id, lastConfirmedTransaction, *mBlockchain);
+				role->runPreValidate(confirmedTransaction, mBlockchain);
 
 				// important! validation
 				interaction::validate::Context validate(*confirmedTransaction);
-				interaction::validate::Type level =
-					// interaction::validate::Type::SINGLE | // already checked
-					interaction::validate::Type::PREVIOUS |
-					interaction::validate::Type::MONTH_RANGE |
-					interaction::validate::Type::ACCOUNT
-					;
-				if (body->getType() != data::CrossGroupType::LOCAL) {
-					level = level | interaction::validate::Type::PAIRED;
+				auto type = role->getValidationType();
+				if (lastConfirmedTransaction) {
+					type = type | interaction::validate::Type::PREVIOUS;
 				}
+				validate.setSenderPreviousConfirmedTransaction(lastConfirmedTransaction);
 				// throw if some error occure
-				validate.run(level, getCommunityId(), provider);
+				validate.run(type, communityId, provider);
 
-				auto transactionEntry = std::make_shared<TransactionEntry>(confirmedTransaction);
-				pushTransactionEntry(transactionEntry);
-				mTransactionFingerprintTransactionEntry.insert({ *confirmedTransaction->getGradidoTransaction()->getFingerprint(), transactionEntry });
+				addToBlockchain(confirmedTransaction);
+				role->runPastAddToBlockchain(confirmedTransaction, mBlockchain);
+				finalize();
 
-				return true;
+				return ResultType::ADDED;
             }
         }
     }

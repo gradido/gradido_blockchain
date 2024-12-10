@@ -6,6 +6,7 @@
 namespace gradido {
 	namespace blockchain {
 		class Abstract;
+		class TransactionEntry;
 	}
 	namespace interaction {
 		namespace calculateAccountBalance {

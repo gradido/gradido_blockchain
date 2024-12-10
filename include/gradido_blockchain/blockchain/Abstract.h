@@ -28,7 +28,10 @@ namespace gradido {
 			//! throw if gradido transaction isn't valid
 			//! \return false if transaction already exist
 			virtual bool addGradidoTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt) = 0;
-			virtual void 
+			virtual bool addEventTriggeredTransaction(std::shared_ptr<const data::EventTriggeredTransaction> eventTriggeredTransaction) = 0;
+			//! add eventTriggeredTransaction which will be later created as GradidoTransaction
+			virtual void addPendingTransaction(std::shared_ptr<const data::EventTriggeredTransaction> eventTriggeredTransaction) = 0;
+			virtual void removePendingTransaction(uint64_t transactioNr) = 0;
 
 			// main search function, do all the work, reference from other functions
 			virtual TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const = 0;

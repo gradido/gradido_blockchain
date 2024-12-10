@@ -9,23 +9,30 @@ namespace gradido {
         class GRADIDOBLOCKCHAIN_EXPORT EventTriggeredTransaction 
         {
         public:
-            EventTriggeredTransaction() : mTransactionNr(0), mType(EventTriggeredTransactionType::NONE) {}
-            EventTriggeredTransaction(uint64_t transactionNr, TimestampSeconds targetDate, EventTriggeredTransactionType type)
-                : mTransactionNr(transactionNr), mTargetDate(targetDate), mType(type) {}
+            EventTriggeredTransaction() : mTransactionNr(0), mLinkedTransactionNr(0), mType(EventTriggeredTransactionType::NONE) {}
+            EventTriggeredTransaction(
+                uint64_t linkedTransactionNr,
+                TimestampSeconds targetDate,
+                EventTriggeredTransactionType type
+            ) : mTransactionNr(0), mLinkedTransactionNr(linkedTransactionNr), mTargetDate(targetDate), mType(type) {}
 
             virtual ~EventTriggeredTransaction() {}
 
             inline uint64_t getId() const { return mTransactionNr; }
+            inline uint64_t getLinkedTransactionId() const { return mLinkedTransactionNr; }
             inline EventTriggeredTransactionType getType() const { return mType; }
             inline TimestampSeconds getTargetDate() const { return mTargetDate; }
+            inline void setTransactionNr(uint64_t transactionNr) { mTransactionNr = transactionNr; }
+
         protected:
-            //! main index
+            // own transaction nr
             uint64_t mTransactionNr;
+            //! main index
+            uint64_t mLinkedTransactionNr;
             //! date on which this trigger takes effect
             TimestampSeconds mTargetDate;
             //! which type of event
-            EventTriggeredTransactionType mType;
-            
+            EventTriggeredTransactionType mType;            
         };
     }
 }

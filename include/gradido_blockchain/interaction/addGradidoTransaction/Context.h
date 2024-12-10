@@ -1,32 +1,45 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_CONTEXT_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_CONTEXT_H
 
-#include "gradido_blockchain/export.h"
-#include "gradido_blockchain/types.h"
-#include "gradido_blockchain/memory/Block.h"
-
-// #include <memory>
+#include "AbstractRole.h"
+#include "ResultType.h"
 
 namespace gradido {
     namespace blockchain {
         class Abstract;
     }
-    namespace data {
-        class GradidoTransaction;
-    }
     namespace interaction {
-        namespace addGradidoTransaction {
+        namespace addGradidoTransaction {            
+
             class GRADIDOBLOCKCHAIN_EXPORT Context 
             {
             public:
-                Context(std::shared_ptr<const blockchain::Abstract> blockchain)
+                Context(std::shared_ptr<blockchain::Abstract> blockchain)
                     : mBlockchain(blockchain) {}
 
                 virtual ~Context() {}
-                bool run(std::shared_ptr<const data::GradidoTransaction> gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt);
+
+                //! can be overloaded for using custom roles
+                virtual std::shared_ptr<AbstractRole> createRole(
+                    std::shared_ptr<data::GradidoTransaction> gradidoTransaction,
+                    memory::ConstBlockPtr messageId,
+                    Timepoint confirmedAt
+                ) const;
+
+                ResultType run(std::shared_ptr<AbstractRole> role);
+
+                //! check if transaction already exist in blockchain
+                //! \return false if transaction not exist
+                virtual bool isExisting(std::shared_ptr<const AbstractRole> role) const = 0;               
+
+                //! finally, add transaction to blockchain
+                virtual void addToBlockchain(std::shared_ptr<const data::ConfirmedTransaction> confirmedTransaction) = 0;
+
+                //! run after addToBlockchain and after call to AbstractRole::runPastAddToBlockchain
+                virtual void finalize() {};
                 
             protected:
-                std::shared_ptr<const blockchain::Abstract> mBlockchain;
+                std::shared_ptr<blockchain::Abstract> mBlockchain;
             };
         }
     }
