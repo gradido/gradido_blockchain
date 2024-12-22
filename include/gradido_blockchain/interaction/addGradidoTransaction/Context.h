@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_CONTEXT_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_CONTEXT_H
 
-#include "AbstractRole.h"
+#include "EventTriggeredTransactionRole.h"
 #include "ResultType.h"
 
 namespace gradido {
@@ -24,6 +24,11 @@ namespace gradido {
                     std::shared_ptr<data::GradidoTransaction> gradidoTransaction,
                     memory::ConstBlockPtr messageId,
                     Timepoint confirmedAt
+                ) const;
+
+                //! can be overloaded for using custom roles
+                virtual std::shared_ptr<AbstractRole> createRole(
+                    std::shared_ptr<data::EventTriggeredTransaction> eventTriggeredTransaction
                 ) const;
 
                 ResultType run(std::shared_ptr<AbstractRole> role);

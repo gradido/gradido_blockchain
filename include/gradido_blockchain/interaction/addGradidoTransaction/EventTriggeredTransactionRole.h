@@ -4,6 +4,9 @@
 #include "AbstractRole.h"
 
 namespace gradido {
+    namespace data {
+        class EventTriggeredTransaction;
+    }
     namespace interaction {
         namespace addGradidoTransaction {
             class GRADIDOBLOCKCHAIN_EXPORT EventTriggeredTransactionRole : public AbstractRole

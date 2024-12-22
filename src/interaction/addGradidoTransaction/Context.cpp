@@ -47,6 +47,17 @@ namespace gradido {
 				);
 			}
 
+			std::shared_ptr<AbstractRole> Context::createRole(
+				std::shared_ptr<data::EventTriggeredTransaction> eventTriggeredTransaction,
+				memory::ConstBlockPtr messageId,
+				Timepoint confirmedAt
+			) const {
+				switch (eventTriggeredTransaction->getType()) {
+
+				}
+			}
+
+
 			ResultType Context::run(std::shared_ptr<AbstractRole> role)
             {
 				auto provider = mBlockchain->getProvider();

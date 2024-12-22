@@ -14,8 +14,8 @@ namespace gradido {
         class GRADIDOBLOCKCHAIN_EXPORT GradidoRedeemDeferredTransfer
         {
         public:
-            GradidoRedeemDeferredTransfer(const GradidoTransfer& transfer, uint64_t deferredTransferTransactionNr)
-                : mTransfer(transfer), mDeferredTransferTransactionNr(deferredTransferTransactionNr) {}
+            GradidoRedeemDeferredTransfer(uint64_t deferredTransferTransactionNr, const GradidoTransfer& transfer)
+                : mDeferredTransferTransactionNr(deferredTransferTransactionNr), mTransfer(transfer) {}
             ~GradidoRedeemDeferredTransfer() {}
 
             inline bool operator==(const GradidoRedeemDeferredTransfer& other) const {
@@ -27,12 +27,12 @@ namespace gradido {
             inline memory::ConstBlockPtr getSenderPublicKey() const { return mTransfer.getSender().getPubkey(); }
             inline memory::ConstBlockPtr getRecipientPublicKey() const { return mTransfer.getRecipient(); }
 
-            inline const GradidoTransfer& getTransfer() const { return mTransfer; }
             inline uint64_t getDeferredTransferTransactionNr() const { return mDeferredTransferTransactionNr; }
+            inline const GradidoTransfer& getTransfer() const { return mTransfer; }
 
         protected:
-            GradidoTransfer mTransfer;
             uint64_t mDeferredTransferTransactionNr;
+            GradidoTransfer mTransfer;            
         };
     }
 }

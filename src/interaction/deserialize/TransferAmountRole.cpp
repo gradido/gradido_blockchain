@@ -12,7 +12,7 @@ namespace gradido {
                 }
                 mTransferAmount = std::make_unique<data::TransferAmount>(
                     std::make_shared<memory::Block>(transferAmount["pubkey"_f].value()),
-                    transferAmount["amount"_f].value_or("0"),
+                    transferAmount["amount"_f].value_or(0),
                     transferAmount["community_id"_f].value_or("")
                 );
             }

@@ -5,7 +5,9 @@
 #include "protopuf/message.h"
 
 #include "gradido_blockchain/data/AddressType.h"
+#include "gradido_blockchain/data/BalanceOwner.h"
 #include "gradido_blockchain/data/CrossGroupType.h"
+#include "gradido_blockchain/data/MemoKeyType.h"
 #include "gradido_blockchain/memory/VectorCacheAllocator.h"
 
 using namespace pp;
@@ -17,6 +19,16 @@ namespace gradido {
         namespace serialize {
 
             //  ----------------  basic_types.proto -----------------------------------
+            using AccountBalanceMessage = message<
+                enum_field <"balance_owner", 1, data::BalanceOwner>,
+                int64_field<"balance", 2>
+            > ;
+
+            using EncryptedMemoMessage = message<
+                enum_field<"type", 1, data::MemoKeyType>,
+                bytes_field<"memo", 2>
+            >;
+
             using SignaturePairMessage = message<
                 bytes_field<"pubkey", 1>,// singular, vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
                 bytes_field<"signature", 2>//, singular, vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>
@@ -37,7 +49,7 @@ namespace gradido {
 
             using TransferAmountMessage = message<
                 bytes_field<"pubkey", 1>,// singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
-                string_field<"amount", 2>,// singular, std::vector<StringCachedAlloc>>,
+                int64_field<"amount", 2>,// singular, std::vector<StringCachedAlloc>>,
                 string_field<"community_id", 3>//, singular, std::vector<StringCachedAlloc>>
             >;
 
@@ -73,8 +85,12 @@ namespace gradido {
             >;
 
             using GradidoRedeemDeferredTransferMessage = message<
-                message_field<"transfer", 1, GradidoTransferMessage>,
-                uint64_field<"deferred_tansfer_transaction_nr", 2>
+                uint64_field<"deferred_tansfer_transaction_nr", 1>,
+                message_field<"transfer", 2, GradidoTransferMessage>
+            >;
+
+            using GradidoTimeoutDeferredTransferMessage = message<
+                uint64_field<"deferred_tansfer_transaction_nr", 1>
             >;
 
             // register_address.proto
@@ -88,7 +104,7 @@ namespace gradido {
 
             // transaction_body.proto
             using TransactionBodyMessage = message<
-                string_field<"memo", 1>,// singular, std::vector<StringCachedAlloc>>,
+                message_field<"memos", 1, EncryptedMemoMessage, repeated>,// singular, std::vector<StringCachedAlloc>>,
                 message_field<"created_at", 2, TimestampMessage>,
                 string_field<"version_number", 3>,// singular, std::vector<StringCachedAlloc>>,
                 enum_field<"type", 4, data::CrossGroupType>,
@@ -102,7 +118,8 @@ namespace gradido {
                 message_field<"register_address", 9, RegisterAddressMessage>,
                 message_field<"deferred_transfer", 10, GradidoDeferredTransferMessage>,
                 message_field<"community_root", 11, CommunityRootMessage>,
-                message_field<"redeem_deferred_transfer", 12, GradidoRedeemDeferredTransferMessage>
+                message_field<"redeem_deferred_transfer", 12, GradidoRedeemDeferredTransferMessage>,
+                message_field<"timeout_deferred_transfer", 13, GradidoTimeoutDeferredTransferMessage>
             >;
 
             // gradido_transaction.proto
@@ -120,7 +137,7 @@ namespace gradido {
                 string_field<"version_number", 4>,// singular, std::vector<StringCachedAlloc>>,
                 bytes_field<"running_hash", 5>,// singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
                 bytes_field<"message_id", 6>,// singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
-                string_field<"account_balance", 7>//, singular, std::vector<StringCachedAlloc>>
+                message_field<"account_balance", 7, AccountBalanceMessage, repeated>//, singular, std::vector<StringCachedAlloc>>
             >;
         }
     }

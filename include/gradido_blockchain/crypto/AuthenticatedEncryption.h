@@ -20,25 +20,25 @@ class GRADIDOBLOCKCHAIN_EXPORT AuthenticatedEncryption
 {
 public:
 	AuthenticatedEncryption();
-	AuthenticatedEncryption(KeyPairEd25519* ed25519KeyPair);
+	AuthenticatedEncryption(const KeyPairEd25519& ed25519KeyPair);
 	AuthenticatedEncryption(memory::ConstBlockPtr privateKeyx25519);
 	AuthenticatedEncryption(const std::array<unsigned char, X25519_PUBLIC_KEY_SIZE>& pubkeyx25519);
 	~AuthenticatedEncryption();
 
-	memory::Block encrypt(const unsigned char* message, size_t messageSize, AuthenticatedEncryption* recipiantKey);
-	inline memory::Block encrypt(const memory::Block& message, AuthenticatedEncryption* recipiantKey) {
+	memory::Block encrypt(const unsigned char* message, size_t messageSize, const AuthenticatedEncryption& recipiantKey) const;
+	inline memory::Block encrypt(const memory::Block& message, const AuthenticatedEncryption& recipiantKey) const {
 		return encrypt(message.data(), message.size(), recipiantKey);
 	}
-	inline memory::Block encrypt(const std::string& message, AuthenticatedEncryption* recipiantKey) {
+	inline memory::Block encrypt(const std::string& message, const AuthenticatedEncryption& recipiantKey) const {
 		return encrypt((const unsigned char*)message.data(), message.size(), recipiantKey);
 	}
 
 	memory::Block encrypt(const memory::Block& message, int precalculatedSharedSecretIndex);
-	memory::Block decrypt(const memory::Block& encryptedMessage, AuthenticatedEncryption* senderKey);
+	memory::Block decrypt(const memory::Block& encryptedMessage, const AuthenticatedEncryption& senderKey) const;
 	memory::Block decrypt(const memory::Block& encryptedMessage, int precalculatedSharedSecretIndex);	
 
 	//! return index for the shared secret for this recipiant public key
-	int precalculateSharedSecret(AuthenticatedEncryption* recipiantKey);
+	int precalculateSharedSecret(const AuthenticatedEncryption& recipiantKey);
 	bool removePrecalculatedSharedSecret(int index);
 	
 	memory::ConstBlockPtr mPubkey;

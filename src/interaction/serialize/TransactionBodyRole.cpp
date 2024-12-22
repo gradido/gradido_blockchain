@@ -208,7 +208,7 @@ namespace gradido {
 				if (!amount.getPubkey()) {
 					throw MissingMemberException("missing member by serializing TransferAmount", "amount.pubkey");
 				}
-				return amount.getPubkey()->size() + amount.getAmount().toString().size() + amount.getCommunityId().size() + 12;
+				return amount.getPubkey()->size() + 4 + amount.getCommunityId().size() + 12;
 			}
 				
 		}

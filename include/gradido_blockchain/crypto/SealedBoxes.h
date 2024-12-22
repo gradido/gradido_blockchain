@@ -6,11 +6,11 @@
 
 namespace SealedBoxes
 {
-	GRADIDOBLOCKCHAIN_EXPORT memory::Block encrypt(const AuthenticatedEncryption* keys, const std::string& message);
-	GRADIDOBLOCKCHAIN_EXPORT std::string decrypt(const AuthenticatedEncryption* keys, const memory::Block& encryptedMessage);
+	GRADIDOBLOCKCHAIN_EXPORT memory::Block encrypt(const AuthenticatedEncryption& keys, const std::string& message);
+	GRADIDOBLOCKCHAIN_EXPORT std::string decrypt(const AuthenticatedEncryption& keys, const memory::Block& encryptedMessage);
 	inline std::string decrypt(memory::ConstBlockPtr privateKey, const memory::Block& encryptedMessage) {
 		AuthenticatedEncryption keys(privateKey);
-		return decrypt(&keys, encryptedMessage);
+		return decrypt(keys, encryptedMessage);
 	}
 
 	class GRADIDOBLOCKCHAIN_EXPORT DecryptException : public GradidoBlockchainException

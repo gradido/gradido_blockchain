@@ -100,7 +100,7 @@ namespace gradido {
 				if (data.getPubkey()) {
 					v.AddMember("pubkey", Value(data.getPubkey()->convertToHex().data(), alloc), alloc);
 				}
-				v.AddMember("amount", Value(data.getAmount().toString().data(), alloc), alloc);
+				v.AddMember("amount", data.getAmount().getGradidoCent(), alloc);
 				if (!data.getCommunityId().empty()) {
 					v.AddMember("communityId", Value(data.getCommunityId().data(), alloc), alloc);
 				}

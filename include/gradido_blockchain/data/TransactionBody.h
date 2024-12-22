@@ -1,12 +1,14 @@
 #ifndef __GRADIDO_BLOCKCHAIN_DATA_TRANSACTION_BODY_H
 #define __GRADIDO_BLOCKCHAIN_DATA_TRANSACTION_BODY_H
 
+#include "EncryptedMemo.h"
 #include "GradidoDeferredTransfer.h"
 #include "GradidoCreation.h"
 #include "RegisterAddress.h"
 #include "CommunityFriendsUpdate.h"
 #include "CommunityRoot.h"
 #include "GradidoRedeemDeferredTransfer.h"
+#include "GradidoTimeoutDeferredTransfer.h"
 #include "Timestamp.h"
 
 #include "CrossGroupType.h"
@@ -27,12 +29,12 @@ namespace gradido {
 		public:
 			TransactionBody() : mType(CrossGroupType::LOCAL) {}
 			TransactionBody(
-				const std::string& _memo,
+				std::vector<EncryptedMemo> _memos,
 				Timepoint _createdAt,
 				const std::string& _versionNumber,
 				CrossGroupType _type = CrossGroupType::LOCAL,
 				const std::string& _otherGroup = ""
-			) : mMemo(_memo), mCreatedAt(_createdAt), mVersionNumber(_versionNumber), mType(_type), mOtherGroup(_otherGroup) {};
+			) : mMemos(_memos), mCreatedAt(_createdAt), mVersionNumber(_versionNumber), mType(_type), mOtherGroup(_otherGroup) {};
 
 			~TransactionBody() {}
 
@@ -51,7 +53,7 @@ namespace gradido {
 			const TransferAmount* getTransferAmount() const;
 
 			std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
-			inline const std::string& getMemo() const { return mMemo; }
+			inline const std::vector<EncryptedMemo>& getMemos() const { return mMemos; }
 			inline Timestamp getCreatedAt() const { return mCreatedAt; }
 			inline const std::string& getVersionNumber() const { return mVersionNumber; }
 			inline CrossGroupType getType() const { return mType; }
@@ -66,7 +68,7 @@ namespace gradido {
 			inline std::shared_ptr<const GradidoRedeemDeferredTransfer> getRedeemDeferredTransfer() const { return mRedeemDeferredTransfer; }
 
 		protected:
-			std::string								mMemo;
+			std::vector<EncryptedMemo>				mMemos;
 			Timestamp								mCreatedAt;
 			std::string								mVersionNumber;
 			CrossGroupType							mType;
@@ -79,6 +81,7 @@ namespace gradido {
 			std::shared_ptr<GradidoDeferredTransfer> mDeferredTransfer;
 			std::shared_ptr<CommunityRoot>          mCommunityRoot;
 			std::shared_ptr<GradidoRedeemDeferredTransfer> mRedeemDeferredTransfer;
+			std::shared_ptr<GradidoTimeoutDeferredTransfer> mTimeoutDeferredTransfer;
 
 		};
 
