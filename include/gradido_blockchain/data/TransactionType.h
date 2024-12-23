@@ -29,7 +29,10 @@ namespace gradido {
 			//! First Transaction in Blockchain
 			COMMUNITY_ROOT,
 			//! redeeming deferred transfer
-			REDEEM_DEFERRED_TRANSFER
+			REDEEM_DEFERRED_TRANSFER,
+			//! timeout deferred transfer, send back locked gdds
+			TIMEOUT_DEFERRED_TRANSFER
+
 		};
 	}
 }

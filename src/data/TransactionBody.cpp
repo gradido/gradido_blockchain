@@ -18,7 +18,7 @@ namespace gradido {
 		bool TransactionBody::isPairing(const TransactionBody& other) const
 		{
 			// memo, type and createdAt must be the same, otherGroup must be different
-			if (mMemo != other.mMemo ||
+			if (mMemos != other.mMemos ||
 				mCreatedAt != other.mCreatedAt ||
 				mOtherGroup == other.mOtherGroup
 				) {
@@ -33,8 +33,14 @@ namespace gradido {
 			if (isTransfer() && other.isTransfer()) {
 				return *mTransfer == *other.mTransfer;
 			}
+			if (isDeferredTransfer() && other.isDeferredTransfer()) {
+				return *mDeferredTransfer == *other.mDeferredTransfer;
+			}
 			if (isRedeemDeferredTransfer() && other.isRedeemDeferredTransfer()) {
-				return *mRedeemDeferredTransfer == *other.getRedeemDeferredTransfer();
+				return *mRedeemDeferredTransfer == *other.mRedeemDeferredTransfer;
+			}
+			if (isTimeoutDeferredTransfer() && other.isTimeoutDeferredTransfer()) {
+				return *mTimeoutDeferredTransfer == *other.mTimeoutDeferredTransfer;
 			}
 			return false;
 		}

@@ -14,7 +14,15 @@ namespace gradido {
 			{
 				Value d(kObjectType);
 				auto& alloc = rootDocument.GetAllocator();
-				d.AddMember("memo", Value(mBody.getMemo().data(), alloc), alloc);
+				Value memos(kArrayType);
+				for (auto& encryptedMemo : mBody.getMemos()) {
+					Value memo(kObjectType);
+					memo.AddMember("type", Value(enum_name(encryptedMemo.getKeyType()).data(), alloc), alloc);
+					memo.AddMember("memo", Value(encryptedMemo.getMemo()->convertToBase64().data(), alloc), alloc);
+					memos.PushBack(memo, alloc);
+				}
+				d.AddMember("memos", memos, alloc);
+				// d.AddMember("memo", Value(mBody.getMemo().data(), alloc), alloc);
 				d.AddMember("createdAt", Value(DataTypeConverter::timePointToString(mBody.getCreatedAt()).data(), alloc), alloc);
 				d.AddMember("versionNumber", Value(mBody.getVersionNumber().data(), alloc), alloc);
 				d.AddMember("type", Value(enum_name(mBody.getType()).data(), alloc), alloc);
@@ -64,6 +72,12 @@ namespace gradido {
 					Value v(kObjectType);
 					v.AddMember("transfer", gradidoTransfer(redeemDeferredTransfer->getTransfer(), d, rootDocument), alloc);
 					v.AddMember("deferredTransferTransactionNr", redeemDeferredTransfer->getDeferredTransferTransactionNr(), alloc);
+					d.AddMember("redeemDeferredTransfer", v, alloc);
+				}
+				else if (mBody.isTimeoutDeferredTransfer()) {
+					auto timeoutDeferredTransfer = mBody.getTimeoutDeferredTransfer();
+					Value v(kObjectType);
+					v.AddMember("deferredTransferTransactionNr", timeoutDeferredTransfer->getDeferredTransferTransactionNr(), alloc);
 					d.AddMember("redeemDeferredTransfer", v, alloc);
 				}
 				else if (mBody.isCommunityRoot()) {

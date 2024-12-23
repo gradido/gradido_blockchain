@@ -28,6 +28,9 @@ namespace gradido {
 
             inline MemoKeyType getKeyType() const { return mKeyType; }
             inline  memory::ConstBlockPtr getMemo() const { return mMemo; }
+            inline bool operator==(const EncryptedMemo& other) const {
+                return mKeyType == other.mKeyType && mMemo->isTheSame(other.mMemo);
+            }
 
             //! with keyType == COMMUNITY_SECRET only first key will be used
             //! with keyType == SHARED_SECRET both keys are used

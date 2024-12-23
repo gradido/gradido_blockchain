@@ -22,6 +22,10 @@ namespace gradido {
 			inline const GradidoTransfer& getTransfer() const { return mTransfer; }
 			inline TimestampSeconds getTimeout() const { return mTimeout; }
 
+			inline bool operator==(const GradidoDeferredTransfer& other) const {
+				return mTimeout == other.mTimeout && mTransfer == other.mTransfer;
+			}
+
 		protected:
 			GradidoTransfer mTransfer;
 			TimestampSeconds mTimeout;

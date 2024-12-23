@@ -32,15 +32,7 @@ namespace gradido {
 			auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
 			mTransactionType = body->getTransactionType();
 			mCoinCommunityId = getCoinCommunityId(*body);
-		}
-
-		TransactionEntry::TransactionEntry(std::shared_ptr<data::EventTriggeredTransaction> eventTriggeredTransaction)
-			: mTransactionNr(eventTriggeredTransaction->getId()), mTransactionType(data::TransactionType::NONE)
-		{
-			auto targetDate = timepointAsYearMonthDay(eventTriggeredTransaction->getTargetDate().getAsTimepoint());
-			mMonth = targetDate.month();
-			mYear = targetDate.year();
-		}
+		}		
 
 		TransactionEntry::TransactionEntry(
 			uint64_t transactionNr,

@@ -13,8 +13,11 @@ namespace gradido {
 			{
 				auto createdAt = mBody.getCreatedAt();
 				auto otherGroup = mBody.getOtherGroup();
-				TransactionBodyMessage message;				
-				message["memo"_f] = mBody.getMemo();				
+				TransactionBodyMessage message;	
+				message["memos"_f].reserve(mBody.getMemos().size());
+				for (auto& encryptedMemo : mBody.getMemos()) {
+					message["memos"_f].push_back(EncryptedMemoMessage(encryptedMemo.getKeyType(), encryptedMemo.getMemo()->copyAsVector()));
+				}
 				message["created_at"_f] = TimestampMessage{ createdAt.getSeconds(), createdAt.getNanos() };
 				message["version_number"_f] = mBody.getVersionNumber();
 				message["type"_f] = mBody.getType();
@@ -41,7 +44,7 @@ namespace gradido {
 						communityRoot->getAufPubkey()->copyAsVector()
 					};
 				} 
-				else if (mBody.isRegisterAddress()) 
+				else if (mBody.isRegisterAddress())
 				{
 					auto registerAddress = mBody.getRegisterAddress();
 					auto userPubkey = registerAddress->getUserPublicKey();
@@ -76,7 +79,8 @@ namespace gradido {
 						TimestampSecondsMessage {creation->getTargetDate().getSeconds()}
 					};
 				}
-				else if (mBody.isTransfer()) {
+				else if (mBody.isTransfer()) 
+				{
 					auto transfer = mBody.getTransfer();
 					auto& amount = transfer->getSender();
 					if (!amount.getPubkey()) {
@@ -90,7 +94,8 @@ namespace gradido {
 						transfer->getRecipient()->copyAsVector()
 					};
 				}
-				else if (mBody.isDeferredTransfer()) {
+				else if (mBody.isDeferredTransfer()) 
+				{
 					auto deferredTransfer = mBody.getDeferredTransfer();
 					auto& transfer = mBody.getDeferredTransfer()->getTransfer();
 					auto& amount = transfer.getSender();
@@ -107,7 +112,8 @@ namespace gradido {
 						}, TimestampSecondsMessage{deferredTransfer->getTimeout().getSeconds()}
 					};
 				}
-				else if (mBody.isRedeemDeferredTransfer()) {
+				else if (mBody.isRedeemDeferredTransfer()) 
+				{
 					auto redeemDeferredTransfer = mBody.getRedeemDeferredTransfer();
 					auto& transfer = mBody.getRedeemDeferredTransfer()->getTransfer();
 					auto& amount = transfer.getSender();
@@ -118,13 +124,23 @@ namespace gradido {
 						throw MissingMemberException("missing member by serializing Gradido Redeem Deferred Transfer Transaction", "transfer.recipient");
 					}
 					message["redeem_deferred_transfer"_f] = GradidoRedeemDeferredTransferMessage{
+						redeemDeferredTransfer->getDeferredTransferTransactionNr(),
 						GradidoTransferMessage{
 							createTransferAmountMessage(amount),
 							transfer.getRecipient()->copyAsVector()
-						}, redeemDeferredTransfer->getDeferredTransferTransactionNr()
+						}
 					};
 				}
-				else if (mBody.isCommunityFriendsUpdate()) {
+				else if (mBody.isTimeoutDeferredTransfer()) 
+				{
+					auto timeoutDeferredTransfer = mBody.getTimeoutDeferredTransfer();
+					
+					message["timeout_deferred_transfer"_f] = GradidoTimeoutDeferredTransferMessage{
+						timeoutDeferredTransfer->getDeferredTransferTransactionNr()
+					};
+				}
+				else if (mBody.isCommunityFriendsUpdate()) 
+				{
 					message["community_friends_update"_f] = CommunityFriendsUpdateMessage{
 						mBody.getCommunityFriendsUpdate()->getColorFusion()
 					};
@@ -136,7 +152,7 @@ namespace gradido {
 			{
 				return TransferAmountMessage{
 					amount.getPubkey()->copyAsVector(),
-					GradidoUnitToStringTrimTrailingZeros(amount.getAmount()),
+					amount.getAmount().getGradidoCent(),
 					amount.getCommunityId()
 				};
 			}
@@ -144,7 +160,10 @@ namespace gradido {
 			size_t TransactionBodyRole::calculateSerializedSize() const
 			{
 										// timestamp						  // enum
-				auto size = mBody.getMemo().size() + 12 + mBody.getVersionNumber().size() + 1 + mBody.getOtherGroup().size() + 3;
+				auto size = 12 + mBody.getVersionNumber().size() + 1 + mBody.getOtherGroup().size() + 3;
+				for (auto& encryptedMemo : mBody.getMemos()) {
+					size += 8 + encryptedMemo.getMemo()->size();
+				}
 				//printf("body base size: %lld\n", size);
 
 				if (mBody.isCommunityRoot()) {
@@ -208,7 +227,7 @@ namespace gradido {
 				if (!amount.getPubkey()) {
 					throw MissingMemberException("missing member by serializing TransferAmount", "amount.pubkey");
 				}
-				return amount.getPubkey()->size() + 4 + amount.getCommunityId().size() + 12;
+				return amount.getPubkey()->size() + 8 + amount.getCommunityId().size() + 12;
 			}
 				
 		}

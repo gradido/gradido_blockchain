@@ -45,6 +45,7 @@ namespace gradido {
 			inline bool isDeferredTransfer() const { return static_cast<bool>(mDeferredTransfer); }
 			inline bool isCommunityRoot() const { return static_cast<bool>(mCommunityRoot); }
 			inline bool isRedeemDeferredTransfer() const { return static_cast<bool>(mRedeemDeferredTransfer); }
+			inline bool isTimeoutDeferredTransfer() const { return static_cast<bool>(mTimeoutDeferredTransfer); }
 			TransactionType getTransactionType() const;
 
 			bool isPairing(const TransactionBody& other) const;
@@ -66,6 +67,7 @@ namespace gradido {
 			inline std::shared_ptr<const GradidoDeferredTransfer> getDeferredTransfer() const { return mDeferredTransfer; }
 			inline std::shared_ptr<const CommunityRoot> getCommunityRoot() const { return mCommunityRoot; }
 			inline std::shared_ptr<const GradidoRedeemDeferredTransfer> getRedeemDeferredTransfer() const { return mRedeemDeferredTransfer; }
+			inline std::shared_ptr<const GradidoTimeoutDeferredTransfer> getTimeoutDeferredTransfer() const { return mTimeoutDeferredTransfer; }
 
 		protected:
 			std::vector<EncryptedMemo>				mMemos;
