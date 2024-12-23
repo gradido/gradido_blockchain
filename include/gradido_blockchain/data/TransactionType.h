@@ -31,8 +31,10 @@ namespace gradido {
 			//! redeeming deferred transfer
 			REDEEM_DEFERRED_TRANSFER,
 			//! timeout deferred transfer, send back locked gdds
-			TIMEOUT_DEFERRED_TRANSFER
+			TIMEOUT_DEFERRED_TRANSFER,
 
+			//! technial type for using it in for loops, as max index
+			MAX_VALUE
 		};
 	}
 }

@@ -6,6 +6,7 @@
 #include "gradido_blockchain/interaction/addGradidoTransaction/DeferredTransferTransactionRole.h"
 #include "gradido_blockchain/interaction/addGradidoTransaction/RedeemDeferredTransferTransactionRole.h"
 #include "gradido_blockchain/interaction/addGradidoTransaction/RegisterAddressRole.h"
+#include "gradido_blockchain/interaction/addGradidoTransaction/TimeoutDeferredTransferTransactionRole.h"
 #include "gradido_blockchain/interaction/addGradidoTransaction/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/addGradidoTransaction/TransferTransactionRole.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
@@ -26,37 +27,30 @@ namespace gradido {
 				memory::ConstBlockPtr messageId,
 				Timepoint confirmedAt
 			) const {
-				auto body = gradidoTransaction->getTransactionBody();
-				if (body->isTransfer()) {
-					return std::make_shared<TransferTransactionRole>(gradidoTransaction, messageId, confirmedAt);
-				} else if (body->isCreation()) {
-					return std::make_shared<CreationTransactionRole>(gradidoTransaction, messageId, confirmedAt);
-				} else if (body->isRegisterAddress()) {
-					return std::make_shared<RegisterAddressRole>(gradidoTransaction, messageId, confirmedAt);
-				} else if (body->isDeferredTransfer()) {
-					return std::make_shared<DeferredTransferTransactionRole>(gradidoTransaction, messageId, confirmedAt);
-				} else if (body->isRedeemDeferredTransfer()) {
-					return std::make_shared<RedeemDeferredTransferTransactionRole>(gradidoTransaction, messageId, confirmedAt);
-				} else if (body->isCommunityRoot()) {
-					return std::make_shared<CommunityRootTransactionRole>(gradidoTransaction, messageId, confirmedAt);
+				// attention! work only if order in enum don't change
+				static const std::array<std::function<std::shared_ptr<AbstractRole>()>, enum_integer(TransactionType::MAX_VALUE)> roleCreators = {
+					[&]() { return std::make_shared<CreationTransactionRole>(gradidoTransaction, messageId, confirmedAt); },
+					[&]() { return std::make_shared<TransferTransactionRole>(gradidoTransaction, messageId, confirmedAt); },
+					[&]() { return nullptr; },
+					[&]() { return std::make_shared<RegisterAddressRole>(gradidoTransaction, messageId, confirmedAt); },
+					[&]() { return std::make_shared<DeferredTransferTransactionRole>(gradidoTransaction, messageId, confirmedAt); },
+					[&]() { return std::make_shared<CommunityRootTransactionRole>(gradidoTransaction, messageId, confirmedAt); },
+					[&]() { return std::make_shared<RedeemDeferredTransferTransactionRole>(gradidoTransaction, messageId, confirmedAt); },
+					[&]() { return std::make_shared<TimeoutDeferredTransferTransactionRole>(gradidoTransaction, messageId, confirmedAt); }
+				};
+
+				auto type = gradidoTransaction->getTransactionBody()->getTransactionType();
+				auto result = roleCreators[enum_integer(type)]();
+
+				if (!result) {
+					throw GradidoUnhandledEnum(
+						"adding transaction of this type currently not implemented",
+						"TransactionType",
+						enum_name(type).data()
+					);
 				}
-				throw GradidoUnhandledEnum(
-					"adding transaction of this type currently not implemented",
-					"TransactionType",
-					enum_name(body->getTransactionType()).data()
-				);
+				return result;
 			}
-
-			std::shared_ptr<AbstractRole> Context::createRole(
-				std::shared_ptr<data::EventTriggeredTransaction> eventTriggeredTransaction,
-				memory::ConstBlockPtr messageId,
-				Timepoint confirmedAt
-			) const {
-				switch (eventTriggeredTransaction->getType()) {
-
-				}
-			}
-
 
 			ResultType Context::run(std::shared_ptr<AbstractRole> role)
             {
@@ -73,6 +67,11 @@ namespace gradido {
 				uint64_t id = 1;
 				auto lastTransaction = mBlockchain->findOne(Filter::LAST_TRANSACTION);
 				if (lastTransaction) {
+					auto pendingTransactions = mBlockchain->findPendingTransactionInRange({ 
+						lastTransaction->getConfirmedTransaction()->getConfirmedAt(), 
+						role->getConfirmedAt() 
+					});
+					mBlockchain->removePendingTransaction(pendingTransactions.front()->getLinkedTransactionId());
 					id = lastTransaction->getTransactionNr() + 1;
 				}
 				
