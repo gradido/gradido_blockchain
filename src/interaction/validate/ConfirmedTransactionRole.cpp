@@ -23,12 +23,12 @@ namespace gradido {
 				auto confirmedAt = mConfirmedTransaction.getConfirmedAt().getAsTimepoint();
 
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					if (mConfirmedTransaction.getVersionNumber() != GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING) {
+					if (mConfirmedTransaction.getVersionNumber() != GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING) {
 						TransactionValidationInvalidInputException exception(
 							"wrong version",
 							"version_number",
 							"string",
-							GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING,
+							GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
 							mConfirmedTransaction.getVersionNumber().data()
 						);
 						exception.setTransactionBody(*body);

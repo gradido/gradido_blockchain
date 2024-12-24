@@ -39,7 +39,7 @@ namespace gradido {
                     id,
                    mGradidoTransaction,
                    mConfirmedAt,
-                   GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING,
+                   GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
                    mMessageId,
                    calculateFinalBalance(id, blockchain),
                    lastConfirmedTransaction

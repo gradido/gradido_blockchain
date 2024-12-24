@@ -29,12 +29,11 @@ namespace gradido {
 		public:
 			TransactionBody() : mType(CrossGroupType::LOCAL) {}
 			TransactionBody(
-				std::vector<EncryptedMemo> _memos,
 				Timepoint _createdAt,
 				const std::string& _versionNumber,
 				CrossGroupType _type = CrossGroupType::LOCAL,
 				const std::string& _otherGroup = ""
-			) : mMemos(_memos), mCreatedAt(_createdAt), mVersionNumber(_versionNumber), mType(_type), mOtherGroup(_otherGroup) {};
+			) : mCreatedAt(_createdAt), mVersionNumber(_versionNumber), mType(_type), mOtherGroup(_otherGroup) {};
 
 			~TransactionBody() {}
 

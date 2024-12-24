@@ -78,6 +78,10 @@ FILE(GLOB INTERACTION_CALCULATE_CREATION_SUM
 	"include/gradido_blockchain/interaction/calculateCreationSum/*.h" 
 	"src/interaction/calculateCreationSum/*.cpp"
 )
+FILE(GLOB INTERACTION_CREATE_TRANSACTION_BY_EVENT
+	"include/gradido_blockchain/interaction/createTransactionByEvent/*.h" 
+	"src/interaction/createTransactionByEvent/*.cpp"
+)
 FILE(GLOB INTERACTION_DESERIALIZE 
 	"include/gradido_blockchain/interaction/deserialize/*.h" 
 	"src/interaction/deserialize/*.cpp"
@@ -110,6 +114,7 @@ SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${INTERACTION_ADD_GRADIDO_TRANSACTION}
 	${INTERACTION_CALCULATE_ACCOUNT_BALANCE}
 	${INTERACTION_CALCULATE_CREATION_SUM}
+	${INTERACTION_CREATE_TRANSACTION_BY_EVENT}
 	${INTERACTION_DESERIALIZE}
 	${INTERACTION_SERIALIZE}
 	${INTERACTION_TO_JSON}
@@ -131,6 +136,7 @@ if(MSVC)
 	source_group("interaction\\addGradidoTransaction" FILES ${INTERACTION_ADD_GRADIDO_TRANSACTION})
 	source_group("interaction\\calculateAccountBalance" FILES ${INTERACTION_CALCULATE_ACCOUNT_BALANCE})
 	source_group("interaction\\calculateCreationSum" FILES ${INTERACTION_CALCULATE_CREATION_SUM})
+	source_group("interaction\\createTransactionByEvent" FILES ${INTERACTION_CREATE_TRANSACTION_BY_EVENT})
 	source_group("interaction\\deserialize" FILES ${INTERACTION_DESERIALIZE})
 	source_group("interaction\\serialize" FILES ${INTERACTION_SERIALIZE})
 	source_group("interaction\\toJson" FILES ${INTERACTION_TO_JSON})

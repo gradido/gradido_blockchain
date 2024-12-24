@@ -10,6 +10,7 @@
 #include "Filter.h"
 #include "SearchDirection.h"
 #include "../data/AddressType.h"
+#include "../data/TransactionTriggerEvent.h"
 
 
 #include <list>
@@ -28,10 +29,10 @@ namespace gradido {
 			//! throw if gradido transaction isn't valid
 			//! \return false if transaction already exist
 			virtual bool addGradidoTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt) = 0;
-			virtual void addPendingTransaction(std::shared_ptr<const data::EventTriggeredTransaction> eventTriggeredTransaction) = 0;
-			virtual void removePendingTransaction(uint64_t linkedTransactioNr) = 0;
+			virtual void addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent) = 0;
+			virtual void removeTransactionTriggerEvent(uint64_t linkedTransactioNr) = 0;
 
-			virtual std::vector<std::shared_ptr<const data::EventTriggeredTransaction>> findPendingTransactionInRange(TimepointInterval range) = 0;
+			virtual std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> findTransactionTriggerEventInRange(TimepointInterval range) = 0;
 
 			// main search function, do all the work, reference from other functions
 			virtual TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const = 0;

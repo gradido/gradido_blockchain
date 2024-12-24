@@ -1,16 +1,16 @@
-#ifndef __GRADIDO_BLOCKCHAIN_DATA_EVENT_TRIGGERED_TRANSACTION_TYPE_H
-#define __GRADIDO_BLOCKCHAIN_DATA_EVENT_TRIGGERED_TRANSACTION_TYPE_H
+#ifndef __GRADIDO_BLOCKCHAIN_DATA_TRANSACTION_TRIGGER_EVENT_TYPE_H
+#define __GRADIDO_BLOCKCHAIN_DATA_TRANSACTION_TRIGGER_EVENT_TYPE_H
 
 namespace gradido {
     namespace data {
         /**
-         * @enum EventTriggeredTransactionType
-         * @brief Represents the types of event-triggered transactions in the Gradido system.
+         * @enum TransactionTriggerEventType
+         * @brief Represents the types event which will trigger transactions in special circumstances
          *
          * This enum defines the types of transactions that are created automatically 
          * based on certain events in the system, such as timeouts or redemptions of deferred transfers.
          */
-        enum class EventTriggeredTransactionType {
+        enum class TransactionTriggerEventType {
              /**
              * @brief Placeholder value indicating no specific event type.
              * 
@@ -30,4 +30,4 @@ namespace gradido {
     }
 }
 
-#endif //__GRADIDO_BLOCKCHAIN_DATA_EVENT_TRIGGERED_TRANSACTION_TYPE_H
+#endif //__GRADIDO_BLOCKCHAIN_DATA_TRANSACTION_TRIGGER_EVENT_TYPE_H

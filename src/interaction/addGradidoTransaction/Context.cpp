@@ -45,7 +45,7 @@ namespace gradido {
 				if (!result) {
 					throw GradidoUnhandledEnum(
 						"adding transaction of this type currently not implemented",
-						"TransactionType",
+						enum_type_name<decltype(type)>().data(),
 						enum_name(type).data()
 					);
 				}
@@ -71,7 +71,17 @@ namespace gradido {
 						lastTransaction->getConfirmedTransaction()->getConfirmedAt(), 
 						role->getConfirmedAt() 
 					});
-					mBlockchain->removePendingTransaction(pendingTransactions.front()->getLinkedTransactionId());
+					for (auto& pendingTransaction : pendingTransactions) {
+						mBlockchain->removePendingTransaction(pendingTransaction->getLinkedTransactionId());
+						try {
+
+						}
+						catch (std::exception& e) {
+							mBlockchain->addPendingTransaction(pendingTransaction);
+							throw e;
+						}
+					}
+					
 					id = lastTransaction->getTransactionNr() + 1;
 				}
 				

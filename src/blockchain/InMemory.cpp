@@ -80,7 +80,7 @@ namespace gradido {
 				id,
 				gradidoTransaction,
 				confirmedAt,
-				GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING,
+				GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
 				messageId,
 				finalBalance,
 				lastConfirmedTransaction

@@ -3,7 +3,6 @@
 
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/TransactionType.h"
-#include "../data/EventTriggeredTransaction.h"
 
 #include "date/date.h"
 
@@ -75,7 +74,6 @@ namespace gradido {
 			std::string mCoinCommunityId;
 			mutable std::mutex mFastMutex;
 			mutable data::ConstConfirmedTransactionPtr mConfirmedTransaction;
-			mutable std::shared_ptr<data::EventTriggeredTransaction> mEventTriggeredTransaction;
 		};
 
 		typedef std::list<std::shared_ptr<const TransactionEntry>> TransactionEntries;

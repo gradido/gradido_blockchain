@@ -8,6 +8,9 @@ namespace gradido {
     namespace blockchain {
         class Abstract;
     }
+    namespace data {
+        class EventTriggeredTransaction;
+    }
     namespace interaction {
         namespace addGradidoTransaction {            
 
@@ -27,6 +30,7 @@ namespace gradido {
                 ) const;
 
                 ResultType run(std::shared_ptr<AbstractRole> role);
+                ResultType run(std::shared_ptr<d)
 
                 //! check if transaction already exist in blockchain
                 //! \return false if transaction not exist

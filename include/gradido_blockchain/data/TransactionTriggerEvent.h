@@ -2,24 +2,24 @@
 #define __GRADIDO_BLOCKCHAIN_DATA_EVENT_TRIGGERED_TRANSACTION_H
 
 #include "TimestampSeconds.h"
-#include "EventTriggeredTransactionType.h"
+#include "TransactionTriggerEventType.h"
 
 namespace gradido {
     namespace data {
-        class GRADIDOBLOCKCHAIN_EXPORT EventTriggeredTransaction 
+        class GRADIDOBLOCKCHAIN_EXPORT TransactionTriggerEvent 
         {
         public:
-            EventTriggeredTransaction() :mLinkedTransactionNr(0), mType(EventTriggeredTransactionType::NONE) {}
-            EventTriggeredTransaction(
+            TransactionTriggerEvent() :mLinkedTransactionNr(0), mType(TransactionTriggerEventType::NONE) {}
+            TransactionTriggerEvent(
                 uint64_t linkedTransactionNr,
                 TimestampSeconds targetDate,
-                EventTriggeredTransactionType type
+                TransactionTriggerEventType type
             ) : mLinkedTransactionNr(linkedTransactionNr), mTargetDate(targetDate), mType(type) {}
 
-            virtual ~EventTriggeredTransaction() {}
+            virtual ~TransactionTriggerEvent() {}
 
             inline uint64_t getLinkedTransactionId() const { return mLinkedTransactionNr; }
-            inline EventTriggeredTransactionType getType() const { return mType; }
+            inline TransactionTriggerEventType getType() const { return mType; }
             inline TimestampSeconds getTargetDate() const { return mTargetDate; }
 
         protected:
@@ -28,7 +28,7 @@ namespace gradido {
             //! date on which this trigger takes effect
             TimestampSeconds mTargetDate;
             //! which type of event
-            EventTriggeredTransactionType mType;            
+            TransactionTriggerEventType mType;            
         };
     }
 }

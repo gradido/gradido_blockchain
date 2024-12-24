@@ -14,7 +14,7 @@ namespace gradido {
 	GradidoTransactionBuilder::GradidoTransactionBuilder() 
 	  : mState(BuildingState::BUILDING_BODY), 
 		mBody(make_unique<TransactionBody>(
-			"", chrono::system_clock::now(), GRADIDO_TRANSACTION_BODY_V3_3_VERSION_STRING, CrossGroupType::LOCAL
+			chrono::system_clock::now(), GRADIDO_TRANSACTION_BODY_VERSION_STRING, CrossGroupType::LOCAL
 		)),
 		mSpecificTransactionChoosen(false)
 	{
@@ -29,7 +29,7 @@ namespace gradido {
 	void GradidoTransactionBuilder::reset() 
 	{
 		mState = BuildingState::BUILDING_BODY;
-		mBody = make_unique<data::TransactionBody>("", chrono::system_clock::now(), GRADIDO_TRANSACTION_BODY_V3_3_VERSION_STRING, CrossGroupType::LOCAL);
+		mBody = make_unique<data::TransactionBody>(chrono::system_clock::now(), GRADIDO_TRANSACTION_BODY_VERSION_STRING, CrossGroupType::LOCAL);
 		mSenderCommunity.clear();
 		mRecipientCommunity.clear();
 		mBodyByteSignatureMaps.clear();
@@ -236,18 +236,18 @@ namespace gradido {
 		return *this;
 	}
 
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setRedeemDeferredTransfer(data::GradidoTransfer transactionTransfer, uint64_t deferredTransferTransactionNr)
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setRedeemDeferredTransfer(uint64_t deferredTransferTransactionNr, GradidoTransfer transactionTransfer)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		return setRedeemDeferredTransfer(
 			std::make_unique<data::GradidoRedeemDeferredTransfer>(
-				transactionTransfer,
-				deferredTransferTransactionNr
+				deferredTransferTransactionNr,
+				transactionTransfer
 			)
 		);
 	}
 
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setRedeemDeferredTransfer(std::unique_ptr<data::GradidoRedeemDeferredTransfer> redeemDeferredTransfer)
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setRedeemDeferredTransfer(std::unique_ptr<GradidoRedeemDeferredTransfer> redeemDeferredTransfer)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		if (mSpecificTransactionChoosen) {
@@ -260,14 +260,38 @@ namespace gradido {
 		return *this;
 	}
 
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setTimeoutDeferredTransfer(uint64_t deferredTransferTransactionNr)
+	{
+		checkBuildState(BuildingState::BUILDING_BODY);
+		return setTimeoutDeferredTransfer(
+			std::make_unique<data::GradidoTimeoutDeferredTransfer>(
+				deferredTransferTransactionNr
+			)
+		);
+	}
+
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setTimeoutDeferredTransfer(std::unique_ptr<GradidoTimeoutDeferredTransfer> timeoutDeferredTransfer)
+	{
+		checkBuildState(BuildingState::BUILDING_BODY);
+		if (mSpecificTransactionChoosen) {
+			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
+		}
+
+		mBody->mTimeoutDeferredTransfer = move(timeoutDeferredTransfer);
+
+		mSpecificTransactionChoosen = true;
+		return *this;
+	}
+
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setCreatedAt(Timepoint createdAt) {
 		checkBuildState(BuildingState::BUILDING_BODY);
 		mBody->mCreatedAt = data::Timestamp(createdAt);
 		return *this;
 	}
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setMemo(std::string_view memo) {
+
+	GradidoTransactionBuilder& GradidoTransactionBuilder::addMemo(EncryptedMemo memo) {
 		checkBuildState(BuildingState::BUILDING_BODY);
-		mBody->mMemo = memo;
+		mBody->mMemos.push_back(memo);
 		return *this;
 	}
 
