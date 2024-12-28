@@ -21,8 +21,8 @@ namespace gradido {
 				Context(const Context&) = delete;
 				Context(Context&&) = delete;
 
-				// calculate (final) balance after a specific transaction
-				GradidoUnit run(
+				// calculate (final) balances after a specific transaction
+				std::vector<data::AccountBalance> run(
 					data::ConstGradidoTransactionPtr gradidoTransaction,
 					Timepoint confirmedAt,
 					uint64_t id

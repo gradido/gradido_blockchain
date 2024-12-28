@@ -12,7 +12,7 @@ namespace gradido {
 
 	namespace interaction {
 		namespace calculateAccountBalance {
-			GradidoUnit Context::run(
+			std::vector<data::AccountBalance> Context::run(
 				data::ConstGradidoTransactionPtr gradidoTransaction,
 				Timepoint confirmedAt,
 				uint64_t id

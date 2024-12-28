@@ -9,11 +9,12 @@ namespace gradido {
             class GRADIDOBLOCKCHAIN_EXPORT TimeoutDeferredTransferTransactionRole : public TransactionBodyRole
             {
             public:
-                using TransactionBodyRole::TransactionBodyRole;
-                virtual void runPastAddToBlockchain(
-                    std::shared_ptr<const data::ConfirmedTransaction> confirmedTransaction,
-                    std::shared_ptr<blockchain::Abstract> blockchain
-                ) const;
+                TimeoutDeferredTransferTransactionRole(
+                    std::shared_ptr<data::GradidoTransaction> gradidoTransaction,
+                    memory::ConstBlockPtr messageId,
+                    Timepoint confirmedAt
+                );
+                ~TimeoutDeferredTransferTransactionRole() {}
             protected:
             };
         }

@@ -1,12 +1,12 @@
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
-#include "gradido_blockchain/interaction/addGradidoTransaction/AbstractRole.h"
+#include "gradido_blockchain/interaction/createConfirmedTransaction/AbstractRole.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
 namespace gradido {
     namespace interaction {
-        namespace addGradidoTransaction {
+        namespace createConfirmedTransaction {
             AbstractRole::~AbstractRole()
             {
 
@@ -23,7 +23,7 @@ namespace gradido {
                 }
             }
 
-            std::vector<data::AccountBalance> AbstractRole::calculateFinalBalance(uint64_t id, const blockchain::Abstract& blockchain) const
+            GradidoUnit AbstractRole::calculateFinalBalance(uint64_t id, const blockchain::Abstract& blockchain) const
             {
                 interaction::calculateAccountBalance::Context finalBalanceCalculate(blockchain);
                 return finalBalanceCalculate.run(mGradidoTransaction, mConfirmedAt, id);
@@ -36,7 +36,7 @@ namespace gradido {
             ) const
             {
                return std::make_shared<data::ConfirmedTransaction>(
-                   id,
+                    id,
                    mGradidoTransaction,
                    mConfirmedAt,
                    GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,

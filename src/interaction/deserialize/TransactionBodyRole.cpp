@@ -84,12 +84,12 @@ namespace gradido {
 					if (!deferredTransferMessage["transfer"_f].has_value()) {
 						throw MissingMemberException(exceptionMessage, "transfer");
 					}
-					if (!deferredTransferMessage["timeout"_f].has_value()) {
-						throw MissingMemberException(exceptionMessage, "timeout");
+					if (!deferredTransferMessage["timeout_duration"_f].has_value()) {
+						throw MissingMemberException(exceptionMessage, "timeout_duration");
 					}
 					mTransactionBody->mDeferredTransfer = make_shared<data::GradidoDeferredTransfer>(
 						*GradidoTransferRole(deferredTransferMessage["transfer"_f].value()).run().get(),
-						TimestampSecondsRole(deferredTransferMessage["timeout"_f].value()).data()
+						deferredTransferMessage["timeout_duration"_f].value()
 					);
 				}
 				else if (bodyMessage["redeem_deferred_transfer"_f].has_value()) {

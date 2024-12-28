@@ -1,11 +1,11 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
-#include "gradido_blockchain/interaction/addGradidoTransaction/RedeemDeferredTransferTransactionRole.h"
+#include "gradido_blockchain/interaction/createConfirmedTransaction/RedeemDeferredTransferTransactionRole.h"
 
 namespace gradido {
     using namespace data;
 
     namespace interaction {
-        namespace addGradidoTransaction {
+        namespace createConfirmedTransaction {
 
             void RedeemDeferredTransferTransactionRole::runPastAddToBlockchain(
                 std::shared_ptr<const data::ConfirmedTransaction> confirmedTransaction,

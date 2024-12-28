@@ -64,7 +64,7 @@ namespace gradido {
 					auto deferredTransfer = mBody.getDeferredTransfer();
 					Value v(kObjectType);
 					v.AddMember("transfer", gradidoTransfer(deferredTransfer->getTransfer(), d, rootDocument), alloc);
-					v.AddMember("timeout", Value(DataTypeConverter::timePointToString(deferredTransfer->getTimeout()).data(), alloc), alloc);
+					v.AddMember("timeout", Value(DataTypeConverter::timespanToString(deferredTransfer->getTimeoutDuration()).data(), alloc), alloc);
 					d.AddMember("deferredTransfer", v, alloc);
 				}
 				else if (mBody.isRedeemDeferredTransfer()) {

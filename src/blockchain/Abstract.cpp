@@ -1,5 +1,6 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
+#include "gradido_blockchain/blockchain/FilterBuilder.h"
 
 namespace gradido {
 	namespace blockchain {
@@ -8,6 +9,23 @@ namespace gradido {
 			: mCommunityId(communityId)
 		{
 
+		}
+
+		bool Abstract::isTransactionExist(data::ConstGradidoTransactionPtr gradidoTransaction) const
+		{
+			const auto& body = gradidoTransaction->getTransactionBody();
+			FilterBuilder builder;
+			return findOne(builder
+				.setTransactionType(body->getTransactionType())
+				.setTimepointInterval({ body->getCreatedAt() })
+				.setFilterFunction([gradidoTransaction](const TransactionEntry& entry) -> FilterResult {
+					const auto& otherGradidoTransaction = entry.getConfirmedTransaction()->getGradidoTransaction();
+					if (gradidoTransaction->getFingerprint()->isTheSame(otherGradidoTransaction->getFingerprint())) {
+						return FilterResult::USE | FilterResult::STOP;
+					}
+					return FilterResult::DISMISS;
+				}).build()
+			) != nullptr;
 		}
 
 		std::shared_ptr<const TransactionEntry> Abstract::findOne(const Filter& filter/* = Filter::LAST_TRANSACTION*/) const

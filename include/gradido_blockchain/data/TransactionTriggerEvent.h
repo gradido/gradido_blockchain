@@ -12,7 +12,7 @@ namespace gradido {
             TransactionTriggerEvent() :mLinkedTransactionNr(0), mType(TransactionTriggerEventType::NONE) {}
             TransactionTriggerEvent(
                 uint64_t linkedTransactionNr,
-                TimestampSeconds targetDate,
+                Timepoint targetDate,
                 TransactionTriggerEventType type
             ) : mLinkedTransactionNr(linkedTransactionNr), mTargetDate(targetDate), mType(type) {}
 
@@ -20,13 +20,13 @@ namespace gradido {
 
             inline uint64_t getLinkedTransactionId() const { return mLinkedTransactionNr; }
             inline TransactionTriggerEventType getType() const { return mType; }
-            inline TimestampSeconds getTargetDate() const { return mTargetDate; }
+            inline Timepoint getTargetDate() const { return mTargetDate; }
 
         protected:
             //! main index
             uint64_t mLinkedTransactionNr;
             //! date on which this trigger takes effect
-            TimestampSeconds mTargetDate;
+            Timepoint mTargetDate;
             //! which type of event
             TransactionTriggerEventType mType;            
         };

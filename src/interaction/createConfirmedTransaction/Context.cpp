@@ -1,14 +1,14 @@
-#include "gradido_blockchain/interaction/addGradidoTransaction/Context.h"
+#include "gradido_blockchain/interaction/createConfirmedTransaction/Context.h"
 
 #include "gradido_blockchain/blockchain/Abstract.h"
-#include "gradido_blockchain/interaction/addGradidoTransaction/CommunityRootTransactionRole.h"
-#include "gradido_blockchain/interaction/addGradidoTransaction/CreationTransactionRole.h"
-#include "gradido_blockchain/interaction/addGradidoTransaction/DeferredTransferTransactionRole.h"
-#include "gradido_blockchain/interaction/addGradidoTransaction/RedeemDeferredTransferTransactionRole.h"
-#include "gradido_blockchain/interaction/addGradidoTransaction/RegisterAddressRole.h"
-#include "gradido_blockchain/interaction/addGradidoTransaction/TimeoutDeferredTransferTransactionRole.h"
-#include "gradido_blockchain/interaction/addGradidoTransaction/TransactionBodyRole.h"
-#include "gradido_blockchain/interaction/addGradidoTransaction/TransferTransactionRole.h"
+#include "gradido_blockchain/interaction/createConfirmedTransaction/CommunityRootTransactionRole.h"
+#include "gradido_blockchain/interaction/createConfirmedTransaction/CreationTransactionRole.h"
+#include "gradido_blockchain/interaction/createConfirmedTransaction/DeferredTransferTransactionRole.h"
+#include "gradido_blockchain/interaction/createConfirmedTransaction/RedeemDeferredTransferTransactionRole.h"
+#include "gradido_blockchain/interaction/createConfirmedTransaction/RegisterAddressRole.h"
+#include "gradido_blockchain/interaction/createConfirmedTransaction/TimeoutDeferredTransferTransactionRole.h"
+#include "gradido_blockchain/interaction/createConfirmedTransaction/TransactionBodyRole.h"
+#include "gradido_blockchain/interaction/createConfirmedTransaction/TransferTransactionRole.h"
 #include "gradido_blockchain/interaction/createTransactionByEvent/Context.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
 
@@ -21,7 +21,7 @@ namespace gradido {
 	using namespace blockchain;
 
     namespace interaction {
-        namespace addGradidoTransaction {
+        namespace createConfirmedTransaction {
 
 			std::shared_ptr<AbstractRole> Context::createRole(
 				std::shared_ptr<data::GradidoTransaction> gradidoTransaction,
@@ -61,13 +61,20 @@ namespace gradido {
 				interaction::validate::Context validateGradidoTransaction(*role->getGradidoTransaction());
 				validateGradidoTransaction.run(interaction::validate::Type::SINGLE, communityId, provider);
 				
-				if (isExisting(role)) {
+				if (mBlockchain->isTransactionExist(role->getGradidoTransaction())) {
 					return ResultType::ALREADY_EXIST;
 				}
 
 				uint64_t id = 1;
 				auto lastTransaction = mBlockchain->findOne(Filter::LAST_TRANSACTION);
+				data::ConstConfirmedTransactionPtr lastConfirmedTransaction;
 				if (lastTransaction) {
+					// check order
+					lastConfirmedTransaction = lastTransaction->getConfirmedTransaction();
+					if (role->getConfirmedAt() < lastConfirmedTransaction->getConfirmedAt().getAsTimepoint()) {
+						return ResultType::INVALID_PREVIOUS_TRANSACTION_IS_YOUNGER;
+					}
+					// check if we need to add transactions triggered by events beforehand
 					auto transactionTriggerEvents = mBlockchain->findTransactionTriggerEventsInRange({ 
 						lastTransaction->getConfirmedTransaction()->getConfirmedAt(), 
 						role->getConfirmedAt() 
@@ -76,11 +83,7 @@ namespace gradido {
 						mBlockchain->removeTransactionTriggerEvent(transactionTriggerEvent->getLinkedTransactionId());
 						try {
 							createTransactionByEvent::Context createTransactionByEvent(mBlockchain);
-							mBlockchain->createAndAddConfirmedTransaction(
-								createTransactionByEvent.run(transactionTriggerEvent),
-								nullptr,
-								transactionTriggerEvent->getTargetDate()
-							);
+							mBlockchain->createConfirmedTransaction(createTransactionByEvent.run(transactionTriggerEvent), nullptr, transactionTriggerEvent->getTargetDate());
 						}
 						catch (std::exception& e) {
 							mBlockchain->addTransactionTriggerEvent(transactionTriggerEvent);
@@ -89,15 +92,7 @@ namespace gradido {
 					}
 					
 					id = lastTransaction->getTransactionNr() + 1;
-				}
-				
-				data::ConstConfirmedTransactionPtr lastConfirmedTransaction;
-				if (lastTransaction) {
-					lastConfirmedTransaction = lastTransaction->getConfirmedTransaction();
-					if (role->getConfirmedAt() < lastConfirmedTransaction->getConfirmedAt().getAsTimepoint()) {
-						return ResultType::INVALID_PREVIOUS_TRANSACTION_IS_YOUNGER;
-					}
-				}
+				}		
 
 				auto confirmedTransaction = role->createConfirmedTransaction(id, lastConfirmedTransaction, *mBlockchain);
 				role->runPreValidate(confirmedTransaction, mBlockchain);
@@ -112,9 +107,8 @@ namespace gradido {
 				// throw if some error occure
 				validate.run(type, communityId, provider);
 
-				addToBlockchain(confirmedTransaction);
+				mBlockchain->addToBlockchain(confirmedTransaction);
 				role->runPastAddToBlockchain(confirmedTransaction, mBlockchain);
-				finalize();
 
 				return ResultType::ADDED;
             }

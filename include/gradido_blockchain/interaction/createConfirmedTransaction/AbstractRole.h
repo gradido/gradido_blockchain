@@ -1,5 +1,5 @@
-#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_ABSTRACT_ROLE_H
-#define __GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_ABSTRACT_ROLE_H
+#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_CREATE_CONFIRMED_TRANSACTION_ABSTRACT_ROLE_H
+#define __GRADIDO_BLOCKCHAIN_INTERACTION_CREATE_CONFIRMED_TRANSACTION_ABSTRACT_ROLE_H
 
 #include "gradido_blockchain/GradidoUnit.h"
 #include "gradido_blockchain/interaction/validate/Type.h"
@@ -13,11 +13,10 @@ namespace gradido {
     namespace data {
         class GradidoTransaction;
         class ConfirmedTransaction;
-        class AccountBalance;
     }
 
     namespace interaction {
-        namespace addGradidoTransaction {
+        namespace createConfirmedTransaction {
             
             class GRADIDOBLOCKCHAIN_EXPORT AbstractRole
             {
@@ -28,7 +27,7 @@ namespace gradido {
                 inline std::shared_ptr<const data::GradidoTransaction> getGradidoTransaction() const { return mGradidoTransaction; }
                 inline Timepoint getConfirmedAt() const { return mConfirmedAt; }
 
-                virtual std::vector<data::AccountBalance> calculateFinalBalance(uint64_t id, const blockchain::Abstract& blockchain) const;
+                virtual GradidoUnit calculateFinalBalance(uint64_t id, const blockchain::Abstract& blockchain) const;
 
                 std::shared_ptr<const data::ConfirmedTransaction> createConfirmedTransaction(
                     uint64_t id, 
@@ -55,4 +54,4 @@ namespace gradido {
     }
 }
 
-#endif // __GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_ABSTRACT_ROLE_H
+#endif // __GRADIDO_BLOCKCHAIN_INTERACTION_CREATE_CONFIRMED_TRANSACTION_ABSTRACT_ROLE_H

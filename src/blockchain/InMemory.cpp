@@ -38,7 +38,7 @@ namespace gradido {
 			mExitCalled = true;
 		}
 
-		bool InMemory::addGradidoTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt)
+		bool InMemory::createConfirmedTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt)
 		{
 			auto provider = getProvider();
 			interaction::validate::Context validateGradidoTransaction(*gradidoTransaction);

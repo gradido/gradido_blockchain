@@ -35,7 +35,7 @@ namespace gradido {
 			//! validate and generate confirmed transaction
 			//! throw if gradido transaction isn't valid
 			//! \return false if transaction already exist
-			bool addGradidoTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt);
+			bool createConfirmedTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt);
 
 			// get all transactions sorted by id
 			const TransactionEntries& getSortedTransactions();

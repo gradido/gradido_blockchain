@@ -1,5 +1,5 @@
-#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_CONTEXT_H
-#define __GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_CONTEXT_H
+#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_CREATE_CONFIRMED_TRANSACTION_CONTEXT_H
+#define __GRADIDO_BLOCKCHAIN_INTERACTION_CREATE_CONFIRMED_TRANSACTION_CONTEXT_H
 
 #include "ResultType.h"
 #include "AbstractRole.h"
@@ -12,7 +12,7 @@ namespace gradido {
         class EventTriggeredTransaction;
     }
     namespace interaction {
-        namespace addGradidoTransaction {            
+        namespace createConfirmedTransaction {            
 
             class GRADIDOBLOCKCHAIN_EXPORT Context 
             {
@@ -29,17 +29,7 @@ namespace gradido {
                     Timepoint confirmedAt
                 ) const;
 
-                ResultType run(std::shared_ptr<AbstractRole> role);
-
-                //! check if transaction already exist in blockchain
-                //! \return false if transaction not exist
-                virtual bool isExisting(std::shared_ptr<const AbstractRole> role) const = 0;               
-
-                //! finally, add transaction to blockchain
-                virtual void addToBlockchain(std::shared_ptr<const data::ConfirmedTransaction> confirmedTransaction) = 0;
-
-                //! run after addToBlockchain and after call to AbstractRole::runPastAddToBlockchain
-                virtual void finalize() {};
+                ResultType run(std::shared_ptr<AbstractRole> role);            
                 
             protected:
                 std::shared_ptr<blockchain::Abstract> mBlockchain;
@@ -48,4 +38,4 @@ namespace gradido {
     }
 }
 
-#endif //__GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_CONTEXT_H
+#endif //__GRADIDO_BLOCKCHAIN_INTERACTION_CREATE_CONFIRMED_TRANSACTION_CONTEXT_H
