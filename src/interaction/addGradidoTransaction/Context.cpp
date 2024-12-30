@@ -1,6 +1,7 @@
 #include "gradido_blockchain/interaction/addGradidoTransaction/Context.h"
 
 #include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/blockchain/TransactionRelationType.h"
 #include "gradido_blockchain/interaction/addGradidoTransaction/CommunityRootTransactionRole.h"
 #include "gradido_blockchain/interaction/addGradidoTransaction/CreationTransactionRole.h"
 #include "gradido_blockchain/interaction/addGradidoTransaction/DeferredTransferTransactionRole.h"
@@ -10,11 +11,13 @@
 #include "gradido_blockchain/interaction/addGradidoTransaction/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/addGradidoTransaction/TransferTransactionRole.h"
 #include "gradido_blockchain/interaction/createTransactionByEvent/Context.h"
+#include "gradido_blockchain/interaction/advancedBlockchainFilter/Context.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
 
 #include "magic_enum/magic_enum.hpp"
 
 using namespace magic_enum;
+using namespace std;
 
 namespace gradido {
 	using namespace data;
@@ -57,13 +60,17 @@ namespace gradido {
             {
 				auto provider = mBlockchain->getProvider();
 				auto communityId = mBlockchain->getCommunityId();
+				auto gradidoTransaction = role->getGradidoTransaction();
 
-				interaction::validate::Context validateGradidoTransaction(*role->getGradidoTransaction());
+				interaction::validate::Context validateGradidoTransaction(*gradidoTransaction);
 				validateGradidoTransaction.run(interaction::validate::Type::SINGLE, communityId, provider);
 				
 				if (isExisting(role)) {
 					return ResultType::ALREADY_EXIST;
 				}
+
+				vector<std::shared_ptr<const TransactionEntry>> previousTransactions;
+				previousTransactions.reserve(enum_integer(TransactionRelationType::Max));
 
 				uint64_t id = 1;
 				auto lastTransaction = mBlockchain->findOne(Filter::LAST_TRANSACTION);
@@ -89,6 +96,12 @@ namespace gradido {
 					}
 					
 					id = lastTransaction->getTransactionNr() + 1;
+					advancedBlockchainFilter::Context blockchainFilter(mBlockchain);
+					previousTransactions[enum_integer(TransactionRelationType::SenderPrevious)] =
+						blockchainFilter.findRelatedTransaction(gradidoTransaction, lastTransaction->getTransactionNr() - 1, TransactionRelationType::SenderPrevious);
+					previousTransactions[enum_integer(TransactionRelationType::RecipientPrevious)] =
+						blockchainFilter.findRelatedTransaction(gradidoTransaction, lastTransaction->getTransactionNr() - 1, TransactionRelationType::RecipientPrevious);
+					previousTransactions[enum_integer(TransactionRelationType::Previous)] = lastTransaction;
 				}
 				
 				data::ConstConfirmedTransactionPtr lastConfirmedTransaction;
@@ -98,8 +111,8 @@ namespace gradido {
 						return ResultType::INVALID_PREVIOUS_TRANSACTION_IS_YOUNGER;
 					}
 				}
-
-				auto confirmedTransaction = role->createConfirmedTransaction(id, lastConfirmedTransaction, *mBlockchain);
+				
+				auto confirmedTransaction = role->createConfirmedTransaction(id, previousTransactions, *mBlockchain);
 				role->runPreValidate(confirmedTransaction, mBlockchain);
 
 				// important! validation

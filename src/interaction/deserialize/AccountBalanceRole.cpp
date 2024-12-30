@@ -5,7 +5,7 @@ namespace gradido {
     namespace interaction {
         namespace deserialize {
             AccountBalanceRole::AccountBalanceRole(const AccountBalanceMessage& accountBalance)
-                : mAccountBalance(accountBalance["balance_owner"_f].value(), accountBalance["balance"_f].value_or(0))
+                : mAccountBalance(accountBalance["pubkey"_f].value(), accountBalance["balance"_f].value_or(0))
             {
             }
         }

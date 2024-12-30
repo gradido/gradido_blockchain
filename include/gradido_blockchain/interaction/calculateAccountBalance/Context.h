@@ -2,11 +2,16 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_CALCULATE_ACCOUNT_BALANCE_CONTEXT_H
 
 #include "gradido_blockchain/export.h"
+#include "gradido_blockchain/data/BalanceOwner.h"
+#include "gradido_blockchain/memory/Block.h"
 
 namespace gradido {
 	namespace blockchain {
 		class Abstract;
 		class TransactionEntry;
+	}
+	namespace data {
+		class AccountBalance;
 	}
 	namespace interaction {
 		namespace calculateAccountBalance {
@@ -24,6 +29,7 @@ namespace gradido {
 				// calculate (final) balances after a specific transaction
 				std::vector<data::AccountBalance> run(
 					data::ConstGradidoTransactionPtr gradidoTransaction,
+					const std::map<blockchain::TransactionRelationType, std::shared_ptr<const blockchain::TransactionEntry>>& relatedTransactions,
 					Timepoint confirmedAt,
 					uint64_t id
 				);
@@ -37,12 +43,12 @@ namespace gradido {
 				);
 					
 			protected:	
-				std::shared_ptr<AbstractRole> getRole(const data::TransactionBody& body);
-				std::pair<Timepoint, GradidoUnit> calculateBookBackTimeoutedDeferredTransfer(
-					std::shared_ptr<const blockchain::TransactionEntry> transactionEntry
-				);
-				std::pair<Timepoint, GradidoUnit> calculateRedeemedDeferredTransferChange(
-					const std::pair<std::shared_ptr<const blockchain::TransactionEntry>, std::shared_ptr<const blockchain::TransactionEntry>>& deferredRedeemingTransferPair
+				//! confirmedAt confirmation date for transaction from which the body is
+				std::shared_ptr<AbstractRole> getRole(std::shared_ptr<const data::TransactionBody> body, Timepoint confirmedAt);
+				AccountBalance calculateAccountBalance(
+					std::shared_ptr<const blockchain::TransactionEntry> lastOwnerTransaction,
+					memory::ConstBlockPtr ownerPublicKey,
+					Timepoint confirmedAt
 				);
 				const blockchain::Abstract& mBlockchain;
 					

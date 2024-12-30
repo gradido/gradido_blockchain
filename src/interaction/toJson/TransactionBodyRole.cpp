@@ -83,8 +83,8 @@ namespace gradido {
 				else if (mBody.isCommunityRoot()) {
 					auto communityRoot = mBody.getCommunityRoot();
 					Value v(kObjectType);
-					if (communityRoot->getPubkey()) {
-						v.AddMember("pubkey", Value(communityRoot->getPubkey()->convertToHex().data(), alloc), alloc);
+					if (communityRoot->getPublicKey()) {
+						v.AddMember("pubkey", Value(communityRoot->getPublicKey()->convertToHex().data(), alloc), alloc);
 					}
 					if (communityRoot->getGmwPubkey()) {
 						v.AddMember("gmwPubkey", Value(communityRoot->getGmwPubkey()->convertToHex().data(), alloc), alloc);
@@ -111,8 +111,8 @@ namespace gradido {
 			{
 				auto alloc = rootDocument.GetAllocator();
 				Value v(kObjectType);
-				if (data.getPubkey()) {
-					v.AddMember("pubkey", Value(data.getPubkey()->convertToHex().data(), alloc), alloc);
+				if (data.getPublicKey()) {
+					v.AddMember("pubkey", Value(data.getPublicKey()->convertToHex().data(), alloc), alloc);
 				}
 				v.AddMember("amount", data.getAmount().getGradidoCent(), alloc);
 				if (!data.getCommunityId().empty()) {

@@ -39,7 +39,7 @@ namespace gradido {
 		bool GradidoTransaction::isInvolved(const memory::Block& publicKey) const
 		{
 			for (auto& signPair : mSignatureMap.getSignaturePairs()) {
-				if (signPair.getPubkey()->isTheSame(publicKey)) {
+				if (signPair.getPublicKey()->isTheSame(publicKey)) {
 					return true;
 				}
 			}
@@ -52,13 +52,13 @@ namespace gradido {
 			for (auto& signPair : mSignatureMap.getSignaturePairs()) {
 				bool found = false;
 				for (auto& involvedAddress : involvedAddresses) {
-					if (involvedAddress->isTheSame(signPair.getPubkey())) {
+					if (involvedAddress->isTheSame(signPair.getPublicKey())) {
 						found = true;
 						break;
 					}
 				}
 				if (!found) {
-					involvedAddresses.push_back(signPair.getPubkey());
+					involvedAddresses.push_back(signPair.getPublicKey());
 				}
 			}
 			return involvedAddresses;

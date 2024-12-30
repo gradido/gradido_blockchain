@@ -13,7 +13,7 @@ namespace gradido {
                 virtual validate::Type getValidationType() const {
                     return TransactionBodyRole::getValidationType() | validate::Type::MONTH_RANGE;
                 }
-            protected:
+                virtual std::vector<data::AccountBalance> calculateAccountBalances(uint64_t maxTransactionNr) const;
             };
         }
     }

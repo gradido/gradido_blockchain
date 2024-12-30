@@ -1,6 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_ABSTRACT_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_ADD_GRADIDO_TRANSACTION_ABSTRACT_ROLE_H
 
+#include "gradido_blockchain/blockchain/TransactionRelationType.h"
 #include "gradido_blockchain/GradidoUnit.h"
 #include "gradido_blockchain/interaction/validate/Type.h"
 #include "gradido_blockchain/memory/Block.h"
@@ -9,6 +10,7 @@
 namespace gradido {
     namespace blockchain {
         class Abstract;
+        class TransactionEntry;
     }
     namespace data {
         class GradidoTransaction;
@@ -22,17 +24,26 @@ namespace gradido {
             class GRADIDOBLOCKCHAIN_EXPORT AbstractRole
             {
             public:
-                AbstractRole(std::shared_ptr<data::GradidoTransaction> gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt);
+                AbstractRole(
+                    std::shared_ptr<data::GradidoTransaction> gradidoTransaction,
+                    memory::ConstBlockPtr messageId, 
+                    Timepoint confirmedAt,
+                    std::shared_ptr<blockchain::Abstract> blockchain
+                );
                 virtual ~AbstractRole();
 
                 inline std::shared_ptr<const data::GradidoTransaction> getGradidoTransaction() const { return mGradidoTransaction; }
                 inline Timepoint getConfirmedAt() const { return mConfirmedAt; }
 
-                virtual std::vector<data::AccountBalance> calculateFinalBalance(uint64_t id, const blockchain::Abstract& blockchain) const;
+                virtual std::vector<data::AccountBalance> calculateFinalBalance(
+                    uint64_t id,
+                    const std::vector<std::shared_ptr<const blockchain::TransactionEntry>>& relatedTransactions,
+                    const blockchain::Abstract& blockchain                    
+                ) const;
 
                 std::shared_ptr<const data::ConfirmedTransaction> createConfirmedTransaction(
-                    uint64_t id, 
-                    std::shared_ptr<const data::ConfirmedTransaction> lastConfirmedTransaction,
+                    uint64_t id,
+                    const std::vector<std::shared_ptr<const blockchain::TransactionEntry>>& relatedTransactions,
                     const blockchain::Abstract& blockchain
                 ) const;
 
@@ -46,10 +57,15 @@ namespace gradido {
                     std::shared_ptr<blockchain::Abstract> blockchain
                 ) const {};
 
+                virtual std::vector<data::AccountBalance> calculateAccountBalances(uint64_t maxTransactionNr) const = 0;
+
             protected:
+                data::AccountBalance calculateAccountBalance(memory::ConstBlockPtr publicKey, uint64_t maxTransactionNr, GradidoUnit amount) const;
+
                 std::shared_ptr<data::GradidoTransaction> mGradidoTransaction;
                 memory::ConstBlockPtr mMessageId;
                 Timepoint mConfirmedAt;
+                std::shared_ptr<blockchain::Abstract> mBlockchain;
             };
         }
     }

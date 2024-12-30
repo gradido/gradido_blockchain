@@ -31,14 +31,14 @@ namespace gradido {
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
 					for (auto& sigPair : mGradidoTransaction.getSignatureMap().getSignaturePairs()) {
-						validateEd25519PublicKey(sigPair.getPubkey(), __FUNCTION__);
+						validateEd25519PublicKey(sigPair.getPublicKey(), __FUNCTION__);
 						validateEd25519Signature(sigPair.getSignature(), __FUNCTION__);
 							
-						KeyPairEd25519 key_pair(sigPair.getPubkey());
+						KeyPairEd25519 key_pair(sigPair.getPublicKey());
 						if (!key_pair.verify(*mGradidoTransaction.getBodyBytes(), *sigPair.getSignature())) {
 							throw TransactionValidationInvalidSignatureException(
 								"pubkey don't belong to body bytes", 
-								sigPair.getPubkey(),
+								sigPair.getPublicKey(),
 								sigPair.getSignature(),
 								mGradidoTransaction.getBodyBytes()
 							);

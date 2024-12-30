@@ -1,43 +1,73 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/blockchain/TransactionRelationType.h"
+#include "gradido_blockchain/data/AccountBalance.h"
+#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/AbstractRole.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/GradidoCreationRole.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/GradidoDeferredTransferRole.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/GradidoRedeemDeferredTransferRole.h"
+#include "gradido_blockchain/interaction/calculateAccountBalance/GradidoTimeoutDeferredTransferRole.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/GradidoTransferRole.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/RegisterAddressRole.h"
 
+#include "magic_enum/magic_enum.hpp"
+
+using namespace magic_enum;
+
 namespace gradido {
 	using namespace blockchain;
+	using namespace data;
 
 	namespace interaction {
 		namespace calculateAccountBalance {
 			std::vector<data::AccountBalance> Context::run(
 				data::ConstGradidoTransactionPtr gradidoTransaction,
+				const std::map<blockchain::TransactionRelationType, std::shared_ptr<const blockchain::TransactionEntry>>& relatedTransactions,
 				Timepoint confirmedAt,
 				uint64_t id
 			) {
 				auto transactionBody = gradidoTransaction->getTransactionBody();
-
+				
 				if (transactionBody->isRegisterAddress() && transactionBody->getType() != data::CrossGroupType::LOCAL) {
 					throw std::runtime_error("not implemented yet");
 				}
-				if (transactionBody->isTransfer() || transactionBody->isCreation() || transactionBody->isDeferredTransfer()) {
-					auto role = getRole(*transactionBody);
-					auto balance = run(role->getFinalBalanceAddress(), confirmedAt, id - 1);
-					balance += role->getAmountAdded(role->getFinalBalanceAddress());
-					GradidoUnit subtractAmount = role->getAmountCost(role->getFinalBalanceAddress());
-					if (balance < subtractAmount) {
-						throw InsufficientBalanceException(
-							"not enough gdd",
-							subtractAmount,
-							balance
-						);
-					}
-					balance -= subtractAmount;
-					return balance;
+				
+				auto role = getRole(transactionBody, confirmedAt);
+				if (!role) {
+					throw GradidoNodeInvalidDataException("cannot find role for this transaction type");
 				}
-				return 0.0;
+				std::vector<data::AccountBalance> resultAccountBalances;
+				for (auto& it : relatedTransactions) {
+
+				}
+				if (role->getSender()) {
+					resultAccountBalances.push_back(calculateAccountBalance(
+						relatedTransactions[enum_integer(TransactionRelationType::SenderPrevious)],
+						role->getSender(),
+						confirmedAt
+					));
+				}
+				if (role->getRecipient()) {
+					resultAccountBalances.push_back(calculateAccountBalance(
+						relatedTransactions[enum_integer(TransactionRelationType::RecipientPrevious)],
+						role->getRecipient(),
+						confirmedAt
+					));
+				}
+
+				auto balance = run(role->getFinalBalanceAddress(), confirmedAt, id - 1);
+				balance += role->getAmountAdded(role->getFinalBalanceAddress());
+				GradidoUnit subtractAmount = role->getAmountCost(role->getFinalBalanceAddress());
+				if (balance < subtractAmount) {
+					throw InsufficientBalanceException(
+						"not enough gdd",
+						subtractAmount,
+						balance
+					);
+				}
+				balance -= subtractAmount;
+				return balance;
 			}
 
 			GradidoUnit Context::run(
@@ -156,60 +186,37 @@ namespace gradido {
 				return gdd;
 			}
 
-			std::shared_ptr<AbstractRole> Context::getRole(const data::TransactionBody& body)
+			std::shared_ptr<AbstractRole> Context::getRole(std::shared_ptr<const data::TransactionBody> body, Timepoint confirmedAt)
 			{
-				if (body.isCreation()) {
-					return std::make_shared<GradidoCreationRole>(*body.getCreation());
-				}
-				if (body.isDeferredTransfer()) {
-					return std::make_shared<GradidoDeferredTransferRole>(body);
-				}
-				if (body.isRedeemDeferredTransfer()) {
-					return std::make_shared<GradidoRedeemDeferredTransferRole>(body);
-				}
-				if (body.isTransfer()) {
-					return std::make_shared<GradidoTransferRole>(*body.getTransfer());
-				}
-				if (body.isRegisterAddress()) {
-					return std::make_shared<RegisterAddressRole>(*body.getRegisterAddress());
-				}
-				return nullptr;
+				// attention! work only if order in enum don't change
+				static const std::array<std::function<std::shared_ptr<AbstractRole>()>, enum_integer(TransactionType::MAX_VALUE)> roleCreators = {
+					[&]() { return make_shared<GradidoCreationRole>(body); },
+					[&]() { return make_shared<GradidoTransferRole>(body); },
+					[&]() { return nullptr; },
+					[&]() { return make_shared<RegisterAddressRole>(body); },
+					[&]() { return make_shared<GradidoDeferredTransferRole>(body); },
+					[&]() { return nullptr; },
+					[&]() { return make_shared<GradidoRedeemDeferredTransferRole>(body); },
+					[&]() { return make_shared<GradidoTimeoutDeferredTransferRole>(body, confirmedAt, mBlockchain); }
+				};
+				return roleCreators[enum_integer(body->getTransactionType())]();
 			}
 
-			std::pair<Timepoint, GradidoUnit> Context::calculateBookBackTimeoutedDeferredTransfer(
-				std::shared_ptr<const blockchain::TransactionEntry> transactionEntry
-			) {
-				auto confirmedTransaction = transactionEntry->getConfirmedTransaction();
-				auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
-				assert(body->isDeferredTransfer());
-
-				auto confirmedAt = confirmedTransaction->getConfirmedAt().getAsTimepoint();
-				// get the amount put into deferredTransfer which we can get back at timeout when not redeemd
-				GradidoDeferredTransferRole deferredTransferRole(*body);
-				auto timeout = body->getDeferredTransfer()->getTimeout().getAsTimepoint();
-				return { timeout, deferredTransferRole.getAmountAdded(deferredTransferRole.getSender().getPubkey()) };
-			}
-
-			std::pair<Timepoint, GradidoUnit> Context::calculateRedeemedDeferredTransferChange(
-				const std::pair<std::shared_ptr<const blockchain::TransactionEntry>, std::shared_ptr<const blockchain::TransactionEntry>>& deferredRedeemingTransferPair
+			AccountBalance Context::calculateAccountBalance(
+				std::shared_ptr<const blockchain::TransactionEntry> lastOwnerTransaction,
+				memory::ConstBlockPtr ownerPublicKey,
+				Timepoint confirmedAt
 			)
-			{
-				auto deferredConfirmedTransaction = deferredRedeemingTransferPair.first->getConfirmedTransaction();
-				auto deferredConfirmedAt = deferredConfirmedTransaction->getConfirmedAt().getAsTimepoint();
-				auto deferredBody = deferredConfirmedTransaction->getGradidoTransaction()->getTransactionBody();
-				assert(deferredBody->isDeferredTransfer());
-				GradidoDeferredTransferRole deferredTransferRole(*deferredBody);
-				auto deferredTransferAmount = deferredTransferRole.getAmountCost(deferredBody->getDeferredTransfer()->getSenderPublicKey());
-
-				auto redeemingConfirmedTransaction = deferredRedeemingTransferPair.second->getConfirmedTransaction();
-				auto redeemingConfirmedAt = redeemingConfirmedTransaction->getConfirmedAt().getAsTimepoint();
-				auto redeemingBody = redeemingConfirmedTransaction->getGradidoTransaction()->getTransactionBody();
-				auto redeemingRole = getRole(*redeemingBody);
-				auto redeemingTransferAmount = redeemingRole->getAmountCost(deferredBody->getDeferredTransfer()->getRecipientPublicKey());
-
-				auto change = deferredTransferAmount.calculateDecay(deferredConfirmedAt, redeemingConfirmedAt);
-				change -= redeemingTransferAmount;
-				return { redeemingConfirmedAt, change };
+			{	
+				auto ownerConfirmedTransaction = lastOwnerTransaction->getConfirmedTransaction();
+				auto lastOwnerTransactionConfirmedAt = ownerConfirmedTransaction->getConfirmedAt();
+				auto role = getRole(lastOwnerTransaction->getTransactionBody(), lastOwnerTransactionConfirmedAt);
+				if (!role) return { ownerPublicKey, 0ll };
+				auto decayedBalance = ownerConfirmedTransaction->getAccountBalance(ownerPublicKey)
+					.getBalance()
+					.calculateDecay(lastOwnerTransactionConfirmedAt, confirmedAt)
+				;
+				return { ownerPublicKey, decayedBalance + role->getAmountAdded(ownerPublicKey) - role->getAmountCost(ownerPublicKey) };
 			}
 		}
 	}

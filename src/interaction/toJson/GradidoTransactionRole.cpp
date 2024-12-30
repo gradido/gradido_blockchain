@@ -18,8 +18,8 @@ namespace gradido {
 				Value signatures(kArrayType);
 				for (auto signaturePair : mTransaction.getSignatureMap().getSignaturePairs()) {
 					Value v(kObjectType);
-					if (signaturePair.getPubkey()) {
-						v.AddMember("pubkey", Value(signaturePair.getPubkey()->convertToHex().data(), alloc), alloc);
+					if (signaturePair.getPublicKey()) {
+						v.AddMember("pubkey", Value(signaturePair.getPublicKey()->convertToHex().data(), alloc), alloc);
 					}
 					if (signaturePair.getSignature()) {
 						v.AddMember("signature", Value(signaturePair.getSignature()->convertToHex().data(), alloc), alloc);

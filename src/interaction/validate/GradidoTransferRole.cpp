@@ -19,7 +19,7 @@ namespace gradido {
 				assert(gradidoTransfer);
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mRequiredSignPublicKeys.push_back(gradidoTransfer->getSender().getPubkey());
+				mRequiredSignPublicKeys.push_back(gradidoTransfer->getSender().getPublicKey());
 			}
 
 			void GradidoTransferRole::run(
@@ -37,7 +37,7 @@ namespace gradido {
 				{
 					validateEd25519PublicKey(mGradidoTransfer->getRecipient(), "recipient");
 
-					if (mGradidoTransfer->getRecipient()->isTheSame(sender.getPubkey())) {
+					if (mGradidoTransfer->getRecipient()->isTheSame(sender.getPublicKey())) {
 						throw TransactionValidationException("sender and recipient are the same");
 					}
 				}
@@ -84,7 +84,7 @@ namespace gradido {
 				calculateAccountBalance::Context c(*blockchain);
 				auto& sender = mGradidoTransfer->getSender();
 				auto finalBalance = c.run(
-					sender.getPubkey(),
+					sender.getPublicKey(),
 					mConfirmedAt, // calculate decay after last transaction balance until confirmation date
 					previousConfirmedTransaction.getId(), // calculate until this transaction nr
 					sender.getCommunityId()
@@ -108,7 +108,7 @@ namespace gradido {
 				// check if sender address was registered
 				auto senderAddressType = senderBlockchain->getAddressType(
 					filterBuilder
-					.setInvolvedPublicKey(mGradidoTransfer->getSender().getPubkey())
+					.setInvolvedPublicKey(mGradidoTransfer->getSender().getPublicKey())
 					.setMaxTransactionNr(senderPreviousConfirmedTransaction.getId())
 					.build()
 				);
@@ -116,7 +116,7 @@ namespace gradido {
 					throw WrongAddressTypeException(
 						"sender address not registered", 
 						senderAddressType, 
-						mGradidoTransfer->getSender().getPubkey()
+						mGradidoTransfer->getSender().getPublicKey()
 					);
 				}
 

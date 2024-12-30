@@ -14,8 +14,8 @@ namespace gradido {
 
 			~GradidoCreation() {}
 
-			inline std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const { return { mRecipient.getPubkey()}; }
-			inline bool isInvolved(const memory::Block& publicKey) const { return publicKey.isTheSame(mRecipient.getPubkey()); }
+			inline std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const { return { mRecipient.getPublicKey()}; }
+			inline bool isInvolved(const memory::Block& publicKey) const { return publicKey.isTheSame(mRecipient.getPublicKey()); }
 
 			inline const TransferAmount& getRecipient() const { return mRecipient; }
 			inline TimestampSeconds getTargetDate() const { return mTargetDate; }

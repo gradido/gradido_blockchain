@@ -5,7 +5,6 @@
 #include "protopuf/message.h"
 
 #include "gradido_blockchain/data/AddressType.h"
-#include "gradido_blockchain/data/BalanceOwner.h"
 #include "gradido_blockchain/data/CrossGroupType.h"
 #include "gradido_blockchain/data/MemoKeyType.h"
 #include "gradido_blockchain/memory/VectorCacheAllocator.h"
@@ -20,7 +19,7 @@ namespace gradido {
 
             //  ----------------  basic_types.proto -----------------------------------
             using AccountBalanceMessage = message<
-                enum_field <"balance_owner", 1, data::BalanceOwner>,
+                bytes_field <"pubkey", 1>,
                 int64_field<"balance", 2>
             >;
 

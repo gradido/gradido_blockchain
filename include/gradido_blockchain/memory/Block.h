@@ -1,7 +1,6 @@
 #ifndef __GRADIDO_BLOCKCHAIN_MEMORY_BLOCK_H
 #define __GRADIDO_BLOCKCHAIN_MEMORY_BLOCK_H
 
-#include "BlockStack.h"
 #include "VectorCacheAllocator.h"
 #include "gradido_blockchain/export.h"
 

@@ -10,7 +10,7 @@ namespace gradido {
             {
             public:
                 using TransactionBodyRole::TransactionBodyRole;
-            protected:
+                virtual std::vector<data::AccountBalance> calculateAccountBalances(uint64_t maxTransactionNr) const;
             };
         }
     }

@@ -45,6 +45,11 @@ namespace gradido {
 			inline memory::ConstBlockPtr getRunningHash() const { return mRunningHash; }
 			inline memory::ConstBlockPtr getMessageId() const { return mMessageId; }
 			inline const std::vector<AccountBalance>& getAccountBalances() const { return mAccountBalances; }
+			bool hasAccountBalance(const memory::Block& publicKey) const;
+			//! \return accountBalance if found one with same public key or an new empty AccountBalance with this public key
+			AccountBalance getAccountBalance(memory::ConstBlockPtr publicKey) const;
+			bool isInvolved(const memory::Block& publicKey) const;
+			std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
 
 		protected:
 			uint64_t                    				mId;

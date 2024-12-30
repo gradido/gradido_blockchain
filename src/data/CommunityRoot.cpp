@@ -7,7 +7,7 @@ namespace gradido {
 			memory::ConstBlockPtr pubkeyPtr,
 			memory::ConstBlockPtr gmwPubkeyPtr,
 			memory::ConstBlockPtr aufPubkeyPtr
-		) : mPubkey(pubkeyPtr), mGmwPubkey(gmwPubkeyPtr), mAufPubkey(aufPubkeyPtr) 
+		) : mPublicKey(pubkeyPtr), mGmwPubkey(gmwPubkeyPtr), mAufPubkey(aufPubkeyPtr) 
 		{
 			KeyPairEd25519::validatePublicKey(pubkeyPtr);
 			KeyPairEd25519::validatePublicKey(gmwPubkeyPtr);
@@ -31,7 +31,7 @@ namespace gradido {
 		bool CommunityRoot::isInvolved(const memory::Block& publicKey) const
 		{
 			return
-				publicKey.isTheSame(mPubkey) ||
+				publicKey.isTheSame(mPublicKey) ||
 				publicKey.isTheSame(mGmwPubkey) ||
 				publicKey.isTheSame(mAufPubkey);
 		}

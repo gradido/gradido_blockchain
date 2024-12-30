@@ -9,46 +9,29 @@ namespace gradido {
 			class GradidoRedeemDeferredTransferRole : public AbstractRole
 			{
 			public:
-				GradidoRedeemDeferredTransferRole(const data::TransactionBody& body)
-					: mBody(body)
+				GradidoRedeemDeferredTransferRole(
+					std::shared_ptr<const data::TransactionBody> body,
+					Timepoint confirmedAt,
+					const blockchain::Abstract& blockchain
+				) : AbstractRole(body)
 				{
-					assert(body.isDeferredTransfer());
+					auto transactionEntry = blockchain.getTransactionForId(body->getRedeemDeferredTransfer()->getDeferredTransferTransactionNr());
+					mDeferredTransferConfirmedAt = transactionEntry->getConfirmedTransaction()->getConfirmedAt();
+					mRedeemTransferConfirmedAt = confirmedAt;
+					mDeferredTransfer = transactionEntry->getTransactionBody()->getDeferredTransfer();
 				}
 
-				inline bool isFinalBalanceForAccount(memory::ConstBlockPtr accountPublicKey) const {
-					return getSender().getPubkey()->isTheSame(accountPublicKey);
-				}
 				//! how much this transaction will add to the account balance
-				GradidoUnit getAmountAdded(memory::ConstBlockPtr accountPublicKey) const {
-					if (getRecipient()->isTheSame(accountPublicKey)) {
-						return getSender().getAmount();
-					}
-					return 0.0;
-				};
-				//! how much this transaction will reduce the account balance
-				GradidoUnit getAmountCost(memory::ConstBlockPtr accountPublicKey) const {
-					if (getSender().getPubkey()->isTheSame(accountPublicKey)) {
-						return getSender().getAmount();
-					}
-					return 0.0;
-				};
-				GradidoUnit getDecayedAmount(Timepoint startDate, Timepoint endDate) const {
-					return getSender().getAmount().calculateDecay(startDate, endDate);
+				virtual GradidoUnit getAmountAdded(memory::ConstBlockPtr accountPublicKey) const;
+
+				virtual memory::ConstBlockPtr getRecipient() const {
+					return mBody->getRedeemDeferredTransfer()->getTransfer().getRecipient();
 				}
-				inline memory::ConstBlockPtr getFinalBalanceAddress() const {
-					return getSender().getPubkey();
-				}
-				inline const data::TransferAmount& getSender() const {
-					return mBody.getRedeemDeferredTransfer()->getTransfer().getSender();
-				}
-				inline const memory::ConstBlockPtr getRecipient() const {
-					return mBody.getRedeemDeferredTransfer()->getTransfer().getRecipient();
-				}
-				inline const Timepoint getCreatedAt() const {
-					return mBody.getCreatedAt();
-				}
-			protected:								
-				const data::TransactionBody& mBody;
+
+			protected:
+				std::shared_ptr<const data::GradidoDeferredTransfer> mDeferredTransfer;
+				Timepoint mDeferredTransferConfirmedAt;
+				Timepoint mRedeemTransferConfirmedAt;
 			};
 		}
 	}

@@ -41,8 +41,8 @@ public:
 	int precalculateSharedSecret(const AuthenticatedEncryption& recipiantKey);
 	bool removePrecalculatedSharedSecret(int index);
 	
-	memory::ConstBlockPtr mPubkey;
-	inline const memory::ConstBlockPtr getPublicKey() const { return mPubkey; }
+	memory::ConstBlockPtr mPublicKey;
+	inline const memory::ConstBlockPtr getPublicKey() const { return mPublicKey; }
 	inline const memory::ConstBlockPtr getPrivateKey() const { return mPrivkey; }
 	inline bool hasPrivateKey() const { return static_cast<bool>(mPrivkey); }
 protected:

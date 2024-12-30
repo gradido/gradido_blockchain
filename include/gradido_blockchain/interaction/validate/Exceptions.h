@@ -71,13 +71,13 @@ namespace gradido {
 				std::string getFullString() const noexcept;
 				rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 
-				inline memory::ConstBlockPtr getPubkey() const { return mPubkey; }
+				inline memory::ConstBlockPtr getPublicKey() const { return mPublicKey; }
 				inline memory::ConstBlockPtr getSignature() const { return mSignature; }
 				inline memory::ConstBlockPtr getBodyBytes() const { return mBodyBytes; }
 
 			protected:
 
-				memory::ConstBlockPtr mPubkey;
+				memory::ConstBlockPtr mPublicKey;
 				memory::ConstBlockPtr mSignature;
 				memory::ConstBlockPtr mBodyBytes;
 			};
@@ -175,7 +175,7 @@ namespace gradido {
 
 			protected:
 				data::AddressType mType;
-				memory::ConstBlockPtr mPubkey;
+				memory::ConstBlockPtr mPublicKey;
 			};
 		}
 	}

@@ -9,12 +9,8 @@ namespace gradido {
 			class RegisterAddressRole : public AbstractRole
 			{
 			public:
-				RegisterAddressRole(const data::RegisterAddress& registerAddress)
-					: mRegisterAddress(registerAddress) {}
+				using AbstractRole::AbstractRole;
 
-				inline bool isFinalBalanceForAccount(memory::ConstBlockPtr accountPublicKey) const {
-					return true;
-				}
 				//! how much this transaction will add to the account balance
 				GradidoUnit getAmountAdded(memory::ConstBlockPtr accountPublicKey) const {
 					return 0.0;
@@ -23,15 +19,10 @@ namespace gradido {
 				GradidoUnit getAmountCost(memory::ConstBlockPtr accountPublicKey) const {
 					return 0.0;
 				};
-				GradidoUnit getDecayedAmount(Timepoint startDate, Timepoint endDate) const {
-					return 0.0;
-				}
-				inline memory::ConstBlockPtr getFinalBalanceAddress() const {
-					return mRegisterAddress.getAccountPublicKey();
-				}
-			protected:
-				const data::RegisterAddress& mRegisterAddress;
 
+				virtual memory::ConstBlockPtr getSender() const {
+					return nullptr;
+				}
 			};
 		}
 	}

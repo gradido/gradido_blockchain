@@ -18,7 +18,7 @@ namespace gradido {
 				assert(deferredTransfer);
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mRequiredSignPublicKeys.push_back(deferredTransfer->getTransfer().getSender().getPubkey());
+				mRequiredSignPublicKeys.push_back(deferredTransfer->getTransfer().getSender().getPublicKey());
 			}
 
 			void GradidoDeferredTransferRole::run(

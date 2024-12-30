@@ -75,5 +75,53 @@ namespace gradido {
 			crypto_generichash_final(&state, hash->data(), hash->size());
 			return hash;
 		}
+
+		bool ConfirmedTransaction::hasAccountBalance(const memory::Block& publicKey) const
+		{
+			for (auto& accountBalance : mAccountBalances) {
+				if (publicKey.isTheSame(accountBalance.getPublicKey())) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		AccountBalance ConfirmedTransaction::getAccountBalance(memory::ConstBlockPtr publicKey) const
+		{
+			for (auto& accountBalance : mAccountBalances) {
+				if (accountBalance.getPublicKey()->isTheSame(publicKey)) {
+					return accountBalance;
+				}
+			}
+			return AccountBalance(publicKey, 0ll);
+		}
+
+		bool ConfirmedTransaction::isInvolved(const memory::Block& publicKey) const
+		{
+			for (auto& accountBalance: mAccountBalances) {
+				if (accountBalance.getPublicKey()->isTheSame(publicKey)) {
+					return true;
+				}
+			}
+			return getGradidoTransaction()->isInvolved(publicKey);
+		}
+
+		std::vector<memory::ConstBlockPtr> ConfirmedTransaction::getInvolvedAddresses() const
+		{
+			auto involvedAddresses = getGradidoTransaction()->getInvolvedAddresses();
+			for (auto& accountBalance : mAccountBalances) {
+				bool found = false;
+				for (auto& involvedAddress : involvedAddresses) {
+					if (involvedAddress->isTheSame(accountBalance.getPublicKey())) {
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					involvedAddresses.push_back(accountBalance.getPublicKey());
+				}
+			}
+			return involvedAddresses;
+		}
 	}
 }

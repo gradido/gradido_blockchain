@@ -2,21 +2,21 @@
 #define __GRADIDO_BLOCKCHAIN_DATA_ACCOUNT_BALANCE_H
 
 #include "gradido_blockchain/GradidoUnit.h"
-#include "BalanceOwner.h"
+#include "gradido_blockchain/memory/Block.h"
 
 namespace gradido {
     namespace data {
         class GRADIDOBLOCKCHAIN_EXPORT AccountBalance 
         {
         public:
-            AccountBalance(BalanceOwner owner, GradidoUnit balance)
-                : mOwner(owner), mBalance(balance) {}
+            AccountBalance(memory::ConstBlockPtr publicKey, GradidoUnit balance)
+                : mPublicKey(publicKey), mBalance(balance) {}
             ~AccountBalance() {}
 
-            inline BalanceOwner getOwner() const { return mOwner; }
+            inline memory::ConstBlockPtr getPublicKey() const { return mPublicKey; }
             inline GradidoUnit getBalance() const { return mBalance; }
         protected:
-            BalanceOwner mOwner;
+            memory::ConstBlockPtr mPublicKey;
             GradidoUnit mBalance;
         };
        

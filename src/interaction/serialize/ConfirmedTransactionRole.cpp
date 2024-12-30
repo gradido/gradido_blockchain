@@ -27,7 +27,10 @@ namespace gradido {
 				std::vector<AccountBalanceMessage> accountBalanceMessages;
 				accountBalanceMessages.reserve(mConfirmedTransaction.getAccountBalances().size());
 				for (auto& accountBalance : mConfirmedTransaction.getAccountBalances()) {
-					accountBalanceMessages.push_back(AccountBalanceMessage(accountBalance.getOwner(), accountBalance.getBalance().getGradidoCent()));
+					accountBalanceMessages.push_back(AccountBalanceMessage(
+						accountBalance.getPublicKey()->copyAsVector(), 
+						accountBalance.getBalance().getGradidoCent()
+					));
 				}
 				
 				return ConfirmedTransactionMessage{

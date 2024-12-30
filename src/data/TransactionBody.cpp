@@ -12,6 +12,7 @@ namespace gradido {
 			else if (isDeferredTransfer()) return data::TransactionType::DEFERRED_TRANSFER;
 			else if (isCommunityRoot()) return data::TransactionType::COMMUNITY_ROOT;
 			else if (isRedeemDeferredTransfer()) return data::TransactionType::REDEEM_DEFERRED_TRANSFER;
+			else if (isTimeoutDeferredTransfer()) return data::TransactionType::TIMEOUT_DEFERRED_TRANSFER;
 			return data::TransactionType::NONE;
 		}
 
@@ -56,13 +57,13 @@ namespace gradido {
 			return false;
 		}
 
-		const TransferAmount* TransactionBody::getTransferAmount() const
+		const TransferAmount& TransactionBody::getTransferAmount() const
 		{
-			if (isTransfer()) { return &mTransfer->getSender(); }
-			else if (isDeferredTransfer()) { return &mDeferredTransfer->getTransfer().getSender(); }
-			else if (isRedeemDeferredTransfer()) { return &mRedeemDeferredTransfer->getTransfer().getSender(); }
-			else if (isCreation()) { return &mCreation->getRecipient(); }
-			return nullptr;
+			if (isTransfer()) { return mTransfer->getSender(); }
+			else if (isDeferredTransfer()) { return mDeferredTransfer->getTransfer().getSender(); }
+			else if (isRedeemDeferredTransfer()) { return mRedeemDeferredTransfer->getTransfer().getSender(); }
+			else if (isCreation()) { return mCreation->getRecipient(); }
+			throw GradidoNodeInvalidDataException("cannnot provide transferAmount for this transaction type");
 		}
 
 		std::vector<memory::ConstBlockPtr> TransactionBody::getInvolvedAddresses() const

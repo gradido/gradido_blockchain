@@ -328,7 +328,7 @@ namespace gradido {
 				
 				auto lastFromSameSender = findOne(
 					filterBuilder
-					.setInvolvedPublicKey(transfer.getSender().getPubkey())
+					.setInvolvedPublicKey(transfer.getSender().getPublicKey())
 					.setMaxTransactionNr(confirmedTransaction->getId() - 1)
 					.setSearchDirection(SearchDirection::DESC)
 					.setPagination(Pagination(1))
@@ -337,7 +337,7 @@ namespace gradido {
 				if (lastFromSameSender) {
 					auto lastFromSameSenderBody = lastFromSameSender->getTransactionBody();
 					
-					auto pubkey = transfer.getSender().getPubkey();
+					auto pubkey = transfer.getSender().getPublicKey();
 					if (lastFromSameSenderBody->isDeferredTransfer()) {
 						auto lastFromSameSenderRecipient = lastFromSameSenderBody->getDeferredTransfer()->getTransfer().getRecipient();
 						if (lastFromSameSenderRecipient->isTheSame(pubkey)) {

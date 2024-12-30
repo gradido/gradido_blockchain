@@ -156,17 +156,17 @@ namespace gradido {
 
 				// check for account type
 				for (auto& signPair : signPairs) {
-					if(signPair.getPubkey()->isTheSame(mRegisterAddress->getAccountPublicKey()) ||
-					   signPair.getPubkey()->isTheSame(mRegisterAddress->getUserPublicKey())) {
+					if(signPair.getPublicKey()->isTheSame(mRegisterAddress->getAccountPublicKey()) ||
+					   signPair.getPublicKey()->isTheSame(mRegisterAddress->getUserPublicKey())) {
 						continue;
 					}
-					if (signPair.getPubkey()->isTheSame(communityRoot->getTransactionBody()->getCommunityRoot()->getPubkey())) {
+					if (signPair.getPublicKey()->isTheSame(communityRoot->getTransactionBody()->getCommunityRoot()->getPublicKey())) {
 						foundCommunityRootSigner = true;
 						break;
 					}
 				}
 				if (!foundCommunityRootSigner) {
-					throw TransactionValidationRequiredSignMissingException({ communityRoot->getTransactionBody()->getCommunityRoot()->getPubkey()});
+					throw TransactionValidationRequiredSignMissingException({ communityRoot->getTransactionBody()->getCommunityRoot()->getPublicKey()});
 				}
 			}
 		}

@@ -7,7 +7,7 @@ namespace gradido {
 			memory::ConstBlockPtr pubkeyPtr,
 			GradidoUnit amount,
 			const std::string& communityId /* = ""*/
-		) : mPubkey(pubkeyPtr), mAmount(amount), mCommunityId(communityId)
+		) : mPublicKey(pubkeyPtr), mAmount(amount), mCommunityId(communityId)
 		{
 			KeyPairEd25519::validatePublicKey(pubkeyPtr);
 		}

@@ -34,7 +34,7 @@ namespace gradido {
 				Value accountBalances(kArrayType);
 				for (auto& accountBalance : mTransaction.getAccountBalances()) {
 					Value b(kObjectType);
-					b.AddMember("owner", Value(enum_name(accountBalance.getOwner()).data(), alloc), alloc);
+					b.AddMember("pubkey", Value(accountBalance.getPublicKey()->convertToHex().data(), alloc), alloc);
 					b.AddMember("balance", Value(accountBalance.getBalance().toString().data(), alloc), alloc);
 					accountBalances.PushBack(b, alloc);
 				}

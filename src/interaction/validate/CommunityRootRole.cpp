@@ -14,7 +14,7 @@ namespace gradido {
 				assert(communityRoot);
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mRequiredSignPublicKeys.push_back(mCommunityRoot->getPubkey());
+				mRequiredSignPublicKeys.push_back(mCommunityRoot->getPublicKey());
 			}
 
 			void CommunityRootRole::run(
@@ -25,11 +25,11 @@ namespace gradido {
 				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					validateEd25519PublicKey(mCommunityRoot->getPubkey(), "pubkey");
+					validateEd25519PublicKey(mCommunityRoot->getPublicKey(), "pubkey");
 					validateEd25519PublicKey(mCommunityRoot->getGmwPubkey(), "gmwPubkey");
 					validateEd25519PublicKey(mCommunityRoot->getAufPubkey(), "aufPubkey");
 
-					const auto& pubkey = *mCommunityRoot->getPubkey();
+					const auto& pubkey = *mCommunityRoot->getPublicKey();
 					const auto& gmwPubkey = *mCommunityRoot->getGmwPubkey();
 					const auto& aufPubkey = *mCommunityRoot->getAufPubkey();
 

@@ -4,36 +4,28 @@
 #include "AbstractRole.h"
 
 namespace gradido {
+	namespace data {
+		class TransferAmount;
+	}
 	namespace interaction {
 		namespace calculateAccountBalance {
 			class GradidoCreationRole : public AbstractRole
 			{
 			public:
-				GradidoCreationRole(const data::GradidoCreation& creation)
-					: mCreation(creation) {}
+				using AbstractRole::AbstractRole;
 
-				inline bool isFinalBalanceForAccount(memory::ConstBlockPtr accountPublicKey) const {
-					return true;
-				}
-				//! how much this transaction will add to the account balance
-				GradidoUnit getAmountAdded(memory::ConstBlockPtr accountPublicKey) const {
-					if (mCreation.getRecipient().getPubkey()->isTheSame(accountPublicKey)) {
-						return mCreation.getRecipient().getAmount();
-					}
-					return 0.0;
-				};
 				//! how much this transaction will reduce the account balance
 				GradidoUnit getAmountCost(memory::ConstBlockPtr accountPublicKey) const {
 					return 0.0;
 				};
-				GradidoUnit getDecayedAmount(Timepoint startDate, Timepoint endDate) const {
-					return mCreation.getRecipient().getAmount().calculateDecay(startDate, endDate);
-				}
-				inline memory::ConstBlockPtr getFinalBalanceAddress() const {
-					return mCreation.getRecipient().getPubkey();
+
+				virtual memory::ConstBlockPtr getRecipient() const {
+					return mBody->getCreation()->getRecipient().getPublicKey();
+				};
+				virtual memory::ConstBlockPtr getSender() const {
+					return nullptr;
 				}
 			protected:
-				const data::GradidoCreation& mCreation;
 			};
 		}
 	}

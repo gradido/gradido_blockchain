@@ -1,9 +1,13 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/blockchain/FilterBuilder.h"
+#include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/interaction/addGradidoTransaction/TransactionBodyRole.h"
 
+using namespace std;
 
 namespace gradido {
     using namespace data;
+    using namespace blockchain;
 
     namespace interaction {
         namespace addGradidoTransaction {

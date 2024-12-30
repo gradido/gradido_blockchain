@@ -11,6 +11,7 @@ namespace gradido {
 		*/
 		/*! @enum model::gradido::TransactionType
 			enum for different transaction types
+			!!! don't change order
 		*/
 		/// Transaction Type Enum
 		enum class TransactionType : uint8_t {
