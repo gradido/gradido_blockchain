@@ -1,7 +1,7 @@
 #include "gradido_blockchain/interaction/addGradidoTransaction/Context.h"
-
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/TransactionRelationType.h"
+#include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/interaction/addGradidoTransaction/CommunityRootTransactionRole.h"
 #include "gradido_blockchain/interaction/addGradidoTransaction/CreationTransactionRole.h"
 #include "gradido_blockchain/interaction/addGradidoTransaction/DeferredTransferTransactionRole.h"
@@ -32,15 +32,16 @@ namespace gradido {
 				Timepoint confirmedAt
 			) const {
 				// attention! work only if order in enum don't change
+				// todo: check if it is possible to use a template class for that
 				static const std::array<std::function<std::shared_ptr<AbstractRole>()>, enum_integer(TransactionType::MAX_VALUE)> roleCreators = {
-					[&]() { return std::make_shared<CreationTransactionRole>(gradidoTransaction, messageId, confirmedAt); },
-					[&]() { return std::make_shared<TransferTransactionRole>(gradidoTransaction, messageId, confirmedAt); },
+					[&]() { return std::make_shared<CreationTransactionRole>(gradidoTransaction, messageId, confirmedAt, mBlockchain); },
+					[&]() { return std::make_shared<TransferTransactionRole>(gradidoTransaction, messageId, confirmedAt, mBlockchain); },
 					[&]() { return nullptr; },
-					[&]() { return std::make_shared<RegisterAddressRole>(gradidoTransaction, messageId, confirmedAt); },
-					[&]() { return std::make_shared<DeferredTransferTransactionRole>(gradidoTransaction, messageId, confirmedAt); },
-					[&]() { return std::make_shared<CommunityRootTransactionRole>(gradidoTransaction, messageId, confirmedAt); },
-					[&]() { return std::make_shared<RedeemDeferredTransferTransactionRole>(gradidoTransaction, messageId, confirmedAt); },
-					[&]() { return std::make_shared<TimeoutDeferredTransferTransactionRole>(gradidoTransaction, messageId, confirmedAt); }
+					[&]() { return std::make_shared<RegisterAddressRole>(gradidoTransaction, messageId, confirmedAt, mBlockchain); },
+					[&]() { return std::make_shared<DeferredTransferTransactionRole>(gradidoTransaction, messageId, confirmedAt, mBlockchain); },
+					[&]() { return std::make_shared<CommunityRootTransactionRole>(gradidoTransaction, messageId, confirmedAt, mBlockchain); },
+					[&]() { return std::make_shared<RedeemDeferredTransferTransactionRole>(gradidoTransaction, messageId, confirmedAt, mBlockchain); },
+					[&]() { return std::make_shared<TimeoutDeferredTransferTransactionRole>(gradidoTransaction, messageId, confirmedAt, mBlockchain); }
 				};
 
 				auto type = gradidoTransaction->getTransactionBody()->getTransactionType();
@@ -68,10 +69,6 @@ namespace gradido {
 				if (isExisting(role)) {
 					return ResultType::ALREADY_EXIST;
 				}
-
-				vector<std::shared_ptr<const TransactionEntry>> previousTransactions;
-				previousTransactions.reserve(enum_integer(TransactionRelationType::Max));
-
 				uint64_t id = 1;
 				auto lastTransaction = mBlockchain->findOne(Filter::LAST_TRANSACTION);
 				if (lastTransaction) {
@@ -96,12 +93,6 @@ namespace gradido {
 					}
 					
 					id = lastTransaction->getTransactionNr() + 1;
-					advancedBlockchainFilter::Context blockchainFilter(mBlockchain);
-					previousTransactions[enum_integer(TransactionRelationType::SenderPrevious)] =
-						blockchainFilter.findRelatedTransaction(gradidoTransaction, lastTransaction->getTransactionNr() - 1, TransactionRelationType::SenderPrevious);
-					previousTransactions[enum_integer(TransactionRelationType::RecipientPrevious)] =
-						blockchainFilter.findRelatedTransaction(gradidoTransaction, lastTransaction->getTransactionNr() - 1, TransactionRelationType::RecipientPrevious);
-					previousTransactions[enum_integer(TransactionRelationType::Previous)] = lastTransaction;
 				}
 				
 				data::ConstConfirmedTransactionPtr lastConfirmedTransaction;
@@ -112,7 +103,7 @@ namespace gradido {
 					}
 				}
 				
-				auto confirmedTransaction = role->createConfirmedTransaction(id, previousTransactions, *mBlockchain);
+				auto confirmedTransaction = role->createConfirmedTransaction(id);
 				role->runPreValidate(confirmedTransaction, mBlockchain);
 
 				// important! validation

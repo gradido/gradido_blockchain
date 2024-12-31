@@ -21,6 +21,20 @@ namespace gradido {
                     data::TransactionTriggerEventType::DEFERRED_TIMEOUT_REVERSAL
                 ));
             };
+
+            std::vector<data::AccountBalance> DeferredTransferTransactionRole::calculateAccountBalances(uint64_t maxTransactionNr) const
+            {
+                auto& transfer = mBody->getDeferredTransfer()->getTransfer();
+                auto& transferAmount = transfer.getSender();
+
+                return {
+                    // sender
+                    calculateAccountBalance(transferAmount.getPublicKey(), maxTransactionNr, transferAmount.getAmount() * GradidoUnit(-1ll)),
+                    // recipient
+                    calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, transferAmount.getAmount())
+                };
+
+            }
         }
     }
 }

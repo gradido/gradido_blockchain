@@ -15,7 +15,8 @@ namespace gradido {
                 TransactionBodyRole(
                     std::shared_ptr<data::GradidoTransaction> gradidoTransaction,
                     memory::ConstBlockPtr messageId, 
-                    Timepoint confirmedAt
+                    Timepoint confirmedAt,
+                    std::shared_ptr<blockchain::Abstract> blockchain
                 );
                 virtual validate::Type getValidationType() const;
             protected:

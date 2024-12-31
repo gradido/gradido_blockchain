@@ -14,6 +14,7 @@ namespace gradido {
                     std::shared_ptr<const data::ConfirmedTransaction> confirmedTransaction,
                     std::shared_ptr<blockchain::Abstract> blockchain
                 ) const;
+                virtual std::vector<data::AccountBalance> calculateAccountBalances(uint64_t maxTransactionNr) const;
             protected:
             };
         }

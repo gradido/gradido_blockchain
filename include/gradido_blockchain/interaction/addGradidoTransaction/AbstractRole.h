@@ -35,17 +35,7 @@ namespace gradido {
                 inline std::shared_ptr<const data::GradidoTransaction> getGradidoTransaction() const { return mGradidoTransaction; }
                 inline Timepoint getConfirmedAt() const { return mConfirmedAt; }
 
-                virtual std::vector<data::AccountBalance> calculateFinalBalance(
-                    uint64_t id,
-                    const std::vector<std::shared_ptr<const blockchain::TransactionEntry>>& relatedTransactions,
-                    const blockchain::Abstract& blockchain                    
-                ) const;
-
-                std::shared_ptr<const data::ConfirmedTransaction> createConfirmedTransaction(
-                    uint64_t id,
-                    const std::vector<std::shared_ptr<const blockchain::TransactionEntry>>& relatedTransactions,
-                    const blockchain::Abstract& blockchain
-                ) const;
+                std::shared_ptr<const data::ConfirmedTransaction> createConfirmedTransaction(uint64_t id) const;
 
                 //! will be called before main validation
                 virtual void runPreValidate(std::shared_ptr<const data::ConfirmedTransaction> confirmedTransaction, std::shared_ptr<blockchain::Abstract> blockchain) {};

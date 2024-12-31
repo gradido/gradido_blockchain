@@ -38,11 +38,7 @@ namespace gradido {
                 }
             }
 
-            std::shared_ptr<const data::ConfirmedTransaction> AbstractRole::createConfirmedTransaction(
-                uint64_t id,
-                const vector<shared_ptr<const blockchain::TransactionEntry>>& relatedTransactions,
-                const blockchain::Abstract& blockchain
-            ) const
+            std::shared_ptr<const data::ConfirmedTransaction> AbstractRole::createConfirmedTransaction(uint64_t id) const
             {
                return make_shared<data::ConfirmedTransaction>(
                    id,
@@ -50,8 +46,7 @@ namespace gradido {
                    mConfirmedAt,
                    GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
                    mMessageId,
-                   calculateFinalBalance(id, relatedTransactions, blockchain),
-                   relatedTransactions[enum_integer(TransactionRelationType::Previous)]
+                   calculateAccountBalances(id - 1)
                 );
 
             }

@@ -12,9 +12,10 @@ namespace gradido {
                 TimeoutDeferredTransferTransactionRole(
                     std::shared_ptr<data::GradidoTransaction> gradidoTransaction,
                     memory::ConstBlockPtr messageId,
-                    Timepoint confirmedAt
+                    Timepoint confirmedAt,
+                    std::shared_ptr<blockchain::Abstract> blockchain
                 );
-                ~TimeoutDeferredTransferTransactionRole() {}
+                virtual std::vector<data::AccountBalance> calculateAccountBalances(uint64_t maxTransactionNr) const;
             protected:
             };
         }
