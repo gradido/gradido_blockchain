@@ -11,11 +11,10 @@ namespace gradido {
 			public:
 				GradidoTimeoutDeferredTransferRole(
 					std::shared_ptr<const data::TransactionBody> body,
-					Timepoint confirmedAt,
-					const blockchain::Abstract& blockchain
+					std::shared_ptr<blockchain::Abstract> blockchain
 				): AbstractRole(body)
 				{
-					auto transactionEntry = blockchain.getTransactionForId(body->getTimeoutDeferredTransfer()->getDeferredTransferTransactionNr());
+					auto transactionEntry = blockchain->getTransactionForId(body->getTimeoutDeferredTransfer()->getDeferredTransferTransactionNr());
 					mDeferredTransfer = transactionEntry->getTransactionBody()->getDeferredTransfer();
 				}
 

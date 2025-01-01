@@ -23,6 +23,9 @@ namespace gradido {
 				virtual memory::ConstBlockPtr getSender() const {
 					return nullptr;
 				}
+				virtual memory::ConstBlockPtr getRecipient() const {
+					return nullptr;
+				}
 			};
 		}
 	}

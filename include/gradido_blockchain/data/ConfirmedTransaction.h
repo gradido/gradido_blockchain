@@ -48,6 +48,10 @@ namespace gradido {
 			bool hasAccountBalance(const memory::Block& publicKey) const;
 			//! \return accountBalance if found one with same public key or an new empty AccountBalance with this public key
 			AccountBalance getAccountBalance(memory::ConstBlockPtr publicKey) const;
+			inline GradidoUnit getDecayedAccountBalance(
+				memory::ConstBlockPtr publicKey,
+				Timepoint endDate = std::chrono::system_clock::now()
+			) const;
 			bool isInvolved(const memory::Block& publicKey) const;
 			std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
 
@@ -61,9 +65,21 @@ namespace gradido {
 			std::vector<AccountBalance>					mAccountBalances;
 		};
 
+		GradidoUnit ConfirmedTransaction::getDecayedAccountBalance(
+			memory::ConstBlockPtr publicKey, 
+			Timepoint endDate/* = std::chrono::system_clock::now()*/
+		) const {
+			return getAccountBalance(publicKey).getBalance().calculateDecay(mConfirmedAt, endDate);
+		}
+
+
+
 		typedef std::shared_ptr<ConfirmedTransaction> ConfirmedTransactionPtr;
 		typedef std::shared_ptr<const ConfirmedTransaction> ConstConfirmedTransactionPtr;
 	}
+
+	
 }
+
 
 #endif //__GRADIDO_BLOCKCHAIN_DATA_CONFIRMED_TRANSACTION_H

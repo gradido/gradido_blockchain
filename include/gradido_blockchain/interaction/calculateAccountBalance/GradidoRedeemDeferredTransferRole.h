@@ -12,10 +12,10 @@ namespace gradido {
 				GradidoRedeemDeferredTransferRole(
 					std::shared_ptr<const data::TransactionBody> body,
 					Timepoint confirmedAt,
-					const blockchain::Abstract& blockchain
+					std::shared_ptr<blockchain::Abstract> blockchain
 				) : AbstractRole(body)
 				{
-					auto transactionEntry = blockchain.getTransactionForId(body->getRedeemDeferredTransfer()->getDeferredTransferTransactionNr());
+					auto transactionEntry = blockchain->getTransactionForId(body->getRedeemDeferredTransfer()->getDeferredTransferTransactionNr());
 					mDeferredTransferConfirmedAt = transactionEntry->getConfirmedTransaction()->getConfirmedAt();
 					mRedeemTransferConfirmedAt = confirmedAt;
 					mDeferredTransfer = transactionEntry->getTransactionBody()->getDeferredTransfer();

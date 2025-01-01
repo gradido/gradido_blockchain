@@ -7,18 +7,25 @@ namespace gradido {
 	namespace data {
 		class TransferAmount;
 	}
+	namespace blockchain {
+		class Abstract;
+	}
 	namespace interaction {
 		namespace calculateAccountBalance {
 			class GradidoCreationRole : public AbstractRole
 			{
 			public:
-				using AbstractRole::AbstractRole;
+				GradidoCreationRole(
+					std::shared_ptr<const data::TransactionBody> body, 
+					std::shared_ptr<const blockchain::Abstract> blockchain
+				): AbstractRole(body), mBlockchain(blockchain) {}
 
 				//! how much this transaction will reduce the account balance
 				GradidoUnit getAmountCost(memory::ConstBlockPtr accountPublicKey) const {
 					return 0.0;
 				};
 
+				virtual GradidoUnit getAmountAdded(memory::ConstBlockPtr accountPublicKey) const;
 				virtual memory::ConstBlockPtr getRecipient() const {
 					return mBody->getCreation()->getRecipient().getPublicKey();
 				};
@@ -26,6 +33,7 @@ namespace gradido {
 					return nullptr;
 				}
 			protected:
+				std::shared_ptr <const blockchain::Abstract> mBlockchain;
 			};
 		}
 	}
