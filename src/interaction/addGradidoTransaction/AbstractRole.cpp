@@ -54,26 +54,23 @@ namespace gradido {
             AccountBalance AbstractRole::calculateAccountBalance(memory::ConstBlockPtr publicKey, uint64_t maxTransactionNr, GradidoUnit amount) const
             {
                 FilterBuilder builder;
-                GradidoUnit previousAccountBalance;
-                Timepoint previousAccountBalanceDate;
+                GradidoUnit previousDecayedAccountBalance;
                 mBlockchain->findOne(builder
                     .setInvolvedPublicKey(publicKey)
                     .setSearchDirection(SearchDirection::DESC)
                     .setMaxTransactionNr(maxTransactionNr)
-                    .setFilterFunction([publicKey, &previousAccountBalance, &previousAccountBalanceDate](const TransactionEntry& entry) -> FilterResult 
+                    .setFilterFunction([publicKey, &previousDecayedAccountBalance, this](const TransactionEntry& entry) -> FilterResult
                         {
                             auto confirmedTransction = entry.getConfirmedTransaction();
                             if (confirmedTransction->hasAccountBalance(*publicKey)) {
-                                previousAccountBalance = confirmedTransction->getAccountBalance(publicKey).getBalance();
-                                previousAccountBalanceDate = confirmedTransction->getConfirmedAt();
+                                previousDecayedAccountBalance = confirmedTransction->getDecayedAccountBalance(publicKey, mConfirmedAt);
                                 return FilterResult::STOP;
                             }
                             return FilterResult::DISMISS;
                         })
                     .build()
                 );
-                auto previousBalanceDecayed = previousAccountBalance.calculateDecay(previousAccountBalanceDate, mConfirmedAt);
-                return AccountBalance(publicKey, previousBalanceDecayed + amount);
+                return AccountBalance(publicKey, previousDecayedAccountBalance + amount);
             }
         }
     }

@@ -29,17 +29,17 @@ namespace gradido {
 				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					if (mDeferredTransfer->getTimeout().getAsTimepoint() - mConfirmedAt.getAsTimepoint() > GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL) {
+					if (mDeferredTransfer->getTimeoutDuration() > GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL) {
 						std::string expected = "<= " 
 						+ DataTypeConverter::timePointToString(mConfirmedAt.getAsTimepoint()) 
 						+ " + " 
 						+ DataTypeConverter::timespanToString(GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL);						
 						throw TransactionValidationInvalidInputException(
-							"timeout is to far away from confirmed date", 
-							"timeout", 
-							"TimestampSeconds",
+							"timeoutDuration is to long", 
+							"timeout_duration", 
+							"uint32",
 							expected.data(),
-							DataTypeConverter::timePointToString(mDeferredTransfer->getTimeout().getAsTimepoint()).data()
+							DataTypeConverter::timespanToString(mDeferredTransfer->getTimeoutDuration()).data()
 						);
 					}
 					if (senderPreviousConfirmedTransaction) {
