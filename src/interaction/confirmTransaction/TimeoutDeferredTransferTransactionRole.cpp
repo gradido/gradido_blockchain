@@ -1,12 +1,12 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
-#include "gradido_blockchain/interaction/addGradidoTransaction/TimeoutDeferredTransferTransactionRole.h"
+#include "gradido_blockchain/interaction/confirmTransaction/TimeoutDeferredTransferTransactionRole.h"
 
 namespace gradido {
     namespace interaction {
-        namespace addGradidoTransaction {
+        namespace confirmTransaction {
             TimeoutDeferredTransferTransactionRole::TimeoutDeferredTransferTransactionRole(
-                std::shared_ptr<data::GradidoTransaction> gradidoTransaction,
+                std::shared_ptr<const data::GradidoTransaction> gradidoTransaction,
                 memory::ConstBlockPtr messageId,
                 Timepoint confirmedAt,
                 std::shared_ptr<blockchain::Abstract> blockchain

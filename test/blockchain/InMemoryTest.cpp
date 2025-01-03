@@ -25,7 +25,8 @@ using namespace date;
 using namespace magic_enum;
 using magic_enum::iostream_operators::operator<<;
 
-#define VERSION_STRING "3.3"
+#define VERSION_STRING "3.4"
+static EncryptedMemo memo(MemoKeyType::PLAIN, std::make_shared<memory::Block>("dummy memo"));
 
 Timepoint getPreviousNMonth2(const Timepoint& startDate, int monthsAgo) {
     auto ymd = date::year_month_day(floor<days>(startDate));
@@ -60,7 +61,7 @@ void InMemoryTest::SetUp()
 		)
 		.sign(g_KeyPairs[0])
 		;
-	mBlockchain->addGradidoTransaction(builder.build(), nullptr, mLastCreatedAt);
+	mBlockchain->createAndAddConfirmedTransaction(builder.build(), nullptr, mLastCreatedAt);
 }
 
 void InMemoryTest::TearDown()
@@ -114,7 +115,7 @@ void InMemoryTest::createRegisterAddress(int keyPairIndexStart)
 		.sign(g_KeyPairs[0])
 	;
 		
-	ASSERT_TRUE(mBlockchain->addGradidoTransaction(builder.build(), nullptr, generateNewConfirmedAt(mLastCreatedAt)));
+	ASSERT_TRUE(mBlockchain->createAndAddConfirmedTransaction(builder.build(), nullptr, generateNewConfirmedAt(mLastCreatedAt)));
 }
 
 bool InMemoryTest::createGradidoCreation(
@@ -129,7 +130,7 @@ bool InMemoryTest::createGradidoCreation(
 	
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo("dummy memo")
+		.addMemo(memo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
@@ -138,7 +139,7 @@ bool InMemoryTest::createGradidoCreation(
 		)
 		.sign(g_KeyPairs[signerKeyPairIndex])
 	;	
-	return mBlockchain->addGradidoTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
+	return mBlockchain->createAndAddConfirmedTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
 }
 
 bool InMemoryTest::createGradidoTransfer(
@@ -152,7 +153,7 @@ bool InMemoryTest::createGradidoTransfer(
 
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo("dummy memo")
+		.addMemo(memo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
@@ -161,7 +162,7 @@ bool InMemoryTest::createGradidoTransfer(
 		)
 		.sign(g_KeyPairs[senderKeyPairIndex])
 	;	
-	return mBlockchain->addGradidoTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
+	return mBlockchain->createAndAddConfirmedTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
 }
 
 bool InMemoryTest::createGradidoDeferredTransfer(
@@ -169,25 +170,25 @@ bool InMemoryTest::createGradidoDeferredTransfer(
 	int recipientKeyPairIndex,
 	GradidoUnit amount, 
 	Timepoint createdAt,
-	Timepoint timeout
+	std::chrono::seconds timeoutDuration
 ) {
 	assert(senderKeyPairIndex > 0 && senderKeyPairIndex < g_KeyPairs.size());
 	assert(recipientKeyPairIndex > 0 && recipientKeyPairIndex < g_KeyPairs.size());
 
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo("dummy memo")
+		.addMemo({ MemoKeyType::PLAIN, std::make_shared<memory::Block>("dummy memo") })
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount),
 				g_KeyPairs[recipientKeyPairIndex]->getPublicKey()
-			), timeout
+			), timeoutDuration
 		)
 		.sign(g_KeyPairs[senderKeyPairIndex])
 	;	
-	return mBlockchain->addGradidoTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
+	return mBlockchain->createAndAddConfirmedTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
 }
 
 void InMemoryTest::logBlockchain()
@@ -205,8 +206,8 @@ GradidoUnit InMemoryTest::getBalance(int keyPairIndex, Timepoint date)
 	if(keyPairIndex < 0 || keyPairIndex >= g_KeyPairs.size()) {
 		throw std::runtime_error("invalid key pair index");
 	}
-	interaction::calculateAccountBalance::Context c(*mBlockchain);
-	return c.run(g_KeyPairs[keyPairIndex]->getPublicKey(), date);
+	interaction::calculateAccountBalance::Context c(mBlockchain);
+	return c.fromEnd(g_KeyPairs[keyPairIndex]->getPublicKey(), date);
 }
 
 TEST_F(InMemoryTest, FindCommunityRootTransactionByType)
@@ -416,7 +417,7 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	auto timeout = createdAt + chrono::hours(24 * 60);
 	const auto recipientKeyPairIndex = 7;
 	try {
-		ASSERT_TRUE(createGradidoDeferredTransfer(6, recipientKeyPairIndex, 500.10, createdAt, timeout));
+		ASSERT_TRUE(createGradidoDeferredTransfer(6, recipientKeyPairIndex, 500.10, createdAt, chrono::hours(24 * 60)));
 	} catch(GradidoBlockchainException& ex) {
 		logBlockchain();
 		LOG_F(ERROR, ex.getFullString().data());
@@ -442,7 +443,7 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	auto balanceWhenSecondsDeferredTransferStart = getBalance(recipientKeyPairIndex, createdAt);
 	ASSERT_EQ(balanceWhenSecondsDeferredTransferStart, GradidoUnit(500.10));
 	try {
-		ASSERT_TRUE(createGradidoDeferredTransfer(recipientKeyPairIndex, newRecipientKeyPairIndex, 483.0, createdAt, secondTimeout));
+		ASSERT_TRUE(createGradidoDeferredTransfer(recipientKeyPairIndex, newRecipientKeyPairIndex, 483.0, createdAt, chrono::hours(24 * 30)));
 	}
 	catch (GradidoBlockchainException& ex) {
 		logBlockchain();
@@ -469,5 +470,5 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	// try transfering gdd from deferred transfer again
 	createdAt = generateNewCreatedAt();
 	auto thirdTimeout = createdAt + chrono::hours(30 * 24);
-	EXPECT_NO_THROW(createGradidoDeferredTransfer(recipientKeyPairIndex, 9, 400.0, createdAt, thirdTimeout), InsufficientBalanceException);
+	EXPECT_NO_THROW(createGradidoDeferredTransfer(recipientKeyPairIndex, 9, 400.0, createdAt, chrono::hours(30 * 24)));
 }

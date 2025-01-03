@@ -23,7 +23,7 @@ namespace gradido {
 	namespace interaction {
 		namespace calculateAccountBalance {
 
-			GradidoUnit Context::run(uint64_t startTransactionNr, memory::ConstBlockPtr publicKey, Timepoint endDate) const
+			GradidoUnit Context::fromBegin(uint64_t startTransactionNr, memory::ConstBlockPtr publicKey, Timepoint endDate) const
 			{
 				FilterBuilder builder;
 				GradidoUnit balance(GradidoUnit::zero());
@@ -48,6 +48,35 @@ namespace gradido {
 							lastDate = confirmedAt;
 						}
 						return FilterResult::DISMISS;
+					})
+					.build()
+				);
+				return balance.calculateDecay(lastDate, endDate);
+			}
+
+			// calculate balance address from last transaction found for the pubkey with transaction <= maxTransactionNr
+			GradidoUnit Context::fromEnd(memory::ConstBlockPtr publicKey, Timepoint endDate, uint64_t maxTransactionNr/* = 0*/) const
+			{
+				FilterBuilder builder;
+				GradidoUnit balance(GradidoUnit::zero());
+				Timepoint lastDate;
+				mBlockchain->findAll(builder
+					.setInvolvedPublicKey(publicKey)
+					.setMaxTransactionNr(maxTransactionNr)
+					.setSearchDirection(SearchDirection::DESC)
+					.setFilterFunction([&](const TransactionEntry& entry) -> FilterResult {
+						auto confirmedTransaction = entry.getConfirmedTransaction();
+						if (confirmedTransaction->getConfirmedAt().getAsTimepoint() > endDate) {
+							return FilterResult::DISMISS;
+						}
+						if (!confirmedTransaction->hasAccountBalance(*publicKey)) {
+							return FilterResult::DISMISS;
+						}
+						
+						balance = confirmedTransaction->getAccountBalance(publicKey).getBalance();
+						lastDate = confirmedTransaction->getConfirmedAt();
+						return FilterResult::STOP;
+						
 					})
 					.build()
 				);

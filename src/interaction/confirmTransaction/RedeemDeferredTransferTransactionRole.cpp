@@ -1,11 +1,11 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
-#include "gradido_blockchain/interaction/addGradidoTransaction/RedeemDeferredTransferTransactionRole.h"
+#include "gradido_blockchain/interaction/confirmTransaction/RedeemDeferredTransferTransactionRole.h"
 
 namespace gradido {
     using namespace data;
 
     namespace interaction {
-        namespace addGradidoTransaction {
+        namespace confirmTransaction {
 
             void RedeemDeferredTransferTransactionRole::runPastAddToBlockchain(
                 std::shared_ptr<const data::ConfirmedTransaction> confirmedTransaction,
@@ -22,7 +22,11 @@ namespace gradido {
                 auto deferredTransfer = deferredTransferEntry->getTransactionBody()->getDeferredTransfer();
                 // if remaining amout is less than 0.01 gdd remove timeout transaction trigger event
                 if (deferredTransfer->calculateUseableAmount() - redeemAmount < GradidoUnit(100ll)) {
-                    blockchain->removeTransactionTriggerEvent(deferredTransferId);
+                    blockchain->removeTransactionTriggerEvent(TransactionTriggerEvent(
+                        deferredTransferId,
+                        deferredTransferEntry->getConfirmedTransaction()->getConfirmedAt(),
+                        TransactionTriggerEventType::DEFERRED_TIMEOUT_REVERSAL
+                    ));
                 }
             };
 

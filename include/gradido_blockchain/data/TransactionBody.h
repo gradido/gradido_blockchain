@@ -49,7 +49,7 @@ namespace gradido {
 
 			bool isPairing(const TransactionBody& other) const;
 			bool isInvolved(const memory::Block& publicKey) const;
-			//! return nullptr, if transaction type doesn't have a transfer amount
+			//! throw if not exist on this transaction type
 			const TransferAmount& getTransferAmount() const;
 
 			std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;

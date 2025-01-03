@@ -109,7 +109,7 @@ namespace gradido {
 						GradidoTransferMessage{
 							createTransferAmountMessage(amount),
 							transfer.getRecipient()->copyAsVector()
-						}, deferredTransfer->getTimeoutDuration()
+						}, static_cast<uint32_t>(deferredTransfer->getTimeoutDuration().count())
 					};
 				}
 				else if (mBody.isRedeemDeferredTransfer()) 

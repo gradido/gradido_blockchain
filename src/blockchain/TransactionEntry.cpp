@@ -66,11 +66,12 @@ namespace gradido {
 
 		std::string TransactionEntry::getCoinCommunityId(const data::TransactionBody& body)
 		{
-			auto transferAmount = body.getTransferAmount();
-			if (transferAmount) {
-				return transferAmount->getCommunityId();
+			try {
+				return body.getTransferAmount().getCommunityId();
 			}
-			return "";
+			catch (...) {
+				return "";
+			}
 		}
 	}
 }

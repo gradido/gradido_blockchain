@@ -12,7 +12,7 @@ namespace gradido {
         class ConfirmedTransaction;
     }
     namespace blockchain {
-        class AbstractProvider;
+        class Abstract;
     }
 	namespace interaction {
 		namespace validate {
@@ -30,11 +30,7 @@ namespace gradido {
                 ~Context();
 
                 //! \param blockchainProvider provide Blockchain access to search for specific transactions
-                void run(
-                    Type type = Type::SINGLE,
-                    std::string_view communityId = "",
-                    blockchain::AbstractProvider* blockchainProvider = nullptr
-                );
+                void run(Type type = Type::SINGLE, std::shared_ptr<blockchain::Abstract> blockchain = nullptr);
 
                 //! set sender previous confirmed transaction manually, normally last transaction on blockchain will be used
                 inline void setSenderPreviousConfirmedTransaction(std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction) {
@@ -46,7 +42,6 @@ namespace gradido {
 				}
             protected:
                 std::unique_ptr<AbstractRole> mRole;
-                std::string mCommunityId;
                 std::shared_ptr<const data::ConfirmedTransaction> mSenderPreviousConfirmedTransaction;
                 std::shared_ptr<const data::ConfirmedTransaction> mRecipientPreviousConfirmedTransaction;
             };

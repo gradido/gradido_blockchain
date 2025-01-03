@@ -8,6 +8,7 @@ using namespace rapidjson;
 using namespace magic_enum;
 
 namespace gradido {
+	using namespace data;
 	namespace interaction {
 		namespace toJson {
 			Value TransactionBodyRole::composeJson(rapidjson::Document& rootDocument) const
@@ -18,7 +19,11 @@ namespace gradido {
 				for (auto& encryptedMemo : mBody.getMemos()) {
 					Value memo(kObjectType);
 					memo.AddMember("type", Value(enum_name(encryptedMemo.getKeyType()).data(), alloc), alloc);
-					memo.AddMember("memo", Value(encryptedMemo.getMemo()->convertToBase64().data(), alloc), alloc);
+					if (MemoKeyType::PLAIN == encryptedMemo.getKeyType()) {
+						memo.AddMember("memo", Value(encryptedMemo.getMemo()->copyAsString().data(), alloc), alloc);
+					} else {
+						memo.AddMember("memo", Value(encryptedMemo.getMemo()->convertToBase64().data(), alloc), alloc);
+					}
 					memos.PushBack(memo, alloc);
 				}
 				d.AddMember("memos", memos, alloc);

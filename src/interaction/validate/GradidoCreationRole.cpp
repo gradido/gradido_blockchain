@@ -24,14 +24,13 @@ namespace gradido {
 
 			void GradidoCreationRole::run(
 				Type type,
-				std::string_view communityId,
-				blockchain::AbstractProvider* blockchainProvider,
+				std::shared_ptr<blockchain::Abstract> blockchain,
 				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
 				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
 				const auto& recipient = mGradidoCreation->getRecipient();
 				TransferAmountRole transferAmountRole(mGradidoCreation->getRecipient());
-				transferAmountRole.run(type, communityId, blockchainProvider, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
+				transferAmountRole.run(type, blockchain, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
 
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
@@ -59,7 +58,6 @@ namespace gradido {
 
 				if ((type & Type::MONTH_RANGE) == Type::MONTH_RANGE)
 				{
-					auto blockchain = findBlockchain(blockchainProvider, communityId, __FUNCTION__);
 					if (!recipientPreviousConfirmedTransaction && senderPreviousConfirmedTransaction) {
 						recipientPreviousConfirmedTransaction = senderPreviousConfirmedTransaction;
 					}
@@ -96,7 +94,6 @@ namespace gradido {
 					}
 				}
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
-					auto blockchain = findBlockchain(blockchainProvider, communityId, __FUNCTION__);
 					blockchain::Filter filter;
 					filter.involvedPublicKey = mGradidoCreation->getRecipient().getPublicKey();
 					auto addressType = blockchain->getAddressType(filter);

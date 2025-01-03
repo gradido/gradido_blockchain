@@ -10,16 +10,15 @@ using namespace data;
 using namespace interaction;
 using namespace std;
 
-constexpr auto memo = "Ich teile mit dir";
 
 TEST(ValidateGradidoTransferTest, Valid) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo(memo)
+		.addMemo(transferMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.sign(g_KeyPairs[4])
@@ -34,11 +33,11 @@ TEST(ValidateGradidoTransferTest, Valid) {
 TEST(ValidateGradidoTransferTest, Outbound) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo(memo)
+		.addMemo(transferMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.setSenderCommunity("dummy-group")
@@ -58,7 +57,7 @@ TEST(ValidateGradidoTransferTest, invalidMemoEmpty) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.sign(g_KeyPairs[4])
@@ -75,11 +74,11 @@ TEST(ValidateGradidoTransferTest, invalidMemoEmpty) {
 TEST(ValidateGradidoTransferTest, invalidMemoToShort) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo("hall")
+		.addMemo(hallMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.sign(g_KeyPairs[4])
@@ -96,11 +95,11 @@ TEST(ValidateGradidoTransferTest, invalidMemoToShort) {
 TEST(ValidateGradidoTransferTest, invalidMemoToBig) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo(std::string(451, 'a')) // fill with 451 x a
+		.addMemo(aFilledMemo) // fill with 451 x a
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.sign(g_KeyPairs[4])
@@ -119,11 +118,11 @@ TEST(ValidateGradidoTransferTest, invalidMemoToBig) {
 TEST(ValidateGradidoTransferTest, InvalidAmountZero) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo(memo)
+		.addMemo(transferMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "0"), // zero amount
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::zero()), // zero amount
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.sign(g_KeyPairs[4])
@@ -138,11 +137,11 @@ TEST(ValidateGradidoTransferTest, InvalidAmountZero) {
 TEST(ValidateGradidoTransferTest, InvalidAmountNegative) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo(memo)
+		.addMemo(transferMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "-100.00"), // negative amount
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), -1000000ll), // negative amount
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.sign(g_KeyPairs[4])
@@ -159,13 +158,13 @@ TEST(ValidateGradidoTransferTest, InvalidCoinCommunityIdIdenticalToBlockchainCom
 	std::string communityId = "testGroup";
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo("Ich teile mit dir")
+		.addMemo(transferMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
 			// coin community id is identical to blockchain community id to which transaction belong
 			// not needed so it is a error
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55", communityId),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll, communityId),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.sign(g_KeyPairs[4])
@@ -175,18 +174,18 @@ TEST(ValidateGradidoTransferTest, InvalidCoinCommunityIdIdenticalToBlockchainCom
 	ASSERT_TRUE(body->isTransfer());
 
 	validate::Context c(*body);
-	EXPECT_THROW(c.run(validate::Type::SINGLE, communityId), validate::TransactionValidationInvalidInputException);
+	EXPECT_THROW(c.run(validate::Type::SINGLE), validate::TransactionValidationInvalidInputException);
 }
 
 TEST(ValidateGradidoTransferTest, InvalidCoinCommunityId) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo("Ich teile mit dir")
+		.addMemo(transferMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
 			// invalid character in coin community id
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55", "<script>"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll, "<script>"),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.sign(g_KeyPairs[4])
@@ -203,11 +202,11 @@ TEST(ValidateGradidoTransferTest, InvalidCoinCommunityId) {
 TEST(ValidateGradidoTransferTest, SenderAndRecipientIdentical) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo(memo)
+		.addMemo(transferMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
 			g_KeyPairs[4]->getPublicKey()
 		)
 		.sign(g_KeyPairs[4])
@@ -222,7 +221,7 @@ TEST(ValidateGradidoTransferTest, SenderAndRecipientIdentical) {
 
 TEST(ValidateGradidoTransferTest, NullptrRecipientPublicKey) {
 	EXPECT_THROW(
-		GradidoTransfer(TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"), nullptr),
+		GradidoTransfer(TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll), nullptr),
 		GradidoNullPointerException
 	);
 }
@@ -230,7 +229,7 @@ TEST(ValidateGradidoTransferTest, NullptrRecipientPublicKey) {
 
 TEST(ValidateGradidoTransferTest, EmptyRecipientPublicKey) {
 	EXPECT_THROW(
-		GradidoTransfer(TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"), std::make_shared<memory::Block>(32)),
+		GradidoTransfer(TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll), std::make_shared<memory::Block>(32)),
 		GradidoNodeInvalidDataException
 	);
 }
@@ -238,7 +237,7 @@ TEST(ValidateGradidoTransferTest, EmptyRecipientPublicKey) {
 TEST(ValidateGradidoTransferTest, InvalidRecipientPublicKey) {
 	EXPECT_THROW(
 		GradidoTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
 			std::make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a", 18))
 		), Ed25519InvalidKeyException
 	);

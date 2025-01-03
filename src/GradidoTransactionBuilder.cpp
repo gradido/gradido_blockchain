@@ -79,14 +79,14 @@ namespace gradido {
 
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setDeferredTransfer(
 		data::GradidoTransfer transactionTransfer,
-		Timepoint timeout
+		Duration timeoutDuration
 	)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		return setDeferredTransfer(
 			std::make_unique<data::GradidoDeferredTransfer>(
 				transactionTransfer,
-				timeout
+				static_cast<uint32_t>(chrono::duration_cast<chrono::seconds>(timeoutDuration).count())
 			)
 		);
 	}

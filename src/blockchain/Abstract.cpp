@@ -17,7 +17,7 @@ namespace gradido {
 			FilterBuilder builder;
 			return findOne(builder
 				.setTransactionType(body->getTransactionType())
-				.setTimepointInterval({ body->getCreatedAt() })
+				.setTimepointInterval(TimepointInterval(body->getCreatedAt()))
 				.setFilterFunction([gradidoTransaction](const TransactionEntry& entry) -> FilterResult {
 					const auto& otherGradidoTransaction = entry.getConfirmedTransaction()->getGradidoTransaction();
 					if (gradidoTransaction->getFingerprint()->isTheSame(otherGradidoTransaction->getFingerprint())) {

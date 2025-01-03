@@ -38,7 +38,7 @@ protected:
         int recipientKeyPairIndex,
         GradidoUnit amount, 
         Timepoint createdAt,
-        Timepoint timeout
+        std::chrono::seconds timeoutDuration
     );
 
     void logBlockchain();

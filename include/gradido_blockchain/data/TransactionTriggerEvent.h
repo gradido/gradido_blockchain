@@ -22,6 +22,19 @@ namespace gradido {
             inline TransactionTriggerEventType getType() const { return mType; }
             inline Timepoint getTargetDate() const { return mTargetDate; }
 
+            bool operator == (const TransactionTriggerEvent& other) const {
+                return
+                    mLinkedTransactionNr == other.mLinkedTransactionNr
+                    && mTargetDate == other.mTargetDate
+                    && mType == other.mType
+                ;
+            }
+
+            bool isTheSame(std::shared_ptr<const TransactionTriggerEvent> other) const {
+                if (!other) return false;
+                return *other == *this;
+            }
+
         protected:
             //! main index
             uint64_t mLinkedTransactionNr;

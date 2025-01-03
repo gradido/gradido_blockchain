@@ -80,16 +80,16 @@ namespace gradido {
 
             using GradidoDeferredTransferMessage = message<
                 message_field<"transfer", 1, GradidoTransferMessage>,
-                message_field<"timeout", 2, TimestampSecondsMessage>
+                int32_field<"timeout_duration", 2>
             >;
 
             using GradidoRedeemDeferredTransferMessage = message<
-                uint64_field<"deferred_tansfer_transaction_nr", 1>,
+                uint64_field<"deferred_transfer_transaction_nr", 1>,
                 message_field<"transfer", 2, GradidoTransferMessage>
             >;
 
             using GradidoTimeoutDeferredTransferMessage = message<
-                uint64_field<"deferred_tansfer_transaction_nr", 1>
+                uint64_field<"deferred_transfer_transaction_nr", 1>
             >;
 
             // register_address.proto
@@ -136,7 +136,7 @@ namespace gradido {
                 string_field<"version_number", 4>,// singular, std::vector<StringCachedAlloc>>,
                 bytes_field<"running_hash", 5>,// singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
                 bytes_field<"message_id", 6>,// singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
-                message_field<"account_balance", 7, AccountBalanceMessage, repeated>//, singular, std::vector<StringCachedAlloc>>
+                message_field<"account_balances", 7, AccountBalanceMessage, repeated>//, singular, std::vector<StringCachedAlloc>>
             >;
         }
     }

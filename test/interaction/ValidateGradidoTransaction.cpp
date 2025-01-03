@@ -14,7 +14,6 @@ using namespace interaction;
 using namespace std;
 using namespace memory;
 
-
 TEST(ValidateGradidoTransaction, invalidBody) 
 {
 	constexpr auto invalidBodyString =
@@ -135,11 +134,11 @@ TEST(ValidateGradidoTransaction, validGradidoCreationTransaction)
 {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo("Deine erste Schoepfung ;)")
+		.addMemo(creationMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), 10000000ll),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -155,11 +154,11 @@ TEST(ValidateGradidoTransaction, invalidGradidoCreationTransactionWrongSignature
 {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo("Deine erste Schoepfung ;)")
+		.addMemo(creationMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), 10000000ll),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[4])
@@ -175,11 +174,11 @@ TEST(ValidateGradidoTransaction, validGradidoTransferTransaction)
 {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo("Ich teile mit dir")
+		.addMemo(transferMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.sign(g_KeyPairs[4])
@@ -194,11 +193,11 @@ TEST(ValidateGradidoTransaction, invalidGradidoTransferTransactionWrongSignature
 {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo("Ich teile mit dir")
+		.addMemo(transferMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.sign(g_KeyPairs[3])
@@ -214,15 +213,15 @@ TEST(ValidateGradidoTransaction, validGradidoDeferredTransferTransaction)
 {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo("Link zum einloesen")
+		.addMemo(deferredTransferMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), "555.55"),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), 5555500ll),
 				g_KeyPairs[5]->getPublicKey()
 			),
-			timeout
+			timeoutDuration
 		)
 		.sign(g_KeyPairs[4])
 		;
@@ -237,15 +236,15 @@ TEST(ValidateGradidoTransaction, invalidGradidoDeferredTransferTransactionWrongS
 {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo("Link zum einloesen")
+		.addMemo(deferredTransferMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), "555.55"),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), 5555500ll),
 				g_KeyPairs[5]->getPublicKey()
 			),
-			timeout
+			timeoutDuration
 		)
 		.sign(g_KeyPairs[5])
 		;

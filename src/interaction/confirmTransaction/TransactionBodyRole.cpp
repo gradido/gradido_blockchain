@@ -1,7 +1,7 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
-#include "gradido_blockchain/interaction/addGradidoTransaction/TransactionBodyRole.h"
+#include "gradido_blockchain/interaction/confirmTransaction/TransactionBodyRole.h"
 
 using namespace std;
 
@@ -10,10 +10,10 @@ namespace gradido {
     using namespace blockchain;
 
     namespace interaction {
-        namespace addGradidoTransaction {
+        namespace confirmTransaction {
 
             TransactionBodyRole::TransactionBodyRole(
-                std::shared_ptr<data::GradidoTransaction> gradidoTransaction,
+                std::shared_ptr<const data::GradidoTransaction> gradidoTransaction,
                 memory::ConstBlockPtr messageId,
                 Timepoint confirmedAt,
                 std::shared_ptr<blockchain::Abstract> blockchain

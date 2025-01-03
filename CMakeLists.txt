@@ -67,10 +67,6 @@ FIlE(GLOB THREADING "include/gradido_blockchain/threading/*.h" "src/threading/*.
 FILE(GLOB BLOCKCHAIN "include/gradido_blockchain/blockchain/*.h" "src/blockchain/*.cpp")
 
 
-FILE(GLOB INTERACTION_ADD_GRADIDO_TRANSACTION 
-	"include/gradido_blockchain/interaction/addGradidoTransaction/*.h" 
-	"src/interaction/addGradidoTransaction/*.cpp"
-)
 FILE(GLOB INTERACTION_ADVANCED_BLOCKCHAIN_FILTER 
 	"include/gradido_blockchain/interaction/advancedBlockchainFilter/*.h" 
 	"src/interaction/advancedBlockchainFilter/*.cpp"
@@ -82,6 +78,10 @@ FILE(GLOB INTERACTION_CALCULATE_ACCOUNT_BALANCE
 FILE(GLOB INTERACTION_CALCULATE_CREATION_SUM
 	"include/gradido_blockchain/interaction/calculateCreationSum/*.h" 
 	"src/interaction/calculateCreationSum/*.cpp"
+)
+FILE(GLOB INTERACTION_CONFIRM_TRANSACTION 
+	"include/gradido_blockchain/interaction/confirmTransaction/*.h" 
+	"src/interaction/confirmTransaction/*.cpp"
 )
 FILE(GLOB INTERACTION_CREATE_TRANSACTION_BY_EVENT
 	"include/gradido_blockchain/interaction/createTransactionByEvent/*.h" 
@@ -116,10 +116,10 @@ SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${MODEL_IOTA} 
 	${TINF} 
 	${THREADING}
-	${INTERACTION_ADD_GRADIDO_TRANSACTION}
 	${INTERACTION_ADVANCED_BLOCKCHAIN_FILTER}
 	${INTERACTION_CALCULATE_ACCOUNT_BALANCE}
 	${INTERACTION_CALCULATE_CREATION_SUM}
+	${INTERACTION_CONFIRM_TRANSACTION}
 	${INTERACTION_CREATE_TRANSACTION_BY_EVENT}
 	${INTERACTION_DESERIALIZE}
 	${INTERACTION_SERIALIZE}
@@ -139,10 +139,10 @@ if(MSVC)
 	source_group("memory" FILES ${MEMORY})
 	source_group("tinf" FILES ${TINF})
 	source_group("threading" FILES ${THREADING})	
-	source_group("interaction\\addGradidoTransaction" FILES ${INTERACTION_ADD_GRADIDO_TRANSACTION})
 	source_group("interaction\\advancedBlockchainFilter" FILES ${INTERACTION_ADVANCED_BLOCKCHAIN_FILTER})
 	source_group("interaction\\calculateAccountBalance" FILES ${INTERACTION_CALCULATE_ACCOUNT_BALANCE})
 	source_group("interaction\\calculateCreationSum" FILES ${INTERACTION_CALCULATE_CREATION_SUM})
+	source_group("interaction\\confirmTransaction" FILES ${INTERACTION_CONFIRM_TRANSACTION})
 	source_group("interaction\\createTransactionByEvent" FILES ${INTERACTION_CREATE_TRANSACTION_BY_EVENT})
 	source_group("interaction\\deserialize" FILES ${INTERACTION_DESERIALIZE})
 	source_group("interaction\\serialize" FILES ${INTERACTION_SERIALIZE})

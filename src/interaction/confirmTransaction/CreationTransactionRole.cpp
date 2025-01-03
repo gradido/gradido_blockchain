@@ -1,4 +1,4 @@
-#include "gradido_blockchain/interaction/addGradidoTransaction/CreationTransactionRole.h"
+#include "gradido_blockchain/interaction/confirmTransaction/CreationTransactionRole.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/data/AccountBalance.h"
 #include "gradido_blockchain/data/TransactionBody.h"
@@ -6,7 +6,7 @@
 namespace gradido {
     using namespace blockchain;
     namespace interaction {
-        namespace addGradidoTransaction {
+        namespace confirmTransaction {
             std::vector<data::AccountBalance> CreationTransactionRole::calculateAccountBalances(uint64_t maxTransactionNr) const
             {
                 auto transfer = mBody->getTransfer();

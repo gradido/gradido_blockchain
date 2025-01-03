@@ -32,7 +32,7 @@ namespace gradido {
 					throw MissingMemberException(exceptionMessage, "message_id");
 				}
 				std::vector<data::AccountBalance> accountBalances;
-				auto accountBalanceMessages = message["account_balance"_f];
+				auto accountBalanceMessages = message["account_balances"_f];
 				if (accountBalanceMessages.size()) {
 					accountBalances.reserve(accountBalanceMessages.size());
 					for (int i = 0; i < accountBalanceMessages.size(); i++) {

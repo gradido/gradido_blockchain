@@ -9,6 +9,7 @@
 #define MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION std::chrono::seconds(120)
 
 #define GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL std::chrono::months(3)
+#define GRADIDO_DEFERRED_TRANSFER_MIN_TIMEOUT_INTERVAL std::chrono::hours(1)
 
 // passphrase word count
 #define PHRASE_WORD_COUNT 24

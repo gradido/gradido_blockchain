@@ -12,7 +12,6 @@ using namespace std::chrono;
 
 TEST(GradidoTransactionBuilderTest, SignTransaction) {	
 	auto body = make_unique<TransactionBody>(
-		"",
 		std::chrono::system_clock::from_time_t(1609459200),
 		VERSION_STRING
 	);
@@ -23,10 +22,10 @@ TEST(GradidoTransactionBuilderTest, SignTransaction) {
 		.build();
 
 	ASSERT_EQ(gradidoTransaction->getBodyBytes()->convertToBase64(),
-		"CgASCAiAzLn/BRAAGgMzLjMgAA=="
+		"EggIgMy5/wUQABoDMy4zIAA="
 	);
 	ASSERT_EQ(gradidoTransaction->getSignatureMap().getSignaturePairs().front().getSignature()->convertToHex(),
-		"04e0d0f6c4bbd2d87dc879fc5f72be48dbf682c888757fd5d3d6da0af4026fecc25edf7aeba19ced1e5f481d2619d4d62bf3bc357e93a053dde942a05584e400"
+		"04e0d0f6c4bbd2d87dc879fc5f72be48dbf682c888757fd5d3d6da0af4026feca2c0b006b05c143484ec24def709d338e20eed2b7b07d0b473f9668156787301"
 	);
 
 	//EXPECT_EQ(*gradidoTransaction->mBodyBytes, )

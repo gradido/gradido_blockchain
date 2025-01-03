@@ -30,14 +30,14 @@ namespace gradido {
 					throw MissingMemberException(rootExceptionMessage, "type");
 				}
 				mTransactionBody = std::make_unique<TransactionBody>();
-				/*auto memoMessages = bodyMessage["memos"_f];
+				auto memoMessages = bodyMessage["memos"_f];
 				if (memoMessages.size()) {
 					mTransactionBody->mMemos.reserve(memoMessages.size());
 					for (int i = 0; i < memoMessages.size(); i++) {
 						mTransactionBody->mMemos.push_back(EncryptedMemoRole(memoMessages[i]));
 					}
 				}
-				*/
+				
 				mTransactionBody->mCreatedAt = TimestampRole(bodyMessage["created_at"_f].value()).data();
 				mTransactionBody->mVersionNumber = bodyMessage["version_number"_f].value();
 				mTransactionBody->mType = bodyMessage["type"_f].value();
@@ -95,25 +95,25 @@ namespace gradido {
 				else if (bodyMessage["redeem_deferred_transfer"_f].has_value()) {
 					auto redeemDeferredTransferMessage = bodyMessage["redeem_deferred_transfer"_f].value();
 					const char* exceptionMessage = "missing member on deserialize redeem deferred transfer transaction";
-					if (!redeemDeferredTransferMessage["deferred_tansfer_transaction_nr"_f].has_value()) {
+					if (!redeemDeferredTransferMessage["deferred_transfer_transaction_nr"_f].has_value()) {
 						throw MissingMemberException(exceptionMessage, "deferredTransferTransactionNr");
 					}
 					if (!redeemDeferredTransferMessage["transfer"_f].has_value()) {
 						throw MissingMemberException(exceptionMessage, "transfer");
 					}
 					mTransactionBody->mRedeemDeferredTransfer = make_shared<data::GradidoRedeemDeferredTransfer>(
-						redeemDeferredTransferMessage["deferred_tansfer_transaction_nr"_f].value(),
+						redeemDeferredTransferMessage["deferred_transfer_transaction_nr"_f].value(),
 						*GradidoTransferRole(redeemDeferredTransferMessage["transfer"_f].value()).run().get()
 					);
 				}
 				else if (bodyMessage["timeout_deferred_transfer"_f].has_value()) {
 					auto timeoutDeferredTransferMessage = bodyMessage["timeout_deferred_transfer"_f].value();
 					const char* exceptionMessage = "missing member on deserialize timeout deferred transfer transaction";
-					if (!timeoutDeferredTransferMessage["deferred_tansfer_transaction_nr"_f].has_value()) {
+					if (!timeoutDeferredTransferMessage["deferred_transfer_transaction_nr"_f].has_value()) {
 						throw MissingMemberException(exceptionMessage, "deferredTransferTransactionNr");
 					}
 					mTransactionBody->mTimeoutDeferredTransfer = make_shared<data::GradidoTimeoutDeferredTransfer>(
-						timeoutDeferredTransferMessage["deferred_tansfer_transaction_nr"_f].value()
+						timeoutDeferredTransferMessage["deferred_transfer_transaction_nr"_f].value()
 					);
 				}
 				else if (bodyMessage["community_root"_f].has_value()) {

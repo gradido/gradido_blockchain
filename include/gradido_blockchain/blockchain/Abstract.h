@@ -36,7 +36,7 @@ namespace gradido {
 			//! \return false if transaction already exist
 			virtual bool createAndAddConfirmedTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt) = 0;
 			virtual void addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent) = 0;
-			virtual void removeTransactionTriggerEvent(uint64_t linkedTransactioNr) = 0;
+			virtual void removeTransactionTriggerEvent(const data::TransactionTriggerEvent& transactionTriggerEvent) = 0;
 
 			//! this implementation use findOne so it isn't neccessarly the fastest way of doing this
 			virtual bool isTransactionExist(data::ConstGradidoTransactionPtr gradidoTransaction) const;
@@ -66,7 +66,6 @@ namespace gradido {
 			virtual AbstractProvider* getProvider() const = 0;
 
 		protected:
-			virtual void addToBlockchain(std::shared_ptr<const data::ConfirmedTransaction> confirmedTransaction) = 0;
 			std::string mCommunityId;
 			Timepoint mStartDate;
 			
