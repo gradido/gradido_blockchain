@@ -17,8 +17,8 @@ namespace gradido {
 			{
 				GradidoTransactionBuilder builder;
 				return builder
-					.setTimeoutDeferredTransfer(mTransactionTriggerEvent->getLinkedTransactionId())
 					.setCreatedAt(mTransactionTriggerEvent->getTargetDate())
+					.setTimeoutDeferredTransfer(mTransactionTriggerEvent->getLinkedTransactionId())
 					.build()
 					;
 			}

@@ -74,6 +74,13 @@ namespace gradido {
 							mDeferredTransfer->getSenderPublicKey()
 						);
 					}
+					else if (data::AddressType::DEFERRED_TRANSFER == senderAddressType) {
+						throw WrongAddressTypeException(
+							"sender address is deferred transfer, please use redeemDeferredTransferTransaction for that",
+							senderAddressType,
+							mDeferredTransfer->getSenderPublicKey()
+						);
+					}
 					// check if recipient address was registered
 					auto recipientAddressType = blockchain->getAddressType(
 						filterBuilder

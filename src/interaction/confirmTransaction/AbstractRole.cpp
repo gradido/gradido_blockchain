@@ -38,15 +38,18 @@ namespace gradido {
                 }
             }
 
-            std::shared_ptr<const data::ConfirmedTransaction> AbstractRole::createConfirmedTransaction(uint64_t id) const
-            {
+            std::shared_ptr<const data::ConfirmedTransaction> AbstractRole::createConfirmedTransaction(
+                uint64_t id,
+                std::shared_ptr<const ConfirmedTransaction> lastConfirmedTransaction
+            ) const {
                return make_shared<data::ConfirmedTransaction>(
                    id,
                    mGradidoTransaction,
                    mConfirmedAt,
                    GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
                    mMessageId,
-                   calculateAccountBalances(id - 1)
+                   calculateAccountBalances(id - 1),
+                   lastConfirmedTransaction
                 );
 
             }

@@ -20,14 +20,16 @@ namespace gradido {
                 auto deferredTransferEntry = blockchain->getTransactionForId(deferredTransferId);
                 assert(deferredTransferEntry->getTransactionBody()->isDeferredTransfer());
                 auto deferredTransfer = deferredTransferEntry->getTransactionBody()->getDeferredTransfer();
-                // if remaining amout is less than 0.01 gdd remove timeout transaction trigger event
-                if (deferredTransfer->calculateUseableAmount() - redeemAmount < GradidoUnit(100ll)) {
-                    blockchain->removeTransactionTriggerEvent(TransactionTriggerEvent(
-                        deferredTransferId,
-                        deferredTransferEntry->getConfirmedTransaction()->getConfirmedAt(),
-                        TransactionTriggerEventType::DEFERRED_TIMEOUT_REVERSAL
-                    ));
-                }
+                auto transactionTriggerEventTargetDate =
+                    deferredTransferEntry->getConfirmedTransaction()->getConfirmedAt().getAsTimepoint()
+                    + deferredTransfer->getTimeoutDuration()
+                ;
+                // remove timeout transaction trigger event
+                blockchain->removeTransactionTriggerEvent(TransactionTriggerEvent(
+                    deferredTransferId,
+                    transactionTriggerEventTargetDate,
+                    TransactionTriggerEventType::DEFERRED_TIMEOUT_REVERSAL
+                ));
             };
 
             std::vector<data::AccountBalance> RedeemDeferredTransferTransactionRole::calculateAccountBalances(uint64_t maxTransactionNr) const
@@ -40,9 +42,18 @@ namespace gradido {
                 auto& deferredTransferAmount = deferredTransferTransaction->getTransfer().getSender();
                 auto decayedDeferredAmount = deferredTransferAmount.getAmount().calculateDecay(deferredTransferConfirmedAt, mConfirmedAt);
                 auto change = decayedDeferredAmount - transferAmount.getAmount();
+                // if recipient and original sender are identical
+                if (transfer.getRecipient()->isTheSame(deferredTransferAmount.getPublicKey())) {
+                    return {
+                        // sender
+                        AccountBalance(transferAmount.getPublicKey(), 0ll),
+                        // recipient and change
+                        calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, decayedDeferredAmount)
+                    };
+                }
                 return {
                     // sender
-                    calculateAccountBalance(transferAmount.getPublicKey(), maxTransactionNr, transferAmount.getAmount() * GradidoUnit(-1ll)),
+                    AccountBalance(transferAmount.getPublicKey(), 0ll),
                     // recipient
                     calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, transferAmount.getAmount()),
                     // change back to original sender of deferred transfer

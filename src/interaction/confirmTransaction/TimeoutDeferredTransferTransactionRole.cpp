@@ -3,6 +3,7 @@
 #include "gradido_blockchain/interaction/confirmTransaction/TimeoutDeferredTransferTransactionRole.h"
 
 namespace gradido {
+    using namespace data;
     namespace interaction {
         namespace confirmTransaction {
             TimeoutDeferredTransferTransactionRole::TimeoutDeferredTransferTransactionRole(
@@ -28,7 +29,7 @@ namespace gradido {
                     // original sender
                     calculateAccountBalance(deferredTransferAmount.getPublicKey(), maxTransactionNr, decayedDeferredAmount),
                     // deferred transfer address 
-                    calculateAccountBalance(deferredTransfer.getRecipient(), maxTransactionNr, decayedDeferredAmount * GradidoUnit(-1ll))
+                    AccountBalance(deferredTransfer.getRecipient(), GradidoUnit::zero())
                 };
             }
         }

@@ -1,10 +1,14 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/interaction/validate/GradidoRedeemDeferredTransferRole.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
 #include "date/date.h"
+#include "magic_enum/magic_enum.hpp"
+
+using namespace magic_enum;
 
 namespace gradido {
 	namespace interaction {
@@ -39,7 +43,8 @@ namespace gradido {
 				}
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS) {
 					assert(blockchain);
-					if (!blockchain->getTransactionForId(mRedeemDeferredTransfer->getDeferredTransferTransactionNr())) {
+					auto deferredTransferEntry = blockchain->getTransactionForId(mRedeemDeferredTransfer->getDeferredTransferTransactionNr());
+					if (!deferredTransferEntry) {
 						throw TransactionValidationInvalidInputException(
 							"deferredTransferTransactionNr is invalid, couldn't find transaction",
 							"deferred_transfer_transaction_nr",
@@ -48,13 +53,88 @@ namespace gradido {
 							"nullptr"
 						);
 					}
+					if (!deferredTransferEntry->getTransactionBody()->isDeferredTransfer()) {
+						throw TransactionValidationInvalidInputException(
+							"deferredTransferTransactionNr points to a invalid Transaction, wrong type",
+							"deferred_transfer_transaction_nr",
+							"uint64",
+							"DeferredTransfer",
+							enum_name(deferredTransferEntry->getTransactionBody()->getTransactionType()).data()
+						);
+					}
+					auto deferredTransfer = deferredTransferEntry->getTransactionBody()->getDeferredTransfer();
+					if (!deferredTransfer->getRecipientPublicKey()->isTheSame(mRedeemDeferredTransfer->getSenderPublicKey())) {
+						throw TransactionValidationInvalidInputException(
+							"deferredTransferTransactionNr points to a invalid Transaction, not matching recipient-sender address pair",
+							"deferred_transfer_transaction_nr",
+							"uint64",
+							deferredTransfer->getRecipientPublicKey()->convertToHex().data(),
+							mRedeemDeferredTransfer->getSenderPublicKey()->convertToHex().data()
+						);
+					}
 				}
+				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
+					if (!senderPreviousConfirmedTransaction) {
+						throw BlockchainOrderException("deferred transfer transaction not allowed as first transaction on sender blockchain");
+					}
+					assert(blockchain);
+					blockchain::FilterBuilder filterBuilder;
+
+					// check if sender address is deferred transfer
+					auto senderAddressType = blockchain->getAddressType(
+						filterBuilder
+						.setInvolvedPublicKey(mRedeemDeferredTransfer->getSenderPublicKey())
+						.setMaxTransactionNr(senderPreviousConfirmedTransaction->getId())
+						.build()
+					);
+					if (data::AddressType::NONE == senderAddressType) {
+						throw WrongAddressTypeException(
+							"sender address not registered",
+							senderAddressType,
+							mRedeemDeferredTransfer->getSenderPublicKey()
+						);
+					}
+					else if (data::AddressType::DEFERRED_TRANSFER != senderAddressType) {
+						throw WrongAddressTypeException(
+							"sender address isn't a deferred transfer",
+							senderAddressType,
+							mRedeemDeferredTransfer->getSenderPublicKey()
+						);
+					}
+					// check if recipient address was registered
+					auto recipientAddressType = blockchain->getAddressType(
+						filterBuilder
+						.setInvolvedPublicKey(mRedeemDeferredTransfer->getRecipientPublicKey())
+						.setMaxTransactionNr(senderPreviousConfirmedTransaction->getId())
+						.build()
+					);
+					if (data::AddressType::NONE == recipientAddressType) {
+						throw WrongAddressTypeException(
+							"recipient address not registered",
+							recipientAddressType, 
+							mRedeemDeferredTransfer->getRecipientPublicKey()
+						);
+					}
+					if (data::AddressType::DEFERRED_TRANSFER == recipientAddressType) {
+						throw WrongAddressTypeException(
+							"recipient cannot be a deferred transfer address", 
+							recipientAddressType, 
+							mRedeemDeferredTransfer->getRecipientPublicKey()
+						);
+					}
+				}
+
 				// make copy from GradidoTransfer
 				auto transfer = std::make_shared<data::GradidoTransfer>(mRedeemDeferredTransfer->getTransfer());
 				GradidoTransferRole transferRole(transfer, "");
 				transferRole.setConfirmedAt(mConfirmedAt);
 				transferRole.setCreatedAt(mCreatedAt);
-				transferRole.run(type, blockchain, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
+				// transfer check without account check, account block differ to much
+				auto modifiedType = type;
+				if ((modifiedType & Type::ACCOUNT) == Type::ACCOUNT) {
+					modifiedType = modifiedType - Type::ACCOUNT;
+				}
+				transferRole.run(modifiedType, blockchain, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
 			}
 
 		}

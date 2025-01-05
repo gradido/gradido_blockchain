@@ -9,8 +9,7 @@ namespace gradido {
         namespace confirmTransaction {
             std::vector<data::AccountBalance> CreationTransactionRole::calculateAccountBalances(uint64_t maxTransactionNr) const
             {
-                auto transfer = mBody->getTransfer();
-                auto& transferAmount = transfer->getSender();
+                auto& transferAmount = mBody->getTransferAmount();
 
                 // get community root transaction for gmw and auf addresses
                 auto firstTransactionEntry = mBlockchain->findOne(Filter::FIRST_TRANSACTION);

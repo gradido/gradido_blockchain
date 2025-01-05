@@ -94,7 +94,7 @@ TEST(ToJsonTest, GradidoCreationBody) {
 	toJson::Context c(*body);
 	auto json = c.run();
 	// printf("json: %s\n", json.data());
-	EXPECT_EQ(json, "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Deine erste Schoepfung ;)\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.4\",\"type\":\"LOCAL\",\"creation\":{\"recipient\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":10000000},\"targetDate\":\"2020-12-31 23:56:40.0000\"}}");
+	EXPECT_EQ(json, "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Deine erste Schoepfung ;)\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.4\",\"type\":\"LOCAL\",\"creation\":{\"recipient\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":\"1000.0000\"},\"targetDate\":\"2020-12-31 23:56:40.0000\"}}");
 }
 
 TEST(ToJsonTest, GradidoTransferBody) {
@@ -116,7 +116,7 @@ TEST(ToJsonTest, GradidoTransferBody) {
 
 	auto json = c.run();
 	// printf("json: %s\n", json.data());
-	EXPECT_EQ(json, "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Ich teile mit dir\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.4\",\"type\":\"LOCAL\",\"transfer\":{\"sender\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":5005500},\"recipient\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\"}}");
+	EXPECT_EQ(json, "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Ich teile mit dir\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.4\",\"type\":\"LOCAL\",\"transfer\":{\"sender\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":\"500.5500\"},\"recipient\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\"}}");
 }
 
 TEST(ToJsonTest, GradidoDeferredTransferBody) {
@@ -141,7 +141,7 @@ TEST(ToJsonTest, GradidoDeferredTransferBody) {
 
 	auto json = c.run();
 	// printf("json: %s\n", json.data());
-	EXPECT_EQ(json, "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Link zum einloesen\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.4\",\"type\":\"LOCAL\",\"deferredTransfer\":{\"transfer\":{\"sender\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":5555500},\"recipient\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\"},\"timeout\":\"1 hours 36 minutes 24 seconds \"}}");
+	EXPECT_EQ(json, "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Link zum einloesen\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.4\",\"type\":\"LOCAL\",\"deferredTransfer\":{\"transfer\":{\"sender\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":\"555.5500\"},\"recipient\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\"},\"timeout\":\"1 hours 36 minutes 24 seconds \"}}");
 }
 
 TEST(ToJsonTest, CommunityFriendsUpdateBody) {
@@ -231,7 +231,7 @@ TEST(ToJsonTest, CompleteConfirmedTransaction) {
 
 	auto json = c.run();
 	// printf("json: %s\n", json.data());
-	EXPECT_EQ(json, "{\"id\":7,\"gradidoTransaction\":{\"signatureMap\":[{\"pubkey\":\"81670329946988edf451f4c424691d83cf5a90439042882d5bb72243ef551ef4\",\"signature\":\"04e0d0f6c4bbd2d87dc879fc5f72be48dbf682c888757fd5d3d6da0af4026fec0f2f606fcb9b0543682cf0707a7d3de207760953a9063fcf86ebf4f38cec2d03\"}],\"bodyBytes\":{\"base64\":\"ChkIAhIVRGFua2UgZnVlciBkZWluIFNlaW4hEggIgMy5/wUQABoDMy40IAAyTAooCiDbDtYSWhTwMKvtG/yDHgohjPn6v87n7NWBwMDniPAXxxCUmD0aABIgJE0o18xb6P6PsNjh0bkN52AzhggteTzoh09jV+blMq0=\",\"hex\":\"0a190802121544616e6b652066756572206465696e205365696e2112080880ccb9ff0510001a03332e342000324c0a280a20db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c71094983d1a001220244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\",\"json\":{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Danke fuer dein Sein!\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.4\",\"type\":\"LOCAL\",\"transfer\":{\"sender\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":1002516},\"recipient\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\"}}}},\"confirmedAt\":\"2021-01-01 01:22:10.0000\",\"versionNumber\":\"3.4\",\"runningHash\":\"1203c5aa94a724a49f10d00db79b8261e3fcb210588087d4a696a99c7a6c7103\",\"messageId\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"accountBalances\":[{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"balance\":\"100.0000\"},{\"pubkey\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\",\"balance\":\"899.7483\"}]}");
+	EXPECT_EQ(json, "{\"id\":7,\"gradidoTransaction\":{\"signatureMap\":[{\"pubkey\":\"81670329946988edf451f4c424691d83cf5a90439042882d5bb72243ef551ef4\",\"signature\":\"04e0d0f6c4bbd2d87dc879fc5f72be48dbf682c888757fd5d3d6da0af4026fec0f2f606fcb9b0543682cf0707a7d3de207760953a9063fcf86ebf4f38cec2d03\"}],\"bodyBytes\":{\"base64\":\"ChkIAhIVRGFua2UgZnVlciBkZWluIFNlaW4hEggIgMy5/wUQABoDMy40IAAyTAooCiDbDtYSWhTwMKvtG/yDHgohjPn6v87n7NWBwMDniPAXxxCUmD0aABIgJE0o18xb6P6PsNjh0bkN52AzhggteTzoh09jV+blMq0=\",\"hex\":\"0a190802121544616e6b652066756572206465696e205365696e2112080880ccb9ff0510001a03332e342000324c0a280a20db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c71094983d1a001220244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\",\"json\":{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Danke fuer dein Sein!\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.4\",\"type\":\"LOCAL\",\"transfer\":{\"sender\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":\"100.2516\"},\"recipient\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\"}}}},\"confirmedAt\":\"2021-01-01 01:22:10.0000\",\"versionNumber\":\"3.4\",\"runningHash\":\"1203c5aa94a724a49f10d00db79b8261e3fcb210588087d4a696a99c7a6c7103\",\"messageId\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"accountBalances\":[{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"balance\":\"100.0000\"},{\"pubkey\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\",\"balance\":\"899.7483\"}]}");
 	auto jsonPretty = c.run(true);
 	// printf("json pretty: %s\n", jsonPretty.data());
 }

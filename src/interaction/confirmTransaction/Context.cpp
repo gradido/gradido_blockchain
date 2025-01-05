@@ -107,7 +107,7 @@ namespace gradido {
 					}
 				}
 				
-				auto confirmedTransaction = role->createConfirmedTransaction(id);
+				auto confirmedTransaction = role->createConfirmedTransaction(id, lastConfirmedTransaction);
 				role->runPreValidate(confirmedTransaction, mBlockchain);
 
 				// important! validation
@@ -118,6 +118,7 @@ namespace gradido {
 				}
 				validate.setSenderPreviousConfirmedTransaction(lastConfirmedTransaction);
 				// throw if some error occure				
+
 				validate.run(type, mBlockchain);
 				
 				return confirmedTransaction;

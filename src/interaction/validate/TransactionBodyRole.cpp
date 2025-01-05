@@ -149,6 +149,16 @@ namespace gradido {
 						// check if redeem is inside the timeout of deferred transfer
 						auto deferredTransferEntry = blockchain->getTransactionForId(redeemDeferredTransfer->getDeferredTransferTransactionNr());
 						auto deferredTransferConfirmedAt = deferredTransferEntry->getConfirmedTransaction()->getConfirmedAt().getAsTimepoint();
+						auto deferredTransferBody = deferredTransferEntry->getTransactionBody();
+						if (!deferredTransferBody || !deferredTransferBody->isDeferredTransfer()) {
+							throw TransactionValidationInvalidInputException(
+								"deferredTransferTransactionNr points to a invalid Transaction, wrong type",
+								"deferred_transfer_transaction_nr",
+								"uint64",
+								"DeferredTransfer",
+								enum_name(deferredTransferEntry->getTransactionBody()->getTransactionType()).data()
+							);
+						}
 						auto deferredTransfer = deferredTransferEntry->getTransactionBody()->getDeferredTransfer();
 						auto expectedMaxConfirmedAt = mBody.getCreatedAt().getAsTimepoint() + MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION;
 						if (deferredTransferConfirmedAt + deferredTransfer->getTimeoutDuration() < expectedMaxConfirmedAt) {

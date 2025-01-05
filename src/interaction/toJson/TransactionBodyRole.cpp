@@ -83,7 +83,7 @@ namespace gradido {
 					auto timeoutDeferredTransfer = mBody.getTimeoutDeferredTransfer();
 					Value v(kObjectType);
 					v.AddMember("deferredTransferTransactionNr", timeoutDeferredTransfer->getDeferredTransferTransactionNr(), alloc);
-					d.AddMember("redeemDeferredTransfer", v, alloc);
+					d.AddMember("timeoutDeferredTransfer", v, alloc);
 				}
 				else if (mBody.isCommunityRoot()) {
 					auto communityRoot = mBody.getCommunityRoot();
@@ -119,7 +119,7 @@ namespace gradido {
 				if (data.getPublicKey()) {
 					v.AddMember("pubkey", Value(data.getPublicKey()->convertToHex().data(), alloc), alloc);
 				}
-				v.AddMember("amount", data.getAmount().getGradidoCent(), alloc);
+				v.AddMember("amount", Value(data.getAmount().toString().data(), alloc), alloc);
 				if (!data.getCommunityId().empty()) {
 					v.AddMember("communityId", Value(data.getCommunityId().data(), alloc), alloc);
 				}

@@ -53,8 +53,6 @@ namespace gradido {
 				std::shared_ptr<blockchain::Abstract> blockchain
 			) const 
 			{
-				assert(mMinSignatureCount);
-
 				auto& signPairs = signatureMap.getSignaturePairs();
 
 				// check for doublets

@@ -215,6 +215,15 @@ namespace gradido {
 					size += transfer.getRecipient()->size() + calculateTransferAmountSerializedSize(transfer.getSender()) + 8;
 					// printf("calculated size for gradido deferred transfer: %lld\n", size);
 				}
+				else if (mBody.isRedeemDeferredTransfer()) {
+					auto redeemDeferredTransfer = mBody.getRedeemDeferredTransfer();
+					auto& transfer = redeemDeferredTransfer->getTransfer();
+					if (!transfer.getRecipient()) {
+						throw MissingMemberException("missing member by serializing Gradido Deferred Transfer Transaction", "transfer.recipient");
+					}
+					size += transfer.getRecipient()->size() + calculateTransferAmountSerializedSize(transfer.getSender()) + 8 + 8;
+					// printf("calculated size for gradido redeem deferred transfer: %lld\n", size);
+				}
 				else if (mBody.isCommunityFriendsUpdate()) {
 					size += 4;
 					// printf("calculated size for community friends update: %lld\n", size);
