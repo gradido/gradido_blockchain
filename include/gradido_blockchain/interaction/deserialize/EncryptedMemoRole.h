@@ -13,6 +13,7 @@ namespace gradido {
             {
             public:
                 EncryptedMemoRole(const EncryptedMemoMessage& encryptedMemo);
+                ~EncryptedMemoRole() {}
                 inline operator const data::EncryptedMemo& () const { return mEncryptedMemo; }
                 inline const data::EncryptedMemo& data() const { return mEncryptedMemo; }
             protected:

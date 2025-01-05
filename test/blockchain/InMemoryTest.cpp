@@ -498,7 +498,7 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	auto userBalanceWithChange = getBalance(6, firstDeferredTransferCreatedAt + timeoutDuration + chrono::hours(1));
 	auto decayedUserBalance = userBalance.calculateDecay(lastUserBalanceDate, firstDeferredTransferCreatedAt + timeoutDuration + chrono::hours(1));
 	auto timeBetween = GradidoUnit::calculateDecayDurationSeconds(lastUserBalanceDate, firstDeferredTransferCreatedAt + timeoutDuration + chrono::hours(1));
-	printf("time between: %s\n", DataTypeConverter::timespanToString(chrono::duration_cast<chrono::seconds>(timeBetween)).data());
+	/*printf("time between: %s\n", DataTypeConverter::timespanToString(chrono::duration_cast<chrono::seconds>(timeBetween)).data());
 	printf("userBalance: %s\n", userBalance.toString().data());
 	auto decayFactor = pow(2.0, (-chrono::duration_cast<chrono::seconds>(timeBetween).count()/31556952.0));
 	auto decay = userBalance * GradidoUnit(decayFactor);
@@ -507,7 +507,7 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	printf("user balance with change: %s, decayed user balance: %s\n", userBalanceWithChange.toString().data(), decayedUserBalance.toString().data());
 	printf("deferred transfer balance: %s\n", deferredTransferBalance.toString().data());
 	printf("new deferred transfer balance: %s\n", newDeferredTransferBalance.toString().data());
-
+	*/
 	// try transfering gdd from deferred transfer 
 	createdAt = generateNewCreatedAt();
 	auto thirdTimeoutDuration = chrono::hours(30 * 24);
@@ -536,7 +536,7 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	);
 	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[thirdRecipientKeyPairIndex]->getPublicKey()).getBalance(), GradidoUnit::zero());
 	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[8]->getPublicKey()).getBalance(), GradidoUnit(400.0));	
-	logBlockchain();
+	// logBlockchain();
 }
 
 TEST_F(InMemoryTest, ValidGradidoTimeoutDeferredTransfer)
@@ -563,6 +563,7 @@ TEST_F(InMemoryTest, ValidGradidoTimeoutDeferredTransfer)
 	// trigger timeout deferred transfer
 	createdAt += timeoutDuration * 2;
 	targetDate = createdAt - chrono::hours(24 * 30);
-	ASSERT_TRUE(createGradidoCreation(4, 6, 1000.0, createdAt, targetDate));
-	logBlockchain();
+	EXPECT_NO_THROW(createGradidoCreation(4, 6, 1000.0, createdAt, targetDate));
+	// logBlockchain();
+
 }

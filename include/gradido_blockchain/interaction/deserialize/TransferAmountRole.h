@@ -13,6 +13,7 @@ namespace gradido {
             {
             public:
                 TransferAmountRole(const TransferAmountMessage& transferAmount);
+                ~TransferAmountRole() {};
                 inline operator const data::TransferAmount&() const { return *mTransferAmount.get(); }
                 inline const data::TransferAmount& data() const { return *mTransferAmount.get(); }
             protected:
