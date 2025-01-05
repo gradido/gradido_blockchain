@@ -13,6 +13,7 @@ namespace gradido {
             {
             public:
                 RegisterAddressRole(const RegisterAddressMessage& registerAddressMessage);
+                ~RegisterAddressRole() {}
                 std::unique_ptr<data::RegisterAddress> run() const;
             protected:
                 const RegisterAddressMessage& mRegisterAddressMessage;

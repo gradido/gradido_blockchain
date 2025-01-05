@@ -19,6 +19,7 @@ TEST(DeserializeTest, CommunityRootBody)
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
+	EXPECT_FALSE(context.isTransactionTriggerEvent());
 
 	auto transaction = context.getGradidoTransaction();
 	ASSERT_TRUE(transaction);
@@ -49,6 +50,7 @@ TEST(DeserializeTest, RegisterAddressBody) {
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
+	EXPECT_FALSE(context.isTransactionTriggerEvent());
 
 	auto transaction = context.getGradidoTransaction();
 	ASSERT_TRUE(transaction);
@@ -82,6 +84,7 @@ TEST(DeserializeTest, GradidoCreationBody) {
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
+	EXPECT_FALSE(context.isTransactionTriggerEvent());
 
 	auto transaction = context.getGradidoTransaction();
 	ASSERT_TRUE(transaction);
@@ -117,6 +120,7 @@ TEST(DeserializeTest, GradidoTransferBody) {
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
+	EXPECT_FALSE(context.isTransactionTriggerEvent());
 
 	auto transaction = context.getGradidoTransaction();
 	ASSERT_TRUE(transaction);
@@ -151,6 +155,7 @@ TEST(DeserializeTest, GradidoDeferredTransferBody) {
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
+	EXPECT_FALSE(context.isTransactionTriggerEvent());
 
 	auto transaction = context.getGradidoTransaction();
 	ASSERT_TRUE(transaction);
@@ -186,6 +191,7 @@ TEST(DeserializeTest, CommunityFriendsUpdateBody) {
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
+	EXPECT_FALSE(context.isTransactionTriggerEvent());
 
 	auto transaction = context.getGradidoTransaction();
 	ASSERT_TRUE(transaction);
@@ -214,6 +220,7 @@ TEST(DeserializeTest, GradidoTransaction) {
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
+	EXPECT_FALSE(context.isTransactionTriggerEvent());
 
 	auto gradidoTransaction = context.getGradidoTransaction();
 	auto bodyBytes = memory::Block(invalidBodyTestPayload);
@@ -237,6 +244,7 @@ TEST(DeserializeTest, MinimalConfirmedTransaction) {
 	EXPECT_FALSE(context.isTransactionBody());
 	ASSERT_TRUE(context.isConfirmedTransaction());
 	EXPECT_FALSE(context.isGradidoTransaction());
+	EXPECT_FALSE(context.isTransactionTriggerEvent());
 
 	auto confirmedTransaction = context.getConfirmedTransaction();
 	auto gradidoTransaction = confirmedTransaction->getGradidoTransaction();
@@ -257,6 +265,7 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_FALSE(context.isTransactionBody());
 	ASSERT_TRUE(context.isConfirmedTransaction());
 	EXPECT_FALSE(context.isGradidoTransaction());
+	EXPECT_FALSE(context.isTransactionTriggerEvent());
 
 	auto confirmedTransaction = context.getConfirmedTransaction();
 
@@ -293,4 +302,20 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_EQ(sender.getAmount(), GradidoUnit(1002516ll));
 	EXPECT_TRUE(sender.getPublicKey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
 	EXPECT_TRUE(transfer->getRecipient()->isTheSame(g_KeyPairs[5]->getPublicKey()));	
+}
+
+
+TEST(DeserializeTest, TransactionTriggerEvent) {
+	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64("CAwSCAjC8rn/BRAAGAE="));
+	deserialize::Context context(rawData, deserialize::Type::TRANSACTION_TRIGGER_EVENT);
+	context.run();
+	EXPECT_FALSE(context.isTransactionBody());
+	EXPECT_FALSE(context.isConfirmedTransaction());
+	EXPECT_FALSE(context.isGradidoTransaction());
+	ASSERT_TRUE(context.isTransactionTriggerEvent());
+
+	auto transactionTriggerEvent = context.getTransactionTriggerEvent();
+	EXPECT_EQ(transactionTriggerEvent.getLinkedTransactionId(), 12);
+	EXPECT_EQ(transactionTriggerEvent.getTargetDate(), confirmedAt);
+	EXPECT_EQ(transactionTriggerEvent.getType(), data::TransactionTriggerEventType::DEFERRED_TIMEOUT_REVERSAL);
 }

@@ -3,6 +3,7 @@
 #include "../serializedTransactions.h"
 #include "const.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/TransactionTriggerEvent.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
@@ -240,4 +241,10 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
 	// printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(), completeConfirmedTransaction);
+}
+
+TEST(SerializeTest, TransactionTriggerEvent) {
+	TransactionTriggerEvent transactionTriggerEvent(12, confirmedAt, data::TransactionTriggerEventType::DEFERRED_TIMEOUT_REVERSAL);
+	auto serialized = serialize::Context(transactionTriggerEvent).run();
+	ASSERT_EQ(serialized->convertToBase64(), "CAwSCAjC8rn/BRAAGAE=");
 }

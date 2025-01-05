@@ -6,6 +6,7 @@
 
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/CrossGroupType.h"
+#include "gradido_blockchain/data/TransactionTriggerEventType.h"
 #include "gradido_blockchain/data/MemoKeyType.h"
 #include "gradido_blockchain/memory/VectorCacheAllocator.h"
 
@@ -137,6 +138,13 @@ namespace gradido {
                 bytes_field<"running_hash", 5>,// singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
                 bytes_field<"message_id", 6>,// singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
                 message_field<"account_balances", 7, AccountBalanceMessage, repeated>//, singular, std::vector<StringCachedAlloc>>
+            >;
+
+            // -- helper classes
+            using TransactionTriggerEventMessage = message<
+                uint64_field<"linked_transaction_nr", 1>,
+                message_field<"target_date", 2, TimestampMessage>,
+                enum_field<"type", 3, data::TransactionTriggerEventType>
             >;
         }
     }
