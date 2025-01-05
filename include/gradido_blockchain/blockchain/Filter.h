@@ -77,6 +77,7 @@ namespace gradido {
 			FilterResult matches(std::shared_ptr<const TransactionEntry> entry, FilterCriteria type, std::string_view communityId) const;
 
 			static const Filter LAST_TRANSACTION;
+			static const Filter FIRST_TRANSACTION;
 			static const Filter ALL_TRANSACTIONS;
 		}; 
 	}

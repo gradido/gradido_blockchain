@@ -16,7 +16,7 @@ namespace gradido {
 				return mSender == other.mSender && mRecipient && mRecipient->isTheSame(other.mRecipient);
 			}
 
-			inline std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const { return { mSender.getPubkey(), mRecipient}; }
+			inline std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const { return { mSender.getPublicKey(), mRecipient}; }
 			bool isInvolved(const memory::Block& publicKey) const;
 
 			inline const TransferAmount& getSender() const { return mSender; }

@@ -26,13 +26,13 @@ namespace gradido {
 			mSerializedTransaction(interaction::serialize::Context(*confirmedTransaction).run()),
 			mConfirmedTransaction(confirmedTransaction)
 		{
-			auto receivedDate = date::year_month_day{ date::floor<date::days>(confirmedTransaction->getConfirmedAt().getAsTimepoint())};
+			auto receivedDate = timepointAsYearMonthDay(confirmedTransaction->getConfirmedAt().getAsTimepoint());
 			mMonth = receivedDate.month();
 			mYear = receivedDate.year();
 			auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
 			mTransactionType = body->getTransactionType();
 			mCoinCommunityId = getCoinCommunityId(*body);
-		}
+		}		
 
 		TransactionEntry::TransactionEntry(
 			uint64_t transactionNr,
@@ -66,11 +66,12 @@ namespace gradido {
 
 		std::string TransactionEntry::getCoinCommunityId(const data::TransactionBody& body)
 		{
-			auto transferAmount = body.getTransferAmount();
-			if (transferAmount) {
-				return transferAmount->getCommunityId();
+			try {
+				return body.getTransferAmount().getCommunityId();
 			}
-			return "";
+			catch (...) {
+				return "";
+			}
 		}
 	}
 }

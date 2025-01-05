@@ -10,16 +10,23 @@
 #include "Filter.h"
 #include "SearchDirection.h"
 #include "../data/AddressType.h"
+#include "../data/TransactionTriggerEvent.h"
 
 
 #include <list>
 
 namespace gradido {	
+	namespace interaction {
+		namespace createConfirmedTransaction {
+			class Context;
+		}
+	}
 	namespace blockchain {
 		class AbstractProvider;
 
 		class GRADIDOBLOCKCHAIN_EXPORT Abstract
 		{
+			friend interaction::createConfirmedTransaction::Context;
 		public:
 			Abstract(std::string_view communityId);
 			virtual ~Abstract() {}
@@ -27,31 +34,20 @@ namespace gradido {
 			//! validate and generate confirmed transaction
 			//! throw if gradido transaction isn't valid
 			//! \return false if transaction already exist
-			virtual bool addGradidoTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt) = 0;
+			virtual bool createAndAddConfirmedTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt) = 0;
+			virtual void addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent) = 0;
+			virtual void removeTransactionTriggerEvent(const data::TransactionTriggerEvent& transactionTriggerEvent) = 0;
+
+			//! this implementation use findOne so it isn't neccessarly the fastest way of doing this
+			virtual bool isTransactionExist(data::ConstGradidoTransactionPtr gradidoTransaction) const;
+
+			//! return events in asc order of targetDate
+			virtual std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> findTransactionTriggerEventsInRange(TimepointInterval range) = 0;
 
 			// main search function, do all the work, reference from other functions
 			virtual TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const = 0;
 			// only if you expect only one result
 			std::shared_ptr<const TransactionEntry> findOne(const Filter& filter = Filter::LAST_TRANSACTION) const;
-
-			//! find all deferred transfers which have the timeout in date range between start and end, have senderPublicKey and are not redeemed,
-			//! therefore boocked back to sender
-			//! find all deferred transfers which have the timeout in date range between start and end, have senderPublicKey and are not redeemed,
-			//! therefore boocked back to sender
-			virtual TransactionEntries findTimeoutedDeferredTransfersInRange(
-				memory::ConstBlockPtr senderPublicKey,
-				TimepointInterval timepointInterval,
-				uint64_t maxTransactionNr
-			) const =  0;
-
-			//! find all transfers which redeem a deferred transfer in date range
-			//! \param senderPublicKey sender public key of sending account of deferred transaction
-			//! \return list with transaction pairs, first is deferred transfer, second is redeeming transfer
-			virtual std::list<DeferredRedeemedTransferPair> findRedeemedDeferredTransfersInRange(
-				memory::ConstBlockPtr senderPublicKey,
-				TimepointInterval timepointInterval,
-				uint64_t maxTransactionNr
-			) const = 0;
 
 			//! analyze only registerAddress Transactions
 			//! \param use filter to check existing of a address in a subrange of transactions

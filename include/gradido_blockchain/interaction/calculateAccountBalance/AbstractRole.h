@@ -5,20 +5,44 @@
 #include "gradido_blockchain/GradidoUnit.h"
 
 namespace gradido {
+	namespace data {
+		class TransactionBody;
+	}
 	namespace interaction {
 		namespace calculateAccountBalance {
 			class AbstractRole
 			{
 			public:
-				virtual bool isFinalBalanceForAccount(memory::ConstBlockPtr accountPublicKey) const = 0;
-				virtual memory::ConstBlockPtr getFinalBalanceAddress() const = 0;
-				//! how much this transaction will add to the account balance
-				virtual GradidoUnit getAmountAdded(memory::ConstBlockPtr accountPublicKey) const = 0;
-				//! how much this transaction will reduce the account balance
-				virtual GradidoUnit getAmountCost(memory::ConstBlockPtr accountPublicKey) const = 0;
-				//! behaviour for deferred transfer will differ to reduce rounding errors
-				virtual GradidoUnit getDecayedAmount(Timepoint startDate, Timepoint endDate) const = 0;
+				AbstractRole(std::shared_ptr<const data::TransactionBody> body)
+					: mBody(body) {}
 				virtual ~AbstractRole() {}
+
+				//! how much this transaction will add to the account balance
+				virtual GradidoUnit getAmountAdded(memory::ConstBlockPtr accountPublicKey) const 
+				{
+					if (getRecipient()->isTheSame(accountPublicKey)) {
+						return getTransferAmount().getAmount();
+					}
+					return 0.0;
+				}
+				//! how much this transaction will reduce the account balance
+				virtual GradidoUnit getAmountCost(memory::ConstBlockPtr accountPublicKey) const 
+				{
+					if (getTransferAmount().getPublicKey()->isTheSame(accountPublicKey)) {
+						return getTransferAmount().getAmount();
+					}
+					return 0.0;
+				}
+				virtual const data::TransferAmount& getTransferAmount() const {
+					return mBody->getTransferAmount();
+				}
+				virtual memory::ConstBlockPtr getRecipient() const = 0;
+				virtual memory::ConstBlockPtr getSender() const {
+					return getTransferAmount().getPublicKey();
+				};
+				
+			protected:
+				std::shared_ptr<const data::TransactionBody> mBody;
 			};
 		}
 	}

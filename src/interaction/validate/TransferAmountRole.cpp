@@ -1,3 +1,4 @@
+#include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/data/TransferAmount.h"
 #include "gradido_blockchain/interaction/validate/TransferAmountRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
@@ -7,8 +8,7 @@ namespace gradido {
 		namespace validate {
 			void TransferAmountRole::run(
 				Type type,
-				std::string_view communityId,
-				blockchain::AbstractProvider* blockchainProvider,
+				std::shared_ptr<blockchain::Abstract> blockchain,
 				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
 				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
@@ -23,20 +23,24 @@ namespace gradido {
 								coinCommunityId.data()
 							);
 					}
-					if (!communityId.empty() && coinCommunityId == communityId) {
-						std::string expected = "!= " + std::string(communityId);
-						throw TransactionValidationInvalidInputException(
-							"coin communityId shouldn't be set if it is the same as blockchain communityId",
-							"community_id",
-							"string",
-							expected.data(),
-							coinCommunityId.data()
-						);
+					
+					if (blockchain) {
+						auto communityId = blockchain->getCommunityId();
+						if (!communityId.empty() && coinCommunityId == communityId) {
+							std::string expected = "!= " + std::string(communityId);
+							throw TransactionValidationInvalidInputException(
+								"coin communityId shouldn't be set if it is the same as blockchain communityId",
+								"community_id",
+								"string",
+								expected.data(),
+								coinCommunityId.data()
+							);
+						}
 					}
 					if (mTransferAmount.getAmount() <= GradidoUnit(0.0)) {
 						throw TransactionValidationInvalidInputException("zero or negative amount", "amount", "string");
 					}
-					validateEd25519PublicKey(mTransferAmount.getPubkey(), "sender");
+					validateEd25519PublicKey(mTransferAmount.getPublicKey(), "sender");
 				}
 			}
 		}

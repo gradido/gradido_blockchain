@@ -84,8 +84,8 @@ int64_t GradidoUnit::calculateDecay(int64_t gradidoCent, int64_t seconds)
 
 int64_t GradidoUnit::calculateCompoundInterest(int64_t gradidoCent, int64_t seconds)
 {
-	auto f = pow(1.5, seconds / SECONDS_PER_YEAR);
-	return static_cast<int64_t>(static_cast<double>(gradidoCent) * pow(1.5, seconds / SECONDS_PER_YEAR));
+	//auto f = pow(2.0, seconds / SECONDS_PER_YEAR);
+	return static_cast<int64_t>(static_cast<double>(gradidoCent) * pow(2.0, seconds / SECONDS_PER_YEAR));
 }
 
 

@@ -1,5 +1,6 @@
 #include "gradido_blockchain/blockchain/InMemory.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
+#include "gradido_blockchain/interaction/confirmTransaction/Context.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
 #include "gradido_blockchain/interaction/validate/Type.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
@@ -9,9 +10,13 @@
 
 #include "gradido_blockchain/interaction/toJson/Context.h"
 
+#include "loguru/loguru.hpp"
+
 #include <algorithm>
 
 namespace gradido {
+	using namespace data;
+	using namespace interaction;
 	namespace blockchain {
 		InMemory::InMemory(std::string_view communityId)
 			: Abstract(communityId), mSortedDirty(false), mExitCalled(false)
@@ -38,74 +43,87 @@ namespace gradido {
 			mExitCalled = true;
 		}
 
-		bool InMemory::addGradidoTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt)
-		{
-			auto provider = getProvider();
-			interaction::validate::Context validateGradidoTransaction(*gradidoTransaction);
-			validateGradidoTransaction.run(interaction::validate::Type::SINGLE, mCommunityId, provider);
-			std::lock_guard _lock(mWorkMutex);
-			if (mExitCalled) return false;
-			if (isTransactionExist(gradidoTransaction)) {
-				return false;
-			}
-			uint64_t id = 1;
-			auto lastTransaction = findOne(Filter::LAST_TRANSACTION);
-			if (lastTransaction) {
-				id = lastTransaction->getTransactionNr() + 1;
-			}
-			else {
-				mStartDate = gradidoTransaction->getTransactionBody()->getCreatedAt();
-			}
-				
-			auto serializedTransaction = gradidoTransaction->getSerializedTransaction();
-			auto body = gradidoTransaction->getTransactionBody();
+		bool InMemory::createAndAddConfirmedTransaction(
+			ConstGradidoTransactionPtr gradidoTransaction,
+			memory::ConstBlockPtr messageId, 
+			Timepoint confirmedAt
+		) {
+			
 			if (!messageId) {
 				// fake message id simply with taking hash from serialized transaction,
 				// iota message id will normally calculated with same algorithmus but with additional data 
+				auto serializedTransaction = gradidoTransaction->getSerializedTransaction();
 				messageId = std::make_shared<memory::Block>(serializedTransaction->calculateHash());
 			}
 
-			interaction::calculateAccountBalance::Context finalBalanceCalculate(*this);
-			auto finalBalance = finalBalanceCalculate.run(gradidoTransaction, confirmedAt, id);
-
-			data::ConstConfirmedTransactionPtr lastConfirmedTransaction;
-			if (lastTransaction) {
-				lastConfirmedTransaction = lastTransaction->getConfirmedTransaction();
-				if (confirmedAt < lastConfirmedTransaction->getConfirmedAt().getAsTimepoint()) {
-					throw BlockchainOrderException("previous transaction is younger");
-				}
+			auto blockchain = getProvider()->findBlockchain(mCommunityId);
+			confirmTransaction::Context context(blockchain);
+			auto role = context.createRole(gradidoTransaction, messageId, confirmedAt);
+			if (!role) {
+				throw GradidoNotImplementedException("missing role for gradido transaction");
 			}
-
-			auto confirmedTransaction = std::make_shared<data::ConfirmedTransaction>(
-				id,
-				gradidoTransaction,
-				confirmedAt,
-				GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING,
-				messageId,
-				finalBalance,
-				lastConfirmedTransaction
-			);
-			
-			// important! validation
-			interaction::validate::Context validate(*confirmedTransaction);
-			interaction::validate::Type level =
-				// interaction::validate::Type::SINGLE | // already checked
-				interaction::validate::Type::PREVIOUS |
-				interaction::validate::Type::MONTH_RANGE |
-				interaction::validate::Type::ACCOUNT
-			;
-			if (body->getType() != data::CrossGroupType::LOCAL) {
-				level = level | interaction::validate::Type::PAIRED;
+			auto confirmedTransaction = context.run(role);
+			if (!confirmedTransaction) {
+				throw GradidoNullPointerException(
+					"empty confirmed transaction from confirmTransaction interaction", 
+					"data::ConfirmedTransaction",
+					__FUNCTION__
+				);
 			}
-			// throw if some error occure
-			validate.run(level, getCommunityId(), provider);
-
 			auto transactionEntry = std::make_shared<TransactionEntry>(confirmedTransaction);
 			pushTransactionEntry(transactionEntry);
-			mTransactionFingerprintTransactionEntry.insert({ *confirmedTransaction->getGradidoTransaction()->getFingerprint(), transactionEntry});
-
+			mTransactionFingerprintTransactionEntry.insert({ *confirmedTransaction->getGradidoTransaction()->getFingerprint(), transactionEntry });
+			role->runPastAddToBlockchain(confirmedTransaction, blockchain);
 			return true;
 		}
+
+		void InMemory::addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent)
+		{
+			std::lock_guard _lock(mTransactionTriggerEventsMutex);
+			mTransactionTriggerEvents.insert({ transactionTriggerEvent->getTargetDate(), transactionTriggerEvent });
+		}
+
+		void InMemory::removeTransactionTriggerEvent(const data::TransactionTriggerEvent& transactionTriggerEvent)
+		{
+			std::lock_guard _lock(mTransactionTriggerEventsMutex);
+			auto range = mTransactionTriggerEvents.equal_range(transactionTriggerEvent.getTargetDate());
+			for (auto& it = range.first; it != range.second; it++) {
+				if (transactionTriggerEvent.isTheSame(it->second)) {
+					mTransactionTriggerEvents.erase(it);
+					return;
+				}
+			}
+			LOG_F(WARNING, "couldn't find transactionTriggerEvent for removal for transaction: %llu", transactionTriggerEvent.getLinkedTransactionId());
+		}
+
+
+		bool InMemory::isTransactionExist(data::ConstGradidoTransactionPtr gradidoTransaction) const
+		{
+			std::lock_guard _lock(mWorkMutex);
+			auto signature = gradidoTransaction->getFingerprint();
+			auto range = mTransactionFingerprintTransactionEntry.equal_range(*signature);
+			for (auto& it = range.first; it != range.second; ++it) {
+				if (it->second->getConfirmedTransaction()->getGradidoTransaction()->getFingerprint()->isTheSame(signature)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		//! return events in asc order of targetDate
+		std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> InMemory::findTransactionTriggerEventsInRange(TimepointInterval range)
+		{
+			std::lock_guard _lock(mTransactionTriggerEventsMutex);
+			auto startIt = mTransactionTriggerEvents.lower_bound(range.getStartDate());
+			auto endIt = mTransactionTriggerEvents.upper_bound(range.getEndDate());
+			std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> result;
+			result.reserve(std::distance(startIt, endIt));
+			for (auto it = startIt; it != endIt; it++) {
+				result.push_back(it->second);
+			}
+			return result;
+		}
+		
 
 		const TransactionEntries& InMemory::getSortedTransactions()
 		{
@@ -214,61 +232,7 @@ namespace gradido {
 			throw std::runtime_error("not expected branch");			
 		}
 
-		//! find all deferred transfers which have the timeout in date range between start and end, have senderPublicKey and are not redeemed,
-		//! therefore boocked back to sender
-		TransactionEntries InMemory::findTimeoutedDeferredTransfersInRange(
-			memory::ConstBlockPtr senderPublicKey,
-			TimepointInterval timepointInterval,
-			uint64_t maxTransactionNr
-		) const
-		{
-			TransactionEntries result;
-			auto it = mTimeoutDeferredRedeemedTransferPairs.lower_bound(timepointInterval.getStartDate());
-			while(it != mTimeoutDeferredRedeemedTransferPairs.upper_bound(timepointInterval.getEndDate())) 
-			{
-				auto deferredRedeemedPair = it->second;
-				assert(deferredRedeemedPair.first->isDeferredTransfer());
-				// not redeemed
-				if (!deferredRedeemedPair.second) {
-					auto deferredTransfer = deferredRedeemedPair.first->getTransactionBody()->getDeferredTransfer();
-					if (deferredTransfer->getSenderPublicKey()->isTheSame(senderPublicKey)) {
-						result.push_back(deferredRedeemedPair.first);
-					}
-				}
-				++it;
-			}
-			return result;
-		}
-
-		//! find all transfers which redeem a deferred transfer in date range (timepointInterval)
-		//! \param senderPublicKey sender public key of sending account of deferred transaction
-		//! \return list with transaction pairs, first is deferred transfer, second is redeeming transfer
-		std::list<DeferredRedeemedTransferPair> InMemory::findRedeemedDeferredTransfersInRange(
-			memory::ConstBlockPtr senderPublicKey,
-			TimepointInterval timepointInterval,
-			uint64_t maxTransactionNr
-		) const
-		{
-			std::list<DeferredRedeemedTransferPair> result;
-			// go back in time, deferred transfers older then GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL cannot be redeemed in timepointInterval
-			auto startDate = timepointInterval.getStartDate() - GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL;
-			auto it = mTimeoutDeferredRedeemedTransferPairs.lower_bound(startDate);
-			
-			while (it != mTimeoutDeferredRedeemedTransferPairs.upper_bound(timepointInterval.getEndDate())) {
-				auto deferredRedeemedPair = it->second;
-				assert(deferredRedeemedPair.first->isDeferredTransfer());
-				// redeemed
-				if (deferredRedeemedPair.second) {
-					auto deferredTransfer = deferredRedeemedPair.first->getTransactionBody()->getDeferredTransfer();
-					if (deferredTransfer->getSenderPublicKey()->isTheSame(senderPublicKey)) {
-						result.push_back(deferredRedeemedPair);
-					}
-				}
-				++it;
-			}
-			return result;
-		}
-
+		
 		std::shared_ptr<const TransactionEntry> InMemory::getTransactionForId(uint64_t transactionId) const
 		{
 			std::lock_guard _lock(mWorkMutex);
@@ -317,43 +281,6 @@ namespace gradido {
 				transactionEntry
 				});
 			auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
-			// add deferred transfer to special deferred transfer map
-			if (body->isDeferredTransfer()) {
-				mTimeoutDeferredRedeemedTransferPairs.insert({ body->getDeferredTransfer()->getTimeout().getAsTimepoint(), {transactionEntry, nullptr}});
-			}
-			// find out if transaction redeem a deferred transfer
-			if (body->isTransfer() || body->isDeferredTransfer()) {
-				FilterBuilder filterBuilder;
-				const auto& transfer = body->isTransfer() ? *body->getTransfer() : body->getDeferredTransfer()->getTransfer();
-				
-				auto lastFromSameSender = findOne(
-					filterBuilder
-					.setInvolvedPublicKey(transfer.getSender().getPubkey())
-					.setMaxTransactionNr(confirmedTransaction->getId() - 1)
-					.setSearchDirection(SearchDirection::DESC)
-					.setPagination(Pagination(1))
-					.build()
-				);
-				if (lastFromSameSender) {
-					auto lastFromSameSenderBody = lastFromSameSender->getTransactionBody();
-					
-					auto pubkey = transfer.getSender().getPubkey();
-					if (lastFromSameSenderBody->isDeferredTransfer()) {
-						auto lastFromSameSenderRecipient = lastFromSameSenderBody->getDeferredTransfer()->getTransfer().getRecipient();
-						if (lastFromSameSenderRecipient->isTheSame(pubkey)) {
-							auto lastFromSameSenderTimeout = lastFromSameSenderBody->getDeferredTransfer()->getTimeout();
-							// seems we found a matching deferred transfer transaction
-							auto byTimeoutDeferredRedeemedPairsIt = mTimeoutDeferredRedeemedTransferPairs.equal_range(lastFromSameSenderTimeout.getAsTimepoint());
-							for (auto it = byTimeoutDeferredRedeemedPairsIt.first; it != byTimeoutDeferredRedeemedPairsIt.second; ++it) {
-								if (lastFromSameSender->getSerializedTransaction()->isTheSame(it->second.first->getSerializedTransaction())) {
-									it->second.second = transactionEntry;
-									break;
-								}
-							}
-						}
-					}
-				}
-			}
 		}
 
 		void InMemory::removeTransactionEntry(std::shared_ptr<const TransactionEntry> transactionEntry)
@@ -390,20 +317,6 @@ namespace gradido {
 			}
 			mMessageIdTransactionNrs.erase(iota::MessageId(*confirmedTransaction->getMessageId()));
 			mTransactionsByNr.erase(confirmedTransaction->getId());
-
-			auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
-			// remove deferred transfer from special deferred transfer map
-			if (body->isDeferredTransfer()) {
-				auto byTimeoutDeferredRedeemedPairsIt = mTimeoutDeferredRedeemedTransferPairs.equal_range(
-					body->getDeferredTransfer()->getTimeout().getAsTimepoint()
-				);
-				for (auto it = byTimeoutDeferredRedeemedPairsIt.first; it != byTimeoutDeferredRedeemedPairsIt.second; ++it) {
-					if (serializedTransaction->isTheSame(it->second.first->getSerializedTransaction())) {
-						mTimeoutDeferredRedeemedTransferPairs.erase(it);
-						break;
-					}
-				}
-			}
 		}
 
 		FilterCriteria InMemory::findSmallestPrefilteredTransactionList(const Filter& filter) const
@@ -439,17 +352,5 @@ namespace gradido {
 			return resultCounts.begin()->second;
 		}
 
-		bool InMemory::isTransactionExist(data::ConstGradidoTransactionPtr gradidoTransaction) const
-		{
-			std::lock_guard _lock(mWorkMutex);
-			auto signature = gradidoTransaction->getFingerprint();
-			auto range = mTransactionFingerprintTransactionEntry.equal_range(*signature);
-			for (auto it = range.first; it != range.second; ++it) {
-				if (it->second->getConfirmedTransaction()->getGradidoTransaction()->getFingerprint()->isTheSame(signature)) {
-					return true;
-				}
-			}	
-			return false;
-		}
 	}
 }

@@ -13,8 +13,7 @@ namespace gradido {
 		namespace validate {
 			void ConfirmedTransactionRole::run(
 				Type type,
-				std::string_view communityId,
-				blockchain::AbstractProvider* blockchainProvider,
+				std::shared_ptr<blockchain::Abstract> blockchain,
 				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
 				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
@@ -23,12 +22,12 @@ namespace gradido {
 				auto confirmedAt = mConfirmedTransaction.getConfirmedAt().getAsTimepoint();
 
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					if (mConfirmedTransaction.getVersionNumber() != GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING) {
+					if (mConfirmedTransaction.getVersionNumber() != GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING) {
 						TransactionValidationInvalidInputException exception(
 							"wrong version",
 							"version_number",
 							"string",
-							GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING,
+							GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
 							mConfirmedTransaction.getVersionNumber().data()
 						);
 						exception.setTransactionBody(*body);
@@ -65,7 +64,6 @@ namespace gradido {
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS) {
 					if (mConfirmedTransaction.getId() > 1) {
 						auto previousTransactionId = mConfirmedTransaction.getId() - 1;
-						auto blockchain = findBlockchain(blockchainProvider, communityId, __FUNCTION__);
 						auto previousTransaction = blockchain->getTransactionForId(previousTransactionId);
 						if (!previousTransaction) {
 							GradidoBlockchainTransactionNotFoundException exception("previous transaction not found");
@@ -129,8 +127,7 @@ namespace gradido {
 				}
 				GradidoTransactionRole(*mConfirmedTransaction.getGradidoTransaction()).run(
 					type,
-					communityId,
-					blockchainProvider,
+					blockchain,
 					senderPreviousConfirmedTransaction,
 					recipientPreviousConfirmedTransaction
 				);

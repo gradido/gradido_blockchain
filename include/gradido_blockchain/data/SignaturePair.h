@@ -12,15 +12,15 @@ namespace gradido {
 			SignaturePair() {}
 			// throw InvalidSizeException
 			SignaturePair(memory::ConstBlockPtr pubkeyPtr, memory::ConstBlockPtr signaturePtr)
-				: mPubkey(pubkeyPtr), mSignature(signaturePtr) {}
+				: mPublicKey(pubkeyPtr), mSignature(signaturePtr) {}
 
 			inline bool operator==(const SignaturePair& other) const {
-				return mPubkey->isTheSame(other.mPubkey) && mSignature->isTheSame(other.mSignature);
+				return mPublicKey->isTheSame(other.mPublicKey) && mSignature->isTheSame(other.mSignature);
 			}
-			inline memory::ConstBlockPtr getPubkey() const { return mPubkey; }
+			inline memory::ConstBlockPtr getPublicKey() const { return mPublicKey; }
 			inline memory::ConstBlockPtr getSignature() const { return mSignature; }
 		protected:
-			memory::ConstBlockPtr mPubkey;
+			memory::ConstBlockPtr mPublicKey;
 			memory::ConstBlockPtr mSignature;
 		};
 	}

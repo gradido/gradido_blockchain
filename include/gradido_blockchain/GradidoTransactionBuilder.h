@@ -33,7 +33,7 @@ namespace gradido {
 		//! build inbound transaction for cross community transaction
 		//! parent message id must be set before with outbound transaction iota message id
 		std::unique_ptr<data::GradidoTransaction> buildInbound();
-		GradidoTransactionBuilder& setDeferredTransfer(data::GradidoTransfer transactionTransfer, Timepoint timeout);
+		GradidoTransactionBuilder& setDeferredTransfer(data::GradidoTransfer transactionTransfer, Duration timeoutDuration);
 		GradidoTransactionBuilder& setDeferredTransfer(std::unique_ptr<data::GradidoDeferredTransfer> deferredTransfer);
 
 		GradidoTransactionBuilder& setCommunityFriendsUpdate(bool colorFusion);
@@ -60,10 +60,15 @@ namespace gradido {
 		);
 		GradidoTransactionBuilder& setCommunityRoot(std::unique_ptr<data::CommunityRoot> communityRoot);
 
+		GradidoTransactionBuilder& setRedeemDeferredTransfer(uint64_t deferredTransferTransactionNr, data::GradidoTransfer transactionTransfer);
+		GradidoTransactionBuilder& setRedeemDeferredTransfer(std::unique_ptr<data::GradidoRedeemDeferredTransfer> redeemDeferredTransfer);
+		GradidoTransactionBuilder& setTimeoutDeferredTransfer(uint64_t deferredTransferTransactionNr);
+		GradidoTransactionBuilder& setTimeoutDeferredTransfer(std::unique_ptr<data::GradidoTimeoutDeferredTransfer> timeoutDeferredTransfer);
+
 		//! if not called, time from calling GradidoTransactionBuilder Constructor will be taken
 		//! \param createAt timestamp when transaction where created
 		GradidoTransactionBuilder& setCreatedAt(Timepoint createdAt);
-		GradidoTransactionBuilder& setMemo(std::string_view memo);
+		GradidoTransactionBuilder& addMemo(data::EncryptedMemo memo);
 		GradidoTransactionBuilder& setVersionNumber(std::string_view versionNumber);
 		//! \param body will be moved
 		GradidoTransactionBuilder& setTransactionBody(std::unique_ptr<data::TransactionBody> body);

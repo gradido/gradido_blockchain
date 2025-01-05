@@ -19,37 +19,36 @@ namespace gradido {
 				assert(gradidoTransfer);
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mRequiredSignPublicKeys.push_back(gradidoTransfer->getSender().getPubkey());
+				mRequiredSignPublicKeys.push_back(gradidoTransfer->getSender().getPublicKey());
 			}
 
 			void GradidoTransferRole::run(
 				Type type,
-				std::string_view communityId,
-				blockchain::AbstractProvider* blockchainProvider,
+				std::shared_ptr<blockchain::Abstract> blockchain,
 				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
 				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
 				TransferAmountRole transferAmountRole(mGradidoTransfer->getSender());
-				transferAmountRole.run(type, communityId, blockchainProvider, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
+				transferAmountRole.run(type, blockchain, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
 				auto& sender = mGradidoTransfer->getSender();
 
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
 					validateEd25519PublicKey(mGradidoTransfer->getRecipient(), "recipient");
 
-					if (mGradidoTransfer->getRecipient()->isTheSame(sender.getPubkey())) {
+					if (mGradidoTransfer->getRecipient()->isTheSame(sender.getPublicKey())) {
 						throw TransactionValidationException("sender and recipient are the same");
 					}
 				}
 
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
-					auto senderBlockchain = findBlockchain(blockchainProvider, communityId, __FUNCTION__);
+					assert(blockchain);
 					std::shared_ptr<blockchain::Abstract> recipientBlockchain;
-					if (!mOtherCommunity.empty() && mOtherCommunity != communityId) {
-						recipientBlockchain = findBlockchain(blockchainProvider, mOtherCommunity, __FUNCTION__);
+					if (!mOtherCommunity.empty() && mOtherCommunity != blockchain->getCommunityId()) {
+						recipientBlockchain = findBlockchain(blockchain->getProvider(), mOtherCommunity, __FUNCTION__);
 					}
 					else {
-						recipientBlockchain = senderBlockchain;
+						recipientBlockchain = blockchain;
 						recipientPreviousConfirmedTransaction = senderPreviousConfirmedTransaction;
 					}
 					if (!senderPreviousConfirmedTransaction) {
@@ -61,7 +60,7 @@ namespace gradido {
 					validateAccount(
 						*senderPreviousConfirmedTransaction,
 						*recipientPreviousConfirmedTransaction,
-						senderBlockchain,
+						blockchain,
 						recipientBlockchain
 					);
 				}
@@ -71,7 +70,7 @@ namespace gradido {
 					if (!senderPreviousConfirmedTransaction) {
 						throw BlockchainOrderException("transfer transaction not allowed as first transaction on blockchain");
 					}
-					validatePrevious(*senderPreviousConfirmedTransaction, findBlockchain(blockchainProvider, communityId, __FUNCTION__));
+					validatePrevious(*senderPreviousConfirmedTransaction, blockchain);
 				}
 			}
 
@@ -81,13 +80,12 @@ namespace gradido {
 			) {
 				assert(blockchain);
 				assert(mConfirmedAt.getSeconds());
-				calculateAccountBalance::Context c(*blockchain);
+				calculateAccountBalance::Context c(blockchain);
 				auto& sender = mGradidoTransfer->getSender();
-				auto finalBalance = c.run(
-					sender.getPubkey(),
+				auto finalBalance = c.fromEnd(
+					sender.getPublicKey(),
 					mConfirmedAt, // calculate decay after last transaction balance until confirmation date
-					previousConfirmedTransaction.getId(), // calculate until this transaction nr
-					sender.getCommunityId()
+					previousConfirmedTransaction.getId() // calculate until this transaction nr
 				);
 					
 				if (sender.getAmount() > finalBalance) {
@@ -108,7 +106,7 @@ namespace gradido {
 				// check if sender address was registered
 				auto senderAddressType = senderBlockchain->getAddressType(
 					filterBuilder
-					.setInvolvedPublicKey(mGradidoTransfer->getSender().getPubkey())
+					.setInvolvedPublicKey(mGradidoTransfer->getSender().getPublicKey())
 					.setMaxTransactionNr(senderPreviousConfirmedTransaction.getId())
 					.build()
 				);
@@ -116,7 +114,14 @@ namespace gradido {
 					throw WrongAddressTypeException(
 						"sender address not registered", 
 						senderAddressType, 
-						mGradidoTransfer->getSender().getPubkey()
+						mGradidoTransfer->getSender().getPublicKey()
+					);
+				}
+				if (data::AddressType::DEFERRED_TRANSFER == senderAddressType) {
+					throw WrongAddressTypeException(
+						"sender address is deferred transfer, please use redeemDeferredTransferTransaction for that",
+						senderAddressType,
+						mGradidoTransfer->getSender().getPublicKey()
 					);
 				}
 
@@ -129,6 +134,9 @@ namespace gradido {
 				);
 				if (data::AddressType::NONE == recipientAddressType) {
 					throw WrongAddressTypeException("recipient address not registered", recipientAddressType, mGradidoTransfer->getRecipient());
+				}
+				if (data::AddressType::DEFERRED_TRANSFER == recipientAddressType) {
+					throw WrongAddressTypeException("recipient cannot be a deferred transfer address", recipientAddressType, mGradidoTransfer->getRecipient());
 				}
 			}
 		}

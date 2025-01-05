@@ -55,12 +55,15 @@ namespace gradido {
 			static std::string getCoinCommunityId(const data::TransactionBody& body);
 			inline data::ConstTransactionBodyPtr getTransactionBody() const { return getConfirmedTransaction()->getGradidoTransaction()->getTransactionBody(); }
 
+			// default transactions
 			inline bool isTransfer() const { return mTransactionType == data::TransactionType::TRANSFER; }
 			inline bool isCreation() const { return mTransactionType == data::TransactionType::CREATION; }
 			inline bool isCommunityFriendsUpdate() const { return mTransactionType == data::TransactionType::COMMUNITY_FRIENDS_UPDATE; }
 			inline bool isRegisterAddress() const { return mTransactionType == data::TransactionType::REGISTER_ADDRESS; }
 			inline bool isDeferredTransfer() const { return mTransactionType == data::TransactionType::DEFERRED_TRANSFER; }
 			inline bool isCommunityRoot() const { return mTransactionType == data::TransactionType::COMMUNITY_ROOT; }
+			inline bool isRedeemDeferredTransfer() const { return mTransactionType == data::TransactionType::REDEEM_DEFERRED_TRANSFER; }			
+			inline bool isTimeoutDeferredTransfer() const { return mTransactionType == data::TransactionType::TIMEOUT_DEFERRED_TRANSFER; }
 
 		protected:
 			uint64_t mTransactionNr;

@@ -5,24 +5,28 @@
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/validate/GradidoCreationRole.h"
 #include "gradido_blockchain/interaction/validate/GradidoDeferredTransferRole.h"
+#include "gradido_blockchain/interaction/validate/GradidoRedeemDeferredTransferRole.h"
+#include "gradido_blockchain/interaction/validate/GradidoTimeoutDeferredTransferRole.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
 #include "gradido_blockchain/interaction/validate/RegisterAddressRole.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
-
 #include "magic_enum/magic_enum.hpp"
 #include "magic_enum/magic_enum_flags.hpp"
+#include "loguru/loguru.hpp"
+
+#include <regex>
 
 using namespace magic_enum;
 
 namespace gradido {
+	using namespace data;
 	namespace interaction {
 		namespace validate {
 
 			void TransactionBodyRole::run(
 				Type type,
-				std::string_view communityId,
-				blockchain::AbstractProvider* blockchainProvider,
+				std::shared_ptr<blockchain::Abstract> blockchain,
 				std::shared_ptr<const data::ConfirmedTransaction> previousConfirmedTransaction,
 				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
@@ -33,26 +37,58 @@ namespace gradido {
 				}
 				try {
 					if ((type & Type::SINGLE) == Type::SINGLE) {
-						if (mBody.getVersionNumber() != GRADIDO_TRANSACTION_BODY_V3_3_VERSION_STRING) {
+						if (mBody.getVersionNumber() != GRADIDO_TRANSACTION_BODY_VERSION_STRING) {
 							throw TransactionValidationInvalidInputException(
 								"wrong version",
 								"version_number",
 								"string",
-								GRADIDO_TRANSACTION_BODY_V3_3_VERSION_STRING,
+								GRADIDO_TRANSACTION_BODY_VERSION_STRING,
 								mBody.getVersionNumber().data()
 							);
 						}
 						// memo is only mandatory for transfer and creation transactions
 						if (mBody.isDeferredTransfer() || mBody.isTransfer() || mBody.isCreation()) {
-							auto memoSize = mBody.getMemo().size();
-							if (memoSize < 5 || memoSize > 450) {
+							auto &memos = mBody.getMemos();
+							if (memos.empty()) {
 								throw TransactionValidationInvalidInputException(
-									"not in expected range [5;450]",
+									"no memo",
 									"memo",
-									"string",
-									">= 5 && <= 450",
-									std::to_string(memoSize).data()
+									"EncryptedMemo",
+									">= 1",
+									0
 								);
+							}
+							for (auto& memo : mBody.getMemos()) {
+								if (MemoKeyType::PLAIN == memo.getKeyType()) {
+									if (!isLikelyPlainText(*memo.getMemo())) {
+										LOG_F(ERROR, "plain memo don't seem to be plain!");
+									}
+									auto memoSize = memo.getMemo()->size();
+									if (memoSize < 5 || memoSize > 450) {
+										throw TransactionValidationInvalidInputException(
+											"not in expected range [5;450]",
+											"memo",
+											"string",
+											">= 5 && <= 450",
+											std::to_string(memoSize).data()
+										);
+									}
+								}
+								else {
+									if (isLikelyPlainText(*memo.getMemo())) {
+										LOG_F(ERROR, "Attention!! encrypted memo seem to be plain!");
+									}
+									auto memoSize = memo.getMemo()->size() - 32;
+									if (memoSize < 5 || memoSize > 450) {
+										throw TransactionValidationInvalidInputException(
+											"not in expected range [5;450]",
+											"encryptedMemo",
+											"bytes",
+											">= 5 && <= 450",
+											std::to_string(memoSize).data()
+										);
+									}
+								}
 							}
 						}
 						auto& otherGroup = mBody.getOtherGroup();
@@ -67,15 +103,15 @@ namespace gradido {
 						}
 					}
 
-					auto& specificRole = getSpecificTransactionRole();
-					if (!mBody.getOtherGroup().empty() && !recipientPreviousConfirmedTransaction && blockchainProvider) {
+					auto& specificRole = getSpecificTransactionRole(blockchain);
+					if (!mBody.getOtherGroup().empty() && !recipientPreviousConfirmedTransaction && blockchain) {
 						recipientPreviousConfirmedTransaction = 
-							findBlockchain(blockchainProvider, mBody.getOtherGroup(), __FUNCTION__)
+							findBlockchain(blockchain->getProvider(), mBody.getOtherGroup(), __FUNCTION__)
 							->findOne(blockchain::Filter::LAST_TRANSACTION)
 							->getConfirmedTransaction();
 					}
 					specificRole.setConfirmedAt(mConfirmedAt);
-					specificRole.run(type, communityId, blockchainProvider, previousConfirmedTransaction, recipientPreviousConfirmedTransaction);
+					specificRole.run(type, blockchain, previousConfirmedTransaction, recipientPreviousConfirmedTransaction);
 				}
 				catch (TransactionValidationException& ex) {
 					ex.setTransactionBody(mBody);
@@ -83,53 +119,87 @@ namespace gradido {
 				}
             }
 
-			AbstractRole& TransactionBodyRole::getSpecificTransactionRole()
+			AbstractRole& TransactionBodyRole::getSpecificTransactionRole(std::shared_ptr<blockchain::Abstract> blockchain)
 			{
 				if (mSpecificTransactionRole) {
 					return *mSpecificTransactionRole;
 				}
+
 				if (mBody.isTransfer()) {
 					mSpecificTransactionRole = std::make_unique<GradidoTransferRole>(mBody.getTransfer(), mBody.getOtherGroup());
-				}
-				else if (mBody.isCreation()) 
-				{
+				} 
+				else if (mBody.isCreation()) {
 					mSpecificTransactionRole = std::make_unique<GradidoCreationRole>(mBody.getCreation());
 					// check target date for creation transactions
 					dynamic_cast<GradidoCreationRole*>(mSpecificTransactionRole.get())->validateTargetDate(mBody.getCreatedAt().getAsTimepoint());
 				} 
-				else if (mBody.isCommunityFriendsUpdate()) 
-				{
+				else if (mBody.isCommunityFriendsUpdate()) {
 					// currently empty
-					throw std::runtime_error("not implemented yet");
-				}
-				else if (mBody.isRegisterAddress()) 
-				{
+					throw GradidoNotImplementedException("interaction::validate missing role for communityFriendsUpdate");
+				} 
+				else if (mBody.isRegisterAddress()) {
 					mSpecificTransactionRole = std::make_unique<RegisterAddressRole>(mBody.getRegisterAddress());
-				}
-				else if (mBody.isDeferredTransfer()) 
-				{
-					auto deferredTransfer = mBody.getDeferredTransfer();
-					if (mBody.getCreatedAt().getAsTimepoint() >= deferredTransfer->getTimeout().getAsTimepoint()) {
-						std::string expected = "> " + DataTypeConverter::timePointToString(mBody.getCreatedAt().getAsTimepoint());
-						throw TransactionValidationInvalidInputException(
-							"already reached", 
-							"timeout", 
-							"TimestampSeconds",
-							expected.data(),
-							DataTypeConverter::timePointToString(deferredTransfer->getTimeout().getAsTimepoint()).data()
-						);
-					}
+				} 
+				else if (mBody.isDeferredTransfer()) {
 					mSpecificTransactionRole = std::make_unique<GradidoDeferredTransferRole>(mBody.getDeferredTransfer());
 				}
-				else if (mBody.isCommunityRoot()) 
-				{
-					mSpecificTransactionRole = std::make_unique<CommunityRootRole>(mBody.getCommunityRoot());
+				else if (mBody.isRedeemDeferredTransfer()) {
+					auto redeemDeferredTransfer = mBody.getRedeemDeferredTransfer();
+					if (blockchain) {
+						// check if redeem is inside the timeout of deferred transfer
+						auto deferredTransferEntry = blockchain->getTransactionForId(redeemDeferredTransfer->getDeferredTransferTransactionNr());
+						auto deferredTransferConfirmedAt = deferredTransferEntry->getConfirmedTransaction()->getConfirmedAt().getAsTimepoint();
+						auto deferredTransferBody = deferredTransferEntry->getTransactionBody();
+						if (!deferredTransferBody || !deferredTransferBody->isDeferredTransfer()) {
+							throw TransactionValidationInvalidInputException(
+								"deferredTransferTransactionNr points to a invalid Transaction, wrong type",
+								"deferred_transfer_transaction_nr",
+								"uint64",
+								"DeferredTransfer",
+								enum_name(deferredTransferEntry->getTransactionBody()->getTransactionType()).data()
+							);
+						}
+						auto deferredTransfer = deferredTransferEntry->getTransactionBody()->getDeferredTransfer();
+						auto expectedMaxConfirmedAt = mBody.getCreatedAt().getAsTimepoint() + MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION;
+						if (deferredTransferConfirmedAt + deferredTransfer->getTimeoutDuration() < expectedMaxConfirmedAt) {
+							std::string expected("< ");
+							expected += DataTypeConverter::timePointToString(deferredTransferConfirmedAt + deferredTransfer->getTimeoutDuration());
+							throw TransactionValidationInvalidInputException(
+								"redeem timeouted deferred transfer",
+								"createdAt",
+								"Timestamp",
+								expected.data(),
+								DataTypeConverter::timePointToString(expectedMaxConfirmedAt).data()
+							);
+						}
+					}
+					mSpecificTransactionRole = std::make_unique<GradidoRedeemDeferredTransferRole>(redeemDeferredTransfer);
 				}
+				else if (mBody.isTimeoutDeferredTransfer()) {
+					mSpecificTransactionRole = std::make_unique<GradidoTimeoutDeferredTransferRole>(mBody.getTimeoutDeferredTransfer());
+				}
+				else if (mBody.isCommunityRoot()) {
+					mSpecificTransactionRole = std::make_unique<CommunityRootRole>(mBody.getCommunityRoot());
+				} 
+				
 				if (!mSpecificTransactionRole) {
 					throw TransactionValidationException("body without specific transaction");
 				}
 				mSpecificTransactionRole->setCreatedAt(mBody.getCreatedAt());
 				return *mSpecificTransactionRole;
+			}
+			
+			bool TransactionBodyRole::isLikelyPlainText(const memory::Block& data)
+			{
+				// Regular expression pattern that matches printable UTF-8 characters,
+				// including characters with diacritics and non-ASCII letters.
+				std::regex utf8Regex("[\\x20-\\x7E\\xC2-\\xDF\\xE0-\\xEF\\xF0-\\xFF\\xA0-\\xFF]+");
+
+				// Convert the memory block into a string
+				std::string text(reinterpret_cast<const char*>(data.data()), data.size());
+
+				// Check if the entire text matches the pattern for printable UTF-8 characters
+				return std::regex_match(text, utf8Regex);
 			}
 		}
 	}

@@ -36,7 +36,7 @@ TEST(DeserializeTest, CommunityRootBody)
 	EXPECT_FALSE(body->isTransfer());
 
 	auto communityRoot = body->getCommunityRoot();
-	EXPECT_TRUE(communityRoot->getPubkey()->isTheSame(g_KeyPairs[0]->getPublicKey()));
+	EXPECT_TRUE(communityRoot->getPublicKey()->isTheSame(g_KeyPairs[0]->getPublicKey()));
 	EXPECT_TRUE(communityRoot->getGmwPubkey()->isTheSame(g_KeyPairs[1]->getPublicKey()));
 	EXPECT_TRUE(communityRoot->getAufPubkey()->isTheSame(g_KeyPairs[2]->getPublicKey()));
 }
@@ -90,7 +90,9 @@ TEST(DeserializeTest, GradidoCreationBody) {
 	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
-	EXPECT_EQ(body->getMemo(), std::string("Deine erste Schoepfung ;)"));
+	auto& memos = body->getMemos();
+	ASSERT_GE(memos.size(), 1);
+	EXPECT_EQ(memos[0].getMemo()->copyAsString(), std::string("Deine erste Schoepfung ;)"));
 
 	EXPECT_FALSE(body->isCommunityFriendsUpdate());
 	EXPECT_FALSE(body->isCommunityRoot());
@@ -101,8 +103,8 @@ TEST(DeserializeTest, GradidoCreationBody) {
 
 	auto creation = body->getCreation();
 	auto& recipient = creation->getRecipient();
-	EXPECT_EQ(recipient.getAmount().toString(), "1000.0000");
-	EXPECT_TRUE(recipient.getPubkey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
+	EXPECT_EQ(recipient.getAmount(), GradidoUnit(10000000ll));
+	EXPECT_TRUE(recipient.getPublicKey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
 	EXPECT_EQ(creation->getTargetDate(), targetDate);
 }
 
@@ -123,7 +125,9 @@ TEST(DeserializeTest, GradidoTransferBody) {
 	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
-	EXPECT_EQ(body->getMemo(), std::string("Ich teile mit dir"));
+	auto& memos = body->getMemos();
+	ASSERT_GE(memos.size(), 1);
+	EXPECT_EQ(memos[0].getMemo()->copyAsString(), std::string("Ich teile mit dir"));
 
 	EXPECT_FALSE(body->isCommunityFriendsUpdate());
 	EXPECT_FALSE(body->isCommunityRoot());
@@ -134,8 +138,8 @@ TEST(DeserializeTest, GradidoTransferBody) {
 
 	auto transfer = body->getTransfer();
 	auto& sender = transfer->getSender();
-	EXPECT_EQ(sender.getAmount().toString(), "500.5500");
-	EXPECT_TRUE(sender.getPubkey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
+	EXPECT_EQ(sender.getAmount(), GradidoUnit(5005500ll));
+	EXPECT_TRUE(sender.getPublicKey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
 	EXPECT_TRUE(transfer->getRecipient()->isTheSame(g_KeyPairs[5]->getPublicKey()));
 }
 
@@ -155,8 +159,9 @@ TEST(DeserializeTest, GradidoDeferredTransferBody) {
 	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
-	EXPECT_EQ(body->getMemo(), std::string("Link zum einloesen"));
-
+	auto& memos = body->getMemos();
+	ASSERT_GE(memos.size(), 1);
+	EXPECT_EQ(memos[0].getMemo()->copyAsString(), std::string("Link zum einloesen"));
 	EXPECT_FALSE(body->isCommunityFriendsUpdate());
 	EXPECT_FALSE(body->isCommunityRoot());
 	EXPECT_FALSE(body->isCreation());
@@ -167,10 +172,10 @@ TEST(DeserializeTest, GradidoDeferredTransferBody) {
 	auto deferredTransfer = body->getDeferredTransfer();
 	auto& transfer = deferredTransfer->getTransfer();
 	auto& sender = transfer.getSender();
-	EXPECT_EQ(sender.getAmount().toString(), "555.5500");
-	EXPECT_TRUE(sender.getPubkey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
+	EXPECT_EQ(sender.getAmount(), GradidoUnit(5555500ll));
+	EXPECT_TRUE(sender.getPublicKey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
 	EXPECT_TRUE(transfer.getRecipient()->isTheSame(g_KeyPairs[5]->getPublicKey()));
-	EXPECT_EQ(deferredTransfer->getTimeout(), timeout);
+	EXPECT_EQ(deferredTransfer->getTimeoutDuration(), timeoutDuration);
 }
 
 
@@ -239,7 +244,7 @@ TEST(DeserializeTest, MinimalConfirmedTransaction) {
 	EXPECT_EQ(confirmedTransaction->getId(), 7);
 	EXPECT_EQ(confirmedTransaction->getConfirmedAt(), confirmedAt);
 	EXPECT_EQ(confirmedTransaction->getVersionNumber(), VERSION_STRING);
-	EXPECT_EQ(confirmedTransaction->getAccountBalance().toString(), "179.0000");
+	EXPECT_EQ(confirmedTransaction->getAccountBalances().size(), 0);
 	EXPECT_EQ(confirmedTransaction->getRunningHash()->size(), crypto_generichash_BYTES);
 }
 
@@ -258,9 +263,10 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_EQ(confirmedTransaction->getId(), 7);
 	EXPECT_EQ(confirmedTransaction->getConfirmedAt(), confirmedAt);
 	EXPECT_EQ(confirmedTransaction->getVersionNumber(), VERSION_STRING);
-	EXPECT_EQ(confirmedTransaction->getAccountBalance().toString(), "899.7484");
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[4]->getPublicKey()).getBalance(), GradidoUnit(1000000ll));
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[5]->getPublicKey()).getBalance(), GradidoUnit(8997483ll));
 	ASSERT_EQ(confirmedTransaction->getRunningHash()->size(), crypto_generichash_BYTES);
-	EXPECT_EQ(confirmedTransaction->getRunningHash()->convertToHex(), "02c718c2d4154829e6e64ed4cb0aeebb5df4cb4f285f49cc299cb286da242afd");
+	EXPECT_EQ(confirmedTransaction->getRunningHash()->convertToHex(), "1203c5aa94a724a49f10d00db79b8261e3fcb210588087d4a696a99c7a6c7103");
 
 	auto gradidoTransaction = confirmedTransaction->getGradidoTransaction();
 	auto firstSignature = gradidoTransaction->getSignatureMap().getSignaturePairs().front().getSignature();
@@ -276,13 +282,15 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_FALSE(secondContext.isGradidoTransaction());
 
 	auto body = secondContext.getTransactionBody();
-	EXPECT_EQ(body->getMemo(), "Danke fuer dein Sein!");
+	auto& memos = body->getMemos();
+	ASSERT_GE(memos.size(), 1);
+	EXPECT_EQ(memos[0].getMemo()->copyAsString(), std::string("Danke fuer dein Sein!"));
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_TRUE(body->isTransfer());
 	
 	auto transfer = body->getTransfer();
 	auto& sender = transfer->getSender();
-	EXPECT_EQ(sender.getAmount().toString(), "100.2516");
-	EXPECT_TRUE(sender.getPubkey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
+	EXPECT_EQ(sender.getAmount(), GradidoUnit(1002516ll));
+	EXPECT_TRUE(sender.getPublicKey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
 	EXPECT_TRUE(transfer->getRecipient()->isTheSame(g_KeyPairs[5]->getPublicKey()));	
 }

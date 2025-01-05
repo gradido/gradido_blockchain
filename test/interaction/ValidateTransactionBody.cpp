@@ -11,21 +11,21 @@ using namespace std;
 
 TEST(ValidateTransactionBody, InvalidMissingSpecificTransaction)
 {
-	TransactionBody body("memo", createdAt, VERSION_STRING);
+	TransactionBody body(createdAt, VERSION_STRING);
 	validate::Context c(body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationException);
 }
 
 TEST(ValidateTransactionBody, InvalidVersion)
 {
-	TransactionBody body("memo", createdAt, "3.2");
+	TransactionBody body(createdAt, "3.2");
 	validate::Context c(body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
 
 TEST(ValidateTransactionBody, InvalidOtherGroup)
 {
-	TransactionBody body("memo", createdAt, "3.3", CrossGroupType::LOCAL, "<script>");
+	TransactionBody body(createdAt, VERSION_STRING, CrossGroupType::LOCAL, "<script>");
 	validate::Context c(body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }

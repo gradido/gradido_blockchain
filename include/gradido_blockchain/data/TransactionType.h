@@ -11,6 +11,7 @@ namespace gradido {
 		*/
 		/*! @enum model::gradido::TransactionType
 			enum for different transaction types
+			!!! don't change order
 		*/
 		/// Transaction Type Enum
 		enum class TransactionType : uint8_t {
@@ -27,7 +28,14 @@ namespace gradido {
 			//! Special Transfer Transaction with timeout used for Gradido Link
 			DEFERRED_TRANSFER,
 			//! First Transaction in Blockchain
-			COMMUNITY_ROOT
+			COMMUNITY_ROOT,
+			//! redeeming deferred transfer
+			REDEEM_DEFERRED_TRANSFER,
+			//! timeout deferred transfer, send back locked gdds
+			TIMEOUT_DEFERRED_TRANSFER,
+
+			//! technial type for using it in for loops, as max index
+			MAX_VALUE
 		};
 	}
 }

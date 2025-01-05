@@ -31,7 +31,14 @@ namespace gradido {
 					auto messageIdHex = mTransaction.getMessageId()->convertToHex();
 					d.AddMember("messageId", Value(messageIdHex.data(), messageIdHex.size(), alloc), alloc);
 				}
-				d.AddMember("accountBalance", Value(mTransaction.getAccountBalance().toString().data(), alloc), alloc);
+				Value accountBalances(kArrayType);
+				for (auto& accountBalance : mTransaction.getAccountBalances()) {
+					Value b(kObjectType);
+					b.AddMember("pubkey", Value(accountBalance.getPublicKey()->convertToHex().data(), alloc), alloc);
+					b.AddMember("balance", Value(accountBalance.getBalance().toString().data(), alloc), alloc);
+					accountBalances.PushBack(b, alloc);
+				}
+				d.AddMember("accountBalances", accountBalances, alloc);
 					
 				return d;
 			}

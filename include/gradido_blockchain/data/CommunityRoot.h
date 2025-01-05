@@ -16,15 +16,15 @@ namespace gradido {
 				memory::ConstBlockPtr aufPubkeyPtr
 			);
 
-			inline std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const { return { mPubkey, mGmwPubkey, mAufPubkey }; }
+			inline std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const { return { mPublicKey, mGmwPubkey, mAufPubkey }; }
 			bool isInvolved(const memory::Block& publicKey) const;
 
-			inline memory::ConstBlockPtr getPubkey() const { return mPubkey; }
+			inline memory::ConstBlockPtr getPublicKey() const { return mPublicKey; }
 			inline memory::ConstBlockPtr getGmwPubkey() const { return mGmwPubkey; }
 			inline memory::ConstBlockPtr getAufPubkey() const { return mAufPubkey; }
 
 		protected:
-			memory::ConstBlockPtr mPubkey;
+			memory::ConstBlockPtr mPublicKey;
 			memory::ConstBlockPtr mGmwPubkey;
 			memory::ConstBlockPtr mAufPubkey;
 		};
