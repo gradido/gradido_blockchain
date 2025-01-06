@@ -78,7 +78,7 @@ TEST(SerializeTest, GradidoCreationBody) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), 10000000ll),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000)),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -99,7 +99,7 @@ TEST(SerializeTest, GradidoTransferBody) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.sign(g_KeyPairs[4])
@@ -121,7 +121,7 @@ TEST(SerializeTest, GradidoDeferredTransferBody) {
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), 5555500ll),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500)),
 				g_KeyPairs[5]->getPublicKey()
 			),
 			timeoutDuration
@@ -215,7 +215,7 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		.setTransactionTransfer(
 			TransferAmount(
 				g_KeyPairs[4]->getPublicKey(), // sender
-				1002516ll
+				GradidoUnit::fromGradidoCent(1002516)
 			), g_KeyPairs[5]->getPublicKey() // recipient
 		)
 		.setCreatedAt(createdAt)
@@ -231,8 +231,8 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		VERSION_STRING,
 		make_shared<memory::Block>(32),
 		{
-			{ g_KeyPairs[4]->getPublicKey(), 1000000ll },
-			{ g_KeyPairs[5]->getPublicKey(), 8997483ll }
+			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000) },
+			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483) }
 		}
 	);
 	serialize::Context c(confirmedTransaction);

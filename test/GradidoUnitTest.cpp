@@ -32,7 +32,7 @@ TEST(GradidoUnitTest, ConstructWithDouble)
 
 TEST(GradidoUnitTest, ConstructWithString)
 {
-	auto stringConstructor = GradidoUnit("271.2817261");
+	auto stringConstructor = GradidoUnit::fromString("271.2817261");
 	EXPECT_EQ(static_cast<double>(stringConstructor), 271.2817);
 	EXPECT_EQ(stringConstructor.toString(), "271.2817");
 }
@@ -41,16 +41,16 @@ TEST(GradidoUnitTest, ConstructWithString)
 TEST(GradidoUnitTest, TestWithManyDifferentDuration)
 {
 	// 2^(x/31556952)
-	// calculate for every 4. second until two years are full
-	int64_t prevValue = 0;
-	int64_t prevDistance = 0;
+	// calculate for every 32. second until two years are full
+	auto prevValue = GradidoUnit::zero();
+	auto prevDistance = GradidoUnit::zero();
 	for (int i = 1; i < 31556952 * 2; i+=32) {
-		auto decayed = GradidoUnit(1000000ll).calculateDecay(i);
+		auto decayed = GradidoUnit::fromGradidoCent(100000000).calculateDecay(i);
 		if (prevValue) {
 			ASSERT_GE(prevValue, decayed) << "previous value wasn't greater on i: " << i;
 			auto distance = prevValue - decayed;
 			if (prevDistance) {
-				ASSERT_GE(prevDistance, distance) << "previous distance wasn't greater on i: " << i;
+				ASSERT_LE(abs(prevDistance - distance), 1) << "distance increased unexpectedly i: " << i;
 			}
 			prevDistance = distance;
 		}
@@ -60,11 +60,10 @@ TEST(GradidoUnitTest, TestWithManyDifferentDuration)
 
 TEST(GradidoUnitTest, TestReverseDecay)
 {
-	const int64_t startValue = 1000000;
+	const auto startValue = GradidoUnit::fromGradidoCent(1000000);
 	for (int i = 1; i < 31556952 * 2; i += 32) {
-		auto valueWithDecay = GradidoUnit::calculateCompoundInterest(startValue, i);
-		auto decay = GradidoUnit::calculateDecay(valueWithDecay, i);
-		EXPECT_LE(abs(startValue - GradidoUnit::calculateDecay(valueWithDecay, i)), 1);
-
+		auto valueWithDecay = startValue.calculateDecay(-i);
+		auto decay = valueWithDecay.calculateDecay(i);
+		ASSERT_LE(abs(startValue.getGradidoCent() - valueWithDecay.calculateDecay(i).getGradidoCent()), 1);
 	}
 }

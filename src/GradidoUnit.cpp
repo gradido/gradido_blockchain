@@ -28,8 +28,7 @@ double GradidoUnit::roundToPrecision(double GradidoUnit, uint8_t precision)
 GradidoUnit GradidoUnit::calculateDecay(int64_t seconds) const
 {
 	if (seconds == 0) return mGradidoCent;
-	assert(seconds > 0);
-
+	
 	// decay for one year is 50%
 	/*
 	* while (seconds >= SECONDS_PER_YEAR) {
@@ -66,7 +65,7 @@ GradidoUnit GradidoUnit::calculateDecay(int64_t seconds) const
 	 */
 	// https://www.wolframalpha.com/input?i=%28e%5E%28lg%282%29+%2F+31556952%29%29%5Ex&assumption=%7B%22FunClash%22%2C+%22lg%22%7D+-%3E+%7B%22Log%22%7D
 	// from wolframalpha, based on the interest rate formula
-	return GradidoUnit(static_cast<int64_t>(static_cast<double>(gradidoCent) * pow(2, static_cast<double>(-seconds / SECONDS_PER_YEAR))));
+	return GradidoUnit(static_cast<int64_t>(static_cast<double>(gradidoCent) * pow(2.0, static_cast<double>(static_cast<double>(-seconds) / SECONDS_PER_YEAR))));
 }
 
 Duration GradidoUnit::calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime)

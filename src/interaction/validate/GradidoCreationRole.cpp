@@ -36,7 +36,7 @@ namespace gradido {
 				{
 					validateEd25519PublicKey(recipient.getPublicKey(), "recipient pubkey");
 					auto recipientAmount = recipient.getAmount();
-					if (recipientAmount > GradidoUnit::fromDecimal(1000.0)) {
+					if (recipientAmount > GradidoUnit(1000.0)) {
 						throw TransactionValidationInvalidInputException(
 							"creation amount to high, max 1000 per month",
 							"amount",
@@ -45,7 +45,7 @@ namespace gradido {
 							recipientAmount.toString().data()
 						);
 					}
-					if (recipientAmount < GradidoUnit::fromDecimal(1.0)) {
+					if (recipientAmount < GradidoUnit(1.0)) {
 						throw TransactionValidationInvalidInputException(
 							"creation amount to low, min 1 GDD",
 							"amount",

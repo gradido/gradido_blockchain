@@ -18,7 +18,7 @@ TEST(ValidateGradidoCreationTest, valid) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), 10000000ll),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000)),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -37,7 +37,7 @@ TEST(ValidateGradidoCreationTest, invalidMemoEmpty) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), 10000000ll),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000)),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -58,7 +58,7 @@ TEST(ValidateGradidoCreationTest, invalidMemoToShort) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), 10000000ll),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000)),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -79,7 +79,7 @@ TEST(ValidateGradidoCreationTest, invalidMemoToBig) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), 10000000ll),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000)),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -101,7 +101,7 @@ TEST(ValidateGradidoCreationTest, invalidAmountNegative) {
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
 			// negative amount
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), -10000000ll),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000).negated()),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -141,7 +141,7 @@ TEST(ValidateGradidoCreationTest, invalidAmountToBig) {
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
 			// to big amount, only 1000 per month allowed
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), 20000000ll),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(20000000)),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -163,7 +163,7 @@ TEST(ValidateGradidoCreationTest, InvalidCoinCommunityIdIdenticalToBlockchainCom
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
 			// coin community id is identical to blockchain community id to which transaction belong
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), 10000000ll, communityId),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), communityId),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -183,7 +183,7 @@ TEST(ValidateGradidoCreationTest, InvalidCoinCommunityId) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), 10000000ll, "<script>"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), "<script>"),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])

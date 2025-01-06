@@ -14,14 +14,13 @@ public:
 	GradidoUnit() : mGradidoCent(0) {}
 	//! will be rounded to maximal 4 after comma so 1.271827 will be 1.2718
 	GradidoUnit(double gdd) : GradidoUnit(static_cast<int64_t>(roundToPrecision(gdd, 4) * 10000.0)) {};
+	GradidoUnit(const std::string& stringAmount) : GradidoUnit(std::stod(stringAmount)) {};
+    ~GradidoUnit() {};
+
+	//! expect decimal string, like 101.1728
+	static GradidoUnit fromString(const std::string& stringAmount) { return GradidoUnit(stringAmount); }
 	//! will be understood as gdd cent with 4 after comma, so gdd = gddCent / 10000
-    static GradidoUnit fromGradidoCent(int64_t gddCent) { return GradidoUnit(gddCent);}
-
-    static GradidoUnit fromDecimal(double gdd) { return GradidoUnit(static_cast<int64_t>(roundToPrecision(gdd, 4) * 10000.0));}
-    //! expect decimal string, like 101.1728
-	static GradidoUnit(const std::string& stringAmount): GradidoUnit(std::stod(stringAmount)) {}
-
-	~GradidoUnit() {};
+	static GradidoUnit fromGradidoCent(int64_t gddCent) { return GradidoUnit(gddCent); }
 
 	std::string toString() const;
 	inline int64_t getGradidoCent() const { return mGradidoCent; }
