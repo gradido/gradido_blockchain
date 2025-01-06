@@ -106,7 +106,7 @@ TEST(DeserializeTest, GradidoCreationBody) {
 
 	auto creation = body->getCreation();
 	auto& recipient = creation->getRecipient();
-	EXPECT_EQ(recipient.getAmount(), GradidoUnit(10000000ll));
+	EXPECT_EQ(recipient.getAmount(), GradidoUnit::fromInteger(10000000));
 	EXPECT_TRUE(recipient.getPublicKey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
 	EXPECT_EQ(creation->getTargetDate(), targetDate);
 }
@@ -296,12 +296,12 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_EQ(memos[0].getMemo()->copyAsString(), std::string("Danke fuer dein Sein!"));
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_TRUE(body->isTransfer());
-	
+
 	auto transfer = body->getTransfer();
 	auto& sender = transfer->getSender();
 	EXPECT_EQ(sender.getAmount(), GradidoUnit(1002516ll));
 	EXPECT_TRUE(sender.getPublicKey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
-	EXPECT_TRUE(transfer->getRecipient()->isTheSame(g_KeyPairs[5]->getPublicKey()));	
+	EXPECT_TRUE(transfer->getRecipient()->isTheSame(g_KeyPairs[5]->getPublicKey()));
 }
 
 

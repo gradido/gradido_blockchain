@@ -12,7 +12,7 @@ namespace gradido {
                 std::shared_ptr<const data::ConfirmedTransaction> confirmedTransaction,
                 std::shared_ptr<blockchain::Abstract> blockchain
             ) const {
-                Timepoint targetDate = confirmedTransaction->getConfirmedAt().getAsTimepoint() 
+                Timepoint targetDate = confirmedTransaction->getConfirmedAt().getAsTimepoint()
                                         + mBody->getDeferredTransfer()->getTimeoutDuration();
 
                 blockchain->addTransactionTriggerEvent(std::make_shared<TransactionTriggerEvent>(
@@ -29,7 +29,7 @@ namespace gradido {
 
                 return {
                     // sender
-                    calculateAccountBalance(transferAmount.getPublicKey(), maxTransactionNr, transferAmount.getAmount() * GradidoUnit(-1ll)),
+                    calculateAccountBalance(transferAmount.getPublicKey(), maxTransactionNr, transferAmount.getAmount().negated()),
                     // recipient
                     calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, transferAmount.getAmount())
                 };

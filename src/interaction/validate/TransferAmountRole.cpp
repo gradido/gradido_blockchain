@@ -17,13 +17,13 @@ namespace gradido {
 					if (!coinCommunityId.empty() && !isValidCommunityAlias(coinCommunityId)) {
 						throw TransactionValidationInvalidInputException(
 								"invalid character, only lowercase english latin letter, numbers and -",
-								"community_id", 
+								"community_id",
 								"string",
 								mCommunityIdRegexString.data(),
 								coinCommunityId.data()
 							);
 					}
-					
+
 					if (blockchain) {
 						auto communityId = blockchain->getCommunityId();
 						if (!communityId.empty() && coinCommunityId == communityId) {
@@ -37,7 +37,7 @@ namespace gradido {
 							);
 						}
 					}
-					if (mTransferAmount.getAmount() <= GradidoUnit(0.0)) {
+					if (mTransferAmount.getAmount() <= GradidoUnit::zero()) {
 						throw TransactionValidationInvalidInputException("zero or negative amount", "amount", "string");
 					}
 					validateEd25519PublicKey(mTransferAmount.getPublicKey(), "sender");

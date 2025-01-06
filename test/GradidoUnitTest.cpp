@@ -45,7 +45,7 @@ TEST(GradidoUnitTest, TestWithManyDifferentDuration)
 	int64_t prevValue = 0;
 	int64_t prevDistance = 0;
 	for (int i = 1; i < 31556952 * 2; i+=32) {
-		auto decayed = GradidoUnit::calculateDecay(1000000, i);
+		auto decayed = GradidoUnit(1000000ll).calculateDecay(i);
 		if (prevValue) {
 			ASSERT_GE(prevValue, decayed) << "previous value wasn't greater on i: " << i;
 			auto distance = prevValue - decayed;
@@ -65,6 +65,6 @@ TEST(GradidoUnitTest, TestReverseDecay)
 		auto valueWithDecay = GradidoUnit::calculateCompoundInterest(startValue, i);
 		auto decay = GradidoUnit::calculateDecay(valueWithDecay, i);
 		EXPECT_LE(abs(startValue - GradidoUnit::calculateDecay(valueWithDecay, i)), 1);
-		
+
 	}
 }

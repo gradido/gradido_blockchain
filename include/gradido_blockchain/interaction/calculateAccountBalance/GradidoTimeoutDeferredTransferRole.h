@@ -19,20 +19,20 @@ namespace gradido {
 				}
 
 				//! how much this transaction will add to the account balance
-				GradidoUnit getAmountAdded(memory::ConstBlockPtr accountPublicKey) const 
+				GradidoUnit getAmountAdded(memory::ConstBlockPtr accountPublicKey) const
 				{
 					if (getRecipient()->isTheSame(accountPublicKey)) {
 						return calculateRestAmount();
 					}
-					return 0.0;
+					return GradidoUnit::zero();
 				};
 				//! how much this transaction will reduce the account balance
-				GradidoUnit getAmountCost(memory::ConstBlockPtr accountPublicKey) const 
+				GradidoUnit getAmountCost(memory::ConstBlockPtr accountPublicKey) const
 				{
 					if (getTransferAmount().getPublicKey()->isTheSame(accountPublicKey)) {
 						return calculateRestAmount();
 					}
-					return 0.0;
+					return GradidoUnit::zero();
 				};
 
 				// helper

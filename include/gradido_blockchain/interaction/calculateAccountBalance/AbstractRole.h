@@ -18,20 +18,20 @@ namespace gradido {
 				virtual ~AbstractRole() {}
 
 				//! how much this transaction will add to the account balance
-				virtual GradidoUnit getAmountAdded(memory::ConstBlockPtr accountPublicKey) const 
+				virtual GradidoUnit getAmountAdded(memory::ConstBlockPtr accountPublicKey) const
 				{
 					if (getRecipient()->isTheSame(accountPublicKey)) {
 						return getTransferAmount().getAmount();
 					}
-					return 0.0;
+					return GradidoUnit::zero();
 				}
 				//! how much this transaction will reduce the account balance
-				virtual GradidoUnit getAmountCost(memory::ConstBlockPtr accountPublicKey) const 
+				virtual GradidoUnit getAmountCost(memory::ConstBlockPtr accountPublicKey) const
 				{
 					if (getTransferAmount().getPublicKey()->isTheSame(accountPublicKey)) {
 						return getTransferAmount().getAmount();
 					}
-					return 0.0;
+					return GradidoUnit::zero();
 				}
 				virtual const data::TransferAmount& getTransferAmount() const {
 					return mBody->getTransferAmount();
@@ -40,7 +40,7 @@ namespace gradido {
 				virtual memory::ConstBlockPtr getSender() const {
 					return getTransferAmount().getPublicKey();
 				};
-				
+
 			protected:
 				std::shared_ptr<const data::TransactionBody> mBody;
 			};
