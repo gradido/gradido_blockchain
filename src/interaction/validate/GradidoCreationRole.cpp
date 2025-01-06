@@ -83,7 +83,7 @@ namespace gradido {
 						auto targetDate = mGradidoCreation->getTargetDate();
 						auto ymd = date::year_month_day{ date::floor<date::days>(targetDate.getAsTimepoint()) };
 						sum -= recipient.getAmount();
-						std::string message = "creation more than ";						
+						std::string message = "creation more than ";
 						message += calculateCreationSum.getLimit().toString() + " not allowed";
 
 						throw InvalidCreationException(
@@ -140,14 +140,14 @@ namespace gradido {
 				if (target_date.year() == received.year())
 				{
 					if (static_cast<unsigned>(target_date.month()) + targetDateReceivedDistanceMonth < static_cast<unsigned>(received.month())) {
-						std::string expected = ">= " 
+						std::string expected = ">= "
 							+ DataTypeConverter::timePointToString(createdAtTimePoint)
 							+ " - "
 							+ std::to_string(static_cast<unsigned>(targetDateReceivedDistanceMonth))
 							+ " months"
 						;
 						throw TransactionValidationInvalidInputException(
-							"year is the same, target date month is invalid", 
+							"year is the same, target date month is invalid",
 							"target_date",
 							"TimestampSeconds",
 							expected.data(),
@@ -191,7 +191,7 @@ namespace gradido {
 				{
 					// target_date.year +1 == now.year
 					if (static_cast<unsigned>(target_date.month()) + targetDateReceivedDistanceMonth < static_cast<unsigned>(received.month()) + 12) {
-						std::string expected = ">= " 
+						std::string expected = ">= "
 							+ DataTypeConverter::timePointToString(createdAtTimePoint)
 							+ " - "
 							+ std::to_string(static_cast<unsigned>(targetDateReceivedDistanceMonth))
@@ -207,7 +207,7 @@ namespace gradido {
 					}
 				}
 			}
-			
+
 			unsigned GradidoCreationRole::getTargetDateReceivedDistanceMonth(Timepoint createdAt)
 			{
 				date::month targetDateReceivedDistanceMonth(2);

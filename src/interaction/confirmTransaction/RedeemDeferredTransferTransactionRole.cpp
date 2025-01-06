@@ -46,14 +46,14 @@ namespace gradido {
                 if (transfer.getRecipient()->isTheSame(deferredTransferAmount.getPublicKey())) {
                     return {
                         // sender
-                        AccountBalance(transferAmount.getPublicKey(), 0ll),
+                        AccountBalance(transferAmount.getPublicKey(), GradidoUnit::zero()),
                         // recipient and change
                         calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, decayedDeferredAmount)
                     };
                 }
                 return {
                     // sender
-                    AccountBalance(transferAmount.getPublicKey(), 0ll),
+                    AccountBalance(transferAmount.getPublicKey(), GradidoUnit::zero()),
                     // recipient
                     calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, transferAmount.getAmount()),
                     // change back to original sender of deferred transfer

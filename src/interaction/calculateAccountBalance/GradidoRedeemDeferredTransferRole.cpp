@@ -16,7 +16,7 @@ namespace gradido {
 					auto decayedDeferredTransferAmount = deferredTransferAmount.calculateDecay(mDeferredTransferConfirmedAt, mRedeemTransferConfirmedAt);
 					return decayedDeferredTransferAmount - getTransferAmount().getAmount();
 				}
-				return 0.0;
+				return GradidoUnit::zero();
 			}
 		}
 	}

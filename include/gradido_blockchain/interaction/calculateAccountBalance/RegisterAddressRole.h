@@ -13,11 +13,11 @@ namespace gradido {
 
 				//! how much this transaction will add to the account balance
 				GradidoUnit getAmountAdded(memory::ConstBlockPtr accountPublicKey) const {
-					return 0.0;
+					return GradidoUnit::zero();
 				};
 				//! how much this transaction will reduce the account balance
 				GradidoUnit getAmountCost(memory::ConstBlockPtr accountPublicKey) const {
-					return 0.0;
+					return GradidoUnit::zero();
 				};
 
 				virtual memory::ConstBlockPtr getSender() const {

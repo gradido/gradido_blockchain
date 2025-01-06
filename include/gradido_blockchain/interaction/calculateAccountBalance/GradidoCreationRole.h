@@ -16,13 +16,13 @@ namespace gradido {
 			{
 			public:
 				GradidoCreationRole(
-					std::shared_ptr<const data::TransactionBody> body, 
+					std::shared_ptr<const data::TransactionBody> body,
 					std::shared_ptr<const blockchain::Abstract> blockchain
 				): AbstractRole(body), mBlockchain(blockchain) {}
 
 				//! how much this transaction will reduce the account balance
 				GradidoUnit getAmountCost(memory::ConstBlockPtr accountPublicKey) const {
-					return 0.0;
+					return GradidoUnit::zero();
 				};
 
 				virtual GradidoUnit getAmountAdded(memory::ConstBlockPtr accountPublicKey) const;

@@ -138,7 +138,7 @@ TEST(ValidateGradidoTransaction, validGradidoCreationTransaction)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), 10000000ll),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000)),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -158,7 +158,7 @@ TEST(ValidateGradidoTransaction, invalidGradidoCreationTransactionWrongSignature
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), 10000000ll),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000)),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[4])
@@ -178,7 +178,7 @@ TEST(ValidateGradidoTransaction, validGradidoTransferTransaction)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.sign(g_KeyPairs[4])
@@ -197,7 +197,7 @@ TEST(ValidateGradidoTransaction, invalidGradidoTransferTransactionWrongSignature
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.sign(g_KeyPairs[3])
@@ -218,7 +218,7 @@ TEST(ValidateGradidoTransaction, validGradidoDeferredTransferTransaction)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), 5555500ll),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500ll)),
 				g_KeyPairs[5]->getPublicKey()
 			),
 			timeoutDuration
@@ -241,7 +241,7 @@ TEST(ValidateGradidoTransaction, invalidGradidoDeferredTransferTransactionWrongS
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), 5555500ll),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500ll)),
 				g_KeyPairs[5]->getPublicKey()
 			),
 			timeoutDuration

@@ -11,14 +11,14 @@ namespace gradido {
 			{
 			public:
 				using AbstractAlgoRole::AbstractAlgoRole;
-				//! get creation limit 
+				//! get creation limit
 				virtual GradidoUnit getLimit() const { return 1000.0; }
-				//! calculate creation sum 
+				//! calculate creation sum
 				virtual GradidoUnit run(const blockchain::Abstract& blockchain) const;
 
 				static unsigned getTargetDateReceivedDistanceMonth(Timepoint createdAt);
 			protected:
-				
+
 			};
 		}
 	}

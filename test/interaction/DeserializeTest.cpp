@@ -106,7 +106,7 @@ TEST(DeserializeTest, GradidoCreationBody) {
 
 	auto creation = body->getCreation();
 	auto& recipient = creation->getRecipient();
-	EXPECT_EQ(recipient.getAmount(), GradidoUnit(10000000ll));
+	EXPECT_EQ(recipient.getAmount(), GradidoUnit::fromGradidoCent(10000000));
 	EXPECT_TRUE(recipient.getPublicKey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
 	EXPECT_EQ(creation->getTargetDate(), targetDate);
 }
@@ -142,7 +142,7 @@ TEST(DeserializeTest, GradidoTransferBody) {
 
 	auto transfer = body->getTransfer();
 	auto& sender = transfer->getSender();
-	EXPECT_EQ(sender.getAmount(), GradidoUnit(5005500ll));
+	EXPECT_EQ(sender.getAmount(), GradidoUnit::fromGradidoCent(5005500));
 	EXPECT_TRUE(sender.getPublicKey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
 	EXPECT_TRUE(transfer->getRecipient()->isTheSame(g_KeyPairs[5]->getPublicKey()));
 }
@@ -177,7 +177,7 @@ TEST(DeserializeTest, GradidoDeferredTransferBody) {
 	auto deferredTransfer = body->getDeferredTransfer();
 	auto& transfer = deferredTransfer->getTransfer();
 	auto& sender = transfer.getSender();
-	EXPECT_EQ(sender.getAmount(), GradidoUnit(5555500ll));
+	EXPECT_EQ(sender.getAmount(), GradidoUnit::fromGradidoCent(5555500));
 	EXPECT_TRUE(sender.getPublicKey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
 	EXPECT_TRUE(transfer.getRecipient()->isTheSame(g_KeyPairs[5]->getPublicKey()));
 	EXPECT_EQ(deferredTransfer->getTimeoutDuration(), timeoutDuration);
@@ -272,8 +272,8 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_EQ(confirmedTransaction->getId(), 7);
 	EXPECT_EQ(confirmedTransaction->getConfirmedAt(), confirmedAt);
 	EXPECT_EQ(confirmedTransaction->getVersionNumber(), VERSION_STRING);
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[4]->getPublicKey()).getBalance(), GradidoUnit(1000000ll));
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[5]->getPublicKey()).getBalance(), GradidoUnit(8997483ll));
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[4]->getPublicKey()).getBalance(), GradidoUnit::fromGradidoCent(1000000));
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[5]->getPublicKey()).getBalance(), GradidoUnit::fromGradidoCent(8997483));
 	ASSERT_EQ(confirmedTransaction->getRunningHash()->size(), crypto_generichash_BYTES);
 	EXPECT_EQ(confirmedTransaction->getRunningHash()->convertToHex(), "1203c5aa94a724a49f10d00db79b8261e3fcb210588087d4a696a99c7a6c7103");
 
@@ -296,12 +296,12 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_EQ(memos[0].getMemo()->copyAsString(), std::string("Danke fuer dein Sein!"));
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_TRUE(body->isTransfer());
-	
+
 	auto transfer = body->getTransfer();
 	auto& sender = transfer->getSender();
-	EXPECT_EQ(sender.getAmount(), GradidoUnit(1002516ll));
+	EXPECT_EQ(sender.getAmount(), GradidoUnit::fromGradidoCent(1002516));
 	EXPECT_TRUE(sender.getPublicKey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
-	EXPECT_TRUE(transfer->getRecipient()->isTheSame(g_KeyPairs[5]->getPublicKey()));	
+	EXPECT_TRUE(transfer->getRecipient()->isTheSame(g_KeyPairs[5]->getPublicKey()));
 }
 
 

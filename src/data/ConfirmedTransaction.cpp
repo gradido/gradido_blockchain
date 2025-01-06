@@ -93,7 +93,7 @@ namespace gradido {
 					return accountBalance;
 				}
 			}
-			return AccountBalance(publicKey, 0ll);
+			return AccountBalance(publicKey, GradidoUnit::zero());
 		}
 
 		bool ConfirmedTransaction::isInvolved(const memory::Block& publicKey) const

@@ -19,7 +19,7 @@ namespace gradido {
 				if (communityRoot->getAufPubkey()->isTheSame(accountPublicKey) || communityRoot->getGmwPubkey()->isTheSame(accountPublicKey)) {
 					return getTransferAmount().getAmount();
 				}
-				return 0.0;
+				return GradidoUnit::zero();
 			}
 		}
 	}

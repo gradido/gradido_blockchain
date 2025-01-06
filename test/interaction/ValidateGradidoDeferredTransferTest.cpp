@@ -21,7 +21,7 @@ TEST(ValidateGradidoDeferredTransferTest, Valid) {
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
@@ -42,7 +42,7 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoEmpty) {
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
@@ -65,7 +65,7 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoToShort) {
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
@@ -88,7 +88,7 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoToBig) {
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
@@ -133,7 +133,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidAmountNegative) {
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), -1000000ll), // negative amount
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000).negated()), // negative amount
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
@@ -157,7 +157,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityIdIdenticalToBlock
 			GradidoTransfer(
 				// coin community id is identical to blockchain community id to which transaction belong
 				// not needed so it is a error
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll, communityId),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityId),
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
@@ -180,7 +180,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityId) {
 		.setDeferredTransfer(
 			GradidoTransfer(
 				// invalid character in coin community id
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll, "<script>"),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), "<script>"),
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
@@ -202,7 +202,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutAboveMaxHardLimit) {
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 				g_KeyPairs[5]->getPublicKey()
 			), chrono::seconds{ 7962400 }
 		)
@@ -223,7 +223,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutIdenticalToCreatedAt) {
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 				g_KeyPairs[5]->getPublicKey()
 			), std::chrono::seconds(0)
 		)
@@ -244,7 +244,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutBeforeCreatedAt) {
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), 5005500ll),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 				g_KeyPairs[5]->getPublicKey()
 			), -chrono::seconds{ 1 }
 		)

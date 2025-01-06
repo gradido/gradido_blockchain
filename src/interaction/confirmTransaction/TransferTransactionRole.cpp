@@ -15,11 +15,11 @@ namespace gradido {
 
                 return {
                     // sender
-                    calculateAccountBalance(transferAmount.getPublicKey(), maxTransactionNr, transferAmount.getAmount() * GradidoUnit(-1ll)),
+                    calculateAccountBalance(transferAmount.getPublicKey(), maxTransactionNr, transferAmount.getAmount().negated()),
                     // recipient
                     calculateAccountBalance(transfer->getRecipient(), maxTransactionNr, transferAmount.getAmount())
                 };
-                
+
             }
         }
     }
