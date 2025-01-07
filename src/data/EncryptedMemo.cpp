@@ -9,30 +9,29 @@ using namespace magic_enum;
 
 namespace gradido {
     namespace data {
+        EncryptedMemo::EncryptedMemo(std::string memo, const AuthenticatedEncryption& communityKeyPair)
+         : mKeyType(MemoKeyType::SHARED_SECRET), mMemo(std::make_shared<memory::Block>(SealedBoxes::encrypt(communityKeyPair, memo)))
+        {
+            
+        }
+
         EncryptedMemo::EncryptedMemo(
-            MemoKeyType keyType,
             std::string memo,
             const AuthenticatedEncryption& firstKeyPair,
             const AuthenticatedEncryption& secondKeyPair
-        ) : mKeyType(keyType) 
+        ) : mKeyType(MemoKeyType::SHARED_SECRET) 
         {
-            switch (keyType) {
-            case MemoKeyType::PLAIN: 
-                mMemo = std::make_shared<memory::Block>(memo);
-                break;
-            case MemoKeyType::SHARED_SECRET:
-                if (firstKeyPair.hasPrivateKey()) {
-                    mMemo = std::make_shared<memory::Block>(firstKeyPair.encrypt(memo, secondKeyPair));
-                }
-                else {
-                    mMemo = std::make_shared<memory::Block>(secondKeyPair.encrypt(memo, firstKeyPair));
-                }
-                break;
-            case MemoKeyType::COMMUNITY_SECRET: 
-                mMemo = std::make_shared<memory::Block>(SealedBoxes::encrypt(firstKeyPair, memo));
-                break;
-            default: throw GradidoUnhandledEnum("not implemented", enum_type_name<decltype(keyType)>().data(), enum_name(keyType).data());
+            if (firstKeyPair.hasPrivateKey()) {
+                mMemo = std::make_shared<memory::Block>(firstKeyPair.encrypt(memo, secondKeyPair));
             }
+            else {
+                mMemo = std::make_shared<memory::Block>(secondKeyPair.encrypt(memo, firstKeyPair));
+            }
+        }
+
+        std::string EncryptedMemo::decrypt(const AuthenticatedEncryption& communityKeyPair) const
+        {
+            return SealedBoxes::decrypt(communityKeyPair, *mMemo);
         }
 
         std::string EncryptedMemo::decrypt(
@@ -40,19 +39,11 @@ namespace gradido {
             const AuthenticatedEncryption& secondKeyPair
         ) const 
         {
-            switch (mKeyType) {
-            case MemoKeyType::PLAIN:
-                return mMemo->copyAsString();
-            case MemoKeyType::SHARED_SECRET:
-                if (firstKeyPair.hasPrivateKey()) {
-                    return firstKeyPair.decrypt(*mMemo, secondKeyPair).copyAsString();
-                }
-                else {
-                    return secondKeyPair.decrypt(*mMemo, firstKeyPair).copyAsString();
-                }
-            case MemoKeyType::COMMUNITY_SECRET:
-                return SealedBoxes::decrypt(firstKeyPair, *mMemo);
-            default: throw GradidoUnhandledEnum("not implemented", enum_type_name<decltype(mKeyType)>().data(), enum_name(mKeyType).data());
+            if (firstKeyPair.hasPrivateKey()) {
+                return firstKeyPair.decrypt(*mMemo, secondKeyPair).copyAsString();
+            }
+            else {
+                return secondKeyPair.decrypt(*mMemo, firstKeyPair).copyAsString();
             }
         }
     }
