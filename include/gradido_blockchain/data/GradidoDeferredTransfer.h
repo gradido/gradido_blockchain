@@ -19,7 +19,7 @@ namespace gradido {
 			inline memory::ConstBlockPtr getRecipientPublicKey() const { return mTransfer.getRecipient(); }
 
 			inline const GradidoTransfer& getTransfer() const { return mTransfer; }
-			inline std::chrono::seconds getTimeoutDuration() const { return std::chrono::seconds(mTimeoutDuration); }
+			inline Duration getTimeoutDuration() const { return std::chrono::seconds(mTimeoutDuration); }
 			inline GradidoUnit calculateUseableAmount() const { return mTransfer.getSender().getAmount().calculateDecay(getTimeoutDuration()); }
 
 			inline bool operator==(const GradidoDeferredTransfer& other) const {

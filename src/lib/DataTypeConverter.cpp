@@ -287,7 +287,7 @@ namespace DataTypeConverter
 		return tp;
 	}
 
-	std::string timespanToString(const std::chrono::seconds timespan)
+	std::string timespanToString(const Duration& timespan)
 	{
 		auto days = duration_cast<duration<int, std::ratio<86400>>>(timespan);
 		auto hours = duration_cast<std::chrono::hours>(timespan % std::chrono::duration<int, std::ratio<86400>>(1));
