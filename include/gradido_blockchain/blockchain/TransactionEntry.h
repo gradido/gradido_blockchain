@@ -77,7 +77,6 @@ namespace gradido {
 		};
 
 		typedef std::list<std::shared_ptr<const TransactionEntry>> TransactionEntries;
-		typedef std::pair<std::shared_ptr<const TransactionEntry>, std::shared_ptr<const TransactionEntry>> DeferredRedeemedTransferPair;
 	}
 }
 

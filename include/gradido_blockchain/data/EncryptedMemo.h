@@ -12,14 +12,16 @@ namespace gradido {
         {
         public:
             EncryptedMemo() : mKeyType(MemoKeyType::PLAIN) {}
-            EncryptedMemo(MemoKeyType keyType, memory::ConstBlockPtr memo)
-                : mKeyType(keyType), mMemo(memo) {}
+            //! key type will be PLAIN, memo isn't encrypted at all
+            EncryptedMemo(memory::ConstBlockPtr memo)
+                : mKeyType(MemoKeyType::PLAIN), mMemo(memo) {}
+            EncryptedMemo(MemoKeyType type, memory::ConstBlockPtr memo)
+                : mKeyType(type), mMemo(memo) {}
 
-            //! with keyType == COMMUNITY_SECRET only first key will be used
-            //! with keyType == SHARED_SECRET both keys are used
-            //! with keyType == PLAIN no key is needed
+            //! key type will be COMMUNITY_SECRET, memo is encrypted with community server key and can be seen by all community server user
+            EncryptedMemo(std::string memo, const AuthenticatedEncryption& communityKeyPair);
+            //! key type will be SHARED_SECRET, memo is encrypted with shared secret calculated from sender public key and recipient private key or vice versa
             EncryptedMemo(
-                MemoKeyType keyType,
                 std::string memo,
                 const AuthenticatedEncryption& firstKeyPair,
                 const AuthenticatedEncryption& secondKeyPair
@@ -32,9 +34,10 @@ namespace gradido {
                 return mKeyType == other.mKeyType && mMemo->isTheSame(other.mMemo);
             }
 
-            //! with keyType == COMMUNITY_SECRET only first key will be used
-            //! with keyType == SHARED_SECRET both keys are used
-            //! with keyType == PLAIN no key is needed
+            //! with keyType == COMMUNITY_SECRET 
+            std::string decrypt(const AuthenticatedEncryption& communityKeyPair) const;
+
+            //! with keyType == SHARED_SECRET 
             std::string decrypt(
                 const AuthenticatedEncryption& firstKeyPair,
                 const AuthenticatedEncryption& secondKeyPair

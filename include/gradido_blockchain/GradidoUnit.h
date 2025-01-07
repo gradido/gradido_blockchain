@@ -51,7 +51,7 @@ public:
 
 	// negate, flip sign
 	inline GradidoUnit& negate() { mGradidoCent = -mGradidoCent; return *this;}
-    inline GradidoUnit negated() const { return GradidoUnit(-mGradidoCent); }
+  inline GradidoUnit negated() const { return GradidoUnit(-mGradidoCent); }
 
     //! decay calculation
 	GradidoUnit calculateDecay(int64_t seconds) const;

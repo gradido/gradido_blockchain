@@ -254,5 +254,10 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutBeforeCreatedAt) {
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body->isDeferredTransfer());
 	validate::Context c(*body);
+	try {
+		c.run();
+	} catch(validate::TransactionValidationInvalidInputException& ex) {
+		printf("%s\n", ex.getFullString().data());
+	}
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
