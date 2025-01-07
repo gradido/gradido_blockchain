@@ -13,8 +13,8 @@ namespace gradido {
         public:
             EncryptedMemo() : mKeyType(MemoKeyType::PLAIN) {}
             //! key type will be PLAIN, memo isn't encrypted at all
-            EncryptedMemo(std::string_view memo)
-                : mKeyType(MemoKeyType::PLAIN), mMemo(std::make_shared<memory::Block>(memo.size(), memo.data())) {}
+            EncryptedMemo(const std::string& memo)
+                : mKeyType(MemoKeyType::PLAIN), mMemo(std::make_shared<memory::Block>(memo)) {}
             EncryptedMemo(MemoKeyType type, memory::ConstBlockPtr memo)
                 : mKeyType(type), mMemo(memo) {}
 
