@@ -9,6 +9,8 @@ namespace gradido {
         class GRADIDOBLOCKCHAIN_EXPORT AccountBalance 
         {
         public:
+            // empty constructor needed for swig
+            AccountBalance() {}
             AccountBalance(memory::ConstBlockPtr publicKey, GradidoUnit balance)
                 : mPublicKey(publicKey), mBalance(balance) {}
             ~AccountBalance() {}

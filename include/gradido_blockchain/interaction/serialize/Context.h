@@ -26,8 +26,8 @@ namespace gradido {
 					: mRole(std::make_unique<SignatureMapRole>(signatureMap)) {}
 				Context(const data::TransactionBody& body)
 					: mRole(std::make_unique<TransactionBodyRole>(body)) {}
-				Context(const data::TransactionTriggerEvent& body)
-					: mRole(std::make_unique<TransactionTriggerEventRole>(body)) {}
+				Context(const data::TransactionTriggerEvent& transactionTriggerEvent)
+					: mRole(std::make_unique<TransactionTriggerEventRole>(transactionTriggerEvent)) {}
 				
 				~Context() {}
 				inline memory::ConstBlockPtr run() { return mRole->run(); }
