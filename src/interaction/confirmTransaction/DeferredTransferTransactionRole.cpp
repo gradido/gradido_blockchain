@@ -13,7 +13,7 @@ namespace gradido {
                 std::shared_ptr<blockchain::Abstract> blockchain
             ) const {
                 Timepoint targetDate = confirmedTransaction->getConfirmedAt().getAsTimepoint()
-                                        + mBody->getDeferredTransfer()->getTimeoutDuration();
+                                        + mBody->getDeferredTransfer()->getTimeoutDuration().getAsDuration();
 
                 blockchain->addTransactionTriggerEvent(std::make_shared<TransactionTriggerEvent>(
                     confirmedTransaction->getId(),

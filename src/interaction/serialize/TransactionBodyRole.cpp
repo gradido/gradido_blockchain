@@ -76,7 +76,7 @@ namespace gradido {
 						
 					message["creation"_f] = GradidoCreationMessage{ 
 						createTransferAmountMessage(amount),
-						TimestampSecondsMessage {creation->getTargetDate().getSeconds()}
+						TimestampSecondsMessage(creation->getTargetDate().getSeconds())
 					};
 				}
 				else if (mBody.isTransfer()) 
@@ -109,7 +109,7 @@ namespace gradido {
 						GradidoTransferMessage{
 							createTransferAmountMessage(amount),
 							transfer.getRecipient()->copyAsVector()
-						}, static_cast<uint32_t>(deferredTransfer->getTimeoutDuration().count())
+						}, DurationSecondsMessage(deferredTransfer->getTimeoutDuration().getSeconds())
 					};
 				}
 				else if (mBody.isRedeemDeferredTransfer()) 

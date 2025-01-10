@@ -2,13 +2,14 @@
 #define __GRADIDO_BLOCKCHAIN_DATA_GRADIDO_DEFERRED_TRANSFER_H
 
 #include "GradidoTransfer.h"
+#include "DurationSeconds.h"
 
 namespace gradido {
 	namespace data {
 		class GRADIDOBLOCKCHAIN_EXPORT GradidoDeferredTransfer
 		{
 		public:
-			GradidoDeferredTransfer(const GradidoTransfer& transfer, uint32_t timeoutDuration)
+			GradidoDeferredTransfer(const GradidoTransfer& transfer, DurationSeconds timeoutDuration)
 				: mTransfer(transfer), mTimeoutDuration(timeoutDuration) {}
 
 			~GradidoDeferredTransfer() {}
@@ -19,7 +20,7 @@ namespace gradido {
 			inline memory::ConstBlockPtr getRecipientPublicKey() const { return mTransfer.getRecipient(); }
 
 			inline const GradidoTransfer& getTransfer() const { return mTransfer; }
-			inline Duration getTimeoutDuration() const { return std::chrono::seconds(mTimeoutDuration); }
+			inline DurationSeconds getTimeoutDuration() const { return mTimeoutDuration; }
 			inline GradidoUnit calculateUseableAmount() const { return mTransfer.getSender().getAmount().calculateDecay(getTimeoutDuration()); }
 
 			inline bool operator==(const GradidoDeferredTransfer& other) const {
@@ -28,7 +29,7 @@ namespace gradido {
 
 		protected:
 			GradidoTransfer mTransfer;
-			uint32_t mTimeoutDuration;
+			DurationSeconds mTimeoutDuration;
 		};
 	}
 }

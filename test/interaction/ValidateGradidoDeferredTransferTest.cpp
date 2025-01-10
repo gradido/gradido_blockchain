@@ -204,7 +204,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutAboveMaxHardLimit) {
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 				g_KeyPairs[5]->getPublicKey()
-			), chrono::seconds{ 7962400 }
+			), DurationSeconds(chrono::seconds(7962400))
 		)
 		.sign(g_KeyPairs[4])
 		;
@@ -225,7 +225,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutIdenticalToCreatedAt) {
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 				g_KeyPairs[5]->getPublicKey()
-			), std::chrono::seconds(0)
+			), DurationSeconds(std::chrono::seconds(0))
 		)
 		.sign(g_KeyPairs[4])
 		;
@@ -246,7 +246,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutBeforeCreatedAt) {
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 				g_KeyPairs[5]->getPublicKey()
-			), -chrono::seconds{ 1 }
+			), DurationSeconds(-chrono::seconds(1))
 		)
 		.sign(g_KeyPairs[4])
 		;

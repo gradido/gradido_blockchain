@@ -33,7 +33,7 @@ namespace gradido {
 		//! build inbound transaction for cross community transaction
 		//! parent message id must be set before with outbound transaction iota message id
 		std::unique_ptr<data::GradidoTransaction> buildInbound();
-		GradidoTransactionBuilder& setDeferredTransfer(data::GradidoTransfer transactionTransfer, Duration timeoutDuration);
+		GradidoTransactionBuilder& setDeferredTransfer(data::GradidoTransfer transactionTransfer, data::DurationSeconds timeoutDuration);
 		GradidoTransactionBuilder& setDeferredTransfer(std::unique_ptr<data::GradidoDeferredTransfer> deferredTransfer);
 
 		GradidoTransactionBuilder& setCommunityFriendsUpdate(bool colorFusion);

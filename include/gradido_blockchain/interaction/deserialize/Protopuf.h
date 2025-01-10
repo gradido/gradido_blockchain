@@ -47,6 +47,10 @@ namespace gradido {
                 int64_field<"seconds", 1>
             >;
 
+            using DurationSecondsMessage = message<
+                uint32_field<"seconds", 1>
+            >;
+
             using TransferAmountMessage = message<
                 bytes_field<"pubkey", 1>,// singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
                 int64_field<"amount", 2>,// singular, std::vector<StringCachedAlloc>>,
@@ -81,7 +85,7 @@ namespace gradido {
 
             using GradidoDeferredTransferMessage = message<
                 message_field<"transfer", 1, GradidoTransferMessage>,
-                int32_field<"timeout_duration", 2>
+                message_field<"timeout_duration", 2, DurationSecondsMessage>
             >;
 
             using GradidoRedeemDeferredTransferMessage = message<

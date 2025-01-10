@@ -22,7 +22,7 @@ namespace gradido {
                 auto deferredTransfer = deferredTransferEntry->getTransactionBody()->getDeferredTransfer();
                 auto transactionTriggerEventTargetDate =
                     deferredTransferEntry->getConfirmedTransaction()->getConfirmedAt().getAsTimepoint()
-                    + deferredTransfer->getTimeoutDuration()
+                    + deferredTransfer->getTimeoutDuration().getAsDuration()
                 ;
                 // remove timeout transaction trigger event
                 blockchain->removeTransactionTriggerEvent(TransactionTriggerEvent(

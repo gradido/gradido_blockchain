@@ -1,5 +1,6 @@
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/data/EncryptedMemo.h"
+#include "gradido_blockchain/interaction/deserialize/DurationSecondsRole.h"
 #include "gradido_blockchain/interaction/deserialize/EncryptedMemoRole.h"
 #include "gradido_blockchain/interaction/deserialize/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/deserialize/TimestampRole.h"
@@ -89,7 +90,7 @@ namespace gradido {
 					}
 					mTransactionBody->mDeferredTransfer = make_shared<data::GradidoDeferredTransfer>(
 						*GradidoTransferRole(deferredTransferMessage["transfer"_f].value()).run().get(),
-						deferredTransferMessage["timeout_duration"_f].value()
+						DurationSecondsRole(deferredTransferMessage["timeout_duration"_f].value()).data()
 					);
 				}
 				else if (bodyMessage["redeem_deferred_transfer"_f].has_value()) {
