@@ -129,7 +129,7 @@ TEST(ToJsonTest, GradidoDeferredTransferBody) {
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500)),
 				g_KeyPairs[5]->getPublicKey()
-			), std::chrono::seconds(5784)
+			), DurationSeconds(std::chrono::seconds(5784))
 		)
 		.sign(g_KeyPairs[4])
 		;

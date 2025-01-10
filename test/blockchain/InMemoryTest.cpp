@@ -184,7 +184,7 @@ bool InMemoryTest::createGradidoDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount),
 				g_KeyPairs[recipientKeyPairIndex]->getPublicKey()
-			), timeoutDuration
+			), DurationSeconds(timeoutDuration)
 		)
 		.sign(g_KeyPairs[senderKeyPairIndex])
 	;	
@@ -265,6 +265,7 @@ TEST_F(InMemoryTest, FindCommunityRootTransactionByPublicKey)
 	// after adding two create addresses
 	createRegisterAddress();
 	createRegisterAddress();
+	f.transactionType = TransactionType::COMMUNITY_ROOT;
 	transaction = mBlockchain->findOne(f);
 	ASSERT_TRUE(transaction);
 	EXPECT_TRUE(transaction->getTransactionBody()->isCommunityRoot());

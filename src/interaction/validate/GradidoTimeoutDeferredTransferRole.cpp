@@ -55,12 +55,12 @@ namespace gradido {
 					auto body = deferredTransferEntry->getTransactionBody();
 					assert(body->isDeferredTransfer());
 					auto timeoutDuration = body->getDeferredTransfer()->getTimeoutDuration();
-					if(mCreatedAt.getAsTimepoint() != deferredTransferConfirmed.getAsTimepoint() + timeoutDuration) {
+					if(mCreatedAt.getAsTimepoint() != deferredTransferConfirmed.getAsTimepoint() + timeoutDuration.getAsDuration()) {
 						throw TransactionValidationInvalidInputException(
 							"createdAt is invalid, must be timeoutDuration after confirmed deferred transfer",
 							"createdAt",
 							"Timestamp",
-							DataTypeConverter::timePointToString(deferredTransferConfirmed.getAsTimepoint() + timeoutDuration).data(),
+							DataTypeConverter::timePointToString(deferredTransferConfirmed.getAsTimepoint() + timeoutDuration.getAsDuration()).data(),
 							DataTypeConverter::timePointToString(mCreatedAt).data()
 						);
 					}

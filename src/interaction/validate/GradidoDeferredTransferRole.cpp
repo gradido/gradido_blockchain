@@ -28,8 +28,8 @@ namespace gradido {
 				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					if (mDeferredTransfer->getTimeoutDuration() > GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL) {
-						std::string expected = DataTypeConverter::timespanToString(mDeferredTransfer->getTimeoutDuration())
+					if (mDeferredTransfer->getTimeoutDuration().getAsDuration() > GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL) {
+						std::string expected = DataTypeConverter::timespanToString(mDeferredTransfer->getTimeoutDuration().getAsDuration())
 						+ " <= " 
 						+ DataTypeConverter::timespanToString(GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL);						
 						throw TransactionValidationInvalidInputException(
@@ -40,8 +40,8 @@ namespace gradido {
 							DataTypeConverter::timespanToString(mDeferredTransfer->getTimeoutDuration()).data()
 						);
 					}
-					if (mDeferredTransfer->getTimeoutDuration() < GRADIDO_DEFERRED_TRANSFER_MIN_TIMEOUT_INTERVAL) {
-						std::string expected = DataTypeConverter::timespanToString(mDeferredTransfer->getTimeoutDuration())
+					if (mDeferredTransfer->getTimeoutDuration().getAsDuration() < GRADIDO_DEFERRED_TRANSFER_MIN_TIMEOUT_INTERVAL) {
+						std::string expected = DataTypeConverter::timespanToString(mDeferredTransfer->getTimeoutDuration().getAsDuration())
 							+ " >= "
 							+ DataTypeConverter::timespanToString(GRADIDO_DEFERRED_TRANSFER_MIN_TIMEOUT_INTERVAL);
 						throw TransactionValidationInvalidInputException(

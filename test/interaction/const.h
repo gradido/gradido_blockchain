@@ -9,7 +9,7 @@ const auto createdAt = std::chrono::system_clock::from_time_t(1609459200); //202
 const auto confirmedAt = std::chrono::system_clock::from_time_t(1609464130);
 const auto targetDate = std::chrono::system_clock::from_time_t(1609459000);
 const auto timeout = std::chrono::system_clock::from_time_t(1609465000);
-const auto timeoutDuration = std::chrono::months(3);
+const auto timeoutDuration = gradido::data::DurationSeconds(std::chrono::months(3));
 
 const auto creationMemo = gradido::data::EncryptedMemo(
 	gradido::data::MemoKeyType::PLAIN, 

@@ -161,9 +161,9 @@ namespace gradido {
 						}
 						auto deferredTransfer = deferredTransferEntry->getTransactionBody()->getDeferredTransfer();
 						auto expectedMaxConfirmedAt = mBody.getCreatedAt().getAsTimepoint() + MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION;
-						if (deferredTransferConfirmedAt + deferredTransfer->getTimeoutDuration() < expectedMaxConfirmedAt) {
+						if (deferredTransferConfirmedAt + deferredTransfer->getTimeoutDuration().getAsDuration() < expectedMaxConfirmedAt) {
 							std::string expected("< ");
-							expected += DataTypeConverter::timePointToString(deferredTransferConfirmedAt + deferredTransfer->getTimeoutDuration());
+							expected += DataTypeConverter::timePointToString(deferredTransferConfirmedAt + deferredTransfer->getTimeoutDuration().getAsDuration());
 							throw TransactionValidationInvalidInputException(
 								"redeem timeouted deferred transfer",
 								"createdAt",
