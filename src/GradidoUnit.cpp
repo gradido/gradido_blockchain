@@ -16,7 +16,13 @@ std::string GradidoUnit::toString(int precision/* = 4*/) const
 	}
 	std::stringstream ss;
 	ss << std::fixed << std::setprecision(precision);
-	ss << static_cast<double>(*this);
+	double decimal = static_cast<double>(*this);
+	if (precision < 4) {
+	// round down like nodejs
+		double factor = std::pow(10.0, precision);
+		decimal = std::trunc(decimal * factor) / factor;
+	}
+	ss << decimal;
 
 	return ss.str();
 }
