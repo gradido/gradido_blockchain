@@ -22,7 +22,8 @@ public:
 	//! will be understood as gdd cent with 4 after comma, so gdd = gddCent / 10000
 	static GradidoUnit fromGradidoCent(int64_t gddCent) { return GradidoUnit(gddCent); }
 
-	std::string toString() const;
+//! \param precision expect value in the range [0;4]
+	std::string toString(int precision = 4) const;
 	inline int64_t getGradidoCent() const { return mGradidoCent; }
 
 	// access operators
