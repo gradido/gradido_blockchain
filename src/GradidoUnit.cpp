@@ -20,7 +20,7 @@ std::string GradidoUnit::toString(int precision/* = 4*/) const
 	if (precision < 4) {
 	// round down like nodejs
 		double factor = std::pow(10.0, precision);
-		decimal = std::trunc(decimal * factor) / factor;
+		decimal = std::round(decimal * factor) / factor;
 	}
 	ss << decimal;
 
