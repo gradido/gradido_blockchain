@@ -9,10 +9,11 @@ namespace gradido {
 			{
 				auto& sigPairs = mSignatureMap.getSignaturePairs();
 				SignatureMapMessage signatureMap;
+				signatureMap["sig_pair"_f].reserve(sigPairs.size());
 				for (auto it = sigPairs.begin(); it != sigPairs.end(); it++) {
 					signatureMap["sig_pair"_f].push_back(
 						SignaturePairMessage{
-							it->getPubkey()->copyAsVector(),
+							it->getPublicKey()->copyAsVector(),
 							it->getSignature()->copyAsVector()
 						}
 					);

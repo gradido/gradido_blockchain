@@ -8,7 +8,7 @@ namespace gradido {
 		{
 			// check if pubkey already exist
 			for (auto& signaturePairIt : mSignaturePairs) {
-				if (signaturePair.getPubkey()->isTheSame(signaturePairIt.getPubkey())) {
+				if (signaturePair.getPublicKey()->isTheSame(signaturePairIt.getPublicKey())) {
 					throw GradidoAlreadyExist("public key already exist in signature map of gradido transaction");
 				}
 			}

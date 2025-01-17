@@ -26,7 +26,13 @@ namespace gradido {
 
 			TransactionValidationException& TransactionValidationException::setTransactionBody(const data::TransactionBody& transactionBody)
 			{
-				mTransactionMemo = transactionBody.getMemo();
+				auto memos = transactionBody.getMemos();
+				for (auto memo : memos) {
+					if (memo.getKeyType() == data::MemoKeyType::PLAIN) {
+						mTransactionMemo = memo.getMemo()->copyAsString();
+						break;
+					}
+				}
 				mType = transactionBody.getTransactionType();
 				return *this;
 			}
@@ -109,7 +115,7 @@ namespace gradido {
 			TransactionValidationInvalidSignatureException::TransactionValidationInvalidSignatureException(
 				const char* what, memory::ConstBlockPtr pubkey, memory::ConstBlockPtr signature, memory::ConstBlockPtr bodyBytes/* = ""*/
 			) noexcept
-				: TransactionValidationException(what), mPubkey(pubkey), mSignature(signature), mBodyBytes(bodyBytes)
+				: TransactionValidationException(what), mPublicKey(pubkey), mSignature(signature), mBodyBytes(bodyBytes)
 			{
 			}
 
@@ -119,7 +125,7 @@ namespace gradido {
 
 			std::string TransactionValidationInvalidSignatureException::getFullString() const noexcept
 			{
-				std::string pubkeyHex = mPubkey ? mPubkey->convertToHex() : "";
+				std::string pubkeyHex = mPublicKey ? mPublicKey->convertToHex() : "";
 				std::string signatureHex = mSignature ? mSignature->convertToHex() : "";
 				std::string bodyBytesBase64 = mBodyBytes ? mBodyBytes->convertToBase64() : "";
 				auto whatString = what();
@@ -143,8 +149,8 @@ namespace gradido {
 			{
 				Value detailsObjs(kObjectType);
 				detailsObjs.AddMember("what", Value(what(), alloc), alloc);
-				if (mPubkey) {
-					detailsObjs.AddMember("pubkey", Value(mPubkey->convertToHex().data(), alloc), alloc);
+				if (mPublicKey) {
+					detailsObjs.AddMember("pubkey", Value(mPublicKey->convertToHex().data(), alloc), alloc);
 				}
 				if (mSignature) {
 					detailsObjs.AddMember("signature", Value(mSignature->convertToHex().data(), alloc), alloc);
@@ -359,7 +365,7 @@ namespace gradido {
 
 			// **************************** Wrong Address Type Exception ***********************************
 			WrongAddressTypeException::WrongAddressTypeException(const char* what, data::AddressType type, memory::ConstBlockPtr pubkey) noexcept
-				: TransactionValidationException(what), mType(type), mPubkey(pubkey)
+				: TransactionValidationException(what), mType(type), mPublicKey(pubkey)
 			{
 
 			}
@@ -368,8 +374,8 @@ namespace gradido {
 				std::string result;
 				auto addressTypeName = enum_name(mType);
 				std::string pubkeyHex;
-				if (mPubkey) {
-					pubkeyHex = mPubkey->convertToHex();
+				if (mPublicKey) {
+					pubkeyHex = mPublicKey->convertToHex();
 				}
 				size_t resultSize = strlen(what()) + addressTypeName.size() + 2 + 14 + 10 + pubkeyHex.size();
 				result.reserve(resultSize);

@@ -3,6 +3,7 @@
 #include "../serializedTransactions.h"
 #include "const.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/TransactionTriggerEvent.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
@@ -14,21 +15,12 @@ using namespace interaction;
 
 TEST(SerializeTest, TransactionBodyWithoutMemo)
 {
-	TransactionBody body(std::string(), createdAt, VERSION_STRING);
+	TransactionBody body(createdAt, VERSION_STRING);
 	serialize::Context c(body);
 	auto serialized = c.run();
-	// printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
+	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
 	// printf("hex: %s\n", serialized->convertToHex().data());
-	ASSERT_EQ(serialized->convertToBase64(), "CgASCAiAzLn/BRAAGgMzLjMgAA==");
-}
-
-TEST(SerializeTest, TransactionBody)
-{
-	TransactionBody body("memo", createdAt, VERSION_STRING);
-	serialize::Context c(body);
-	auto serialized = c.run();
-	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
-	ASSERT_EQ(serialized->convertToBase64(), "CgRtZW1vEggIgMy5/wUQABoDMy4zIAA=");
+	ASSERT_EQ(serialized->convertToBase64(), "EggIgMy5/wUQABoDMy40IAA=");
 }
 
 TEST(SerializeTest, CommunityRootBody) 
@@ -51,8 +43,8 @@ TEST(SerializeTest, CommunityRootBody)
 	
 	serialize::Context c(*transaction);
 	auto serialized = c.run();
-	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
-	//printf("hex: %s\n", serialized->convertToHex().data());
+	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
+	// printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(), communityRootTransactionBase64);
 }
 
@@ -75,18 +67,18 @@ TEST(SerializeTest, RegisterAddressBody) {
 	ASSERT_TRUE(body->isRegisterAddress());
 	serialize::Context c(*transaction);
 	auto serialized = c.run();
-	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
+	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
 	ASSERT_EQ(serialized->convertToBase64(), registeAddressTransactionBase64);
 }
 
 TEST(SerializeTest, GradidoCreationBody) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo("Deine erste Schoepfung ;)")
+		.addMemo(creationMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000)),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -96,19 +88,18 @@ TEST(SerializeTest, GradidoCreationBody) {
 	ASSERT_TRUE(body->isCreation());
 	serialize::Context c(*transaction);
 	auto serialized = c.run();
-	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
-
+	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
 	ASSERT_EQ(serialized->convertToBase64(), creationTransactionBase64);
 }
 
 TEST(SerializeTest, GradidoTransferBody) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo("Ich teile mit dir")
+		.addMemo(transferMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "500.55"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.sign(g_KeyPairs[4])
@@ -118,23 +109,22 @@ TEST(SerializeTest, GradidoTransferBody) {
 	ASSERT_TRUE(body->isTransfer());
 	serialize::Context c(*transaction);
 	auto serialized = c.run();
-	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
-
+	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
 	ASSERT_EQ(serialized->convertToBase64(), transferTransactionBase64);
 }
 
 TEST(SerializeTest, GradidoDeferredTransferBody) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo("Link zum einloesen")
+		.addMemo(deferredTransferMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), "555.55"),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500)),
 				g_KeyPairs[5]->getPublicKey()
 			),
-			timeout
+			timeoutDuration
 		)
 		.sign(g_KeyPairs[4])
 	;
@@ -143,8 +133,7 @@ TEST(SerializeTest, GradidoDeferredTransferBody) {
 	ASSERT_TRUE(body->isDeferredTransfer());
 	serialize::Context c(*transaction);
 	auto serialized = c.run();
-	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
-
+	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
 	ASSERT_EQ(serialized->convertToBase64(), deferredTransferTransactionBase64);
 }
 
@@ -161,7 +150,7 @@ TEST(SerializeTest, CommunityFriendsUpdateBody) {
 	ASSERT_TRUE(body->isCommunityFriendsUpdate());
 	serialize::Context c(*transaction);
 	auto serialized = c.run();
-	// printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
+	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
 	// printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(), communityFriendsUpdateBase64);
 }
@@ -175,8 +164,8 @@ TEST(SerializeTest, GradidoTransaction) {
 
 	serialize::Context c(transaction);
 	auto serialized = c.run();
-	// printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
-	//printf("hex: %s\n", serialized->convertToHex().data());
+	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
+	// printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(), gradidoTransactionSignedInvalidBody);
 }
 
@@ -193,15 +182,15 @@ TEST(SerializeTest, SignatureMap) {
 
 	serialize::Context c(signatureMap);
 	auto serialized = c.run();
-	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
-	//printf("hex: %s\n", serialized->convertToHex().data());
+	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
+	// printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(),
 		"CmQKIIFnAymUaYjt9FH0xCRpHYPPWpBDkEKILVu3IkPvVR70EkAE4ND2xLvS2H3Iefxfcr5I2/aCyIh1f9XT1toK9AJv7Mfu5U7ftL87CuOGbn+VfdemtvbIBr9amXNo4HI+BIYICmQKINfjqKCQqkSHMkb1xqz8F/907hdPVue9KlX/uBBB9tsdEkD82U+ofaXHmbiWJUf/cYiyb7xKW9MrNAjPlelL7a5+2WjM4mBPneSPn7iCK3ewWQXbN/OF6As/gWqQI7Mq7RAF"
 	);
 }
 
 TEST(SerializeTest, MinimalConfirmedTransaction) {
-	
+
 	ConfirmedTransaction confirmedTransaction(
 		7,
 		std::make_unique<GradidoTransaction>(),
@@ -209,28 +198,28 @@ TEST(SerializeTest, MinimalConfirmedTransaction) {
 		VERSION_STRING,
 		make_shared<memory::Block>(crypto_generichash_BYTES),
 		make_shared<memory::Block>(32),
-		"179.00"
+		{}
 	);
 	serialize::Context c(confirmedTransaction);
 	auto serialized = c.run();
-	//printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
-	//printf("hex: %s\n", serialized->convertToHex().data());
+	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
+	// printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(), minimalConfirmedTransaction);
 }
 
 TEST(SerializeTest, CompleteConfirmedTransaction) {
-	std::string memo("Danke fuer dein Sein!");
+	EncryptedMemo memo(MemoKeyType::PLAIN, std::make_shared<memory::Block>("Danke fuer dein Sein!"));
 
 	GradidoTransactionBuilder builder;
 	auto gradidoTransaction = builder
 		.setTransactionTransfer(
 			TransferAmount(
 				g_KeyPairs[4]->getPublicKey(), // sender
-				"100.251621"
+				GradidoUnit::fromGradidoCent(1002516)
 			), g_KeyPairs[5]->getPublicKey() // recipient
 		)
 		.setCreatedAt(createdAt)
-		.setMemo(memo)
+		.addMemo(memo)
 		.setVersionNumber(VERSION_STRING)
 		.sign(g_KeyPairs[0])
 		.build();
@@ -241,12 +230,21 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		confirmedAt,
 		VERSION_STRING,
 		make_shared<memory::Block>(32),
-		"899.748379"
+		{
+			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000) },
+			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483) }
+		}
 	);
 	serialize::Context c(confirmedTransaction);
 	auto serialized = c.run();
 	// printf("running hash: %s\n", confirmedTransaction.getRunningHash()->convertToHex().data());
-	// printf("serialized size: %d, serialized in base64: %s\n", serialized->size(), DataTypeConverter::binToBase64(*serialized).data());
+	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
 	// printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(), completeConfirmedTransaction);
+}
+
+TEST(SerializeTest, TransactionTriggerEvent) {
+	TransactionTriggerEvent transactionTriggerEvent(12, confirmedAt, data::TransactionTriggerEventType::DEFERRED_TIMEOUT_REVERSAL);
+	auto serialized = serialize::Context(transactionTriggerEvent).run();
+	ASSERT_EQ(serialized->convertToBase64(), "CAwSCAjC8rn/BRAAGAE=");
 }

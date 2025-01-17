@@ -18,53 +18,50 @@ namespace gradido {
 				assert(deferredTransfer);
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mRequiredSignPublicKeys.push_back(deferredTransfer->getTransfer().getSender().getPubkey());
+				mRequiredSignPublicKeys.push_back(deferredTransfer->getTransfer().getSender().getPublicKey());
 			}
 
 			void GradidoDeferredTransferRole::run(
 				Type type,
-				std::string_view communityId,
-				blockchain::AbstractProvider* blockchainProvider,
+				std::shared_ptr<blockchain::Abstract> blockchain,
 				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
 				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					if (mDeferredTransfer->getTimeout().getAsTimepoint() - mConfirmedAt.getAsTimepoint() > GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL) {
-						std::string expected = "<= " 
-						+ DataTypeConverter::timePointToString(mConfirmedAt.getAsTimepoint()) 
-						+ " + " 
+					if (mDeferredTransfer->getTimeoutDuration().getAsDuration() > GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL) {
+						std::string expected = DataTypeConverter::timespanToString(mDeferredTransfer->getTimeoutDuration().getAsDuration())
+						+ " <= " 
 						+ DataTypeConverter::timespanToString(GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL);						
 						throw TransactionValidationInvalidInputException(
-							"timeout is to far away from confirmed date", 
-							"timeout", 
-							"TimestampSeconds",
+							"timeoutDuration is to long", 
+							"timeout_duration", 
+							"uint32",
 							expected.data(),
-							DataTypeConverter::timePointToString(mDeferredTransfer->getTimeout().getAsTimepoint()).data()
+							DataTypeConverter::timespanToString(mDeferredTransfer->getTimeoutDuration()).data()
 						);
 					}
-					if (senderPreviousConfirmedTransaction) {
-						if (senderPreviousConfirmedTransaction->getConfirmedAt() >= mDeferredTransfer->getTimeout()) {
-							std::string expected = "> " + DataTypeConverter::timePointToString(senderPreviousConfirmedTransaction->getConfirmedAt());
-							throw TransactionValidationInvalidInputException(
-								"timeout must be greater than the confirmedAt date from the previous transaction of sender user",
-								"timeout",
-								"TimestampSeconds",
-								expected.data(),
-								DataTypeConverter::timePointToString(mDeferredTransfer->getTimeout().getAsTimepoint()).data()
-							);
-						}
+					if (mDeferredTransfer->getTimeoutDuration().getAsDuration() < GRADIDO_DEFERRED_TRANSFER_MIN_TIMEOUT_INTERVAL) {
+						std::string expected = DataTypeConverter::timespanToString(mDeferredTransfer->getTimeoutDuration().getAsDuration())
+							+ " >= "
+							+ DataTypeConverter::timespanToString(GRADIDO_DEFERRED_TRANSFER_MIN_TIMEOUT_INTERVAL);
+						throw TransactionValidationInvalidInputException(
+							"timeoutDuration is to short",
+							"timeout_duration",
+							"uint32",
+							expected.data(),
+							DataTypeConverter::timespanToString(mDeferredTransfer->getTimeoutDuration()).data()
+						);
 					}
 				}
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
-					auto senderBlockchain = findBlockchain(blockchainProvider, communityId, __FUNCTION__);
 					if (!senderPreviousConfirmedTransaction) {
 						throw BlockchainOrderException("deferred transfer transaction not allowed as first transaction on sender blockchain");
 					}
-					assert(senderBlockchain);
+					assert(blockchain);
 					blockchain::FilterBuilder filterBuilder;
 
 					// check if sender address was registered
-					auto senderAddressType = senderBlockchain->getAddressType(
+					auto senderAddressType = blockchain->getAddressType(
 						filterBuilder
 						.setInvolvedPublicKey(mDeferredTransfer->getSenderPublicKey())
 						.setMaxTransactionNr(senderPreviousConfirmedTransaction->getId())
@@ -77,8 +74,15 @@ namespace gradido {
 							mDeferredTransfer->getSenderPublicKey()
 						);
 					}
+					else if (data::AddressType::DEFERRED_TRANSFER == senderAddressType) {
+						throw WrongAddressTypeException(
+							"sender address is deferred transfer, please use redeemDeferredTransferTransaction for that",
+							senderAddressType,
+							mDeferredTransfer->getSenderPublicKey()
+						);
+					}
 					// check if recipient address was registered
-					auto recipientAddressType = senderBlockchain->getAddressType(
+					auto recipientAddressType = blockchain->getAddressType(
 						filterBuilder
 						.setInvolvedPublicKey(mDeferredTransfer->getRecipientPublicKey())
 						.setMaxTransactionNr(senderPreviousConfirmedTransaction->getId())
@@ -99,7 +103,7 @@ namespace gradido {
 				if ((modifiedType & Type::ACCOUNT) == Type::ACCOUNT) {
 					modifiedType = modifiedType - Type::ACCOUNT;
 				}
-				transferRole.run(modifiedType, communityId, blockchainProvider, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
+				transferRole.run(modifiedType, blockchain, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
 			}
 
 		}

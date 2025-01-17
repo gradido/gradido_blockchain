@@ -83,8 +83,11 @@ namespace gradido {
 		const Filter Filter::LAST_TRANSACTION = Filter(
 			0, 0, nullptr, SearchDirection::DESC, Pagination(1, 0)
 		);
+		const Filter Filter::FIRST_TRANSACTION = Filter(
+			0, 0, nullptr, SearchDirection::ASC, Pagination(1, 0)
+		);
 		const Filter Filter::ALL_TRANSACTIONS = Filter(
-			0, 0, nullptr, SearchDirection::DESC, Pagination(0, 0)
+			0, 0, nullptr, SearchDirection::DESC, Pagination(1, 0)
 		);
 
 		FilterResult Filter::matches(std::shared_ptr<const TransactionEntry> entry, FilterCriteria type, std::string_view communityId) const
@@ -144,7 +147,7 @@ namespace gradido {
 			// needing deserialized transaction
 			if ((type & FilterCriteria::INVOLVED_PUBLIC_KEY) == FilterCriteria::INVOLVED_PUBLIC_KEY) 
 			{
-				if (involvedPublicKey && !body->isInvolved(*involvedPublicKey)) {
+				if (involvedPublicKey && !confirmedTransaction->isInvolved(*involvedPublicKey)) {
 					return FilterResult::DISMISS;
 				}				
 			}	

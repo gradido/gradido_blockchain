@@ -12,15 +12,18 @@ class GRADIDOBLOCKCHAIN_EXPORT GradidoUnit
 {
 public:
 	GradidoUnit() : mGradidoCent(0) {}
-	// will be understood as gdd cent with 4 after comma, so gdd = gddCent / 10000
-	GradidoUnit(int64_t gddCent) : mGradidoCent(gddCent) {}
-	// will be rounded to maximal 4 after comma so 1.271827 will be 1.2718
-	GradidoUnit(double gdd);
-	GradidoUnit(const std::string& stringAmount);
+	//! will be rounded to maximal 4 after comma so 1.271827 will be 1.2718
+	GradidoUnit(double gdd) : GradidoUnit(static_cast<int64_t>(roundToPrecision(gdd, 4) * 10000.0)) {};
+	GradidoUnit(const std::string& stringAmount) : GradidoUnit(std::stod(stringAmount)) {};
+    ~GradidoUnit() {};
 
-	~GradidoUnit() {};
+	//! expect decimal string, like 101.1728
+	static GradidoUnit fromString(const std::string& stringAmount) { return GradidoUnit(stringAmount); }
+	//! will be understood as gdd cent with 4 after comma, so gdd = gddCent / 10000
+	static GradidoUnit fromGradidoCent(int64_t gddCent) { return GradidoUnit(gddCent); }
 
-	std::string toString() const;
+//! \param precision expect value in the range [0;4]
+	std::string toString(int precision = 4) const;
 	inline int64_t getGradidoCent() const { return mGradidoCent; }
 
 	// access operators
@@ -47,35 +50,43 @@ public:
 	inline bool operator==(const GradidoUnit& other) const { return mGradidoCent == other.mGradidoCent; }
 	inline bool operator!=(const GradidoUnit& other) const { return mGradidoCent != other.mGradidoCent; }
 
-	//! decay calculation 
-	static int64_t calculateDecay(int64_t gradidoCent, int64_t seconds);
-	//! reverse decay calculation or original compund interest calculation
-	static int64_t calculateCompoundInterest(int64_t gradidoCent, int64_t seconds);
-	inline GradidoUnit calculateCompoundInterest(Duration duration) const {
-		uint64_t seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
-		return calculateCompoundInterest(mGradidoCent, seconds);
-	}
-	inline GradidoUnit calculateCompoundInterest(Timepoint startTime, Timepoint endTime) const {
-		return calculateCompoundInterest(calculateDecayDurationSeconds(startTime, endTime));
-	}
-	
-	inline GradidoUnit calculateDecay(Duration duration) const {
-		uint64_t seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
-		return calculateDecay(mGradidoCent, seconds);
-	}
-	inline GradidoUnit calculateDecay(Timepoint startTime, Timepoint endTime) const {
-		return calculateDecay(calculateDecayDurationSeconds(startTime, endTime));
-	}
+	// negate, flip sign
+	inline GradidoUnit& negate() { mGradidoCent = -mGradidoCent; return *this;}
+  inline GradidoUnit negated() const { return GradidoUnit(-mGradidoCent); }
+
+    //! decay calculation
+	GradidoUnit calculateDecay(int64_t seconds) const;
+	inline GradidoUnit calculateDecay(Duration duration) const;
+	inline GradidoUnit calculateDecay(Timepoint startTime, Timepoint endTime) const;
+
+	//! reverse decay calculation or original compound interest calculation
+	inline GradidoUnit calculateCompoundInterest(Duration duration) const;
+	inline GradidoUnit calculateCompoundInterest(Timepoint startTime, Timepoint endTime) const;
+
 	//! be aware that in production we started with decay calculation at a specific date
 	static Duration calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime);
     static GradidoUnit zero() { return GradidoUnit(); }
 
 protected:
+    // will be understood as gdd cent with 4 after comma, so gdd = gddCent / 10000
+    GradidoUnit(int64_t gddCent) : mGradidoCent(gddCent) {}
 	static double roundToPrecision(double GradidoUnit, uint8_t precision);
 
 	int64_t mGradidoCent;
 };
 
+GradidoUnit GradidoUnit::calculateCompoundInterest(Duration duration) const {
+    return calculateDecay(-std::chrono::duration_cast<std::chrono::seconds>(duration).count());
+}
+GradidoUnit GradidoUnit::calculateCompoundInterest(Timepoint startTime, Timepoint endTime) const {
+    return calculateCompoundInterest(calculateDecayDurationSeconds(startTime, endTime));
+}
+GradidoUnit GradidoUnit::calculateDecay(Duration duration) const {
+    return calculateDecay(std::chrono::duration_cast<std::chrono::seconds>(duration).count());
+}
+GradidoUnit GradidoUnit::calculateDecay(Timepoint startTime, Timepoint endTime) const {
+    return calculateDecay(calculateDecayDurationSeconds(startTime, endTime));
+}
 
 /*!
 * will be thrown if x

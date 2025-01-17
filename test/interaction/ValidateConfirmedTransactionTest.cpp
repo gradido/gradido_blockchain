@@ -26,7 +26,7 @@ TEST(ValidateConfirmedTransactionTest, validCommunityRootGradidoTransaction) {
 		confirmedAt,
 		VERSION_STRING,
 		make_shared<memory::Block>(32),
-		"899.748379"
+		{}
 	);
 
 	validate::Context c(confirmedTransaction);
@@ -45,7 +45,7 @@ TEST(ValidateConfirmedTransactionTest, invalidWrongVersion) {
 		confirmedAt,
 		"1",
 		make_shared<memory::Block>(32),
-		"899.748379"
+		{}
 	);
 
 	validate::Context c(confirmedTransaction);
@@ -65,7 +65,7 @@ TEST(ValidateConfirmedTransactionTest, invalidMessageID) {
 		confirmedAt,
 		VERSION_STRING,
 		make_shared<memory::Block>(10),
-		"899.748379"
+		{}
 	);
 
 	validate::Context c(confirmedTransaction);
@@ -84,7 +84,7 @@ TEST(ValidateConfirmedTransactionTest, invalidConfirmedBeforeCreated) {
 		createdAt - chrono::seconds{ 1 },
 		VERSION_STRING,
 		make_shared<memory::Block>(32),
-		"899.748379"
+		{}
 	);
 
 	validate::Context c(confirmedTransaction);

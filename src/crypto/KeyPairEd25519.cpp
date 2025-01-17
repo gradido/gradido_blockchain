@@ -370,13 +370,13 @@ std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePublicKey(uint32_t index
 
 // ********************** Exceptions *************************************
 Ed25519SignException::Ed25519SignException(const char* what, memory::ConstBlockPtr pubkey, const std::string& message) noexcept
-	: GradidoBlockchainException(what), mPubkey(pubkey), mMessage(message)
+	: GradidoBlockchainException(what), mPublicKey(pubkey), mMessage(message)
 {
 
 }
 
 Ed25519SignException::Ed25519SignException(const char* what, const unsigned char* pubkey, const std::string& message) noexcept
-	: GradidoBlockchainException(what), mPubkey(std::make_shared<memory::Block>(ED25519_PUBLIC_KEY_SIZE, pubkey)), mMessage(message)
+	: GradidoBlockchainException(what), mPublicKey(std::make_shared<memory::Block>(ED25519_PUBLIC_KEY_SIZE, pubkey)), mMessage(message)
 {
 }
 
@@ -387,7 +387,7 @@ Ed25519SignException::~Ed25519SignException()
 std::string Ed25519SignException::getFullString() const
 {
 	std::string mResult(what());
-	mResult += ", with pubkey: " + mPubkey->convertToHex();
+	mResult += ", with pubkey: " + mPublicKey->convertToHex();
 	mResult += ", with message: " + DataTypeConverter::binToHex(mMessage);
 	return mResult;
 }
@@ -422,7 +422,7 @@ rapidjson::Value Ed25519VerifyException::getDetails(rapidjson::Document::Allocat
 // -----------------------------------------------------------------------------------------
 
 Ed25519DeriveException::Ed25519DeriveException(const char* what, memory::ConstBlockPtr pubkey) noexcept
-	: GradidoBlockchainException(what), mPubkey(pubkey)
+	: GradidoBlockchainException(what), mPublicKey(pubkey)
 {
 
 }
@@ -434,8 +434,8 @@ Ed25519DeriveException::~Ed25519DeriveException()
 std::string Ed25519DeriveException::getFullString() const
 {
 	std::string mResult(what());
-	if (mPubkey) {
-		mResult += ", with pubkey: " + mPubkey->convertToHex();
+	if (mPublicKey) {
+		mResult += ", with pubkey: " + mPublicKey->convertToHex();
 	}
 	return mResult;
 }

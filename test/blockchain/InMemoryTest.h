@@ -38,7 +38,14 @@ protected:
         int recipientKeyPairIndex,
         GradidoUnit amount, 
         Timepoint createdAt,
-        Timepoint timeout
+        std::chrono::seconds timeoutDuration
+    );
+    bool createGradidoRedeemDeferredTransfer(
+        int senderKeyPairIndex,
+        int recipientKeyPairIndex,
+        GradidoUnit amount,
+        Timepoint createdAt,
+        uint64_t deferredTransferNr
     );
 
     void logBlockchain();

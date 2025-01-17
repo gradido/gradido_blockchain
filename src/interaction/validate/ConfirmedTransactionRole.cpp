@@ -13,8 +13,7 @@ namespace gradido {
 		namespace validate {
 			void ConfirmedTransactionRole::run(
 				Type type,
-				std::string_view communityId,
-				blockchain::AbstractProvider* blockchainProvider,
+				std::shared_ptr<blockchain::Abstract> blockchain,
 				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
 				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
@@ -23,12 +22,12 @@ namespace gradido {
 				auto confirmedAt = mConfirmedTransaction.getConfirmedAt().getAsTimepoint();
 
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					if (mConfirmedTransaction.getVersionNumber() != GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING) {
+					if (mConfirmedTransaction.getVersionNumber() != GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING) {
 						TransactionValidationInvalidInputException exception(
 							"wrong version",
 							"version_number",
 							"string",
-							GRADIDO_CONFIRMED_TRANSACTION_V3_3_VERSION_STRING,
+							GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
 							mConfirmedTransaction.getVersionNumber().data()
 						);
 						exception.setTransactionBody(*body);
@@ -65,7 +64,6 @@ namespace gradido {
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS) {
 					if (mConfirmedTransaction.getId() > 1) {
 						auto previousTransactionId = mConfirmedTransaction.getId() - 1;
-						auto blockchain = findBlockchain(blockchainProvider, communityId, __FUNCTION__);
 						auto previousTransaction = blockchain->getTransactionForId(previousTransactionId);
 						if (!previousTransaction) {
 							GradidoBlockchainTransactionNotFoundException exception("previous transaction not found");
@@ -75,25 +73,19 @@ namespace gradido {
 						if (previousConfirmedTransaction->getConfirmedAt() > mConfirmedTransaction.getConfirmedAt()) {
 							throw BlockchainOrderException("previous transaction is younger");
 						}
-						auto previousCreated = previousConfirmedTransaction->getGradidoTransaction()->getTransactionBody()->getCreatedAt().getAsTimepoint();
-						// if previous transaction was created after this transaction we make sure that creation date and received/confirmation date are not 
-						// to far apart
-						// it is possible that they where created nearly at the same time but sorted from iota swapped
-						if (previousCreated > createdAt) {
-							auto timespanBetweenCreatedAndReceived = duration_cast<seconds>(confirmedAt - createdAt);
-							if (timespanBetweenCreatedAndReceived > MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION) {
-								std::string message = "timespan between created and received are more than " + DataTypeConverter::timespanToString(MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION);
-								std::string expected = "<= (" + DataTypeConverter::timePointToString(createdAt) + " + " + DataTypeConverter::timespanToString(MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION) + ")";
-								TransactionValidationInvalidInputException exception(
-									message.data(),
-									"confirmed_at",
-									"TimestampSeconds",
-									expected.data(),
-									DataTypeConverter::timePointToString(confirmedAt).data()
-								);
-								exception.setTransactionBody(*body);
-								throw exception;
-							}
+						
+						if (confirmedAt - createdAt > MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION) {
+							std::string message = "timespan between created and received are more than " + DataTypeConverter::timespanToString(MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION);
+							std::string expected = "<= (" + DataTypeConverter::timePointToString(createdAt) + " + " + DataTypeConverter::timespanToString(MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION) + ")";
+							TransactionValidationInvalidInputException exception(
+								message.data(),
+								"confirmed_at",
+								"TimestampSeconds",
+								expected.data(),
+								DataTypeConverter::timePointToString(confirmedAt).data()
+							);
+							exception.setTransactionBody(*body);
+							throw exception;
 						}
 						auto runningHash = mConfirmedTransaction.calculateRunningHash(previousConfirmedTransaction);
 						if (!mConfirmedTransaction.getRunningHash() || runningHash->size() != mConfirmedTransaction.getRunningHash()->size()) {
@@ -129,8 +121,7 @@ namespace gradido {
 				}
 				GradidoTransactionRole(*mConfirmedTransaction.getGradidoTransaction()).run(
 					type,
-					communityId,
-					blockchainProvider,
+					blockchain,
 					senderPreviousConfirmedTransaction,
 					recipientPreviousConfirmedTransaction
 				);

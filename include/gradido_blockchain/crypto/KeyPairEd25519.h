@@ -134,7 +134,7 @@ public:
 	std::string getFullString() const;
 
 protected:
-	memory::ConstBlockPtr mPubkey;
+	memory::ConstBlockPtr mPublicKey;
 	std::string mMessage;
 };
 
@@ -158,7 +158,7 @@ public:
 	std::string getFullString() const;
 
 protected:
-	memory::ConstBlockPtr mPubkey;
+	memory::ConstBlockPtr mPublicKey;
 };
 
 class GRADIDOBLOCKCHAIN_EXPORT Ed25519InvalidKeyException: public GradidoBlockchainException

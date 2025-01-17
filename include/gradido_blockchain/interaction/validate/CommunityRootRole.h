@@ -13,8 +13,7 @@ namespace gradido {
 
 				void run(
 					Type type,
-					std::string_view communityId,
-					blockchain::AbstractProvider* blockchainProvider,
+					std::shared_ptr<blockchain::Abstract> blockchain,
 					std::shared_ptr<const data::ConfirmedTransaction> previousConfirmedTransaction,
 					std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 				);

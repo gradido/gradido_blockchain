@@ -1,9 +1,12 @@
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
-#include "gradido_blockchain/interaction/deserialize/Context.h"
-#include "gradido_blockchain/interaction/deserialize/TransactionBodyRole.h"
-#include "gradido_blockchain/interaction/deserialize/GradidoTransactionRole.h"
 #include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionRole.h"
+#include "gradido_blockchain/interaction/deserialize/Context.h"
+#include "gradido_blockchain/interaction/deserialize/GradidoTransactionRole.h"
+#include "gradido_blockchain/interaction/deserialize/TransactionBodyRole.h"
+#include "gradido_blockchain/interaction/deserialize/TransactionTriggerEventRole.h"
+
+
 #include "loguru/loguru.hpp"
 
 namespace gradido {
@@ -12,7 +15,7 @@ namespace gradido {
 			void Context::run()
 			{
 				if(!mData) {
-					throw GradidoNullPointerException("mData is empty", "memory::ConstBlockPtr", "gradido::v3_3::interaction_deserialize::Context::run");
+					throw GradidoNullPointerException("mData is empty", "memory::ConstBlockPtr", "gradido::interaction_deserialize::Context::run");
 				}
 				if (Type::TRANSACTION_BODY == mType || Type::UNKNOWN == mType) {
 					try {
@@ -37,6 +40,20 @@ namespace gradido {
 					}
 					catch (std::exception& ex) {
 						if (Type::GRADIDO_TRANSACTION == mType) {
+							LOG_F(WARNING, "couldn't deserialize, maybe wrong type? exception: %s", ex.what());
+						}
+						mType = Type::UNKNOWN;
+					}
+				}
+				if (Type::TRANSACTION_TRIGGER_EVENT == mType || Type::UNKNOWN == mType) {
+					try {
+						auto [transactionTriggerEvent, bufferEnd2] = message_coder<TransactionTriggerEventMessage>::decode(mData->span());
+						mTransactionTriggerEvent = TransactionTriggerEventRole(transactionTriggerEvent);
+						mType = Type::TRANSACTION_TRIGGER_EVENT;
+						return;
+					}
+					catch (std::exception& ex) {
+						if (Type::TRANSACTION_TRIGGER_EVENT == mType) {
 							LOG_F(WARNING, "couldn't deserialize, maybe wrong type? exception: %s", ex.what());
 						}
 						mType = Type::UNKNOWN;

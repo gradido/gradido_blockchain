@@ -53,15 +53,13 @@ namespace gradido {
 				std::shared_ptr<blockchain::Abstract> blockchain
 			) const 
 			{
-				assert(mMinSignatureCount);
-
 				auto& signPairs = signatureMap.getSignaturePairs();
 
 				// check for doublets
 				if (signPairs.size() > 1) {
 					std::set<memory::Block> memoryBlockSet;
 					for (auto& signPair : signPairs) {
-						if (!memoryBlockSet.insert(*signPair.getPubkey()).second) {
+						if (!memoryBlockSet.insert(*signPair.getPublicKey()).second) {
 							throw TransactionValidationInvalidInputException("double public key", "public key");
 						};
 					}
@@ -85,10 +83,10 @@ namespace gradido {
 				if (signPairs.size() == 1) {
 					auto& signPair = signPairs[0];
 					// check for forbidden keys
-					isPublicKeyForbidden(signPair.getPubkey());
+					isPublicKeyForbidden(signPair.getPublicKey());
 
 					// check for required keys
-					if (mRequiredSignPublicKeys.size() == 1 && !signPair.getPubkey()->isTheSame(mRequiredSignPublicKeys[0])) {
+					if (mRequiredSignPublicKeys.size() == 1 && !signPair.getPublicKey()->isTheSame(mRequiredSignPublicKeys[0])) {
 						throw TransactionValidationRequiredSignMissingException(mRequiredSignPublicKeys);
 					}
 					return;
@@ -102,11 +100,11 @@ namespace gradido {
 				for (auto& signPair : signPairs)
 				{
 					// check for forbidden keys
-					isPublicKeyForbidden(signPair.getPubkey());
+					isPublicKeyForbidden(signPair.getPublicKey());
 
 					// check for required keys
 					for (auto it = requiredKeys.begin(); it != requiredKeys.end(); it++) {
-						if (signPair.getPubkey()->isTheSame(*it)) {
+						if (signPair.getPublicKey()->isTheSame(*it)) {
 							it = requiredKeys.erase(it);
 							break;
 						}

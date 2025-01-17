@@ -35,30 +35,24 @@ namespace gradido {
 			//! validate and generate confirmed transaction
 			//! throw if gradido transaction isn't valid
 			//! \return false if transaction already exist
-			bool addGradidoTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt);
+			virtual bool createAndAddConfirmedTransaction(
+				data::ConstGradidoTransactionPtr gradidoTransaction,
+				memory::ConstBlockPtr messageId, 
+				Timepoint confirmedAt
+			);
+			virtual void addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent);
+			virtual void removeTransactionTriggerEvent(const data::TransactionTriggerEvent& transactionTriggerEvent);
+
+			virtual bool isTransactionExist(data::ConstGradidoTransactionPtr gradidoTransaction) const;
+
+			//! return events in asc order of targetDate
+			virtual std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> findTransactionTriggerEventsInRange(TimepointInterval range);
 
 			// get all transactions sorted by id
 			const TransactionEntries& getSortedTransactions();
 
 			// from Abstract blockchain
 			TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
-
-			//! find all deferred transfers which have the timeout in date range between start and end, have senderPublicKey and are not redeemed,
-			//! therefore boocked back to sender
-			TransactionEntries findTimeoutedDeferredTransfersInRange(
-				memory::ConstBlockPtr senderPublicKey,
-				TimepointInterval timepointInterval,
-				uint64_t maxTransactionNr
-			) const;
-
-			//! find all transfers which redeem a deferred transfer in date range
-			//! \param senderPublicKey sender public key of sending account of deferred transaction
-			//! \return list with transaction pairs, first is deferred transfer, second is redeeming transfer
-			std::list<DeferredRedeemedTransferPair> findRedeemedDeferredTransfersInRange(
-				memory::ConstBlockPtr senderPublicKey,
-				TimepointInterval timepointInterval,
-				uint64_t maxTransactionNr
-			) const;
 
 			std::shared_ptr<const TransactionEntry> getTransactionForId(uint64_t transactionId) const;
 
@@ -79,8 +73,6 @@ namespace gradido {
 
 			FilterCriteria findSmallestPrefilteredTransactionList(const Filter& filter) const;
 
-			// if called, mWorkMutex should be locked
-			bool isTransactionExist(data::ConstGradidoTransactionPtr gradidoTransaction) const;
 			mutable std::recursive_mutex mWorkMutex;
 
 			// update map and multimap on every transaction add and remove
@@ -92,10 +84,11 @@ namespace gradido {
 			std::unordered_map<iota::MessageId, uint64_t> mMessageIdTransactionNrs;
 			//! find transactionEntry by transaction nr
 			std::map<uint64_t, std::shared_ptr<const TransactionEntry>> mTransactionsByNr;
-			//! deferred transfers with redeem transfer if exist sorted by deferred transfer timeout
-			std::multimap<Timepoint, DeferredRedeemedTransferPair> mTimeoutDeferredRedeemedTransferPairs;
 			// for fast doublette check
 			std::unordered_map<SignatureOctet, std::shared_ptr<const TransactionEntry>> mTransactionFingerprintTransactionEntry;
+			// transactionTriggerEvents
+			mutable std::mutex mTransactionTriggerEventsMutex;
+			std::multimap<Timepoint, std::shared_ptr<const data::TransactionTriggerEvent>> mTransactionTriggerEvents;
 			// because sorted transactions are not needed often, update list only if needed and mSortedDirty = true
 			bool mSortedDirty;
 			TransactionEntries mSortedTransactions;

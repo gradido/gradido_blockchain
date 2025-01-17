@@ -12,20 +12,20 @@ namespace gradido {
 		public:
 			TransferAmount(
 				memory::ConstBlockPtr pubkeyPtr,
-				const std::string& amountString,
+				GradidoUnit amount,
 				const std::string& communityId = ""
 			);
 			~TransferAmount() {}
 
 			inline bool operator==(const TransferAmount& other) const {
-				return mPubkey && mPubkey->isTheSame(other.mPubkey) && mAmount == other.mAmount && mCommunityId == other.mCommunityId;
+				return mPublicKey && mPublicKey->isTheSame(other.mPublicKey) && mAmount == other.mAmount && mCommunityId == other.mCommunityId;
 			}
-			inline memory::ConstBlockPtr getPubkey() const { return mPubkey; }
+			inline memory::ConstBlockPtr getPublicKey() const { return mPublicKey; }
 			inline GradidoUnit getAmount() const { return mAmount; }
 			inline const std::string& getCommunityId() const { return mCommunityId; }
 
 		protected:
-			memory::ConstBlockPtr mPubkey;
+			memory::ConstBlockPtr mPublicKey;
 			GradidoUnit mAmount;
 			std::string mCommunityId;
 		};

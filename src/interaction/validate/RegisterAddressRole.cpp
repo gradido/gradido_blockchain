@@ -27,8 +27,7 @@ namespace gradido {
 
 			void RegisterAddressRole::run(
 				Type type,
-				std::string_view communityId,
-				blockchain::AbstractProvider* blockchainProvider,
+				std::shared_ptr<blockchain::Abstract> blockchain,
 				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
 				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
@@ -67,7 +66,7 @@ namespace gradido {
 
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) 
 				{
-					auto blockchain = findBlockchain(blockchainProvider, communityId, __FUNCTION__);
+					assert(blockchain);
 					blockchain::FilterBuilder filterBuilder;
 
 					std::shared_ptr<const blockchain::TransactionEntry> transactionWithSameAddress;
@@ -156,17 +155,17 @@ namespace gradido {
 
 				// check for account type
 				for (auto& signPair : signPairs) {
-					if(signPair.getPubkey()->isTheSame(mRegisterAddress->getAccountPublicKey()) ||
-					   signPair.getPubkey()->isTheSame(mRegisterAddress->getUserPublicKey())) {
+					if(signPair.getPublicKey()->isTheSame(mRegisterAddress->getAccountPublicKey()) ||
+					   signPair.getPublicKey()->isTheSame(mRegisterAddress->getUserPublicKey())) {
 						continue;
 					}
-					if (signPair.getPubkey()->isTheSame(communityRoot->getTransactionBody()->getCommunityRoot()->getPubkey())) {
+					if (signPair.getPublicKey()->isTheSame(communityRoot->getTransactionBody()->getCommunityRoot()->getPublicKey())) {
 						foundCommunityRootSigner = true;
 						break;
 					}
 				}
 				if (!foundCommunityRootSigner) {
-					throw TransactionValidationRequiredSignMissingException({ communityRoot->getTransactionBody()->getCommunityRoot()->getPubkey()});
+					throw TransactionValidationRequiredSignMissingException({ communityRoot->getTransactionBody()->getCommunityRoot()->getPublicKey()});
 				}
 			}
 		}

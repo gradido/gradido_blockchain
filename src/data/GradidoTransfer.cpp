@@ -11,7 +11,7 @@ namespace gradido {
 
 		bool GradidoTransfer::isInvolved(const memory::Block& publicKey) const
 		{
-			return publicKey.isTheSame(mSender.getPubkey()) || publicKey.isTheSame(mRecipient);
+			return publicKey.isTheSame(mSender.getPublicKey()) || publicKey.isTheSame(mRecipient);
 		}
 	}
 }

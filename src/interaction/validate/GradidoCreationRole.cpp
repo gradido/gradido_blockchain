@@ -19,23 +19,22 @@ namespace gradido {
 				assert(gradidoCreation);
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mForbiddenSignPublicKeys.push_back(mGradidoCreation->getRecipient().getPubkey());
+				mForbiddenSignPublicKeys.push_back(mGradidoCreation->getRecipient().getPublicKey());
 			}
 
 			void GradidoCreationRole::run(
 				Type type,
-				std::string_view communityId,
-				blockchain::AbstractProvider* blockchainProvider,
+				std::shared_ptr<blockchain::Abstract> blockchain,
 				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
 				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
 				const auto& recipient = mGradidoCreation->getRecipient();
 				TransferAmountRole transferAmountRole(mGradidoCreation->getRecipient());
-				transferAmountRole.run(type, communityId, blockchainProvider, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
+				transferAmountRole.run(type, blockchain, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
 
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
-					validateEd25519PublicKey(recipient.getPubkey(), "recipient pubkey");
+					validateEd25519PublicKey(recipient.getPublicKey(), "recipient pubkey");
 					auto recipientAmount = recipient.getAmount();
 					if (recipientAmount > GradidoUnit(1000.0)) {
 						throw TransactionValidationInvalidInputException(
@@ -59,7 +58,6 @@ namespace gradido {
 
 				if ((type & Type::MONTH_RANGE) == Type::MONTH_RANGE)
 				{
-					auto blockchain = findBlockchain(blockchainProvider, communityId, __FUNCTION__);
 					if (!recipientPreviousConfirmedTransaction && senderPreviousConfirmedTransaction) {
 						recipientPreviousConfirmedTransaction = senderPreviousConfirmedTransaction;
 					}
@@ -75,7 +73,7 @@ namespace gradido {
 					calculateCreationSum::Context calculateCreationSum(
 						mConfirmedAt,
 						mGradidoCreation->getTargetDate(),
-						mGradidoCreation->getRecipient().getPubkey(),
+						mGradidoCreation->getRecipient().getPublicKey(),
 						recipientPreviousConfirmedTransaction->getId()
 					);
 
@@ -85,7 +83,7 @@ namespace gradido {
 						auto targetDate = mGradidoCreation->getTargetDate();
 						auto ymd = date::year_month_day{ date::floor<date::days>(targetDate.getAsTimepoint()) };
 						sum -= recipient.getAmount();
-						std::string message = "creation more than ";						
+						std::string message = "creation more than ";
 						message += calculateCreationSum.getLimit().toString() + " not allowed";
 
 						throw InvalidCreationException(
@@ -96,14 +94,13 @@ namespace gradido {
 					}
 				}
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
-					auto blockchain = findBlockchain(blockchainProvider, communityId, __FUNCTION__);
 					blockchain::Filter filter;
-					filter.involvedPublicKey = mGradidoCreation->getRecipient().getPubkey();
+					filter.involvedPublicKey = mGradidoCreation->getRecipient().getPublicKey();
 					auto addressType = blockchain->getAddressType(filter);
 					if (data::AddressType::COMMUNITY_HUMAN != addressType &&
 						data::AddressType::COMMUNITY_AUF != addressType &&
 						data::AddressType::COMMUNITY_GMW != addressType) {
-						throw WrongAddressTypeException("wrong address type for creation", addressType, mGradidoCreation->getRecipient().getPubkey());
+						throw WrongAddressTypeException("wrong address type for creation", addressType, mGradidoCreation->getRecipient().getPublicKey());
 					}
 				}
 			}
@@ -119,7 +116,7 @@ namespace gradido {
 				// check for account type
 				for (auto& signPair : signPairs) {
 					blockchain::Filter filter;
-					filter.involvedPublicKey = signPair.getPubkey();
+					filter.involvedPublicKey = signPair.getPublicKey();
 					filter.searchDirection = blockchain::SearchDirection::DESC;
 					filter.timepointInterval = TimepointInterval(blockchain->getStartDate(), mCreatedAt);
 					auto signerAccountType = blockchain->getAddressType(filter);
@@ -127,7 +124,7 @@ namespace gradido {
 						throw WrongAddressTypeException(
 							"signer for creation doesn't have a community human account",
 							signerAccountType,
-							signPair.getPubkey()
+							signPair.getPublicKey()
 						);
 					}
 				}
@@ -143,14 +140,14 @@ namespace gradido {
 				if (target_date.year() == received.year())
 				{
 					if (static_cast<unsigned>(target_date.month()) + targetDateReceivedDistanceMonth < static_cast<unsigned>(received.month())) {
-						std::string expected = ">= " 
+						std::string expected = ">= "
 							+ DataTypeConverter::timePointToString(createdAtTimePoint)
 							+ " - "
 							+ std::to_string(static_cast<unsigned>(targetDateReceivedDistanceMonth))
 							+ " months"
 						;
 						throw TransactionValidationInvalidInputException(
-							"year is the same, target date month is invalid", 
+							"year is the same, target date month is invalid",
 							"target_date",
 							"TimestampSeconds",
 							expected.data(),
@@ -194,7 +191,7 @@ namespace gradido {
 				{
 					// target_date.year +1 == now.year
 					if (static_cast<unsigned>(target_date.month()) + targetDateReceivedDistanceMonth < static_cast<unsigned>(received.month()) + 12) {
-						std::string expected = ">= " 
+						std::string expected = ">= "
 							+ DataTypeConverter::timePointToString(createdAtTimePoint)
 							+ " - "
 							+ std::to_string(static_cast<unsigned>(targetDateReceivedDistanceMonth))
@@ -210,7 +207,7 @@ namespace gradido {
 					}
 				}
 			}
-			
+
 			unsigned GradidoCreationRole::getTargetDateReceivedDistanceMonth(Timepoint createdAt)
 			{
 				date::month targetDateReceivedDistanceMonth(2);

@@ -25,8 +25,7 @@ namespace gradido {
                 // test if transaction is valid, throw an exception on error
                 virtual void run(
                     Type type = Type::SINGLE,
-                    std::string_view communityId = "",
-                    blockchain::AbstractProvider* blockchainProvider = nullptr,
+                    std::shared_ptr<blockchain::Abstract> blockchain = nullptr,
                     std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction = nullptr,
                     std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction = nullptr
                 ) = 0;

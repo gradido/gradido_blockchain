@@ -20,6 +20,13 @@ public:
 	virtual rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const { return rapidjson::Value(rapidjson::kObjectType); }
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT GradidoNotImplementedException : public GradidoBlockchainException
+{
+public:
+	explicit GradidoNotImplementedException(const char* what): GradidoBlockchainException(what) {}
+	virtual std::string getFullString() const {return what();}
+};
+
 class GRADIDOBLOCKCHAIN_EXPORT GradidoBlockchainTransactionNotFoundException : public GradidoBlockchainException
 {
 public:

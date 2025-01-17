@@ -17,8 +17,7 @@ namespace gradido {
 
 			void GradidoTransactionRole::run(
 				Type type,
-				std::string_view communityId,
-				blockchain::AbstractProvider* blockchainProvider,
+				std::shared_ptr<blockchain::Abstract> blockchain,
 				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
 				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
@@ -26,19 +25,19 @@ namespace gradido {
 				TransactionBodyRole bodyRole(*body);
 				bodyRole.setConfirmedAt(mConfirmedAt);
 				// recursive validation					
-				bodyRole.run(type, communityId, blockchainProvider, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
+				bodyRole.run(type, blockchain, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
 
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
 					for (auto& sigPair : mGradidoTransaction.getSignatureMap().getSignaturePairs()) {
-						validateEd25519PublicKey(sigPair.getPubkey(), __FUNCTION__);
+						validateEd25519PublicKey(sigPair.getPublicKey(), __FUNCTION__);
 						validateEd25519Signature(sigPair.getSignature(), __FUNCTION__);
 							
-						KeyPairEd25519 key_pair(sigPair.getPubkey());
+						KeyPairEd25519 key_pair(sigPair.getPublicKey());
 						if (!key_pair.verify(*mGradidoTransaction.getBodyBytes(), *sigPair.getSignature())) {
 							throw TransactionValidationInvalidSignatureException(
 								"pubkey don't belong to body bytes", 
-								sigPair.getPubkey(),
+								sigPair.getPublicKey(),
 								sigPair.getSignature(),
 								mGradidoTransaction.getBodyBytes()
 							);
@@ -46,14 +45,11 @@ namespace gradido {
 					}
 				}
 				// check signatures
-				std::shared_ptr<blockchain::Abstract> blockchain;
-				if (blockchainProvider && !communityId.empty()) {
-					blockchain = blockchainProvider->findBlockchain(communityId);
-				}
 				bodyRole.checkRequiredSignatures(mGradidoTransaction.getSignatureMap(), blockchain);
 
 				if ((type & Type::PAIRED) == Type::PAIRED && !body->getOtherGroup().empty()) {
-					auto otherBlockchain = findBlockchain(blockchainProvider, body->getOtherGroup(), __FUNCTION__);
+					assert(blockchain);
+					auto otherBlockchain = findBlockchain(blockchain->getProvider(), body->getOtherGroup(), __FUNCTION__);
 					
 					std::shared_ptr<const blockchain::TransactionEntry> pairTransactionEntry;
 					switch (body->getType()) {

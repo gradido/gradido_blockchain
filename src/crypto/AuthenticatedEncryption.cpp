@@ -9,26 +9,26 @@ AuthenticatedEncryption::AuthenticatedEncryption()
 
 	crypto_box_keypair(pubkey, privkey);
 
-	mPubkey = std::make_shared<memory::Block>(pubkey);
+	mPublicKey = std::make_shared<memory::Block>(pubkey);
 	mPrivkey = std::make_shared<memory::Block>(privkey);
 }
 
-AuthenticatedEncryption::AuthenticatedEncryption(KeyPairEd25519* ed25519KeyPair)
+AuthenticatedEncryption::AuthenticatedEncryption(const KeyPairEd25519& ed25519KeyPair)
 	: mPrecalculatedSharedSecretLastIndex(0)
 {
 	memory::Block pubkey(X25519_PUBLIC_KEY_SIZE);
-	if (ed25519KeyPair->getPrivateKey()) {		
+	if (ed25519KeyPair.getPrivateKey()) {		
 		memory::Block privkey(X25519_PRIVATE_KEY_SIZE);
-		crypto_sign_ed25519_sk_to_curve25519(privkey, *ed25519KeyPair->getPrivateKey());
+		crypto_sign_ed25519_sk_to_curve25519(privkey, *ed25519KeyPair.getPrivateKey());
 		crypto_scalarmult_base(pubkey, privkey);
 		mPrivkey = std::make_shared<memory::Block>(privkey);
 	}
-	else if (ed25519KeyPair->getPublicKey()) {
-		if(crypto_sign_ed25519_pk_to_curve25519(pubkey, *ed25519KeyPair->getPublicKey())) {
+	else if (ed25519KeyPair.getPublicKey()) {
+		if(crypto_sign_ed25519_pk_to_curve25519(pubkey, *ed25519KeyPair.getPublicKey())) {
 			throw AuthenticatedKeyTransformationException("error transforming ed25519 key to curve25519");
 		}
 	}
-	mPubkey = std::make_shared<memory::Block>(pubkey);
+	mPublicKey = std::make_shared<memory::Block>(pubkey);
 }
 
 AuthenticatedEncryption::AuthenticatedEncryption(memory::ConstBlockPtr privateKeyx25519)
@@ -39,12 +39,12 @@ AuthenticatedEncryption::AuthenticatedEncryption(memory::ConstBlockPtr privateKe
 
 	crypto_scalarmult_base(pubkey, privkey);
 
-	mPubkey = std::make_shared<memory::Block>(pubkey);
+	mPublicKey = std::make_shared<memory::Block>(pubkey);
 	mPrivkey = std::make_shared<memory::Block>(privkey);
 }
 
 AuthenticatedEncryption::AuthenticatedEncryption(const std::array<unsigned char, X25519_PUBLIC_KEY_SIZE>& pubkeyx25519)
-	: mPrecalculatedSharedSecretLastIndex(0), mPubkey(std::make_shared<memory::Block>(pubkeyx25519.size(), pubkeyx25519.data()))
+	: mPrecalculatedSharedSecretLastIndex(0), mPublicKey(std::make_shared<memory::Block>(pubkeyx25519.size(), pubkeyx25519.data()))
 {
 }
 
@@ -54,7 +54,7 @@ AuthenticatedEncryption::~AuthenticatedEncryption()
 	mPrecalculatedSharedSecrets.clear();
 }
 
-memory::Block AuthenticatedEncryption::encrypt(const unsigned char* message, size_t messageSize, AuthenticatedEncryption* recipiantKey)
+memory::Block AuthenticatedEncryption::encrypt(const unsigned char* message, size_t messageSize, const AuthenticatedEncryption& recipiantKey) const
 {
 	if (!mPrivkey) {
 		throw AuthenticatedEncryptionException("encrypt called with empty private key");
@@ -65,7 +65,7 @@ memory::Block AuthenticatedEncryption::encrypt(const unsigned char* message, siz
 	/*int crypto_box_easy(unsigned char* c, const unsigned char* m,
 		unsigned long long mlen, const unsigned char* n,
 		const unsigned char* pk, const unsigned char* sk);*/
-	if (crypto_box_easy(&result.data()[crypto_box_NONCEBYTES], message, messageSize, result.data(), *recipiantKey->mPubkey, mPrivkey->data())) {
+	if (crypto_box_easy(&result.data()[crypto_box_NONCEBYTES], message, messageSize, result.data(), *recipiantKey.mPublicKey, mPrivkey->data())) {
 		throw AuthenticatedEncryptionException("error by encrypt message");
 	}
 	return result;
@@ -95,7 +95,7 @@ memory::Block AuthenticatedEncryption::encrypt(const memory::Block& message, int
 	return result;
 }
 
-memory::Block AuthenticatedEncryption::decrypt(const memory::Block& encryptedMessage, AuthenticatedEncryption* senderKey)
+memory::Block AuthenticatedEncryption::decrypt(const memory::Block& encryptedMessage, const AuthenticatedEncryption& senderKey) const
 {
 	if (!mPrivkey) {
 		throw AuthenticatedEncryptionException("decrypt called with empty private key");
@@ -108,7 +108,7 @@ memory::Block AuthenticatedEncryption::decrypt(const memory::Block& encryptedMes
 	// The function returns -1 if the verification fails, and 0 on success. On success, the decrypted message is stored into m.
 	if (crypto_box_open_easy(result.data(), &encryptedMessage.data()[crypto_box_NONCEBYTES],
 		encryptedMessage.size() - crypto_box_NONCEBYTES, encryptedMessage.data(),
-		*senderKey->mPubkey, mPrivkey->data())) {
+		*senderKey.mPublicKey, mPrivkey->data())) {
 			throw AuthenticatedDecryptionException("error by decrypt message");
 	}
 	return result;
@@ -139,14 +139,14 @@ memory::Block AuthenticatedEncryption::decrypt(const memory::Block& encryptedMes
 	return result;
 }
 
-int AuthenticatedEncryption::precalculateSharedSecret(AuthenticatedEncryption* recipiantKey)
+int AuthenticatedEncryption::precalculateSharedSecret(const AuthenticatedEncryption& recipiantKey)
 {
 	if (!mPrivkey) return -1;
 	std::lock_guard _lock(mPrecalculatedSharedSecretsMutex);
 	/*int crypto_box_beforenm(unsigned char* k, const unsigned char* pk,
 		const unsigned char* sk);*/
 	auto sharedSecret = std::make_unique<memory::Block>(crypto_box_BEFORENMBYTES);
-	if(crypto_box_beforenm(sharedSecret->data(), *recipiantKey->mPubkey, mPrivkey->data())) {
+	if(crypto_box_beforenm(sharedSecret->data(), *recipiantKey.mPublicKey, mPrivkey->data())) {
 		throw AuthenticatedPrepareException("error in precalculateSharedSecret");
 	};
 	mPrecalculatedSharedSecretLastIndex++;

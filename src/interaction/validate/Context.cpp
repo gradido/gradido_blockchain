@@ -30,22 +30,15 @@ namespace gradido {
 
 			}
 
-			void Context::run(
-				Type type/* = Type::SINGLE*/,
-				std::string_view communityId /* = "" */, 
-				blockchain::AbstractProvider* blockchainProvider /* = nullptr*/)
+			void Context::run(Type type/* = Type::SINGLE*/, std::shared_ptr<blockchain::Abstract> blockchain /*= nullptr*/)
 			{
-				if (!mSenderPreviousConfirmedTransaction && blockchainProvider) {
-					auto blockchain = blockchainProvider->findBlockchain(communityId);
-					if (!blockchain) {
-						throw blockchain::CommunityNotFoundException("missing blockchain for interaction::validate", communityId);
-					}
+				if (!mSenderPreviousConfirmedTransaction && blockchain) {
 					auto transactionEntry = blockchain->findOne(blockchain::Filter::LAST_TRANSACTION);
 					if (transactionEntry) {
 						mSenderPreviousConfirmedTransaction = transactionEntry->getConfirmedTransaction();
 					}
 				}
-				mRole->run(type, communityId, blockchainProvider, mSenderPreviousConfirmedTransaction, mRecipientPreviousConfirmedTransaction);
+				mRole->run(type, blockchain, mSenderPreviousConfirmedTransaction, mRecipientPreviousConfirmedTransaction);
 			}
 		}
 	}

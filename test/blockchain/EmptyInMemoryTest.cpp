@@ -34,7 +34,7 @@ TEST_F(EmptyInMemoryTest, AddCommunityRootAsFirst) {
 	interaction::deserialize::Context deserializer(communityRootRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
 	deserializer.run();
 	ASSERT_TRUE(deserializer.isGradidoTransaction());	
-	EXPECT_TRUE(mBlockchain->addGradidoTransaction(deserializer.getGradidoTransaction(), nullptr, confirmedAt));
+	EXPECT_TRUE(mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), nullptr, confirmedAt));
 }
 
 TEST_F(EmptyInMemoryTest, InvalidRegisterAddressAsFirst) {
@@ -44,7 +44,7 @@ TEST_F(EmptyInMemoryTest, InvalidRegisterAddressAsFirst) {
 	ASSERT_TRUE(deserializer.isGradidoTransaction());
 
 	EXPECT_THROW(
-		mBlockchain->addGradidoTransaction(deserializer.getGradidoTransaction(), nullptr, confirmedAt),
+		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), nullptr, confirmedAt),
 		BlockchainOrderException
 	);
 }
@@ -55,7 +55,7 @@ TEST_F(EmptyInMemoryTest, InvalidGradidoCreationAsFirst) {
 	ASSERT_TRUE(deserializer.isGradidoTransaction());
 
 	EXPECT_THROW(
-		mBlockchain->addGradidoTransaction(deserializer.getGradidoTransaction(), nullptr, confirmedAt),
+		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), nullptr, confirmedAt),
 		validate::WrongAddressTypeException
 	);
 }
@@ -66,8 +66,8 @@ TEST_F(EmptyInMemoryTest, InvalidGradidoTransferAsFirst) {
 	ASSERT_TRUE(deserializer.isGradidoTransaction());
 
 	EXPECT_THROW(
-		mBlockchain->addGradidoTransaction(deserializer.getGradidoTransaction(), nullptr, confirmedAt),
-		InsufficientBalanceException
+		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), nullptr, confirmedAt),
+		BlockchainOrderException
 	);
 }
 
@@ -78,7 +78,7 @@ TEST_F(EmptyInMemoryTest, InvalidGradidoDeferredTransferAsFirst) {
 	ASSERT_TRUE(deserializer.isGradidoTransaction());
 
 	EXPECT_THROW(
-		mBlockchain->addGradidoTransaction(deserializer.getGradidoTransaction(), nullptr, confirmedAt),
-		InsufficientBalanceException
+		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), nullptr, confirmedAt),
+		BlockchainOrderException
 	);
 }

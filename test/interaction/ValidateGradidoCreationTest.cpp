@@ -11,17 +11,14 @@ using namespace data;
 using namespace interaction;
 using namespace std;
 
-constexpr auto memo = "Deine erste Schoepfung;)";
-
-
 TEST(ValidateGradidoCreationTest, valid) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo(memo)
+		.addMemo(creationMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000)),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -40,7 +37,7 @@ TEST(ValidateGradidoCreationTest, invalidMemoEmpty) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000)),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -57,11 +54,11 @@ TEST(ValidateGradidoCreationTest, invalidMemoEmpty) {
 TEST(ValidateGradidoCreationTest, invalidMemoToShort) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo("hall")
+		.addMemo({ MemoKeyType::PLAIN, std::make_shared<memory::Block>("hall") })
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000)),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -78,11 +75,11 @@ TEST(ValidateGradidoCreationTest, invalidMemoToShort) {
 TEST(ValidateGradidoCreationTest, invalidMemoToBig) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo(std::string(451, 'a')) // fill with 451 x a
+		.addMemo(aFilledMemo) // fill with 451 x a
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000)),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -99,12 +96,12 @@ TEST(ValidateGradidoCreationTest, invalidMemoToBig) {
 TEST(ValidateGradidoCreationTest, invalidAmountNegative) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo(memo)
+		.addMemo(creationMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
 			// negative amount
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "-1000.00"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000).negated()),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -119,12 +116,12 @@ TEST(ValidateGradidoCreationTest, invalidAmountNegative) {
 TEST(ValidateGradidoCreationTest, invalidAmountZero) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo(memo)
+		.addMemo(creationMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
 			// zero amount
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "0"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::zero()),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -139,12 +136,12 @@ TEST(ValidateGradidoCreationTest, invalidAmountZero) {
 TEST(ValidateGradidoCreationTest, invalidAmountToBig) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo(memo)
+		.addMemo(creationMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
 			// to big amount, only 1000 per month allowed
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "2000.00"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(20000000)),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -161,12 +158,12 @@ TEST(ValidateGradidoCreationTest, InvalidCoinCommunityIdIdenticalToBlockchainCom
 	std::string communityId = "testGroup";
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo(memo)
+		.addMemo(creationMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
 			// coin community id is identical to blockchain community id to which transaction belong
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00", communityId),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), communityId),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -176,17 +173,17 @@ TEST(ValidateGradidoCreationTest, InvalidCoinCommunityIdIdenticalToBlockchainCom
 	ASSERT_TRUE(body->isCreation());
 
 	validate::Context c(*body);
-	EXPECT_THROW(c.run(validate::Type::SINGLE, communityId), validate::TransactionValidationInvalidInputException);
+	EXPECT_THROW(c.run(validate::Type::SINGLE), validate::TransactionValidationInvalidInputException);
 }
 
 TEST(ValidateGradidoCreationTest, InvalidCoinCommunityId) {
 	GradidoTransactionBuilder builder;
 	builder
-		.setMemo(memo)
+		.addMemo(creationMemo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), "1000.00", "<script>"),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), "<script>"),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
