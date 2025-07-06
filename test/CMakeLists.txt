@@ -4,21 +4,15 @@ project(GradidoBlockchainTest)
 # GoogleTest requires at least C++11
 set(CMAKE_CXX_STANDARD 20)
 
-IF(WIN32)
-  find_package(gtest REQUIRED)
-    include_directories(
-        ${GTest_INCLUDE_DIRS}
-    )
-else()
-    include(FetchContent)
-    FetchContent_Declare(
-      googletest
-      URL https://github.com/google/googletest/releases/download/v1.15.0/googletest-1.15.0.tar.gz
-    )
-    # For Windows: Prevent overriding the parent project's compiler/linker settings
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(googletest)
-endif()
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
 
 # collect source code files
 
@@ -57,18 +51,15 @@ ENDIF()
 enable_testing()
 
 
-find_package(Sodium REQUIRED)
+#find_package(Sodium REQUIRED)
 
 add_executable(GradidoBlockchainTest ${TEST_SRC})
 target_link_libraries(GradidoBlockchainTest GradidoBlockchain sodium loguru::loguru) #libprotobuf
-IF(WIN32)    
-    target_link_libraries(GradidoBlockchainTest ${GTest_LIBRARIES})
-ELSE()
-    target_link_libraries(GradidoBlockchainTest gtest)
-ENDIF()
+target_link_libraries(GradidoBlockchainTest gtest)
 
 include_directories(
 	"../dependencies/date/include"
+  "${googletest_SOURCE_DIR}/googletest/include"
 )
 
 IF(WIN32)
