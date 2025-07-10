@@ -6,7 +6,6 @@
 #include "gradido_blockchain/data/TransactionTriggerEvent.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
-#include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
 using namespace gradido;

@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_CONTEXT_H
 
 #include "gradido_blockchain/export.h"
+#include "AbstractRole.h"
 #include "Type.h"
 #include <memory>
 
@@ -16,7 +17,6 @@ namespace gradido {
     }
 	namespace interaction {
 		namespace validate {
-            class AbstractRole;
             class TransactionBodyRole;
             class GradidoTransactionRole;
             class ConfirmedTransactionRole;
@@ -28,6 +28,14 @@ namespace gradido {
                 Context(const data::GradidoTransaction& body);
                 Context(const data::ConfirmedTransaction& body);
                 ~Context();
+
+                // move constructor & assignment
+                Context(Context&&) noexcept = default;
+                Context& operator=(Context&&) noexcept = default;
+
+                // delete copy constructor & assignment
+                Context(const Context&) = delete;
+                Context& operator=(const Context&) = delete;
 
                 //! \param blockchainProvider provide Blockchain access to search for specific transactions
                 void run(Type type = Type::SINGLE, std::shared_ptr<blockchain::Abstract> blockchain = nullptr);

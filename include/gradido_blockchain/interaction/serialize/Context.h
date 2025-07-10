@@ -29,6 +29,14 @@ namespace gradido {
 				Context(const data::TransactionTriggerEvent& transactionTriggerEvent)
 					: mRole(std::make_unique<TransactionTriggerEventRole>(transactionTriggerEvent)) {}
 				
+				// move constructor & assignment
+				Context(Context&&) noexcept = default;
+				Context& operator=(Context&&) noexcept = default;
+
+				// delete copy constructor & assignment
+				Context(const Context&) = delete;
+				Context& operator=(const Context&) = delete;
+
 				~Context() {}
 				inline memory::ConstBlockPtr run() { return mRole->run(); }
 

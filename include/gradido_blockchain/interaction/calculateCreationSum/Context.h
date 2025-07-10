@@ -12,6 +12,14 @@ namespace gradido {
 			{
 			public:
 				Context(Timepoint date, Timepoint targetDate, memory::ConstBlockPtr publicKey, uint64_t transactionNrMax = 0);
+				// move constructor & assignment
+				Context(Context&&) noexcept = default;
+				Context& operator=(Context&&) noexcept = default;
+
+				// delete copy constructor & assignment
+				Context(const Context&) = delete;
+				Context& operator=(const Context&) = delete;
+
 				GradidoUnit run(blockchain::Abstract& blockchain) { return mRole->run(blockchain); }
 				GradidoUnit getLimit() { return mRole->getLimit(); }
 
