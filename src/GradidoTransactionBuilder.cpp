@@ -155,7 +155,7 @@ namespace gradido {
 		mSpecificTransactionChoosen = true;
 		return *this;
 	}
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setTransactionCreation(data::TransferAmount recipient, Timepoint targetDate)
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setTransactionCreation(const data::TransferAmount& recipient, Timepoint targetDate)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		return setTransactionCreation(
@@ -180,7 +180,7 @@ namespace gradido {
 
 
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setTransactionTransfer(
-		data::TransferAmount sender,
+		const data::TransferAmount& sender,
 		memory::ConstBlockPtr recipientPubkey
 	)
 	{
@@ -289,7 +289,7 @@ namespace gradido {
 		return *this;
 	}
 
-	GradidoTransactionBuilder& GradidoTransactionBuilder::addMemo(EncryptedMemo memo) {
+	GradidoTransactionBuilder& GradidoTransactionBuilder::addMemo(const EncryptedMemo& memo) {
 		checkBuildState(BuildingState::BUILDING_BODY);
 		mBody->mMemos.push_back(memo);
 		return *this;

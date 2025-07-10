@@ -47,10 +47,10 @@ namespace gradido {
 		);
 		GradidoTransactionBuilder& setRegisterAddress(std::unique_ptr<data::RegisterAddress> registerAddress);
 
-		GradidoTransactionBuilder& setTransactionCreation(data::TransferAmount recipient, Timepoint targetDate);
+		GradidoTransactionBuilder& setTransactionCreation(const data::TransferAmount& recipient, Timepoint targetDate);
 		GradidoTransactionBuilder& setTransactionCreation(std::unique_ptr<data::GradidoCreation> creation);
 
-		GradidoTransactionBuilder& setTransactionTransfer(data::TransferAmount sender, memory::ConstBlockPtr recipientPubkey);
+		GradidoTransactionBuilder& setTransactionTransfer(const data::TransferAmount& sender, memory::ConstBlockPtr recipientPubkey);
 		GradidoTransactionBuilder& setTransactionTransfer(std::unique_ptr<data::GradidoTransfer> transfer);
 
 		GradidoTransactionBuilder& setCommunityRoot(
@@ -68,7 +68,7 @@ namespace gradido {
 		//! if not called, time from calling GradidoTransactionBuilder Constructor will be taken
 		//! \param createAt timestamp when transaction where created
 		GradidoTransactionBuilder& setCreatedAt(Timepoint createdAt);
-		GradidoTransactionBuilder& addMemo(data::EncryptedMemo memo);
+		GradidoTransactionBuilder& addMemo(const data::EncryptedMemo& memo);
 		GradidoTransactionBuilder& setVersionNumber(std::string_view versionNumber);
 		//! \param body will be moved
 		GradidoTransactionBuilder& setTransactionBody(std::unique_ptr<data::TransactionBody> body);
