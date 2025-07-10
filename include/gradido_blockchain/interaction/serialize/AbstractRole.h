@@ -8,6 +8,7 @@
 #include <bit>
 #include <array>
 #include <vector>
+#include <string>
 #include "protopuf/message.h"
 #include "sodium.h"
 
@@ -34,7 +35,9 @@ namespace gradido {
 					buffer.resize(size, std::byte{ 0 });
 					// auto buffer = std::make_shared<memory::Block>(size);
 					auto bufferEnd = pp::message_coder<T>::encode(message, buffer);
-					buffer.resize(pp::begin_diff(bufferEnd, buffer));
+					if (!bufferEnd.has_value()) return nullptr;
+					auto bufferEndValue = bufferEnd.value();
+					buffer.resize(pp::begin_diff(bufferEndValue, buffer));
 					if (!buffer.size()) return nullptr;
 					//pp::bytes
 					return std::make_shared<memory::Block>(buffer);

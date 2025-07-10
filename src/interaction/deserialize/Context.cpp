@@ -19,7 +19,9 @@ namespace gradido {
 				}
 				if (Type::TRANSACTION_BODY == mType || Type::UNKNOWN == mType) {
 					try {
-						auto [body, bufferEnd2] = message_coder<TransactionBodyMessage>::decode(mData->span());
+						auto result = message_coder<TransactionBodyMessage>::decode(mData->span());
+						if (!result.has_value()) return;
+						const auto& [body, bufferEnd2] = *result;
 						mTransactionBody = std::make_shared<data::TransactionBody>(TransactionBodyRole(body).getBody());
 						mType = Type::TRANSACTION_BODY;
 						return;
@@ -33,7 +35,9 @@ namespace gradido {
 				}
 				if (Type::GRADIDO_TRANSACTION == mType || Type::UNKNOWN == mType) {
 					try {
-						auto [gradidoTransaction, bufferEnd2] = message_coder<GradidoTransactionMessage>::decode(mData->span());
+						auto result = message_coder<GradidoTransactionMessage>::decode(mData->span());
+						if (!result.has_value()) return;
+						const auto& [gradidoTransaction, bufferEnd2] = *result;
 						mGradidoTransaction = GradidoTransactionRole(gradidoTransaction).getGradidoTransaction();
 						mType = Type::GRADIDO_TRANSACTION;
 						return;
@@ -47,7 +51,9 @@ namespace gradido {
 				}
 				if (Type::TRANSACTION_TRIGGER_EVENT == mType || Type::UNKNOWN == mType) {
 					try {
-						auto [transactionTriggerEvent, bufferEnd2] = message_coder<TransactionTriggerEventMessage>::decode(mData->span());
+						auto result = message_coder<TransactionTriggerEventMessage>::decode(mData->span());
+						if (!result.has_value()) return;
+						const auto& [transactionTriggerEvent, bufferEnd2] = *result;
 						mTransactionTriggerEvent = TransactionTriggerEventRole(transactionTriggerEvent);
 						mType = Type::TRANSACTION_TRIGGER_EVENT;
 						return;
@@ -60,7 +66,9 @@ namespace gradido {
 					}
 				}
 				try {
-					auto [confirmedTransaction, bufferEnd2] = message_coder<ConfirmedTransactionMessage>::decode(mData->span());
+					auto result = message_coder<ConfirmedTransactionMessage>::decode(mData->span());
+					if (!result.has_value()) return;
+					const auto& [confirmedTransaction, bufferEnd2] = *result;
 					mConfirmedTransaction = ConfirmedTransactionRole(confirmedTransaction).getConfirmedTransaction();
 					mType = Type::CONFIRMED_TRANSACTION;
 					return;

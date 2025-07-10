@@ -4,20 +4,23 @@ lib for all gradido blockchain related stuff in c++
 git submodule update --init --recursive
 
 ## Dependencies
-### Windows
-- conan 
+- cmake 
 - rust
 
+## Build with CMake in Release Mode
+Without parameter is version without test, http and iota rust client
 
-
-## Build with Conan
-```bash`
+```bash
 cd gradido_blockchain
-conan install . --output-folder=build --build=missing
+mkdir build
 cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
+cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build .
 ```
+
+- ENABLE_IOTA_RUST_CLIENT: switch for include rust iota client into build, needed for sending transaction to iota
+- ENABLE_HTTP: switch for include http based classes into build, will be enabled if ENABLE_IOTA_RUST_CLIENT is enabled
+- ENABLE_TEST: switch for include test into build config
 
 ## Install for Linux
 ```bash
@@ -31,4 +34,3 @@ cmake ..
 # build lib
 make -j$(nproc) GradidoBlockchain
 ```
-## Install for Windows
