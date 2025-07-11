@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_TYPES_H
 
 #include <chrono>
-#include "date/date.h"
+#include "date/tz.h"
 
 typedef std::chrono::time_point<std::chrono::system_clock> Timepoint;
 typedef std::chrono::system_clock::duration Duration;
