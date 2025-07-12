@@ -14,7 +14,7 @@ using namespace std;
 TEST(ValidateGradidoCreationTest, valid) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(creationMemo)
+		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
@@ -54,7 +54,7 @@ TEST(ValidateGradidoCreationTest, invalidMemoEmpty) {
 TEST(ValidateGradidoCreationTest, invalidMemoToShort) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo({ MemoKeyType::PLAIN, std::make_shared<memory::Block>("hall") })
+		.addMemo(hallMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
@@ -75,7 +75,7 @@ TEST(ValidateGradidoCreationTest, invalidMemoToShort) {
 TEST(ValidateGradidoCreationTest, invalidMemoToBig) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(aFilledMemo) // fill with 451 x a
+		.addMemo(aFilledMemoString) // fill with 451 x a
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
@@ -96,7 +96,7 @@ TEST(ValidateGradidoCreationTest, invalidMemoToBig) {
 TEST(ValidateGradidoCreationTest, invalidAmountNegative) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(creationMemo)
+		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
@@ -116,7 +116,7 @@ TEST(ValidateGradidoCreationTest, invalidAmountNegative) {
 TEST(ValidateGradidoCreationTest, invalidAmountZero) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(creationMemo)
+		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
@@ -136,7 +136,7 @@ TEST(ValidateGradidoCreationTest, invalidAmountZero) {
 TEST(ValidateGradidoCreationTest, invalidAmountToBig) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(creationMemo)
+		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
@@ -158,7 +158,7 @@ TEST(ValidateGradidoCreationTest, InvalidCoinCommunityIdIdenticalToBlockchainCom
 	std::string communityId = "testGroup";
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(creationMemo)
+		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
@@ -179,7 +179,7 @@ TEST(ValidateGradidoCreationTest, InvalidCoinCommunityIdIdenticalToBlockchainCom
 TEST(ValidateGradidoCreationTest, InvalidCoinCommunityId) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(creationMemo)
+		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(

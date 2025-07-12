@@ -11,27 +11,50 @@ namespace gradido {
         class GRADIDOBLOCKCHAIN_EXPORT EncryptedMemo
         {
         public:
-            EncryptedMemo() : mKeyType(MemoKeyType::PLAIN) {}
+            EncryptedMemo() : mKeyType(MemoKeyType::PLAIN), mMemo(0) {}
             //! key type will be PLAIN, memo isn't encrypted at all
             EncryptedMemo(const std::string& memo)
-                : mKeyType(MemoKeyType::PLAIN), mMemo(std::make_shared<memory::Block>(memo)) {}
-            EncryptedMemo(MemoKeyType type, memory::ConstBlockPtr memo)
+                : mKeyType(MemoKeyType::PLAIN), mMemo(memo) {}
+            //! key type will be PLAIN, memo isn't encrypted at all
+            EncryptedMemo(const char* memo)
+                : EncryptedMemo(std::string(memo)) {}
+            EncryptedMemo(MemoKeyType type, memory::Block&& memo)
                 : mKeyType(type), mMemo(memo) {}
-
             //! key type will be COMMUNITY_SECRET, memo is encrypted with community server key and can be seen by all community server user
-            EncryptedMemo(std::string memo, const AuthenticatedEncryption& communityKeyPair);
+            EncryptedMemo(const std::string& memo, const AuthenticatedEncryption& communityKeyPair);
+            EncryptedMemo(const char* memo, const AuthenticatedEncryption& communityKeyPair)
+                : EncryptedMemo(std::string(memo), communityKeyPair) {}
             //! key type will be SHARED_SECRET, memo is encrypted with shared secret calculated from sender public key and recipient private key or vice versa
             EncryptedMemo(
-                std::string memo,
+                const std::string& memo,
                 const AuthenticatedEncryption& firstKeyPair,
                 const AuthenticatedEncryption& secondKeyPair
             );
+            EncryptedMemo(const char* memo, const AuthenticatedEncryption& firstKeyPair, const AuthenticatedEncryption& secondKeyPair)
+                : EncryptedMemo(std::string(memo), firstKeyPair, secondKeyPair) {}
+            // move
+            EncryptedMemo(EncryptedMemo&& other) noexcept : mKeyType(other.mKeyType), mMemo(std::move(other.mMemo)) {}
+            // copy 
+            EncryptedMemo(const EncryptedMemo& other) : mKeyType(other.mKeyType), mMemo(other.mMemo) {}
             ~EncryptedMemo() {}
 
             inline MemoKeyType getKeyType() const { return mKeyType; }
-            inline  memory::ConstBlockPtr getMemo() const { return mMemo; }
+            inline const memory::Block& getMemo() const { return mMemo; }
+            // operators
             inline bool operator==(const EncryptedMemo& other) const {
-                return mKeyType == other.mKeyType && mMemo->isTheSame(other.mMemo);
+                return mKeyType == other.mKeyType && mMemo.isTheSame(other.mMemo);
+            }            
+            // move
+            EncryptedMemo& operator=(EncryptedMemo&& other) noexcept {
+                mKeyType = other.mKeyType;
+                mMemo = std::move(other.mMemo);
+                return *this;
+            }
+            // copy
+            EncryptedMemo& operator=(const EncryptedMemo& other) {
+                mKeyType = other.mKeyType;
+                mMemo = other.mMemo;
+                return *this;
             }
 
             //! with keyType == COMMUNITY_SECRET 
@@ -45,7 +68,7 @@ namespace gradido {
             
         protected:
             MemoKeyType mKeyType;
-            memory::ConstBlockPtr mMemo;
+            memory::Block mMemo;
         };
 
     }

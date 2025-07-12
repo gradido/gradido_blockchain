@@ -78,7 +78,7 @@ TEST(ToJsonTest, RegisterAddressBody) {
 TEST(ToJsonTest, GradidoCreationBody) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(creationMemo)
+		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
@@ -100,7 +100,7 @@ TEST(ToJsonTest, GradidoCreationBody) {
 TEST(ToJsonTest, GradidoTransferBody) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(transferMemo)
+		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
@@ -122,7 +122,7 @@ TEST(ToJsonTest, GradidoTransferBody) {
 TEST(ToJsonTest, GradidoDeferredTransferBody) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(deferredTransferMemo)
+		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
@@ -200,7 +200,7 @@ TEST(ToJsonTest, MinimalConfirmedTransaction) {
 }
 
 TEST(ToJsonTest, CompleteConfirmedTransaction) {
-	EncryptedMemo memo(MemoKeyType::PLAIN, std::make_shared<memory::Block>("Danke fuer dein Sein!"));
+	EncryptedMemo memo("Danke fuer dein Sein!");
 
 	GradidoTransactionBuilder builder;
 	auto gradidoTransaction = builder

@@ -74,7 +74,7 @@ TEST(SerializeTest, RegisterAddressBody) {
 TEST(SerializeTest, GradidoCreationBody) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(creationMemo)
+		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
@@ -95,7 +95,7 @@ TEST(SerializeTest, GradidoCreationBody) {
 TEST(SerializeTest, GradidoTransferBody) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(transferMemo)
+		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
@@ -116,7 +116,7 @@ TEST(SerializeTest, GradidoTransferBody) {
 TEST(SerializeTest, GradidoDeferredTransferBody) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(deferredTransferMemo)
+		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
@@ -208,8 +208,6 @@ TEST(SerializeTest, MinimalConfirmedTransaction) {
 }
 
 TEST(SerializeTest, CompleteConfirmedTransaction) {
-	EncryptedMemo memo(MemoKeyType::PLAIN, std::make_shared<memory::Block>("Danke fuer dein Sein!"));
-
 	GradidoTransactionBuilder builder;
 	auto gradidoTransaction = builder
 		.setTransactionTransfer(
@@ -219,7 +217,7 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 			), g_KeyPairs[5]->getPublicKey() // recipient
 		)
 		.setCreatedAt(createdAt)
-		.addMemo(memo)
+		.addMemo(completeTransactionMemoString)
 		.setVersionNumber(VERSION_STRING)
 		.sign(g_KeyPairs[0])
 		.build();

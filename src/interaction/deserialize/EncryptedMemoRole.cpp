@@ -10,7 +10,10 @@ namespace gradido {
                 if (!encryptedMemo["memo"_f].has_value()) {
                     throw MissingMemberException("missing member on deserialize EncryptedMemo", "memo");
                 }
-                mEncryptedMemo = data::EncryptedMemo(encryptedMemo["type"_f].value(), std::make_shared<memory::Block>(encryptedMemo["memo"_f].value()));
+                mEncryptedMemo = std::move(data::EncryptedMemo(
+                    encryptedMemo["type"_f].value(), 
+                    std::move(memory::Block(encryptedMemo["memo"_f].value()))
+                ));
             }
         }
     }

@@ -32,6 +32,8 @@ namespace memory {
 		Block(Block&& other) noexcept;
 		// also move
 		Block& operator=(Block&& other) noexcept;
+		// also copy
+		Block& operator=(const Block& other);
 
 		~Block();
 
@@ -89,8 +91,8 @@ namespace memory {
 		uint8_t* mData;
 	};
 
-	typedef std::shared_ptr<Block> BlockPtr;
-	typedef std::shared_ptr<const Block> ConstBlockPtr;
+	using BlockPtr = std::shared_ptr<Block>;
+	using ConstBlockPtr = std::shared_ptr<const Block>;
 
 	struct ConstBlockPtrComparator {
 		bool operator()(ConstBlockPtr a, ConstBlockPtr b) const

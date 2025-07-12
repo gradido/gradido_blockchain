@@ -16,7 +16,7 @@ using namespace std;
 TEST(ValidateGradidoDeferredTransferTest, Valid) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(deferredTransferMemo)
+		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
@@ -60,7 +60,7 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoEmpty) {
 TEST(ValidateGradidoDeferredTransferTest, invalidMemoToShort) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(hallMemo)
+		.addMemo(hallMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
@@ -83,7 +83,7 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoToShort) {
 TEST(ValidateGradidoDeferredTransferTest, invalidMemoToBig) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(aFilledMemo) // fill with 451 x a
+		.addMemo(aFilledMemoString) // fill with 451 x a
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
@@ -107,7 +107,7 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoToBig) {
 TEST(ValidateGradidoDeferredTransferTest, InvalidAmountZero) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(deferredTransferMemo)
+		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
@@ -128,7 +128,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidAmountZero) {
 TEST(ValidateGradidoDeferredTransferTest, InvalidAmountNegative) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(deferredTransferMemo)
+		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
@@ -150,7 +150,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityIdIdenticalToBlock
 	std::string communityId = "testGroup";
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(deferredTransferMemo)
+		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
@@ -174,7 +174,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityIdIdenticalToBlock
 TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityId) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(deferredTransferMemo)
+		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
@@ -197,7 +197,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityId) {
 TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutAboveMaxHardLimit) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(deferredTransferMemo)
+		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
@@ -218,7 +218,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutAboveMaxHardLimit) {
 TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutIdenticalToCreatedAt) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(deferredTransferMemo)
+		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
@@ -239,7 +239,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutIdenticalToCreatedAt) {
 TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutBeforeCreatedAt) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(deferredTransferMemo)
+		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(

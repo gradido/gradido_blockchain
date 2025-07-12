@@ -134,7 +134,7 @@ TEST(ValidateGradidoTransaction, validGradidoCreationTransaction)
 {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(creationMemo)
+		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
@@ -154,7 +154,7 @@ TEST(ValidateGradidoTransaction, invalidGradidoCreationTransactionWrongSignature
 {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(creationMemo)
+		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
@@ -174,7 +174,7 @@ TEST(ValidateGradidoTransaction, validGradidoTransferTransaction)
 {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(transferMemo)
+		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
@@ -193,7 +193,7 @@ TEST(ValidateGradidoTransaction, invalidGradidoTransferTransactionWrongSignature
 {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(transferMemo)
+		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
@@ -213,7 +213,7 @@ TEST(ValidateGradidoTransaction, validGradidoDeferredTransferTransaction)
 {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(deferredTransferMemo)
+		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
@@ -236,7 +236,7 @@ TEST(ValidateGradidoTransaction, invalidGradidoDeferredTransferTransactionWrongS
 {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(deferredTransferMemo)
+		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(

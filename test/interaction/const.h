@@ -11,24 +11,10 @@ const auto targetDate = std::chrono::system_clock::from_time_t(1609459000);
 const auto timeout = std::chrono::system_clock::from_time_t(1609465000);
 const auto timeoutDuration = gradido::data::DurationSeconds(std::chrono::months(3));
 
-const auto creationMemo = gradido::data::EncryptedMemo(
-	gradido::data::MemoKeyType::PLAIN, 
-	std::make_shared<memory::Block>("Deine erste Schoepfung ;)")
-);
-const auto transferMemo = gradido::data::EncryptedMemo(
-	gradido::data::MemoKeyType::PLAIN,
-	std::make_shared<memory::Block>("Ich teile mit dir")
-);
-const auto deferredTransferMemo = gradido::data::EncryptedMemo(
-	gradido::data::MemoKeyType::PLAIN, 
-	std::make_shared<memory::Block>("Link zum einloesen")
-);
-const auto aFilledMemo = gradido::data::EncryptedMemo(
-	gradido::data::MemoKeyType::PLAIN, 
-	std::make_shared<memory::Block>(std::string(451, 'a'))
-); // fill with 451 x a
-const auto hallMemo = gradido::data::EncryptedMemo(
-	gradido::data::MemoKeyType::PLAIN,
-	std::make_shared<memory::Block>("hall")
-);
+const auto creationMemoString = "Deine erste Schoepfung ;)";
+const auto transferMemoString = "Ich teile mit dir";
+const auto deferredTransferMemoString = "Link zum einloesen";
+const auto aFilledMemoString = std::string(451, 'a');
+const auto hallMemoString = "hall";
+const auto completeTransactionMemoString = "Danke fuer dein Sein!";
 #endif //__GRADIDO_BLOCKCHAIN_TEST_INTERACTION_CONST_H

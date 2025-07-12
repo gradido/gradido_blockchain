@@ -14,7 +14,7 @@ using namespace std;
 TEST(ValidateGradidoTransferTest, Valid) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(transferMemo)
+		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
@@ -33,7 +33,7 @@ TEST(ValidateGradidoTransferTest, Valid) {
 TEST(ValidateGradidoTransferTest, Outbound) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(transferMemo)
+		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
@@ -74,7 +74,7 @@ TEST(ValidateGradidoTransferTest, invalidMemoEmpty) {
 TEST(ValidateGradidoTransferTest, invalidMemoToShort) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(hallMemo)
+		.addMemo(hallMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
@@ -95,7 +95,7 @@ TEST(ValidateGradidoTransferTest, invalidMemoToShort) {
 TEST(ValidateGradidoTransferTest, invalidMemoToBig) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(aFilledMemo) // fill with 451 x a
+		.addMemo(aFilledMemoString) // fill with 451 x a
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
@@ -118,7 +118,7 @@ TEST(ValidateGradidoTransferTest, invalidMemoToBig) {
 TEST(ValidateGradidoTransferTest, InvalidAmountZero) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(transferMemo)
+		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
@@ -137,7 +137,7 @@ TEST(ValidateGradidoTransferTest, InvalidAmountZero) {
 TEST(ValidateGradidoTransferTest, InvalidAmountNegative) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(transferMemo)
+		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
@@ -158,7 +158,7 @@ TEST(ValidateGradidoTransferTest, InvalidCoinCommunityIdIdenticalToBlockchainCom
 	std::string communityId = "testGroup";
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(transferMemo)
+		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
@@ -180,7 +180,7 @@ TEST(ValidateGradidoTransferTest, InvalidCoinCommunityIdIdenticalToBlockchainCom
 TEST(ValidateGradidoTransferTest, InvalidCoinCommunityId) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(transferMemo)
+		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
@@ -202,7 +202,7 @@ TEST(ValidateGradidoTransferTest, InvalidCoinCommunityId) {
 TEST(ValidateGradidoTransferTest, SenderAndRecipientIdentical) {
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo(transferMemo)
+		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(

@@ -61,6 +61,15 @@ namespace memory {
 		other.mData = nullptr;
 		return *this;
 	}
+	// also copy
+	Block& Block::operator=(const Block& other) {
+		clear();
+		mSize = other.mSize;
+		mData = Manager::getInstance()->getBlock(other.mSize);
+		if (!mData) throw std::bad_alloc();
+		memcpy(mData, other.mData, mSize);
+		return *this;
+	}
 
 	Block::~Block()
 	{

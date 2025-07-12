@@ -26,7 +26,7 @@ using namespace magic_enum;
 using magic_enum::iostream_operators::operator<<;
 
 #define VERSION_STRING "3.4"
-static EncryptedMemo memo(MemoKeyType::PLAIN, std::make_shared<memory::Block>("dummy memo"));
+static EncryptedMemo memo("dummy memo");
 
 Timepoint getPreviousNMonth2(const Timepoint& startDate, int monthsAgo) {
     auto ymd = date::year_month_day(floor<days>(startDate));
@@ -177,7 +177,7 @@ bool InMemoryTest::createGradidoDeferredTransfer(
 
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo({ MemoKeyType::PLAIN, std::make_shared<memory::Block>("dummy memo") })
+		.addMemo(memo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
@@ -204,7 +204,7 @@ bool InMemoryTest::createGradidoRedeemDeferredTransfer(
 
 	GradidoTransactionBuilder builder;
 	builder
-		.addMemo({ MemoKeyType::PLAIN, std::make_shared<memory::Block>("redeem deferred") })
+		.addMemo("redeem deferred")
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setRedeemDeferredTransfer(

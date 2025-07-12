@@ -16,7 +16,10 @@ namespace gradido {
 				TransactionBodyMessage message;	
 				message["memos"_f].reserve(mBody.getMemos().size());
 				for (auto& encryptedMemo : mBody.getMemos()) {
-					message["memos"_f].push_back(EncryptedMemoMessage(encryptedMemo.getKeyType(), encryptedMemo.getMemo()->copyAsVector()));
+					message["memos"_f].push_back(EncryptedMemoMessage(
+						encryptedMemo.getKeyType(), 
+						encryptedMemo.getMemo().copyAsVector()
+					));
 				}
 				message["created_at"_f] = TimestampMessage{ createdAt.getSeconds(), createdAt.getNanos() };
 				message["version_number"_f] = mBody.getVersionNumber();
@@ -162,7 +165,7 @@ namespace gradido {
 										// timestamp						  // enum
 				auto size = 12 + mBody.getVersionNumber().size() + 1 + mBody.getOtherGroup().size() + 3;
 				for (auto& encryptedMemo : mBody.getMemos()) {
-					size += 8 + encryptedMemo.getMemo()->size();
+					size += 8 + encryptedMemo.getMemo().size();
 				}
 				//printf("body base size: %lld\n", size);
 

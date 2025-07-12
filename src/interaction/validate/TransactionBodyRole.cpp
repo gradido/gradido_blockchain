@@ -63,7 +63,7 @@ namespace gradido {
 									if (!isLikelyPlainText(*memo.getMemo())) {
 										LOG_F(ERROR, "plain memo don't seem to be plain!");
 									}
-									auto memoSize = memo.getMemo()->size();
+									auto memoSize = memo.getMemo().size();
 									if (memoSize < 5 || memoSize > 450) {
 										throw TransactionValidationInvalidInputException(
 											"not in expected range [5;450]",
@@ -78,7 +78,7 @@ namespace gradido {
 									if (isLikelyPlainText(*memo.getMemo())) {
 										LOG_F(ERROR, "Attention!! encrypted memo seem to be plain!");
 									}
-									auto memoSize = memo.getMemo()->size() - 32;
+									auto memoSize = memo.getMemo().size() - 32;
 									if (memoSize < 5 || memoSize > 450) {
 										throw TransactionValidationInvalidInputException(
 											"not in expected range [5;450]",

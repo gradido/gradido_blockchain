@@ -20,9 +20,9 @@ namespace gradido {
 					Value memo(kObjectType);
 					memo.AddMember("type", Value(enum_name(encryptedMemo.getKeyType()).data(), alloc), alloc);
 					if (MemoKeyType::PLAIN == encryptedMemo.getKeyType()) {
-						memo.AddMember("memo", Value(encryptedMemo.getMemo()->copyAsString().data(), alloc), alloc);
+						memo.AddMember("memo", Value(encryptedMemo.getMemo().copyAsString().data(), alloc), alloc);
 					} else {
-						memo.AddMember("memo", Value(encryptedMemo.getMemo()->convertToBase64().data(), alloc), alloc);
+						memo.AddMember("memo", Value(encryptedMemo.getMemo().convertToBase64().data(), alloc), alloc);
 					}
 					memos.PushBack(memo, alloc);
 				}
