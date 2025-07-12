@@ -12,7 +12,7 @@ namespace gradido {
 		public:
 			TransferAmount(
 				memory::ConstBlockPtr pubkeyPtr,
-				GradidoUnit amount,
+				const GradidoUnit& amount,
 				const std::string& communityId = ""
 			);
 			~TransferAmount() {}

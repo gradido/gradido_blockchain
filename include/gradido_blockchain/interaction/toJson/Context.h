@@ -21,6 +21,14 @@ namespace gradido {
 				Context(const blockchain::Filter& filter)
 					: mRole(std::make_unique<FilterRole>(filter)) {}
 
+				// move constructor & assignment
+				Context(Context&&) noexcept = default;
+				Context& operator=(Context&&) noexcept = default;
+
+				// delete copy constructor & assignment
+				Context(const Context&) = delete;
+				Context& operator=(const Context&) = delete;
+
 				inline std::string run(bool pretty = false) const { return mRole->run(pretty);}
 				//! use this if you like to add this json to you own json tree
 				inline rapidjson::Value run(rapidjson::Document& rootJson) const { return mRole->composeJson(rootJson); }

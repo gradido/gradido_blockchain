@@ -1,6 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_PROTOPUF_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_PROTOPUF_H
 
+#include <string>
 #include <bit>
 #include "protopuf/message.h"
 
