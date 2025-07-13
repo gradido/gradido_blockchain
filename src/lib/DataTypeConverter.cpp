@@ -296,16 +296,19 @@ namespace DataTypeConverter
 
 		std::ostringstream fmt;
 		if (days.count() != 0) {
-			fmt << days.count() << " days ";
+			fmt << days.count() << " days";
 		}
 		if (hours.count() != 0) {
-			fmt << hours.count() << " hours ";
+			if(fmt.tellp() > 0) fmt << " ";
+			fmt << hours.count() << " hours";
 		}
 		if (minutes.count() != 0) {
-			fmt << minutes.count() << " minutes ";
+			if(fmt.tellp() > 0) fmt << " ";
+			fmt << minutes.count() << " minutes";
 		}
 		if (seconds.count() != 0) {
-			fmt << seconds.count() << " seconds ";
+			if(fmt.tellp() > 0) fmt << " ";
+			fmt << seconds.count() << " seconds";
 		}
 
 		return fmt.str();

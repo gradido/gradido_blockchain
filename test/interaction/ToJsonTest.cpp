@@ -141,7 +141,7 @@ TEST(ToJsonTest, GradidoDeferredTransferBody) {
 
 	auto json = c.run();
 	// printf("json: %s\n", json.data());
-	EXPECT_EQ(json, "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Link zum einloesen\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.4\",\"type\":\"LOCAL\",\"deferredTransfer\":{\"transfer\":{\"sender\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":\"555.5500\"},\"recipient\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\"},\"timeout\":\"1 hours 36 minutes 24 seconds \"}}");
+	EXPECT_EQ(json, "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Link zum einloesen\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.4\",\"type\":\"LOCAL\",\"deferredTransfer\":{\"transfer\":{\"sender\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":\"555.5500\"},\"recipient\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\"},\"timeout\":\"1 hours 36 minutes 24 seconds\"}}");
 }
 
 TEST(ToJsonTest, CommunityFriendsUpdateBody) {
