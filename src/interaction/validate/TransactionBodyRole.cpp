@@ -60,7 +60,7 @@ namespace gradido {
 							}
 							for (auto& memo : mBody.getMemos()) {
 								if (MemoKeyType::PLAIN == memo.getKeyType()) {
-									if (!isLikelyPlainText(*memo.getMemo())) {
+									if (!isLikelyPlainText(memo.getMemo())) {
 										LOG_F(ERROR, "plain memo don't seem to be plain!");
 									}
 									auto memoSize = memo.getMemo().size();
@@ -75,7 +75,7 @@ namespace gradido {
 									}
 								}
 								else {
-									if (isLikelyPlainText(*memo.getMemo())) {
+									if (isLikelyPlainText(memo.getMemo())) {
 										LOG_F(ERROR, "Attention!! encrypted memo seem to be plain!");
 									}
 									auto memoSize = memo.getMemo().size() - 32;
