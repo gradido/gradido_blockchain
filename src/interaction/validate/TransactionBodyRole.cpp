@@ -148,6 +148,11 @@ namespace gradido {
 					if (blockchain) {
 						// check if redeem is inside the timeout of deferred transfer
 						auto deferredTransferEntry = blockchain->getTransactionForId(redeemDeferredTransfer->getDeferredTransferTransactionNr());
+						if (!deferredTransferEntry) {
+							throw GradidoBlockchainTransactionNotFoundException(
+								"could'n find deferred transfer transaction for redeem deferred transfer"
+							).setTransactionId(redeemDeferredTransfer->getDeferredTransferTransactionNr());
+						}
 						auto deferredTransferConfirmedAt = deferredTransferEntry->getConfirmedTransaction()->getConfirmedAt().getAsTimepoint();
 						auto deferredTransferBody = deferredTransferEntry->getTransactionBody();
 						if (!deferredTransferBody || !deferredTransferBody->isDeferredTransfer()) {
