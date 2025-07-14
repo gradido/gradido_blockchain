@@ -6,7 +6,7 @@
 	url = https://github.com/Tencent/rapidjson.git
 [submodule "gradido_protocol"]
 	path = gradido_protocol
-	url = git@github.com:gradido/gradido_protocol.git
+	url = https://github.com/gradido/gradido_protocol.git
 [submodule "doc/doxygen_awesome_css"]
 	path = doc/doxygen_awesome_css
 	url = https://github.com/jothepro/doxygen-awesome-css.git
