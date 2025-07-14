@@ -10,7 +10,7 @@ using namespace magic_enum;
 namespace gradido {
     namespace data {
         EncryptedMemo::EncryptedMemo(const std::string& memo, const AuthenticatedEncryption& communityKeyPair)
-         : mKeyType(MemoKeyType::COMMUNITY_SECRET), mMemo(std::move(SealedBoxes::encrypt(communityKeyPair, memo)))
+         : mKeyType(MemoKeyType::COMMUNITY_SECRET), mMemo(std::make_shared<memory::Block>(SealedBoxes::encrypt(communityKeyPair, memo)))
         {
             
         }
@@ -22,16 +22,16 @@ namespace gradido {
         ) : mKeyType(MemoKeyType::SHARED_SECRET), mMemo(0)
         {
             if (firstKeyPair.hasPrivateKey()) {
-                mMemo = std::move(firstKeyPair.encrypt(memo, secondKeyPair));
+                mMemo = std::make_shared<memory::Block>(firstKeyPair.encrypt(memo, secondKeyPair));
             }
             else {
-                mMemo = std::move(secondKeyPair.encrypt(memo, firstKeyPair));
+                mMemo = std::make_shared<memory::Block>(secondKeyPair.encrypt(memo, firstKeyPair));
             }
         }
 
         std::string EncryptedMemo::decrypt(const AuthenticatedEncryption& communityKeyPair) const
         {
-            return SealedBoxes::decrypt(communityKeyPair, mMemo);
+            return SealedBoxes::decrypt(communityKeyPair, *mMemo);
         }
 
         std::string EncryptedMemo::decrypt(
@@ -40,10 +40,10 @@ namespace gradido {
         ) const 
         {
             if (firstKeyPair.hasPrivateKey()) {
-                return firstKeyPair.decrypt(mMemo, secondKeyPair).copyAsString();
+                return firstKeyPair.decrypt(*mMemo, secondKeyPair).copyAsString();
             }
             else {
-                return secondKeyPair.decrypt(mMemo, firstKeyPair).copyAsString();
+                return secondKeyPair.decrypt(*mMemo, firstKeyPair).copyAsString();
             }
         }
     }

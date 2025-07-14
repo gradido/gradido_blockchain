@@ -26,7 +26,7 @@ namespace gradido {
 
 			TransactionValidationException& TransactionValidationException::setTransactionBody(const data::TransactionBody& transactionBody)
 			{
-				auto memos = transactionBody.getMemos();
+				const auto& memos = transactionBody.getMemos();
 				for (const auto& memo : memos) {
 					if (memo.getKeyType() == data::MemoKeyType::PLAIN) {
 						mTransactionMemo = memo.getMemo().copyAsString();
