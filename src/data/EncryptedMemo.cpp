@@ -2,7 +2,9 @@
 #include "gradido_blockchain/data/EncryptedMemo.h"
 #include "gradido_blockchain/crypto/AuthenticatedEncryption.h"
 #include "gradido_blockchain/crypto/SealedBoxes.h"
+#include "gradido_blockchain/const.h"
 
+#include "miniz.h"
 #include "magic_enum/magic_enum.hpp"
 
 using namespace magic_enum;

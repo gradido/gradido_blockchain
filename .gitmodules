@@ -31,3 +31,6 @@
 [submodule "dependencies/fkYAML"]
 	path = dependencies/fkYAML
 	url = https://github.com/fktn-k/fkYAML.git
+[submodule "dependencies/miniz"]
+	path = dependencies/miniz
+	url = https://github.com/richgel999/miniz.git
