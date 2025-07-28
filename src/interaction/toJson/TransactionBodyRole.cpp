@@ -18,7 +18,8 @@ namespace gradido {
 				Value memos(kArrayType);
 				for (auto& encryptedMemo : mBody.getMemos()) {
 					Value memo(kObjectType);
-					memo.AddMember("type", Value(enum_name(encryptedMemo.getKeyType()).data(), alloc), alloc);
+					auto typeName = enum_name(encryptedMemo.getKeyType());
+					memo.AddMember("type", Value(typeName.data(), typeName.size(), alloc), alloc);
 					if (MemoKeyType::PLAIN == encryptedMemo.getKeyType()) {
 						memo.AddMember("memo", Value(encryptedMemo.getMemo().copyAsString().data(), alloc), alloc);
 					} else {
@@ -30,7 +31,8 @@ namespace gradido {
 				// d.AddMember("memo", Value(mBody.getMemo().data(), alloc), alloc);
 				d.AddMember("createdAt", Value(DataTypeConverter::timePointToString(mBody.getCreatedAt()).data(), alloc), alloc);
 				d.AddMember("versionNumber", Value(mBody.getVersionNumber().data(), alloc), alloc);
-				d.AddMember("type", Value(enum_name(mBody.getType()).data(), alloc), alloc);
+				auto bodyTypeName = enum_name(mBody.getType());
+				d.AddMember("type", Value(bodyTypeName.data(), bodyTypeName.size(), alloc), alloc);
 				if (!mBody.getOtherGroup().empty()) {
 					d.AddMember("otherGroup", Value(mBody.getOtherGroup().data(), alloc), alloc);
 				}
@@ -55,7 +57,8 @@ namespace gradido {
 					if (registerAddress->getUserPublicKey()) {
 						v.AddMember("userPubkey", Value(registerAddress->getUserPublicKey()->convertToHex().data(), alloc), alloc);
 					}
-					v.AddMember("addressType", Value(enum_name(registerAddress->getAddressType()).data(), alloc), alloc);
+					auto addressTypeName = enum_name(registerAddress->getAddressType());
+					v.AddMember("addressType", Value(addressTypeName.data(), addressTypeName.size(), alloc), alloc);
 					if (registerAddress->getNameHash()) {
 						v.AddMember("nameHash", Value(registerAddress->getNameHash()->convertToHex().data(), alloc), alloc);
 					}

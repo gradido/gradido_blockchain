@@ -6,9 +6,11 @@
 
 /*
 * Wrapper for using miniz for compressing with memory::Block
+*  
 */
-
+// It will return only the compressed version, when it is smaller than original, else plain will be returned
 GRADIDOBLOCKCHAIN_EXPORT memory::Block compress(const memory::Block& plain);
+// check input for 0x78DA (zlib header) if not found, assume compressed is already plain and simply return it
 GRADIDOBLOCKCHAIN_EXPORT memory::Block decompress(const memory::Block& compressed);
 
 class GradidoMinizCompressException : GradidoBlockchainException

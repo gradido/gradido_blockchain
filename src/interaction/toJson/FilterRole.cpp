@@ -19,7 +19,8 @@ namespace gradido {
         if(mFilter.involvedPublicKey) {
           d.AddMember("involvedPublicKey", Value(mFilter.involvedPublicKey->convertToHex().data(), alloc), alloc);
         }
-        d.AddMember("searchDirection", Value(enum_name(mFilter.searchDirection).data(), alloc), alloc);
+        auto searchDirectionName = enum_name(mFilter.searchDirection);
+        d.AddMember("searchDirection", Value(searchDirectionName.data(), searchDirectionName.size(), alloc), alloc);
         Value pagination(kObjectType);
         pagination.AddMember("size", mFilter.pagination.size, alloc);
         pagination.AddMember("page", mFilter.pagination.page, alloc);
@@ -38,7 +39,8 @@ namespace gradido {
           alloc
         );
         d.AddMember("timepointInterval", timepointInterval, alloc);
-        d.AddMember("transactionType", Value(enum_name(mFilter.transactionType).data(), alloc), alloc);
+        auto transactionType = enum_name(mFilter.transactionType);
+        d.AddMember("transactionType", Value(transactionType.data(), transactionType.size(), alloc), alloc);
 
         return d;
       }

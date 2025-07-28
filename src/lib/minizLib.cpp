@@ -2,8 +2,11 @@
 #include "gradido_blockchain/const.h"
 
 #include "miniz.h"
+#include "tinf/src/tinf.h"
 
 using namespace rapidjson;
+// 78DA is zlib Header on maximal kompression level without custom dictionary
+static const uint8_t zlibHeaderData[] = { 0x78, 0xDA };
 
 std::string getContentPart(const memory::Block& content) {
     if (content.size() < 6) {
@@ -19,6 +22,9 @@ std::string getContentPart(const memory::Block& content) {
 
 memory::Block compress(const memory::Block& plain)
 {
+    if (plain.size() < GRADIDO_ENCRYPTED_MEMO_COMPRESSION_DEFAULT_SKIP_SIZE_BYTES) {
+        return plain;
+    }
     auto maxExpectedSize = compressBound(plain.size());
     size_t bufferSize = maxExpectedSize;
     // use if possible default buffer size to reduce memory allocation overhead
@@ -26,17 +32,23 @@ memory::Block compress(const memory::Block& plain)
         bufferSize = GRADIDO_ENCRYPTED_MEMO_COMPRESSION_DEFAULT_BUFFER_BYTES;
     }
     memory::Block buffer(bufferSize);
-    mz_ulong compressedSize = 0;
+    mz_ulong compressedSize = bufferSize;
     // status can be MZ_PARAM_ERROR, MZ_BUF_ERROR, MZ_STREAM_ERROR, MZ_OK
     auto status = compress2(buffer, &compressedSize, plain, plain.size(), 10);
     if (MZ_OK != status) {
         throw GradidoMinizCompressException(getContentPart(plain), status, plain.size(), bufferSize);
+    }
+    if (plain.size() <= compressedSize) {
+        return plain;
     }
     return memory::Block(compressedSize, buffer);
 }
 
 memory::Block decompress(const memory::Block& compressed)
 {
+    if (0 != std::memcmp(compressed, zlibHeaderData, 2)) {
+        return compressed;
+    }
     size_t bufferSize = GRADIDO_ENCRYPTED_MEMO_COMPRESSION_DEFAULT_BUFFER_BYTES;
     memory::Block buffer(bufferSize);
     // status can be: 
@@ -44,14 +56,16 @@ memory::Block decompress(const memory::Block& compressed)
     // MZ_PARAM_ERROR
     // MZ_OK
     // MZ_STREAM_ERROR
-    mz_ulong uncompressedSize = bufferSize;
-    auto status = uncompress(buffer, &uncompressedSize, compressed, compressed.size());
+    unsigned int uncompressedSize = bufferSize;
+    auto status = tinf_zlib_uncompress(buffer, &uncompressedSize, compressed, compressed.size());
+    // auto status = uncompress(buffer, &uncompressedSize, compressed, compressed.size());
     // if buffer is to small, try again with 2x Default buffer
     if (status == MZ_BUF_ERROR) {
         bufferSize *= 2;
         uncompressedSize = bufferSize;
         buffer = memory::Block(bufferSize);
-        status = uncompress(buffer, &uncompressedSize, compressed, compressed.size());
+        //status = uncompress(buffer, &uncompressedSize, compressed, compressed.size());
+        status = tinf_zlib_uncompress(buffer, &uncompressedSize, compressed, compressed.size());
     }
     if (MZ_OK != status) {
         throw GradidoMinizDecompressException(status);

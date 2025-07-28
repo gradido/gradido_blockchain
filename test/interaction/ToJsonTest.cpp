@@ -90,7 +90,8 @@ TEST(ToJsonTest, GradidoCreationBody) {
 	auto transaction = builder.build();
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body->isCreation());
-
+	EXPECT_EQ(body->getMemos().size(), 1);
+	EXPECT_TRUE(body->getMemos()[0].isPlain());
 	toJson::Context c(*body);
 	auto json = c.run();
 	// printf("json: %s\n", json.data());
