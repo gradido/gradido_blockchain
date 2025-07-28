@@ -8,8 +8,10 @@
 * Wrapper for using miniz for compressing with memory::Block
 *  
 */
+// Compress with miniz
 // It will return only the compressed version, when it is smaller than original, else plain will be returned
 GRADIDOBLOCKCHAIN_EXPORT memory::Block compress(const memory::Block& plain);
+// Uncompross with tinf (because it is a lot faster in uncompressing as miniz)
 // check input for 0x78DA (zlib header) if not found, assume compressed is already plain and simply return it
 GRADIDOBLOCKCHAIN_EXPORT memory::Block decompress(const memory::Block& compressed);
 
@@ -36,18 +38,18 @@ protected:
 };
 
 
-class GradidoMinizDecompressException : GradidoBlockchainException
+class GradidoTinfDecompressException : GradidoBlockchainException
 {
 public:
     /*
     * \param contentPart: only put a part from content for privacy reasons
     */
-    explicit GradidoMinizDecompressException(int minizStatus) noexcept;
+    explicit GradidoTinfDecompressException(int tinfStatus) noexcept;
     std::string getFullString() const;
     rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 
 protected:
-    std::string mMinizStatusName;
+    std::string mTinfStatusName;
 };
 
 

@@ -52,23 +52,21 @@ memory::Block decompress(const memory::Block& compressed)
     size_t bufferSize = GRADIDO_ENCRYPTED_MEMO_COMPRESSION_DEFAULT_BUFFER_BYTES;
     memory::Block buffer(bufferSize);
     // status can be: 
-    // MZ_BUF_ERROR // output not large enough MZ_DATA_ERROR
-    // MZ_PARAM_ERROR
-    // MZ_OK
-    // MZ_STREAM_ERROR
+    // TINF_OK
+    // TINF_BUF_ERROR
+    // TINF_DATA_ERROR
     unsigned int uncompressedSize = bufferSize;
     auto status = tinf_zlib_uncompress(buffer, &uncompressedSize, compressed, compressed.size());
-    // auto status = uncompress(buffer, &uncompressedSize, compressed, compressed.size());
+
     // if buffer is to small, try again with 2x Default buffer
-    if (status == MZ_BUF_ERROR) {
+    if (status == TINF_DATA_ERROR) {
         bufferSize *= 2;
         uncompressedSize = bufferSize;
         buffer = memory::Block(bufferSize);
-        //status = uncompress(buffer, &uncompressedSize, compressed, compressed.size());
         status = tinf_zlib_uncompress(buffer, &uncompressedSize, compressed, compressed.size());
     }
-    if (MZ_OK != status) {
-        throw GradidoMinizDecompressException(status);
+    if (TINF_OK != status) {
+        throw GradidoTinfDecompressException(status);
     }
     return memory::Block(uncompressedSize, buffer);
 }
@@ -80,6 +78,15 @@ const char* getMinizStatusName(int status) {
     case MZ_DATA_ERROR: return "data error";
     case MZ_STREAM_ERROR: return "stream error";
     case MZ_OK: return "ok";
+    default: return "unknown";
+    }
+}
+
+const char* getTinfStatusName(int status) {
+    switch (status) {
+    case TINF_DATA_ERROR: return "data error";
+    case TINF_BUF_ERROR: return "buf error";
+    case TINF_OK: return "ok";
     default: return "unknown";
     }
 }
@@ -118,23 +125,23 @@ rapidjson::Value GradidoMinizCompressException::getDetails(rapidjson::Document::
     return result;
 }
 
-GradidoMinizDecompressException::GradidoMinizDecompressException(int minizStatus) noexcept
-    : GradidoBlockchainException("error while uncompressing with miniz"), mMinizStatusName(getMinizStatusName(minizStatus))
+GradidoTinfDecompressException::GradidoTinfDecompressException(int tinfStatus) noexcept
+    : GradidoBlockchainException("error while uncompressing with tinf"), mTinfStatusName(getTinfStatusName(tinfStatus))
 {
 
 }
 
-std::string GradidoMinizDecompressException::getFullString() const
+std::string GradidoTinfDecompressException::getFullString() const
 {
     std::string result = what();
-    result += ", status: " + mMinizStatusName;
+    result += ", status: " + mTinfStatusName;
     return result;
 }
 
-rapidjson::Value GradidoMinizDecompressException::getDetails(rapidjson::Document::AllocatorType& alloc) const
+rapidjson::Value GradidoTinfDecompressException::getDetails(rapidjson::Document::AllocatorType& alloc) const
 {
     Value result(kObjectType);
     result.AddMember("what", Value(what(), alloc), alloc);
-    result.AddMember("status", Value(mMinizStatusName.data(), mMinizStatusName.size(), alloc), alloc);
+    result.AddMember("status", Value(mTinfStatusName.data(), mTinfStatusName.size(), alloc), alloc);
     return result;
 }
