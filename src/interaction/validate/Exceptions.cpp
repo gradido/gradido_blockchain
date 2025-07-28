@@ -316,7 +316,8 @@ namespace gradido {
 			{
 				Value detailsObjs(kObjectType);
 				detailsObjs.AddMember("what", Value(what(), alloc), alloc);
-				detailsObjs.AddMember("addressType", Value(enum_name(mAddressType).data(), alloc), alloc);
+				auto addressTypeName = enum_name(mAddressType);
+				detailsObjs.AddMember("addressType", Value(addressTypeName.data(), addressTypeName.size(), alloc), alloc);
 				detailsObjs.AddMember("address", Value(mAddressHex.data(), alloc), alloc);
 				return std::move(detailsObjs);
 			}
@@ -393,7 +394,7 @@ namespace gradido {
 				jsonDetails.AddMember("what", Value(what(), alloc), alloc);
 
 				auto addressTypeName = enum_name(mType);
-				jsonDetails.AddMember("addressType", Value(addressTypeName.data(), alloc), alloc);
+				jsonDetails.AddMember("addressType", Value(addressTypeName.data(), addressTypeName.size(), alloc), alloc);
 				return std::move(jsonDetails);
 			}
 		}

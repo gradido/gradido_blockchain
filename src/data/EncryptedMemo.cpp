@@ -2,17 +2,16 @@
 #include "gradido_blockchain/data/EncryptedMemo.h"
 #include "gradido_blockchain/crypto/AuthenticatedEncryption.h"
 #include "gradido_blockchain/crypto/SealedBoxes.h"
-
-#include "magic_enum/magic_enum.hpp"
-
-using namespace magic_enum;
+#include "gradido_blockchain/const.h"
+#include "gradido_blockchain/lib/minizLib.h"
 
 namespace gradido {
     namespace data {
         EncryptedMemo::EncryptedMemo(const std::string& memo, const AuthenticatedEncryption& communityKeyPair)
-         : mKeyType(MemoKeyType::COMMUNITY_SECRET), mMemo(std::make_shared<memory::Block>(SealedBoxes::encrypt(communityKeyPair, memo)))
+         : mKeyType(MemoKeyType::COMMUNITY_SECRET), mMemo(0)
         {
-            
+            auto compressedMemo = compress(memo);
+            mMemo = std::make_shared<memory::Block>(SealedBoxes::encrypt(communityKeyPair, compressedMemo.copyAsString()));
         }
 
         EncryptedMemo::EncryptedMemo(
@@ -21,17 +20,18 @@ namespace gradido {
             const AuthenticatedEncryption& secondKeyPair
         ) : mKeyType(MemoKeyType::SHARED_SECRET), mMemo(0)
         {
+            auto compressedMemo = compress(memo);
             if (firstKeyPair.hasPrivateKey()) {
-                mMemo = std::make_shared<memory::Block>(firstKeyPair.encrypt(memo, secondKeyPair));
+                mMemo = std::make_shared<memory::Block>(firstKeyPair.encrypt(compressedMemo, secondKeyPair));
             }
             else {
-                mMemo = std::make_shared<memory::Block>(secondKeyPair.encrypt(memo, firstKeyPair));
+                mMemo = std::make_shared<memory::Block>(secondKeyPair.encrypt(compressedMemo, firstKeyPair));
             }
         }
 
         std::string EncryptedMemo::decrypt(const AuthenticatedEncryption& communityKeyPair) const
         {
-            return SealedBoxes::decrypt(communityKeyPair, *mMemo);
+            return decompress(SealedBoxes::decrypt(communityKeyPair, *mMemo)).copyAsString();
         }
 
         std::string EncryptedMemo::decrypt(
@@ -39,12 +39,14 @@ namespace gradido {
             const AuthenticatedEncryption& secondKeyPair
         ) const 
         {
+            memory::Block compressedMemo(0);
             if (firstKeyPair.hasPrivateKey()) {
-                return firstKeyPair.decrypt(*mMemo, secondKeyPair).copyAsString();
+                compressedMemo = firstKeyPair.decrypt(*mMemo, secondKeyPair);
             }
             else {
-                return secondKeyPair.decrypt(*mMemo, firstKeyPair).copyAsString();
+                compressedMemo = secondKeyPair.decrypt(*mMemo, firstKeyPair);
             }
+            return decompress(compressedMemo).copyAsString();
         }
     }
 }

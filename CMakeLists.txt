@@ -178,11 +178,13 @@ include_directories(
 	"dependencies"
 	"dependencies/date/include"
 	"dependencies/fkYAML/single_include"
-	"dependencies/furi/code/"
+	"dependencies/furi/code"
 	"dependencies/magic_enum/include"
 	"dependencies/protopuf/include"
 	"dependencies/rapidjson/include"
-	"dependencies/tinf/src/" 
+	"dependencies/tinf/src" 
+	"dependencies/miniz"
+	"build/dependencies/miniz"
 	"include"
 )
 
@@ -217,13 +219,16 @@ set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(dependencies/loguru)
 set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP})
 add_subdirectory(dependencies/fkYAML)
+# Set the policy default before adding the third-party directory
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+add_subdirectory(dependencies/miniz)
 
 ######################################################################
 
 add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
-target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML)
+target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz)
 IF(WIN32) 
 	if(openssl_FOUND) 
 		target_link_libraries(GradidoBlockchain openssl::openssl)
