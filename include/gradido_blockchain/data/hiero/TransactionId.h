@@ -56,7 +56,11 @@ namespace hiero {
 	class GRADIDOBLOCKCHAIN_EXPORT TransactionId
 	{
 	public: 
+		TransactionId();
 		TransactionId(const gradido::data::Timestamp& transactionValidStart, const AccountId& accountId);
+		//! expect string in format 0.0.2-17281772-21022 or 0.0.256009@1755503343.736000193
+		//! sharedNum.realmNum.accountNum-seconds-nanoseconds
+		TransactionId(const std::string& transactionIdString);
 		~TransactionId();
 		inline void setScheduled();
 		inline void setNonce(int32_t nonce);
@@ -66,6 +70,8 @@ namespace hiero {
 		inline bool isScheduled() const { return mScheduled; }
 		inline int32_t getNonce() const { return mNonce; }
 
+		//! format in hedera block explorer format: 0.0.256009@1755503343.736000193
+		//! ignore scheduled and nonce completly
 		std::string toString();
 	protected:
 		gradido::data::Timestamp mTransactionValidStart;
@@ -76,16 +82,6 @@ namespace hiero {
 
 
 	// --------------------------------  inline implementations ------------------------------------------------
-	TransactionId::TransactionId(const gradido::data::Timestamp& transactionValidStart, const AccountId& accountId)
-		: mTransactionValidStart(transactionValidStart), mAccountId(accountId), mScheduled(false), mNonce(0) {
-
-	}
-
-	TransactionId::~TransactionId() {
-
-	}
-
-
 	void TransactionId::setScheduled() {
 		mScheduled = true;
 	}

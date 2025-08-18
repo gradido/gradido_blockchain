@@ -1,32 +1,26 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_HIERO_ACCOUNT_ID_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_HIERO_ACCOUNT_ID_ROLE_H
 
-#include "AbstractRole.h"
+#include "gradido_blockchain/data/hiero/AccountId.h"
 #include "Protopuf.h"
+#include <memory>
 
-namespace hiero {
-	class AccountId;
-}
-
-namespace gradido {	
-	namespace interaction {
-		namespace serialize {
-
-			class HieroAccountIdRole : public AbstractRole
-			{
-			public:
-				HieroAccountIdRole(const hiero::AccountId& accountId) : mAccountId(accountId) {}
-				~HieroAccountIdRole() {};
-
-				RUM_IMPLEMENTATION
-				HieroAccountIdMessage getMessage() const;
-				size_t calculateSerializedSize() const;
-
-			protected:
-				const hiero::AccountId& mAccountId;
-			};
-		}
-	}
+namespace gradido {
+    namespace interaction {
+        namespace deserialize {
+            class HieroAccountIdRole
+            {
+            public:
+                HieroAccountIdRole(const HieroAccountIdMessage& hieroAccountId);
+                ~HieroAccountIdRole();
+                
+                inline operator const hiero::AccountId& () const { return mAccountId; }
+                inline const hiero::AccountId& data() const { return mAccountId; }
+            protected:
+                hiero::AccountId mAccountId;
+            };
+        }
+    }
 }
 
 #endif // __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_HIERO_ACCOUNT_ID_ROLE_H

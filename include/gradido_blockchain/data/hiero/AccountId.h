@@ -84,16 +84,29 @@ namespace hiero {
 	class GRADIDOBLOCKCHAIN_EXPORT AccountId
 	{
 	public:
+		AccountId();
 		AccountId(int64_t shardNum, int64_t realmNum, int64_t accountNum);
+		// copy alias
 		AccountId(int64_t shardNum, int64_t realmNum, const memory::Block& alias);
+		// move alias
+		AccountId(int64_t shardNum, int64_t realmNum, memory::Block&& alias);
+		//! expect string like 0.0.2
+		//! can also parse string like 0.0.2-1321201-212122 for example a transaction id, will ignore everything after the third number
+		AccountId(const std::string& accountIdString);
 		~AccountId();
+
+		// default constructor and operators
+		AccountId(const AccountId& other) = default;
+		AccountId(AccountId&& other) noexcept = default;
+		AccountId& operator=(const AccountId& other) = default;
+		AccountId& operator=(AccountId&& other) noexcept = default;
 
 		int64_t getShardNum() const { return mShardNum;  }
 		int64_t getRealmNum() const { return mRealmNum;  }
 		int64_t getAccountNum() const { return mAccountNum; }
 		const memory::Block& getAlias() const { return mAlias; }
 
-		std::string toString();
+		std::string toString() const;
 		
 	protected:
 		int64_t mShardNum;
@@ -101,25 +114,7 @@ namespace hiero {
 		int64_t mAccountNum; 
 		memory::Block mAlias;
 	};
-
-	// --------------------------------  inline implementations ------------------------------------------------
-
-	AccountId::AccountId(int64_t shardNum, int64_t realmNum, int64_t accountNum)
-		: mShardNum(shardNum), mRealmNum(realmNum), mAccountNum(accountNum), mAlias(memory::Block(0))
-	{
-
-	}
-
-	AccountId::AccountId(int64_t shardNum, int64_t realmNum, const memory::Block& alias)
-		: mShardNum(shardNum), mRealmNum(realmNum), mAccountNum(0), mAlias(alias)
-	{
-
-	}
-
-	AccountId::~AccountId()
-	{
-
-	}
+	
 }
 
 #endif // __GRADIDO_BLOCKCHAIN_DATA_HIERO_ACCOUNT_ID

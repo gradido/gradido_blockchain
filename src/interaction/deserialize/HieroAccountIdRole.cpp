@@ -1,35 +1,33 @@
-#include "gradido_blockchain/interaction/serialize/HieroAccountIdRole.h"
-#include "gradido_blockchain/data/hiero/AccountId.h"
+#include "gradido_blockchain/interaction/deserialize/HieroAccountIdRole.h"
+#include "gradido_blockchain/interaction/deserialize/Exceptions.h"
 
 namespace gradido {
-	namespace interaction {
-		namespace serialize {
-			HieroAccountIdMessage HieroAccountIdRole::getMessage() const
-			{
-				HieroAccountIdMessage message;
-				message["shardNum"_f] = mAccountId.getShardNum();
-				message["realmNum"_f] = mAccountId.getRealmNum();
-				if (!mAccountId.getAlias().isEmpty()) {
-					message["alias"_f] = mAccountId.getAlias().copyAsVector();
-				}
-				else {
-					message["accountNum"_f] = mAccountId.getAccountNum();
-				}
-				return message;
-			}
+    namespace interaction {
+        namespace deserialize {
+            HieroAccountIdRole::HieroAccountIdRole(const HieroAccountIdMessage& hieroAccountId)
+            {
+                int64_t shardNum = 0;
+                int64_t realmNum = 0;
+                if (hieroAccountId["shardNum"_f].has_value()) {
+                    shardNum = hieroAccountId["shardNum"_f].value();
+                }
+                if (hieroAccountId["realmNum"_f].has_value()) {
+                    realmNum = hieroAccountId["realmNum"_f].value();
+                }
+                if (hieroAccountId["accountNum"_f].has_value()) {
+                    mAccountId = hiero::AccountId(shardNum, realmNum, hieroAccountId["accountNum"_f].value());
+                }
+                else if (hieroAccountId["alias"_f].has_value()) {
+                    auto alias = memory::Block(hieroAccountId["alias"_f].value());
+                    mAccountId = hiero::AccountId(shardNum, realmNum, std::move(alias));
+                }
+                throw MissingMemberException("either accountNum or alias must be set", "hiero::AccountId");
+            }
 
-			size_t HieroAccountIdRole::calculateSerializedSize() const
-			{
-				size_t size = 2 * 9 + 2;
-				if (!mAccountId.getAlias().isEmpty()) {
-					size += mAccountId.getAlias().size();
-				}
-				else {
-					size += 9;
-				}
-				//printf("calculated signature map size: %lld\n", size);
-				return size;
-			}
-		}
-	}
+            HieroAccountIdRole::~HieroAccountIdRole()
+            {
+
+            }
+        }
+    }
 }

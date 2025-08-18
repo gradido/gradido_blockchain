@@ -1,30 +1,24 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_HIERO_TRANSACTION_ID_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_HIERO_TRANSACTION_ID_ROLE_H
 
-#include "AbstractRole.h"
 #include "Protopuf.h"
-
-namespace hiero {
-	class TransactionId;
-}
+#include "gradido_blockchain/data/hiero/TransactionId.h"
 
 namespace gradido {
 	namespace interaction {
-		namespace serialize {
+		namespace deserialize {
 
-			class HieroTransactionIdRole : public AbstractRole
-			{
-			public:
-				HieroTransactionIdRole(const hiero::TransactionId& transactionId) : mTransactionId(transactionId) {}
-				~HieroTransactionIdRole() {};
+            class HieroTransactionIdRole
+            {
+            public:
+                HieroTransactionIdRole(const HieroTransactionIdMessage& hieroTransactionId);
+                ~HieroTransactionIdRole();
 
-				RUM_IMPLEMENTATION
-				HieroTransactionIdMessage getMessage() const;
-				size_t calculateSerializedSize() const;
-
-			protected:
-				const hiero::TransactionId& mTransactionId;
-			};
+                inline operator const hiero::TransactionId& () const { return mTransactionId; }
+                inline const hiero::TransactionId& data() const { return mTransactionId; }
+            protected:
+                hiero::TransactionId mTransactionId;
+            };
 		}
 	}
 }

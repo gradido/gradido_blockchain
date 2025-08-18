@@ -22,6 +22,7 @@ FILE(GLOB TEST_INTERACTION "interaction/*.cpp" "interaction/*.h")
 FILE(GLOB TEST_LIB "lib/*.cpp" "lib/*.h")
 FILE(GLOB TEST_MAIN "*.cpp" "*.h")
 FILE(GLOB TEST_DATA "data/*.cpp" "data/*.h")
+FILE(GLOB TEST_DATA_HIERO "data/hiero/*.cpp" "data/hiero/*.h")
 
 
 SET(TEST_SRC 
@@ -30,6 +31,7 @@ SET(TEST_SRC
   ${TEST_LIB} 
   ${TEST_CRYPTO}
   ${TEST_DATA}
+  ${TEST_DATA_HIERO}
   ${TEST_INTERACTION}
 )
 
@@ -38,6 +40,7 @@ if(MSVC)
 	source_group("lib" FILES ${TEST_LIB})
   source_group("blockchain" FILES ${TEST_BLOCKCHAIN})
   source_group("crypto" FILES ${TEST_CRYPTO})
+  source_group("data\\hiero" FILES ${TEST_DATA_HIERO})
   source_group("data" FILES ${TEST_DATA})
   source_group("interaction" FILES ${TEST_INTERACTION})    
   source_group("seeding" FILES ${TEST_SEEDING})    
