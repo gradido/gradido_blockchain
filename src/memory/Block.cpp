@@ -66,7 +66,7 @@ namespace memory {
 		clear();
 		mSize = other.mSize;
 		mData = Manager::getInstance()->getBlock(other.mSize);
-		if (!mData) throw std::bad_alloc();
+		if (mSize && !mData) throw std::bad_alloc();
 		memcpy(mData, other.mData, mSize);
 		return *this;
 	}

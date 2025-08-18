@@ -4,6 +4,8 @@
 #include "const.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/TransactionTriggerEvent.h"
+#include "gradido_blockchain/data/hiero/AccountId.h"
+#include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
@@ -11,6 +13,30 @@
 using namespace gradido;
 using namespace data;
 using namespace interaction;
+
+TEST(SerializeTest, HieroAccountId) 
+{
+	hiero::AccountId accountId(0, 0, 21231);
+	serialize::Context c(accountId);
+	auto serialized = c.run();
+	ASSERT_EQ(serialized->convertToBase64(), "CAAQABjvpQE=");
+	ASSERT_EQ(serialized->convertToHex(), "0800100018efa501");
+}
+
+TEST(SerializeTest, HieroTransactionId)
+{
+	hiero::TransactionId transactionId("0.0.121212@172618921.29182");
+	serialize::Context c(transactionId);
+	auto serialized = c.run();
+	ASSERT_EQ(serialized->convertToBase64(), "CgkIqemnUhD+4wESCAgAEAAY/LIH");
+	ASSERT_EQ(serialized->convertToHex(), "0a0908a9e9a75210fee30112080800100018fcb207");
+
+	transactionId.setNonce(121);
+	transactionId.setScheduled();
+	serialized = c.run();
+	ASSERT_EQ(serialized->convertToBase64(), "CgkIqemnUhD+4wESCAgAEAAY/LIHGAEgeQ==");
+	ASSERT_EQ(serialized->convertToHex(), "0a0908a9e9a75210fee30112080800100018fcb20718012079");
+}
 
 TEST(SerializeTest, TransactionBodyWithoutMemo)
 {

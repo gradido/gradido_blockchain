@@ -151,6 +151,21 @@ namespace gradido {
                 message_field<"target_date", 2, TimestampMessage>,
                 enum_field<"type", 3, data::TransactionTriggerEventType>
             >;
+
+            // hiero
+            using HieroAccountIdMessage = message<
+                int64_field<"shardNum", 1>,
+                int64_field<"realmNum", 2>,
+                int64_field<"accountNum", 3>,
+                bytes_field<"alias", 4>
+            >;
+
+            using HieroTransactionIdMessage = message<
+                message_field<"transactionValidStart", 1, TimestampMessage>,
+                message_field<"accountID", 2, HieroAccountIdMessage>,
+                bool_field<"scheduled", 3>,
+                int32_field<"nonce", 4>
+            >;
         }
     }
 }

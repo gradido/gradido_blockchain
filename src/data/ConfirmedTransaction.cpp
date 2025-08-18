@@ -2,6 +2,10 @@
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 
+#include <memory>
+
+using namespace std;
+
 namespace gradido {
 	namespace data {
 		using namespace interaction;
@@ -42,7 +46,6 @@ namespace gradido {
 		{
 
 		}
-
 
 		memory::ConstBlockPtr ConfirmedTransaction::calculateRunningHash(
 			std::shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction/* = nullptr*/
