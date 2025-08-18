@@ -10,6 +10,38 @@ using namespace gradido;
 using namespace data;
 using namespace interaction;
 
+TEST(DeserializeTest, HieroAccountId)
+{
+	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64("CAAQABjvpQE="));
+	deserialize::Context context(rawData, deserialize::Type::HIERO_ACCOUNT_ID);
+	context.run();
+
+	EXPECT_FALSE(context.isTransactionBody());
+	EXPECT_FALSE(context.isConfirmedTransaction());
+	EXPECT_FALSE(context.isGradidoTransaction());
+	EXPECT_FALSE(context.isTransactionTriggerEvent());
+	ASSERT_TRUE(context.isHieroAccountId());
+
+	EXPECT_EQ(context.getHieroAccountId().getAccountNum(), 21231);
+}
+
+TEST(DeserializeTest, HieroTransactionId)
+{
+	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64("CgkIqemnUhD+4wESCAgAEAAY/LIHGAEgeQ=="));
+	deserialize::Context context(rawData, deserialize::Type::HIERO_TRANSACTION_ID);
+	context.run();
+
+	EXPECT_FALSE(context.isTransactionBody());
+	EXPECT_FALSE(context.isConfirmedTransaction());
+	EXPECT_FALSE(context.isGradidoTransaction());
+	EXPECT_FALSE(context.isTransactionTriggerEvent());
+	EXPECT_FALSE(context.isHieroAccountId());
+	ASSERT_TRUE(context.isHieroTransactionId());
+
+	EXPECT_EQ(context.getHieroTransactionId().toString(), "0.0.121212@172618921.29182");
+}
+
+
 
 TEST(DeserializeTest, CommunityRootBody)
 {

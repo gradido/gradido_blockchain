@@ -21,7 +21,9 @@ namespace gradido {
                     auto alias = memory::Block(hieroAccountId["alias"_f].value());
                     mAccountId = hiero::AccountId(shardNum, realmNum, std::move(alias));
                 }
-                throw MissingMemberException("either accountNum or alias must be set", "hiero::AccountId");
+                else {
+                    throw MissingMemberException("either accountNum or alias must be set", "hiero::AccountId");
+                }
             }
 
             HieroAccountIdRole::~HieroAccountIdRole()

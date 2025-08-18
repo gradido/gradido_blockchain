@@ -74,6 +74,7 @@ namespace gradido {
 						if (!result.has_value()) return;
 						const auto& [hieroAccountId, bufferEnd2] = *result;
 						mHieroAccountId = HieroAccountIdRole(hieroAccountId);
+						return;
 					}
 					catch (std::exception& ex) {
 						if (Type::HIERO_ACCOUNT_ID == mType) {
@@ -87,6 +88,7 @@ namespace gradido {
 						if (!result.has_value()) return;
 						const auto& [hieroTransactionId, bufferEnd2] = *result;
 						mHieroTransactionId = HieroTransactionIdRole(hieroTransactionId);
+						return;
 					} 
 					catch (std::exception& ex) {
 						if (Type::HIERO_TRANSACTION_ID == mType) {
