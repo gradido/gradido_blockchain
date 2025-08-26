@@ -5,6 +5,7 @@
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/TransactionTriggerEvent.h"
 #include "gradido_blockchain/data/hiero/AccountId.h"
+#include "gradido_blockchain/data/hiero/TopicId.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
@@ -21,6 +22,15 @@ TEST(SerializeTest, HieroAccountId)
 	auto serialized = c.run();
 	ASSERT_EQ(serialized->convertToBase64(), "CAAQABjvpQE=");
 	ASSERT_EQ(serialized->convertToHex(), "0800100018efa501");
+}
+
+TEST(SerializeTest, HieroTopicId)
+{
+	hiero::TopicId topicId(0, 0, 1621);
+	serialize::Context c(topicId);
+	auto serialized = c.run();
+	ASSERT_EQ(serialized->convertToBase64(), "CAAQABjVDA==");
+	ASSERT_EQ(serialized->convertToHex(), "0800100018d50c");
 }
 
 TEST(SerializeTest, HieroTransactionId)

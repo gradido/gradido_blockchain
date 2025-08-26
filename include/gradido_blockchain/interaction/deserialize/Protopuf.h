@@ -160,6 +160,12 @@ namespace gradido {
                 bytes_field<"alias", 4>
             >;
 
+            using HieroTopicIdMessage = message<
+                int64_field<"shardNum", 1>,
+                int64_field<"realmNum", 2>,
+                int64_field<"topicNum", 3>
+            >;            
+
             using HieroTransactionIdMessage = message<
                 message_field<"transactionValidStart", 1, TimestampMessage>,
                 message_field<"accountID", 2, HieroAccountIdMessage>,

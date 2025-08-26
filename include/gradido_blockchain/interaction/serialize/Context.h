@@ -5,6 +5,7 @@
 #include "ConfirmedTransactionRole.h"
 #include "GradidoTransactionRole.h"
 #include "HieroAccountIdRole.h"
+#include "HieroTopicIdRole.h"
 #include "HieroTransactionIdRole.h"
 #include "SignatureMapRole.h"
 #include "TransactionBodyRole.h"
@@ -26,6 +27,8 @@ namespace gradido {
 					: mRole(std::make_unique<GradidoTransactionRole>(transaction)) {}
 				Context(const hiero::AccountId& accountId)
 					: mRole(std::make_unique<HieroAccountIdRole>(accountId)) {}
+				Context(const hiero::TopicId& topicId)
+					: mRole(std::make_unique<HieroTopicIdRole>(topicId)) {}
 				Context(const hiero::TransactionId& transactionId)
 					: mRole(std::make_unique<HieroTransactionIdRole>(transactionId)) {}
 				Context(const data::SignatureMap& signatureMap)

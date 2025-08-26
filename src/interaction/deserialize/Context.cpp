@@ -4,6 +4,7 @@
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/deserialize/GradidoTransactionRole.h"
 #include "gradido_blockchain/interaction/deserialize/HieroAccountIdRole.h"
+#include "gradido_blockchain/interaction/deserialize/HieroTopicIdRole.h"
 #include "gradido_blockchain/interaction/deserialize/HieroTransactionIdRole.h"
 #include "gradido_blockchain/interaction/deserialize/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/deserialize/TransactionTriggerEventRole.h"
@@ -79,6 +80,20 @@ namespace gradido {
 					catch (std::exception& ex) {
 						if (Type::HIERO_ACCOUNT_ID == mType) {
 							LOG_F(WARNING, "couldn't deserialize as hiero account id, maybe wrong type? exception: %s", ex.what());
+						}
+					}
+				}
+				if (Type::HIERO_TOPIC_ID == mType || Type::UNKNOWN == mType) {
+					try {
+						auto result = message_coder<HieroTopicIdMessage>::decode(mData->span());
+						if (!result.has_value()) return;
+						const auto& [hieroTopicId, bufferEnd2] = *result;
+						mHieroTopicId = HieroTopicIdRole(hieroTopicId);
+						return;
+					}
+					catch (std::exception& ex) {
+						if (Type::HIERO_TOPIC_ID == mType) {
+							LOG_F(WARNING, "couldn't deserialize as hiero topic id, maybe wrong type? exception: %s", ex.what());
 						}
 					}
 				}

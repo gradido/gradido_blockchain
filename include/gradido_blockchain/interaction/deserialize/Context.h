@@ -5,6 +5,7 @@
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/data/TransactionTriggerEvent.h"
 #include "gradido_blockchain/data/hiero/AccountId.h"
+#include "gradido_blockchain/data/hiero/TopicId.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 
 // TODO: rewrite maybe with template traits, example from chatgpt
@@ -62,7 +63,9 @@ namespace gradido {
 				inline bool isConfirmedTransaction() const { return Type::CONFIRMED_TRANSACTION == mType; }
 				inline bool isTransactionTriggerEvent() const { return Type::TRANSACTION_TRIGGER_EVENT == mType; }
 				inline bool isHieroAccountId() const { return Type::HIERO_ACCOUNT_ID == mType; }
+				inline bool isHieroTopicId() const { return Type::HIERO_TOPIC_ID == mType; }
 				inline bool isHieroTransactionId() const { return Type::HIERO_TRANSACTION_ID == mType; }
+				
 				Type getType() const { return mType; }
 
 				inline std::shared_ptr<const data::TransactionBody> getTransactionBody() { return mTransactionBody; }
@@ -70,6 +73,7 @@ namespace gradido {
 				inline std::shared_ptr<const data::ConfirmedTransaction> getConfirmedTransaction() { return mConfirmedTransaction; }
 				inline hiero::AccountId getHieroAccountId() { return mHieroAccountId; }
 				inline hiero::TransactionId getHieroTransactionId() { return mHieroTransactionId; }
+				inline hiero::TopicId getHieroTopicId() { return mHieroTopicId; }
 				inline data::TransactionTriggerEvent getTransactionTriggerEvent() { return mTransactionTriggerEvent; }
 
 			protected:
@@ -79,6 +83,7 @@ namespace gradido {
 				std::shared_ptr<const data::GradidoTransaction> mGradidoTransaction;
 				std::shared_ptr<const data::ConfirmedTransaction> mConfirmedTransaction;
 				hiero::AccountId mHieroAccountId;
+				hiero::TopicId mHieroTopicId;
 				hiero::TransactionId mHieroTransactionId;
 				data::TransactionTriggerEvent mTransactionTriggerEvent;
 			};
