@@ -25,6 +25,21 @@ TEST(DeserializeTest, HieroAccountId)
 	EXPECT_EQ(context.getHieroAccountId().getAccountNum(), 21231);
 }
 
+TEST(DeserializeTest, HieroTopicId)
+{
+	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64("CAAQABjVDA=="));
+	deserialize::Context context(rawData, deserialize::Type::HIERO_TOPIC_ID);
+	context.run();
+
+	EXPECT_FALSE(context.isTransactionBody());
+	EXPECT_FALSE(context.isConfirmedTransaction());
+	EXPECT_FALSE(context.isGradidoTransaction());
+	EXPECT_FALSE(context.isTransactionTriggerEvent());
+	ASSERT_TRUE(context.isHieroTopicId());
+
+	EXPECT_EQ(context.getHieroTopicId().getTopicNum(), 1621);
+}
+
 TEST(DeserializeTest, HieroTransactionId)
 {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64("CgkIqemnUhD+4wESCAgAEAAY/LIHGAEgeQ=="));
