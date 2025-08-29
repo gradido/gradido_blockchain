@@ -4,7 +4,7 @@
 #include <chrono>
 #include "gradido_blockchain/data/EncryptedMemo.h"
 
-#define VERSION_STRING "3.4"
+#define VERSION_STRING "3.5"
 const auto createdAt = std::chrono::system_clock::from_time_t(1609459200); //2021-01-01 00:00:00 UTC
 const auto confirmedAt = std::chrono::system_clock::from_time_t(1609464130);
 const auto targetDate = std::chrono::system_clock::from_time_t(1609459000);

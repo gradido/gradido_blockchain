@@ -185,8 +185,8 @@ namespace gradido {
 			if ((startSetType & FilterCriteria::TIMEPOINT_INTERVAL) == FilterCriteria::TIMEPOINT_INTERVAL)
 			{
 				auto notYetFiltered = FilterCriteria::MAX - FilterCriteria::TIMEPOINT_INTERVAL;
-				data::TimestampSeconds startDate(filter.timepointInterval.getStartDate());
-				data::TimestampSeconds endDate(filter.timepointInterval.getEndDate());
+				data::Timestamp startDate(filter.timepointInterval.getStartDate());
+				data::Timestamp endDate(filter.timepointInterval.getEndDate());
 				auto startIt = mTransactionsByConfirmedAt.lower_bound(startDate);
 				auto endIt = mTransactionsByConfirmedAt.upper_bound(endDate);
 				return processEntry(startIt, endIt, notYetFiltered, filter);
@@ -323,8 +323,8 @@ namespace gradido {
 		{
 			std::map<ptrdiff_t, FilterCriteria> resultCounts;
 			if (!filter.timepointInterval.isEmpty()) {
-				data::TimestampSeconds startDate(filter.timepointInterval.getStartDate());
-				data::TimestampSeconds endDate(filter.timepointInterval.getEndDate());
+				data::Timestamp startDate(filter.timepointInterval.getStartDate());
+				data::Timestamp endDate(filter.timepointInterval.getEndDate());
 				auto startIt = mTransactionsByConfirmedAt.lower_bound(startDate);
 				auto endIt = mTransactionsByConfirmedAt.upper_bound(endDate);
 				if (startIt != mTransactionsByConfirmedAt.end() && startIt != endIt) {

@@ -40,7 +40,7 @@ namespace gradido {
 
 			inline uint64_t getId() const { return  mId; }
 			inline std::shared_ptr<const data::GradidoTransaction> getGradidoTransaction() const { return mGradidoTransaction; }
-			inline TimestampSeconds getConfirmedAt() const { return mConfirmedAt; } 
+			inline Timestamp getConfirmedAt() const { return mConfirmedAt; } 
 			inline const std::string& getVersionNumber() const { return mVersionNumber; }
 			inline memory::ConstBlockPtr getRunningHash() const { return mRunningHash; }
 			inline memory::ConstBlockPtr getMessageId() const { return mMessageId; }
@@ -58,7 +58,7 @@ namespace gradido {
 		protected:
 			uint64_t                    				mId;
 			std::shared_ptr<const data::GradidoTransaction> mGradidoTransaction;
-			TimestampSeconds							mConfirmedAt;
+			Timestamp									mConfirmedAt;
 			std::string   								mVersionNumber;
 			memory::ConstBlockPtr 						mRunningHash;
 			memory::ConstBlockPtr 						mMessageId;

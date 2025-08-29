@@ -2,7 +2,7 @@
 #include "gradido_blockchain/interaction/deserialize/AccountBalanceRole.h"
 #include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/interaction/deserialize/GradidoTransactionRole.h"
-#include "gradido_blockchain/interaction/deserialize/TimestampSecondsRole.h"
+#include "gradido_blockchain/interaction/deserialize/TimestampRole.h"
 #include "gradido_blockchain/interaction/deserialize/Exceptions.h"
 #include "gradido_blockchain/interaction/serialize/GradidoTransactionRole.h"
 
@@ -42,7 +42,7 @@ namespace gradido {
 				mConfirmedTransaction = std::make_shared<data::ConfirmedTransaction>(
 					message["id"_f].value(),
 					GradidoTransactionRole(message["transaction"_f].value()).getGradidoTransaction(),
-					TimestampSecondsRole(message["confirmed_at"_f].value()).data(),
+					TimestampRole(message["confirmed_at"_f].value()).data(),
 					message["version_number"_f].value(),
 					std::make_shared<memory::Block>(message["running_hash"_f].value()),
 					std::make_shared<memory::Block>(message["message_id"_f].value()),

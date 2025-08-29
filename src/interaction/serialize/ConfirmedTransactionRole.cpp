@@ -36,7 +36,10 @@ namespace gradido {
 				return ConfirmedTransactionMessage{
 					mConfirmedTransaction.getId(),
 					mGradidoTransactionRole.getMessage(),
-					TimestampSecondsMessage { mConfirmedTransaction.getConfirmedAt().getSeconds()},
+					TimestampMessage { 
+						mConfirmedTransaction.getConfirmedAt().getSeconds(),
+						mConfirmedTransaction.getConfirmedAt().getNanos()
+					},
 					mConfirmedTransaction.getVersionNumber(),
 					mConfirmedTransaction.getRunningHash()->copyAsVector(),
 					mConfirmedTransaction.getMessageId()->copyAsVector(),
@@ -47,7 +50,7 @@ namespace gradido {
 
 			size_t ConfirmedTransactionRole::calculateSerializedSize() const
 			{
-				size_t size = 8 + 8 
+				size_t size = 8 + 8 + 4 
 					+ mConfirmedTransaction.getVersionNumber().size()
 					+ crypto_generichash_BYTES 
 					+ 32 

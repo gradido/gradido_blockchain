@@ -322,7 +322,7 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[4]->getPublicKey()).getBalance(), GradidoUnit::fromGradidoCent(1000000));
 	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[5]->getPublicKey()).getBalance(), GradidoUnit::fromGradidoCent(8997483));
 	ASSERT_EQ(confirmedTransaction->getRunningHash()->size(), crypto_generichash_BYTES);
-	EXPECT_EQ(confirmedTransaction->getRunningHash()->convertToHex(), "1203c5aa94a724a49f10d00db79b8261e3fcb210588087d4a696a99c7a6c7103");
+	EXPECT_EQ(confirmedTransaction->getRunningHash()->convertToHex(), "28a58de12318789f59ee15373a1ef8337da0e2cd66f266bf756590ffb5447ecc");
 
 	auto gradidoTransaction = confirmedTransaction->getGradidoTransaction();
 	auto firstSignature = gradidoTransaction->getSignatureMap().getSignaturePairs().front().getSignature();

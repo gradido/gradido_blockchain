@@ -25,7 +25,7 @@ using namespace date;
 using namespace magic_enum;
 using magic_enum::iostream_operators::operator<<;
 
-#define VERSION_STRING "3.4"
+#define VERSION_STRING "3.5"
 static EncryptedMemo memo("dummy memo");
 
 Timepoint getPreviousNMonth2(const Timepoint& startDate, int monthsAgo) {
