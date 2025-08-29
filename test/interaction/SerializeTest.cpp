@@ -55,7 +55,7 @@ TEST(SerializeTest, TransactionBodyWithoutMemo)
 	auto serialized = c.run();
 	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
 	// printf("hex: %s\n", serialized->convertToHex().data());
-	ASSERT_EQ(serialized->convertToBase64(), "EggIgMy5/wUQABoDMy40IAA=");
+	ASSERT_EQ(serialized->convertToBase64(), "EggIgMy5/wUQABoDMy41IAA=");
 }
 
 TEST(SerializeTest, CommunityRootBody) 
