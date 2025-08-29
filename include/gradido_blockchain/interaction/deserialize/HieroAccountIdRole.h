@@ -2,13 +2,14 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_HIERO_ACCOUNT_ID_ROLE_H
 
 #include "gradido_blockchain/data/hiero/AccountId.h"
+#include "gradido_blockchain/export.h"
 #include "Protopuf.h"
 #include <memory>
 
 namespace gradido {
     namespace interaction {
         namespace deserialize {
-            class HieroAccountIdRole
+            class GRADIDOBLOCKCHAIN_EXPORT HieroAccountIdRole
             {
             public:
                 HieroAccountIdRole(const HieroAccountIdMessage& hieroAccountId);
