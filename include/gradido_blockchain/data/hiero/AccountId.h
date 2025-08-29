@@ -108,6 +108,7 @@ namespace hiero {
 
 		std::string toString() const;
 
+		inline bool empty() const { return !mAccountNum && mAlias.isEmpty(); }
 		
 	protected:
 		int64_t mShardNum;
