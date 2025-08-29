@@ -79,7 +79,7 @@ namespace gradido {
 			//! key is hash from pubkey, not collision resistent!
 			std::multimap<memory::BlockKey, std::shared_ptr<const TransactionEntry>> mTransactionsByPubkey;
 			//! key is transaction received date
-			std::multimap<data::TimestampSeconds, std::shared_ptr<const TransactionEntry>> mTransactionsByConfirmedAt;
+			std::multimap<data::Timestamp, std::shared_ptr<const TransactionEntry>> mTransactionsByConfirmedAt;
 			//! find transaction nr by iota message id
 			std::unordered_map<iota::MessageId, uint64_t> mMessageIdTransactionNrs;
 			//! find transactionEntry by transaction nr

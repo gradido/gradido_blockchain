@@ -138,7 +138,7 @@ namespace gradido {
             using ConfirmedTransactionMessage = message<
                 uint64_field<"id", 1>,
                 message_field<"transaction", 2, GradidoTransactionMessage>,
-                message_field<"confirmed_at", 3, TimestampSecondsMessage>,
+                message_field<"confirmed_at", 3, TimestampMessage>,
                 string_field<"version_number", 4>,// singular, std::vector<StringCachedAlloc>>,
                 bytes_field<"running_hash", 5>,// singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
                 bytes_field<"message_id", 6>,// singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
