@@ -72,7 +72,7 @@ namespace hiero {
 
 		//! format in hedera block explorer format: 0.0.256009@1755503343.736000193
 		//! ignore scheduled and nonce completly
-		std::string toString();
+		std::string toString() const;
 	protected:
 		gradido::data::Timestamp mTransactionValidStart;
 		AccountId mAccountId;

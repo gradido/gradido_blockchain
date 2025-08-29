@@ -52,7 +52,7 @@ namespace hiero {
 
     }
 
-	std::string TransactionId::toString()
+	std::string TransactionId::toString() const
 	{
 		std::string result;
 		std::string accountIdString = mAccountId.toString();
