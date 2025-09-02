@@ -26,6 +26,7 @@ namespace hiero
 		int64_t getTopicNum() const { return mTopicNum; }
 
 		std::string toString() const;
+		inline bool operator==(const TopicId& other) const;
 
 		inline bool empty() const { return !mTopicNum; }
 
@@ -34,6 +35,14 @@ namespace hiero
 		int64_t mRealmNum; 
 		int64_t mTopicNum;
 	};
+
+	inline bool TopicId::operator==(const TopicId& other) const
+	{
+		return mShardNum == other.mShardNum
+			&& mRealmNum == other.mRealmNum
+			&& mTopicNum == other.mTopicNum
+		;
+	}
 }
 
 #endif //__GRADIDO_BLOCKCHAIN_DATA_HIERO_TOPIC_ID_H

@@ -168,6 +168,7 @@ namespace memory {
 		if (b.size() != size()) {
 			return false;
 		}
+		if (!size()) { return true; }
 		return 0 == memcmp(mData, b, size());
 	}
 	// is for loop faster or memcmp with zero filled buffer? (overhead for filling buffer or keeping static filled buffer in memory for each size, or maximal size?)

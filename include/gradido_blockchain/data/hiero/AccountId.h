@@ -109,6 +109,7 @@ namespace hiero {
 		std::string toString() const;
 
 		inline bool empty() const { return !mAccountNum && mAlias.isEmpty(); }
+		inline bool operator==(const AccountId& other) const;
 		
 	protected:
 		int64_t mShardNum;
@@ -116,6 +117,15 @@ namespace hiero {
 		int64_t mAccountNum; 
 		memory::Block mAlias;
 	};
+
+	inline bool AccountId::operator==(const AccountId& other) const
+	{
+		return mShardNum == other.mShardNum
+			&& mRealmNum == other.mRealmNum
+			&& mAccountNum == other.mAccountNum
+			&& mAlias.isTheSame(other.mAlias)
+		;
+	}
 
 	inline bool operator<(AccountId const& lhs, AccountId const& rhs)
 	{
@@ -130,6 +140,8 @@ namespace hiero {
 		}
 		return lhs.getAlias() < rhs.getAlias();
 	}
+
+	
 }
 
 #endif // __GRADIDO_BLOCKCHAIN_DATA_HIERO_ACCOUNT_ID
