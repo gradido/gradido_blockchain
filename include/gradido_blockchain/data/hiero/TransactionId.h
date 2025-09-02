@@ -55,7 +55,7 @@
 namespace hiero {
 	class GRADIDOBLOCKCHAIN_EXPORT TransactionId
 	{
-	public: 
+	public:
 		TransactionId();
 		TransactionId(const gradido::data::Timestamp& transactionValidStart, const AccountId& accountId);
 		//! expect string in format 0.0.2-17281772-21022 or 0.0.256009@1755503343.736000193
@@ -73,6 +73,7 @@ namespace hiero {
 		//! format in hedera block explorer format: 0.0.256009@1755503343.736000193
 		//! ignore scheduled and nonce completly
 		std::string toString();
+		inline bool operator==(const TransactionId& other) const;
 	protected:
 		gradido::data::Timestamp mTransactionValidStart;
 		AccountId mAccountId;
@@ -88,6 +89,14 @@ namespace hiero {
 
 	void TransactionId::setNonce(int32_t nonce) {
 		mNonce = nonce;
+	}
+
+	bool TransactionId::operator==(const TransactionId& other) const
+	{
+		return mTransactionValidStart == other.mTransactionValidStart
+			&& mAccountId == other.mAccountId
+			&& mNonce == other.mNonce
+		;
 	}
 }
 
