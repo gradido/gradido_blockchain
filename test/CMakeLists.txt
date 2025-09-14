@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.18.2)
+cmake_policy(SET CMP0135 NEW)
 project(GradidoBlockchainTest)
 
 # GoogleTest requires at least C++11
@@ -59,6 +60,9 @@ enable_testing()
 add_executable(GradidoBlockchainTest ${TEST_SRC})
 target_link_libraries(GradidoBlockchainTest GradidoBlockchain sodium loguru::loguru) #libprotobuf
 target_link_libraries(GradidoBlockchainTest gtest)
+if(openssl_FOUND) 
+	target_link_libraries(GradidoBlockchainTest openssl::openssl)
+endif()
 
 include_directories(
 	"../dependencies/date/include"

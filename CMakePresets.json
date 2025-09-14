@@ -1,0 +1,61 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "vcpkg-base",
+      "hidden": true,
+      "displayName": "VCPkg Base Build",
+      "description": "Configured via the vcpkg toolchain",
+      "binaryDir": "${sourceDir}/build",
+      "installDir": "${sourceDir}/package",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "FILEPATH",
+          "value": "${sourceDir}/dependencies/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        }
+      }
+    },
+    {
+      "name": "vcpkg-msbuild-base",
+      "hidden": true,
+      "displayName": "MSBuild VCPkg Base",
+      "description": "Configured via the VS msbuild vcpkg toolchain",
+      "binaryDir": "${sourceDir}/build",
+      "installDir": "${sourceDir}/package",
+      "generator": "Visual Studio 17 2022",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "FILEPATH",
+          "value": "${sourceDir}/dependencies/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        }
+      }
+    },
+    {
+      "name": "windows-x64",
+      "inherits": ["vcpkg-msbuild-base"],
+      "binaryDir": "${sourceDir}/build",
+      "generator": "Visual Studio 17 2022",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": {
+          "type": "STRING",
+          "value": "x64-windows"
+        }
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-x64",
+      "configurePreset": "windows-x64",
+      "displayName": "MSVC Build (x64)",
+      "description": "Build MSVC Configurations", 
+      "targets": ["all"]
+    }
+  ]
+}

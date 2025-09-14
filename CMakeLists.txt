@@ -6,7 +6,14 @@ project(GradidoBlockchain VERSION 2.0.0)
 
 option(ENABLE_IOTA_RUST_CLIENT "switch for include rust iota client into build, increase build time and size a lot" OFF)
 option(ENABLE_HTTP "switch for include http based classes into build, increase build time and size" OFF)
+option(ENABLE_HTTPS "switch for include openssl for https support" OFF)
 option(ENABLE_TEST "switch for include test into build config" OFF)
+option(USE_VCPKG "switch for use vcpkg for dependencies" OFF)
+
+if(ENABLE_HTTPS)
+	set(USE_VCPKG ON CACHE BOOL "Use vcpkg for dependencies (auto-set because ENABLE_HTTPS is ON)" FORCE)
+	set(ENABLE_HTTP ON CACHE BOOL "Use http for dependencies (auto-set because ENABLE_HTTPS is ON)" FORCE)
+endif()
 
 IF(WIN32)
 	set(CMAKE_CXX_FLAGS         "/MP /EHsc /std:c++20")
@@ -53,29 +60,63 @@ FetchContent_Declare(Sodium
 set(SODIUM_DISABLE_TESTS ON)
 FetchContent_MakeAvailable(Sodium)
 
-IF(WIN32)
-	#set(sodium_DIR "C:/libsodium" CACHE FILEPATH "sodium install directory")
-	#include(FindSodium)
-  
-  #find_package(Sodium REQUIRED)
-	#include_directories(${Sodium_INCLUDE_DIR})
-	if(ENABLE_HTTP)
-		if(TARGET ssl AND TARGET crypto)
-			message("[GradidoBlockchain] ssl found, enable use of https")
-			add_compile_definitions(USE_HTTPS)
-		else()
-			find_package(OpenSSL)
-			if(openssl_FOUND)
-				message("[GradidoBlockchain] openSSL found, enable use of https")
-				include_directories(${OPENSSL_INCLUDE_DIR})
-				add_compile_definitions(USE_HTTPS)
-			else()
-				message("[GradidoBlockchain] openSSL not found, disable use of https")
-				add_compile_definitions(DISABLE_HTTPS)
+if(WIN32) 
+	if(USE_VCPKG)
+		SET(VCPKG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vcpkg")
+		# Path to the vcpkg Toolchain in the submodule
+		set(CMAKE_TOOLCHAIN_FILE "${VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake")
+
+		if(NOT EXISTS "${VCPKG_PATH}/vcpkg.exe")
+			message(STATUS "[GradidoBlockchain] Bootstrapping vcpkg...")
+			execute_process(
+				COMMAND ${CMAKE_COMMAND} -E chdir "${VCPKG_PATH}" bootstrap-vcpkg.bat -disableMetrics
+				RESULT_VARIABLE res
+			)
+			if(NOT res EQUAL 0)
+				message(FATAL_ERROR "vcpkg bootstrap failed with exit code ${res}")
 			endif()
 		endif()
+    
+		if(ENABLE_HTTPS)
+			execute_process(
+				COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vcpkg" vcpkg install openssl:x64-windows
+				RESULT_VARIABLE vcpkg_install_result
+			)
+			if(NOT vcpkg_install_result EQUAL 0)
+				message(FATAL_ERROR "vcpkg failed to install OpenSSL")
+			endif()
+		endif()	
 	endif()
-ENDIF()
+
+	if(ENABLE_HTTPS)
+		# CA certificates for used with cpp-httplib
+		set(CACERT_PEM "${CMAKE_BINARY_DIR}/cacert.pem")
+
+		if(NOT EXISTS ${CACERT_PEM})
+			message(STATUS "Downloading cacert.pem ...")
+			file(DOWNLOAD
+				https://curl.se/ca/cacert-2025-08-12.pem
+				${CACERT_PEM}
+				SHOW_PROGRESS
+				STATUS download_status
+				EXPECTED_HASH SHA256=64dfd5b1026700e0a0a324964749da9adc69ae5e51e899bf16ff47d6fd0e9a5e
+			)
+			list(GET download_status 0 status_code)
+			if(NOT status_code EQUAL 0)
+				message(FATAL_ERROR "Failed to download cacert.pem: ${download_status}")
+			endif()
+		endif()
+
+		add_compile_definitions(CACERT_PEM_PATH="${CACERT_PEM}")
+	endif()
+endif()
+
+if(ENABLE_HTTPS)
+	find_package(OpenSSL REQUIRED)
+	message("[GradidoBlockchain] openSSL found, enable use of https")
+	include_directories(${OPENSSL_INCLUDE_DIR})
+	add_compile_definitions(USE_HTTPS)
+endif()
 # find_package(Sodium REQUIRED)
 
 ############################## bind source files ###################################
@@ -239,12 +280,10 @@ add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
 target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz)
-IF(WIN32) 
-	if (TARGET ssl AND TARGET crypto)
-		target_link_libraries(GradidoBlockchain ssl crypto)
-	elseif(openssl_FOUND) 
-		target_link_libraries(GradidoBlockchain openssl::openssl)
-	endif()
+if(OpenSSL_FOUND) 
+	target_link_libraries(GradidoBlockchain OpenSSL::SSL OpenSSL::Crypto)
+endif()
+if(WIN32) 
 	# needed for windows if linking to a rust lib
 	if(ENABLE_IOTA_RUST_CLIENT)
 		find_library(IOTA_RUST_C_LIB iota_rust_clib.dll.lib PATHS 
