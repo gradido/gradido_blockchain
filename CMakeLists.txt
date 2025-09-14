@@ -64,7 +64,13 @@ if(WIN32)
 	if(USE_VCPKG)
 		SET(VCPKG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vcpkg")
 		# Path to the vcpkg Toolchain in the submodule
-		set(CMAKE_TOOLCHAIN_FILE "${VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake")
+		if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+			set(CMAKE_TOOLCHAIN_FILE "${VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake")
+		endif()
+
+		if(NOT DEFINED VCPKG_TARGET_TRIPLET)
+			set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "vcpkg target triplet")
+		endif()
 
 		if(NOT EXISTS "${VCPKG_PATH}/vcpkg.exe")
 			message(STATUS "[GradidoBlockchain] Bootstrapping vcpkg...")
