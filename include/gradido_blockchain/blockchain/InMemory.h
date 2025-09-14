@@ -3,8 +3,9 @@
 
 #include "Abstract.h"
 #include "FilterResult.h"
-#include "gradido_blockchain/export.h"
 #include "gradido_blockchain/crypto/SignatureOctet.h"
+#include "gradido_blockchain/data/hiero/TransactionId.h"
+#include "gradido_blockchain/export.h"
 #include "gradido_blockchain/memory/BlockKey.h"
 
 #include <vector>
@@ -80,8 +81,8 @@ namespace gradido {
 			std::multimap<memory::BlockKey, std::shared_ptr<const TransactionEntry>> mTransactionsByPubkey;
 			//! key is transaction received date
 			std::multimap<data::Timestamp, std::shared_ptr<const TransactionEntry>> mTransactionsByConfirmedAt;
-			//! find transaction nr by iota message id
-			std::unordered_map<iota::MessageId, uint64_t> mMessageIdTransactionNrs;
+			//! find transaction nr by hiero transaction id
+			std::unordered_map<hiero::TransactionId, uint64_t, hiero::TransactionIdHasher> mHieroTransactionIdTransactionNrs;
 			//! find transactionEntry by transaction nr
 			std::map<uint64_t, std::shared_ptr<const TransactionEntry>> mTransactionsByNr;
 			// for fast doublette check

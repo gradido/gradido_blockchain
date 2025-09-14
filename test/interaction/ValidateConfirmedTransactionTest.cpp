@@ -25,7 +25,7 @@ TEST(ValidateConfirmedTransactionTest, validCommunityRootGradidoTransaction) {
 		deserializer.getGradidoTransaction(),
 		confirmedAt,
 		VERSION_STRING,
-		make_shared<memory::Block>(32),
+		make_shared<memory::Block>(memory::Block::fromBase64(hieroTransactionIdBase64)),
 		{}
 	);
 

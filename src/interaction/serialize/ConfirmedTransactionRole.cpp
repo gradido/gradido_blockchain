@@ -20,9 +20,6 @@ namespace gradido {
 				if (!mConfirmedTransaction.getRunningHash()) {
 					throw MissingMemberException("missing member by serializing ConfirmedTransaction", "runningHash");
 				}
-				if (!mConfirmedTransaction.getMessageId()) {
-					throw MissingMemberException("missing member by serializing ConfirmedTransaction", "messageId");
-				}
 				std::vector<AccountBalanceMessage> accountBalanceMessages;
 				accountBalanceMessages.reserve(mConfirmedTransaction.getAccountBalances().size());
 				for (auto& accountBalance : mConfirmedTransaction.getAccountBalances()) {
@@ -32,20 +29,22 @@ namespace gradido {
 							accountBalance.getBalance().getGradidoCent()
 						)
 					);
-				}				
-				return ConfirmedTransactionMessage{
-					mConfirmedTransaction.getId(),
-					mGradidoTransactionRole.getMessage(),
-					TimestampMessage { 
+				}			
+				ConfirmedTransactionMessage message;
+				message["id"_f] = mConfirmedTransaction.getId();
+				message["transaction"_f] = mGradidoTransactionRole.getMessage();
+				message["confirmed_at"_f] = TimestampMessage{
 						mConfirmedTransaction.getConfirmedAt().getSeconds(),
 						mConfirmedTransaction.getConfirmedAt().getNanos()
-					},
-					mConfirmedTransaction.getVersionNumber(),
-					mConfirmedTransaction.getRunningHash()->copyAsVector(),
-					mConfirmedTransaction.getMessageId()->copyAsVector(),
-					accountBalanceMessages
 				};
-				// return confirmedTransactionMessage;
+				message["version_number"_f] = mConfirmedTransaction.getVersionNumber();
+				message["running_hash"_f] = mConfirmedTransaction.getRunningHash()->copyAsVector();
+				if (mConfirmedTransaction.getMessageId()) {
+					message["message_id"_f] = mConfirmedTransaction.getMessageId()->copyAsVector();
+				}
+				message["account_balances"_f] = accountBalanceMessages;
+				
+				return message;
 			}
 
 			size_t ConfirmedTransactionRole::calculateSerializedSize() const

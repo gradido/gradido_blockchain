@@ -38,7 +38,7 @@ TEST(SerializeTest, HieroTransactionId)
 	hiero::TransactionId transactionId("0.0.121212@172618921.29182");
 	serialize::Context c(transactionId);
 	auto serialized = c.run();
-	ASSERT_EQ(serialized->convertToBase64(), "CgkIqemnUhD+4wESCAgAEAAY/LIH");
+	ASSERT_EQ(serialized->convertToBase64(), std::string(hieroTransactionIdBase64));
 	ASSERT_EQ(serialized->convertToHex(), "0a0908a9e9a75210fee30112080800100018fcb207");
 
 	transactionId.setNonce(121);
@@ -225,14 +225,13 @@ TEST(SerializeTest, SignatureMap) {
 }
 
 TEST(SerializeTest, MinimalConfirmedTransaction) {
-
 	ConfirmedTransaction confirmedTransaction(
 		7,
 		std::make_unique<GradidoTransaction>(),
 		confirmedAt,
 		VERSION_STRING,
 		make_shared<memory::Block>(crypto_generichash_BYTES),
-		make_shared<memory::Block>(32),
+		make_shared<memory::Block>(memory::Block::fromBase64(hieroTransactionIdBase64)),
 		{}
 	);
 	serialize::Context c(confirmedTransaction);
@@ -262,7 +261,7 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		std::move(gradidoTransaction),
 		confirmedAt,
 		VERSION_STRING,
-		make_shared<memory::Block>(32),
+		make_shared<memory::Block>(memory::Block::fromBase64(hieroTransactionIdBase64)),
 		{
 			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000) },
 			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483) }

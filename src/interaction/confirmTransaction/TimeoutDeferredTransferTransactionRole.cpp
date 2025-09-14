@@ -11,7 +11,7 @@ namespace gradido {
                 memory::ConstBlockPtr messageId,
                 Timepoint confirmedAt,
                 std::shared_ptr<blockchain::Abstract> blockchain
-            ) : TransactionBodyRole(gradidoTransaction, gradidoTransaction->getFingerprint(), confirmedAt, blockchain) 
+            ) : TransactionBodyRole(gradidoTransaction, messageId, confirmedAt, blockchain)
             {
 
             }

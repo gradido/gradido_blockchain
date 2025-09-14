@@ -33,9 +33,6 @@ namespace gradido {
                 if (!gradidoTransaction) {
                     throw GradidoNullPointerException("missing transaction", "GradidoTransactionPtr", __FUNCTION__);
                 }
-                if (!messageId) {
-                    throw GradidoNullPointerException("missing messageId", "memory::ConstBlockPtr", __FUNCTION__);
-                }
             }
 
             std::shared_ptr<const data::ConfirmedTransaction> AbstractRole::createConfirmedTransaction(
