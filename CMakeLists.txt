@@ -95,8 +95,8 @@ if(WIN32)
 	endif()
 
 	if(ENABLE_HTTPS)
-		# CA certificates for used with cpp-httplib
-		set(CACERT_PEM "${CMAKE_BINARY_DIR}/cacert.pem")
+		# CA certificates for used with cpp-httplib, make it also available for projects including this one
+		set(CACERT_PEM "${CMAKE_BINARY_DIR}/cacert.pem" CACHE PATH "Path to CA certificates" FORCE)
 
 		if(NOT EXISTS ${CACERT_PEM})
 			message(STATUS "Downloading cacert.pem ...")
