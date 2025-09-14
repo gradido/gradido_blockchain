@@ -65,11 +65,11 @@ if(WIN32)
 		SET(VCPKG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vcpkg")
 		# Path to the vcpkg Toolchain in the submodule
 		if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-			set(CMAKE_TOOLCHAIN_FILE "${VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake")
+			set(CMAKE_TOOLCHAIN_FILE "${VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake" CACHE FILEPATH "Vcpkg toolchain" FORCE)
 		endif()
 
 		if(NOT DEFINED VCPKG_TARGET_TRIPLET)
-			set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "vcpkg target triplet")
+			set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "vcpkg target triplet" FORCE)
 		endif()
 
 		if(NOT EXISTS "${VCPKG_PATH}/vcpkg.exe")
@@ -118,6 +118,9 @@ if(WIN32)
 endif()
 
 if(ENABLE_HTTPS)
+	if(WIN32 AND USE_VCPKG)
+		set(OPENSSL_ROOT_DIR "${VCPKG_PATH}/installed/${VCPKG_TARGET_TRIPLET}" CACHE PATH "" FORCE)
+	endif()
 	find_package(OpenSSL REQUIRED)
 	message("[GradidoBlockchain] openSSL found, enable use of https")
 	include_directories(${OPENSSL_INCLUDE_DIR})
