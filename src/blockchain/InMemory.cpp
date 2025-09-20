@@ -49,7 +49,7 @@ namespace gradido {
 		bool InMemory::createAndAddConfirmedTransaction(
 			ConstGradidoTransactionPtr gradidoTransaction,
 			memory::ConstBlockPtr messageId, 
-			Timepoint confirmedAt
+			Timestamp confirmedAt
 		) {
 			auto blockchain = getProvider()->findBlockchain(mCommunityId);
 			confirmTransaction::Context context(blockchain);

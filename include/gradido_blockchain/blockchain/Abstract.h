@@ -1,10 +1,11 @@
 #ifndef __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_ABSTRACT_H
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_ABSTRACT_H
 
+
 #include "gradido_blockchain/types.h"
 #include "gradido_blockchain/GradidoUnit.h"
 #include "gradido_blockchain/lib/ExpireCache.h"
-#include "gradido_blockchain/data/iota/MessageId.h"
+#include "gradido_blockchain/data/Timestamp.h"
 
 #include "TransactionEntry.h"
 #include "Filter.h"
@@ -34,7 +35,7 @@ namespace gradido {
 			//! validate and generate confirmed transaction
 			//! throw if gradido transaction isn't valid
 			//! \return false if transaction already exist
-			virtual bool createAndAddConfirmedTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, Timepoint confirmedAt) = 0;
+			virtual bool createAndAddConfirmedTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, data::Timestamp confirmedAt) = 0;
 			virtual void addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent) = 0;
 			virtual void removeTransactionTriggerEvent(const data::TransactionTriggerEvent& transactionTriggerEvent) = 0;
 
@@ -62,13 +63,12 @@ namespace gradido {
 			) const;
 
 			inline std::string_view getCommunityId() const { return mCommunityId; }
-			inline Timepoint getStartDate() const { return mStartDate; }
+			inline data::Timestamp getStartDate() const { return mStartDate; }
 			virtual AbstractProvider* getProvider() const = 0;
 
 		protected:
 			std::string mCommunityId;
-			Timepoint mStartDate;
-			
+			data::Timestamp mStartDate;			
 		};
 			
 	}

@@ -39,7 +39,7 @@ namespace gradido {
 			virtual bool createAndAddConfirmedTransaction(
 				data::ConstGradidoTransactionPtr gradidoTransaction,
 				memory::ConstBlockPtr messageId, 
-				Timepoint confirmedAt
+				data::Timestamp confirmedAt
 			);
 			virtual void addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent);
 			virtual void removeTransactionTriggerEvent(const data::TransactionTriggerEvent& transactionTriggerEvent);

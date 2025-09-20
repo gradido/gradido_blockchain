@@ -365,7 +365,7 @@ TEST_F(InMemoryTest, CreationTransactions)
 		);
 		filter.searchDirection = blockchain::SearchDirection::DESC;
 		//filter.timepointInterval = TimepointInterval(mBlockchain->getStartDate(), createdAt);
-		std::cout << mBlockchain->getStartDate() << " - " << createdAt << std::endl;
+		std::cout << mBlockchain->getStartDate().getAsTimepoint() << " - " << createdAt << std::endl;
 		auto results = mBlockchain->findAll(filter);
 		std::cout << results.size() << std::endl;
 		LOG_F(ERROR, ex.getFullString().data());
