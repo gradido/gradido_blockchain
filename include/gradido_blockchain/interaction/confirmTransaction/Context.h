@@ -9,6 +9,7 @@ namespace gradido {
     }
     namespace data {
         class EventTriggeredTransaction;
+        class Timestamp;
     }
     namespace interaction {
         namespace confirmTransaction {            
@@ -31,7 +32,7 @@ namespace gradido {
                 virtual std::shared_ptr<AbstractRole> createRole(
                     std::shared_ptr<const data::GradidoTransaction> gradidoTransaction,
                     memory::ConstBlockPtr messageId,
-                    Timepoint confirmedAt
+                    data::Timestamp confirmedAt
                 ) const;
 
                 std::shared_ptr<const data::ConfirmedTransaction> run(std::shared_ptr<AbstractRole> role);

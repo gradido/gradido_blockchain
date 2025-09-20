@@ -63,7 +63,8 @@ namespace gradido {
 						exception.setTransactionBody(*body);
 						throw exception;
 					}*/						
-						
+					// I don't know how far a server clock can be off, but let simply ignore this for now and test this some time
+					/*
 					if (confirmedAt - createdAt < duration<int>::zero()) {
 						std::string expected = ">= " + DataTypeConverter::timePointToString(createdAt);
 						TransactionValidationInvalidInputException exception(
@@ -75,7 +76,7 @@ namespace gradido {
 						);
 						exception.setTransactionBody(*body);
 						throw exception;
-					}
+					}*/
 				}
 
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS) {

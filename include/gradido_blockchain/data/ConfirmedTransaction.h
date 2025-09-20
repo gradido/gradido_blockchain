@@ -15,7 +15,7 @@ namespace gradido {
 			ConfirmedTransaction(
 				uint64_t id,
 				std::shared_ptr<const GradidoTransaction> gradidoTransaction,
-				Timepoint confirmedAt,
+				Timestamp confirmedAt,
 				const std::string& versionNumber,
 				memory::ConstBlockPtr messageId,
 				std::vector<AccountBalance> accountBalances,
@@ -25,7 +25,7 @@ namespace gradido {
 			ConfirmedTransaction(
 				uint64_t id,
 				std::shared_ptr<const GradidoTransaction> gradidoTransaction,
-				Timepoint confirmedAt,
+				Timestamp confirmedAt,
 				const std::string& versionNumber,
 				memory::ConstBlockPtr runningHash,
 				memory::ConstBlockPtr messageId,

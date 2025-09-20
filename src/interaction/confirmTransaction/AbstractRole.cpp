@@ -2,6 +2,7 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/interaction/confirmTransaction/AbstractRole.h"
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/Context.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
@@ -26,7 +27,7 @@ namespace gradido {
             AbstractRole::AbstractRole(
                 std::shared_ptr<const data::GradidoTransaction> gradidoTransaction,
                 memory::ConstBlockPtr messageId,
-                Timepoint confirmedAt,
+                Timestamp confirmedAt,
                 std::shared_ptr<blockchain::Abstract> blockchain
             ): mGradidoTransaction(gradidoTransaction), mMessageId(messageId), mConfirmedAt(confirmedAt), mBlockchain(blockchain)
             {
