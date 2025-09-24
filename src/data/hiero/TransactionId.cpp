@@ -57,6 +57,7 @@ namespace hiero {
 		std::string result;
 		std::string accountIdString = mAccountId.toString();
 		std::string seconds = std::to_string(mTransactionValidStart.getSeconds());
+        // need always 9 character, fill in with zero at the start
 		std::string nanos = std::to_string(mTransactionValidStart.getNanos());
 		result.reserve(accountIdString.size() + 2 + seconds.size() + nanos.size());
 		result = accountIdString + '@' + seconds + '.' + nanos;
