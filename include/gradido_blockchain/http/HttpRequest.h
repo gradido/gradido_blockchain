@@ -28,7 +28,6 @@ protected:
 	std::string mUrl;
 	std::multimap<std::string, std::string> mCookies;
 	std::multimap<std::string, std::string> mHeaders;
-	
 };
 
 #endif //__GRADIDO_POCO_HTTP_REQUEST

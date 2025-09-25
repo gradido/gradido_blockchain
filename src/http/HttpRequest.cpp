@@ -12,6 +12,27 @@
 #endif
 #include "httplib.h"
 
+// this is to prevent crashes, because at least with C++17 and C++20 httplib crashes with calling httplib::Client deconstructor
+// so we create a new client for each new host and keep them forever and don't delete them even on program exit
+// TODO: Fix bug in httplib which leads to this crash
+static std::multimap<std::string, std::shared_ptr<httplib::Client>> mHttpClients;
+static std::mutex mClientsMutex;
+
+static std::shared_ptr<httplib::Client> getClientForHost(const std::string& host)
+{
+	std::lock_guard _lock(mClientsMutex);
+	auto range = mHttpClients.equal_range(host);
+	for (auto it = range.first; it != range.second; ++it) {
+		if (it->second.use_count() == 1) {
+			return it->second;
+		}
+	}
+	
+	auto httpClient = std::make_shared<httplib::Client>(host);
+	mHttpClients.insert({ host, httpClient });
+	return httpClient;
+}
+
 using namespace rapidjson;
 
 static httplib::Headers constructHeaders(std::multimap<std::string, std::string> headers, std::multimap<std::string, std::string> cookies)
@@ -68,7 +89,7 @@ HttpRequest::HttpRequest(const std::string& host, int port, const char* path/* =
 
 std::string HttpRequest::POST(const std::string& body, const char* contentType/* = "application/json"*/, const char* path/* = nullptr*/)
 {
-	httplib::Client cli(constructHostString());
+	auto cli = getClientForHost(constructHostString());
 	auto uri = furi::uri_split::from_uri(mUrl);
 
 	std::string finalPath;
@@ -79,7 +100,7 @@ std::string HttpRequest::POST(const std::string& body, const char* contentType/*
 		finalPath = path;
 	}
 
-	auto res = cli.Post(finalPath.data(), constructHeaders(mHeaders, mCookies), body, contentType);
+	auto res = cli->Post(finalPath.data(), constructHeaders(mHeaders, mCookies), body, contentType);
 	if (!res) {
 		throw HttplibRequestException("no response", mUrl, 0, magic_enum::enum_name(res.error()).data());
 	}
@@ -91,7 +112,7 @@ std::string HttpRequest::POST(const std::string& body, const char* contentType/*
 
 std::string HttpRequest::GET(const std::map<std::string, std::string> query, const char* path/* = nullptr*/)
 {
-	httplib::Client cli(constructHostString());
+	auto cli = getClientForHost(constructHostString());
 	auto uri = furi::uri_split::from_uri(mUrl);
 	std::string pathAndQuery("/");
 
@@ -117,7 +138,7 @@ std::string HttpRequest::GET(const std::map<std::string, std::string> query, con
 		// remove last &
 		pathAndQuery.pop_back();
 	}
-	auto res = cli.Get(pathAndQuery, constructHeaders(mHeaders, mCookies));
+	auto res = cli->Get(pathAndQuery, constructHeaders(mHeaders, mCookies));
 	if (!res) {
 		throw HttplibRequestException("no response", mUrl, 0, magic_enum::enum_name(res.error()).data());
 	}
@@ -129,9 +150,9 @@ std::string HttpRequest::GET(const std::map<std::string, std::string> query, con
 
 std::string HttpRequest::GET(const char* path)
 {
-	httplib::Client cli(constructHostString());
+	auto cli = getClientForHost(constructHostString());
 
-	auto res = cli.Get(path, constructHeaders(mHeaders, mCookies));
+	auto res = cli->Get(path, constructHeaders(mHeaders, mCookies));
 	if (!res) {
 		std::string url = constructHostString();
 		url.append("/").append(path);
