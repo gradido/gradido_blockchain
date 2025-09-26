@@ -15,6 +15,17 @@
 // this is to prevent crashes, because at least with C++17 and C++20 httplib crashes with calling httplib::Client deconstructor
 // so we create a new client for each new host and keep them forever and don't delete them even on program exit
 // TODO: Fix bug in httplib which leads to this crash
+struct FakeDeleter
+{
+    void operator()(httplib::Client* client) const
+    {
+			#ifdef WIN32
+				delete client;
+			#else
+			// leak memory on linux to prevent crashes on exit
+			#endif
+    }
+};
 static std::multimap<std::string, std::shared_ptr<httplib::Client>> mHttpClients;
 static std::mutex mClientsMutex;
 
@@ -28,7 +39,7 @@ static std::shared_ptr<httplib::Client> getClientForHost(const std::string& host
 		}
 	}
 	
-	auto httpClient = std::make_shared<httplib::Client>(host);
+	std::shared_ptr<httplib::Client> httpClient(new httplib::Client(host), FakeDeleter());
 	mHttpClients.insert({ host, httpClient });
 	return httpClient;
 }
