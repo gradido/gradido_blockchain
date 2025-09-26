@@ -1,4 +1,5 @@
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/toJson/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/interaction/toJson/GradidoTransactionRole.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
@@ -28,8 +29,16 @@ namespace gradido {
 					d.AddMember("runningHash", Value(hashHex.data(), hashHex.size(), alloc), alloc);
 				}
 				if (mTransaction.getMessageId()) {
-					auto messageIdHex = mTransaction.getMessageId()->convertToHex();
-					d.AddMember("messageId", Value(messageIdHex.data(), messageIdHex.size(), alloc), alloc);
+					deserialize::Context context(mTransaction.getMessageId(), deserialize::Type::HIERO_TRANSACTION_ID);
+					context.run();
+					if (context.isHieroTransactionId()) {
+						auto hieroTransactionIdString = context.getHieroTransactionId().toString();
+						d.AddMember("messageId", Value(hieroTransactionIdString.data(), hieroTransactionIdString.size(), alloc), alloc);
+					}
+					else {
+						auto messageIdHex = mTransaction.getMessageId()->convertToHex();
+						d.AddMember("messageId", Value(messageIdHex.data(), messageIdHex.size(), alloc), alloc);
+					}
 				}
 				Value accountBalances(kArrayType);
 				for (auto& accountBalance : mTransaction.getAccountBalances()) {
