@@ -64,7 +64,7 @@ bool Server::init()
 	mServer->set_error_handler([this](const auto& req, auto& res) {
 		// check path
 		auto it = mRegisteredResponseHandlers.find(req.path);
-		if (it != mRegisteredResponseHandlers.end()) {
+		if (it == mRegisteredResponseHandlers.end()) {
 			res.status = httplib::StatusCode::NotFound_404;
 			std::string response = "Path: " + req.path + " Not Found";
 			res.set_content(response, "text/plain");
