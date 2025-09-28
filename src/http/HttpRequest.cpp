@@ -40,6 +40,11 @@ static std::shared_ptr<httplib::Client> getClientForHost(const std::string& host
 	}
 	auto httpClient = std::shared_ptr<httplib::Client>(new httplib::Client(host), FakeDeleter());
 	httpClient->set_keep_alive(true);
+	// TODO: put into config
+	httpClient->set_connection_timeout(5); // 5 seconds
+	httpClient->set_read_timeout(5); // 5 seconds
+	httpClient->set_write_timeout(5); // 5 seconds
+
 	LOG_F(INFO, "created new HTTP%s client for host: %s", isSSL ? "S" : "", host.data());
 	mHttpClients.insert({ host, httpClient });
 	return httpClient;
