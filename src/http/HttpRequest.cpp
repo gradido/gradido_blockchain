@@ -2,7 +2,7 @@
 #include "gradido_blockchain/http/RequestExceptions.h"
 #include "gradido_blockchain/http/ServerConfig.h"
 
-
+// TODO: remove furi dependency and replace with own implementation, it don't work like expected
 #include "furi/furi.hpp"
 #include "magic_enum/magic_enum.hpp"
 #include "loguru/loguru.hpp"
@@ -38,7 +38,6 @@ static std::shared_ptr<httplib::Client> getClientForHost(const std::string& host
 			return it->second;
 		}
 	}
-
 	auto httpClient = std::shared_ptr<httplib::Client>(new httplib::Client(host), FakeDeleter());
 	httpClient->set_keep_alive(true);
 	LOG_F(INFO, "created new HTTP%s client for host: %s", isSSL ? "S" : "", host.data());
@@ -72,13 +71,20 @@ HttpRequest::HttpRequest(const std::string& url)
 	: mUrl(url), mIsSSL(false)
 {
 	auto uri = furi::uri_split::from_uri(mUrl);
-	if (uri.scheme != "http" && uri.scheme != "https") {
-		throw RequestException("cannot find scheme (http|https) in url", url);
-	}
-	if (uri.scheme == "https") {
+	auto portStringView = furi::authority_split::get_port_from_authority(uri.authority);
+	std::string port(portStringView.data(), portStringView.size());
+	// furi put the port into path on url without scheme
+	std::string path(uri.path.data(), uri.path.size());	
+	if (port == "443" || path == "443") {
 		mIsSSL = true;
 	}
-	if (uri.authority.empty()) {
+	if (!uri.scheme.empty()) {
+		if (uri.scheme == "https") {
+			mIsSSL = true;
+		}
+	}
+	
+	if (uri.authority.empty() && uri.scheme.empty()) {
 		throw RequestException("cannot find host in url, please use something like: http://server.com:80", url);
 	}
 }
@@ -188,21 +194,31 @@ std::string HttpRequest::GET(const char* path)
 std::string HttpRequest::constructHostString()
 {
 	auto uri = furi::uri_split::from_uri(mUrl);
-	LOG_F(
-		INFO, "uri split: scheme: %s, authority: %s, path: %s, query: %s, fragment: %s",
-		uri.scheme.data(), uri.authority.data(), uri.path.data(), uri.query.data(), uri.fragment.data()
-	);
 	// http | https
-	std::string host(uri.scheme.data(), uri.scheme.size());
-	if (host.empty()) {
-		host += "http";
+	std::string schema;
+	if (mIsSSL) {
+		schema = "https";
 	}
+	else {
+		schema = "http";
+	}
+	
 #ifndef USE_HTTPS
-	if (host == "https") {
-		mIsSSL = false;
+	if (schema == "https") {
 		LOG_F(WARNING, "try to make Https Request but cpp-httplib was included without OpenSSL-Support, changed to http");
+		schema = "http";
 	}
 #endif
+	std::string hostPort;
+	// if scheme is empty, furi put the host into scheme and port into path
+  if (uri.authority.empty()) {
+		hostPort = std::string(uri.scheme.data(), uri.scheme.size());
+		hostPort += ":";
+		std::string path(uri.path.data(), uri.path.size());
+		hostPort += path;
+	} else {
+  	hostPort = std::string(uri.authority.data(), uri.authority.size());
+	}
 	// host:port
-	return std::string(uri.authority.data(), uri.authority.size());
+	return schema + "://" + hostPort;
 }
