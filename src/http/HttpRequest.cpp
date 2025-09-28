@@ -29,7 +29,7 @@ struct FakeDeleter
 static std::multimap<std::string, std::shared_ptr<httplib::Client>> mHttpClients;
 static std::mutex mClientsMutex;
 
-static std::shared_ptr<httplib::Client> getClientForHost(const std::string& host)
+static std::shared_ptr<httplib::Client> getClientForHost(const std::string& host, bool isSSL = false)
 {
 	std::lock_guard _lock(mClientsMutex);
 	auto range = mHttpClients.equal_range(host);
@@ -38,8 +38,10 @@ static std::shared_ptr<httplib::Client> getClientForHost(const std::string& host
 			return it->second;
 		}
 	}
-	
-	std::shared_ptr<httplib::Client> httpClient(new httplib::Client(host), FakeDeleter());
+
+	auto httpClient = std::shared_ptr<httplib::Client>(new httplib::Client(host), FakeDeleter());
+	httpClient->set_keep_alive(true);
+	LOG_F(INFO, "created new HTTP%s client for host: %s", isSSL ? "S" : "", host.data());
 	mHttpClients.insert({ host, httpClient });
 	return httpClient;
 }
@@ -67,11 +69,14 @@ static httplib::Headers constructHeaders(std::multimap<std::string, std::string>
 }
 
 HttpRequest::HttpRequest(const std::string& url)
-	: mUrl(url)
+	: mUrl(url), mIsSSL(false)
 {
 	auto uri = furi::uri_split::from_uri(mUrl);
 	if (uri.scheme != "http" && uri.scheme != "https") {
 		throw RequestException("cannot find scheme (http|https) in url", url);
+	}
+	if (uri.scheme == "https") {
+		mIsSSL = true;
 	}
 	if (uri.authority.empty()) {
 		throw RequestException("cannot find host in url, please use something like: http://server.com:80", url);
@@ -83,6 +88,7 @@ HttpRequest::HttpRequest(const std::string& host, int port, const char* path/* =
 	if (host.find("http") == std::string::npos) {
 		if (port == 443) {
 			mUrl = "https://";
+			mIsSSL = true;
 		}
 		else {
 			mUrl = "http://";
@@ -100,7 +106,7 @@ HttpRequest::HttpRequest(const std::string& host, int port, const char* path/* =
 
 std::string HttpRequest::POST(const std::string& body, const char* contentType/* = "application/json"*/, const char* path/* = nullptr*/)
 {
-	auto cli = getClientForHost(constructHostString());
+	auto cli = getClientForHost(constructHostString(), mIsSSL);
 	auto uri = furi::uri_split::from_uri(mUrl);
 
 	std::string finalPath;
@@ -123,13 +129,14 @@ std::string HttpRequest::POST(const std::string& body, const char* contentType/*
 
 std::string HttpRequest::GET(const std::map<std::string, std::string> query, const char* path/* = nullptr*/)
 {
-	auto cli = getClientForHost(constructHostString());
+	auto cli = getClientForHost(constructHostString(), mIsSSL);
 	auto uri = furi::uri_split::from_uri(mUrl);
 	std::string pathAndQuery("/");
 
 	if (!path) {
 		if (uri.path.size()) {
-			pathAndQuery += std::string(uri.path.data());
+			if(uri.path.data()[0] != '/') pathAndQuery += "/";
+			pathAndQuery = std::string(uri.path.data(), uri.path.size());
 		}
 	}
 	else {
@@ -137,7 +144,7 @@ std::string HttpRequest::GET(const std::map<std::string, std::string> query, con
 	}
 	if (query.empty()) {
 		if (uri.query.size()) {
-			pathAndQuery += "?" + std::string(uri.query.data());
+			pathAndQuery += "?" + std::string(uri.query.data(), uri.query.size());
 		}
 	}
 	else {
@@ -161,17 +168,17 @@ std::string HttpRequest::GET(const std::map<std::string, std::string> query, con
 
 std::string HttpRequest::GET(const char* path)
 {
-	auto cli = getClientForHost(constructHostString());
+	std::string host = constructHostString();
+	auto cli = getClientForHost(host, mIsSSL);
 
 	auto res = cli->Get(path, constructHeaders(mHeaders, mCookies));
 	if (!res) {
-		std::string url = constructHostString();
+		std::string url = host;
 		url.append("/").append(path);
 		throw HttplibRequestException("no response", url, 0, magic_enum::enum_name(res.error()).data());
 	}
 	if (res->status != 200) {
-		auto host = constructHostString();
-		std::string url(host);
+		std::string url = host;
 		url.append("/").append(path);
 		throw HttplibRequestException("status isn't 200 for GET", url, res->status, magic_enum::enum_name(res.error()).data());
 	}
@@ -181,18 +188,21 @@ std::string HttpRequest::GET(const char* path)
 std::string HttpRequest::constructHostString()
 {
 	auto uri = furi::uri_split::from_uri(mUrl);
+	LOG_F(
+		INFO, "uri split: scheme: %s, authority: %s, path: %s, query: %s, fragment: %s",
+		uri.scheme.data(), uri.authority.data(), uri.path.data(), uri.query.data(), uri.fragment.data()
+	);
 	// http | https
 	std::string host(uri.scheme.data(), uri.scheme.size());
 	if (host.empty()) {
 		host += "http";
 	}
 #ifndef USE_HTTPS
-	if ("https" == host) {
-		host = "http";
+	if (host == "https") {
+		mIsSSL = false;
 		LOG_F(WARNING, "try to make Https Request but cpp-httplib was included without OpenSSL-Support, changed to http");
 	}
 #endif
 	// host:port
-	host += "://" + std::string(uri.authority.data(), uri.authority.size());
-	return host;
+	return std::string(uri.authority.data(), uri.authority.size());
 }
