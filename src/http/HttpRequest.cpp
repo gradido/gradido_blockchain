@@ -40,10 +40,11 @@ static std::shared_ptr<httplib::Client> getClientForHost(const std::string& host
 	}
 	auto httpClient = std::shared_ptr<httplib::Client>(new httplib::Client(host), FakeDeleter());
 	httpClient->set_keep_alive(true);
-	// TODO: put into config
-	httpClient->set_connection_timeout(5); // 5 seconds
-	httpClient->set_read_timeout(5); // 5 seconds
-	httpClient->set_write_timeout(5); // 5 seconds
+	// some weird bug in httplib (debug, debian 12), intern it will move connection_timeout_sec_ to connection_timeout_usec_
+	// and setting connection_timeout_sec_ to 0 leading to calculating connection timeout:
+	// auto timeout = static_cast<int>(0 * 1000 + connection_timeout_sec_ / 1000);
+	// so 1200000 "seconds" becomes 1200 milliseconds
+	httpClient->set_connection_timeout(1200000); // 5 seconds
 
 	LOG_F(INFO, "created new HTTP%s client for host: %s", isSSL ? "S" : "", host.data());
 	mHttpClients.insert({ host, httpClient });
