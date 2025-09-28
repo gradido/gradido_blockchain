@@ -61,7 +61,15 @@ bool Server::init()
 		//LOG_F(INFO, "path requested: %s, method: %s", req.path.data(), req.method.data());
 		//printf("request: %s, response: %s\n", req.body.data(), res.body.data());
 		});
-	mServer->set_error_handler([](const auto& req, auto& res) {
+	mServer->set_error_handler([this](const auto& req, auto& res) {
+		// check path
+		auto it = mRegisteredResponseHandlers.find(req.path);
+		if (it != mRegisteredResponseHandlers.end()) {
+			res.status = httplib::StatusCode::NotFound_404;
+			std::string response = "Path: " + req.path + " Not Found";
+			res.set_content(response, "text/plain");
+			return;
+		}
 		std::string data = req.path;
 		if (!req.body.empty()) {
 			data = req.body;
