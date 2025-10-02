@@ -135,11 +135,11 @@ FILE(GLOB DATA_IOTA "include/gradido_blockchain/data/iota/*.h" "src/data/iota/*.
 FILE(GLOB DATA_HIERO "include/gradido_blockchain/data/hiero/*.h" "src/data/hiero/*.cpp")
 FILE(GLOB HTTP "include/gradido_blockchain/http/*.h" "src/http/*.cpp")
 FILE(GLOB INTERACTION "include/gradido_blockchain/interaction/*.h" "src/interaction/*.cpp")
-
 FILE(GLOB LIB_SRC "include/gradido_blockchain/lib/*.h" "src/lib/*.cpp")
 FILE(GLOB MAIN "src/*.cpp" "src/*.c"  "include/gradido_blockchain/*.h")
 FILE(GLOB MEMORY "include/gradido_blockchain/memory/*.h" "src/memory/*.cpp")
 FILE(GLOB PROTO_GRADIDO "build/proto/gradido/*.cc" "build/proto/gradido/*.h")
+FILE(GLOB SERIALIZATION "include/gradido_blockchain/serialization/*.h" "src/serialization/*.cpp")
 FILE(GLOB TINF "dependencies/tinf/src/*.c" "dependencies/tinf/src/*.h")
 FIlE(GLOB THREADING "include/gradido_blockchain/threading/*.h" "src/threading/*.cpp")
 FILE(GLOB BLOCKCHAIN "include/gradido_blockchain/blockchain/*.h" "src/blockchain/*.cpp")
@@ -191,6 +191,7 @@ SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${MAIN}
 	${MEMORY}
 	${MODEL_IOTA} 
+	${SERIALIZATION}
 	${TINF} 
 	${THREADING}
 	${INTERACTION_ADVANCED_BLOCKCHAIN_FILTER}
@@ -221,6 +222,7 @@ if(MSVC)
 	source_group("interaction" FILES ${INTERACTION})
 	source_group("lib" FILES ${LIB_SRC})	
 	source_group("memory" FILES ${MEMORY})
+	source_group("serialization" FILES ${SERIALIZATION})
 	source_group("tinf" FILES ${TINF})
 	source_group("threading" FILES ${THREADING})	
 	source_group("interaction\\advancedBlockchainFilter" FILES ${INTERACTION_ADVANCED_BLOCKCHAIN_FILTER})
