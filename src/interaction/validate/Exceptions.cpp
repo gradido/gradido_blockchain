@@ -1,7 +1,7 @@
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
-#include "gradido_blockchain/interaction/toJson/Context.h"
+#include "gradido_blockchain/serialization/toJsonString.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
 #include "loguru/loguru.hpp"
@@ -274,10 +274,8 @@ namespace gradido {
 			std::string PairingTransactionNotMatchException::getFullString() const noexcept
 			{
 				std::string resultString;
-				interaction::toJson::Context transactionToJson(*mTransaction.get());
-				auto transactionJson = transactionToJson.run(true);
-				interaction::toJson::Context paringTransactionToJson(*mPairingTransaction.get());
-				auto pairedTransactionJson = paringTransactionToJson.run(true);
+				auto transactionJson = serialization::toJsonString(*mTransaction, true);
+				auto pairedTransactionJson = serialization::toJsonString(*mPairingTransaction, true);
 				size_t resultSize = strlen(what()) + transactionJson.size() + pairedTransactionJson.size() + 4;
 				resultString.reserve(resultSize);
 				resultString = what();

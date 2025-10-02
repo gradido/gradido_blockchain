@@ -4,7 +4,7 @@
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
-#include "gradido_blockchain/interaction/toJson/Context.h"
+#include "gradido_blockchain/serialization/toJsonString.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/lib/Profiler.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
@@ -233,10 +233,8 @@ bool InMemoryTest::createGradidoRedeemDeferredTransfer(
 void InMemoryTest::logBlockchain()
 {
 	auto transactions = dynamic_cast<InMemory*>(mBlockchain.get())->getSortedTransactions();
-
 	for (auto transaction : transactions) {
-		toJson::Context c(*transaction->getConfirmedTransaction());
-		LOG_F(INFO, c.run(true).data());
+		LOG_F(INFO, serialization::toJsonString(*transaction->getConfirmedTransaction(), true).data());
 	}
 }
 

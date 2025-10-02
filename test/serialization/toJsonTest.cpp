@@ -56,7 +56,7 @@ TEST(ToJsonTest, Filter) {
 
 	EXPECT_EQ(1, json["minTransactionNr"].GetInt());
 	EXPECT_EQ(2, json["maxTransactionNr"].GetInt());
-	EXPECT_STREQ("1234567890abcdef", json["involvedPublicKey"].GetString());
+	EXPECT_STREQ("1234567890abcdef", json["involvedPubkey"].GetString());
 	EXPECT_STREQ("ASC", json["searchDirection"].GetString());
 	EXPECT_EQ(1, json["pagination"]["size"].GetInt());
 	EXPECT_EQ(2, json["pagination"]["page"].GetInt());

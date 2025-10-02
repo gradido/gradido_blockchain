@@ -2,7 +2,7 @@
 #include "../KeyPairs.h"
 #include "const.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
-#include "gradido_blockchain/interaction/toJson/Context.h"
+#include "gradido_blockchain/serialization/toJsonString.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
@@ -12,20 +12,16 @@ using namespace gradido;
 using namespace data;
 using namespace interaction;
 using namespace std;
+using namespace serialization;
 
 TEST(ToJsonTest, TransactionBodyWithoutMemo)
 {
 	TransactionBody body(createdAt, VERSION_STRING);
 
-	toJson::Context c(body);
-	auto json = c.run();
-	// printf("json: %s\n", json.data());
-	EXPECT_EQ(json, "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\"}");
+	EXPECT_EQ(toJsonString(body), "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\"}");
 
-	auto jsonPretty = c.run(true);
 	// printf("json pretty: %s\n", jsonPretty.data());
-	EXPECT_EQ(jsonPretty, "{\n    \"memos\": [],\n    \"createdAt\": \"2021-01-01 00:00:00.0000\",\n    \"versionNumber\": \"3.5\",\n    \"type\": \"LOCAL\"\n}");	
-
+	EXPECT_EQ(toJsonString(body, true), "{\n    \"memos\": [],\n    \"createdAt\": \"2021-01-01 00:00:00.0000\",\n    \"versionNumber\": \"3.5\",\n    \"type\": \"LOCAL\"\n}");
 }
 
 TEST(ToJsonTest, CommunityRootBody)
@@ -45,10 +41,7 @@ TEST(ToJsonTest, CommunityRootBody)
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body->isCommunityRoot());
 
-	toJson::Context c(*body);
-	auto json = c.run();
-	// printf("json: %s\n", json.data());
-	EXPECT_EQ(json, "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"communityRoot\":{\"pubkey\":\"81670329946988edf451f4c424691d83cf5a90439042882d5bb72243ef551ef4\",\"gmwPubkey\":\"d7e3a8a090aa44873246f5c6acfc17ff74ee174f56e7bd2a55ffb81041f6db1d\",\"aufPubkey\":\"946f583630d89c77cc1fc61d46726a3adeacb91ccab166c08a44ca0a0a0255c4\"}}");
+	EXPECT_EQ(toJsonString(*body), "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"communityRoot\":{\"pubkey\":\"81670329946988edf451f4c424691d83cf5a90439042882d5bb72243ef551ef4\",\"gmwPubkey\":\"d7e3a8a090aa44873246f5c6acfc17ff74ee174f56e7bd2a55ffb81041f6db1d\",\"aufPubkey\":\"946f583630d89c77cc1fc61d46726a3adeacb91ccab166c08a44ca0a0a0255c4\"}}");
 }
 
 TEST(ToJsonTest, RegisterAddressBody) {
@@ -69,10 +62,7 @@ TEST(ToJsonTest, RegisterAddressBody) {
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body->isRegisterAddress());
 
-	toJson::Context c(*body);
-	auto json = c.run();
-	// printf("json: %s\n", json.data());
-	EXPECT_EQ(json, "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"registerAddress\":{\"userPubkey\":\"f4dd3989f7554b7ab32e3dd0b7f9e11afce90a1811e9d1f677169eb44bf44272\",\"addressType\":\"COMMUNITY_HUMAN\",\"accountPubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"derivationIndex\":1}}");
+	EXPECT_EQ(toJsonString(*body), "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"registerAddress\":{\"userPubkey\":\"f4dd3989f7554b7ab32e3dd0b7f9e11afce90a1811e9d1f677169eb44bf44272\",\"addressType\":\"COMMUNITY_HUMAN\",\"accountPubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"derivationIndex\":1}}");
 }
 
 TEST(ToJsonTest, GradidoCreationBody) {
@@ -92,10 +82,8 @@ TEST(ToJsonTest, GradidoCreationBody) {
 	ASSERT_TRUE(body->isCreation());
 	EXPECT_EQ(body->getMemos().size(), 1);
 	EXPECT_TRUE(body->getMemos()[0].isPlain());
-	toJson::Context c(*body);
-	auto json = c.run();
-	// printf("json: %s\n", json.data());
-	EXPECT_EQ(json, "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Deine erste Schoepfung ;)\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"creation\":{\"recipient\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":\"1000.0000\"},\"targetDate\":\"2020-12-31 23:56:40.0000\"}}");
+	
+	EXPECT_EQ(toJsonString(*body), "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Deine erste Schoepfung ;)\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"creation\":{\"recipient\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":\"1000.0000\"},\"targetDate\":\"2020-12-31 23:56:40.0000\"}}");
 }
 
 TEST(ToJsonTest, GradidoTransferBody) {
@@ -113,11 +101,8 @@ TEST(ToJsonTest, GradidoTransferBody) {
 	auto transaction = builder.build();
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body->isTransfer());
-	toJson::Context c(*body);
-
-	auto json = c.run();
-	// printf("json: %s\n", json.data());
-	EXPECT_EQ(json, "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Ich teile mit dir\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"transfer\":{\"sender\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":\"500.5500\"},\"recipient\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\"}}");
+	
+	EXPECT_EQ(toJsonString(*body), "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Ich teile mit dir\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"transfer\":{\"sender\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":\"500.5500\"},\"recipient\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\"}}");
 }
 
 TEST(ToJsonTest, GradidoDeferredTransferBody) {
@@ -138,11 +123,8 @@ TEST(ToJsonTest, GradidoDeferredTransferBody) {
 	auto body = transaction->getTransactionBody();
 
 	ASSERT_TRUE(body->isDeferredTransfer());
-	toJson::Context c(*body);
 
-	auto json = c.run();
-	// printf("json: %s\n", json.data());
-	EXPECT_EQ(json, "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Link zum einloesen\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"deferredTransfer\":{\"transfer\":{\"sender\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":\"555.5500\"},\"recipient\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\"},\"timeout\":\"1 hours 36 minutes 24 seconds\"}}");
+	EXPECT_EQ(toJsonString(*body), "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Link zum einloesen\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"deferredTransfer\":{\"transfer\":{\"sender\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":\"555.5500\"},\"recipient\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\"},\"timeout\":\"1 hours 36 minutes 24 seconds\"}}");
 }
 
 TEST(ToJsonTest, CommunityFriendsUpdateBody) {
@@ -157,11 +139,8 @@ TEST(ToJsonTest, CommunityFriendsUpdateBody) {
 	auto body = transaction->getTransactionBody();
 	
 	ASSERT_TRUE(body->isCommunityFriendsUpdate());
-	toJson::Context c(*body);
 
-	auto json = c.run();
-	// printf("json: %s\n", json.data());
-	EXPECT_EQ(json, "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"communityFriendsUpdate\":{\"colorFusion\":true}}");
+	EXPECT_EQ(toJsonString(*body), "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"communityFriendsUpdate\":{\"colorFusion\":true}}");
 }
 
 TEST(ToJsonTest, GradidoTransaction) {	
@@ -174,11 +153,8 @@ TEST(ToJsonTest, GradidoTransaction) {
 		std::make_shared<memory::Block>(g_KeyPairs[3]->sign(*bodyBytes))
 	));
 	GradidoTransaction transaction(signatures, bodyBytes);
-	toJson::Context c(transaction);
 
-	auto json = c.run();
-	// printf("json: %s\n", json.data());
-	EXPECT_EQ(json, "{\"signatureMap\":[{\"pubkey\":\"f4dd3989f7554b7ab32e3dd0b7f9e11afce90a1811e9d1f677169eb44bf44272\",\"signature\":\"b4c8d994c7c08a6b13685d33767fc843061a6bcfa0d3c415335567610c0deeaa45efce6e038ca7c1d21bcfba98b0f6fa9ed6c75f9cda6ce186db400120c09a02\"}],\"bodyBytes\":{\"json\":\"cannot deserialize from body bytes\"}}");
+	EXPECT_EQ(toJsonString(transaction), "{\"signatureMap\":[{\"pubkey\":\"f4dd3989f7554b7ab32e3dd0b7f9e11afce90a1811e9d1f677169eb44bf44272\",\"signature\":\"b4c8d994c7c08a6b13685d33767fc843061a6bcfa0d3c415335567610c0deeaa45efce6e038ca7c1d21bcfba98b0f6fa9ed6c75f9cda6ce186db400120c09a02\"}],\"bodyBytes\":\"cannot deserialize from body bytes\"}");
 }
 
 
@@ -193,11 +169,8 @@ TEST(ToJsonTest, MinimalConfirmedTransaction) {
 		make_shared<memory::Block>(32),
 		{}
 	);
-	toJson::Context c(confirmedTransaction);
 
-	auto json = c.run();
-	// printf("json: %s\n", json.data());
-	EXPECT_EQ(json, "{\"id\":7,\"gradidoTransaction\":{\"signatureMap\":[],\"bodyBytes\":{\"json\":\"body bytes missing\"}},\"confirmedAt\":\"2021-01-01 01:22:10.0000\",\"versionNumber\":\"3.5\",\"runningHash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"messageId\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"accountBalances\":[]}");
+	EXPECT_EQ(toJsonString(confirmedTransaction), "{\"id\":7,\"gradidoTransaction\":{\"signatureMap\":[],\"bodyBytes\":\"body bytes missing\"},\"confirmedAt\":\"2021-01-01 01:22:10.0000\",\"versionNumber\":\"3.5\",\"runningHash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"messageId\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"accountBalances\":[]}");
 }
 
 TEST(ToJsonTest, CompleteConfirmedTransaction) {
@@ -228,11 +201,6 @@ TEST(ToJsonTest, CompleteConfirmedTransaction) {
 			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483) }
 		}
 	);
-	toJson::Context c(confirmedTransaction, toJson::BodyBytesType::BASE64 | toJson::BodyBytesType::HEX | toJson::BodyBytesType::JSON);
-
-	auto json = c.run();
-	// printf("json: %s\n", json.data());
-	EXPECT_EQ(json, "{\"id\":7,\"gradidoTransaction\":{\"signatureMap\":[{\"pubkey\":\"81670329946988edf451f4c424691d83cf5a90439042882d5bb72243ef551ef4\",\"signature\":\"04e0d0f6c4bbd2d87dc879fc5f72be48dbf682c888757fd5d3d6da0af4026fec848f60ddfdfcd284862a7f7a68a08330274d4190325d346059b39303cc40240a\"}],\"bodyBytes\":{\"base64\":\"ChkIAhIVRGFua2UgZnVlciBkZWluIFNlaW4hEggIgMy5/wUQABoDMy41IAAyTAooCiDbDtYSWhTwMKvtG/yDHgohjPn6v87n7NWBwMDniPAXxxCUmD0aABIgJE0o18xb6P6PsNjh0bkN52AzhggteTzoh09jV+blMq0=\",\"hex\":\"0a190802121544616e6b652066756572206465696e205365696e2112080880ccb9ff0510001a03332e352000324c0a280a20db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c71094983d1a001220244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\",\"json\":{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Danke fuer dein Sein!\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"transfer\":{\"sender\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":\"100.2516\"},\"recipient\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\"}}}},\"confirmedAt\":\"2021-01-01 01:22:10.0000\",\"versionNumber\":\"3.5\",\"runningHash\":\"28a58de12318789f59ee15373a1ef8337da0e2cd66f266bf756590ffb5447ecc\",\"messageId\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"accountBalances\":[{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"balance\":\"100.0000\"},{\"pubkey\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\",\"balance\":\"899.7483\"}]}");
-	auto jsonPretty = c.run(true);
-	// printf("json pretty: %s\n", jsonPretty.data());
+	EXPECT_EQ(toJsonString(confirmedTransaction), "{\"id\":7,\"gradidoTransaction\":{\"signatureMap\":[{\"pubkey\":\"81670329946988edf451f4c424691d83cf5a90439042882d5bb72243ef551ef4\",\"signature\":\"04e0d0f6c4bbd2d87dc879fc5f72be48dbf682c888757fd5d3d6da0af4026fec848f60ddfdfcd284862a7f7a68a08330274d4190325d346059b39303cc40240a\"}],\"bodyBytes\":{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Danke fuer dein Sein!\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"transfer\":{\"sender\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":\"100.2516\"},\"recipient\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\"}}},\"confirmedAt\":\"2021-01-01 01:22:10.0000\",\"versionNumber\":\"3.5\",\"runningHash\":\"28a58de12318789f59ee15373a1ef8337da0e2cd66f266bf756590ffb5447ecc\",\"messageId\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"accountBalances\":[{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"balance\":\"100.0000\"},{\"pubkey\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\",\"balance\":\"899.7483\"}]}");	
+	// printf("json pretty: %s\n", toJsonString(confirmedTransaction, true).data());
 }

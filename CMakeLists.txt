@@ -174,10 +174,6 @@ FILE(GLOB INTERACTION_SERIALIZE
 	"include/gradido_blockchain/interaction/serialize/*.h" 
 	"src/interaction/serialize/*.cpp"
 )
-FILE(GLOB INTERACTION_TO_JSON 
-	"include/gradido_blockchain/interaction/toJson/*.h" 
-	"src/interaction/toJson/*.cpp"
-)
 FILE(GLOB INTERACTION_VALIDATE 
 	"include/gradido_blockchain/interaction/validate/*.h"
 	"src/interaction/validate/*.cpp"
@@ -202,7 +198,6 @@ SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${INTERACTION_CREATE_TRANSACTION_BY_EVENT}
 	${INTERACTION_DESERIALIZE}
 	${INTERACTION_SERIALIZE}
-	${INTERACTION_TO_JSON}
 	${INTERACTION_VALIDATE}
 )
 
@@ -233,7 +228,6 @@ if(MSVC)
 	source_group("interaction\\createTransactionByEvent" FILES ${INTERACTION_CREATE_TRANSACTION_BY_EVENT})
 	source_group("interaction\\deserialize" FILES ${INTERACTION_DESERIALIZE})
 	source_group("interaction\\serialize" FILES ${INTERACTION_SERIALIZE})
-	source_group("interaction\\toJson" FILES ${INTERACTION_TO_JSON})
 	source_group("interaction\\validate" FILES ${INTERACTION_VALIDATE})
 endif()
 

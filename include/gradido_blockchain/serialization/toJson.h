@@ -16,6 +16,19 @@ namespace gradido {
 }
 
 namespace serialization {
+
+// Explicitly instantiate and export these specializations from the library.
+// This is required on Windows when building a dynamic/shared library to ensure
+// the symbols are visible to consuming code.
+#define DEFINE_TO_JSON(TYPE, BODY)												 \
+    template<>																	 \
+    rapidjson::Value toJson(const TYPE& value, Document::AllocatorType& alloc) { \
+        rapidjson::Value obj(rapidjson::kObjectType);                            \
+        BODY																	 \
+        return obj;																 \
+    }																			 \
+    template GRADIDOBLOCKCHAIN_EXPORT rapidjson::Value toJson(const TYPE& value, Document::AllocatorType& alloc);    
+// DEFINE_TO_JSON end
   
 	// for compile time check if for a type a toJson specialization exists
 	template<typename, typename = void>
