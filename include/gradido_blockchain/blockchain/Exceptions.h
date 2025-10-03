@@ -6,6 +6,8 @@
 
 namespace gradido {
 	namespace blockchain {
+		class Filter;
+
 		class GRADIDOBLOCKCHAIN_EXPORT ConstructBlockchainException : public GradidoBlockchainException
 		{
 		public:
@@ -45,13 +47,13 @@ namespace gradido {
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionResultCountException : public GradidoBlockchainException
 		{
 		public:
-			explicit TransactionResultCountException(const char* what, int expectedResultCount, int actuallyResultCount) noexcept
-				: GradidoBlockchainException(what), mExpectedResultCount(expectedResultCount), mActuallyResultCount(actuallyResultCount) {}
+			explicit TransactionResultCountException(const char* what, int expectedResultCount, int actuallyResultCount, const Filter& filter) noexcept;
 
 			std::string getFullString() const;
 		protected:
 			int mExpectedResultCount;
 			int mActuallyResultCount;
+			std::string mFilterJson;
 		};
 
 		class GRADIDOBLOCKCHAIN_EXPORT CommunityNotFoundException : GradidoBlockchainException
