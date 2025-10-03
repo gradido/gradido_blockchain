@@ -1,7 +1,6 @@
 #include "gradido_blockchain/http/GraphQLRequest.h"
 
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
+#include "rapidjson/document.h"
 
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/http/RequestExceptions.h"
