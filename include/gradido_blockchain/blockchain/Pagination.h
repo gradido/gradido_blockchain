@@ -29,6 +29,11 @@ namespace gradido {
 				if (!page) return 0;
 				return (page-1) * size;
 			}
+			inline bool hasCapacityLeft(unsigned int currentCount) const {
+				if (!size) return true;
+				if (currentCount >= size) return false;
+				return true;
+			}
 		};
 	}
 }
