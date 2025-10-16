@@ -16,6 +16,8 @@ namespace gradido {
 				AbstractAlgoRole(Timepoint date, Timepoint targetDate, memory::ConstBlockPtr publicKey, uint64_t transactionNrMax = 0)
 					: mDate(date), mTargetDate(targetDate), mPublicKey(publicKey), mTransactionNrMax(transactionNrMax) {}
 
+				virtual ~AbstractAlgoRole() {}
+
 				//! get creation limit 
 				virtual GradidoUnit getLimit() const = 0;
 				//! calculate creation sum 

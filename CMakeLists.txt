@@ -2,8 +2,8 @@
 
 cmake_minimum_required(VERSION 3.18.2)
 cmake_policy(VERSION 3.18.2)
+set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/toolchain.cmake")
 project(GradidoBlockchain VERSION 2.0.0)
-
 option(ENABLE_IOTA_RUST_CLIENT "switch for include rust iota client into build, increase build time and size a lot" OFF)
 option(ENABLE_HTTP "switch for include http based classes into build, increase build time and size" OFF)
 option(ENABLE_HTTPS "switch for include openssl for https support" OFF)

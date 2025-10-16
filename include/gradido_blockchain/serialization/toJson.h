@@ -31,19 +31,11 @@ namespace serialization {
 // DEFINE_TO_JSON end
   
 	// for compile time check if for a type a toJson specialization exists
-	template<typename, typename = void>
-	struct has_to_json : std::false_type {};
-
+	// C++20 concept-based detection - works reliably with Clang (zig c++)
 	template<typename T>
-	struct has_to_json<
-		T, std::void_t<
-			decltype(toJson(std::declval<const T&>(), 
-			std::declval<rapidjson::Document::AllocatorType&>()))
-		>
-	> : std::true_type {};
-
-	template<typename T>
-	constexpr bool has_to_json_v = has_to_json<T>::value;
+	concept HasToJson = requires(const T& t, rapidjson::Document::AllocatorType& alloc) {
+			{ toJson(t, alloc) } -> std::same_as<rapidjson::Value>;
+	};
 
 	// Generic converter
 	template<typename T>
@@ -68,7 +60,7 @@ namespace serialization {
 	inline constexpr bool is_json_container_v = is_json_container<T>::value;
 
 	template<typename T>
-	requires (!has_to_json_v<T>) && is_json_container_v<T>
+	requires (!HasToJson<T>) && is_json_container_v<T>
 	rapidjson::Value toJson(const T& container, rapidjson::Document::AllocatorType& alloc) 
 	{
 		rapidjson::Value arr(rapidjson::kArrayType);
