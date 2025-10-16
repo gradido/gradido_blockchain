@@ -67,3 +67,12 @@ TEST(GradidoUnitTest, TestReverseDecay)
 		ASSERT_LE(abs(startValue.getGradidoCent() - valueWithDecay.calculateDecay(i).getGradidoCent()), 1);
 	}
 }
+
+TEST(GradidoUnitTest, With100Gdd14DaysDecay)
+{
+	auto startValue = GradidoUnit::fromGradidoCent(1000000);
+	auto decayed = startValue.calculateDecay(60 * 60 * 24 * 14);
+	// printf("decayed value: %s\n", decayed.toString().data());
+	ASSERT_EQ(decayed.getGradidoCent(), 973781);
+}	
+
