@@ -61,10 +61,12 @@ namespace serialization {
 		return toJson(gdd.toString(4), alloc);
 	}
 
+#ifdef _WIN32
 	// Explicitly instantiate and export these specializations from the library.
 	// This is required on Windows when building a dynamic/shared library to ensure
 	// the symbols are visible to consuming code.
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const memory::Block& block, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const Timepoint& timepoint, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const GradidoUnit& gdd, Document::AllocatorType& alloc);
+#endif
 }

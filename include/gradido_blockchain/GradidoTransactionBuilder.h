@@ -1,10 +1,42 @@
 #ifndef __GRADIDO_BLOCKCHAIN_GRADIDO_TRANSACTION_BUILDER_H
 #define __GRADIDO_BLOCKCHAIN_GRADIDO_TRANSACTION_BUILDER_H
 
-#include "gradido_blockchain/data/GradidoTransaction.h"
-#include "gradido_blockchain/crypto/KeyPairEd25519.h"
+#include "gradido_blockchain/export.h"
+#include "gradido_blockchain/types.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain/data/SignatureMap.h"
+
+#include <memory>
+#include <string>
+#include <string_view>
+
+class KeyPairEd25519;
+
+namespace memory {
+	class Block;
+	using ConstBlockPtr = std::shared_ptr<const Block>;
+}
 
 namespace gradido {
+	namespace data {
+		enum class AddressType;
+		class CommunityFriendsUpdate;
+		class CommunityRoot;
+		enum class CrossGroupType;
+		class DurationSeconds;
+		class EncryptedMemo;
+		class GradidoTransaction;
+		class GradidoTransfer;
+		class GradidoCreation;		
+		class GradidoRedeemDeferredTransfer;
+		class GradidoTimeoutDeferredTransfer;
+		class GradidoDeferredTransfer;
+		class RegisterAddress;
+		class Timestamp;
+		class TransactionBody;
+		class TransferAmount;		
+	}
+
 	/*!
 	 * @author einhornimmond
 	 * 
@@ -121,7 +153,7 @@ namespace gradido {
 	};
 
 	// *******************  Exceptions ****************************
-	class GradidoTransactionBuilderException : public GradidoBlockchainException
+	class GRADIDOBLOCKCHAIN_EXPORT GradidoTransactionBuilderException : public GradidoBlockchainException
 	{
 	public:
 		explicit GradidoTransactionBuilderException(const char* what) noexcept
@@ -132,7 +164,7 @@ namespace gradido {
 		}
 	};	
 
-	class GradidoTransactionWrongBuildingStateBuilderException : public GradidoTransactionBuilderException
+	class GRADIDOBLOCKCHAIN_EXPORT GradidoTransactionWrongBuildingStateBuilderException : public GradidoTransactionBuilderException
 	{
 	public:
 		explicit GradidoTransactionWrongBuildingStateBuilderException(
