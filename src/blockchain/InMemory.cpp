@@ -6,7 +6,6 @@
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
 #include "gradido_blockchain/interaction/validate/Type.h"
-#include "gradido_blockchain/interaction/toJson/Context.h"
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"

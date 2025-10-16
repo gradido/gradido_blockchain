@@ -1,4 +1,6 @@
+#include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
+#include "gradido_blockchain/serialization/toJsonString.h"
 
 namespace gradido {
 	namespace blockchain {
@@ -31,15 +33,26 @@ namespace gradido {
 			return result;
 		}
 
-		std::string TransactionResultCountException::getFullString() const
+		TransactionResultCountException::TransactionResultCountException(
+			const char* what, int expectedResultCount, int actuallyResultCount, const Filter& filter
+		) noexcept
+			: GradidoBlockchainException(what), 
+			mExpectedResultCount(expectedResultCount), 
+			mActuallyResultCount(actuallyResultCount), 
+			mFilterJson(serialization::toJsonString(filter, true))
 		{
-			std::string result = what();
-			result += ", expected result count: " + std::to_string(mExpectedResultCount);
-			result += " actual result count: " + std::to_string(mActuallyResultCount);
-			return result;
 		}
 
-
+		std::string TransactionResultCountException::getFullString() const
+		{
+			std::string result;
+			result.reserve(mFilterJson.size() + strlen(what()) + 60);
+			result = what();
+			result += ", expected result count: " + std::to_string(mExpectedResultCount);
+			result += " actual result count: " + std::to_string(mActuallyResultCount);
+			result += "\n" + mFilterJson;
+			return result;
+		}
 
 		CommunityNotFoundException::CommunityNotFoundException(const char* what, std::string_view communityId) noexcept
 			: GradidoBlockchainException(what), mCommunityId(communityId)

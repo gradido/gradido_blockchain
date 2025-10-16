@@ -24,6 +24,7 @@ FILE(GLOB TEST_LIB "lib/*.cpp" "lib/*.h")
 FILE(GLOB TEST_MAIN "*.cpp" "*.h")
 FILE(GLOB TEST_DATA "data/*.cpp" "data/*.h")
 FILE(GLOB TEST_DATA_HIERO "data/hiero/*.cpp" "data/hiero/*.h")
+FILE(GLOB TEST_SERIALIZATION "serialization/*.cpp" "serialization/*.h")
 
 
 SET(TEST_SRC 
@@ -34,6 +35,7 @@ SET(TEST_SRC
   ${TEST_DATA}
   ${TEST_DATA_HIERO}
   ${TEST_INTERACTION}
+  ${TEST_SERIALIZATION}
 )
 
 if(MSVC)
@@ -44,7 +46,7 @@ if(MSVC)
   source_group("data\\hiero" FILES ${TEST_DATA_HIERO})
   source_group("data" FILES ${TEST_DATA})
   source_group("interaction" FILES ${TEST_INTERACTION})    
-  source_group("seeding" FILES ${TEST_SEEDING})    
+  source_group("serialization" FILES ${TEST_SERIALIZATION})    
 endif()
 
 IF(WIN32)
