@@ -61,18 +61,19 @@ FetchContent_Declare(Sodium
 set(SODIUM_DISABLE_TESTS ON)
 FetchContent_MakeAvailable(Sodium)
 
-if(WIN32) 
-	if(USE_VCPKG)
-		SET(VCPKG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vcpkg")
-		# Path to the vcpkg Toolchain in the submodule
-		if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-			set(CMAKE_TOOLCHAIN_FILE "${VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake" CACHE FILEPATH "Vcpkg toolchain" FORCE)
-		endif()
 
-		if(NOT DEFINED VCPKG_TARGET_TRIPLET)
-			set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "vcpkg target triplet" FORCE)
-		endif()
+if(USE_VCPKG)
+	SET(VCPKG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vcpkg")
+	# Path to the vcpkg Toolchain in the submodule
+	if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+		set(CMAKE_TOOLCHAIN_FILE "${VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake" CACHE FILEPATH "Vcpkg toolchain" FORCE)
+	endif()
 
+	if(NOT DEFINED VCPKG_TARGET_TRIPLET)
+		set(VCPKG_TARGET_TRIPLET ${TARGET} CACHE STRING "vcpkg target triplet" FORCE)
+	endif()
+
+	if(WIN32)
 		if(NOT EXISTS "${VCPKG_PATH}/vcpkg.exe")
 			message(STATUS "[GradidoBlockchain] Bootstrapping vcpkg...")
 			execute_process(
@@ -83,48 +84,66 @@ if(WIN32)
 				message(FATAL_ERROR "vcpkg bootstrap failed with exit code ${res}")
 			endif()
 		endif()
-    
-		if(ENABLE_HTTPS)
+	else()
+		if(NOT EXISTS "${VCPKG_PATH}/vcpkg")
+			message(STATUS "[GradidoBlockchain] Bootstrapping vcpkg from ${VCPKG_PATH}")
 			execute_process(
-				COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vcpkg" vcpkg install openssl:x64-windows
-				RESULT_VARIABLE vcpkg_install_result
+				COMMAND bash bootstrap-vcpkg.sh -disableMetrics
+				WORKING_DIRECTORY "${VCPKG_PATH}"
+				RESULT_VARIABLE res
 			)
-			if(NOT vcpkg_install_result EQUAL 0)
-				message(FATAL_ERROR "vcpkg failed to install OpenSSL")
+			if(NOT res EQUAL 0)
+				message(FATAL_ERROR "vcpkg bootstrap failed with exit code ${res}")
 			endif()
-		endif()	
+		endif()
 	endif()
 
 	if(ENABLE_HTTPS)
-		# CA certificates for used with cpp-httplib, make it also available for projects including this one
-		set(CACERT_PEM "${CMAKE_BINARY_DIR}/cacert.pem" CACHE PATH "Path to CA certificates" FORCE)
-
-		if(NOT EXISTS ${CACERT_PEM})
-			message(STATUS "Downloading cacert.pem ...")
-			file(DOWNLOAD
-				https://curl.se/ca/cacert-2025-08-12.pem
-				${CACERT_PEM}
-				SHOW_PROGRESS
-				STATUS download_status
-				EXPECTED_HASH SHA256=64dfd5b1026700e0a0a324964749da9adc69ae5e51e899bf16ff47d6fd0e9a5e
+		if(WIN32)
+			execute_process(
+				COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vcpkg" vcpkg install openssl:${VCPKG_TARGET_TRIPLET}
+				RESULT_VARIABLE vcpkg_install_result
+		)
+		else()
+			execute_process(
+				COMMAND "${VCPKG_PATH}/vcpkg" install openssl:${VCPKG_TARGET_TRIPLET}
+				WORKING_DIRECTORY "${VCPKG_PATH}"
+				RESULT_VARIABLE vcpkg_install_result
 			)
-			list(GET download_status 0 status_code)
-			if(NOT status_code EQUAL 0)
-				message(FATAL_ERROR "Failed to download cacert.pem: ${download_status}")
-			endif()
 		endif()
-
-		add_compile_definitions(CACERT_PEM_PATH="${CACERT_PEM}")
+		if(NOT vcpkg_install_result EQUAL 0)
+			message(FATAL_ERROR "vcpkg failed to install OpenSSL")
+		endif()
 	endif()
 endif()
 
 if(ENABLE_HTTPS)
-	if(WIN32 AND USE_VCPKG)
+	# CA certificates for used with cpp-httplib, make it also available for projects including this one
+	set(CACERT_PEM "${CMAKE_BINARY_DIR}/cacert.pem" CACHE PATH "Path to CA certificates" FORCE)
+
+	if(NOT EXISTS ${CACERT_PEM})
+		message(STATUS "Downloading cacert.pem ...")
+		file(DOWNLOAD
+			https://curl.se/ca/cacert-2025-08-12.pem
+			${CACERT_PEM}
+			SHOW_PROGRESS
+			STATUS download_status
+			EXPECTED_HASH SHA256=64dfd5b1026700e0a0a324964749da9adc69ae5e51e899bf16ff47d6fd0e9a5e
+		)
+		list(GET download_status 0 status_code)
+		if(NOT status_code EQUAL 0)
+			message(FATAL_ERROR "Failed to download cacert.pem: ${download_status}")
+		endif()
+	endif()
+
+	add_compile_definitions(CACERT_PEM_PATH="${CACERT_PEM}")
+
+	if(USE_VCPKG)
 		set(OPENSSL_ROOT_DIR "${VCPKG_PATH}/installed/${VCPKG_TARGET_TRIPLET}" CACHE PATH "" FORCE)
 	endif()
 	find_package(OpenSSL REQUIRED)
-	message("[GradidoBlockchain] openSSL found, enable use of https")
 	include_directories(${OPENSSL_INCLUDE_DIR})
+	message(STATUS "OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
 	add_compile_definitions(USE_HTTPS)
 endif()
 # find_package(Sodium REQUIRED)
@@ -146,50 +165,50 @@ FIlE(GLOB THREADING "include/gradido_blockchain/threading/*.h" "src/threading/*.
 FILE(GLOB BLOCKCHAIN "include/gradido_blockchain/blockchain/*.h" "src/blockchain/*.cpp")
 
 
-FILE(GLOB INTERACTION_ADVANCED_BLOCKCHAIN_FILTER 
-	"include/gradido_blockchain/interaction/advancedBlockchainFilter/*.h" 
+FILE(GLOB INTERACTION_ADVANCED_BLOCKCHAIN_FILTER
+	"include/gradido_blockchain/interaction/advancedBlockchainFilter/*.h"
 	"src/interaction/advancedBlockchainFilter/*.cpp"
 )
-FILE(GLOB INTERACTION_CALCULATE_ACCOUNT_BALANCE 
-	"include/gradido_blockchain/interaction/calculateAccountBalance/*.h" 
+FILE(GLOB INTERACTION_CALCULATE_ACCOUNT_BALANCE
+	"include/gradido_blockchain/interaction/calculateAccountBalance/*.h"
 	"src/interaction/calculateAccountBalance/*.cpp"
 )
 FILE(GLOB INTERACTION_CALCULATE_CREATION_SUM
-	"include/gradido_blockchain/interaction/calculateCreationSum/*.h" 
+	"include/gradido_blockchain/interaction/calculateCreationSum/*.h"
 	"src/interaction/calculateCreationSum/*.cpp"
 )
-FILE(GLOB INTERACTION_CONFIRM_TRANSACTION 
-	"include/gradido_blockchain/interaction/confirmTransaction/*.h" 
+FILE(GLOB INTERACTION_CONFIRM_TRANSACTION
+	"include/gradido_blockchain/interaction/confirmTransaction/*.h"
 	"src/interaction/confirmTransaction/*.cpp"
 )
 FILE(GLOB INTERACTION_CREATE_TRANSACTION_BY_EVENT
-	"include/gradido_blockchain/interaction/createTransactionByEvent/*.h" 
+	"include/gradido_blockchain/interaction/createTransactionByEvent/*.h"
 	"src/interaction/createTransactionByEvent/*.cpp"
 )
-FILE(GLOB INTERACTION_DESERIALIZE 
-	"include/gradido_blockchain/interaction/deserialize/*.h" 
+FILE(GLOB INTERACTION_DESERIALIZE
+	"include/gradido_blockchain/interaction/deserialize/*.h"
 	"src/interaction/deserialize/*.cpp"
 )
-FILE(GLOB INTERACTION_SERIALIZE 
-	"include/gradido_blockchain/interaction/serialize/*.h" 
+FILE(GLOB INTERACTION_SERIALIZE
+	"include/gradido_blockchain/interaction/serialize/*.h"
 	"src/interaction/serialize/*.cpp"
 )
-FILE(GLOB INTERACTION_VALIDATE 
+FILE(GLOB INTERACTION_VALIDATE
 	"include/gradido_blockchain/interaction/validate/*.h"
 	"src/interaction/validate/*.cpp"
 )
 
-SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS 
+SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${BLOCKCHAIN}
 	${CRYPTO}
 	${DATA} ${DATA_IOTA} ${DATA_HIERO}
 	${INTERACTION}
-	${LIB_SRC} 
+	${LIB_SRC}
 	${MAIN}
 	${MEMORY}
-	${MODEL_IOTA} 
+	${MODEL_IOTA}
 	${SERIALIZATION}
-	${TINF} 
+	${TINF}
 	${THREADING}
 	${INTERACTION_ADVANCED_BLOCKCHAIN_FILTER}
 	${INTERACTION_CALCULATE_ACCOUNT_BALANCE}
@@ -216,11 +235,11 @@ if(MSVC)
 		source_group("http" FILES ${HTTP})
 	endif()
 	source_group("interaction" FILES ${INTERACTION})
-	source_group("lib" FILES ${LIB_SRC})	
+	source_group("lib" FILES ${LIB_SRC})
 	source_group("memory" FILES ${MEMORY})
 	source_group("serialization" FILES ${SERIALIZATION})
 	source_group("tinf" FILES ${TINF})
-	source_group("threading" FILES ${THREADING})	
+	source_group("threading" FILES ${THREADING})
 	source_group("interaction\\advancedBlockchainFilter" FILES ${INTERACTION_ADVANCED_BLOCKCHAIN_FILTER})
 	source_group("interaction\\calculateAccountBalance" FILES ${INTERACTION_CALCULATE_ACCOUNT_BALANCE})
 	source_group("interaction\\calculateCreationSum" FILES ${INTERACTION_CALCULATE_CREATION_SUM})
@@ -239,7 +258,7 @@ include_directories(
 	"dependencies/magic_enum/include"
 	"dependencies/protopuf/include"
 	"dependencies/rapidjson/include"
-	"dependencies/tinf/src" 
+	"dependencies/tinf/src"
 	"dependencies/miniz"
 	"build/dependencies/miniz"
 	"include"
@@ -286,18 +305,18 @@ add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
 target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz)
-if(OpenSSL_FOUND) 
+if(OpenSSL_FOUND)
 	target_link_libraries(GradidoBlockchain OpenSSL::SSL OpenSSL::Crypto)
 endif()
-if(WIN32) 
+if(WIN32)
 	# needed for windows if linking to a rust lib
 	if(ENABLE_IOTA_RUST_CLIENT)
-		find_library(IOTA_RUST_C_LIB iota_rust_clib.dll.lib PATHS 
+		find_library(IOTA_RUST_C_LIB iota_rust_clib.dll.lib PATHS
 			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
 			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/debug"
 			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/release"
 		)
-		IF(IOTA_RUST_C_LIB STREQUAL "IOTA_RUST_C_LIB-NOTFOUND" ) 
+		IF(IOTA_RUST_C_LIB STREQUAL "IOTA_RUST_C_LIB-NOTFOUND" )
 				message("[GradidoBlockchain] !!!!!!\nplease build target iota_rust_clib_target and call again `cmake`\n!!!!!!")
 		ELSE()
 			target_link_libraries(GradidoBlockchain ${IOTA_RUST_C_LIB})
@@ -306,7 +325,7 @@ if(WIN32)
 	target_link_libraries(GradidoBlockchain ws2_32 userenv)
 ELSE()
 	if(ENABLE_IOTA_RUST_CLIENT)
-		target_link_libraries(GradidoBlockchain iota_rust_clib)	
+		target_link_libraries(GradidoBlockchain iota_rust_clib)
 	endif()
 ENDIF()
 target_link_libraries(GradidoBlockchain sodium)
@@ -329,7 +348,7 @@ target_include_directories(
 string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" is_top_level)
 #option(GradidoBlockchain_INCLUDE_PACKAGING "Include packaging rules for GradidoBlockchain" "${is_top_level}")
 #if (GradidoBlockchain_INCLUDE_PACKAGING)
- #   add_subdirectory(packaging)
+#   add_subdirectory(packaging)
 #endif ()
 
 if(ENABLE_TEST)
