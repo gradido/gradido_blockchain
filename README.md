@@ -60,8 +60,6 @@ make -j$(nproc) GradidoBlockchain
 
 ## Cross Compile for arm64 on Linux
 
-Then in project root
-
 ```bash
 mkdir build_arm64 && cd build_arm64
 cmake .. -DTARGET=aarch64-linux-gnu

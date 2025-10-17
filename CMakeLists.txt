@@ -15,7 +15,7 @@ if(ENABLE_HTTPS)
 	set(ENABLE_HTTP ON CACHE BOOL "Use http for dependencies (auto-set because ENABLE_HTTPS is ON)" FORCE)
 endif()
 
-IF(WIN32)
+IF(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
 	set(CMAKE_CXX_FLAGS         "/MP /EHsc /std:c++20")
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 	set(BUILD_SHARED_LIBS ON)
@@ -26,7 +26,7 @@ ENDIF()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_definitions(-DNOMINMAX)
+#add_definitions(-DNOMINMAX)
 if(ENABLE_IOTA_RUST_CLIENT)
     add_definitions(-DENABLE_IOTA_RUST_CLIENT)
 	set(ENABLE_HTTP ON)
@@ -69,48 +69,48 @@ if(USE_VCPKG)
 		set(CMAKE_TOOLCHAIN_FILE "${VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake" CACHE FILEPATH "Vcpkg toolchain" FORCE)
 	endif()
 
-	if(NOT DEFINED VCPKG_TARGET_TRIPLET)
-		set(VCPKG_TARGET_TRIPLET ${TARGET} CACHE STRING "vcpkg target triplet" FORCE)
-	endif()
-
-	if(WIN32)
-		if(NOT EXISTS "${VCPKG_PATH}/vcpkg.exe")
-			message(STATUS "[GradidoBlockchain] Bootstrapping vcpkg...")
-			execute_process(
-				COMMAND ${CMAKE_COMMAND} -E chdir "${VCPKG_PATH}" bootstrap-vcpkg.bat -disableMetrics
-				RESULT_VARIABLE res
-			)
-			if(NOT res EQUAL 0)
-				message(FATAL_ERROR "vcpkg bootstrap failed with exit code ${res}")
-			endif()
-		endif()
-	else()
-		if(NOT EXISTS "${VCPKG_PATH}/vcpkg")
-			message(STATUS "[GradidoBlockchain] Bootstrapping vcpkg from ${VCPKG_PATH}")
-			execute_process(
-				COMMAND bash bootstrap-vcpkg.sh -disableMetrics
-				WORKING_DIRECTORY "${VCPKG_PATH}"
-				RESULT_VARIABLE res
-			)
-			if(NOT res EQUAL 0)
-				message(FATAL_ERROR "vcpkg bootstrap failed with exit code ${res}")
-			endif()
+	if(NOT EXISTS "${VCPKG_PATH}/vcpkg" AND NOT EXISTS "${VCPKG_PATH}/vcpkg.exe")
+    if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+        set(VCPKG_BOOTSTRAP_CMD "${VCPKG_PATH}/bootstrap-vcpkg.bat")
+    else()
+        set(VCPKG_BOOTSTRAP_CMD "bash ${VCPKG_PATH}/bootstrap-vcpkg.sh")
+    endif()
+		message(STATUS "[GradidoBlockchain] Bootstrapping vcpkg...")
+		execute_process(
+			COMMAND ${VCPKG_BOOTSTRAP_CMD} -disableMetrics
+			WORKING_DIRECTORY "${VCPKG_PATH}"
+			RESULT_VARIABLE res
+		)
+		if(NOT res EQUAL 0)
+			message(FATAL_ERROR "vcpkg bootstrap failed with exit code ${res}")
 		endif()
 	endif()
 
 	if(ENABLE_HTTPS)
-		if(WIN32)
-			execute_process(
-				COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vcpkg" vcpkg install openssl:${VCPKG_TARGET_TRIPLET}
-				RESULT_VARIABLE vcpkg_install_result
-		)
+		# set correct vcpkg triplet
+		if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+			set(VCPKG_TARGET_TRIPLET "arm64-")
+		elseif (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+			set(VCPKG_TARGET_TRIPLET "x64-")
+		elseif (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86")
+			set(VCPKG_TARGET_TRIPLET "x86-")
 		else()
-			execute_process(
-				COMMAND "${VCPKG_PATH}/vcpkg" install openssl:${VCPKG_TARGET_TRIPLET}
-				WORKING_DIRECTORY "${VCPKG_PATH}"
-				RESULT_VARIABLE vcpkg_install_result
-			)
+			message(FATAL_ERROR "Unknown CMAKE_SYSTEM_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR}, cannot set VCPKG_TARGET_TRIPLET")
 		endif()
+		if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+				set(VCPKG_TARGET_TRIPLET "${VCPKG_TARGET_TRIPLET}linux")
+		elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+				set(VCPKG_TARGET_TRIPLET "${VCPKG_TARGET_TRIPLET}windows")
+		else()
+				message(FATAL_ERROR "Unknown CMAKE_SYSTEM_NAME ${CMAKE_SYSTEM_NAME}, cannot set VCPKG_TARGET_TRIPLET")
+		endif()
+
+		message(STATUS "run vcpkg with VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}")
+		execute_process(
+			COMMAND "${VCPKG_PATH}/vcpkg" install openssl:${VCPKG_TARGET_TRIPLET}
+			WORKING_DIRECTORY "${VCPKG_PATH}"
+			RESULT_VARIABLE vcpkg_install_result
+		)
 		if(NOT vcpkg_install_result EQUAL 0)
 			message(FATAL_ERROR "vcpkg failed to install OpenSSL")
 		endif()
