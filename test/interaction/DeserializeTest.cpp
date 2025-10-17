@@ -42,7 +42,7 @@ TEST(DeserializeTest, HieroTopicId)
 
 TEST(DeserializeTest, HieroTransactionId)
 {
-	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64("CgkIqemnUhD+4wESCAgAEAAY/LIHGAEgeQ=="));
+	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(hieroTransactionIdBase64));
 	deserialize::Context context(rawData, deserialize::Type::HIERO_TRANSACTION_ID);
 	context.run();
 

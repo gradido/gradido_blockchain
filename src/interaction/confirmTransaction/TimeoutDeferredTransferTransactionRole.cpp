@@ -9,9 +9,9 @@ namespace gradido {
             TimeoutDeferredTransferTransactionRole::TimeoutDeferredTransferTransactionRole(
                 std::shared_ptr<const data::GradidoTransaction> gradidoTransaction,
                 memory::ConstBlockPtr messageId,
-                Timepoint confirmedAt,
+                Timestamp confirmedAt,
                 std::shared_ptr<blockchain::Abstract> blockchain
-            ) : TransactionBodyRole(gradidoTransaction, gradidoTransaction->getFingerprint(), confirmedAt, blockchain) 
+            ) : TransactionBodyRole(gradidoTransaction, messageId, confirmedAt, blockchain)
             {
 
             }

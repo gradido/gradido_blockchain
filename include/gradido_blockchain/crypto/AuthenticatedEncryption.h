@@ -4,7 +4,6 @@
 #include "sodium.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
-#include "rapidjson/document.h"
 
 #include <map>
 #include <mutex>

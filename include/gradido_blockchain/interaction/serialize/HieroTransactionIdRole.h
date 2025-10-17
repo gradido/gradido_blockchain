@@ -1,6 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_HIERO_TRANSACTION_ID_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_HIERO_TRANSACTION_ID_ROLE_H
 
+#include "gradido_blockchain/export.h"
 #include "AbstractRole.h"
 #include "Protopuf.h"
 
@@ -12,7 +13,7 @@ namespace gradido {
 	namespace interaction {
 		namespace serialize {
 
-			class HieroTransactionIdRole : public AbstractRole
+			class GRADIDOBLOCKCHAIN_EXPORT HieroTransactionIdRole : public AbstractRole
 			{
 			public:
 				HieroTransactionIdRole(const hiero::TransactionId& transactionId) : mTransactionId(transactionId) {}

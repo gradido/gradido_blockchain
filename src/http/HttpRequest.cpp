@@ -2,7 +2,7 @@
 #include "gradido_blockchain/http/RequestExceptions.h"
 #include "gradido_blockchain/http/ServerConfig.h"
 
-
+// TODO: remove furi dependency and replace with own implementation, it don't work like expected
 #include "furi/furi.hpp"
 #include "magic_enum/magic_enum.hpp"
 #include "loguru/loguru.hpp"
@@ -11,6 +11,45 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #endif
 #include "httplib.h"
+
+// this is to prevent crashes, because at least with C++17 and C++20 httplib crashes with calling httplib::Client deconstructor
+// so we create a new client for each new host and keep them forever and don't delete them even on program exit
+// TODO: Fix bug in httplib which leads to this crash
+struct FakeDeleter
+{
+    void operator()(httplib::Client* client) const
+    {
+			#ifdef WIN32
+				delete client;
+			#else
+			// leak memory on linux to prevent crashes on exit
+			#endif
+    }
+};
+static std::multimap<std::string, std::shared_ptr<httplib::Client>> mHttpClients;
+static std::mutex mClientsMutex;
+
+static std::shared_ptr<httplib::Client> getClientForHost(const std::string& host, bool isSSL = false)
+{
+	std::lock_guard _lock(mClientsMutex);
+	auto range = mHttpClients.equal_range(host);
+	for (auto it = range.first; it != range.second; ++it) {
+		if (it->second.use_count() == 1) {
+			return it->second;
+		}
+	}
+	auto httpClient = std::shared_ptr<httplib::Client>(new httplib::Client(host), FakeDeleter());
+	httpClient->set_keep_alive(true);
+	// some weird bug in httplib (debug, debian 12), intern it will move connection_timeout_sec_ to connection_timeout_usec_
+	// and setting connection_timeout_sec_ to 0 leading to calculating connection timeout:
+	// auto timeout = static_cast<int>(0 * 1000 + connection_timeout_sec_ / 1000);
+	// so 1200000 "seconds" becomes 1200 milliseconds
+	httpClient->set_connection_timeout(1200000); // 5 seconds
+
+	LOG_F(INFO, "created new HTTP%s client for host: %s", isSSL ? "S" : "", host.data());
+	mHttpClients.insert({ host, httpClient });
+	return httpClient;
+}
 
 using namespace rapidjson;
 
@@ -35,13 +74,23 @@ static httplib::Headers constructHeaders(std::multimap<std::string, std::string>
 }
 
 HttpRequest::HttpRequest(const std::string& url)
-	: mUrl(url)
+	: mUrl(url), mIsSSL(false)
 {
 	auto uri = furi::uri_split::from_uri(mUrl);
-	if (uri.scheme != "http" && uri.scheme != "https") {
-		throw RequestException("cannot find scheme (http|https) in url", url);
+	auto portStringView = furi::authority_split::get_port_from_authority(uri.authority);
+	std::string port(portStringView.data(), portStringView.size());
+	// furi put the port into path on url without scheme
+	std::string path(uri.path.data(), uri.path.size());	
+	if (port == "443" || path == "443") {
+		mIsSSL = true;
 	}
-	if (uri.authority.empty()) {
+	if (!uri.scheme.empty()) {
+		if (uri.scheme == "https") {
+			mIsSSL = true;
+		}
+	}
+	
+	if (uri.authority.empty() && uri.scheme.empty()) {
 		throw RequestException("cannot find host in url, please use something like: http://server.com:80", url);
 	}
 }
@@ -51,6 +100,7 @@ HttpRequest::HttpRequest(const std::string& host, int port, const char* path/* =
 	if (host.find("http") == std::string::npos) {
 		if (port == 443) {
 			mUrl = "https://";
+			mIsSSL = true;
 		}
 		else {
 			mUrl = "http://";
@@ -68,7 +118,7 @@ HttpRequest::HttpRequest(const std::string& host, int port, const char* path/* =
 
 std::string HttpRequest::POST(const std::string& body, const char* contentType/* = "application/json"*/, const char* path/* = nullptr*/)
 {
-	httplib::Client cli(constructHostString());
+	auto cli = getClientForHost(constructHostString(), mIsSSL);
 	auto uri = furi::uri_split::from_uri(mUrl);
 
 	std::string finalPath;
@@ -79,7 +129,7 @@ std::string HttpRequest::POST(const std::string& body, const char* contentType/*
 		finalPath = path;
 	}
 
-	auto res = cli.Post(finalPath.data(), constructHeaders(mHeaders, mCookies), body, contentType);
+	auto res = cli->Post(finalPath.data(), constructHeaders(mHeaders, mCookies), body, contentType);
 	if (!res) {
 		throw HttplibRequestException("no response", mUrl, 0, magic_enum::enum_name(res.error()).data());
 	}
@@ -91,13 +141,14 @@ std::string HttpRequest::POST(const std::string& body, const char* contentType/*
 
 std::string HttpRequest::GET(const std::map<std::string, std::string> query, const char* path/* = nullptr*/)
 {
-	httplib::Client cli(constructHostString());
+	auto cli = getClientForHost(constructHostString(), mIsSSL);
 	auto uri = furi::uri_split::from_uri(mUrl);
 	std::string pathAndQuery("/");
 
 	if (!path) {
 		if (uri.path.size()) {
-			pathAndQuery += std::string(uri.path.data());
+			if(uri.path.data()[0] != '/') pathAndQuery += "/";
+			pathAndQuery = std::string(uri.path.data(), uri.path.size());
 		}
 	}
 	else {
@@ -105,7 +156,7 @@ std::string HttpRequest::GET(const std::map<std::string, std::string> query, con
 	}
 	if (query.empty()) {
 		if (uri.query.size()) {
-			pathAndQuery += "?" + std::string(uri.query.data());
+			pathAndQuery += "?" + std::string(uri.query.data(), uri.query.size());
 		}
 	}
 	else {
@@ -117,7 +168,7 @@ std::string HttpRequest::GET(const std::map<std::string, std::string> query, con
 		// remove last &
 		pathAndQuery.pop_back();
 	}
-	auto res = cli.Get(pathAndQuery, constructHeaders(mHeaders, mCookies));
+	auto res = cli->Get(pathAndQuery, constructHeaders(mHeaders, mCookies));
 	if (!res) {
 		throw HttplibRequestException("no response", mUrl, 0, magic_enum::enum_name(res.error()).data());
 	}
@@ -129,17 +180,17 @@ std::string HttpRequest::GET(const std::map<std::string, std::string> query, con
 
 std::string HttpRequest::GET(const char* path)
 {
-	httplib::Client cli(constructHostString());
+	std::string host = constructHostString();
+	auto cli = getClientForHost(host, mIsSSL);
 
-	auto res = cli.Get(path, constructHeaders(mHeaders, mCookies));
+	auto res = cli->Get(path, constructHeaders(mHeaders, mCookies));
 	if (!res) {
-		std::string url = constructHostString();
+		std::string url = host;
 		url.append("/").append(path);
 		throw HttplibRequestException("no response", url, 0, magic_enum::enum_name(res.error()).data());
 	}
 	if (res->status != 200) {
-		auto host = constructHostString();
-		std::string url(host);
+		std::string url = host;
 		url.append("/").append(path);
 		throw HttplibRequestException("status isn't 200 for GET", url, res->status, magic_enum::enum_name(res.error()).data());
 	}
@@ -150,17 +201,30 @@ std::string HttpRequest::constructHostString()
 {
 	auto uri = furi::uri_split::from_uri(mUrl);
 	// http | https
-	std::string host(uri.scheme.data(), uri.scheme.size());
-	if (host.empty()) {
-		host += "http";
+	std::string schema;
+	if (mIsSSL) {
+		schema = "https";
 	}
+	else {
+		schema = "http";
+	}
+	
 #ifndef USE_HTTPS
-	if ("https" == host) {
-		host = "http";
+	if (schema == "https") {
 		LOG_F(WARNING, "try to make Https Request but cpp-httplib was included without OpenSSL-Support, changed to http");
+		schema = "http";
 	}
 #endif
+	std::string hostPort;
+	// if scheme is empty, furi put the host into scheme and port into path
+  if (uri.authority.empty()) {
+		hostPort = std::string(uri.scheme.data(), uri.scheme.size());
+		hostPort += ":";
+		std::string path(uri.path.data(), uri.path.size());
+		hostPort += path;
+	} else {
+  	hostPort = std::string(uri.authority.data(), uri.authority.size());
+	}
 	// host:port
-	host += "://" + std::string(uri.authority.data(), uri.authority.size());
-	return host;
+	return schema + "://" + hostPort;
 }

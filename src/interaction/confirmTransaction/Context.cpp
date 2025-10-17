@@ -1,6 +1,7 @@
 #include "gradido_blockchain/interaction/confirmTransaction/Context.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/TransactionRelationType.h"
+#include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/interaction/confirmTransaction/CommunityRootTransactionRole.h"
 #include "gradido_blockchain/interaction/confirmTransaction/CreationTransactionRole.h"
@@ -30,7 +31,7 @@ namespace gradido {
 			std::shared_ptr<AbstractRole> Context::createRole(
 				std::shared_ptr<const data::GradidoTransaction> gradidoTransaction,
 				memory::ConstBlockPtr messageId,
-				Timepoint confirmedAt
+				data::Timestamp confirmedAt
 			) const {
 				// attention! work only if order in enum don't change
 				// todo: check if it is possible to use a template class for that
@@ -102,7 +103,7 @@ namespace gradido {
 				data::ConstConfirmedTransactionPtr lastConfirmedTransaction;
 				if (lastTransaction) {
 					lastConfirmedTransaction = lastTransaction->getConfirmedTransaction();
-					if (role->getConfirmedAt() < lastConfirmedTransaction->getConfirmedAt().getAsTimepoint()) {
+					if (role->getConfirmedAt() < lastConfirmedTransaction->getConfirmedAt()) {
 						throw BlockchainOrderException("previous transaction is younger");
 					}
 				}

@@ -268,15 +268,15 @@ namespace DataTypeConverter
 	std::string timePointToString(const Timepoint& timepoint, const char* fmt /*= "%Y-%m-%d %H:%M:%S"*/)
 	{
 		// First, format the time without the fractional seconds
-    auto timepointSeconds = date::floor<seconds>(timepoint);
+		auto timepointSeconds = date::floor<seconds>(timepoint);
 
 		// Get the fractional seconds part
-    auto seconds = duration_cast<duration<double>>(timepoint - timepointSeconds).count();
-    std::stringstream fractional_ss;
-    fractional_ss << std::fixed << std::setprecision(4) << seconds;
+		auto seconds = duration_cast<duration<double>>(timepoint - timepointSeconds).count();
+		std::stringstream fractional_ss;
+		fractional_ss << std::fixed << std::setprecision(4) << seconds;
 
-    // Append the fractional part
-    return date::format(fmt, timepointSeconds) + fractional_ss.str().substr(1);  // Skip the leading zero
+		// Append the fractional part
+		return date::format(fmt, timepointSeconds) + fractional_ss.str().substr(1);  // Skip the leading zero
 	}
 
 	Timepoint dateTimeStringToTimePoint(const std::string& dateTimeString, const char* fmt /*= "%F %T"*/)

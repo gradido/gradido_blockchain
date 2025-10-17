@@ -107,6 +107,8 @@ namespace hiero {
 		const memory::Block& getAlias() const { return mAlias; }
 
 		std::string toString() const;
+
+		inline bool empty() const { return !mAccountNum && mAlias.isEmpty(); }
 		inline bool operator==(const AccountId& other) const;
 		
 	protected:

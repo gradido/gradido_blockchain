@@ -35,7 +35,12 @@ namespace gradido {
 				return nullptr; 
 			}
 			if (results.size() > 1) {
-				throw TransactionResultCountException("to many transactions found with blockchain::Abstract::findOne", 1, results.size());
+				throw TransactionResultCountException(
+					"to many transactions found with blockchain::Abstract::findOne", 
+					1, 
+					results.size(),
+					filter
+				);
 			}
 			return results.front();
 		}

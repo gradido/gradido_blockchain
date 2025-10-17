@@ -4,7 +4,7 @@
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
-#include "gradido_blockchain/interaction/toJson/Context.h"
+#include "gradido_blockchain/serialization/toJsonString.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/lib/Profiler.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
@@ -27,6 +27,7 @@ using magic_enum::iostream_operators::operator<<;
 
 #define VERSION_STRING "3.5"
 static EncryptedMemo memo("dummy memo");
+const hiero::AccountId hieroAccount(0, 0, 121);
 
 Timepoint getPreviousNMonth2(const Timepoint& startDate, int monthsAgo) {
     auto ymd = date::year_month_day(floor<days>(startDate));
@@ -61,7 +62,8 @@ void InMemoryTest::SetUp()
 		)
 		.sign(g_KeyPairs[0])
 		;
-	mBlockchain->createAndAddConfirmedTransaction(builder.build(), nullptr, mLastCreatedAt);
+	interaction::serialize::Context serializeTransactionId({ mLastCreatedAt, hieroAccount });
+	mBlockchain->createAndAddConfirmedTransaction(builder.build(), serializeTransactionId.run(), mLastCreatedAt);
 }
 
 void InMemoryTest::TearDown()
@@ -114,8 +116,9 @@ void InMemoryTest::createRegisterAddress(int keyPairIndexStart)
 		// sign with community root key
 		.sign(g_KeyPairs[0])
 	;
-		
-	ASSERT_TRUE(mBlockchain->createAndAddConfirmedTransaction(builder.build(), nullptr, generateNewConfirmedAt(mLastCreatedAt)));
+	auto confirmedAt = generateNewConfirmedAt(mLastCreatedAt);
+	interaction::serialize::Context serializeTransactionId({ confirmedAt, hieroAccount });
+	ASSERT_TRUE(mBlockchain->createAndAddConfirmedTransaction(builder.build(), serializeTransactionId.run(), confirmedAt));
 }
 
 bool InMemoryTest::createGradidoCreation(
@@ -139,7 +142,9 @@ bool InMemoryTest::createGradidoCreation(
 		)
 		.sign(g_KeyPairs[signerKeyPairIndex])
 	;	
-	return mBlockchain->createAndAddConfirmedTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
+	auto confirmedAt = generateNewConfirmedAt(createdAt);
+	interaction::serialize::Context serializeTransactionId({ confirmedAt, hieroAccount });
+	return mBlockchain->createAndAddConfirmedTransaction(builder.build(), serializeTransactionId.run(), confirmedAt);
 }
 
 bool InMemoryTest::createGradidoTransfer(
@@ -162,7 +167,9 @@ bool InMemoryTest::createGradidoTransfer(
 		)
 		.sign(g_KeyPairs[senderKeyPairIndex])
 	;	
-	return mBlockchain->createAndAddConfirmedTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
+	auto confirmedAt = generateNewConfirmedAt(createdAt);
+	interaction::serialize::Context serializeTransactionId({ confirmedAt, hieroAccount });
+	return mBlockchain->createAndAddConfirmedTransaction(builder.build(), serializeTransactionId.run(), confirmedAt);
 }
 
 bool InMemoryTest::createGradidoDeferredTransfer(
@@ -188,7 +195,9 @@ bool InMemoryTest::createGradidoDeferredTransfer(
 		)
 		.sign(g_KeyPairs[senderKeyPairIndex])
 	;	
-	return mBlockchain->createAndAddConfirmedTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
+	auto confirmedAt = generateNewConfirmedAt(createdAt);
+	interaction::serialize::Context serializeTransactionId({ confirmedAt, hieroAccount });
+	return mBlockchain->createAndAddConfirmedTransaction(builder.build(), serializeTransactionId.run(), confirmedAt);
 }
 
 
@@ -216,16 +225,16 @@ bool InMemoryTest::createGradidoRedeemDeferredTransfer(
 		)
 		.sign(g_KeyPairs[senderKeyPairIndex])
 		;
-	return mBlockchain->createAndAddConfirmedTransaction(builder.build(), nullptr, generateNewConfirmedAt(createdAt));
+	auto confirmedAt = generateNewConfirmedAt(createdAt);
+	interaction::serialize::Context serializeTransactionId({ confirmedAt, hieroAccount });
+	return mBlockchain->createAndAddConfirmedTransaction(builder.build(), serializeTransactionId.run(), confirmedAt);
 }
 
 void InMemoryTest::logBlockchain()
 {
 	auto transactions = dynamic_cast<InMemory*>(mBlockchain.get())->getSortedTransactions();
-
 	for (auto transaction : transactions) {
-		toJson::Context c(*transaction->getConfirmedTransaction());
-		LOG_F(INFO, c.run(true).data());
+		LOG_F(INFO, serialization::toJsonString(*transaction->getConfirmedTransaction(), true).data());
 	}
 }
 
@@ -354,7 +363,7 @@ TEST_F(InMemoryTest, CreationTransactions)
 		);
 		filter.searchDirection = blockchain::SearchDirection::DESC;
 		//filter.timepointInterval = TimepointInterval(mBlockchain->getStartDate(), createdAt);
-		std::cout << mBlockchain->getStartDate() << " - " << createdAt << std::endl;
+		std::cout << mBlockchain->getStartDate().getAsTimepoint() << " - " << createdAt << std::endl;
 		auto results = mBlockchain->findAll(filter);
 		std::cout << results.size() << std::endl;
 		LOG_F(ERROR, ex.getFullString().data());

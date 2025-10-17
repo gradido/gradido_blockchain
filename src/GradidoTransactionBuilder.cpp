@@ -1,20 +1,67 @@
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
+#include "gradido_blockchain/crypto/KeyPairEd25519.h"
+#include "gradido_blockchain/data/AddressType.h"
+#include "gradido_blockchain/data/CommunityFriendsUpdate.h"
+#include "gradido_blockchain/data/CommunityRoot.h"
+#include "gradido_blockchain/data/CrossGroupType.h"
+#include "gradido_blockchain/data/DurationSeconds.h"
+#include "gradido_blockchain/data/EncryptedMemo.h"
+#include "gradido_blockchain/data/GradidoCreation.h"
+#include "gradido_blockchain/data/GradidoDeferredTransfer.h"
+#include "gradido_blockchain/data/GradidoRedeemDeferredTransfer.h"
+#include "gradido_blockchain/data/GradidoTimeoutDeferredTransfer.h"
+#include "gradido_blockchain/data/GradidoTransaction.h"
+#include "gradido_blockchain/data/GradidoTransfer.h"
+#include "gradido_blockchain/data/RegisterAddress.h"
+#include "gradido_blockchain/data/SignaturePair.h"
+#include "gradido_blockchain/data/Timestamp.h"
+#include "gradido_blockchain/data/TransactionBody.h"
+#include "gradido_blockchain/data/TransferAmount.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
+#include "gradido_blockchain/memory/Block.h"
+
 
 #include "magic_enum/magic_enum.hpp"
+#include <chrono>
+#include <memory>
+#include <string>
+#include <string_view>
 
 using namespace magic_enum;
-using namespace std;
+using std::chrono::system_clock;
+using std::unique_ptr;
+using std::shared_ptr;
+using std::make_unique;
+using std::string;
+using std::string_view;
+
+using memory::Block;
+using memory::ConstBlockPtr;
 
 namespace gradido {
-
-	using namespace data;
+	using data::AddressType;
+	using data::DurationSeconds;
+	using data::CommunityFriendsUpdate;
+	using data::CommunityRoot;
+	using data::CrossGroupType;
+	using data::EncryptedMemo;
+	using data::GradidoCreation;
+	using data::GradidoDeferredTransfer;
+	using data::GradidoRedeemDeferredTransfer;
+	using data::GradidoTimeoutDeferredTransfer;
+	using data::GradidoTransaction;
+	using data::GradidoTransfer;
+	using data::RegisterAddress;
+	using data::SignaturePair;
+	using data::Timestamp;
+	using data::TransactionBody;
+	using data::TransferAmount;
 
 	GradidoTransactionBuilder::GradidoTransactionBuilder() 
 	  : mState(BuildingState::BUILDING_BODY), 
 		mBody(make_unique<TransactionBody>(
-			chrono::system_clock::now(), GRADIDO_TRANSACTION_BODY_VERSION_STRING, CrossGroupType::LOCAL
+			system_clock::now(), GRADIDO_TRANSACTION_BODY_VERSION_STRING, CrossGroupType::LOCAL
 		)),
 		mSpecificTransactionChoosen(false)
 	{
@@ -29,61 +76,61 @@ namespace gradido {
 	void GradidoTransactionBuilder::reset() 
 	{
 		mState = BuildingState::BUILDING_BODY;
-		mBody = make_unique<data::TransactionBody>(chrono::system_clock::now(), GRADIDO_TRANSACTION_BODY_VERSION_STRING, CrossGroupType::LOCAL);
+		mBody = make_unique<data::TransactionBody>(system_clock::now(), GRADIDO_TRANSACTION_BODY_VERSION_STRING, CrossGroupType::LOCAL);
 		mSenderCommunity.clear();
 		mRecipientCommunity.clear();
 		mBodyByteSignatureMaps.clear();
 		mSpecificTransactionChoosen = false;
 	}
-	std::unique_ptr<data::GradidoTransaction> GradidoTransactionBuilder::build()
+	unique_ptr<GradidoTransaction> GradidoTransactionBuilder::build()
 	{
 		checkBuildState(BuildingState::LOCAL);
 		assert(mBodyByteSignatureMaps.size());
-		auto result = make_unique<data::GradidoTransaction>(
+		auto result = make_unique<GradidoTransaction>(
 			mBodyByteSignatureMaps[0].signatureMap,
 			mBodyByteSignatureMaps[0].bodyBytes,
 			mParingMessageId
 		);
 		reset();
-		return move(result);
+		return std::move(result);
 	}
 
-	std::unique_ptr<data::GradidoTransaction> GradidoTransactionBuilder::buildOutbound()
+	unique_ptr<GradidoTransaction> GradidoTransactionBuilder::buildOutbound()
 	{
 		checkBuildState(BuildingState::CROSS_COMMUNITY);
 		assert(mBodyByteSignatureMaps.size());
-		auto result = make_unique<data::GradidoTransaction>(
+		auto result = make_unique<GradidoTransaction>(
 			mBodyByteSignatureMaps[0].signatureMap,
 			mBodyByteSignatureMaps[0].bodyBytes,
 			mParingMessageId
 		);
 		reset();
-		return move(result);
+		return std::move(result);
 	}
 
-	std::unique_ptr<data::GradidoTransaction> GradidoTransactionBuilder::buildInbound()
+	unique_ptr<GradidoTransaction> GradidoTransactionBuilder::buildInbound()
 	{
 		checkBuildState(BuildingState::CROSS_COMMUNITY);
 		assert(mBodyByteSignatureMaps.size() > 1);
 		if(!mParingMessageId || mParingMessageId->isEmpty()) {
 			throw GradidoTransactionBuilderException("missing paring message id from outbound transaction for inbound transaction");
 		}
-		auto result = make_unique<data::GradidoTransaction>(
+		auto result = make_unique<GradidoTransaction>(
 			mBodyByteSignatureMaps[1].signatureMap,
 			mBodyByteSignatureMaps[1].bodyBytes,
 			mParingMessageId
 		);
 		reset();
-		return move(result);
+		return std::move(result);
 	}
 
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setDeferredTransfer(
-		data::GradidoTransfer transactionTransfer,
+		GradidoTransfer transactionTransfer,
 		DurationSeconds timeoutDuration
 	) {
 		checkBuildState(BuildingState::BUILDING_BODY);
 		return setDeferredTransfer(
-			std::make_unique<data::GradidoDeferredTransfer>(
+			std::make_unique<GradidoDeferredTransfer>(
 				transactionTransfer,
 				timeoutDuration
 			)
@@ -96,7 +143,7 @@ namespace gradido {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
 
-		mBody->mDeferredTransfer = move(deferredTransfer);
+		mBody->mDeferredTransfer = std::move(deferredTransfer);
 
 		mSpecificTransactionChoosen = true;
 		return *this;
@@ -106,7 +153,7 @@ namespace gradido {
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		return setCommunityFriendsUpdate(
-			std::make_unique<data::CommunityFriendsUpdate>(
+			std::make_unique<CommunityFriendsUpdate>(
 				colorFusion
 			)
 		);
@@ -125,10 +172,10 @@ namespace gradido {
 	}
 
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setRegisterAddress(
-		memory::ConstBlockPtr userPubkey,
-		data::AddressType type,
-		memory::ConstBlockPtr nameHash/* = nullptr*/,
-		memory::ConstBlockPtr accountPubkey/* = nullptr*/
+		ConstBlockPtr userPubkey,
+		AddressType type,
+		ConstBlockPtr nameHash/* = nullptr*/,
+		ConstBlockPtr accountPubkey/* = nullptr*/
 	)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
@@ -155,11 +202,11 @@ namespace gradido {
 		mSpecificTransactionChoosen = true;
 		return *this;
 	}
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setTransactionCreation(const data::TransferAmount& recipient, Timepoint targetDate)
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setTransactionCreation(const TransferAmount& recipient, Timepoint targetDate)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		return setTransactionCreation(
-			make_unique<data::GradidoCreation>(
+			make_unique<GradidoCreation>(
 				recipient,
 				targetDate
 			)
@@ -180,13 +227,13 @@ namespace gradido {
 
 
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setTransactionTransfer(
-		const data::TransferAmount& sender,
-		memory::ConstBlockPtr recipientPubkey
+		const TransferAmount& sender,
+		ConstBlockPtr recipientPubkey
 	)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		return setTransactionTransfer(
-			make_unique<data::GradidoTransfer>(
+			make_unique<GradidoTransfer>(
 				sender,
 				recipientPubkey
 			)
@@ -208,13 +255,13 @@ namespace gradido {
 
 
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setCommunityRoot(
-		memory::ConstBlockPtr pubkey,
-		memory::ConstBlockPtr gmwPubkey,
-		memory::ConstBlockPtr aufPubkey
+		ConstBlockPtr pubkey,
+		ConstBlockPtr gmwPubkey,
+		ConstBlockPtr aufPubkey
 	) {
 		checkBuildState(BuildingState::BUILDING_BODY);
 		return setCommunityRoot(
-			make_unique<data::CommunityRoot>(
+			make_unique<CommunityRoot>(
 				pubkey,
 				gmwPubkey,
 				aufPubkey
@@ -239,21 +286,21 @@ namespace gradido {
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		return setRedeemDeferredTransfer(
-			std::make_unique<data::GradidoRedeemDeferredTransfer>(
+			make_unique<GradidoRedeemDeferredTransfer>(
 				deferredTransferTransactionNr,
 				transactionTransfer
 			)
 		);
 	}
 
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setRedeemDeferredTransfer(std::unique_ptr<GradidoRedeemDeferredTransfer> redeemDeferredTransfer)
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setRedeemDeferredTransfer(unique_ptr<GradidoRedeemDeferredTransfer> redeemDeferredTransfer)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		if (mSpecificTransactionChoosen) {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
 
-		mBody->mRedeemDeferredTransfer = move(redeemDeferredTransfer);
+		mBody->mRedeemDeferredTransfer = std::move(redeemDeferredTransfer);
 
 		mSpecificTransactionChoosen = true;
 		return *this;
@@ -263,20 +310,20 @@ namespace gradido {
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		return setTimeoutDeferredTransfer(
-			std::make_unique<data::GradidoTimeoutDeferredTransfer>(
+			make_unique<GradidoTimeoutDeferredTransfer>(
 				deferredTransferTransactionNr
 			)
 		);
 	}
 
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setTimeoutDeferredTransfer(std::unique_ptr<GradidoTimeoutDeferredTransfer> timeoutDeferredTransfer)
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setTimeoutDeferredTransfer(unique_ptr<GradidoTimeoutDeferredTransfer> timeoutDeferredTransfer)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		if (mSpecificTransactionChoosen) {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
 
-		mBody->mTimeoutDeferredTransfer = move(timeoutDeferredTransfer);
+		mBody->mTimeoutDeferredTransfer = std::move(timeoutDeferredTransfer);
 		// special case, because TimeoutDeferredTransfer didn't need singnatures
 		switchBuildState();
 		mSpecificTransactionChoosen = true;
@@ -285,7 +332,7 @@ namespace gradido {
 
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setCreatedAt(Timepoint createdAt) {
 		checkBuildState(BuildingState::BUILDING_BODY);
-		mBody->mCreatedAt = data::Timestamp(createdAt);
+		mBody->mCreatedAt = Timestamp(createdAt);
 		return *this;
 	}
 
@@ -295,45 +342,45 @@ namespace gradido {
 		return *this;
 	}
 
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setVersionNumber(std::string_view versionNumber) {
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setVersionNumber(string_view versionNumber) {
 		checkBuildState(BuildingState::BUILDING_BODY);
 		mBody->mVersionNumber = versionNumber;
 		return *this;
 	}
 
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setTransactionBody(std::unique_ptr<data::TransactionBody> body)
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setTransactionBody(unique_ptr<TransactionBody> body)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		mBody = std::move(body);
 		return *this;
 	}
 
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setTransactionBody(memory::ConstBlockPtr bodyBytes)
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setTransactionBody(ConstBlockPtr bodyBytes)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
-		interaction::deserialize::Context deserializer(bodyBytes, interaction::deserialize::Type::TRANSACTION_BODY);
+		interaction::deserialize::Context deserializer(bodyBytes, gradido::interaction::deserialize::Type::TRANSACTION_BODY);
 		deserializer.run();
 		if (!deserializer.isTransactionBody()) {
 			throw GradidoTransactionBuilderException("cannot deserialize TransactionBody");
 		}
-		mBody = std::make_unique<data::TransactionBody>(*deserializer.getTransactionBody());
+		mBody = make_unique<data::TransactionBody>(*deserializer.getTransactionBody());
 		return *this;
 	}
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setSenderCommunity(const std::string& senderCommunity)
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setSenderCommunity(const string& senderCommunity)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		mSenderCommunity = senderCommunity;
 		return *this;
 	}
 
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setRecipientCommunity(const std::string& recipientCommunity)
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setRecipientCommunity(const string& recipientCommunity)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		mRecipientCommunity = recipientCommunity;
 		return *this;
 	}
 
-	GradidoTransactionBuilder& GradidoTransactionBuilder::sign(std::shared_ptr<KeyPairEd25519> keyPair)
+	GradidoTransactionBuilder& GradidoTransactionBuilder::sign(shared_ptr<KeyPairEd25519> keyPair)
 	{
 		if (isBodyBuildingState()) {
 			switchBuildState();
@@ -342,13 +389,13 @@ namespace gradido {
 			if (!bodyByteSignatureMap.bodyBytes || bodyByteSignatureMap.bodyBytes->isEmpty()) {
 				throw GradidoTransactionBuilderException("system error, missing body bytes, please check Builder Implementation.");
 			}
-			auto signature = make_shared<memory::Block>(keyPair->sign(*bodyByteSignatureMap.bodyBytes));
+			auto signature = make_shared<Block>(keyPair->sign(*bodyByteSignatureMap.bodyBytes));
 			bodyByteSignatureMap.signatureMap.push(SignaturePair(keyPair->getPublicKey(), signature));
 		}
 		return *this;
 	}
 
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setParentMessageId(memory::ConstBlockPtr paringMessageId)
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setParentMessageId(ConstBlockPtr paringMessageId)
 	{
 		mParingMessageId = paringMessageId;
 		return *this;
@@ -413,8 +460,8 @@ namespace gradido {
 	// ------------------------- exception implement ------------------------- 
 	GradidoTransactionWrongBuildingStateBuilderException::GradidoTransactionWrongBuildingStateBuilderException(
 		const char* what,
-		std::string_view expectedBuildState,
-		std::string_view actualBuildState
+		string_view expectedBuildState,
+		string_view actualBuildState
 	) : GradidoTransactionBuilderException(what),
 		mExpectedBuildState(expectedBuildState),
 		mActualBuildState(actualBuildState)
@@ -424,7 +471,7 @@ namespace gradido {
 
 	std::string GradidoTransactionWrongBuildingStateBuilderException::getFullString() const
 	{
-		std::string mResult = what();
+		string mResult = what();
 		mResult += ", expected: " + mExpectedBuildState;
 		mResult += ", actual: " + mActualBuildState;
 		return mResult;

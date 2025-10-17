@@ -1,14 +1,15 @@
-#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_HIERO_TOPIC_ID_ROLE_H
-#define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_HIERO_TOPIC_ID_ROLE_H
+#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_HIERO_TOPIC_ID_ROLE_H
+#define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_HIERO_TOPIC_ID_ROLE_H
 
 #include "gradido_blockchain/data/hiero/TopicId.h"
+#include "gradido_blockchain/export.h"
 #include "Protopuf.h"
 #include <memory>
 
 namespace gradido {
     namespace interaction {
         namespace deserialize {
-            class HieroTopicIdRole
+            class GRADIDOBLOCKCHAIN_EXPORT HieroTopicIdRole
             {
             public:
                 HieroTopicIdRole(const HieroTopicIdMessage& hieroTopicId);
@@ -23,4 +24,4 @@ namespace gradido {
     }
 }
 
-#endif // __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_HIERO_TOPIC_ID_ROLE_H
+#endif // __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_HIERO_TOPIC_ID_ROLE_H

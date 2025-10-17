@@ -16,12 +16,14 @@ namespace gradido {
 			Timepoint getAsTimepoint() const;
 			inline int64_t getSeconds() const { return mSeconds; }
 			inline int32_t getNanos() const { return mNanos; }
+			std::string toString() const;
 
 			inline bool operator==(const Timestamp& other) const { return mSeconds == other.mSeconds && mNanos == other.mNanos; }
 			inline bool operator<(const Timestamp& other) const { return mSeconds < other.mSeconds || (mSeconds == other.mSeconds && mNanos < other.mNanos); }
 			inline bool operator>(const Timestamp& other) const { return mSeconds > other.mSeconds || (mSeconds == other.mSeconds && mNanos > other.mNanos); }
 			inline bool operator<(const TimestampSeconds& other) const { return mSeconds < other.getSeconds(); }
 			inline bool operator>(const TimestampSeconds& other) const { return mSeconds > other.getSeconds(); }
+			inline bool empty() const { return !mSeconds && !mNanos; }
 
 		protected:
 			int64_t mSeconds;

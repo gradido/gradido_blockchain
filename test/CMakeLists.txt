@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.18.2)
+cmake_policy(SET CMP0135 NEW)
 project(GradidoBlockchainTest)
 
 # GoogleTest requires at least C++11
@@ -23,6 +24,7 @@ FILE(GLOB TEST_LIB "lib/*.cpp" "lib/*.h")
 FILE(GLOB TEST_MAIN "*.cpp" "*.h")
 FILE(GLOB TEST_DATA "data/*.cpp" "data/*.h")
 FILE(GLOB TEST_DATA_HIERO "data/hiero/*.cpp" "data/hiero/*.h")
+FILE(GLOB TEST_SERIALIZATION "serialization/*.cpp" "serialization/*.h")
 
 
 SET(TEST_SRC 
@@ -33,6 +35,7 @@ SET(TEST_SRC
   ${TEST_DATA}
   ${TEST_DATA_HIERO}
   ${TEST_INTERACTION}
+  ${TEST_SERIALIZATION}
 )
 
 if(MSVC)
@@ -43,7 +46,7 @@ if(MSVC)
   source_group("data\\hiero" FILES ${TEST_DATA_HIERO})
   source_group("data" FILES ${TEST_DATA})
   source_group("interaction" FILES ${TEST_INTERACTION})    
-  source_group("seeding" FILES ${TEST_SEEDING})    
+  source_group("serialization" FILES ${TEST_SERIALIZATION})    
 endif()
 
 IF(WIN32)
@@ -59,6 +62,9 @@ enable_testing()
 add_executable(GradidoBlockchainTest ${TEST_SRC})
 target_link_libraries(GradidoBlockchainTest GradidoBlockchain sodium loguru::loguru) #libprotobuf
 target_link_libraries(GradidoBlockchainTest gtest)
+if(openssl_FOUND) 
+	target_link_libraries(GradidoBlockchainTest openssl::openssl)
+endif()
 
 include_directories(
 	"../dependencies/date/include"
@@ -73,4 +79,7 @@ IF(WIN32)
 ENDIF()
 
 include(GoogleTest)
-gtest_discover_tests(GradidoBlockchainTest)
+if(NOT CMAKE_CROSSCOMPILING OR (DEFINED CMAKE_CROSSCOMPILING_EMULATOR AND CMAKE_CROSSCOMPILING_EMULATOR))
+  message(STATUS "Enable GradidoBlockchainTest tests, crosscompiling: ${CMAKE_CROSSCOMPILING}, emulator: ${CMAKE_CROSSCOMPILING_EMULATOR}")
+  gtest_discover_tests(GradidoBlockchainTest)
+endif()

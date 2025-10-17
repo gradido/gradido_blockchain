@@ -2,6 +2,8 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/memory/Manager.h"
 
+#include "loguru/loguru.hpp"
+
 namespace memory {
 	
 	Block::Block(size_t size)
@@ -65,8 +67,14 @@ namespace memory {
 	Block& Block::operator=(const Block& other) {
 		clear();
 		mSize = other.mSize;
+		if (!mSize) {
+			if (other.mData) {
+				LOG_F(WARNING, "Block::operator= (copy) called with size 0 but other has data");
+			}
+			return *this;
+		}
 		mData = Manager::getInstance()->getBlock(other.mSize);
-		if (mSize && !mData) throw std::bad_alloc();
+		if (!mData) throw std::bad_alloc();
 		memcpy(mData, other.mData, mSize);
 		return *this;
 	}

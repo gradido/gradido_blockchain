@@ -63,6 +63,9 @@ public:
 	virtual ~HttplibRequestException() {};
 	std::string getFullString() const;
 
+	inline int getStatus() const { return mStatus; }
+	inline const std::string& getError() const { return mError; }
+
 protected:
 	int mStatus;
 	std::string mError;

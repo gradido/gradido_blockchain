@@ -79,7 +79,7 @@ public:
         using pointer = ResourceType*;
         using reference = ResourceType&;
 
-        iterator(ResourceType* p) : lock_(mSharedMutex), current_(p) {}
+        iterator(ResourceType* p, std::shared_mutex& mutex) : lock_(mutex), current_(p) {}
         reference operator*() const { return *current_; }
         pointer operator->() const { return current_; }
         iterator& operator++() {
@@ -94,10 +94,10 @@ public:
         ResourceType* current_;
     };
 
-    iterator begin() { return iterator(&std::list<ResourceType>::begin());}
-    const iterator begin() const { return iterator(&std::list<ResourceType>::begin()); }
-    iterator end() { return iterator(&std::list<ResourceType>::end()); }
-    const iterator end() const { return iterator(&std::list<ResourceType>::end()); }
+    iterator begin() { return iterator(&std::list<ResourceType>::begin(), mSharedMutex);}
+    const iterator begin() const { return iterator(&std::list<ResourceType>::begin(), mSharedMutex); }
+    iterator end() { return iterator(&std::list<ResourceType>::end(), mSharedMutex); }
+    const iterator end() const { return iterator(&std::list<ResourceType>::end(), mSharedMutex); }
 
     friend class iterator;
     using iterator = iterator;

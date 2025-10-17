@@ -52,6 +52,8 @@
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/data/hiero/AccountId.h"
 
+#include <functional>
+
 namespace hiero {
 	class GRADIDOBLOCKCHAIN_EXPORT TransactionId
 	{
@@ -72,8 +74,12 @@ namespace hiero {
 
 		//! format in hedera block explorer format: 0.0.256009@1755503343.736000193
 		//! ignore scheduled and nonce completly
-		std::string toString();
+
+		std::string toString() const;
+		inline bool empty() const { return mAccountId.empty() && mTransactionValidStart.empty(); }
+
 		inline bool operator==(const TransactionId& other) const;
+		inline bool operator<(const TransactionId& other) const;
 	protected:
 		gradido::data::Timestamp mTransactionValidStart;
 		AccountId mAccountId;
@@ -98,6 +104,32 @@ namespace hiero {
 			&& mNonce == other.mNonce
 		;
 	}
+	bool TransactionId::operator<(const TransactionId& other) const {
+		if (mTransactionValidStart != other.mTransactionValidStart) {
+			return mTransactionValidStart < other.mTransactionValidStart;
+		}
+		if (mAccountId != other.mAccountId) {
+			return mAccountId < other.mAccountId;
+		}
+		if (mNonce != other.mNonce) {
+			return mNonce < other.mNonce;
+		}
+		return mScheduled < other.mScheduled;
+	}
+
+	struct TransactionIdHasher {
+		std::size_t operator()(const hiero::TransactionId& tid) const noexcept {
+			return tid.getTransactionValidStart().getSeconds();
+		}
+	};
 }
 
+namespace std {
+	template <>
+	struct hash<hiero::TransactionId> {
+		std::size_t operator()(const hiero::TransactionId& tid) const noexcept {
+			return std::hash<int64_t>()(tid.getTransactionValidStart().getSeconds());
+		}
+	};
+}
 #endif //__GRADIDO_BLOCKCHAIN_DATA_HIERO_TRANSACTION_ID

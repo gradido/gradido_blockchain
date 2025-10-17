@@ -4,6 +4,7 @@
 #include "gradido_blockchain/interaction/validate/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransactionRole.h"
+#include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
 using namespace std::chrono;
@@ -34,7 +35,23 @@ namespace gradido {
 						throw exception;
 					}	
 					auto messageId = mConfirmedTransaction.getMessageId();
-					// with iota it is a BLAKE2b-256 hash with 256 Bits or 32 Bytes
+					if (messageId) {
+						deserialize::Context deserializeHieroTransactionId(messageId, deserialize::Type::HIERO_TRANSACTION_ID);
+						deserializeHieroTransactionId.run();
+						if (!deserializeHieroTransactionId.isHieroTransactionId() || deserializeHieroTransactionId.getHieroTransactionId().empty()) {
+							TransactionValidationInvalidInputException exception(
+								"invalid",
+								"message_id",
+								"bytes",
+								"hiero transaction id",
+								messageId->convertToHex().data()
+							);
+							exception.setTransactionBody(*body);
+							throw exception;
+						}
+					}
+					// with iota it is a BLAKE2b-256 hash with 256 Bits or 32 Bytes					
+					/*
 					if (messageId && messageId->size() != 32) {
 						TransactionValidationInvalidInputException exception(
 							"wrong size",
@@ -45,8 +62,9 @@ namespace gradido {
 						);
 						exception.setTransactionBody(*body);
 						throw exception;
-					}						
-						
+					}*/						
+					// I don't know how far a server clock can be off, but let simply ignore this for now and test this some time
+					/*
 					if (confirmedAt - createdAt < duration<int>::zero()) {
 						std::string expected = ">= " + DataTypeConverter::timePointToString(createdAt);
 						TransactionValidationInvalidInputException exception(
@@ -58,7 +76,7 @@ namespace gradido {
 						);
 						exception.setTransactionBody(*body);
 						throw exception;
-					}
+					}*/
 				}
 
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS) {

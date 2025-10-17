@@ -103,11 +103,11 @@ public:
 		pointer m_ptr;
 	};
 
-	MonthYearIterator begin() { 
+	MonthYearIterator begin() const { 
 		auto date = date::year_month_day{ date::floor<date::days>(mStartDate) };
 		return MonthYearIterator(new date::year_month(date.year(), date.month()));
 	}
-	MonthYearIterator end() { 
+	MonthYearIterator end() const { 
 		auto date = date::year_month_day{ date::floor<date::days>(mEndDate) };
 		// +1 month to have end out of bounds
 		date += date::months(1);

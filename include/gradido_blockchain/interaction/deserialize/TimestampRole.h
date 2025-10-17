@@ -1,6 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_TIMESTAMP_ROLE_H
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_TIMESTAMP_ROLE_H
 
+#include "gradido_blockchain/export.h"
 #include "Protopuf.h"
 #include <memory>
 
@@ -10,7 +11,7 @@ namespace gradido {
     }
     namespace interaction {
         namespace deserialize {
-            class TimestampRole 
+            class GRADIDOBLOCKCHAIN_EXPORT TimestampRole
             {
             public:
                 TimestampRole(const TimestampMessage& timestamp);

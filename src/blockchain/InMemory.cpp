@@ -1,14 +1,16 @@
 #include "gradido_blockchain/blockchain/InMemory.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
+#include "gradido_blockchain/data/hiero/TransactionId.h"
+#include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/interaction/confirmTransaction/Context.h"
+#include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
 #include "gradido_blockchain/interaction/validate/Type.h"
-#include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
-#include "gradido_blockchain/interaction/toJson/Context.h"
+
 
 #include "loguru/loguru.hpp"
 
@@ -46,16 +48,8 @@ namespace gradido {
 		bool InMemory::createAndAddConfirmedTransaction(
 			ConstGradidoTransactionPtr gradidoTransaction,
 			memory::ConstBlockPtr messageId, 
-			Timepoint confirmedAt
+			Timestamp confirmedAt
 		) {
-			
-			if (!messageId) {
-				// fake message id simply with taking hash from serialized transaction,
-				// iota message id will normally calculated with same algorithmus but with additional data 
-				auto serializedTransaction = gradidoTransaction->getSerializedTransaction();
-				messageId = std::make_shared<memory::Block>(serializedTransaction->calculateHash());
-			}
-
 			auto blockchain = getProvider()->findBlockchain(mCommunityId);
 			confirmTransaction::Context context(blockchain);
 			auto role = context.createRole(gradidoTransaction, messageId, confirmedAt);
@@ -248,9 +242,15 @@ namespace gradido {
 			const Filter& filter/* = Filter::ALL_TRANSACTIONS*/
 		) const
 		{
+			deserialize::Context transactionIdDeserialize(messageId, deserialize::Type::HIERO_TRANSACTION_ID);
+			transactionIdDeserialize.run();
+			if (!transactionIdDeserialize.isHieroTransactionId()) {
+				return nullptr;
+			}
 			std::lock_guard _lock(mWorkMutex);
-			auto it = mMessageIdTransactionNrs.find(iota::MessageId(*messageId));
-			if (it != mMessageIdTransactionNrs.end()) {
+			
+			auto it = mHieroTransactionIdTransactionNrs.find(transactionIdDeserialize.getHieroTransactionId());
+			if (it != mHieroTransactionIdTransactionNrs.end()) {
 				return getTransactionForId(it->second);
 			}
 			return nullptr;
@@ -272,10 +272,17 @@ namespace gradido {
 			for (auto involvedAddress : involvedAddresses) {
 				mTransactionsByPubkey.insert({ involvedAddress, transactionEntry });
 			}
-			mMessageIdTransactionNrs.insert({
-				iota::MessageId(*confirmedTransaction->getMessageId()),
-				confirmedTransaction->getId()
-				});
+			if (confirmedTransaction->getMessageId()) {
+				deserialize::Context transactionIdDeserialize(confirmedTransaction->getMessageId(), deserialize::Type::HIERO_TRANSACTION_ID);
+				transactionIdDeserialize.run();
+				if (!transactionIdDeserialize.isHieroTransactionId()) {
+					throw GradidoNodeInvalidDataException("invalid transaction id on transactionEntry");
+				}
+				mHieroTransactionIdTransactionNrs.insert({
+					transactionIdDeserialize.getHieroTransactionId(),
+					confirmedTransaction->getId()
+					});
+			}
 			mTransactionsByNr.insert({
 				confirmedTransaction->getId(),
 				transactionEntry
@@ -315,7 +322,14 @@ namespace gradido {
 					}
 				}
 			}
-			mMessageIdTransactionNrs.erase(iota::MessageId(*confirmedTransaction->getMessageId()));
+			if (confirmedTransaction->getMessageId()) {
+				deserialize::Context transactionIdDeserialize(confirmedTransaction->getMessageId(), deserialize::Type::HIERO_TRANSACTION_ID);
+				transactionIdDeserialize.run();
+				if (transactionIdDeserialize.isHieroTransactionId()) {
+					mHieroTransactionIdTransactionNrs.erase(transactionIdDeserialize.getHieroTransactionId());
+				}
+			}
+			
 			mTransactionsByNr.erase(confirmedTransaction->getId());
 		}
 

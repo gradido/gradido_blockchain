@@ -28,6 +28,8 @@ namespace hiero
 		std::string toString() const;
 		inline bool operator==(const TopicId& other) const;
 
+		inline bool empty() const { return !mTopicNum; }
+
 	protected:
 		int64_t mShardNum;
 		int64_t mRealmNum; 

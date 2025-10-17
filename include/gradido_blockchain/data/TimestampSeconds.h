@@ -24,6 +24,7 @@ namespace gradido {
 			bool operator<=(const TimestampSeconds& other) const { return mSeconds <= other.mSeconds; }
 			bool operator>(const TimestampSeconds& other) const { return mSeconds > other.mSeconds; }
 			bool operator>=(const TimestampSeconds& other) const { return mSeconds >= other.mSeconds; }
+			inline bool empty() const { return !mSeconds; }
 
 		protected:
 			int64_t mSeconds;

@@ -7,6 +7,7 @@
 class AbstractResponseHandlerFactory
 {
 public: 
+	virtual ~AbstractResponseHandlerFactory() {};
 	//! \return response hander for method
 	virtual std::unique_ptr<AbstractResponseHandler> getResponseHandler(MethodType method) = 0;
 	//! \return check if factory has a response handler for a specific method, else server didn't need to listen for requests

@@ -1,14 +1,15 @@
-#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_HIERO_TRANSACTION_ID_ROLE_H
-#define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_HIERO_TRANSACTION_ID_ROLE_H
+#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_HIERO_TRANSACTION_ID_ROLE_H
+#define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_HIERO_TRANSACTION_ID_ROLE_H
 
 #include "Protopuf.h"
+#include "gradido_blockchain/export.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 
 namespace gradido {
 	namespace interaction {
 		namespace deserialize {
 
-            class HieroTransactionIdRole
+            class GRADIDOBLOCKCHAIN_EXPORT HieroTransactionIdRole
             {
             public:
                 HieroTransactionIdRole(const HieroTransactionIdMessage& hieroTransactionId);
@@ -23,4 +24,4 @@ namespace gradido {
 	}
 }
 
-#endif //__GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_HIERO_TRANSACTION_ID_ROLE_H
+#endif //__GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_HIERO_TRANSACTION_ID_ROLE_H
