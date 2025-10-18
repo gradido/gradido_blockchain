@@ -80,6 +80,6 @@ ENDIF()
 
 include(GoogleTest)
 if(NOT CMAKE_CROSSCOMPILING OR (DEFINED CMAKE_CROSSCOMPILING_EMULATOR AND CMAKE_CROSSCOMPILING_EMULATOR))
-  message(STATUS "Enable GradidoBlockchainTest tests, crosscompiling: ${CMAKE_CROSSCOMPILING}, emulator: ${CMAKE_CROSSCOMPILING_EMULATOR}")
+  message(STATUS "Enable GradidoBlockchainTest tests")
   gtest_discover_tests(GradidoBlockchainTest)
 endif()

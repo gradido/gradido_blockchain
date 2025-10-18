@@ -9,9 +9,13 @@ option(ENABLE_HTTP "switch for include http based classes into build, increase b
 option(ENABLE_HTTPS "switch for include openssl for https support" OFF)
 option(ENABLE_TEST "switch for include test into build config" OFF)
 option(USE_VCPKG "switch for use vcpkg for dependencies" OFF)
+option(USE_INSTALLED_SODIUM "switch for use system installed libsodium" OFF)
+option(USE_INSTALLED_SSL "Use the installed version of OpenSSL" OFF)
 
 if(ENABLE_HTTPS)
-	set(USE_VCPKG ON CACHE BOOL "Use vcpkg for dependencies (auto-set because ENABLE_HTTPS is ON)" FORCE)
+  if (NOT USE_INSTALLED_SSL)
+		set(USE_VCPKG ON CACHE BOOL "Use vcpkg for dependencies (auto-set because ENABLE_HTTPS is ON)" FORCE)
+	endif()
 	set(ENABLE_HTTP ON CACHE BOOL "Use http for dependencies (auto-set because ENABLE_HTTPS is ON)" FORCE)
 endif()
 
@@ -50,16 +54,25 @@ endif()
 ############################## find dependencies ###################################
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-# Fetch Content Module
-include(FetchContent)
+if (NOT DBUILD_SHARED_LIBS)
+	add_definitions(-DSODIUM_STATIC)
+endif()
 
-# Update the commit to point to whatever libsodium-cmake-commit you want to target.
-FetchContent_Declare(Sodium
-    GIT_REPOSITORY https://github.com/robinlinden/libsodium-cmake.git
-    GIT_TAG e5b985ad0dd235d8c4307ea3a385b45e76c74c6a # HEAD, last updated at 2025-04-13
-)
 set(SODIUM_DISABLE_TESTS ON)
-FetchContent_MakeAvailable(Sodium)
+if(USE_INSTALLED_SODIUM)
+	find_package(Sodium REQUIRED)
+	message(STATUS "Using installed Sodium library")
+else()
+	# Fetch Content Module
+	include(FetchContent)
+
+	# Update the commit to point to whatever libsodium-cmake-commit you want to target.
+	FetchContent_Declare(Sodium
+			GIT_REPOSITORY https://github.com/robinlinden/libsodium-cmake.git
+			GIT_TAG e5b985ad0dd235d8c4307ea3a385b45e76c74c6a # HEAD, last updated at 2025-04-13
+	)
+	FetchContent_MakeAvailable(Sodium)
+endif()
 
 
 if(USE_VCPKG)
@@ -86,7 +99,7 @@ if(USE_VCPKG)
 		endif()
 	endif()
 
-	if(ENABLE_HTTPS)
+	if(ENABLE_HTTPS AND NOT USE_INSTALLED_SSL)
 		# set correct vcpkg triplet
 		if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
 			set(VCPKG_TARGET_TRIPLET "arm64-")
@@ -140,6 +153,9 @@ if(ENABLE_HTTPS)
 
 	if(USE_VCPKG)
 		set(OPENSSL_ROOT_DIR "${VCPKG_PATH}/installed/${VCPKG_TARGET_TRIPLET}" CACHE PATH "" FORCE)
+	endif()
+	if(NOT DBUILD_SHARED_LIBS)
+		set(OPENSSL_USE_STATIC_LIBS TRUE)
 	endif()
 	find_package(OpenSSL REQUIRED)
 	include_directories(${OPENSSL_INCLUDE_DIR})
