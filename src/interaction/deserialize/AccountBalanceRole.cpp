@@ -7,7 +7,8 @@ namespace gradido {
             AccountBalanceRole::AccountBalanceRole(const AccountBalanceMessage& accountBalance)
                 : mAccountBalance(
                     std::make_shared<memory::Block>(accountBalance["pubkey"_f].value()),
-                    GradidoUnit::fromGradidoCent(accountBalance["balance"_f].value_or(0))
+                    GradidoUnit::fromGradidoCent(accountBalance["balance"_f].value_or(0)),
+                    accountBalance["community_id"_f].value_or("")
                 )
             {
             }

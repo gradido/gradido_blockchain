@@ -12,12 +12,13 @@ namespace gradido {
             {
                 auto transfer = mBody->getTransfer();
                 auto& transferAmount = transfer->getSender();
+                auto& communityId = transferAmount.getCommunityId();
 
                 return {
                     // sender
-                    calculateAccountBalance(transferAmount.getPublicKey(), maxTransactionNr, transferAmount.getAmount().negated()),
+                    calculateAccountBalance(transferAmount.getPublicKey(), maxTransactionNr, transferAmount.getAmount().negated(), communityId),
                     // recipient
-                    calculateAccountBalance(transfer->getRecipient(), maxTransactionNr, transferAmount.getAmount())
+                    calculateAccountBalance(transfer->getRecipient(), maxTransactionNr, transferAmount.getAmount(), communityId)
                 };
 
             }

@@ -23,7 +23,12 @@ namespace gradido {
 	namespace interaction {
 		namespace calculateAccountBalance {
 
-			GradidoUnit Context::fromBegin(uint64_t startTransactionNr, memory::ConstBlockPtr publicKey, Timepoint endDate) const
+			GradidoUnit Context::fromBegin(
+				uint64_t startTransactionNr,
+				memory::ConstBlockPtr publicKey,
+				Timepoint endDate,
+				const std::string& communityId
+			) const 
 			{
 				FilterBuilder builder;
 				GradidoUnit balance(GradidoUnit::zero());
@@ -32,13 +37,14 @@ namespace gradido {
 					.setInvolvedPublicKey(publicKey)
 					.setMinTransactionNr(startTransactionNr)
 					.setSearchDirection(SearchDirection::ASC)
+					.setCoinCommunityId(communityId)
 					.setFilterFunction([&](const TransactionEntry& entry) -> FilterResult {
 						auto confirmedTransaction = entry.getConfirmedTransaction();
 						if (confirmedTransaction->getConfirmedAt().getAsTimepoint() > endDate) {
 							return FilterResult::STOP;
 						}
 						if (GradidoUnit::zero() == balance) {
-							balance = confirmedTransaction->getAccountBalance(publicKey).getBalance();
+							balance = confirmedTransaction->getAccountBalance(publicKey, communityId).getBalance();
 							lastDate = confirmedTransaction->getConfirmedAt();
 						}
 						else {
@@ -55,7 +61,12 @@ namespace gradido {
 			}
 
 			// calculate balance address from last transaction found for the pubkey with transaction <= maxTransactionNr
-			GradidoUnit Context::fromEnd(memory::ConstBlockPtr publicKey, Timepoint endDate, uint64_t maxTransactionNr/* = 0*/) const
+			GradidoUnit Context::fromEnd(
+				memory::ConstBlockPtr publicKey,
+				Timepoint endDate,
+				const std::string& communityId,
+				uint64_t maxTransactionNr/* = 0 */
+			) const 
 			{
 				FilterBuilder builder;
 				GradidoUnit balance(GradidoUnit::zero());
@@ -64,6 +75,7 @@ namespace gradido {
 					.setInvolvedPublicKey(publicKey)
 					.setMaxTransactionNr(maxTransactionNr)
 					.setSearchDirection(SearchDirection::DESC)
+					.setCoinCommunityId(communityId)
 					.setFilterFunction([&](const TransactionEntry& entry) -> FilterResult {
 						auto confirmedTransaction = entry.getConfirmedTransaction();
 						if (confirmedTransaction->getConfirmedAt().getAsTimepoint() > endDate) {
@@ -73,7 +85,7 @@ namespace gradido {
 							return FilterResult::DISMISS;
 						}
 						
-						balance = confirmedTransaction->getAccountBalance(publicKey).getBalance();
+						balance = confirmedTransaction->getAccountBalance(publicKey, communityId).getBalance();
 						lastDate = confirmedTransaction->getConfirmedAt();
 						return FilterResult::STOP;
 						

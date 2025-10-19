@@ -14,7 +14,7 @@ namespace gradido {
                 virtual std::vector<data::AccountBalance> calculateAccountBalances(uint64_t maxTransactionNr) const {
                     auto accountPublicKey = mBody->getRegisterAddress()->getAccountPublicKey();
                     if (!accountPublicKey || accountPublicKey->isEmpty()) return {};
-                    return { data::AccountBalance(accountPublicKey, GradidoUnit::zero()) };
+                    return { data::AccountBalance(accountPublicKey, GradidoUnit::zero(), "")};
                 }
             };
         }

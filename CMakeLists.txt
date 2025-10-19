@@ -54,7 +54,8 @@ endif()
 ############################## find dependencies ###################################
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-if (NOT DBUILD_SHARED_LIBS)
+if (NOT BUILD_SHARED_LIBS)
+	message(STATUS "add sodium static definition")
 	add_definitions(-DSODIUM_STATIC)
 endif()
 
@@ -107,6 +108,8 @@ if(USE_VCPKG)
 			set(VCPKG_TARGET_TRIPLET "x64-")
 		elseif (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86")
 			set(VCPKG_TARGET_TRIPLET "x86-")
+		elseif (CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
+			set(VCPKG_TARGET_TRIPLET "x64-")
 		else()
 			message(FATAL_ERROR "Unknown CMAKE_SYSTEM_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR}, cannot set VCPKG_TARGET_TRIPLET")
 		endif()
@@ -308,11 +311,12 @@ endif()
 set(LOGURU_INSTALL ON)
 set(BUILD_SHARED_LIBS_TEMP ${BUILD_SHARED_LIBS})
 set(BUILD_SHARED_LIBS OFF)
+# Set the policy default before adding the third-party directory
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 add_subdirectory(dependencies/loguru)
 set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP})
 add_subdirectory(dependencies/fkYAML)
-# Set the policy default before adding the third-party directory
-set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+
 add_subdirectory(dependencies/miniz)
 
 ######################################################################

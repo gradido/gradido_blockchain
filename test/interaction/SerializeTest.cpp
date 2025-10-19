@@ -263,15 +263,15 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		VERSION_STRING,
 		make_shared<memory::Block>(memory::Block::fromBase64(hieroTransactionIdBase64)),
 		{
-			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000) },
-			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483) }
+			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), ""},
+			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483), ""}
 		}
 	);
 	serialize::Context c(confirmedTransaction);
 	auto serialized = c.run();
 	// printf("running hash: %s\n", confirmedTransaction.getRunningHash()->convertToHex().data());
 	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
-	// printf("hex: %s\n", serialized->convertToHex().data());
+	printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(), completeConfirmedTransaction);
 }
 

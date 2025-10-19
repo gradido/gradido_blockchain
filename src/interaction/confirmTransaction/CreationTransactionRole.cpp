@@ -10,6 +10,7 @@ namespace gradido {
             std::vector<data::AccountBalance> CreationTransactionRole::calculateAccountBalances(uint64_t maxTransactionNr) const
             {
                 auto& transferAmount = mBody->getTransferAmount();
+                auto& communityId = transferAmount.getCommunityId();
 
                 // get community root transaction for gmw and auf addresses
                 auto firstTransactionEntry = mBlockchain->findOne(Filter::FIRST_TRANSACTION);
@@ -18,11 +19,11 @@ namespace gradido {
 
                 return {
                     // user which get creation
-                    calculateAccountBalance(transferAmount.getPublicKey(), maxTransactionNr, transferAmount.getAmount()),
+                    calculateAccountBalance(transferAmount.getPublicKey(), maxTransactionNr, transferAmount.getAmount(), communityId),
                     // gmw
-                    calculateAccountBalance(communityRoot->getGmwPubkey(), maxTransactionNr, transferAmount.getAmount()),
+                    calculateAccountBalance(communityRoot->getGmwPubkey(), maxTransactionNr, transferAmount.getAmount(), communityId),
                     // auf
-                    calculateAccountBalance(communityRoot->getAufPubkey(), maxTransactionNr, transferAmount.getAmount()),
+                    calculateAccountBalance(communityRoot->getAufPubkey(), maxTransactionNr, transferAmount.getAmount(), communityId),
                 };
             }
         }

@@ -73,7 +73,11 @@ namespace gradido {
 					assert(body->isDeferredTransfer());
 					auto deferredTransfer = deferredTransferEntry->getTransactionBody()->getDeferredTransfer();
 					calculateAccountBalance::Context calculateAccountBalance(blockchain);
-					auto balance = calculateAccountBalance.fromEnd(deferredTransfer->getRecipientPublicKey(), mCreatedAt);
+					auto balance = calculateAccountBalance.fromEnd(
+						deferredTransfer->getRecipientPublicKey(), 
+						mCreatedAt, 
+						deferredTransfer->getTransfer().getSender().getCommunityId()
+					);
 					if(GradidoUnit::zero() == balance) {
 						throw TransactionValidationInvalidInputException(
 							"deferred transfer balance is already empty",

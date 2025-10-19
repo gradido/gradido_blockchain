@@ -29,7 +29,6 @@ using namespace gradido::interaction;
 namespace serialization {
 
 	// basic 
-
 	DEFINE_TO_JSON(TransferAmount, {
 		obj.AddMember("pubkey", toJson(value.getPublicKey(), alloc), alloc);
 		obj.AddMember("amount", toJson(value.getAmount(), alloc), alloc);
@@ -42,6 +41,10 @@ namespace serialization {
 	DEFINE_TO_JSON(AccountBalance, {
 		obj.AddMember("pubkey", toJson(value.getPublicKey(), alloc), alloc);
 		obj.AddMember("balance", toJson(value.getBalance(), alloc), alloc);
+		auto communityId = value.getCommunityId();
+		if (!communityId.empty()) {
+			obj.AddMember("communityId", toJson(communityId, alloc), alloc);
+		}
 	})
 
 	DEFINE_TO_JSON(DurationSeconds, {

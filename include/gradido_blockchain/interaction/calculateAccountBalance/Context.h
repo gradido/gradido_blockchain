@@ -29,9 +29,19 @@ namespace gradido {
 
 				// calculate balance address starting from transaction >= startTransactionNr
 				// calculate it newly, without relaying on AccountBalance except the first as startting point
-				GradidoUnit fromBegin(uint64_t startTransactionNr, memory::ConstBlockPtr publicKey, Timepoint endDate) const;
+				GradidoUnit fromBegin(
+					uint64_t startTransactionNr, 
+					memory::ConstBlockPtr publicKey, 
+					Timepoint endDate,
+					const std::string& communityId
+				) const;
 				// calculate balance address from last transaction found for the pubkey with transaction <= maxTransactionNr
-				GradidoUnit fromEnd(memory::ConstBlockPtr publicKey, Timepoint endDate, uint64_t maxTransactionNr = 0) const;
+				GradidoUnit fromEnd(
+					memory::ConstBlockPtr publicKey, 
+					Timepoint endDate, 
+					const std::string& communityId,
+					uint64_t maxTransactionNr = 0
+				) const;
 					
 			protected:	
 				//! confirmedAt confirmation date for transaction from which the body is

@@ -54,7 +54,12 @@ namespace gradido {
                 virtual std::vector<data::AccountBalance> calculateAccountBalances(uint64_t maxTransactionNr) const = 0;
 
             protected:
-                data::AccountBalance calculateAccountBalance(memory::ConstBlockPtr publicKey, uint64_t maxTransactionNr, GradidoUnit amount) const;
+                data::AccountBalance calculateAccountBalance(
+                    memory::ConstBlockPtr publicKey, 
+                    uint64_t maxTransactionNr, 
+                    GradidoUnit amount,
+                    const std::string& communityId
+                ) const;
 
                 std::shared_ptr<const data::GradidoTransaction> mGradidoTransaction;
                 memory::ConstBlockPtr mMessageId;

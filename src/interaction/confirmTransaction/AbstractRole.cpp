@@ -52,7 +52,12 @@ namespace gradido {
 
             }
 
-            AccountBalance AbstractRole::calculateAccountBalance(memory::ConstBlockPtr publicKey, uint64_t maxTransactionNr, GradidoUnit amount) const
+            AccountBalance AbstractRole::calculateAccountBalance(
+                memory::ConstBlockPtr publicKey,
+                uint64_t maxTransactionNr,
+                GradidoUnit amount,
+                const std::string& communityId
+            ) const 
             {
                 FilterBuilder builder;
                 GradidoUnit previousDecayedAccountBalance;
@@ -60,18 +65,19 @@ namespace gradido {
                     .setInvolvedPublicKey(publicKey)
                     .setSearchDirection(SearchDirection::DESC)
                     .setMaxTransactionNr(maxTransactionNr)
-                    .setFilterFunction([publicKey, &previousDecayedAccountBalance, this](const TransactionEntry& entry) -> FilterResult
+                    .setCoinCommunityId(communityId)
+                    .setFilterFunction([publicKey, communityId, &previousDecayedAccountBalance, this](const TransactionEntry& entry) -> FilterResult
                         {
                             auto confirmedTransction = entry.getConfirmedTransaction();
                             if (confirmedTransction->hasAccountBalance(*publicKey)) {
-                                previousDecayedAccountBalance = confirmedTransction->getDecayedAccountBalance(publicKey, mConfirmedAt);
+                                previousDecayedAccountBalance = confirmedTransction->getDecayedAccountBalance(publicKey, communityId, mConfirmedAt);
                                 return FilterResult::STOP;
                             }
                             return FilterResult::DISMISS;
                         })
                     .build()
                 );
-                return AccountBalance(publicKey, previousDecayedAccountBalance + amount);
+                return AccountBalance(publicKey, previousDecayedAccountBalance + amount, communityId);
             }
         }
     }

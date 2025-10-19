@@ -36,6 +36,7 @@ namespace gradido {
             {
                 auto& transfer = mBody->getRedeemDeferredTransfer()->getTransfer();
                 auto& transferAmount = transfer.getSender();
+                auto& communityId = transferAmount.getCommunityId();
                 auto deferredTransferEntry = mBlockchain->getTransactionForId(mBody->getRedeemDeferredTransfer()->getDeferredTransferTransactionNr());
                 auto deferredTransferConfirmedAt = deferredTransferEntry->getConfirmedTransaction()->getConfirmedAt();
                 auto deferredTransferTransaction = deferredTransferEntry->getTransactionBody()->getDeferredTransfer();
@@ -46,18 +47,18 @@ namespace gradido {
                 if (transfer.getRecipient()->isTheSame(deferredTransferAmount.getPublicKey())) {
                     return {
                         // sender
-                        AccountBalance(transferAmount.getPublicKey(), GradidoUnit::zero()),
+                        AccountBalance(transferAmount.getPublicKey(), GradidoUnit::zero(), communityId),
                         // recipient and change
-                        calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, decayedDeferredAmount)
+                        calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, decayedDeferredAmount, communityId)
                     };
                 }
                 return {
                     // sender
-                    AccountBalance(transferAmount.getPublicKey(), GradidoUnit::zero()),
+                    AccountBalance(transferAmount.getPublicKey(), GradidoUnit::zero(), communityId),
                     // recipient
-                    calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, transferAmount.getAmount()),
+                    calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, transferAmount.getAmount(), communityId),
                     // change back to original sender of deferred transfer
-                    calculateAccountBalance(deferredTransferAmount.getPublicKey(), maxTransactionNr, change)
+                    calculateAccountBalance(deferredTransferAmount.getPublicKey(), maxTransactionNr, change, communityId)
                 };
 
             }

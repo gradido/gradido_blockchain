@@ -23,12 +23,13 @@ namespace gradido {
 				std::vector<AccountBalanceMessage> accountBalanceMessages;
 				accountBalanceMessages.reserve(mConfirmedTransaction.getAccountBalances().size());
 				for (auto& accountBalance : mConfirmedTransaction.getAccountBalances()) {
-					accountBalanceMessages.push_back(
-						AccountBalanceMessage(
-							accountBalance.getPublicKey()->copyAsVector(),
-							accountBalance.getBalance().getGradidoCent()
-						)
-					);
+					AccountBalanceMessage accountBalanceMessage;
+					accountBalanceMessage["pubkey"_f] = accountBalance.getPublicKey()->copyAsVector();
+					accountBalanceMessage["balance"_f] = accountBalance.getBalance().getGradidoCent();
+					if (!accountBalance.getCommunityId().empty()) {
+						accountBalanceMessage["community_id"_f] = accountBalance.getCommunityId();
+					}
+					accountBalanceMessages.push_back(accountBalanceMessage);
 				}			
 				ConfirmedTransactionMessage message;
 				message["id"_f] = mConfirmedTransaction.getId();

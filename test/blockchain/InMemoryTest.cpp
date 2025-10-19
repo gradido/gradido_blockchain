@@ -244,7 +244,7 @@ GradidoUnit InMemoryTest::getBalance(int keyPairIndex, Timepoint date)
 		throw std::runtime_error("invalid key pair index");
 	}
 	interaction::calculateAccountBalance::Context c(mBlockchain);
-	return c.fromEnd(g_KeyPairs[keyPairIndex]->getPublicKey(), date);
+	return c.fromEnd(g_KeyPairs[keyPairIndex]->getPublicKey(), date, "");
 }
 
 TEST_F(InMemoryTest, FindCommunityRootTransactionByType)
@@ -499,8 +499,8 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	auto lastTransactionEntry = mBlockchain->findOne(Filter::LAST_TRANSACTION);
 	auto confirmedTransaction = lastTransactionEntry->getConfirmedTransaction();
 	ASSERT_EQ(confirmedTransaction->getAccountBalances().size(), 2);
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[secondRecipientKeyPairIndex]->getPublicKey()).getBalance(), GradidoUnit(996.3677));
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[recipientKeyPairIndex]->getPublicKey()).getBalance(), GradidoUnit::zero());
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[secondRecipientKeyPairIndex]->getPublicKey(), "").getBalance(), GradidoUnit(996.3677));
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[recipientKeyPairIndex]->getPublicKey(), "").getBalance(), GradidoUnit::zero());
 	// check accounts
 	blockedDeferredTransferBalance = GradidoUnit(483.0).calculateCompoundInterest(createdAt, createdAt + secondTimeoutDuration);
 	deferredTransferBalance = getBalance(recipientKeyPairIndex, firstDeferredTransferCreatedAt + timeoutDuration + chrono::hours(1));
@@ -529,8 +529,8 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	lastTransactionEntry = mBlockchain->findOne(Filter::LAST_TRANSACTION);
 	confirmedTransaction = lastTransactionEntry->getConfirmedTransaction();
 	ASSERT_EQ(confirmedTransaction->getAccountBalances().size(), 2);
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[6]->getPublicKey()).getBalance(), originalSenderBalance);
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[thirdRecipientKeyPairIndex]->getPublicKey()).getBalance(), deferredFullBalance);
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[6]->getPublicKey(), "").getBalance(), originalSenderBalance);
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[thirdRecipientKeyPairIndex]->getPublicKey(), "").getBalance(), deferredFullBalance);
 
 	// redeem second deferred transfer
 	auto previousCreatedAt = createdAt;
@@ -541,11 +541,11 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	lastTransactionEntry = mBlockchain->findOne(Filter::LAST_TRANSACTION);
 	confirmedTransaction = lastTransactionEntry->getConfirmedTransaction();
 	ASSERT_EQ(confirmedTransaction->getAccountBalances().size(), 3);
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[secondRecipientKeyPairIndex]->getPublicKey()).getBalance(),
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[secondRecipientKeyPairIndex]->getPublicKey(), "").getBalance(),
 		originalSenderBalance + deferredFullBalance - GradidoUnit(400.0)
 	);
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[thirdRecipientKeyPairIndex]->getPublicKey()).getBalance(), GradidoUnit::zero());
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[8]->getPublicKey()).getBalance(), GradidoUnit(400.0));	
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[thirdRecipientKeyPairIndex]->getPublicKey(), "").getBalance(), GradidoUnit::zero());
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[8]->getPublicKey(), "").getBalance(), GradidoUnit(400.0));
 	// logBlockchain();
 }
 

@@ -14,8 +14,8 @@ namespace gradido {
                 virtual validate::Type getValidationType() const { return validate::Type::SINGLE; }
                 virtual std::vector<data::AccountBalance> calculateAccountBalances(uint64_t maxTransactionNr) const {
                     return {
-                        data::AccountBalance(mBody->getCommunityRoot()->getAufPubkey(), GradidoUnit::zero()),
-                        data::AccountBalance(mBody->getCommunityRoot()->getGmwPubkey(), GradidoUnit::zero())
+                        data::AccountBalance(mBody->getCommunityRoot()->getAufPubkey(), GradidoUnit::zero(), ""),
+                        data::AccountBalance(mBody->getCommunityRoot()->getGmwPubkey(), GradidoUnit::zero(), "")
                     };
                 }
             protected:

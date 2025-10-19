@@ -22,7 +22,8 @@ namespace gradido {
             //  ----------------  basic_types.proto -----------------------------------
             using AccountBalanceMessage = message<
                 bytes_field <"pubkey", 1>,
-                int64_field<"balance", 2>
+                int64_field<"balance", 2>,
+                string_field<"community_id", 3>
             > ;
 
             using EncryptedMemoMessage = message<
