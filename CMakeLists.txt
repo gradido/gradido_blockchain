@@ -314,10 +314,9 @@ set(BUILD_SHARED_LIBS OFF)
 # Set the policy default before adding the third-party directory
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 add_subdirectory(dependencies/loguru)
-set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP})
 add_subdirectory(dependencies/fkYAML)
-
 add_subdirectory(dependencies/miniz)
+set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP})
 
 ######################################################################
 

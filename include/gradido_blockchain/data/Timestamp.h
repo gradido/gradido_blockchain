@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_DATA_TIMESTAMP_H
 
 #include "TimestampSeconds.h"
+#include "DurationSeconds.h"
 
 namespace gradido {
 	namespace data {
@@ -25,11 +26,19 @@ namespace gradido {
 			inline bool operator>(const TimestampSeconds& other) const { return mSeconds > other.getSeconds(); }
 			inline bool empty() const { return !mSeconds && !mNanos; }
 
+			inline Timestamp operator+=(const DurationSeconds& duration) { mSeconds += static_cast<int64_t>(duration.getSeconds()); return *this; }
+
 		protected:
 			int64_t mSeconds;
 			int32_t mNanos;
 		};
+
+		inline Timestamp operator+(const Timestamp& timestamp, const DurationSeconds& duration) {
+			return Timestamp(timestamp.getSeconds() + duration.getSeconds(), timestamp.getNanos());
+		}
 	}
 }
+
+
 
 #endif //__GRADIDO_BLOCKCHAIN_DATA_TIMESTAMP_H

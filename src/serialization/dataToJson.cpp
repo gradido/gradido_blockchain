@@ -17,6 +17,7 @@
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/data/TimestampSeconds.h"
 #include "gradido_blockchain/data/TransferAmount.h"
+#include "gradido_blockchain/data/TransactionTriggerEvent.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/serialization/toJson.h"
 
@@ -36,6 +37,12 @@ namespace serialization {
 		if (!communityId.empty()) {
 			obj.AddMember("communityId", toJson(communityId, alloc), alloc);
 		}
+	})
+
+	DEFINE_TO_JSON(TransactionTriggerEvent, {
+		obj.AddMember("linkedTransactionNr", value.getLinkedTransactionId(), alloc);
+		obj.AddMember("targetDate", toJson(value.getTargetDate().getAsTimepoint(), alloc), alloc);
+		obj.AddMember("type", toJson(value.getType(), alloc), alloc);
 	})
 
 	DEFINE_TO_JSON(AccountBalance, {
