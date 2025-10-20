@@ -98,7 +98,7 @@ public:
 	/// the 3rd highest bit to be cleared too.
 	static void normalizeBytesForce3rd(memory::Block& key);
 	static bool isNormalized(const memory::Block& key);
-	bool isNormalized();
+	bool isNormalized() const;
 
 protected:
 	inline memory::ConstBlockPtr getPrivateKey() const { return mExtendedSecret; }

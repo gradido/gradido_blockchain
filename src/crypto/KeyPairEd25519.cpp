@@ -24,9 +24,9 @@ std::shared_ptr<KeyPairEd25519> KeyPairEd25519::create(const std::shared_ptr<Pas
 	assert(passphrase);
 	// libsodium doc: https://libsodium.gitbook.io/doc/advanced/hmac-sha2
 	// https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
-	
+
 	auto word_indices = passphrase->getWordIndices();
-	
+
 	assert(word_indices[0] && word_indices[1] && word_indices[2] && word_indices[3]);
 	std::string clear_passphrase = passphrase->createClearPassphrase();
 
@@ -42,7 +42,7 @@ std::shared_ptr<KeyPairEd25519> KeyPairEd25519::create(const std::shared_ptr<Pas
 	for (int i = 0; i < PHRASE_WORD_COUNT; i++) {
 		value = word_indices[i];
 		crypto_hash_sha512_update(&state, (const unsigned char*)&value, valueSize);
-	}	
+	}
 	// **** end converting into uint64 *****
 	crypto_hash_sha512_update(&state, (unsigned char*)clear_passphrase.data(), clear_passphrase.size());
 	crypto_hash_sha512_final(&state, hash);
@@ -56,7 +56,7 @@ std::shared_ptr<KeyPairEd25519> KeyPairEd25519::create(const memory::Block& seed
 		throw Ed25519InvalidSeedException("seed to short, need at least 32 Bytes, 64 Character as hex", seed.convertToHex());
 	}
 	auto chainCode = std::make_shared<memory::Block>(ED25519_CHAIN_CODE_SIZE);
-	auto privateKey = std::make_shared<memory::Block>(ED25519_PRIVATE_KEY_SIZE);	
+	auto privateKey = std::make_shared<memory::Block>(ED25519_PRIVATE_KEY_SIZE);
 
 	// secret key: modified sha512(seed)
 	crypto_hash_sha512(*privateKey, seed, 32);
@@ -64,7 +64,7 @@ std::shared_ptr<KeyPairEd25519> KeyPairEd25519::create(const memory::Block& seed
 	kl[0] &= 0b11111000;
 	kl[31] &= 0b00011111;
 	kl[31] |= 0b01000000;
-	
+
 	// public key: scalar multiplication
 	auto publicKey = std::make_shared<memory::Block>(calculatePublicKey(*privateKey));
 
@@ -157,7 +157,7 @@ memory::Block KeyPairEd25519::sign(const unsigned char* message, size_t messageS
 
 	crypto_scalarmult_ed25519_base_noclamp(signature, nonce);
 	memmove(signature.data(32), *mSodiumPublic, 32);
-	
+
 	crypto_hash_sha512_init(&hs);
 	crypto_hash_sha512_update(&hs, signature, 64);
 	crypto_hash_sha512_update(&hs, message, messageSize);
@@ -223,11 +223,11 @@ bool KeyPairEd25519::isNormalized(const memory::Block& key)
 	return  (key[0]  & 0b11111000) == key[0] 
 		&& ((key[31] & 0b00011111) | 0b01000000) == key[31];
 }
-bool KeyPairEd25519::isNormalized()
+bool KeyPairEd25519::isNormalized() const
 {
 	if (!mExtendedSecret) {
 		throw Ed25519MissingKeyException("missing secret key");
-	}	
+	}
 	return isNormalized(*mExtendedSecret);
 }
 
