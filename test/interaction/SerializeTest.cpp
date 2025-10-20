@@ -229,7 +229,7 @@ TEST(SerializeTest, MinimalConfirmedTransaction) {
 		7,
 		std::make_unique<GradidoTransaction>(),
 		confirmedAt,
-		VERSION_STRING,
+		GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
 		make_shared<memory::Block>(crypto_generichash_BYTES),
 		make_shared<memory::Block>(memory::Block::fromBase64(hieroTransactionIdBase64)),
 		{}
@@ -260,7 +260,8 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		7,
 		std::move(gradidoTransaction),
 		confirmedAt,
-		VERSION_STRING,
+		GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
+		make_shared<memory::Block>(crypto_generichash_BYTES),
 		make_shared<memory::Block>(memory::Block::fromBase64(hieroTransactionIdBase64)),
 		{
 			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), ""},
