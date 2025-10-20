@@ -87,7 +87,7 @@ namespace gradido {
 					return;
 				}
 			}
-			LOG_F(WARNING, "couldn't find transactionTriggerEvent for removal for transaction: %llu", transactionTriggerEvent.getLinkedTransactionId());
+			LOG_F(WARNING, "couldn't find transactionTriggerEvent for removal for transaction: %lu", transactionTriggerEvent.getLinkedTransactionId());
 		}
 
 

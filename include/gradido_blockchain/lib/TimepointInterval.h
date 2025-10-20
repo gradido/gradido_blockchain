@@ -56,14 +56,16 @@ public:
 		using pointer = value_type*;  // or also value_type*
 		using reference = value_type&;  // or also value_type&
 
+		MonthYearIterator() : m_ptr(nullptr) {}
+
 		MonthYearIterator(pointer ptr)
-			: m_ptr(ptr) 
+			: m_ptr(ptr)
 		{
 		}
 
 		// Copy constructor
 		MonthYearIterator(const MonthYearIterator& other)
-			: m_ptr(new value_type(other.m_ptr->year(), other.m_ptr->month())) // Deep copy of the value
+			: m_ptr(other.m_ptr ? new value_type(other.m_ptr->year(), other.m_ptr->month()) : nullptr) // Deep copy of the value
 		{
 		}
 
@@ -81,39 +83,79 @@ public:
 			}
 		}
 
-		reference operator*() const { return *m_ptr; }
+		// Copy assignment
+		MonthYearIterator& operator=(const MonthYearIterator& other)
+		{
+			if (this == &other) { return *this; }
+			// delete existing resource
+			if (m_ptr) { delete m_ptr; m_ptr = nullptr; }
+			// deep copy other's value if present
+			if (other.m_ptr) {
+				m_ptr = new value_type(other.m_ptr->year(), other.m_ptr->month());
+			}
+			return *this;
+		}
+
+		// Move assignment
+		MonthYearIterator& operator=(MonthYearIterator&& other) noexcept
+		{
+			if (this == &other) return *this;
+			if (m_ptr) { delete m_ptr; }
+			m_ptr = other.m_ptr;
+			other.m_ptr = nullptr;
+			return *this;
+		}
+
+		// Assign from value_type (year_month)
+		MonthYearIterator& operator=(const value_type& v)
+		{
+			if (m_ptr) {
+				*m_ptr = v;
+			} else {
+				m_ptr = new value_type(v.year(), v.month());
+			}
+			return *this;
+		}
+
+		reference operator*() const { ptrCheck(); return *m_ptr; }
 		pointer operator->() { return m_ptr; }
 
 		// Prefix increment
-		MonthYearIterator& operator++() { (*m_ptr) += date::months(1); return *this; }
+		MonthYearIterator& operator++() { ptrCheck(); (*m_ptr) += date::months(1); return *this; }
 
 		// Prefix decrement
-		MonthYearIterator& operator--() { (*m_ptr) -= date::months(1); return *this; }
+		MonthYearIterator& operator--() { ptrCheck(); (*m_ptr) -= date::months(1); return *this; }
 
 		// Postfix increment
 		MonthYearIterator operator++(int) { MonthYearIterator tmp = *this; ++(*this); return tmp; }
 
-		// Postfix decrement 
+		// Postfix decrement
 		MonthYearIterator operator--(int) { MonthYearIterator tmp = *this; --(*this); return tmp; }
 
-		friend bool operator== (const MonthYearIterator& a, const MonthYearIterator& b) { return *a.m_ptr == *b.m_ptr; };
-		friend bool operator!= (const MonthYearIterator& a, const MonthYearIterator& b) { return *a.m_ptr != *b.m_ptr; };
+		friend bool operator== (const MonthYearIterator& a, const MonthYearIterator& b) { a.ptrCheck(); b.ptrCheck(); return *a.m_ptr == *b.m_ptr; };
+		friend bool operator!= (const MonthYearIterator& a, const MonthYearIterator& b) { a.ptrCheck(); b.ptrCheck(); return *a.m_ptr != *b.m_ptr; };
+
+	protected:
+		void ptrCheck() const {
+			if (!m_ptr) {
+				throw GradidoNullPointerException("Nullptr in TimepointInterval", "date::year_month", "MonthYearIterator");
+			}
+		}
 
 	private:
 		pointer m_ptr;
 	};
 
-	MonthYearIterator begin() const { 
+	MonthYearIterator begin() const {
 		auto date = date::year_month_day{ date::floor<date::days>(mStartDate) };
 		return MonthYearIterator(new date::year_month(date.year(), date.month()));
 	}
-	MonthYearIterator end() const { 
+	MonthYearIterator end() const {
 		auto date = date::year_month_day{ date::floor<date::days>(mEndDate) };
 		// +1 month to have end out of bounds
 		date += date::months(1);
 		return MonthYearIterator(new date::year_month(date.year(), date.month()));
 	}
-	
 protected:
 	Timepoint mStartDate;
 	Timepoint mEndDate;

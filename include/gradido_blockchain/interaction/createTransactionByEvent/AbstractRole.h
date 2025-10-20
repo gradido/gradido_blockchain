@@ -15,6 +15,7 @@ namespace gradido {
 			class AbstractRole
 			{
 			public:
+				virtual ~AbstractRole() {}
 				virtual std::unique_ptr<data::GradidoTransaction> run(const blockchain::Abstract& blockchain) const = 0;
 			protected:
 			};

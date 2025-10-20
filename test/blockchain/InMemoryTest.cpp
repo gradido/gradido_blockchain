@@ -50,7 +50,7 @@ void InMemoryTest::SetUp()
 	mCommunityId = "testCommunity";
 	mLastCreatedAt = std::chrono::system_clock::from_time_t(1641681324);
 	mBlockchain = InMemoryProvider::getInstance()->findBlockchain(mCommunityId);
-		
+
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(mLastCreatedAt)
@@ -130,7 +130,7 @@ bool InMemoryTest::createGradidoCreation(
 ) {
 	assert(recipientKeyPairIndex > 0 && recipientKeyPairIndex < g_KeyPairs.size());
 	assert(signerKeyPairIndex > 0 && signerKeyPairIndex < g_KeyPairs.size());
-	
+
 	GradidoTransactionBuilder builder;
 	builder
 		.addMemo(memo)
@@ -141,7 +141,7 @@ bool InMemoryTest::createGradidoCreation(
 			targetDate
 		)
 		.sign(g_KeyPairs[signerKeyPairIndex])
-	;	
+	;
 	auto confirmedAt = generateNewConfirmedAt(createdAt);
 	interaction::serialize::Context serializeTransactionId({ confirmedAt, hieroAccount });
 	return mBlockchain->createAndAddConfirmedTransaction(builder.build(), serializeTransactionId.run(), confirmedAt);
@@ -150,7 +150,7 @@ bool InMemoryTest::createGradidoCreation(
 bool InMemoryTest::createGradidoTransfer(
 	int senderKeyPairIndex,
 	int recipientKeyPairIndex,
-	GradidoUnit amount, 
+	GradidoUnit amount,
 	Timepoint createdAt
 ) {
 	assert(senderKeyPairIndex > 0 && senderKeyPairIndex < g_KeyPairs.size());
@@ -166,7 +166,7 @@ bool InMemoryTest::createGradidoTransfer(
 			g_KeyPairs[recipientKeyPairIndex]->getPublicKey()
 		)
 		.sign(g_KeyPairs[senderKeyPairIndex])
-	;	
+	;
 	auto confirmedAt = generateNewConfirmedAt(createdAt);
 	interaction::serialize::Context serializeTransactionId({ confirmedAt, hieroAccount });
 	return mBlockchain->createAndAddConfirmedTransaction(builder.build(), serializeTransactionId.run(), confirmedAt);
@@ -234,7 +234,7 @@ void InMemoryTest::logBlockchain()
 {
 	auto transactions = dynamic_cast<InMemory*>(mBlockchain.get())->getSortedTransactions();
 	for (auto transaction : transactions) {
-		LOG_F(INFO, serialization::toJsonString(*transaction->getConfirmedTransaction(), true).data());
+		LOG_F(INFO, "%s", serialization::toJsonString(*transaction->getConfirmedTransaction(), true).data());
 	}
 }
 
@@ -258,7 +258,7 @@ TEST_F(InMemoryTest, FindCommunityRootTransactionByType)
 	// after adding two create addresses
 	createRegisterAddress();
 	createRegisterAddress();
-	transaction = mBlockchain->findOne(f);	
+	transaction = mBlockchain->findOne(f);
 	ASSERT_TRUE(transaction);
 	EXPECT_TRUE(transaction->getTransactionBody()->isCommunityRoot());
 }
@@ -325,10 +325,10 @@ TEST_F(InMemoryTest, CreationTransactions)
 		ASSERT_TRUE(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate));
 	} catch(GradidoBlockchainException& ex) {
 		logBlockchain();
-		LOG_F(ERROR, ex.getFullString().data());
+		LOG_F(ERROR, "%s", ex.getFullString().data());
 	}
 	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit(1000.0));
-	
+
 	createdAt += chrono::hours{ 23 };
 	mLastCreatedAt = createdAt;
 	auto newTargetDate = getPreviousNMonth2(createdAt, 2);
@@ -344,7 +344,7 @@ TEST_F(InMemoryTest, CreationTransactions)
 		auto createAtString = DataTypeConverter::timePointToString(createdAt);
 		auto targetDateString = DataTypeConverter::timePointToString(newTargetDate);
 		LOG_F(INFO, "createdAt: %s, targetDate: %s", createAtString.data(), targetDateString.data());
-		LOG_F(ERROR, ex.getFullString().data());
+		LOG_F(ERROR, "%s", ex.getFullString().data());
 	}
 
 	// 1000.0000 decayed for 23 hours => 998.1829
@@ -359,14 +359,14 @@ TEST_F(InMemoryTest, CreationTransactions)
 		logBlockchain();
 		blockchain::Filter filter;
 		filter.involvedPublicKey = make_shared<memory::Block>(
-		  memory::Block::fromHex("8a8c93293cb97e8784178da8ae588144f7c982f4658bfd35101a1e2b479c3e57", 64)
+	    memory::Block::fromHex("8a8c93293cb97e8784178da8ae588144f7c982f4658bfd35101a1e2b479c3e57", 64)
 		);
 		filter.searchDirection = blockchain::SearchDirection::DESC;
 		//filter.timepointInterval = TimepointInterval(mBlockchain->getStartDate(), createdAt);
 		std::cout << mBlockchain->getStartDate().getAsTimepoint() << " - " << createdAt << std::endl;
 		auto results = mBlockchain->findAll(filter);
 		std::cout << results.size() << std::endl;
-		LOG_F(ERROR, ex.getFullString().data());
+		LOG_F(ERROR, "%s", ex.getFullString().data());
 	}
 	EXPECT_EQ(getBalance(8, mLastConfirmedAt), GradidoUnit(1000.0));
 }
@@ -410,7 +410,7 @@ TEST_F(InMemoryTest, ValidTransferTransaction)
 		ASSERT_TRUE(createGradidoCreation(6, 4, 1000.0, createdAt, targetDate));
 	} catch(GradidoBlockchainException& ex) {
 		logBlockchain();
-		LOG_F(ERROR, ex.getFullString().data());
+		LOG_F(ERROR, "%s", ex.getFullString().data());
 	}
 	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit(1000.0));
 	auto creationConfirmedAt = mLastConfirmedAt;
@@ -419,7 +419,7 @@ TEST_F(InMemoryTest, ValidTransferTransaction)
 		ASSERT_TRUE(createGradidoTransfer(6, 4, 500.10, generateNewCreatedAt()));
 	} catch(GradidoBlockchainException& ex) {
 		logBlockchain();
-		LOG_F(ERROR, ex.getFullString().data());
+		LOG_F(ERROR, "%s", ex.getFullString().data());
 	}
 
 	EXPECT_EQ(getBalance(4, mLastConfirmedAt), GradidoUnit(500.1));
@@ -461,7 +461,7 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 		ASSERT_TRUE(createGradidoDeferredTransfer(6, recipientKeyPairIndex, deferredTransferAmount, createdAt, timeoutDuration));
 	} catch(GradidoBlockchainException& ex) {
 		logBlockchain();
-		LOG_F(ERROR, ex.getFullString().data());
+		LOG_F(ERROR, "%s", ex.getFullString().data());
 	}
 
 	// check account
@@ -493,7 +493,7 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	}
 	catch (GradidoBlockchainException& ex) {
 		logBlockchain();
-		LOG_F(ERROR, ex.getFullString().data());
+		LOG_F(ERROR, "%s", ex.getFullString().data());
 	}
 
 	auto lastTransactionEntry = mBlockchain->findOne(Filter::LAST_TRANSACTION);
@@ -568,7 +568,7 @@ TEST_F(InMemoryTest, ValidGradidoTimeoutDeferredTransfer)
 	}
 	catch (GradidoBlockchainException& ex) {
 		logBlockchain();
-		LOG_F(ERROR, ex.getFullString().data());
+		LOG_F(ERROR, "%s", ex.getFullString().data());
 	}
 	// trigger timeout deferred transfer
 	createdAt += timeoutDuration * 2;
