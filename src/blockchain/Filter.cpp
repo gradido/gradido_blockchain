@@ -87,7 +87,7 @@ namespace gradido {
 			0, 0, nullptr, SearchDirection::ASC, Pagination(1, 0)
 		);
 		const Filter Filter::ALL_TRANSACTIONS = Filter(
-			0, 0, nullptr, SearchDirection::DESC, Pagination(1, 0)
+			0, 0, nullptr, SearchDirection::DESC, Pagination(0, 0)
 		);
 
 		FilterResult Filter::matches(std::shared_ptr<const TransactionEntry> entry, FilterCriteria type, std::string_view communityId) const
