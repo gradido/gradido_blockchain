@@ -1,4 +1,5 @@
 #include "gradido_blockchain/data/TransactionBody.h"
+#include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
@@ -15,6 +16,11 @@
 namespace gradido {
 	namespace interaction {
 		namespace deserialize {
+			Context::~Context()
+			{
+
+			}
+
 			void Context::run()
 			{
 				// TODO: shorten code with help of template
@@ -42,7 +48,7 @@ namespace gradido {
 						auto result = message_coder<GradidoTransactionMessage>::decode(mData->span());
 						if (!result.has_value()) return;
 						const auto& [gradidoTransaction, bufferEnd2] = *result;
-						mGradidoTransaction = GradidoTransactionRole(gradidoTransaction).getGradidoTransaction();
+						mGradidoTransaction = std::move(GradidoTransactionRole(gradidoTransaction).getGradidoTransaction());
 						mType = Type::GRADIDO_TRANSACTION;
 						return;
 					}

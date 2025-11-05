@@ -55,7 +55,7 @@ namespace gradido {
 				Context() = delete;
 				Context(memory::ConstBlockPtr rawData, Type hint = Type::UNKNOWN)
 					: mData(rawData), mType(hint) {}
-				~Context() {}
+				~Context();
 				void run();
 
 				inline bool isGradidoTransaction() const { return Type::GRADIDO_TRANSACTION == mType; }

@@ -14,7 +14,7 @@ namespace gradido {
 			//! \param previousConfirmedTransaction needed for running hash calculation
 			ConfirmedTransaction(
 				uint64_t id,
-				std::shared_ptr<const GradidoTransaction> gradidoTransaction,
+				std::unique_ptr<const GradidoTransaction> gradidoTransaction,
 				Timestamp confirmedAt,
 				const std::string& versionNumber,
 				memory::ConstBlockPtr messageId,
@@ -24,7 +24,7 @@ namespace gradido {
 			//! copy running hash
 			ConfirmedTransaction(
 				uint64_t id,
-				std::shared_ptr<const GradidoTransaction> gradidoTransaction,
+				std::unique_ptr<const GradidoTransaction> gradidoTransaction,
 				Timestamp confirmedAt,
 				const std::string& versionNumber,
 				memory::ConstBlockPtr runningHash,

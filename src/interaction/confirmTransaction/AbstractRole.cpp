@@ -42,7 +42,7 @@ namespace gradido {
             ) const {
                return make_shared<data::ConfirmedTransaction>(
                    id,
-                   mGradidoTransaction,
+                   std::make_unique<data::GradidoTransaction>(*mGradidoTransaction),
                    mConfirmedAt,
                    GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
                    mMessageId,

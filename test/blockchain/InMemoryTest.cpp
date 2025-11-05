@@ -547,6 +547,8 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[thirdRecipientKeyPairIndex]->getPublicKey(), "").getBalance(), GradidoUnit::zero());
 	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[8]->getPublicKey(), "").getBalance(), GradidoUnit(400.0));
 	// logBlockchain();
+	auto transactions = mBlockchain->findAll(Filter::ALL_TRANSACTIONS);
+	EXPECT_EQ(transactions.size(), 9);
 }
 
 TEST_F(InMemoryTest, ValidGradidoTimeoutDeferredTransfer)
