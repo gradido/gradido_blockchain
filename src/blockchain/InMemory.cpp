@@ -10,11 +10,12 @@
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
-
-
 #include "loguru/loguru.hpp"
+#include "magic_enum/magic_enum.hpp"
 
 #include <algorithm>
+
+using namespace magic_enum;
 
 namespace gradido {
 	using namespace data;
@@ -140,38 +141,48 @@ namespace gradido {
 			if (FilterCriteria::NONE == startSetType) {
 				return {};
 			}
-			auto processEntry = [&](auto& start, auto& end, FilterCriteria toFilter, const Filter& filter) -> TransactionEntries 
-			{
-				end--;
+			auto iterateRange = [](const auto& startIt, const auto& endIt, FilterCriteria toFilter, const Filter& filter, const std::string& communityId) -> TransactionEntries {
 				TransactionEntries transactionEntries;
-				bool revert = SearchDirection::DESC == filter.searchDirection;
-				auto& it = revert ? end : start;
+				if (startIt == endIt) {
+					return transactionEntries;
+				}
 				int paginationCursor = 0;
-				while (it != (revert ? start : end)) {
-					auto result = filter.matches(it->second, toFilter, mCommunityId);
+				// return false if finished
+				auto handleEntry = [&](const auto& entry) -> bool {
+					auto result = filter.matches(entry, toFilter, communityId);
 					if ((result & FilterResult::USE) == FilterResult::USE) {
 						if (paginationCursor >= filter.pagination.skipEntriesCount()) {
-							transactionEntries.push_back(it->second);
-							if (filter.pagination.size && transactionEntries.size() >= filter.pagination.size) {
-								return transactionEntries;
+							transactionEntries.push_back(entry);
+							if (!filter.pagination.hasCapacityLeft(transactionEntries.size())) {
+								return false; // no capacity left, caller gets his requested result count
 							}
 						}
 						paginationCursor++;
 					}
 					if ((result & FilterResult::STOP) == FilterResult::STOP) {
-						return transactionEntries;
+						return false; // filter function has signaled stop
 					}
-					if (!revert) {
-						++it;
-					}
-					else {
-						--it;
+					return true;
+				};
+
+				if (SearchDirection::ASC == filter.searchDirection) {
+					for (auto it = startIt; it != endIt; ++it) {
+						if (!handleEntry(it->second)) {
+							return transactionEntries;
+						}
 					}
 				}
-				// last entry
-				auto result = filter.matches(it->second, toFilter, mCommunityId);
-				if ((result & FilterResult::USE) == FilterResult::USE) {
-					transactionEntries.push_back(start->second);
+				else if (SearchDirection::DESC == filter.searchDirection) {
+					auto it = endIt;
+					do {
+						--it;
+						if (!handleEntry(it->second)) {
+							return transactionEntries;
+						}
+					} while (it != startIt);
+				}
+				else {
+					throw GradidoUnhandledEnum("blockhain::inMemory::findAll", "SearchDirection", enum_name(filter.searchDirection).data());
 				}
 				return transactionEntries;
 			};
@@ -179,11 +190,13 @@ namespace gradido {
 			if ((startSetType & FilterCriteria::TIMEPOINT_INTERVAL) == FilterCriteria::TIMEPOINT_INTERVAL)
 			{
 				auto notYetFiltered = FilterCriteria::MAX - FilterCriteria::TIMEPOINT_INTERVAL;
-				data::Timestamp startDate(filter.timepointInterval.getStartDate());
-				data::Timestamp endDate(filter.timepointInterval.getEndDate());
-				auto startIt = mTransactionsByConfirmedAt.lower_bound(startDate);
-				auto endIt = mTransactionsByConfirmedAt.upper_bound(endDate);
-				return processEntry(startIt, endIt, notYetFiltered, filter);
+				const auto& timeInterval = filter.timepointInterval;
+				// first element not less than the given key
+				auto startIt = mTransactionsByConfirmedAt.lower_bound(timeInterval.getStartDate());
+				// first element greater than the given key (outside of bounds, possible == end())
+				auto endIt = mTransactionsByConfirmedAt.upper_bound(timeInterval.getEndDate());
+
+				return iterateRange(startIt, endIt, notYetFiltered, filter, mCommunityId);
 			}						
 			else if ((startSetType & FilterCriteria::INVOLVED_PUBLIC_KEY) == FilterCriteria::INVOLVED_PUBLIC_KEY) {
 				// we have a problem there, filterFunction expect to be called in searchOrder, mTransactionsByPubkey is sorted by public key
@@ -194,7 +207,7 @@ namespace gradido {
 				Filter partFilter = filter;
 				// disable pagination for prefilter round
 				partFilter.pagination = Pagination();				
-				auto prefilteredTransactions = processEntry(range.first, range.second, notYetFiltered, partFilter);
+				auto prefilteredTransactions = iterateRange(range.first, range.second, notYetFiltered, partFilter, mCommunityId);
 
 				// we need to call processEntry again for filterFunction, searchDirection and/or pagination
 				if (!prefilteredTransactions.empty()) {
@@ -205,7 +218,7 @@ namespace gradido {
 					prefilteredTransactions.clear();
 					auto startIt = sortedTransactions.begin();
 					auto endIt = sortedTransactions.end();
-					return processEntry(startIt, endIt, FilterCriteria::FILTER_FUNCTION, filter);
+					return iterateRange(startIt, endIt, FilterCriteria::FILTER_FUNCTION, filter, mCommunityId);
 				}
 				else {
 					return prefilteredTransactions;
@@ -221,7 +234,7 @@ namespace gradido {
 				if (filter.maxTransactionNr) {
 					endIt = mTransactionsByNr.upper_bound(filter.maxTransactionNr);
 				}
-				return processEntry(startIt, endIt, notYetFiltered, filter);
+				return iterateRange(startIt, endIt, notYetFiltered, filter, mCommunityId);
 			}
 			throw std::runtime_error("not expected branch");			
 		}
