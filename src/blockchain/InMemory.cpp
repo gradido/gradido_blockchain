@@ -206,7 +206,8 @@ namespace gradido {
 				auto range = mTransactionsByPubkey.equal_range(filter.involvedPublicKey);
 				Filter partFilter = filter;
 				// disable pagination for prefilter round
-				partFilter.pagination = Pagination();				
+				partFilter.pagination = Pagination();		
+				partFilter.searchDirection = SearchDirection::ASC;
 				auto prefilteredTransactions = iterateRange(range.first, range.second, notYetFiltered, partFilter, mCommunityId);
 
 				// we need to call processEntry again for filterFunction, searchDirection and/or pagination
@@ -279,7 +280,7 @@ namespace gradido {
 			std::lock_guard _lock(mWorkMutex);
 			mSortedDirty = true;
 			auto confirmedTransaction = transactionEntry->getConfirmedTransaction();
-			auto involvedAddresses = confirmedTransaction->getGradidoTransaction()->getInvolvedAddresses();
+			auto involvedAddresses = confirmedTransaction->getInvolvedAddresses();
 
 			mTransactionsByConfirmedAt.insert({ confirmedTransaction->getConfirmedAt(), transactionEntry});
 			for (auto involvedAddress : involvedAddresses) {

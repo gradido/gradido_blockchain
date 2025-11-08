@@ -394,22 +394,16 @@ TEST_F(InMemoryTest, CreationTransactions)
 	ASSERT_NO_THROW(createRegisterAddress(7));
 	createdAt = generateNewCreatedAt();
 	targetDate = getPreviousNMonth2(createdAt, 2);
-	try {
-		ASSERT_TRUE(createGradidoCreation(8, 4, 1000.0, createdAt, targetDate));
-	} catch(GradidoBlockchainException& ex) {
-		logBlockchain();
-		blockchain::Filter filter;
-		filter.involvedPublicKey = make_shared<memory::Block>(
-	    memory::Block::fromHex("8a8c93293cb97e8784178da8ae588144f7c982f4658bfd35101a1e2b479c3e57", 64)
-		);
-		filter.searchDirection = blockchain::SearchDirection::DESC;
-		//filter.timepointInterval = TimepointInterval(mBlockchain->getStartDate(), createdAt);
-		std::cout << mBlockchain->getStartDate().getAsTimepoint() << " - " << createdAt << std::endl;
-		auto results = mBlockchain->findAll(filter);
-		std::cout << results.size() << std::endl;
-		LOG_F(ERROR, "%s", ex.getFullString().data());
-	}
+	ASSERT_TRUE(createGradidoCreation(8, 4, 1000.0, createdAt, targetDate));
+	
 	EXPECT_EQ(getBalance(8, mLastConfirmedAt), GradidoUnit(1000.0));
+	auto balanceCalculator = calculateAccountBalance::Context(mBlockchain);
+	auto gmwBalance = balanceCalculator.fromEnd(g_KeyPairs[1]->getPublicKey(), mLastConfirmedAt, "");
+	auto aufBalance = balanceCalculator.fromEnd(g_KeyPairs[2]->getPublicKey(), mLastConfirmedAt, "");
+
+	auto creationSum = getBalance(8, mLastConfirmedAt) + getBalance(6, mLastConfirmedAt);
+	EXPECT_EQ(gmwBalance, creationSum);
+	EXPECT_EQ(aufBalance, creationSum);
 }
 
 
@@ -624,17 +618,25 @@ TEST_F(InMemoryTest, ManyTransactions)
 {
 	Profiler timeUsed;
 	const int userCount = 100;
+	Timepoint previousConfirmedAt;
 	// admin
-	GradidoUnit amountSum;
+	GradidoUnit decayedAmountSum;
 	ASSERT_NO_THROW(createRegisterAddress(3));
 	for (int i = 0; i < userCount; i++) {
 		auto accountKeyPair = createRegisterAddressGenerateKeyPair();
 		auto createdAt = generateNewCreatedAt();
 		auto targetDate = getPreviousNMonth2(createdAt, static_cast<int>(rand() % 3));
-		auto amount = GradidoUnit::fromGradidoCent(10000 + rand() % 9990001);
-		amountSum += amount;
+		uint64_t randAmount = 0;
+		randombytes_buf(&randAmount, sizeof(randAmount));
+		auto amount = GradidoUnit::fromGradidoCent(10000 + randAmount % 9990001);
 		ASSERT_TRUE(createGradidoCreation(accountKeyPair->getPublicKey(), 4, amount, createdAt, targetDate));
+		if (i > 0) {
+			decayedAmountSum = decayedAmountSum.calculateDecay(previousConfirmedAt, mLastConfirmedAt);
+		}
+		previousConfirmedAt = mLastConfirmedAt;
+		decayedAmountSum += amount;
 	}
+
 	auto firstTransaction = mBlockchain->findOne(Filter::FIRST_TRANSACTION);
 	ASSERT_EQ(firstTransaction->getTransactionNr(), 1);
 	ASSERT_TRUE(firstTransaction->isCommunityRoot());
@@ -648,14 +650,10 @@ TEST_F(InMemoryTest, ManyTransactions)
 	ASSERT_EQ(changeGmwBalanceTransactions.size(), userCount + 1);
 	
 	// printf gmw and auf account
-	auto now = chrono::system_clock::now();
 	calculateAccountBalance::Context balanceCalculator(mBlockchain);
-	auto gmwBalance = balanceCalculator.fromEnd(g_KeyPairs[1]->getPublicKey(), now, mCommunityId);
-	auto aufBalance = balanceCalculator.fromEnd(g_KeyPairs[2]->getPublicKey(), now, mCommunityId);
+	auto gmwBalance = balanceCalculator.fromEnd(g_KeyPairs[1]->getPublicKey(), mLastConfirmedAt, "");
+	auto aufBalance = balanceCalculator.fromEnd(g_KeyPairs[2]->getPublicKey(), mLastConfirmedAt, "");
 	
-	std::cout << ANSI_TXT_GRN << std::endl;
-	std::cout << GTEST_BOX << "amount sum: " << amountSum.toString() << std::endl;
-	std::cout << GTEST_BOX << "gmw Balance: " << gmwBalance.toString() << std::endl;
-	std::cout << GTEST_BOX << "auf Balance: " << aufBalance.toString() << std::endl;
-	std::cout << ANSI_TXT_DFT << std::endl;
+	ASSERT_EQ(gmwBalance, decayedAmountSum);
+	ASSERT_EQ(aufBalance, decayedAmountSum);
 }
