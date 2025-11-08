@@ -1,3 +1,4 @@
+#include "../main.h"
 #include "InMemoryTest.h"
 #include "../serializedTransactions.h"
 
@@ -15,6 +16,7 @@
 #include "loguru/loguru.hpp"
 #include "magic_enum/magic_enum.hpp"
 #include "magic_enum/magic_enum_iostream.hpp"
+#include <chrono>
 
 using namespace std;
 using namespace gradido;
@@ -121,6 +123,36 @@ void InMemoryTest::createRegisterAddress(int keyPairIndexStart)
 	ASSERT_TRUE(mBlockchain->createAndAddConfirmedTransaction(builder.build(), serializeTransactionId.run(), confirmedAt));
 }
 
+std::shared_ptr<KeyPairEd25519> InMemoryTest::createRegisterAddressGenerateKeyPair()
+{
+	const int seedSize = 32;
+	memory::Block buffer(seedSize);
+	randombytes_buf(buffer, seedSize);
+
+	auto userKeyPair = KeyPairEd25519::create(buffer);
+	randombytes_buf(buffer, seedSize);
+	auto accountKeyPair = KeyPairEd25519::create(buffer);
+	GradidoTransactionBuilder builder;
+	builder
+		.setCreatedAt(generateNewCreatedAt())
+		.setVersionNumber(VERSION_STRING)
+		.setRegisterAddress(
+			userKeyPair->getPublicKey(),
+			AddressType::COMMUNITY_HUMAN,
+			nullptr,
+			accountKeyPair->getPublicKey()
+		)
+		// sign with community root key
+		.sign(g_KeyPairs[0])
+		.sign(accountKeyPair)
+		.sign(userKeyPair)		
+		;
+	auto confirmedAt = generateNewConfirmedAt(mLastCreatedAt);
+	interaction::serialize::Context serializeTransactionId({ confirmedAt, hieroAccount });
+	EXPECT_TRUE(mBlockchain->createAndAddConfirmedTransaction(builder.build(), serializeTransactionId.run(), confirmedAt));
+	return accountKeyPair;
+}
+
 bool InMemoryTest::createGradidoCreation(
 	int recipientKeyPairIndex,
 	int signerKeyPairIndex,
@@ -129,19 +161,28 @@ bool InMemoryTest::createGradidoCreation(
 	Timepoint targetDate
 ) {
 	assert(recipientKeyPairIndex > 0 && recipientKeyPairIndex < g_KeyPairs.size());
-	assert(signerKeyPairIndex > 0 && signerKeyPairIndex < g_KeyPairs.size());
+	return createGradidoCreation(g_KeyPairs[recipientKeyPairIndex]->getPublicKey(), signerKeyPairIndex, amount, createdAt, targetDate);
+}
 
+bool InMemoryTest::createGradidoCreation(
+	memory::ConstBlockPtr recipientPublicKey,
+	int signerKeyPairIndex,
+	GradidoUnit amount,
+	Timepoint createdAt,
+	Timepoint targetDate
+) {
+	assert(signerKeyPairIndex > 0 && signerKeyPairIndex < g_KeyPairs.size());
 	GradidoTransactionBuilder builder;
 	builder
 		.addMemo(memo)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[recipientKeyPairIndex]->getPublicKey(), amount),
+			TransferAmount(recipientPublicKey, amount),
 			targetDate
 		)
 		.sign(g_KeyPairs[signerKeyPairIndex])
-	;
+		;
 	auto confirmedAt = generateNewConfirmedAt(createdAt);
 	interaction::serialize::Context serializeTransactionId({ confirmedAt, hieroAccount });
 	return mBlockchain->createAndAddConfirmedTransaction(builder.build(), serializeTransactionId.run(), confirmedAt);
@@ -353,22 +394,16 @@ TEST_F(InMemoryTest, CreationTransactions)
 	ASSERT_NO_THROW(createRegisterAddress(7));
 	createdAt = generateNewCreatedAt();
 	targetDate = getPreviousNMonth2(createdAt, 2);
-	try {
-		ASSERT_TRUE(createGradidoCreation(8, 4, 1000.0, createdAt, targetDate));
-	} catch(GradidoBlockchainException& ex) {
-		logBlockchain();
-		blockchain::Filter filter;
-		filter.involvedPublicKey = make_shared<memory::Block>(
-	    memory::Block::fromHex("8a8c93293cb97e8784178da8ae588144f7c982f4658bfd35101a1e2b479c3e57", 64)
-		);
-		filter.searchDirection = blockchain::SearchDirection::DESC;
-		//filter.timepointInterval = TimepointInterval(mBlockchain->getStartDate(), createdAt);
-		std::cout << mBlockchain->getStartDate().getAsTimepoint() << " - " << createdAt << std::endl;
-		auto results = mBlockchain->findAll(filter);
-		std::cout << results.size() << std::endl;
-		LOG_F(ERROR, "%s", ex.getFullString().data());
-	}
+	ASSERT_TRUE(createGradidoCreation(8, 4, 1000.0, createdAt, targetDate));
+	
 	EXPECT_EQ(getBalance(8, mLastConfirmedAt), GradidoUnit(1000.0));
+	auto balanceCalculator = calculateAccountBalance::Context(mBlockchain);
+	auto gmwBalance = balanceCalculator.fromEnd(g_KeyPairs[1]->getPublicKey(), mLastConfirmedAt, "");
+	auto aufBalance = balanceCalculator.fromEnd(g_KeyPairs[2]->getPublicKey(), mLastConfirmedAt, "");
+
+	auto creationSum = getBalance(8, mLastConfirmedAt) + getBalance(6, mLastConfirmedAt);
+	EXPECT_EQ(gmwBalance, creationSum);
+	EXPECT_EQ(aufBalance, creationSum);
 }
 
 
@@ -546,6 +581,8 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	);
 	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[thirdRecipientKeyPairIndex]->getPublicKey(), "").getBalance(), GradidoUnit::zero());
 	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[8]->getPublicKey(), "").getBalance(), GradidoUnit(400.0));
+	auto transactions = mBlockchain->findAll();
+	EXPECT_EQ(transactions.size(), 9);
 	// logBlockchain();
 }
 
@@ -575,5 +612,48 @@ TEST_F(InMemoryTest, ValidGradidoTimeoutDeferredTransfer)
 	targetDate = createdAt - chrono::hours(24 * 30);
 	EXPECT_NO_THROW(createGradidoCreation(4, 6, 1000.0, createdAt, targetDate));
 	// logBlockchain();
+}
 
+TEST_F(InMemoryTest, ManyTransactions)
+{
+	Profiler timeUsed;
+	const int userCount = 100;
+	Timepoint previousConfirmedAt;
+	// admin
+	GradidoUnit decayedAmountSum;
+	ASSERT_NO_THROW(createRegisterAddress(3));
+	for (int i = 0; i < userCount; i++) {
+		auto accountKeyPair = createRegisterAddressGenerateKeyPair();
+		auto createdAt = generateNewCreatedAt();
+		auto targetDate = getPreviousNMonth2(createdAt, static_cast<int>(rand() % 3));
+		uint64_t randAmount = 0;
+		randombytes_buf(&randAmount, sizeof(randAmount));
+		auto amount = GradidoUnit::fromGradidoCent(10000 + randAmount % 9990001);
+		ASSERT_TRUE(createGradidoCreation(accountKeyPair->getPublicKey(), 4, amount, createdAt, targetDate));
+		if (i > 0) {
+			decayedAmountSum = decayedAmountSum.calculateDecay(previousConfirmedAt, mLastConfirmedAt);
+		}
+		previousConfirmedAt = mLastConfirmedAt;
+		decayedAmountSum += amount;
+	}
+
+	auto firstTransaction = mBlockchain->findOne(Filter::FIRST_TRANSACTION);
+	ASSERT_EQ(firstTransaction->getTransactionNr(), 1);
+	ASSERT_TRUE(firstTransaction->isCommunityRoot());
+
+	auto lastTransaction = mBlockchain->findOne(Filter::LAST_TRANSACTION);
+	ASSERT_EQ(lastTransaction->getTransactionNr(), userCount * 2 + 2);
+	ASSERT_TRUE(lastTransaction->isCreation());
+	Filter f;
+	f.involvedPublicKey = g_KeyPairs[1]->getPublicKey();
+	auto changeGmwBalanceTransactions = mBlockchain->findAll(f);
+	ASSERT_EQ(changeGmwBalanceTransactions.size(), userCount + 1);
+	
+	// printf gmw and auf account
+	calculateAccountBalance::Context balanceCalculator(mBlockchain);
+	auto gmwBalance = balanceCalculator.fromEnd(g_KeyPairs[1]->getPublicKey(), mLastConfirmedAt, "");
+	auto aufBalance = balanceCalculator.fromEnd(g_KeyPairs[2]->getPublicKey(), mLastConfirmedAt, "");
+	
+	ASSERT_EQ(gmwBalance, decayedAmountSum);
+	ASSERT_EQ(aufBalance, decayedAmountSum);
 }

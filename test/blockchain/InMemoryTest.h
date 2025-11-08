@@ -20,10 +20,19 @@ protected:
 
     void createRegisterAddress();
     void createRegisterAddress(int keyPairIndexStart);
+    std::shared_ptr<KeyPairEd25519> createRegisterAddressGenerateKeyPair();
     bool createGradidoCreation(
         int recipientKeyPairIndex,
         int signerKeyPairIndex,
         GradidoUnit amount, 
+        Timepoint createdAt,
+        Timepoint targetDate
+    );
+
+    bool createGradidoCreation(
+        memory::ConstBlockPtr recipientPublicKey,
+        int signerKeyPairIndex,
+        GradidoUnit amount,
         Timepoint createdAt,
         Timepoint targetDate
     );
