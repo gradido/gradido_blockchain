@@ -12,7 +12,7 @@ namespace gradido {
 
 		ConfirmedTransaction::ConfirmedTransaction(
 			uint64_t id,
-			std::shared_ptr<const GradidoTransaction> gradidoTransaction,
+			std::unique_ptr<const GradidoTransaction> gradidoTransaction,
 			Timestamp confirmedAt,
 			const std::string& versionNumber,
 			memory::ConstBlockPtr messageId,
@@ -30,7 +30,7 @@ namespace gradido {
 
 		ConfirmedTransaction::ConfirmedTransaction(
 			uint64_t id,
-			std::shared_ptr<const GradidoTransaction> gradidoTransaction,
+			std::unique_ptr<const GradidoTransaction> gradidoTransaction,
 			Timestamp confirmedAt,
 			const std::string& versionNumber,
 			memory::ConstBlockPtr runningHash,

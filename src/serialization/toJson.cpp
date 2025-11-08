@@ -29,6 +29,9 @@ namespace serialization {
 	template<>
 	Value toJson(const memory::ConstBlockPtr& ptr, Document::AllocatorType& alloc)
 	{
+		if (!ptr) {
+			return Value("");
+		}
 		return toJson(*ptr, alloc);
 	}
 

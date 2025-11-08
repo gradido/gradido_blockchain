@@ -22,7 +22,7 @@ TEST(ValidateConfirmedTransactionTest, validCommunityRootGradidoTransaction) {
 
 	ConfirmedTransaction confirmedTransaction(
 		7,
-		deserializer.getGradidoTransaction(),
+		make_unique<GradidoTransaction>(*deserializer.getGradidoTransaction()),
 		confirmedAt,
 		GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
 		make_shared<memory::Block>(memory::Block::fromBase64(hieroTransactionIdBase64)),
@@ -41,7 +41,7 @@ TEST(ValidateConfirmedTransactionTest, invalidWrongVersion) {
 
 	ConfirmedTransaction confirmedTransaction(
 		7,
-		deserializer.getGradidoTransaction(),
+		make_unique<GradidoTransaction>(*deserializer.getGradidoTransaction()),
 		confirmedAt,
 		"1",
 		make_shared<memory::Block>(32),
@@ -61,7 +61,7 @@ TEST(ValidateConfirmedTransactionTest, invalidMessageID) {
 
 	ConfirmedTransaction confirmedTransaction(
 		7,
-		deserializer.getGradidoTransaction(),
+		make_unique<GradidoTransaction>(*deserializer.getGradidoTransaction()),
 		confirmedAt,
 		GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
 		make_shared<memory::Block>(10),
@@ -80,7 +80,7 @@ TEST(ValidateConfirmedTransactionTest, invalidConfirmedBeforeCreated) {
 
 	ConfirmedTransaction confirmedTransaction(
 		7,
-		deserializer.getGradidoTransaction(),
+		make_unique<GradidoTransaction>(*deserializer.getGradidoTransaction()),
 		createdAt - chrono::seconds{ 1 },
 		GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
 		make_shared<memory::Block>(32),

@@ -5,6 +5,11 @@
 namespace gradido {
 	namespace interaction {
 		namespace deserialize {
+			GradidoTransactionRole::~GradidoTransactionRole()
+			{
+
+			}
+			
 			GradidoTransactionRole::GradidoTransactionRole(const GradidoTransactionMessage& message)
 			{
 				data::SignatureMap signatures;
@@ -29,7 +34,7 @@ namespace gradido {
 				if (paringMessageId.has_value()) {
 					paringMessageIdPtr = std::make_shared<memory::Block>(paringMessageId.value());
 				}
-				mGradidoTransaction = std::make_shared<data::GradidoTransaction>(signatures, bodyBytesPtr, paringMessageIdPtr);
+				mGradidoTransaction = std::make_unique<const data::GradidoTransaction>(signatures, bodyBytesPtr, paringMessageIdPtr);
 			}
 		}
 	}
