@@ -76,7 +76,8 @@ namespace gradido {
 			mutable data::ConstConfirmedTransactionPtr mConfirmedTransaction;
 		};
 
-		typedef std::list<std::shared_ptr<const TransactionEntry>> TransactionEntries;
+		typedef std::shared_ptr<const TransactionEntry> ConstTransactionEntryPtr;
+		typedef std::list<ConstTransactionEntryPtr> TransactionEntries;
 	}
 }
 

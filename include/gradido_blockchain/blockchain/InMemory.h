@@ -73,6 +73,7 @@ namespace gradido {
 			void removeTransactionEntry(std::shared_ptr<const TransactionEntry> transactionEntry);
 
 			FilterCriteria findSmallestPrefilteredTransactionList(const Filter& filter) const;
+			///TransactionEntries filterRange()
 
 			mutable std::recursive_mutex mWorkMutex;
 
