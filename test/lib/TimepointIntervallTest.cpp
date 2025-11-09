@@ -1,8 +1,10 @@
 #include "gtest/gtest.h"
 #include "gradido_blockchain/lib/TimepointInterval.h"
+#include "gradido_blockchain/blockchain/RangeUtils.h"
 
 using namespace std;
 using namespace chrono;
+using namespace gradido::blockchain;
 
 TEST(TimepointIntervalTest, TimepointConstructorTest)
 {
@@ -132,4 +134,53 @@ TEST(TimepointIntervalTest, TestException)
 	auto startDate = Timepoint(seconds{ 1612181859 }); 
 	auto endDate = Timepoint(seconds{ 1596284259 });   
 	EXPECT_THROW(TimepointInterval(startDate, endDate), EndDateBeforeStartDateException);
+}
+
+
+TEST(IterateRangeInOrderTest, AscendingIterationOverTimepointInterval)
+{
+	auto startDate = Timepoint(seconds{ 1585743459 }); // 2020-04-01
+	auto endDate = Timepoint(seconds{ 1591013859 }); // 2020-06-01
+	TimepointInterval interval(startDate, endDate);
+
+	vector<pair<date::month, date::year>> visited;
+
+	iterateRangeInOrder(interval.begin(), interval.end(), SearchDirection::ASC,
+		[&](const date::year_month& ym) -> bool {
+			visited.emplace_back(ym.month(), ym.year());
+			return true;
+		}
+	);
+
+	vector<pair<date::month, date::year>> expected = {
+		{date::month(4), date::year(2020)},
+		{date::month(5), date::year(2020)},
+		{date::month(6), date::year(2020)}
+	};
+
+	ASSERT_EQ(visited, expected);
+}
+
+TEST(IterateRangeInOrderTest, DescendingIterationOverTimepointInterval)
+{
+	auto startDate = Timepoint(seconds{ 1585743459 }); // 2020-04-01
+	auto endDate = Timepoint(seconds{ 1591013859 }); // 2020-06-01
+	TimepointInterval interval(startDate, endDate);
+
+	vector<pair<date::month, date::year>> visited;
+
+	iterateRangeInOrder(interval.begin(), interval.end(), SearchDirection::DESC,
+		[&](const date::year_month& ym) -> bool {
+			visited.emplace_back(ym.month(), ym.year());
+			return true;
+		}
+	);
+
+	vector<pair<date::month, date::year>> expected = {
+		{date::month(6), date::year(2020)},
+		{date::month(5), date::year(2020)},
+		{date::month(4), date::year(2020)}
+	};
+
+	ASSERT_EQ(visited, expected);
 }
