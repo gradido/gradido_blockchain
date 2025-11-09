@@ -49,6 +49,39 @@ namespace gradido {
 		 *
 		 * @see Filter, FilterResult, SearchDirection
 		 */
+		template<typename Iterator, typename Callback>
+		void iterateRangeInOrder(
+			const Iterator& startIt,
+			const Iterator& endIt,
+			SearchDirection searchDirection,
+			Callback callback
+		) {
+			if (startIt == endIt) {
+				return;
+			}
+
+			if (SearchDirection::ASC == searchDirection) {
+				for (auto it = startIt; it != endIt; ++it) {
+					if (!callback(*it)) {
+						return;
+					}
+				}
+			}
+			else if (SearchDirection::DESC == searchDirection) {
+				auto rBegin = std::make_reverse_iterator(endIt);
+				auto rEnd = std::make_reverse_iterator(startIt);
+				for (auto it = rBegin; it != rEnd; ++it) {
+					if (!callback(*it)) {
+						return;
+					}
+				}
+			}
+			else {
+				throw GradidoUnhandledEnum("blockhain::inMemory::findAll", "SearchDirection", magic_enum::enum_name(searchDirection).data());
+			}
+			return;
+		}
+
         
 		template<
 			typename Iterator, 
@@ -56,7 +89,7 @@ namespace gradido {
 			typename EntityType = typename ResultContainer::value_type,
 			typename FilterFunc
 		>
-		ResultContainer iterateRangeInOrder(
+		ResultContainer iterateRangeInOrderCollectFiltered(
 			const Iterator& startIt,
 			const Iterator& endIt,
 			const Filter& filter,
@@ -67,44 +100,26 @@ namespace gradido {
 				return results;
 			}
 			int paginationCursor = 0;
-			// return false if finished
-			auto handleEntry = [&](const Iterator::value_type& it) -> bool {
-				EntityType entity{};
-				auto filterResult = filterFunction(it, entity);// filter.matches(entry, toFilter);
-				if ((filterResult & FilterResult::USE) == FilterResult::USE) {
-					if (paginationCursor >= filter.pagination.skipEntriesCount()) {
-						results.push_back(entity);
-						if (!filter.pagination.hasCapacityLeft(results.size())) {
-							return false; // no capacity left, caller gets his requested result count
+			iterateRangeInOrder(startIt, endIt, filter.searchDirection,
+				[&](const Iterator::value_type& it) -> bool  // return false if finished
+				{
+					EntityType entity{};
+					auto filterResult = filterFunction(it, entity);// filter.matches(entry, toFilter);
+					if ((filterResult & FilterResult::USE) == FilterResult::USE) {
+						if (paginationCursor >= filter.pagination.skipEntriesCount()) {
+							results.push_back(entity);
+							if (!filter.pagination.hasCapacityLeft(results.size())) {
+								return false; // no capacity left, caller gets his requested result count
+							}
 						}
+						paginationCursor++;
 					}
-					paginationCursor++;
-				}
-				if ((filterResult & FilterResult::STOP) == FilterResult::STOP) {
-					return false; // filter function has signaled stop
-				}
-				return true;
-				};
-
-			if (SearchDirection::ASC == filter.searchDirection) {
-				for (auto it = startIt; it != endIt; ++it) {
-					if (!handleEntry(*it)) {
-						return results;
+					if ((filterResult & FilterResult::STOP) == FilterResult::STOP) {
+						return false; // filter function has signaled stop
 					}
+					return true; // go on
 				}
-			}
-			else if (SearchDirection::DESC == filter.searchDirection) {
-				auto rBegin = std::make_reverse_iterator(endIt);
-				auto rEnd = std::make_reverse_iterator(startIt);
-				for (auto it = rBegin; it != rEnd; ++it) {
-					if (!handleEntry(*it)) {
-						return results;
-					}
-				}
-			}
-			else {
-				throw GradidoUnhandledEnum("blockhain::inMemory::findAll", "SearchDirection", magic_enum::enum_name(filter.searchDirection).data());
-			}
+			);
 			return results;
 		}
 
@@ -142,7 +157,7 @@ namespace gradido {
 				"Iterator must point to a pair<Key, std::shared_ptr<const TransactionEntry>>"
 				);
 
-			return iterateRangeInOrder<Iterator, TransactionEntries>(
+			return iterateRangeInOrderCollectFiltered<Iterator, TransactionEntries>(
 					startIt, 
 					endIt, 
 					filter,

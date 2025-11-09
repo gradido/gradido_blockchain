@@ -7,8 +7,9 @@ TEST(IterateRangeTest, EmptyRangeReturnsEmpty) {
     std::vector<int> data;
     Filter filter;
     // const Iterator& it, EntityType& entity
-    std::vector<int> result = iterateRangeInOrder<std::vector<int>::iterator, std::vector<int>>(
-        data.begin(), data.end(), filter, [](auto&, auto&) -> FilterResult 
+    std::vector<int> result = iterateRangeInOrderCollectFiltered<std::vector<int>::iterator, std::vector<int>>(
+        data.begin(), data.end(), filter,
+        [](auto&, auto&) -> FilterResult 
         { 
             return FilterResult::USE;
         }
@@ -20,7 +21,8 @@ TEST(IterateRangeTest, AllElementsMatch) {
     std::vector<int> data = { 1,2,3,4,5 };
     Filter filter;
     filter.searchDirection = SearchDirection::ASC;
-    auto result = iterateRangeInOrder<std::vector<int>::iterator, std::vector<int>>(data.begin(), data.end(), filter, [](auto& it, int& out)
+    auto result = iterateRangeInOrderCollectFiltered<std::vector<int>::iterator, std::vector<int>>(data.begin(), data.end(), filter, 
+        [](auto& it, int& out)
         {
             out = it;
             return FilterResult::USE;
@@ -34,7 +36,8 @@ TEST(IterateRangeTest, StopSignalWorks) {
     Filter filter;
     filter.searchDirection = SearchDirection::ASC;
     int stopAfter = 3;
-    auto result = iterateRangeInOrder<std::vector<int>::iterator, std::vector<int>>(data.begin(), data.end(), filter, [stopAfter](auto& it, int& out)
+    auto result = iterateRangeInOrderCollectFiltered<std::vector<int>::iterator, std::vector<int>>(data.begin(), data.end(), filter, 
+        [stopAfter](auto& it, int& out)
         {
             out = it;
             return (it > stopAfter) ? FilterResult::STOP : FilterResult::USE;
@@ -48,7 +51,8 @@ TEST(IterateRangeTest, PaginationSkipAndLimit) {
     Filter filter;
     filter.searchDirection = SearchDirection::ASC;
     filter.pagination = Pagination(2, 3); // page size 2, skip until 3. page
-    auto result = iterateRangeInOrder<std::vector<int>::iterator, std::vector<int>>(data.begin(), data.end(), filter, [](auto& it, int& out) 
+    auto result = iterateRangeInOrderCollectFiltered<std::vector<int>::iterator, std::vector<int>>(data.begin(), data.end(), filter, 
+        [](auto& it, int& out)
         {
             out = it;
             return FilterResult::USE;
@@ -62,7 +66,8 @@ TEST(IterateRangeTest, ReverseDirection) {
     std::vector<int> data = { 1,2,3 };
     Filter filter;
     filter.searchDirection = SearchDirection::DESC;
-    auto result = iterateRangeInOrder<std::vector<int>::iterator, std::vector<int>>(data.begin(), data.end(), filter, [](auto& it, int& out) 
+    auto result = iterateRangeInOrderCollectFiltered<std::vector<int>::iterator, std::vector<int>>(data.begin(), data.end(), filter,
+        [](auto& it, int& out)
         {
             out = it;
             return FilterResult::USE;
