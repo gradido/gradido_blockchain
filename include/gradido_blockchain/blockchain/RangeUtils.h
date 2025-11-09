@@ -13,6 +13,63 @@
 namespace gradido {
     namespace blockchain {
 		/**
+		 * @brief Iterates over a given range in ascending or descending order.
+		 *
+		 * This function applies a user-provided callback to each element within the specified iterator range.
+		 * Iteration order is determined by the given @p searchDirection.
+		 *
+		 * The callback is expected to have the signature:
+		 * @code
+		 * bool callback(const ValueType& value);
+		 * @endcode
+		 *
+		 * If the callback returns `false`, iteration stops early.
+		 *
+		 * @tparam Iterator Type of the range iterator (e.g. vector<T>::iterator, map<K,V>::iterator, etc.)
+		 * @tparam Callback Callable type (e.g. lambda, functor, or std::function) accepting the dereferenced element.
+		 * @param startIt Iterator pointing to the start of the range.
+		 * @param endIt Iterator pointing to the end of the range.
+		 * @param searchDirection Determines whether the range is iterated in ascending (ASC) or descending (DESC) order.
+		 * @param callback Function or lambda that processes each element. Returning `false` stops the iteration.
+		 *
+		 * @throws GradidoUnhandledEnum if an invalid @p searchDirection value is provided.
+		 *
+		 * @note The function does not return any value. Control returns once the iteration completes or stops early.
+		 */
+		template<typename Iterator, typename Callback>
+		void iterateRangeInOrder(
+			const Iterator& startIt,
+			const Iterator& endIt,
+			SearchDirection searchDirection,
+			Callback callback
+		) {
+			if (startIt == endIt) {
+				return;
+			}
+
+			if (SearchDirection::ASC == searchDirection) {
+				for (auto it = startIt; it != endIt; ++it) {
+					if (!callback(*it)) {
+						return;
+					}
+				}
+			}
+			else if (SearchDirection::DESC == searchDirection) {
+				auto rBegin = std::make_reverse_iterator(endIt);
+				auto rEnd = std::make_reverse_iterator(startIt);
+				for (auto it = rBegin; it != rEnd; ++it) {
+					if (!callback(*it)) {
+						return;
+					}
+				}
+			}
+			else {
+				throw GradidoUnhandledEnum("blockhain::inMemory::findAll", "SearchDirection", magic_enum::enum_name(searchDirection).data());
+			}
+			return;
+		}
+
+		/**
 		 * @brief Iterates through a range of elements and collects those matching a filter, supporting custom result types and containers.
 		 *
 		 * This templated utility provides a generic mechanism to iterate over a contiguous or associative range of elements
@@ -49,40 +106,6 @@ namespace gradido {
 		 *
 		 * @see Filter, FilterResult, SearchDirection
 		 */
-		template<typename Iterator, typename Callback>
-		void iterateRangeInOrder(
-			const Iterator& startIt,
-			const Iterator& endIt,
-			SearchDirection searchDirection,
-			Callback callback
-		) {
-			if (startIt == endIt) {
-				return;
-			}
-
-			if (SearchDirection::ASC == searchDirection) {
-				for (auto it = startIt; it != endIt; ++it) {
-					if (!callback(*it)) {
-						return;
-					}
-				}
-			}
-			else if (SearchDirection::DESC == searchDirection) {
-				auto rBegin = std::make_reverse_iterator(endIt);
-				auto rEnd = std::make_reverse_iterator(startIt);
-				for (auto it = rBegin; it != rEnd; ++it) {
-					if (!callback(*it)) {
-						return;
-					}
-				}
-			}
-			else {
-				throw GradidoUnhandledEnum("blockhain::inMemory::findAll", "SearchDirection", magic_enum::enum_name(searchDirection).data());
-			}
-			return;
-		}
-
-        
 		template<
 			typename Iterator, 
 			typename ResultContainer, 
