@@ -90,7 +90,7 @@ namespace gradido {
 			0, 0, nullptr, SearchDirection::DESC, Pagination(0, 0)
 		);
 
-		FilterResult Filter::matches(std::shared_ptr<const TransactionEntry> entry, FilterCriteria type, std::string_view communityId) const
+		FilterResult Filter::matches(std::shared_ptr<const TransactionEntry> entry, FilterCriteria type) const
 		{
 			// without needing deserialize transaction
 			if ((type & FilterCriteria::TRANSACTION_NR) == FilterCriteria::TRANSACTION_NR) 
@@ -102,24 +102,15 @@ namespace gradido {
 					return FilterResult::DISMISS;
 				}
 			}
-			if ((type & FilterCriteria::COIN_COMMUNITY) == FilterCriteria::COIN_COMMUNITY)
+			if ((type & FilterCriteria::COIN_COMMUNITY) == FilterCriteria::COIN_COMMUNITY && !coinCommunityId.empty())
 			{
-				if (!coinCommunityId.empty()) {
-					std::string_view entryCoinCommunityId = entry->getCoinCommunityId();
-					// only if coin community id was set transaction 
-					if (!entryCoinCommunityId.empty()) {
-						if (coinCommunityId != entryCoinCommunityId) {
-							return FilterResult::DISMISS;
-						}
+				std::string_view entryCoinCommunityId = entry->getCoinCommunityId();
+				// only if coin community id was set transaction 
+				if (!entryCoinCommunityId.empty()) {
+					if (coinCommunityId != entryCoinCommunityId) {
+						return FilterResult::DISMISS;
 					}
-					// compare only if coin community id was not set in transaction
-					else {
-						if (coinCommunityId != communityId) {
-							return FilterResult::DISMISS;
-						}
-					}
-					
-				}
+				}					
 			}
 			if ((type & FilterCriteria::TRANSACTION_TYPE) == FilterCriteria::TRANSACTION_TYPE) {
 				if (transactionType != data::TransactionType::NONE) {

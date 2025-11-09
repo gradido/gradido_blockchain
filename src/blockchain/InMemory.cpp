@@ -1,5 +1,6 @@
 #include "gradido_blockchain/blockchain/InMemory.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
+#include "gradido_blockchain/blockchain/RangeUtils.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/interaction/confirmTransaction/Context.h"
@@ -141,51 +142,6 @@ namespace gradido {
 			if (FilterCriteria::NONE == startSetType) {
 				return {};
 			}
-			auto iterateRange = [](const auto& startIt, const auto& endIt, FilterCriteria toFilter, const Filter& filter, const std::string& communityId) -> TransactionEntries {
-				TransactionEntries transactionEntries;
-				if (startIt == endIt) {
-					return transactionEntries;
-				}
-				int paginationCursor = 0;
-				// return false if finished
-				auto handleEntry = [&](const auto& entry) -> bool {
-					auto result = filter.matches(entry, toFilter, communityId);
-					if ((result & FilterResult::USE) == FilterResult::USE) {
-						if (paginationCursor >= filter.pagination.skipEntriesCount()) {
-							transactionEntries.push_back(entry);
-							if (!filter.pagination.hasCapacityLeft(transactionEntries.size())) {
-								return false; // no capacity left, caller gets his requested result count
-							}
-						}
-						paginationCursor++;
-					}
-					if ((result & FilterResult::STOP) == FilterResult::STOP) {
-						return false; // filter function has signaled stop
-					}
-					return true;
-				};
-
-				if (SearchDirection::ASC == filter.searchDirection) {
-					for (auto it = startIt; it != endIt; ++it) {
-						if (!handleEntry(it->second)) {
-							return transactionEntries;
-						}
-					}
-				}
-				else if (SearchDirection::DESC == filter.searchDirection) {
-					auto it = endIt;
-					do {
-						--it;
-						if (!handleEntry(it->second)) {
-							return transactionEntries;
-						}
-					} while (it != startIt);
-				}
-				else {
-					throw GradidoUnhandledEnum("blockhain::inMemory::findAll", "SearchDirection", enum_name(filter.searchDirection).data());
-				}
-				return transactionEntries;
-			};
 
 			if ((startSetType & FilterCriteria::TIMEPOINT_INTERVAL) == FilterCriteria::TIMEPOINT_INTERVAL)
 			{
@@ -196,7 +152,7 @@ namespace gradido {
 				// first element greater than the given key (outside of bounds, possible == end())
 				auto endIt = mTransactionsByConfirmedAt.upper_bound(timeInterval.getEndDate());
 
-				return iterateRange(startIt, endIt, notYetFiltered, filter, mCommunityId);
+				return findInRange(startIt, endIt, notYetFiltered, filter);
 			}						
 			else if ((startSetType & FilterCriteria::INVOLVED_PUBLIC_KEY) == FilterCriteria::INVOLVED_PUBLIC_KEY) {
 				// we have a problem there, filterFunction expect to be called in searchOrder, mTransactionsByPubkey is sorted by public key
@@ -208,7 +164,7 @@ namespace gradido {
 				// disable pagination for prefilter round
 				partFilter.pagination = Pagination();		
 				partFilter.searchDirection = SearchDirection::ASC;
-				auto prefilteredTransactions = iterateRange(range.first, range.second, notYetFiltered, partFilter, mCommunityId);
+				auto prefilteredTransactions = findInRange(range.first, range.second, notYetFiltered, partFilter);
 
 				// we need to call processEntry again for filterFunction, searchDirection and/or pagination
 				if (!prefilteredTransactions.empty()) {
@@ -219,7 +175,7 @@ namespace gradido {
 					prefilteredTransactions.clear();
 					auto startIt = sortedTransactions.begin();
 					auto endIt = sortedTransactions.end();
-					return iterateRange(startIt, endIt, FilterCriteria::FILTER_FUNCTION, filter, mCommunityId);
+					return findInRange(startIt, endIt, FilterCriteria::FILTER_FUNCTION, filter);
 				}
 				else {
 					return prefilteredTransactions;
@@ -235,7 +191,7 @@ namespace gradido {
 				if (filter.maxTransactionNr) {
 					endIt = mTransactionsByNr.upper_bound(filter.maxTransactionNr);
 				}
-				return iterateRange(startIt, endIt, notYetFiltered, filter, mCommunityId);
+				return findInRange(startIt, endIt, notYetFiltered, filter);
 			}
 			throw std::runtime_error("not expected branch");			
 		}

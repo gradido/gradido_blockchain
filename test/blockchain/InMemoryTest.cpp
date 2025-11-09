@@ -584,7 +584,7 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	auto transactions = mBlockchain->findAll();
 	EXPECT_EQ(transactions.size(), 9);
 	// logBlockchain();
-	auto transactions = mBlockchain->findAll(Filter::ALL_TRANSACTIONS);
+	transactions = mBlockchain->findAll(Filter::ALL_TRANSACTIONS);
 	EXPECT_EQ(transactions.size(), 9);
 }
 
