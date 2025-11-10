@@ -13,17 +13,18 @@ public:
 
 	TimepointInterval(Timepoint startDate, Timepoint endDate)
 		: mStartDate(startDate), mEndDate(endDate) {
-			if(startDate > endDate) {
-				throw EndDateBeforeStartDateException("end date for timepoint interval is before start date", startDate, endDate);
-			}
+		if (startDate > endDate) {
+			throw EndDateBeforeStartDateException("end date for timepoint interval is before start date", startDate, endDate);
 		}
+	}
 	TimepointInterval(const date::year_month& startDate, const date::year_month& endDate)
 		: TimepointInterval(DataTypeConverter::monthYearToTimepoint(startDate), DataTypeConverter::monthYearToTimepoint(endDate))
 	{
 	}
 
 	TimepointInterval(Timepoint date)
-		: mStartDate(date), mEndDate(date) {}
+		: mStartDate(date), mEndDate(date) {
+	}
 
 	inline Timepoint getStartDate() const { return mStartDate; }
 	inline Timepoint getEndDate() const { return mEndDate; }
@@ -58,9 +59,8 @@ public:
 
 		MonthYearIterator() = default;
 		explicit MonthYearIterator(const value_type& v) : m_value(v) {};
-		~MonthYearIterator() = default;		
 
-		reference operator*() const { return m_value; }
+		value_type operator*() const { return m_value; }
 		pointer operator->() { return &m_value; }
 
 		// Prefix increment
@@ -75,8 +75,8 @@ public:
 		// Postfix decrement
 		MonthYearIterator operator--(int) { MonthYearIterator tmp = *this; --(*this); return tmp; }
 
-		friend bool operator== (const MonthYearIterator& a, const MonthYearIterator& b) {  return a.m_value == b.m_value; };
-		friend bool operator!= (const MonthYearIterator& a, const MonthYearIterator& b) {  return a.m_value != b.m_value; };
+		friend bool operator== (const MonthYearIterator& a, const MonthYearIterator& b) { return a.m_value == b.m_value; };
+		friend bool operator!= (const MonthYearIterator& a, const MonthYearIterator& b) { return a.m_value != b.m_value; };
 
 	protected:
 

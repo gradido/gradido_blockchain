@@ -50,7 +50,7 @@ TEST(TimepointIntervalTest, IteratorOnlyMonths)
 
 	int i = 0;
 	for (auto it = interval.begin(); it != interval.end(); ++it) {
-		auto& date = *it;
+		auto date = *it;
 		EXPECT_EQ(date.month(), expectedDates[i].first);
 		EXPECT_EQ(date.year(), expectedDates[i].second);
 		++i;
@@ -75,7 +75,7 @@ TEST(TimepointIntervalTest, IteratorChangingYears)
 
 	int i = 0;
 	for (auto it = interval.begin(); it != interval.end(); ++it) {
-		auto& date = *it;
+		auto date = *it;
 		EXPECT_EQ(date.month(), expectedDates[i].first);
 		EXPECT_EQ(date.year(), expectedDates[i].second);
 		++i;
@@ -97,7 +97,7 @@ TEST(TimepointIntervalTest, IteratorOnlyMonthsReverse)
 
 	int i = 0;
 	for (auto it = std::prev(interval.end()); it != interval.begin(); --it) {
-		auto& date = *it;
+		auto date = *it;
 		EXPECT_EQ(date.month(), expectedDates[i].first);
 		EXPECT_EQ(date.year(), expectedDates[i].second);
 		++i;
@@ -122,7 +122,7 @@ TEST(TimepointIntervalTest, IteratorChangingYearsReverse)
 
 	int i = 0;
 	for (auto it = std::prev(interval.end()); it != interval.begin(); --it) {
-		auto& date = *it;
+		auto date = *it;
 		EXPECT_EQ(date.month(), expectedDates[i].first);
 		EXPECT_EQ(date.year(), expectedDates[i].second);
 		++i;
