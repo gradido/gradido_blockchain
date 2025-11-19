@@ -3,7 +3,13 @@
 cmake_minimum_required(VERSION 3.18.2)
 cmake_policy(VERSION 3.18.2)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/toolchain.cmake")
-project(GradidoBlockchain VERSION 2.0.0)
+execute_process(
+    COMMAND git describe --tags --dirty --always
+    OUTPUT_VARIABLE GRADIDO_BLOCKCHAIN_GIT_VER
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" GRADIDO_BLOCKCHAIN_CLEAN_VERSION "${GRADIDO_BLOCKCHAIN_GIT_VER}")
+project(GradidoBlockchain VERSION ${GRADIDO_BLOCKCHAIN_CLEAN_VERSION})
 option(ENABLE_IOTA_RUST_CLIENT "switch for include rust iota client into build, increase build time and size a lot" OFF)
 option(ENABLE_HTTP "switch for include http based classes into build, increase build time and size" OFF)
 option(ENABLE_HTTPS "switch for include openssl for https support" OFF)
@@ -50,6 +56,15 @@ endif ()
 if (DEFINED GradidoBlockchain_SHARED_LIBS)
     set(BUILD_SHARED_LIBS "${GradidoBlockchain_SHARED_LIBS}")
 endif()
+
+# version
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/gradido_blockchain/version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/include/gradido_blockchain/version.h
+    @ONLY
+)
+
+set(GRADIDO_BLOCKCHAIN_VERSION "@PROJECT_VERSION@")
 
 ############################## find dependencies ###################################
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
