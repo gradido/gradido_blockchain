@@ -31,6 +31,7 @@
 #include "gtest/gtest.h"
 #include "KeyPairs.h"
 #include "gradido_blockchain/crypto/CryptoConfig.h"
+#include "gradido_blockchain/version.h"
 
 #if GTEST_OS_ESP8266 || GTEST_OS_ESP32
 #if GTEST_OS_ESP8266
@@ -56,6 +57,7 @@ int main(int argc, char** argv) {
 	CryptoConfig::g_ServerCryptoKey = std::make_shared<memory::Block>(memory::Block::fromHex("153afcd54ef316e45cd3e5ed4567cd21", 32));
 	//printf("Running main() from %s\n", __FILE__);
 	//
+	printf("Gradido Blockchain Version: %s\n", GRADIDO_BLOCKCHAIN_VERSION);
 	auto result = RUN_ALL_TESTS();
 	return result;
 //	return 0;

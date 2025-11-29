@@ -7,13 +7,16 @@
 
 #include "sodium.h"
 
+#include "date/date.h"
 #include <chrono>
 #include <iomanip>
 #include <sstream>
 
 using namespace rapidjson;
 
+
 namespace serialization {
+
 	template<>
 	Value toJson(const memory::Block& block, Document::AllocatorType& alloc) 
 	{
@@ -39,17 +42,6 @@ namespace serialization {
 	Value toJson(const Timepoint& timepoint, Document::AllocatorType& alloc) 
 	{
 		return toJson(DataTypeConverter::timePointToString(timepoint), alloc);
-		/*auto t = std::chrono::system_clock::to_time_t(timepoint);
-		std::tm tm{};
-#ifdef _WIN32
-		gmtime_s(&tm, &t);
-#else
-		gmtime_r(&t, &tm);
-#endif
-		std::ostringstream oss;
-		oss << std::put_time(&tm, "%Y-%m-%dT%H:%M:%SZ");
-		return toJson(oss.str(), alloc);
-		*/
 	}
 
 	template<>
@@ -58,6 +50,18 @@ namespace serialization {
 		return toJson(DataTypeConverter::timespanToString(duration), alloc);
 	}
 
+	template<>
+	Value toJson(const date::year& year, Document::AllocatorType& alloc)
+	{
+		return toJson(std::to_string(static_cast<int>(year)), alloc);
+	}
+	
+	template<>
+	Value toJson(const date::month& month, Document::AllocatorType& alloc)
+	{
+		return toJson(std::to_string(static_cast<unsigned int>(month)), alloc);
+	}
+	
 	template<>
 	Value toJson(const GradidoUnit& gdd, Document::AllocatorType& alloc)
 	{
@@ -69,7 +73,11 @@ namespace serialization {
 	// This is required on Windows when building a dynamic/shared library to ensure
 	// the symbols are visible to consuming code.
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const memory::Block& block, Document::AllocatorType& alloc);
+	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const memory::ConstBlockPtr& ptr, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const Timepoint& timepoint, Document::AllocatorType& alloc);
+	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const Duration& duration, Document::AllocatorType& alloc);
+	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const date::year& year, Document::AllocatorType& alloc);
+	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const date::month& month, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const GradidoUnit& gdd, Document::AllocatorType& alloc);
 #endif
 }
