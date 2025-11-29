@@ -49,7 +49,7 @@ namespace gradido {
 
 		bool InMemory::createAndAddConfirmedTransaction(
 			ConstGradidoTransactionPtr gradidoTransaction,
-			memory::ConstBlockPtr messageId, 
+			memory::ConstBlockPtr messageId,
 			Timestamp confirmedAt
 		) {
 			auto blockchain = getProvider()->findBlockchain(mCommunityId);
@@ -99,7 +99,11 @@ namespace gradido {
 			auto signature = gradidoTransaction->getFingerprint();
 			auto range = mTransactionFingerprintTransactionEntry.equal_range(*signature);
 			for (auto& it = range.first; it != range.second; ++it) {
-				if (it->second->getConfirmedTransaction()->getGradidoTransaction()->getFingerprint()->isTheSame(signature)) {
+				auto itGradidoTransaction = it->second->getConfirmedTransaction()->getGradidoTransaction();
+				if (
+						itGradidoTransaction->getFingerprint()->isTheSame(signature) &&
+						itGradidoTransaction->getBodyBytes()->isTheSame(gradidoTransaction->getBodyBytes())
+				) {
 					return true;
 				}
 			}
