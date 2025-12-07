@@ -90,6 +90,7 @@ namespace gradido {
 								nullptr,
 								transactionTriggerEvent->getTargetDate()
 							);
+							lastTransaction = mBlockchain->findOne(Filter::LAST_TRANSACTION);
 						}
 						catch (std::exception& e) {
 							mBlockchain->addTransactionTriggerEvent(transactionTriggerEvent);
