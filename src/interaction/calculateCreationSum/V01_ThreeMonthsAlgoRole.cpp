@@ -1,6 +1,7 @@
 #include "gradido_blockchain/interaction/calculateCreationSum/V01_ThreeMonthsAlgoRole.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/Filter.h"
+#include "gradido_blockchain/blockchain/FilterBuilder.h"
 
 #include <chrono>
 #include <cassert>
@@ -8,34 +9,45 @@
 using namespace std::chrono;
 
 namespace gradido {
+	using blockchain::Filter;
+	using blockchain::FilterBuilder;
+	using blockchain::Abstract;
+
 	namespace interaction {
 		namespace calculateCreationSum {
-			GradidoUnit V01_ThreeMonthsAlgoRole::run(const blockchain::Abstract& blockchain) const
+			GradidoUnit V01_ThreeMonthsAlgoRole::run(const Abstract& blockchain) const
 			{
-				GradidoUnit sum; // default initialized with zero
+				auto sum(GradidoUnit::zero()); // default initialized with zero
 
 				// received = max
 				// received - 2 month = min
 				auto beforeReceived = mDate - months(2);
 
-				blockchain.findAll(blockchain::Filter(
+				FilterBuilder builder;
+				builder
 					// static filter
-					mTransactionNrMax,
-					mPublicKey,
-					TimepointInterval(beforeReceived, mDate),
+					.setMaxTransactionNr(mTransactionNrMax)
+					.setInvolvedPublicKey(mPublicKey)
+					.setTimepointInterval({ beforeReceived, mDate })
+					.setTransactionType(data::TransactionType::CREATION)
 					// dynamic filter
 					// called for each transaction which fulfills the static filters
-					[&sum](const blockchain::TransactionEntry& entry) -> blockchain::FilterResult
-					{
-						auto body = entry.getTransactionBody();
-						if (body->isCreation())
+					.setFilterFunction(	
+						[&](const blockchain::TransactionEntry& entry) -> blockchain::FilterResult
 						{
-							sum += body->getCreation()->getRecipient().getAmount();
-						}
-						// we don't need any of it in our result set
-						return blockchain::FilterResult::DISMISS;
-					}
-				));
+							auto creation = entry.getTransactionBody()->getCreation();
+							if (!creation) {
+								throw GradidoNullPointerException("transaction isn't creation or invalid", "GradidoCreation", __FUNCTION__);
+							}
+							if (creation->getRecipient().getPublicKey()->isTheSame(mPublicKey)) {
+								sum += creation->getRecipient().getAmount();
+							}
+							// we don't need any of it in our result set
+							return blockchain::FilterResult::DISMISS;
+						})
+					;
+
+				blockchain.findAll(builder.getFilter());
 				return sum;
 			}
 		}

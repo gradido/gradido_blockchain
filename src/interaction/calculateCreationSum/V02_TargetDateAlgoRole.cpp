@@ -1,6 +1,7 @@
 #include "gradido_blockchain/interaction/calculateCreationSum/V02_TargetDateAlgoRole.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/Filter.h"
+#include "gradido_blockchain/blockchain/FilterBuilder.h"
 
 #include "date/date.h"
 
@@ -10,40 +11,50 @@
 using namespace std::chrono;
 
 namespace gradido {
+	using blockchain::Filter;
+	using blockchain::FilterBuilder;
+	using blockchain::Abstract;
+
 	namespace interaction {
 		namespace calculateCreationSum {
 
 			GradidoUnit V02_TargetDateAlgoRole::run(const blockchain::Abstract& blockchain) const
 			{
-				GradidoUnit sum; // default initialized with zero
+				auto sum(GradidoUnit::zero());
 
 				// received = max
 				// received - 2 month = min
 				auto beforeReceived = mDate - std::chrono::months(getTargetDateReceivedDistanceMonth(mDate));
 				auto ymd = date::year_month_day{ date::floor<date::days>(mTargetDate) };
 
-				blockchain.findAll(blockchain::Filter(
+				FilterBuilder builder;
+				builder
 					// static filter
-					mTransactionNrMax,
-					mPublicKey,
-					TimepointInterval(beforeReceived, mDate),
+					.setMaxTransactionNr(mTransactionNrMax)
+					.setInvolvedPublicKey(mPublicKey)
+					.setTimepointInterval({ beforeReceived, mDate })
+					.setTransactionType(data::TransactionType::CREATION)
 					// dynamic filter
 					// called for each transaction which fulfills the static filters
-					[&sum, ymd](const blockchain::TransactionEntry& entry) -> blockchain::FilterResult
-					{
-						auto body = entry.getTransactionBody();
-						if (body->isCreation())
+					.setFilterFunction(
+						[&](const blockchain::TransactionEntry& entry) -> blockchain::FilterResult
 						{
-							auto creation = body->getCreation();
-							auto targetDate = date::year_month_day{ date::floor<date::days>(creation->getTargetDate().getAsTimepoint()) };
-							if (targetDate.month() == ymd.month() && targetDate.year() == ymd.year()) {
-								sum += creation->getRecipient().getAmount();
+							auto creation = entry.getTransactionBody()->getCreation();
+							if (!creation) {
+								throw GradidoNullPointerException("transaction isn't creation or invalid", "GradidoCreation", __FUNCTION__);
 							}
-						}
-						// we don't need any of it in our result set
-						return blockchain::FilterResult::DISMISS;
-					}
-				));
+							if (creation->getRecipient().getPublicKey()->isTheSame(mPublicKey)) {
+								auto targetDate = date::year_month_day{ date::floor<date::days>(creation->getTargetDate().getAsTimepoint()) };
+								if (targetDate.month() == ymd.month() && targetDate.year() == ymd.year()) {
+									sum += creation->getRecipient().getAmount();
+								}
+							}
+							// we don't need any of it in our result set
+							return blockchain::FilterResult::DISMISS;
+						})
+				;
+
+				blockchain.findAll(builder.getFilter());
 				return sum;
 			}
 
