@@ -15,6 +15,7 @@ namespace memory {
 		: Block(size)
 	{
 		if (!size) return;
+		mShortHash = BlockKey(size, data);
 		memcpy(mData, data, size);
 	}
 
@@ -48,10 +49,11 @@ namespace memory {
 	}
 	// move
 	Block::Block(Block&& other) noexcept
-		: mSize(other.size()), mData(other.data())
+		: mSize(other.size()), mData(other.data()), mShortHash(other.mShortHash)
 	{
 		other.mSize = 0;
 		other.mData = nullptr;
+		other.mShortHash.shortHash = 0;
 	}
 	// also move 
 	Block& Block::operator=(Block&& other) noexcept
@@ -59,8 +61,10 @@ namespace memory {
 		clear();
 		mSize = other.mSize;
 		mData = other.mData;
+		mShortHash = other.mShortHash;
 		other.mSize = 0;
 		other.mData = nullptr;
+		other.mShortHash.shortHash = 0;
 		return *this;
 	}
 	// also copy
@@ -76,6 +80,7 @@ namespace memory {
 		mData = Manager::getInstance()->getBlock(other.mSize);
 		if (!mData) throw std::bad_alloc();
 		memcpy(mData, other.mData, mSize);
+		mShortHash = other.mShortHash;
 		return *this;
 	}
 
@@ -90,6 +95,7 @@ namespace memory {
 			Manager::getInstance()->releaseBlock(mSize, mData);
 			mData = nullptr;
 			mSize = 0;
+			mShortHash.shortHash = 0;
 		}
 	}
 
@@ -173,6 +179,9 @@ namespace memory {
 
 	bool Block::isTheSame(const Block& b) const
 	{
+		if (mShortHash != b.mShortHash) {
+			return false;
+		}
 		if (b.size() != size()) {
 			return false;
 		}

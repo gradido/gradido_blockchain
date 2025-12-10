@@ -179,12 +179,12 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 		try {
 			tx->getTransactionBody();
 			// printf("added: %s\n", toJsonString(*tx, true).data());
+			mTransactions.emplace_back(tx);
 		}
 		catch (...) {
 			printf("cannot deserialize transaction body from: %s\n", toJsonString(*tx, true).data());
 			printf("size: %u\n", transactionSize);
-		}
-		mTransactions.emplace(mTransactions.end(), tx);
+		}		
 	}
 	// printf("\n");
 	printf("%s time to load and deserialize %d transactions from binary file\n",
@@ -217,6 +217,6 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 	}
 	printf("\n");
 	printf("%s time for adding %d transactions to blockchain\n", timeUsed.string().data(), count);
-
+	int zahl = 1;
 }
 // */

@@ -325,13 +325,15 @@ namespace gradido {
 					resultCounts.emplace(std::distance(its.first, its.second), FilterCriteria::INVOLVED_PUBLIC_KEY);
 				}
 			}
-			auto startIt = mTransactionsByNr.lower_bound(filter.minTransactionNr);
-			auto endIt = mTransactionsByNr.end();
-			if (filter.maxTransactionNr) {
-				endIt = mTransactionsByNr.upper_bound(filter.maxTransactionNr);
-			}
-			if (startIt != mTransactionsByNr.end() && startIt != endIt) {
-				resultCounts.emplace(std::distance(startIt, endIt), FilterCriteria::TRANSACTION_NR);
+			if (!mTransactionsByNr.empty()) {
+				assert(mTransactionsByNr.begin()->first == 1);
+				auto endIt = mTransactionsByNr.end();
+				endIt--;
+				auto maxTransactionNr = endIt->first;
+				if (filter.maxTransactionNr && filter.maxTransactionNr < maxTransactionNr) {
+					maxTransactionNr = filter.maxTransactionNr;
+				}
+				resultCounts.emplace(maxTransactionNr - filter.minTransactionNr, FilterCriteria::TRANSACTION_NR);
 			}
 			
 			if (resultCounts.empty()) { return FilterCriteria::NONE; }

@@ -133,7 +133,7 @@ namespace gradido {
 				}
 			}
 			auto confirmedTransaction = entry->getConfirmedTransaction();
-			auto body = entry->getTransactionBody();
+			// auto body = entry->getTransactionBody();
 			
 			// needing deserialized transaction
 			if ((type & FilterCriteria::INVOLVED_PUBLIC_KEY) == FilterCriteria::INVOLVED_PUBLIC_KEY) 

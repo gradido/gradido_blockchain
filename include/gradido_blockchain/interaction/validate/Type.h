@@ -36,22 +36,27 @@ namespace gradido {
                 CONNECTED_BLOCKCHAIN = 64
             };
 
-            inline Type operator | (Type lhs, Type rhs)
+            constexpr inline Type operator | (Type lhs, Type rhs)
             {
                 using T = std::underlying_type_t <Type>;
                 return static_cast<Type>(static_cast<T>(lhs) | static_cast<T>(rhs));
             }
 
-            inline Type operator & (Type lhs, Type rhs)
+            constexpr inline Type operator & (Type lhs, Type rhs)
             {
                 using T = std::underlying_type_t <Type>;
                 return static_cast<Type>(static_cast<T>(lhs) & static_cast<T>(rhs));
             }
 
-            inline Type operator - (Type lhs, Type rhs)
+            constexpr inline Type operator - (Type lhs, Type rhs)
             {
                 using T = std::underlying_type_t <Type>;
                 return static_cast<Type>(static_cast<T>(lhs) - static_cast<T>(rhs));
+            }
+
+            constexpr bool hasFlag(Type v, Type f) {
+                using T = std::underlying_type_t<Type>;
+                return (static_cast<T>(v) & static_cast<T>(f)) != 0;
             }
         }
     }

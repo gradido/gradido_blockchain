@@ -3,6 +3,7 @@
 
 #include "GradidoTransaction.h"
 #include "AccountBalance.h"
+#include "gradido_blockchain/memory/BlockKey.h"
 
 namespace gradido {
 	namespace data {
@@ -14,7 +15,7 @@ namespace gradido {
 			//! \param previousConfirmedTransaction needed for running hash calculation
 			ConfirmedTransaction(
 				uint64_t id,
-				std::unique_ptr<const GradidoTransaction> gradidoTransaction,
+				std::shared_ptr<const GradidoTransaction> gradidoTransaction,
 				Timestamp confirmedAt,
 				const std::string& versionNumber,
 				memory::ConstBlockPtr messageId,
@@ -24,7 +25,7 @@ namespace gradido {
 			//! copy running hash
 			ConfirmedTransaction(
 				uint64_t id,
-				std::unique_ptr<const GradidoTransaction> gradidoTransaction,
+				std::shared_ptr<const GradidoTransaction> gradidoTransaction,
 				Timestamp confirmedAt,
 				const std::string& versionNumber,
 				memory::ConstBlockPtr runningHash,
@@ -57,6 +58,8 @@ namespace gradido {
 			std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
 
 		protected:
+			void initalizePubkeyHashes();
+
 			uint64_t                    				mId;
 			std::shared_ptr<const data::GradidoTransaction> mGradidoTransaction;
 			Timestamp									mConfirmedAt;
@@ -64,6 +67,10 @@ namespace gradido {
 			memory::ConstBlockPtr 						mRunningHash;
 			memory::ConstBlockPtr 						mMessageId;
 			std::vector<AccountBalance>					mAccountBalances;
+			
+		private:
+			// for faster public key comparisation
+			std::vector<memory::BlockKey> mPubkeyHashes;
 		};
 
 		GradidoUnit ConfirmedTransaction::getDecayedAccountBalance(

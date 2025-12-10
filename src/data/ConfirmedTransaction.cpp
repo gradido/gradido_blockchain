@@ -12,39 +12,40 @@ namespace gradido {
 
 		ConfirmedTransaction::ConfirmedTransaction(
 			uint64_t id,
-			std::unique_ptr<const GradidoTransaction> gradidoTransaction,
+			std::shared_ptr<const GradidoTransaction> gradidoTransaction,
 			Timestamp confirmedAt,
 			const std::string& versionNumber,
 			memory::ConstBlockPtr messageId,
 			std::vector<AccountBalance> accountBalances,
 			std::shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction/* = nullptr */
 		) : mId(id),
-			mGradidoTransaction(std::move(gradidoTransaction)),
+			mGradidoTransaction(gradidoTransaction),
 			mConfirmedAt(confirmedAt),
 			mVersionNumber(versionNumber),
 			mMessageId(messageId),
 			mAccountBalances(accountBalances) 
 		{
 			mRunningHash = calculateRunningHash(previousConfirmedTransaction);
+			initalizePubkeyHashes();
 		}
 
 		ConfirmedTransaction::ConfirmedTransaction(
 			uint64_t id,
-			std::unique_ptr<const GradidoTransaction> gradidoTransaction,
+			std::shared_ptr<const GradidoTransaction> gradidoTransaction,
 			Timestamp confirmedAt,
 			const std::string& versionNumber,
 			memory::ConstBlockPtr runningHash,
 			memory::ConstBlockPtr messageId,
 			std::vector<AccountBalance> accountBalances
 		) : mId(id),
-			mGradidoTransaction(std::move(gradidoTransaction)),
+			mGradidoTransaction(gradidoTransaction),
 			mConfirmedAt(confirmedAt),
 			mVersionNumber(versionNumber),
 			mRunningHash(runningHash),
 			mMessageId(messageId),
 			mAccountBalances(accountBalances)
 		{
-
+			initalizePubkeyHashes();
 		}
 
 		memory::ConstBlockPtr ConfirmedTransaction::calculateRunningHash(
@@ -101,6 +102,16 @@ namespace gradido {
 
 		bool ConfirmedTransaction::isInvolved(const memory::Block& publicKey) const
 		{
+			bool allFalse = true;
+			for (auto& hash : mPubkeyHashes) {
+				if (hash == publicKey.hash()) {
+					allFalse = false;
+					break;
+				}
+			}
+			if (allFalse) {
+				return false;
+			}
 			for (auto& accountBalance: mAccountBalances) {
 				if (accountBalance.getPublicKey()->isTheSame(publicKey)) {
 					return true;
@@ -125,6 +136,15 @@ namespace gradido {
 				}
 			}
 			return involvedAddresses;
+		}
+
+		void ConfirmedTransaction::initalizePubkeyHashes()
+		{
+			auto involvedAddresses = getInvolvedAddresses();
+			mPubkeyHashes.reserve(involvedAddresses.size());
+			for (auto& address : involvedAddresses) {
+				mPubkeyHashes.emplace_back(address->hash());
+			}
 		}
 	}
 }

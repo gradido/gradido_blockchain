@@ -18,18 +18,18 @@ namespace gradido {
 			MAX = (1UL << 6) - 1
 		};
 
-		inline FilterCriteria operator | (FilterCriteria lhs, FilterCriteria rhs)
+		constexpr inline FilterCriteria operator | (FilterCriteria lhs, FilterCriteria rhs)
 		{
 			using T = std::underlying_type_t <FilterCriteria>;
 			return static_cast<FilterCriteria>(static_cast<T>(lhs) | static_cast<T>(rhs));
 		}
 
-		inline FilterCriteria operator & (FilterCriteria lhs, FilterCriteria rhs)
+		constexpr inline FilterCriteria operator & (FilterCriteria lhs, FilterCriteria rhs)
 		{
 			using T = std::underlying_type_t <FilterCriteria>;
 			return static_cast<FilterCriteria>(static_cast<T>(lhs) & static_cast<T>(rhs));
 		}
-		inline FilterCriteria operator - (FilterCriteria lhs, FilterCriteria rhs)
+		constexpr inline FilterCriteria operator - (FilterCriteria lhs, FilterCriteria rhs)
 		{
 			using T = std::underlying_type_t <FilterCriteria>;
 			return static_cast<FilterCriteria>(static_cast<T>(lhs) - static_cast<T>(rhs));

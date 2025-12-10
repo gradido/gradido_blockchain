@@ -2,9 +2,12 @@
 #define __GRADIDO_BLOCKCHAIN_MEMORY_BLOCK_KEY_H
 
 #include "gradido_blockchain/export.h"
-#include "Block.h"
+
+#include <memory>
 
 namespace memory {
+
+	class Block;
 
 	/*!
 	* @author einhornimmond
@@ -14,7 +17,9 @@ namespace memory {
 
 	struct GRADIDOBLOCKCHAIN_EXPORT BlockKey
 	{
-		BlockKey(ConstBlockPtr block);
+		BlockKey();
+		BlockKey(std::shared_ptr<const Block> block);
+		BlockKey(size_t size, const unsigned char* data);
 
 		// Copy constructor
 		BlockKey(const BlockKey& other)
