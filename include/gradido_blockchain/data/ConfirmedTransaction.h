@@ -3,7 +3,7 @@
 
 #include "GradidoTransaction.h"
 #include "AccountBalance.h"
-#include "gradido_blockchain/memory/BlockKey.h"
+#include "gradido_blockchain/crypto/SignatureOctet.h"
 
 namespace gradido {
 	namespace data {
@@ -67,14 +67,14 @@ namespace gradido {
 			memory::ConstBlockPtr 						mRunningHash;
 			memory::ConstBlockPtr 						mMessageId;
 			std::vector<AccountBalance>					mAccountBalances;
-			
+
 		private:
 			// for faster public key comparisation
-			std::vector<memory::BlockKey> mPubkeyHashes;
+			std::vector<SignatureOctet>mPubkeyHashes;
 		};
 
 		GradidoUnit ConfirmedTransaction::getDecayedAccountBalance(
-			memory::ConstBlockPtr publicKey, 
+			memory::ConstBlockPtr publicKey,
 			const std::string& communityId,
 			Timepoint endDate/* = std::chrono::system_clock::now()*/
 		) const {
@@ -86,8 +86,6 @@ namespace gradido {
 		typedef std::shared_ptr<ConfirmedTransaction> ConfirmedTransactionPtr;
 		typedef std::shared_ptr<const ConfirmedTransaction> ConstConfirmedTransactionPtr;
 	}
-
-	
 }
 
 

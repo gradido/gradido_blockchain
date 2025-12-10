@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_MEMORY_BLOCK_H
 
 #include "VectorCacheAllocator.h"
-#include "BlockKey.h"
+#include "gradido_blockchain/crypto/SignatureOctet.h"
 #include "gradido_blockchain/export.h"
 
 #include "sodium.h"
@@ -46,7 +46,7 @@ namespace memory {
 		inline operator const uint8_t* () const { return mData; }
 		inline unsigned char* data(size_t startIndex) { assert(startIndex < mSize); return &mData[startIndex]; }
 		inline const unsigned char* data(size_t startIndex) const { assert(startIndex < mSize); return &mData[startIndex]; }
-		inline BlockKey hash() const { return mShortHash; }
+		inline SignatureOctet hash() const { return mShortHash; }
 
 		uint8_t& operator [](int idx) { return mData[idx];}
 		uint8_t  operator [](int idx) const { return mData[idx];}
@@ -92,7 +92,7 @@ namespace memory {
 		size_t mSize;
 		uint8_t* mData;
 		// short hash for speeding up comparisations
-		BlockKey mShortHash;
+		SignatureOctet mShortHash;
 	};
 
 	using BlockPtr = std::shared_ptr<Block>;

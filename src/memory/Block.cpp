@@ -1,30 +1,31 @@
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/memory/Manager.h"
+#include "gradido_blockchain/crypto/SignatureOctet.h"
 
 #include "loguru/loguru.hpp"
 
 namespace memory {
-	
+
 	Block::Block(size_t size)
 		: mSize(size), mData(Manager::getInstance()->getBlock(size))
-	{		
+	{
 	}
 
 	Block::Block(size_t size, const unsigned char* data)
 		: Block(size)
 	{
 		if (!size) return;
-		mShortHash = BlockKey(size, data);
+		mShortHash = SignatureOctet(data, size);
 		memcpy(mData, data, size);
 	}
 
 	Block::Block(const std::vector<unsigned char>& data)
-		: Block(data.size(), data.data()) 
+		: Block(data.size(), data.data())
 	{
 	}
 
-	Block::Block(std::span<std::byte> data) 
+	Block::Block(std::span<std::byte> data)
 		: Block(data.size(), reinterpret_cast<const unsigned char*>(data.data()))
 	{
 
@@ -53,7 +54,7 @@ namespace memory {
 	{
 		other.mSize = 0;
 		other.mData = nullptr;
-		other.mShortHash.shortHash = 0;
+		other.mShortHash.octet = 0;
 	}
 	// also move 
 	Block& Block::operator=(Block&& other) noexcept
@@ -64,7 +65,7 @@ namespace memory {
 		mShortHash = other.mShortHash;
 		other.mSize = 0;
 		other.mData = nullptr;
-		other.mShortHash.shortHash = 0;
+		other.mShortHash.octet = 0;
 		return *this;
 	}
 	// also copy
@@ -95,7 +96,7 @@ namespace memory {
 			Manager::getInstance()->releaseBlock(mSize, mData);
 			mData = nullptr;
 			mSize = 0;
-			mShortHash.shortHash = 0;
+			mShortHash.octet = 0;
 		}
 	}
 
