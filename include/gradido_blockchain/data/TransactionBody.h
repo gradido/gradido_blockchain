@@ -51,6 +51,7 @@ namespace gradido {
 			bool isInvolved(const memory::Block& publicKey) const;
 			//! throw if not exist on this transaction type
 			const TransferAmount& getTransferAmount() const;
+			bool hasTransferAmount() const;
 
 			std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
 			inline const std::vector<EncryptedMemo>& getMemos() const { return mMemos; }
