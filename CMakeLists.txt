@@ -389,5 +389,5 @@ string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" is_top_
 if(ENABLE_TEST)
 	# add test
 	include(CTest)
-	add_subdirectory(test)
+	add_subdirectory(tests)
 endif()

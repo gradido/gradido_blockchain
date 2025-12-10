@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18.2)
 cmake_policy(SET CMP0135 NEW)
-project(GradidoBlockchainTest)
+project(GradidoBlockchainUnitTest)
 
 # GoogleTest requires at least C++11
 set(CMAKE_CXX_STANDARD 20)
@@ -59,11 +59,11 @@ enable_testing()
 
 #find_package(Sodium REQUIRED)
 
-add_executable(GradidoBlockchainTest ${TEST_SRC})
-target_link_libraries(GradidoBlockchainTest GradidoBlockchain sodium loguru::loguru) #libprotobuf
-target_link_libraries(GradidoBlockchainTest gtest)
+add_executable(GradidoBlockchainUnitTest ${TEST_SRC})
+target_link_libraries(GradidoBlockchainUnitTest GradidoBlockchain sodium loguru::loguru) #libprotobuf
+target_link_libraries(GradidoBlockchainUnitTest gtest)
 if(openssl_FOUND) 
-	target_link_libraries(GradidoBlockchainTest openssl::openssl)
+	target_link_libraries(GradidoBlockchainUnitTest openssl::openssl)
 endif()
 
 include_directories(
@@ -72,14 +72,14 @@ include_directories(
 )
 
 IF(WIN32)
-  add_custom_command(TARGET GradidoBlockchainTest POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:GradidoBlockchainTest> $<TARGET_FILE_DIR:GradidoBlockchainTest>
+  add_custom_command(TARGET GradidoBlockchainUnitTest POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:GradidoBlockchainUnitTest> $<TARGET_FILE_DIR:GradidoBlockchainUnitTest>
     COMMAND_EXPAND_LISTS
   )
 ENDIF()
 
 include(GoogleTest)
 if(NOT CMAKE_CROSSCOMPILING OR (DEFINED CMAKE_CROSSCOMPILING_EMULATOR AND CMAKE_CROSSCOMPILING_EMULATOR))
-  message(STATUS "Enable GradidoBlockchainTest tests")
-  gtest_discover_tests(GradidoBlockchainTest)
+  message(STATUS "Enable GradidoBlockchainUnitTest tests")
+  gtest_discover_tests(GradidoBlockchainUnitTest)
 endif()
