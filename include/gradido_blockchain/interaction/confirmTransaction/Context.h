@@ -38,6 +38,7 @@ namespace gradido {
                 std::shared_ptr<const data::ConfirmedTransaction> run(std::shared_ptr<AbstractRole> role);
                 
             protected:
+                bool processTransactionTrigger(Timepoint endDate);
                 std::shared_ptr<blockchain::Abstract> mBlockchain;
             };
         }

@@ -40,14 +40,15 @@ namespace gradido {
 				data::ConstGradidoTransactionPtr gradidoTransaction,
 				memory::ConstBlockPtr messageId, 
 				data::Timestamp confirmedAt
-			);
-			virtual void addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent);
-			virtual void removeTransactionTriggerEvent(const data::TransactionTriggerEvent& transactionTriggerEvent);
+			) override;
+			virtual void addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent) override;
+			virtual void removeTransactionTriggerEvent(const data::TransactionTriggerEvent& transactionTriggerEvent) override;
 
-			virtual bool isTransactionExist(data::ConstGradidoTransactionPtr gradidoTransaction) const;
+			virtual bool isTransactionExist(data::ConstGradidoTransactionPtr gradidoTransaction) const override;
 
 			//! return events in asc order of targetDate
-			virtual std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> findTransactionTriggerEventsInRange(TimepointInterval range);
+			virtual std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> findTransactionTriggerEventsInRange(TimepointInterval range) override;
+			virtual std::shared_ptr<const data::TransactionTriggerEvent> findNextTransactionTriggerEventInRange(TimepointInterval range) override;
 
 			// get all transactions sorted by id
 			const TransactionEntries& getSortedTransactions();

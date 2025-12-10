@@ -89,7 +89,7 @@ namespace gradido {
 					return;
 				}
 			}
-			LOG_F(WARNING, "couldn't find transactionTriggerEvent for removal for transaction: %lu", transactionTriggerEvent.getLinkedTransactionId());
+			LOG_F(WARNING, "couldn't find transactionTriggerEvent for removal for transaction: %llu", transactionTriggerEvent.getLinkedTransactionId());
 		}
 
 
@@ -118,12 +118,21 @@ namespace gradido {
 			auto endIt = mTransactionTriggerEvents.upper_bound(range.getEndDate());
 			std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> result;
 			result.reserve(std::distance(startIt, endIt));
-			for (auto it = startIt; it != endIt; it++) {
-				result.push_back(it->second);
+			for (; startIt != endIt; startIt++) {
+				result.push_back(startIt->second);
 			}
 			return result;
 		}
-		
+
+		std::shared_ptr<const data::TransactionTriggerEvent> InMemory::findNextTransactionTriggerEventInRange(TimepointInterval range)
+		{
+			std::lock_guard _lock(mTransactionTriggerEventsMutex);
+			auto startIt = mTransactionTriggerEvents.lower_bound(range.getStartDate());
+			if (startIt != mTransactionTriggerEvents.end() && startIt->first <= range.getEndDate()) {
+				return startIt->second;
+			}
+			return nullptr;
+		}		
 
 		const TransactionEntries& InMemory::getSortedTransactions()
 		{

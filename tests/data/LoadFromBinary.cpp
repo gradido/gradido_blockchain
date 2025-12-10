@@ -213,7 +213,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 		}
 		count++;
 		printf("\rtransactions: %d", count);
-		if (timeUsed.seconds() > 30.0) break;
+		// if (timeUsed.seconds() > 30.0) break;
 	}
 	printf("\n");
 	printf("%s time for adding %d transactions to blockchain\n", timeUsed.string().data(), count);
