@@ -37,6 +37,7 @@ struct GRADIDOBLOCKCHAIN_EXPORT SignatureOctet
 	inline bool operator==(const SignatureOctet& ob) const {
 		return octet == ob.octet;
 	}
+	inline bool empty() const { return octet == 0; }
 	int64_t octet;
 };
 

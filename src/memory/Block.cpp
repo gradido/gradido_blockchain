@@ -180,7 +180,7 @@ namespace memory {
 
 	bool Block::isTheSame(const Block& b) const
 	{
-		if (mShortHash != b.mShortHash) {
+		if (!mShortHash.empty() && !b.mShortHash.empty() && mShortHash != b.mShortHash) {
 			return false;
 		}
 		if (b.size() != size()) {
