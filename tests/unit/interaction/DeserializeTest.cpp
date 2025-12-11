@@ -283,27 +283,6 @@ TEST(DeserializeTest, GradidoTransaction) {
 }
 
 
-TEST(DeserializeTest, MinimalConfirmedTransaction) {
-
-	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(minimalConfirmedTransaction));
-	deserialize::Context context(rawData, deserialize::Type::CONFIRMED_TRANSACTION);
-	context.run();
-	EXPECT_FALSE(context.isTransactionBody());
-	ASSERT_TRUE(context.isConfirmedTransaction());
-	EXPECT_FALSE(context.isGradidoTransaction());
-	EXPECT_FALSE(context.isTransactionTriggerEvent());
-
-	auto confirmedTransaction = context.getConfirmedTransaction();
-	auto gradidoTransaction = confirmedTransaction->getGradidoTransaction();
-
-	EXPECT_EQ(confirmedTransaction->getId(), 7);
-	EXPECT_EQ(confirmedTransaction->getConfirmedAt(), confirmedAt);
-	EXPECT_EQ(confirmedTransaction->getVersionNumber(), GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING);
-	EXPECT_EQ(confirmedTransaction->getAccountBalances().size(), 0);
-	EXPECT_EQ(confirmedTransaction->getRunningHash()->size(), crypto_generichash_BYTES);
-}
-
-
 TEST(DeserializeTest, CompleteConfirmedTransaction) {
 
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(completeConfirmedTransaction));

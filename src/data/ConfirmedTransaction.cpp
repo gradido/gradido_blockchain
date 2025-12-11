@@ -102,15 +102,17 @@ namespace gradido {
 
 		bool ConfirmedTransaction::isInvolved(const memory::Block& publicKey) const
 		{
-			bool allFalse = true;
-			for (auto& hash : mPubkeyHashes) {
-				if (hash == publicKey.hash()) {
-					allFalse = false;
-					break;
+			if (!publicKey.hash().empty()) {
+				bool allFalse = true;
+				for (auto& hash : mPubkeyHashes) {
+					if (hash == publicKey.hash()) {
+						allFalse = false;
+						break;
+					}
 				}
-			}
-			if (allFalse) {
-				return false;
+				if (allFalse) {
+					return false;
+				}
 			}
 			for (auto& accountBalance: mAccountBalances) {
 				if (accountBalance.getPublicKey()->isTheSame(publicKey)) {

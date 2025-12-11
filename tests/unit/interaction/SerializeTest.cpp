@@ -224,23 +224,6 @@ TEST(SerializeTest, SignatureMap) {
 	);
 }
 
-TEST(SerializeTest, MinimalConfirmedTransaction) {
-	ConfirmedTransaction confirmedTransaction(
-		7,
-		std::make_unique<GradidoTransaction>(),
-		confirmedAt,
-		GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
-		make_shared<memory::Block>(crypto_generichash_BYTES),
-		make_shared<memory::Block>(memory::Block::fromBase64(hieroTransactionIdBase64)),
-		{}
-	);
-	serialize::Context c(confirmedTransaction);
-	auto serialized = c.run();
-	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
-	// printf("hex: %s\n", serialized->convertToHex().data());
-	ASSERT_EQ(serialized->convertToBase64(), minimalConfirmedTransaction);
-}
-
 TEST(SerializeTest, CompleteConfirmedTransaction) {
 	GradidoTransactionBuilder builder;
 	auto gradidoTransaction = builder

@@ -140,6 +140,7 @@ namespace memory {
 	{
 		memory::Block hash(crypto_generichash_BYTES);
 		crypto_generichash(hash, crypto_generichash_BYTES, mData, mSize, nullptr, 0);
+		hash.mShortHash = SignatureOctet(mData, mSize);
 		return hash;
 	}
 
@@ -156,6 +157,7 @@ namespace memory {
 		if (0 != sodium_hex2bin(result.data(), binSize, hexString, stringSize, nullptr, &resultBinSize, nullptr)) {
 			throw GradidoInvalidHexException("invalid hex for Block::fromHex", hexString);
 		}
+		result.mShortHash = SignatureOctet(result.data(), result.size());
 		return result;
 	}
 
@@ -174,7 +176,7 @@ namespace memory {
 			memory::Block bin_real(resultBinSize, bin);
 			return bin_real;
 		}
-
+		bin.mShortHash = SignatureOctet(bin.data(), bin.size());
 		return bin;
 	}
 
