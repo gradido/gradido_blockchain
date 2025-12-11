@@ -43,8 +43,8 @@ namespace gradido {
                return make_shared<data::ConfirmedTransaction>(
                    id,
                    //std::make_unique<data::GradidoTransaction>(*mGradidoTransaction),
-                   // std::make_shared<data::GradidoTransaction>(*mGradidoTransaction),
-                   mGradidoTransaction,
+                   std::make_shared<data::GradidoTransaction>(*mGradidoTransaction),
+                   // mGradidoTransaction, // don't work as native node module. TODO: find underlying issue
                    mConfirmedAt,
                    GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
                    mMessageId,
