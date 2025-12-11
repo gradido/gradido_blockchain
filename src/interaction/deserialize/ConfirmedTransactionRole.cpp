@@ -6,6 +6,9 @@
 #include "gradido_blockchain/interaction/deserialize/Exceptions.h"
 #include "gradido_blockchain/interaction/serialize/GradidoTransactionRole.h"
 
+using memory::Block, memory::ConstBlockPtr;
+using std::make_shared;
+
 namespace gradido {
 	namespace interaction {
 		namespace deserialize {
@@ -13,6 +16,8 @@ namespace gradido {
 			ConfirmedTransactionRole::ConfirmedTransactionRole(const ConfirmedTransactionMessage& message)
 			{
 				const char* exceptionMessage = "missing member on deserialize confirmed transaction";
+				ConstBlockPtr messageId = nullptr;
+
 				if (!message["id"_f].has_value()) {
 					throw MissingMemberException(exceptionMessage, "id");
 				}
@@ -28,8 +33,9 @@ namespace gradido {
 				if (!message["running_hash"_f].has_value()) {
 					throw MissingMemberException(exceptionMessage, "running_hash");
 				}
-				if (!message["message_id"_f].has_value()) {
-					throw MissingMemberException(exceptionMessage, "message_id");
+				if (message["message_id"_f].has_value()) {
+					// throw MissingMemberException(exceptionMessage, "message_id");
+					messageId = make_shared<const Block>(message["message_id"_f].value());
 				}
 				std::vector<data::AccountBalance> accountBalances;
 				auto accountBalanceMessages = message["account_balances"_f];
@@ -44,8 +50,8 @@ namespace gradido {
 					GradidoTransactionRole(message["transaction"_f].value()).getGradidoTransaction(),
 					TimestampRole(message["confirmed_at"_f].value()).data(),
 					message["version_number"_f].value(),
-					std::make_shared<memory::Block>(message["running_hash"_f].value()),
-					std::make_shared<memory::Block>(message["message_id"_f].value()),
+					make_shared<Block>(message["running_hash"_f].value()),
+					messageId,
 					accountBalances
 				);
 			}
