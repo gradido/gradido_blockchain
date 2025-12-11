@@ -6,6 +6,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <cassert>
 
 template <class TKey, class TValue>
 class AccessExpireCache

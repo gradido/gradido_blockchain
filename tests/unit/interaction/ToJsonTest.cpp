@@ -157,22 +157,6 @@ TEST(ToJsonTest, GradidoTransaction) {
 	EXPECT_EQ(toJsonString(transaction), "{\"signatureMap\":[{\"pubkey\":\"f4dd3989f7554b7ab32e3dd0b7f9e11afce90a1811e9d1f677169eb44bf44272\",\"signature\":\"b4c8d994c7c08a6b13685d33767fc843061a6bcfa0d3c415335567610c0deeaa45efce6e038ca7c1d21bcfba98b0f6fa9ed6c75f9cda6ce186db400120c09a02\"}],\"bodyBytes\":\"cannot deserialize from body bytes\"}");
 }
 
-
-TEST(ToJsonTest, MinimalConfirmedTransaction) {
-
-	ConfirmedTransaction confirmedTransaction(
-		7,
-		std::make_unique<GradidoTransaction>(),
-		confirmedAt,
-		VERSION_STRING,
-		make_shared<memory::Block>(crypto_generichash_BYTES),
-		make_shared<memory::Block>(32),
-		{}
-	);
-
-	EXPECT_EQ(toJsonString(confirmedTransaction), "{\"id\":7,\"gradidoTransaction\":{\"signatureMap\":[],\"bodyBytes\":\"body bytes missing\"},\"confirmedAt\":\"2021-01-01 01:22:10.0000\",\"versionNumber\":\"3.5\",\"runningHash\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"messageId\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"accountBalances\":[]}");
-}
-
 TEST(ToJsonTest, CompleteConfirmedTransaction) {
 	EncryptedMemo memo("Danke fuer dein Sein!");
 

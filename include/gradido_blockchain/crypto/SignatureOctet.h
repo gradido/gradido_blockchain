@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_CRYPTO_SIGNATURE_OCTET_H
 
 #include "gradido_blockchain/export.h"
-#include "gradido_blockchain/memory/Block.h"
+#include <string>
 
 /*!
 * @author einhornimmond
@@ -12,47 +12,23 @@
 * it is possible so we need a check for that, but it will happen only rarely, if at all
 */
 
+namespace memory {
+	class Block;
+}
+
 struct GRADIDOBLOCKCHAIN_EXPORT SignatureOctet
 {
-	SignatureOctet(const memory::Block& signature)
-	: SignatureOctet(signature.data(), signature.size()) 
-	{
-
-	}
-
-	SignatureOctet(const std::string& binString)
-		: SignatureOctet((const uint8_t*)binString.data(), binString.size())
-	{
-
-	}
-
-	SignatureOctet(const uint8_t* data, size_t size)
-		: octet(0) {
-		if (data && size >= sizeof(int64_t)) {
-			int32_t firstPart = 0;
-			int32_t lastPart = 0;
-
-			// Kopiere die ersten 32 Bit (4 Bytes)
-			memcpy(&firstPart, data, sizeof(int32_t));
-
-			// Kopiere die letzten 32 Bit (4 Bytes)
-			memcpy(&lastPart, data + size - sizeof(int32_t), sizeof(int32_t));
-
-			// Kombiniere die beiden 32-Bit-Werte zu einem 64-Bit-Wert
-			octet = (static_cast<int64_t>(firstPart) << 32) | (static_cast<int64_t>(lastPart) & 0xFFFFFFFF);
-		}
-	}
+	SignatureOctet();
+	SignatureOctet(const memory::Block& signature);
+	SignatureOctet(const std::string& binString);
+	SignatureOctet(const uint8_t* data, size_t size);
+	~SignatureOctet();
 
 	// Copy constructor
-	SignatureOctet(const SignatureOctet& other)
-		: octet(other.octet) {}
-
+	SignatureOctet(const SignatureOctet& other);
 
 	// Copy assignment operator
-	SignatureOctet& operator=(const SignatureOctet& other) {
-		octet = other.octet;
-		return *this;
-	}
+	SignatureOctet& operator=(const SignatureOctet& other);
 
 	inline bool operator<(const SignatureOctet& ob) const {
 		return octet < ob.octet;
@@ -61,6 +37,7 @@ struct GRADIDOBLOCKCHAIN_EXPORT SignatureOctet
 	inline bool operator==(const SignatureOctet& ob) const {
 		return octet == ob.octet;
 	}
+	inline bool empty() const { return octet == 0; }
 	int64_t octet;
 };
 

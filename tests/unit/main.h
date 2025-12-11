@@ -1,0 +1,19 @@
+#ifndef __GRADIDO_BLOCKCHAIN_LIB_UNIT_TEST_MAIN_H
+#define __GRADIDO_BLOCKCHAIN_LIB_UNIT_TEST_MAIN_H
+
+#define ANSI_TXT_GRN "\033[0;32m" // Green 
+#define ANSI_TXT_YLW "\033[0;33m" // Yellow
+#define ANSI_TXT_BLU "\033[0;34m" // Blue
+#define ANSI_TXT_MGT "\033[0;35m" // Magenta
+#define ANSI_TXT_DFT "\033[0;0m" // Console default
+#define GTEST_BOX "[     cout ] "
+#define GTEST_BOX_TIME "[   TIME   ] "
+#define COUT_GTEST ANSI_TXT_GRN << GTEST_BOX //You could add the Default
+#define COUT_GTEST_YLW COUT_GTEST << ANSI_TXT_YLW
+#define COUT_GTEST_BLU COUT_GTEST << ANSI_TXT_BLU
+#define COUT_GTEST_MGT COUT_GTEST << ANSI_TXT_MGT
+#define COUT_GTEST_DFT COUT_GTEST << ANSI_TXT_DFT
+#define TIME_GTEST_YLW ANSI_TXT_GRN << GTEST_BOX_TIME << ANSI_TXT_YLW
+
+
+#endif //__GRADIDO_BLOCKCHAIN_LIB_UNIT_TEST_MAIN_H

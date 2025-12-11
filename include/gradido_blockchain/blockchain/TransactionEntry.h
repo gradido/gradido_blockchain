@@ -77,7 +77,7 @@ namespace gradido {
 		};
 
 		typedef std::shared_ptr<const TransactionEntry> ConstTransactionEntryPtr;
-		typedef std::list<ConstTransactionEntryPtr> TransactionEntries;
+		typedef std::vector<ConstTransactionEntryPtr> TransactionEntries;
 	}
 }
 

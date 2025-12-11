@@ -73,36 +73,12 @@ namespace gradido {
 					LOG_F(WARNING, "transaction skipped because it already exist");
 					return nullptr;
 				}
-
+				while (processTransactionTrigger(role->getConfirmedAt()));
 				uint64_t id = 1;
 				auto lastTransaction = mBlockchain->findOne(Filter::LAST_TRANSACTION);
-				if (lastTransaction) {
-					auto transactionTriggerEvents = mBlockchain->findTransactionTriggerEventsInRange({ 
-						lastTransaction->getConfirmedTransaction()->getConfirmedAt(), 
-						role->getConfirmedAt() 
-					});
-					for (auto& transactionTriggerEvent : transactionTriggerEvents) {
-						mBlockchain->removeTransactionTriggerEvent(*transactionTriggerEvent);
-						try {
-							createTransactionByEvent::Context createTransactionByEvent(mBlockchain);
-							mBlockchain->createAndAddConfirmedTransaction(
-								createTransactionByEvent.run(transactionTriggerEvent),
-								nullptr,
-								transactionTriggerEvent->getTargetDate()
-							);
-							lastTransaction = mBlockchain->findOne(Filter::LAST_TRANSACTION);
-						}
-						catch (std::exception& e) {
-							mBlockchain->addTransactionTriggerEvent(transactionTriggerEvent);
-							throw e;
-						}
-					}
-					
-					id = lastTransaction->getTransactionNr() + 1;
-				}
-				
 				data::ConstConfirmedTransactionPtr lastConfirmedTransaction;
 				if (lastTransaction) {
+					id = lastTransaction->getTransactionNr() + 1;
 					lastConfirmedTransaction = lastTransaction->getConfirmedTransaction();
 					if (role->getConfirmedAt() < lastConfirmedTransaction->getConfirmedAt()) {
 						throw BlockchainOrderException("previous transaction is younger");
@@ -125,6 +101,44 @@ namespace gradido {
 				
 				return confirmedTransaction;
             }
+
+			bool Context::processTransactionTrigger(Timepoint endDate)
+			{
+				auto lastTransaction = mBlockchain->findOne(Filter::LAST_TRANSACTION);
+				if (!lastTransaction) {
+					// no transaction, no triggers
+					return false;
+				}
+				auto transactionTriggerEvent = mBlockchain->findNextTransactionTriggerEventInRange(
+					TimepointInterval(
+						lastTransaction->getConfirmedTransaction()->getConfirmedAt(),
+						endDate
+					)
+				);
+				if (!transactionTriggerEvent) {
+					// no trigger, we can exit here
+					return false;
+				}
+				mBlockchain->removeTransactionTriggerEvent(*transactionTriggerEvent);
+				// TODO: maybe find a better way as recursive call
+				try {
+					createTransactionByEvent::Context createTransactionByEvent(mBlockchain);
+					if (!mBlockchain->createAndAddConfirmedTransaction(
+						createTransactionByEvent.run(transactionTriggerEvent),
+						nullptr,
+						transactionTriggerEvent->getTargetDate()
+					)
+						) {
+						throw GradidoNodeInvalidDataException("Adding trigger created Transaction Failed");
+					}
+					return true;
+				}
+				catch (std::exception& e) {
+					mBlockchain->addTransactionTriggerEvent(transactionTriggerEvent);
+					throw e;
+				}
+				return false;
+			}
         }
     }
 }

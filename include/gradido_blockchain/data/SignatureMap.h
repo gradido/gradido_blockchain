@@ -8,13 +8,14 @@ namespace gradido {
 		class GRADIDOBLOCKCHAIN_EXPORT SignatureMap
 		{
 		public:
-			SignatureMap(size_t sizeHint = 1) { mSignaturePairs.reserve(sizeHint); }
+			SignatureMap(size_t sizeHint = 1) { reserve(sizeHint); }
 			SignatureMap(SignaturePair firstSignaturePair, size_t sizeHint = 1): SignatureMap(sizeHint) {
 				push(firstSignaturePair);
 			}
 
 			//! attention! not thread safe
 			void push(const SignaturePair& signaturePair);
+			void reserve(size_t sizeHint) { mSignaturePairs.reserve(sizeHint); }
 			inline void clear() { mSignaturePairs.clear(); }
 			inline const std::vector<SignaturePair>& getSignaturePairs() const { return mSignaturePairs; }
 

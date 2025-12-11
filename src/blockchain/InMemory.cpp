@@ -89,7 +89,7 @@ namespace gradido {
 					return;
 				}
 			}
-			LOG_F(WARNING, "couldn't find transactionTriggerEvent for removal for transaction: %lu", transactionTriggerEvent.getLinkedTransactionId());
+			LOG_F(WARNING, "couldn't find transactionTriggerEvent for removal for transaction: %llu", transactionTriggerEvent.getLinkedTransactionId());
 		}
 
 
@@ -118,12 +118,21 @@ namespace gradido {
 			auto endIt = mTransactionTriggerEvents.upper_bound(range.getEndDate());
 			std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> result;
 			result.reserve(std::distance(startIt, endIt));
-			for (auto it = startIt; it != endIt; it++) {
-				result.push_back(it->second);
+			for (; startIt != endIt; startIt++) {
+				result.push_back(startIt->second);
 			}
 			return result;
 		}
-		
+
+		std::shared_ptr<const data::TransactionTriggerEvent> InMemory::findNextTransactionTriggerEventInRange(TimepointInterval range)
+		{
+			std::lock_guard _lock(mTransactionTriggerEventsMutex);
+			auto startIt = mTransactionTriggerEvents.lower_bound(range.getStartDate());
+			if (startIt != mTransactionTriggerEvents.end() && startIt->first <= range.getEndDate()) {
+				return startIt->second;
+			}
+			return nullptr;
+		}		
 
 		const TransactionEntries& InMemory::getSortedTransactions()
 		{
@@ -325,13 +334,15 @@ namespace gradido {
 					resultCounts.emplace(std::distance(its.first, its.second), FilterCriteria::INVOLVED_PUBLIC_KEY);
 				}
 			}
-			auto startIt = mTransactionsByNr.lower_bound(filter.minTransactionNr);
-			auto endIt = mTransactionsByNr.end();
-			if (filter.maxTransactionNr) {
-				endIt = mTransactionsByNr.upper_bound(filter.maxTransactionNr);
-			}
-			if (startIt != mTransactionsByNr.end() && startIt != endIt) {
-				resultCounts.emplace(std::distance(startIt, endIt), FilterCriteria::TRANSACTION_NR);
+			if (!mTransactionsByNr.empty()) {
+				assert(mTransactionsByNr.begin()->first == 1);
+				auto endIt = mTransactionsByNr.end();
+				endIt--;
+				auto maxTransactionNr = endIt->first;
+				if (filter.maxTransactionNr && filter.maxTransactionNr < maxTransactionNr) {
+					maxTransactionNr = filter.maxTransactionNr;
+				}
+				resultCounts.emplace(maxTransactionNr - filter.minTransactionNr, FilterCriteria::TRANSACTION_NR);
 			}
 			
 			if (resultCounts.empty()) { return FilterCriteria::NONE; }

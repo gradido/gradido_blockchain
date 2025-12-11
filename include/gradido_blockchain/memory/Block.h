@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_MEMORY_BLOCK_H
 
 #include "VectorCacheAllocator.h"
+#include "gradido_blockchain/crypto/SignatureOctet.h"
 #include "gradido_blockchain/export.h"
 
 #include "sodium.h"
@@ -38,15 +39,16 @@ namespace memory {
 		~Block();
 
 		inline size_t size() const { return static_cast<size_t>(mSize); }
-
-		inline uint8_t* data() { return mData; }
+		inline uint8_t* data() { mShortHash.octet = 0;  return mData; }
 		inline const uint8_t* data() const { return mData; }
 		inline std::span<std::byte> span() const { return { reinterpret_cast<std::byte*>(mData), mSize }; }
-		inline operator uint8_t* () { return mData; }
+		inline operator uint8_t* () { mShortHash.octet = 0; return mData; }
 		inline operator const uint8_t* () const { return mData; }
-		inline unsigned char* data(size_t startIndex) { assert(startIndex < mSize); return &mData[startIndex]; }
+		inline unsigned char* data(size_t startIndex) { assert(startIndex < mSize); mShortHash.octet = 0; return &mData[startIndex]; }
 		inline const unsigned char* data(size_t startIndex) const { assert(startIndex < mSize); return &mData[startIndex]; }
-		uint8_t& operator [](int idx) { return mData[idx];}
+		inline SignatureOctet hash() const { return mShortHash; }
+
+		uint8_t& operator [](int idx) { mShortHash.octet = 0;  return mData[idx];}
 		uint8_t  operator [](int idx) const { return mData[idx];}
 		std::string convertToHex() const;
 		std::string convertToBase64(int variant = sodium_base64_VARIANT_ORIGINAL) const;
@@ -89,6 +91,8 @@ namespace memory {
 		void clear();
 		size_t mSize;
 		uint8_t* mData;
+		// short hash for speeding up comparisations
+		SignatureOctet mShortHash;
 	};
 
 	using BlockPtr = std::shared_ptr<Block>;

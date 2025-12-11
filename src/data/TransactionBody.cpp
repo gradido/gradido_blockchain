@@ -65,6 +65,10 @@ namespace gradido {
 			else if (isCreation()) { return mCreation->getRecipient(); }
 			throw GradidoNodeInvalidDataException("cannnot provide transferAmount for this transaction type");
 		}
+		bool TransactionBody::hasTransferAmount() const
+		{
+			return isTransfer() || isDeferredTransfer() || isRedeemDeferredTransfer() || isCreation();
+		}
 
 		std::vector<memory::ConstBlockPtr> TransactionBody::getInvolvedAddresses() const
 		{
