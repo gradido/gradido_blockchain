@@ -83,13 +83,19 @@ namespace gradido {
 		{
 			std::lock_guard _lock(mTransactionTriggerEventsMutex);
 			auto range = mTransactionTriggerEvents.equal_range(transactionTriggerEvent.getTargetDate());
+			int countRemoved = 0;
 			for (auto& it = range.first; it != range.second; it++) {
 				if (transactionTriggerEvent.isTheSame(it->second)) {
 					mTransactionTriggerEvents.erase(it);
-					return;
+					countRemoved++;
 				}
 			}
-			LOG_F(WARNING, "couldn't find transactionTriggerEvent for removal for transaction: %llu", transactionTriggerEvent.getLinkedTransactionId());
+			if (!countRemoved) {
+				LOG_F(WARNING, "couldn't find transactionTriggerEvent for removal for transaction: %llu", transactionTriggerEvent.getLinkedTransactionId());
+			}
+			else if (countRemoved > 1) {
+				LOG_F(WARNING, "find more than one transactionTriggerEvent for removal for transaction: %llu", transactionTriggerEvent.getLinkedTransactionId());
+			}
 		}
 
 
