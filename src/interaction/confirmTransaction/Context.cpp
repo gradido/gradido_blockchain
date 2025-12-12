@@ -69,7 +69,8 @@ namespace gradido {
 				validateGradidoTransaction.run(interaction::validate::Type::SINGLE, mBlockchain);
 
 				// check if already exist
-				if (mBlockchain->isTransactionExist(role->getGradidoTransaction())) {
+				auto tx = role->getGradidoTransaction();
+				if (mBlockchain->isTransactionExist(tx)) {
 					LOG_F(WARNING, "transaction skipped because it already exist");
 					return nullptr;
 				}

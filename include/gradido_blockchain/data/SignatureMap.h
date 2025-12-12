@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_DATA_SIGNATURE_MAP_H
 
 #include "SignaturePair.h"
+#include <vector>
 
 namespace gradido {
 	namespace data {
@@ -18,6 +19,7 @@ namespace gradido {
 			void reserve(size_t sizeHint) { mSignaturePairs.reserve(sizeHint); }
 			inline void clear() { mSignaturePairs.clear(); }
 			inline const std::vector<SignaturePair>& getSignaturePairs() const { return mSignaturePairs; }
+			bool isTheSame(const SignatureMap& other) const;
 
 		protected:
 			std::vector<SignaturePair> mSignaturePairs;

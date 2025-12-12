@@ -9,20 +9,31 @@ namespace gradido {
 		class GRADIDOBLOCKCHAIN_EXPORT SignaturePair
 		{
 		public:
-			SignaturePair() {}
+			SignaturePair();
 			// throw InvalidSizeException
-			SignaturePair(memory::ConstBlockPtr pubkeyPtr, memory::ConstBlockPtr signaturePtr)
-				: mPublicKey(pubkeyPtr), mSignature(signaturePtr) {}
+			SignaturePair(memory::ConstBlockPtr pubkeyPtr, memory::ConstBlockPtr signaturePtr);
+			~SignaturePair();
 
-			inline bool operator==(const SignaturePair& other) const {
-				return mPublicKey->isTheSame(other.mPublicKey) && mSignature->isTheSame(other.mSignature);
+			inline bool operator==(const SignaturePair& other) const;
+			inline bool operator !=(const SignaturePair& other) const {
+				return !(*this == other);
 			}
 			inline memory::ConstBlockPtr getPublicKey() const { return mPublicKey; }
 			inline memory::ConstBlockPtr getSignature() const { return mSignature; }
+			inline int64_t hash() const { return mHash; };
 		protected:
+			int64_t calculateHash() const;
 			memory::ConstBlockPtr mPublicKey;
 			memory::ConstBlockPtr mSignature;
+			int64_t mHash;
 		};
+
+		bool SignaturePair::operator==(const SignaturePair& other) const {
+			if (mHash != other.mHash) {
+				return false;
+			}
+			return mPublicKey->isTheSame(other.mPublicKey) && mSignature->isTheSame(other.mSignature);
+		}
 	}
 }
 

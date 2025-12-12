@@ -108,10 +108,7 @@ namespace gradido {
 			auto range = mTransactionFingerprintTransactionEntry.equal_range(*signature);
 			for (auto& it = range.first; it != range.second; ++it) {
 				auto itGradidoTransaction = it->second->getConfirmedTransaction()->getGradidoTransaction();
-				if (
-						itGradidoTransaction->getFingerprint()->isTheSame(signature) &&
-						itGradidoTransaction->getBodyBytes()->isTheSame(gradidoTransaction->getBodyBytes())
-				) {
+				if (gradidoTransaction->isTheSame(*itGradidoTransaction)) {
 					return true;
 				}
 			}

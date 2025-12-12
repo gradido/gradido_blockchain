@@ -35,6 +35,7 @@ namespace gradido {
 			//! return hash for clearly identify the transaction
 			//! normally the first signature, but if not exist return hash from bodyBytes
 			memory::ConstBlockPtr getFingerprint() const;
+			bool isTheSame(const GradidoTransaction& other) const;
 
 			inline const SignatureMap& getSignatureMap() const { return mSignatureMap; }
 			inline SignatureMap& getSignatureMap() { return mSignatureMap; }
