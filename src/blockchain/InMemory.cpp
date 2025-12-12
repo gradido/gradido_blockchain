@@ -84,10 +84,12 @@ namespace gradido {
 			std::lock_guard _lock(mTransactionTriggerEventsMutex);
 			auto range = mTransactionTriggerEvents.equal_range(transactionTriggerEvent.getTargetDate());
 			int countRemoved = 0;
-			for (auto& it = range.first; it != range.second; it++) {
+			for (auto it = range.first; it != range.second;) {
 				if (transactionTriggerEvent.isTheSame(it->second)) {
-					mTransactionTriggerEvents.erase(it);
+					it = mTransactionTriggerEvents.erase(it);
 					countRemoved++;
+				} else {
+					it++;
 				}
 			}
 			if (!countRemoved) {
