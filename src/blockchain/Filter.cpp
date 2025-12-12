@@ -150,6 +150,25 @@ namespace gradido {
 			}
 			return FilterResult::USE;
 		}
+
+		bool Filter::isTheSame(const Filter& other) const
+		{
+			if (minTransactionNr != other.minTransactionNr ||
+				maxTransactionNr != other.maxTransactionNr ||
+				!involvedPublicKey->isTheSame(other.involvedPublicKey) ||
+				searchDirection != other.searchDirection ||
+				pagination != other.pagination ||
+				coinCommunityId != other.coinCommunityId ||
+				timepointInterval != other.timepointInterval ||
+				transactionType != other.transactionType) {
+				return false;
+			}
+			// cannot really compare filter functions
+			if (filterFunction || other.filterFunction) {
+				return false;
+			}
+			return true;
+		}
 	}
 }
 

@@ -48,6 +48,13 @@ public:
 		return mStartDate <= date && date <= mEndDate;
 	}
 
+	inline bool operator==(const TimepointInterval& other) const {
+		return mStartDate == other.mStartDate && mEndDate == other.mEndDate;
+	}
+	inline bool operator !=(const TimepointInterval& other) const {
+		return !(*this == other);
+	}
+
 	// source: https://internalpointers.com/post/writing-custom-iterators-modern-cpp
 	struct MonthYearIterator
 	{

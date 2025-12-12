@@ -39,6 +39,9 @@ struct GRADIDOBLOCKCHAIN_EXPORT SignatureOctet
 	}
 	inline bool empty() const { return octet == 0; }
 	int64_t octet;
+
+protected:
+	int64_t calculateOctet(const uint8_t* data, size_t size) const;
 };
 
 

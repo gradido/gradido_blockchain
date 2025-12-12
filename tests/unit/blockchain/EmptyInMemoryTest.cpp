@@ -71,7 +71,7 @@ TEST_F(EmptyInMemoryTest, InvalidGradidoTransferAsFirst) {
 	interaction::serialize::Context serializeTransactionId({ confirmedAt, hieroAccount });
 	EXPECT_THROW(
 		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), serializeTransactionId.run(), confirmedAt),
-		BlockchainOrderException
+		InsufficientBalanceException
 	);
 }
 
@@ -83,6 +83,6 @@ TEST_F(EmptyInMemoryTest, InvalidGradidoDeferredTransferAsFirst) {
 	interaction::serialize::Context serializeTransactionId({ confirmedAt, hieroAccount });
 	EXPECT_THROW(
 		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), serializeTransactionId.run(), confirmedAt),
-		BlockchainOrderException
+		InsufficientBalanceException
 	);
 }

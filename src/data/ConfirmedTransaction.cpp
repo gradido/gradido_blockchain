@@ -3,6 +3,7 @@
 #include "gradido_blockchain/interaction/serialize/Context.h"
 
 #include <memory>
+#include "loguru/loguru.hpp"
 
 using namespace std;
 
@@ -138,6 +139,55 @@ namespace gradido {
 				}
 			}
 			return involvedAddresses;
+		}
+
+		bool ConfirmedTransaction::isTheSame(const ConfirmedTransaction& other) const
+		{
+			if (mRunningHash && other.mRunningHash) {
+				return mRunningHash->isTheSame(other.mRunningHash);
+			}
+			LOG_F(WARNING, "missing running hash from confirmed transaction, make full comparisation");
+
+			if (mId != other.mId) { 
+				return false; 
+			}
+			if (!mGradidoTransaction || !other.mGradidoTransaction) {
+				LOG_F(WARNING, "missing gradido transaction for compare confirmed transaction");
+				if (!(!mGradidoTransaction && !other.mGradidoTransaction)) {
+					return false;
+				}
+			}
+			else if (!mGradidoTransaction->isTheSame(*other.mGradidoTransaction)) {
+				return false;
+			}
+
+			if (mConfirmedAt != other.mConfirmedAt) {
+				return false;
+			}
+
+			if (mVersionNumber != other.mVersionNumber) {
+				return false;
+			}
+
+			if (mMessageId && other.mMessageId) {
+				if (!mMessageId->isTheSame(other.mMessageId)) {
+					return false;
+				}
+				if (!(!mMessageId && !other.mMessageId)) {
+					return false;
+				}
+			}
+			if (mAccountBalances.size() != other.mAccountBalances.size()) {
+				return false;
+			}
+			
+			for (size_t i = 0; i < mAccountBalances.size(); i++) {
+				if (!mAccountBalances[i].isTheSame(other.mAccountBalances[i])) {
+					LOG_F(WARNING, "assume same account balance order, consider this result as instable");
+					return false;
+				}
+			}
+			return true;
 		}
 
 		void ConfirmedTransaction::initalizePubkeyHashes()

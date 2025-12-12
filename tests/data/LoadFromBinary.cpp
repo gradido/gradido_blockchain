@@ -201,15 +201,18 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 			blockchain->createAndAddConfirmedTransaction(tx, transactionIdRaw, createdAt);
 		}
 		catch (GradidoBlockchainException& ex) {
-			printf("exception: %s\n", ex.getFullString().data());
+			printf("\nexception: %s\n", ex.getFullString().data());
 			int zahl = 1;
+			// throw;
 		}
 		catch (std::exception& ex) {
-			printf("ex: %s\n", ex.what());
+			printf("\nex: %s\n", ex.what());
 			int zahl = 2;
+			// throw;
 		}
 		catch (...) {
-			printf("unknow exceptions\n");
+			printf("\nunknow exceptions\n");
+			// throw;
 		}
 		count++;
 		printf("\rtransactions: %d", count);

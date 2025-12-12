@@ -3,10 +3,12 @@
 
 #include "Abstract.h"
 #include "FilterResult.h"
+#include "TransactionsIndex.h"
 #include "gradido_blockchain/crypto/SignatureOctet.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/memory/BlockKey.h"
+#include "gradido_blockchain/lib/Dictionary.h"
 
 #include <vector>
 #include <unordered_map>
@@ -54,12 +56,13 @@ namespace gradido {
 			const TransactionEntries& getSortedTransactions();
 
 			// from Abstract blockchain
-			TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
+			TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const override;
+			ConstTransactionEntryPtr findOne(const Filter& filter = Filter::LAST_TRANSACTION) const override;
 
-			std::shared_ptr<const TransactionEntry> getTransactionForId(uint64_t transactionId) const;
+			ConstTransactionEntryPtr getTransactionForId(uint64_t transactionId) const;
 
 			// this implementation use a map for direct search and don't use filter at all
-			std::shared_ptr<const TransactionEntry> findByMessageId(
+			ConstTransactionEntryPtr findByMessageId(
 				memory::ConstBlockPtr messageId,
 				const Filter& filter = Filter::ALL_TRANSACTIONS
 			) const;
@@ -69,26 +72,21 @@ namespace gradido {
 		protected:
 			InMemory(std::string_view communityId);
 
+			TransactionsIndex mTransactionsIndex;
+
 			// if called, mWorkMutex should be locked exclusive
-			void pushTransactionEntry(std::shared_ptr<const TransactionEntry> transactionEntry);
-			void removeTransactionEntry(std::shared_ptr<const TransactionEntry> transactionEntry);
-
-			FilterCriteria findSmallestPrefilteredTransactionList(const Filter& filter) const;
-			///TransactionEntries filterRange()
-
+			void pushTransactionEntry(ConstTransactionEntryPtr transactionEntry);
+			void removeTransactionEntry(ConstTransactionEntryPtr transactionEntry);
+			
 			mutable std::recursive_mutex mWorkMutex;
 
 			// update map and multimap on every transaction add and remove
-			//! key is hash from pubkey, not collision resistent!
-			std::multimap<memory::BlockKey, std::shared_ptr<const TransactionEntry>> mTransactionsByPubkey;
-			//! key is transaction received date
-			std::multimap<data::Timestamp, std::shared_ptr<const TransactionEntry>> mTransactionsByConfirmedAt;
 			//! find transaction nr by hiero transaction id
 			std::unordered_map<hiero::TransactionId, uint64_t, hiero::TransactionIdHasher> mHieroTransactionIdTransactionNrs;
 			//! find transactionEntry by transaction nr
-			std::map<uint64_t, std::shared_ptr<const TransactionEntry>> mTransactionsByNr;
+			std::map<uint64_t, ConstTransactionEntryPtr> mTransactionsByNr;
 			// for fast doublette check
-			std::unordered_map<SignatureOctet, std::shared_ptr<const TransactionEntry>> mTransactionFingerprintTransactionEntry;
+			std::unordered_multimap<SignatureOctet, ConstTransactionEntryPtr> mTransactionFingerprintTransactionEntry;
 			// transactionTriggerEvents
 			mutable std::mutex mTransactionTriggerEventsMutex;
 			std::multimap<Timepoint, std::shared_ptr<const data::TransactionTriggerEvent>> mTransactionTriggerEvents;
@@ -96,6 +94,7 @@ namespace gradido {
 			bool mSortedDirty;
 			TransactionEntries mSortedTransactions;
 			bool mExitCalled;
+			ConstTransactionEntryPtr mLastTransaction;
 		};
 	}
 }

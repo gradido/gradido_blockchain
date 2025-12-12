@@ -46,5 +46,14 @@ namespace memory {
 	};
 }
 
+namespace std {
+	template<>
+	struct hash<memory::BlockKey> {
+		size_t operator()(const memory::BlockKey& k) const noexcept {
+			return std::hash<int64_t>()(k.shortHash);
+		}
+	};
+}
+
 
 #endif //__GRADIDO_BLOCKCHAIN_MEMORY_BLOCK_KEY_H

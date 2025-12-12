@@ -34,6 +34,12 @@ namespace gradido {
 				if (currentCount >= size) return false;
 				return true;
 			}
+			inline bool operator==(const Pagination& other) const {
+				return size == other.size && page == other.page;
+			}
+			inline bool operator !=(const Pagination& other) const {
+				return !(*this == other);
+			}
 		};
 	}
 }

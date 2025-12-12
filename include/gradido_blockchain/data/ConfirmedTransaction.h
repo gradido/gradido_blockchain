@@ -56,6 +56,7 @@ namespace gradido {
 			) const;
 			bool isInvolved(const memory::Block& publicKey) const;
 			std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
+			bool isTheSame(const ConfirmedTransaction& other) const;
 
 		protected:
 			void initalizePubkeyHashes();
