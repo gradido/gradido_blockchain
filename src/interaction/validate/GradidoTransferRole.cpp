@@ -89,7 +89,7 @@ namespace gradido {
 					previousConfirmedTransaction.getId() // calculate until this transaction nr
 				);
 					
-				if (sender.getAmount() > finalBalance) {
+				if (sender.getAmount() > finalBalance + GradidoUnit::fromGradidoCent(100)) {
 					throw InsufficientBalanceException("not enough Gradido Balance for send coins", sender.getAmount(), finalBalance);
 				}
 			}

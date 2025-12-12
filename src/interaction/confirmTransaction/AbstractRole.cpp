@@ -79,7 +79,19 @@ namespace gradido {
                         })
                     .build()
                 );
-                return AccountBalance(publicKey, previousDecayedAccountBalance + amount, communityId);
+                GradidoUnit newBalance = previousDecayedAccountBalance + amount;
+                if (newBalance < GradidoUnit::zero()) {
+                    if (newBalance + GradidoUnit::fromGradidoCent(100) < GradidoUnit::zero()) {
+                        throw InsufficientBalanceException(
+                            "not enough Gradido Balance for operation",
+                            amount,
+                            previousDecayedAccountBalance
+                        );
+                    } else {
+                        newBalance = GradidoUnit::zero();
+                    }
+                }
+                return AccountBalance(publicKey, newBalance, communityId);
             }
         }
     }
