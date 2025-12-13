@@ -93,7 +93,7 @@ namespace gradido {
 			AddressIndex mAddressIndex;
 			std::map<uint32_t, data::AddressType> mPublicKeyAddressTypes;
 			AbstractProvider* mBlockchainProvider;
-			std::map<date::year, std::map<date::month, std::list<TransactionsIndexEntry>>> mYearMonthAddressIndexEntries;
+			std::map<date::year, std::map<date::month, std::list<std::vector<TransactionsIndexEntry>>>> mYearMonthAddressIndexEntries;
 		};
 
 		bool TransactionsIndex::hasTransactionNr(uint64_t transactionNr) const
