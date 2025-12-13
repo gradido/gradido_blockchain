@@ -54,7 +54,7 @@ namespace gradido {
 			//! analyze only registerAddress Transactions
 			//! \param use filter to check existing of a address in a subrange of transactions
 			//!        check for user and account public keys
-			data::AddressType getAddressType(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
+			virtual data::AddressType getAddressType(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
 			virtual ConstTransactionEntryPtr getTransactionForId(uint64_t transactionId) const = 0;
 
 			//! \param filter use to speed up search if infos exist to narrow down search transactions range

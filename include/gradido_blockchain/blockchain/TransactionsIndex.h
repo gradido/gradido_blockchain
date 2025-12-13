@@ -1,14 +1,21 @@
 #ifndef __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_TRANSACTION_INDEX_H
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_TRANSACTION_INDEX_H
 
-#include "gradido_blockchain/blockchain/Filter.h"
-#include "gradido_blockchain/blockchain/TransactionEntry.h"
+#include "AddressIndex.h"
+#include "Filter.h"
+#include "TransactionEntry.h"
+#include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/lib/Dictionary.h"
 
 #include "rapidjson/document.h"
 
 #include <vector>
 #include <map>
+#include <memory>
+
+namespace memory {
+	class Block;
+}
 
 namespace gradido {
 	namespace blockchain {
@@ -33,19 +40,10 @@ namespace gradido {
 
 			bool addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry);
 
-			bool addIndicesForTransaction(
-				gradido::data::TransactionType transactionType,
-				uint32_t coinCommunityIdIndex,
-				date::year year,
-				date::month month,
-				uint64_t transactionNr, 
-				const uint32_t* addressIndices,
-				uint16_t addressIndiceCount
-			);
-
 			//! \brief search transaction nrs for search criteria in filter, ignore filter function
 			//! \return transaction nrs
 			std::vector<uint64_t> findTransactions(const gradido::blockchain::Filter& filter) const;
+			data::AddressType getAddressType(const memory::Block& publicKey) const;
 
 			//! count all, ignore pagination
 			size_t countTransactions(const gradido::blockchain::Filter& filter) const;
@@ -65,6 +63,15 @@ namespace gradido {
 			inline TimepointInterval filteredTimepointInterval(const gradido::blockchain::Filter& filter) const;
 
 		protected:
+			bool addIndicesForTransaction(
+				gradido::data::TransactionType transactionType,
+				uint32_t coinCommunityIdIndex,
+				date::year year,
+				date::month month,
+				uint64_t transactionNr,
+				const uint32_t* addressIndices,
+				uint16_t addressIndiceCount
+			);
 			void clearIndexEntries(); 			
 			uint64_t				 mMaxTransactionNr;
 			uint64_t				 mMinTransactionNr;
@@ -83,6 +90,8 @@ namespace gradido {
 				) const;
 			};
 			Dictionary mPublicKeyDictionary;
+			AddressIndex mAddressIndex;
+			std::map<uint32_t, data::AddressType> mPublicKeyAddressTypes;
 			AbstractProvider* mBlockchainProvider;
 			std::map<date::year, std::map<date::month, std::list<TransactionsIndexEntry>>> mYearMonthAddressIndexEntries;
 		};

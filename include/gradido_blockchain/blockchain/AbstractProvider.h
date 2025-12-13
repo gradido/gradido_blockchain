@@ -28,7 +28,7 @@ namespace gradido {
 
 		uint32_t AbstractProvider::getCommunityIdIndex(const std::string& communityId)
 		{
-			return mCoinCommunityIdDicitionary.getIndexForBinary(std::make_shared<const memory::Block>(communityId));
+			return mCoinCommunityIdDicitionary.getIndexForBinary(communityId);
 		}
 		uint32_t AbstractProvider::getCommunityIdIndex(std::string_view communityId)
 		{

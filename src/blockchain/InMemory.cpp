@@ -17,12 +17,17 @@
 #include <algorithm>
 
 using namespace magic_enum;
+using std::string_view;
+using std::lock_guard;
+using memory::ConstBlockPtr, memory::Block;
 
 namespace gradido {
-	using namespace data;
+
+	using data::AddressType, data::ConstGradidoTransactionPtr, data::Timestamp;
 	using namespace interaction;
+
 	namespace blockchain {
-		InMemory::InMemory(std::string_view communityId)
+		InMemory::InMemory(string_view communityId)
 			: Abstract(communityId), mTransactionsIndex(getProvider()), mSortedDirty(false), mExitCalled(false)
 		{
 
@@ -34,7 +39,7 @@ namespace gradido {
 
 		void InMemory::clear()
 		{
-			std::lock_guard _lock(mWorkMutex);
+			lock_guard _lock(mWorkMutex);
 			mSortedDirty = false;
 			mSortedTransactions.clear();
 			mTransactionsIndex.reset();
@@ -42,13 +47,13 @@ namespace gradido {
 
 		void InMemory::exit()
 		{
-			std::lock_guard _lock(mWorkMutex);
+			lock_guard _lock(mWorkMutex);
 			mExitCalled = true;
 		}
 
 		bool InMemory::createAndAddConfirmedTransaction(
 			ConstGradidoTransactionPtr gradidoTransaction,
-			memory::ConstBlockPtr messageId,
+			ConstBlockPtr messageId,
 			Timestamp confirmedAt
 		) {
 			auto blockchain = getProvider()->findBlockchain(mCommunityId);
@@ -182,10 +187,18 @@ namespace gradido {
 			return Abstract::findOne(filter);
 		}
 
+		data::AddressType InMemory::getAddressType(const Filter& filter/* = Filter::ALL_TRANSACTIONS*/) const
+		{
+			if (!filter.involvedPublicKey) {
+				throw GradidoNodeInvalidDataException("missing public key, please use filter with involvedPublicKey set");
+			}
+			return mTransactionsIndex.getAddressType(*filter.involvedPublicKey);
+		}
+
 		
 		ConstTransactionEntryPtr InMemory::getTransactionForId(uint64_t transactionId) const
 		{
-			std::lock_guard _lock(mWorkMutex);
+			lock_guard _lock(mWorkMutex);
 			auto it = mTransactionsByNr.find(transactionId);
 			if (it != mTransactionsByNr.end()) {
 				return it->second;

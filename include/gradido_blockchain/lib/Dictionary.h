@@ -32,8 +32,8 @@ public:
 	//! empty 
 	virtual void reset();
 
-	virtual uint32_t getIndexForBinary(memory::ConstBlockPtr binary) const;
-	virtual inline bool hasBinary(memory::ConstBlockPtr binary) const {
+	virtual uint32_t getIndexForBinary(const memory::Block& binary) const;
+	virtual inline bool hasBinary(const memory::Block& binary) const {
 		return findIndexForBinary(binary) != 0;
 	}
 
@@ -53,8 +53,8 @@ public:
 	virtual inline uint32_t getLastIndex() { return mLastIndex; }
 
 protected:
-	bool hasBinaryIndexPair(memory::ConstBlockPtr binary, uint32_t index) const;
-	uint32_t findIndexForBinary(memory::ConstBlockPtr binary) const;
+	bool hasBinaryIndexPair(const memory::Block& binary, uint32_t index) const;
+	uint32_t findIndexForBinary(const memory::Block& binary) const;
 
 	typedef std::pair<memory::ConstBlockPtr, uint32_t> BinaryIndexPair;
 
@@ -73,7 +73,7 @@ public:
 
 	virtual void reset() override;
 
-	virtual uint32_t getIndexForBinary(memory::ConstBlockPtr binary) const override;
+	virtual uint32_t getIndexForBinary(const memory::Block& binary) const override;
 
 	virtual memory::ConstBlockPtr getBinaryForIndex(uint32_t index) const override;
 	virtual bool hasIndex(uint32_t index) const override;

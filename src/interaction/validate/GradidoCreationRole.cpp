@@ -10,6 +10,7 @@
 #include "date/date.h"
 
 namespace gradido {
+	using blockchain::Filter;
 	namespace interaction {
 		namespace validate {
 
@@ -94,12 +95,10 @@ namespace gradido {
 					}
 				}
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
-					blockchain::Filter filter;
+					Filter filter;
 					filter.involvedPublicKey = mGradidoCreation->getRecipient().getPublicKey();
 					auto addressType = blockchain->getAddressType(filter);
-					if (data::AddressType::COMMUNITY_HUMAN != addressType &&
-						data::AddressType::COMMUNITY_AUF != addressType &&
-						data::AddressType::COMMUNITY_GMW != addressType) {
+					if (data::AddressType::COMMUNITY_HUMAN != addressType) {
 						throw WrongAddressTypeException("wrong address type for creation", addressType, mGradidoCreation->getRecipient().getPublicKey());
 					}
 				}
@@ -115,7 +114,7 @@ namespace gradido {
 				auto& signPairs = signatureMap.getSignaturePairs();
 				// check for account type
 				for (auto& signPair : signPairs) {
-					blockchain::Filter filter;
+					Filter filter;
 					filter.involvedPublicKey = signPair.getPublicKey();
 					filter.searchDirection = blockchain::SearchDirection::DESC;
 					filter.timepointInterval = TimepointInterval(blockchain->getStartDate(), mCreatedAt);

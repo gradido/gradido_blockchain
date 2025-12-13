@@ -29,7 +29,7 @@ void Dictionary::reset()
 
 bool Dictionary::addBinaryIndex(ConstBlockPtr binary, uint32_t index)
 {
-	if (hasBinaryIndexPair(binary, index)) {
+	if (hasBinaryIndexPair(*binary, index)) {
 		LOG_F(WARNING, "try to add binary index pair which already exist");
 		return false;
 	}
@@ -48,14 +48,14 @@ bool Dictionary::addBinaryIndex(ConstBlockPtr binary, uint32_t index)
 	return true;
 }
 
-uint32_t Dictionary::getIndexForBinary(ConstBlockPtr binary)  const
+uint32_t Dictionary::getIndexForBinary(const memory::Block& binary)  const
 {
 	auto result = findIndexForBinary(binary);
 	if (!result) {
 		throw DictionaryNotFoundException(
 			"binary not found in dictionary", 
 			mName.data(), 
-			binary->convertToHex().data()
+			binary.convertToHex().data()
 		);
 	}
 	return result;
@@ -82,8 +82,7 @@ bool Dictionary::hasIndex(uint32_t index) const
 
 uint32_t Dictionary::getOrAddIndexForBinary(ConstBlockPtr binary)
 {
-
-	auto index = findIndexForBinary(binary);
+	auto index = findIndexForBinary(*binary);
 	if (!index) {
 		index = ++mLastIndex;
 		mBinaryIndexLookup.insert({ SignatureOctet(*binary), { binary, index } });
@@ -92,7 +91,7 @@ uint32_t Dictionary::getOrAddIndexForBinary(ConstBlockPtr binary)
 	return index;
 }
 
-bool Dictionary::hasBinaryIndexPair(ConstBlockPtr binary, uint32_t index) const
+bool Dictionary::hasBinaryIndexPair(const memory::Block& binary, uint32_t index) const
 {
 	auto it = mIndexBinaryLookup.find(index);
 	if (it == mIndexBinaryLookup.end()) {
@@ -104,13 +103,13 @@ bool Dictionary::hasBinaryIndexPair(ConstBlockPtr binary, uint32_t index) const
 	return false;
 }
 	 
-uint32_t Dictionary::findIndexForBinary(ConstBlockPtr binary) const
+uint32_t Dictionary::findIndexForBinary(const memory::Block& binary) const
 {
-	if (!binary || binary->isEmpty()) {
+	if (!binary || binary.isEmpty()) {
 		throw GradidoNodeInvalidDataException("binary is empty");
 	}
 	
-	auto itRange = mBinaryIndexLookup.equal_range(SignatureOctet(*binary));
+	auto itRange = mBinaryIndexLookup.equal_range(SignatureOctet(binary));
 	for (auto& it = itRange.first; it != itRange.second; ++it) {
 		if (it->second.first->isTheSame(binary)) {
 			return it->second.second;
@@ -131,7 +130,7 @@ bool DictionaryThreadsafe::addBinaryIndex(ConstBlockPtr binary, uint32_t index)
 	return Dictionary::addBinaryIndex(binary, index);
 }
 
-uint32_t DictionaryThreadsafe::getIndexForBinary(ConstBlockPtr binary)  const
+uint32_t DictionaryThreadsafe::getIndexForBinary(const memory::Block& binary)  const
 {
 	shared_lock _lock(mSharedMutex);
 	return Dictionary::getIndexForBinary(binary);

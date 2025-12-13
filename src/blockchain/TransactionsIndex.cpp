@@ -17,6 +17,8 @@ using std::make_shared;
 using memory::Block;
 
 namespace gradido {
+	using data::AddressType;
+
 	namespace blockchain {
 
 		TransactionsIndex::TransactionsIndex(AbstractProvider* blockchainProvider)
@@ -141,12 +143,16 @@ namespace gradido {
 			if (!transactionEntry->getCoinCommunityId().empty()) {
 				coinCommunityIndex = mBlockchainProvider->getCommunityIdIndex(transactionEntry->getCoinCommunityId());
 			}
+			
 			auto involvedPublicKeys = transactionEntry->getConfirmedTransaction()->getInvolvedAddresses();
 			std::vector<uint32_t> publicKeyIndices;
 			publicKeyIndices.reserve(involvedPublicKeys.size());
 			for (auto& pubKey : involvedPublicKeys) {
-				publicKeyIndices.push_back(mPublicKeyDictionary.getOrAddIndexForBinary(pubKey));
+				auto publicKeyIndex = mPublicKeyDictionary.getOrAddIndexForBinary(pubKey);
+				publicKeyIndices.push_back(publicKeyIndex);
 			}
+			mAddressIndex.addTransaction(*transactionEntry, mPublicKeyDictionary);
+			// TODO: fill address types into mPublicKeyAddressTypes, use it for check address request
 			return addIndicesForTransaction(
 				transactionEntry->getTransactionType(),
 				coinCommunityIndex,
@@ -158,7 +164,6 @@ namespace gradido {
 			);
 
 		}
-
 		
 		std::vector<uint64_t> TransactionsIndex::findTransactions(const gradido::blockchain::Filter& filter) const
 		{
@@ -170,8 +175,8 @@ namespace gradido {
 
 			uint32_t publicKeyIndex = 0;
 			if (filter.involvedPublicKey && !filter.involvedPublicKey->isEmpty()) {
-				if (mPublicKeyDictionary.hasBinary(filter.involvedPublicKey)) {
-					publicKeyIndex = mPublicKeyDictionary.getIndexForBinary(filter.involvedPublicKey);
+				if (mPublicKeyDictionary.hasBinary(*filter.involvedPublicKey)) {
+					publicKeyIndex = mPublicKeyDictionary.getIndexForBinary(*filter.involvedPublicKey);
 				}
 				else {
 					// if public key not exist, no transaction can match
@@ -223,6 +228,14 @@ namespace gradido {
 			return result;
 		}
 
+		AddressType TransactionsIndex::getAddressType(const memory::Block& publicKey) const
+		{
+			if (!mPublicKeyDictionary.hasBinary(publicKey)) {
+				return AddressType::NONE;
+			}
+			return mAddressIndex.getAddressType(mPublicKeyDictionary.getIndexForBinary(publicKey));
+		}
+
 		size_t TransactionsIndex::countTransactions(const gradido::blockchain::Filter& filter) const
 		{
 			// prefilter, early exit
@@ -233,8 +246,8 @@ namespace gradido {
 
 			uint32_t publicKeyIndex = 0;
 			if (filter.involvedPublicKey && !filter.involvedPublicKey->isEmpty()) {
-				if (mPublicKeyDictionary.hasBinary(filter.involvedPublicKey)) {
-					publicKeyIndex = mPublicKeyDictionary.getIndexForBinary(filter.involvedPublicKey);
+				if (mPublicKeyDictionary.hasBinary(*filter.involvedPublicKey)) {
+					publicKeyIndex = mPublicKeyDictionary.getIndexForBinary(*filter.involvedPublicKey);
 				}
 				else {
 					// if public key not exist, no transaction can match

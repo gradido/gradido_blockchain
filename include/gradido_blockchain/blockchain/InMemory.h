@@ -8,7 +8,6 @@
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/memory/BlockKey.h"
-#include "gradido_blockchain/lib/Dictionary.h"
 
 #include <vector>
 #include <unordered_map>
@@ -58,6 +57,7 @@ namespace gradido {
 			// from Abstract blockchain
 			TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const override;
 			ConstTransactionEntryPtr findOne(const Filter& filter = Filter::LAST_TRANSACTION) const override;
+			data::AddressType getAddressType(const Filter& filter = Filter::ALL_TRANSACTIONS) const override;
 
 			ConstTransactionEntryPtr getTransactionForId(uint64_t transactionId) const;
 
