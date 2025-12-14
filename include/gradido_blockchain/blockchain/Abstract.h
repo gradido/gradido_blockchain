@@ -49,16 +49,16 @@ namespace gradido {
 			// main search function, do all the work, reference from other functions
 			virtual TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const = 0;
 			// only if you expect only one result
-			std::shared_ptr<const TransactionEntry> findOne(const Filter& filter = Filter::LAST_TRANSACTION) const;
+			virtual ConstTransactionEntryPtr findOne(const Filter& filter = Filter::LAST_TRANSACTION) const;
 
 			//! analyze only registerAddress Transactions
 			//! \param use filter to check existing of a address in a subrange of transactions
 			//!        check for user and account public keys
-			data::AddressType getAddressType(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
-			virtual std::shared_ptr<const TransactionEntry> getTransactionForId(uint64_t transactionId) const = 0;
+			virtual data::AddressType getAddressType(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
+			virtual ConstTransactionEntryPtr getTransactionForId(uint64_t transactionId) const = 0;
 
 			//! \param filter use to speed up search if infos exist to narrow down search transactions range
-			virtual std::shared_ptr<const TransactionEntry> findByMessageId(
+			virtual ConstTransactionEntryPtr findByMessageId(
 				memory::ConstBlockPtr messageId,
 				const Filter& filter = Filter::ALL_TRANSACTIONS
 			) const;

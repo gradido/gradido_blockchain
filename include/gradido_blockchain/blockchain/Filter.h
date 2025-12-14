@@ -76,6 +76,8 @@ namespace gradido {
 			//! \param type filter criteria to check			
 			FilterResult matches(std::shared_ptr<const TransactionEntry> entry, FilterCriteria type) const;
 
+			bool isTheSame(const Filter& other) const;
+
 			static const Filter LAST_TRANSACTION;
 			static const Filter FIRST_TRANSACTION;
 			static const Filter ALL_TRANSACTIONS;

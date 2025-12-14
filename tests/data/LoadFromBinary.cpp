@@ -177,7 +177,11 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 		auto tx = deserializer.getGradidoTransaction();
 		// trigger body deserialization
 		try {
-			tx->getTransactionBody();
+			if (tx->getTransactionBody()->isCommunityRoot()) {
+				printf("community root \n");
+				int zahl = 1;
+			}
+			
 			// printf("added: %s\n", toJsonString(*tx, true).data());
 			mTransactions.emplace_back(tx);
 		}
@@ -201,15 +205,19 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 			blockchain->createAndAddConfirmedTransaction(tx, transactionIdRaw, createdAt);
 		}
 		catch (GradidoBlockchainException& ex) {
-			printf("exception: %s\n", ex.getFullString().data());
+			printf("\nexception: %s\n", ex.getFullString().data());
+			printf("createdAt: %ld %d\n", createdAt.getSeconds(), createdAt.getNanos());
 			int zahl = 1;
+			throw;
 		}
 		catch (std::exception& ex) {
-			printf("ex: %s\n", ex.what());
+			printf("\nex: %s\n", ex.what());
 			int zahl = 2;
+			throw;
 		}
 		catch (...) {
-			printf("unknow exceptions\n");
+			printf("\nunknow exceptions\n");
+			throw;
 		}
 		count++;
 		printf("\rtransactions: %d", count);

@@ -389,6 +389,7 @@ TEST_F(InMemoryTest, CreationTransactions)
 	}
 
 	// 1000.0000 decayed for 23 hours => 998.1829
+	// new algo
 	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit(1998.1829));
 
 	ASSERT_NO_THROW(createRegisterAddress(7));
@@ -400,7 +401,6 @@ TEST_F(InMemoryTest, CreationTransactions)
 	auto balanceCalculator = calculateAccountBalance::Context(mBlockchain);
 	auto gmwBalance = balanceCalculator.fromEnd(g_KeyPairs[1]->getPublicKey(), mLastConfirmedAt, "");
 	auto aufBalance = balanceCalculator.fromEnd(g_KeyPairs[2]->getPublicKey(), mLastConfirmedAt, "");
-
 	auto creationSum = getBalance(8, mLastConfirmedAt) + getBalance(6, mLastConfirmedAt);
 	EXPECT_EQ(gmwBalance, creationSum);
 	EXPECT_EQ(aufBalance, creationSum);

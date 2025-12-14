@@ -9,18 +9,20 @@
 static const Timepoint DECAY_START_TIME = DataTypeConverter::dateTimeStringToTimePoint("2021-05-13 17:46:31");
 constexpr double SECONDS_PER_YEAR = 31556952.0; // seconds in a year in gregorian calender
 
-std::string GradidoUnit::toString(int precision/* = 4*/) const
+using std::string, std::stringstream, std::fixed, std::setprecision, std::pow, std::round;
+
+string GradidoUnit::toString(int precision/* = 4*/) const
 {
 	if (precision < 0 || precision > 4) {
 		throw GradidoNodeInvalidDataException("expect precision in the range [0;4]");
 	}
-	std::stringstream ss;
-	ss << std::fixed << std::setprecision(precision);
+	stringstream ss;
+	ss << fixed << setprecision(precision);
 	double decimal = static_cast<double>(*this);
 	if (precision < 4) {
 	// round down like nodejs
-		double factor = std::pow(10.0, precision);
-		decimal = std::round(decimal * factor) / factor;
+		double factor = pow(10.0, precision);
+		decimal = round(decimal * factor) / factor;
 	}
 	ss << decimal;
 
@@ -29,8 +31,8 @@ std::string GradidoUnit::toString(int precision/* = 4*/) const
 
 double GradidoUnit::roundToPrecision(double GradidoUnit, uint8_t precision)
 {
-	auto factor = std::pow(10, precision);
-	return std::round(GradidoUnit * factor) / factor;
+	auto factor = pow(10, precision);
+	return round(GradidoUnit * factor) / factor;
 }
 
 GradidoUnit GradidoUnit::calculateDecay(int64_t seconds) const
