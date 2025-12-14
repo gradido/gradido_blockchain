@@ -20,7 +20,7 @@ namespace gradido {
 				.setTimepointInterval(TimepointInterval(body->getCreatedAt()))
 				.setFilterFunction([gradidoTransaction](const TransactionEntry& entry) -> FilterResult {
 					const auto& otherGradidoTransaction = entry.getConfirmedTransaction()->getGradidoTransaction();
-					if (gradidoTransaction->getFingerprint()->isTheSame(otherGradidoTransaction->getFingerprint())) {
+					if (gradidoTransaction->isTheSame(*otherGradidoTransaction)) {
 						return FilterResult::USE | FilterResult::STOP;
 					}
 					return FilterResult::DISMISS;
