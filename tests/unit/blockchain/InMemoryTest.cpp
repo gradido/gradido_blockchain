@@ -388,8 +388,12 @@ TEST_F(InMemoryTest, CreationTransactions)
 		LOG_F(ERROR, "%s", ex.getFullString().data());
 	}
 
-	// 1000.0000 decayed for 23 hours => 998.1829
-	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit(1998.1829));
+	// 1000.0000 decayed for 23 hours => 998.1829 (new algo) | 998.1830 (old algo)
+	// printf("balance: %s\n", getBalance(6, mLastConfirmedAt).toString().data());
+	// new algo
+	// EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit(1998.1829));
+	// old algo
+	EXPECT_EQ(getBalance(6, mLastConfirmedAt), GradidoUnit(1998.1830));
 
 	ASSERT_NO_THROW(createRegisterAddress(7));
 	createdAt = generateNewCreatedAt();
@@ -400,7 +404,6 @@ TEST_F(InMemoryTest, CreationTransactions)
 	auto balanceCalculator = calculateAccountBalance::Context(mBlockchain);
 	auto gmwBalance = balanceCalculator.fromEnd(g_KeyPairs[1]->getPublicKey(), mLastConfirmedAt, "");
 	auto aufBalance = balanceCalculator.fromEnd(g_KeyPairs[2]->getPublicKey(), mLastConfirmedAt, "");
-
 	auto creationSum = getBalance(8, mLastConfirmedAt) + getBalance(6, mLastConfirmedAt);
 	EXPECT_EQ(gmwBalance, creationSum);
 	EXPECT_EQ(aufBalance, creationSum);
@@ -505,7 +508,11 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	auto userBalanceAtDeferredTransferTime = getBalance(6, createdAt).calculateDecay(createdAt, mLastConfirmedAt);
 	auto userBalance = getBalance(6, mLastConfirmedAt);
 	auto lastUserBalanceDate = mLastConfirmedAt;
-	EXPECT_EQ(userBalance, GradidoUnit(438.7963));
+	// printf("balance: %s\n", userBalance.toString().data());
+	// new algo
+	// EXPECT_EQ(userBalance, GradidoUnit(438.7963));
+	// old algo
+	EXPECT_EQ(userBalance, GradidoUnit(438.7964));
 	auto diff = userBalance - (userBalanceAtDeferredTransferTime - blockedDeferredTransferBalance);
 	// the difference should be small, normaly it should be identical but we must account for rounding errors
 	EXPECT_LE(abs(diff.getGradidoCent()), 1);
@@ -534,7 +541,11 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	auto lastTransactionEntry = mBlockchain->findOne(Filter::LAST_TRANSACTION);
 	auto confirmedTransaction = lastTransactionEntry->getConfirmedTransaction();
 	ASSERT_EQ(confirmedTransaction->getAccountBalances().size(), 2);
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[secondRecipientKeyPairIndex]->getPublicKey(), "").getBalance(), GradidoUnit(996.3677));
+	// printf("balance: %s\n", confirmedTransaction->getAccountBalance(g_KeyPairs[secondRecipientKeyPairIndex]->getPublicKey(), "").getBalance().toString().data());
+	// new algo
+	// EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[secondRecipientKeyPairIndex]->getPublicKey(), "").getBalance(), GradidoUnit(996.3677));
+	// old algo
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[secondRecipientKeyPairIndex]->getPublicKey(), "").getBalance(), GradidoUnit(996.3679));
 	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[recipientKeyPairIndex]->getPublicKey(), "").getBalance(), GradidoUnit::zero());
 	// check accounts
 	blockedDeferredTransferBalance = GradidoUnit(483.0).calculateCompoundInterest(createdAt, createdAt + secondTimeoutDuration);
