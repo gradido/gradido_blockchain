@@ -71,7 +71,6 @@ protected:
     // will be understood as gdd cent with 4 after comma, so gdd = gddCent / 10000
     GradidoUnit(int64_t gddCent) : mGradidoCent(gddCent) {}
 	static double roundToPrecision(double GradidoUnit, uint8_t precision);
-	double legacyCalculateDecay(int64_t seconds) const;
 
 	int64_t mGradidoCent;
 };

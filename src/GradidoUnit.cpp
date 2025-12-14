@@ -37,8 +37,6 @@ double GradidoUnit::roundToPrecision(double GradidoUnit, uint8_t precision)
 
 GradidoUnit GradidoUnit::calculateDecay(int64_t seconds) const
 {
-	// TODO: choose timestamp since then the new algorithmus will be used
-	return legacyCalculateDecay(seconds);
 	if (seconds == 0) return mGradidoCent;
 	
 	// decay for one year is 50%
@@ -89,10 +87,4 @@ Duration GradidoUnit::calculateDecayDurationSeconds(Timepoint startTime, Timepoi
 	Timepoint end = endTime > DECAY_START_TIME ? endTime : DECAY_START_TIME;
 	if (start == end) return std::chrono::seconds{ 0 };
 	return end - start;
-}
-
-double GradidoUnit::legacyCalculateDecay(int64_t seconds) const
-{
-	// short from type script version with precalculated factor of decay per second of year 0.99999997803504048973201202316767079413460520837376 
-	return (double)(*this) * pow(0.9999999780350405, (double)seconds);
 }
