@@ -9,18 +9,20 @@
 static const Timepoint DECAY_START_TIME = DataTypeConverter::dateTimeStringToTimePoint("2021-05-13 17:46:31");
 constexpr double SECONDS_PER_YEAR = 31556952.0; // seconds in a year in gregorian calender
 
-std::string GradidoUnit::toString(int precision/* = 4*/) const
+using std::string, std::stringstream, std::fixed, std::setprecision, std::pow, std::round;
+
+string GradidoUnit::toString(int precision/* = 4*/) const
 {
 	if (precision < 0 || precision > 4) {
 		throw GradidoNodeInvalidDataException("expect precision in the range [0;4]");
 	}
-	std::stringstream ss;
-	ss << std::fixed << std::setprecision(precision);
+	stringstream ss;
+	ss << fixed << setprecision(precision);
 	double decimal = static_cast<double>(*this);
 	if (precision < 4) {
 	// round down like nodejs
-		double factor = std::pow(10.0, precision);
-		decimal = std::round(decimal * factor) / factor;
+		double factor = pow(10.0, precision);
+		decimal = round(decimal * factor) / factor;
 	}
 	ss << decimal;
 
@@ -29,12 +31,14 @@ std::string GradidoUnit::toString(int precision/* = 4*/) const
 
 double GradidoUnit::roundToPrecision(double GradidoUnit, uint8_t precision)
 {
-	auto factor = std::pow(10, precision);
-	return std::round(GradidoUnit * factor) / factor;
+	auto factor = pow(10, precision);
+	return round(GradidoUnit * factor) / factor;
 }
 
 GradidoUnit GradidoUnit::calculateDecay(int64_t seconds) const
 {
+	// TODO: choose timestamp since then the new algorithmus will be used
+	return legacyCalculateDecay(seconds);
 	if (seconds == 0) return mGradidoCent;
 	
 	// decay for one year is 50%
@@ -85,4 +89,10 @@ Duration GradidoUnit::calculateDecayDurationSeconds(Timepoint startTime, Timepoi
 	Timepoint end = endTime > DECAY_START_TIME ? endTime : DECAY_START_TIME;
 	if (start == end) return std::chrono::seconds{ 0 };
 	return end - start;
+}
+
+double GradidoUnit::legacyCalculateDecay(int64_t seconds) const
+{
+	// short from type script version with precalculated factor of decay per second of year 0.99999997803504048973201202316767079413460520837376 
+	return (double)(*this) * pow(0.9999999780350405, (double)seconds);
 }
