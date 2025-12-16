@@ -82,7 +82,7 @@ namespace gradido {
 		bool InMemory::createAndAddConfirmedTransactionExtern(
 			data::ConstGradidoTransactionPtr gradidoTransaction,
 			uint64_t legacyTransactionNr,
-			std::vector<data::AccountBalance>&& accountBalances
+			std::vector<data::AccountBalance> accountBalances
 		) {
 			auto blockchain = getProvider()->findBlockchain(mCommunityId);
 			confirmTransaction::Context context(blockchain);
@@ -94,7 +94,7 @@ namespace gradido {
 			if (!role) {
 				throw GradidoNotImplementedException("missing role for gradido transaction");
 			}
-			role->setAccountBalances(std::move(accountBalances));
+			role->setAccountBalances(accountBalances);
 			auto confirmedTransaction = context.run(role);
 			if (!confirmedTransaction) {
 				throw GradidoNullPointerException(
