@@ -57,7 +57,7 @@ namespace gradido {
                 //! set pre-calculated account balances
                 //! will set mBalanceDerivationType to extern
                 //! \param accountBalances move
-                void setAccountBalances(std::vector<data::AccountBalance>&& accountBalances);
+                void setAccountBalances(std::vector<data::AccountBalance> accountBalances);
 
             protected:
                 data::AccountBalance calculateAccountBalance(

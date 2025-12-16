@@ -63,9 +63,9 @@ namespace gradido {
                 );
             }
 
-            void AbstractRole::setAccountBalances(std::vector<data::AccountBalance>&& accountBalances)
+            void AbstractRole::setAccountBalances(std::vector<data::AccountBalance> accountBalances)
             {
-                mAccountBalances = std::move(accountBalances);
+                mAccountBalances = accountBalances;
                 mBalanceDerivationType = BalanceDerivationType::EXTERN;
             }
 
