@@ -7,7 +7,10 @@
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
+#include "magic_enum/magic_enum.hpp"
+
 using namespace std::chrono;
+using namespace magic_enum;
 
 namespace gradido {
 	namespace interaction {
@@ -34,35 +37,17 @@ namespace gradido {
 						exception.setTransactionBody(*body);
 						throw exception;
 					}	
-					auto messageId = mConfirmedTransaction.getMessageId();
-					if (messageId) {
-						deserialize::Context deserializeHieroTransactionId(messageId, deserialize::Type::HIERO_TRANSACTION_ID);
-						deserializeHieroTransactionId.run();
-						if (!deserializeHieroTransactionId.isHieroTransactionId() || deserializeHieroTransactionId.getHieroTransactionId().empty()) {
-							TransactionValidationInvalidInputException exception(
-								"invalid",
-								"message_id",
-								"bytes",
-								"hiero transaction id",
-								messageId->convertToHex().data()
-							);
-							exception.setTransactionBody(*body);
-							throw exception;
-						}
-					}
-					// with iota it is a BLAKE2b-256 hash with 256 Bits or 32 Bytes					
-					/*
-					if (messageId && messageId->size() != 32) {
+					if (mConfirmedTransaction.getLedgerAnchor().empty()) {
 						TransactionValidationInvalidInputException exception(
-							"wrong size",
-							"message_id",
-							"bytes",
-							"32",
-							std::to_string(messageId->size()).data()
+							"invalid",
+							"ledger_anchor",
+							"LedgerAnchor",
+							"iotaMessageId || hieroTransactionId || legacyTransactionId || nodeTriggeredTransactionId",
+							nullptr
 						);
 						exception.setTransactionBody(*body);
 						throw exception;
-					}*/						
+					}
 					// I don't know how far a server clock can be off, but let simply ignore this for now and test this some time
 					/*
 					if (confirmedAt - createdAt < duration<int>::zero()) {
@@ -133,6 +118,18 @@ namespace gradido {
 								fieldTypeWithSize.data(),
 								runningHash->convertToHex().data(),
 								actual.data()
+							);
+						}
+						const auto& ledgerAnchor = mConfirmedTransaction.getLedgerAnchor();
+						const auto& previousLedgerAnchor = previousConfirmedTransaction->getLedgerAnchor();
+						if ((previousLedgerAnchor.isHieroTransactionId() || previousLedgerAnchor.isIotaMessageId())
+							&& ledgerAnchor.isLegacyGradidoDbTransactionId()) {
+							throw TransactionValidationInvalidInputException(
+								"current transaction was imported from db while last transaction was confirmed by ledger",
+								"ledger_anchor",
+								"LedgerAnchor",
+								magic_enum::enum_name(ledgerAnchor.getType()).data(),
+								magic_enum::enum_name(previousLedgerAnchor.getType()).data()
 							);
 						}
 					}

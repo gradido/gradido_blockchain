@@ -88,14 +88,14 @@ namespace gradido {
 			return data::AddressType::NONE;
 		}
 
-		std::shared_ptr<const TransactionEntry> Abstract::findByMessageId(
-			memory::ConstBlockPtr messageId,
+		std::shared_ptr<const TransactionEntry> Abstract::findByLedgerAnchor(
+			const data::LedgerAnchor& ledgerAnchor,
 			const Filter& filter /*= Filter::ALL_TRANSACTIONS*/
 		) const
 		{
 			// copy filter
 			Filter f(filter);
-			f.filterFunction = [&messageId, filter](const TransactionEntry& entry) -> FilterResult {
+			f.filterFunction = [&ledgerAnchor, filter](const TransactionEntry& entry) -> FilterResult {
 				if (filter.filterFunction) {
 					// evaluate filter from caller
 					auto result = filter.filterFunction(entry);
@@ -103,7 +103,7 @@ namespace gradido {
 						return result;
 					}
 				}
-				if (messageId->isTheSame(entry.getConfirmedTransaction()->getMessageId())) {
+				if (ledgerAnchor.isTheSame(entry.getConfirmedTransaction()->getLedgerAnchor())) {
 					return FilterResult::USE | FilterResult::STOP;
 				}
 				return FilterResult::DISMISS;

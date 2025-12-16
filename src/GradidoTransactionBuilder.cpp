@@ -89,7 +89,7 @@ namespace gradido {
 		auto result = make_unique<GradidoTransaction>(
 			mBodyByteSignatureMaps[0].signatureMap,
 			mBodyByteSignatureMaps[0].bodyBytes,
-			mParingMessageId
+			mLedgerAnchor
 		);
 		reset();
 		return std::move(result);
@@ -102,7 +102,7 @@ namespace gradido {
 		auto result = make_unique<GradidoTransaction>(
 			mBodyByteSignatureMaps[0].signatureMap,
 			mBodyByteSignatureMaps[0].bodyBytes,
-			mParingMessageId
+			mLedgerAnchor
 		);
 		reset();
 		return std::move(result);
@@ -112,13 +112,13 @@ namespace gradido {
 	{
 		checkBuildState(BuildingState::CROSS_COMMUNITY);
 		assert(mBodyByteSignatureMaps.size() > 1);
-		if(!mParingMessageId || mParingMessageId->isEmpty()) {
-			throw GradidoTransactionBuilderException("missing paring message id from outbound transaction for inbound transaction");
+		if(mLedgerAnchor.empty()) {
+			throw GradidoTransactionBuilderException("missing pairing ledger anchor from outbound transaction for inbound transaction");
 		}
 		auto result = make_unique<GradidoTransaction>(
 			mBodyByteSignatureMaps[1].signatureMap,
 			mBodyByteSignatureMaps[1].bodyBytes,
-			mParingMessageId
+			mLedgerAnchor
 		);
 		reset();
 		return std::move(result);
@@ -395,11 +395,13 @@ namespace gradido {
 		return *this;
 	}
 
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setParentMessageId(ConstBlockPtr paringMessageId)
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setParentLedgerAnchor(const data::LedgerAnchor& ledgerAnchor)
 	{
-		mParingMessageId = paringMessageId;
+		mLedgerAnchor = ledgerAnchor;
 		return *this;
+
 	}
+
 	bool GradidoTransactionBuilder::isCrossCommunityTransaction() const
 	{
 		// XOR

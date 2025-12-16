@@ -5,6 +5,7 @@
 #include "gradido_blockchain/types.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/data/SignatureMap.h"
+#include "gradido_blockchain/data/LedgerAnchor.h"
 
 #include <memory>
 #include <string>
@@ -114,7 +115,7 @@ namespace gradido {
 		GradidoTransactionBuilder& setRecipientCommunity(const std::string& recipientCommunity);
 		GradidoTransactionBuilder& sign(std::shared_ptr<KeyPairEd25519> keyPair);
 		//! \param paringMessageId usually only for cross community transactions, the iota message id of outbound transaction
-		GradidoTransactionBuilder& setParentMessageId(memory::ConstBlockPtr paringMessageId);
+		GradidoTransactionBuilder& setParentLedgerAnchor(const data::LedgerAnchor& ledgerAnchor);
 
 		bool isCrossCommunityTransaction() const;
 		inline bool isBodyBuildingState() const { return mState == BuildingState::BUILDING_BODY; }
@@ -149,7 +150,7 @@ namespace gradido {
 		std::vector<BodyBytesSignatureMap> mBodyByteSignatureMaps;
 
 		bool mSpecificTransactionChoosen;
-		memory::ConstBlockPtr mParingMessageId;
+		data::LedgerAnchor mLedgerAnchor;
 	};
 
 	// *******************  Exceptions ****************************

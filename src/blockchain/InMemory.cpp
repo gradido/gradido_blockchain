@@ -1,7 +1,9 @@
 #include "gradido_blockchain/blockchain/InMemory.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/blockchain/RangeUtils.h"
+#include "gradido_blockchain/data/AccountBalance.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
+#include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/interaction/confirmTransaction/Context.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
@@ -23,7 +25,7 @@ using memory::ConstBlockPtr, memory::Block;
 
 namespace gradido {
 
-	using data::AddressType, data::ConstGradidoTransactionPtr, data::Timestamp;
+	using data::AddressType, data::ConstGradidoTransactionPtr, data::Timestamp, data::LedgerAnchor, data::AccountBalance;
 	using namespace interaction;
 
 	namespace blockchain {
@@ -53,12 +55,12 @@ namespace gradido {
 
 		bool InMemory::createAndAddConfirmedTransaction(
 			ConstGradidoTransactionPtr gradidoTransaction,
-			ConstBlockPtr messageId,
+			const data::LedgerAnchor& ledgerAnchor,
 			Timestamp confirmedAt
 		) {
 			auto blockchain = getProvider()->findBlockchain(mCommunityId);
 			confirmTransaction::Context context(blockchain);
-			auto role = context.createRole(gradidoTransaction, messageId, confirmedAt);
+			auto role = context.createRole(gradidoTransaction, ledgerAnchor, confirmedAt);
 			if (!role) {
 				throw GradidoNotImplementedException("missing role for gradido transaction");
 			}
@@ -66,6 +68,37 @@ namespace gradido {
 			if (!confirmedTransaction) {
 				throw GradidoNullPointerException(
 					"empty confirmed transaction from confirmTransaction interaction", 
+					"data::ConfirmedTransaction",
+					__FUNCTION__
+				);
+			}
+			auto transactionEntry = std::make_shared<TransactionEntry>(confirmedTransaction);
+			pushTransactionEntry(transactionEntry);
+			mTransactionFingerprintTransactionEntry.insert({ *confirmedTransaction->getGradidoTransaction()->getFingerprint(), transactionEntry });
+			role->runPastAddToBlockchain(confirmedTransaction, blockchain);
+			return true;
+		}
+
+		bool InMemory::createAndAddConfirmedTransactionExtern(
+			data::ConstGradidoTransactionPtr gradidoTransaction,
+			uint64_t legacyTransactionNr,
+			std::vector<data::AccountBalance>&& accountBalances
+		) {
+			auto blockchain = getProvider()->findBlockchain(mCommunityId);
+			confirmTransaction::Context context(blockchain);
+			auto role = context.createRole(
+				gradidoTransaction,
+				LedgerAnchor(legacyTransactionNr, LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_ID),
+				gradidoTransaction->getTransactionBody()->getCreatedAt()
+			);
+			if (!role) {
+				throw GradidoNotImplementedException("missing role for gradido transaction");
+			}
+			role->setAccountBalances(std::move(accountBalances));
+			auto confirmedTransaction = context.run(role);
+			if (!confirmedTransaction) {
+				throw GradidoNullPointerException(
+					"empty confirmed transaction from confirmTransaction interaction",
 					"data::ConfirmedTransaction",
 					__FUNCTION__
 				);
@@ -206,20 +239,15 @@ namespace gradido {
 			return nullptr;
 		}
 
-		ConstTransactionEntryPtr InMemory::findByMessageId(
-			memory::ConstBlockPtr messageId,
+		ConstTransactionEntryPtr InMemory::findByLedgerAnchor(
+			const data::LedgerAnchor& ledgerAnchor,
 			const Filter& filter/* = Filter::ALL_TRANSACTIONS*/
 		) const
 		{
-			deserialize::Context transactionIdDeserialize(messageId, deserialize::Type::HIERO_TRANSACTION_ID);
-			transactionIdDeserialize.run();
-			if (!transactionIdDeserialize.isHieroTransactionId()) {
-				return nullptr;
-			}
 			std::lock_guard _lock(mWorkMutex);
 			
-			auto it = mHieroTransactionIdTransactionNrs.find(transactionIdDeserialize.getHieroTransactionId());
-			if (it != mHieroTransactionIdTransactionNrs.end()) {
+			auto it = mLedgerAnchorTransactionNrs.find(ledgerAnchor);
+			if (it != mLedgerAnchorTransactionNrs.end()) {
 				return getTransactionForId(it->second);
 			}
 			return nullptr;
@@ -236,22 +264,8 @@ namespace gradido {
 			mSortedDirty = true;
 			auto confirmedTransaction = transactionEntry->getConfirmedTransaction();
 			mTransactionsIndex.addIndicesForTransaction(transactionEntry);
-
-			if (confirmedTransaction->getMessageId()) {
-				deserialize::Context transactionIdDeserialize(confirmedTransaction->getMessageId(), deserialize::Type::HIERO_TRANSACTION_ID);
-				transactionIdDeserialize.run();
-				if (!transactionIdDeserialize.isHieroTransactionId()) {
-					throw GradidoNodeInvalidDataException("invalid transaction id on transactionEntry");
-				}
-				mHieroTransactionIdTransactionNrs.insert({
-					transactionIdDeserialize.getHieroTransactionId(),
-					confirmedTransaction->getId()
-					});
-			}
-			mTransactionsByNr.insert({
-				confirmedTransaction->getId(),
-				transactionEntry
-				});
+			mLedgerAnchorTransactionNrs.insert({ confirmedTransaction->getLedgerAnchor(), confirmedTransaction->getId() });
+			mTransactionsByNr.insert({ confirmedTransaction->getId(), transactionEntry });
 			auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
 			mLastTransaction = transactionEntry;
 		}
@@ -261,14 +275,7 @@ namespace gradido {
 			std::lock_guard _lock(mWorkMutex);
 			mSortedDirty = true;
 			auto confirmedTransaction = transactionEntry->getConfirmedTransaction();
-			if (confirmedTransaction->getMessageId()) {
-				deserialize::Context transactionIdDeserialize(confirmedTransaction->getMessageId(), deserialize::Type::HIERO_TRANSACTION_ID);
-				transactionIdDeserialize.run();
-				if (transactionIdDeserialize.isHieroTransactionId()) {
-					mHieroTransactionIdTransactionNrs.erase(transactionIdDeserialize.getHieroTransactionId());
-				}
-			}
-			
+			mLedgerAnchorTransactionNrs.erase(confirmedTransaction->getLedgerAnchor());			
 			mTransactionsByNr.erase(confirmedTransaction->getId());
 		}
 	}

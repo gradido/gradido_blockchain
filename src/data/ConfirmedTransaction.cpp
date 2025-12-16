@@ -16,15 +16,17 @@ namespace gradido {
 			std::shared_ptr<const GradidoTransaction> gradidoTransaction,
 			Timestamp confirmedAt,
 			const std::string& versionNumber,
-			memory::ConstBlockPtr messageId,
+			const LedgerAnchor& ledgerAnchor,
 			std::vector<AccountBalance> accountBalances,
+			BalanceDerivationType balanceDerivationType,
 			std::shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction/* = nullptr */
 		) : mId(id),
 			mGradidoTransaction(gradidoTransaction),
 			mConfirmedAt(confirmedAt),
 			mVersionNumber(versionNumber),
-			mMessageId(messageId),
-			mAccountBalances(accountBalances) 
+			mLedgerAnchor(ledgerAnchor),
+			mAccountBalances(accountBalances),
+			mBalanceDerivationType(balanceDerivationType)
 		{
 			mRunningHash = calculateRunningHash(previousConfirmedTransaction);
 			initalizePubkeyHashes();
@@ -36,15 +38,17 @@ namespace gradido {
 			Timestamp confirmedAt,
 			const std::string& versionNumber,
 			memory::ConstBlockPtr runningHash,
-			memory::ConstBlockPtr messageId,
-			std::vector<AccountBalance> accountBalances
+			const LedgerAnchor& ledgerAnchor,
+			std::vector<AccountBalance> accountBalances,
+			BalanceDerivationType balanceDerivationType
 		) : mId(id),
 			mGradidoTransaction(gradidoTransaction),
 			mConfirmedAt(confirmedAt),
 			mVersionNumber(versionNumber),
 			mRunningHash(runningHash),
-			mMessageId(messageId),
-			mAccountBalances(accountBalances)
+			mLedgerAnchor(ledgerAnchor),
+			mAccountBalances(accountBalances),
+			mBalanceDerivationType(balanceDerivationType)
 		{
 			initalizePubkeyHashes();
 		}
@@ -54,6 +58,7 @@ namespace gradido {
 		) const {
 			std::string transactionIdString = std::to_string(mId);
 			auto confirmedAtString = DataTypeConverter::timePointToString(mConfirmedAt, "%Y-%m-%d %H:%M:%S");
+			auto ledgerAnchorString = mLedgerAnchor.toString();
 			std::string signatureMapString;
 			if (mGradidoTransaction->getSignatureMap().getSignaturePairs().size()) {
 				serialize::Context serializeContext(mGradidoTransaction->getSignatureMap());
@@ -71,12 +76,15 @@ namespace gradido {
 			crypto_generichash_update(&state, (const unsigned char*)transactionIdString.data(), transactionIdString.size());
 			
 			crypto_generichash_update(&state, (const unsigned char*)confirmedAtString.data(), confirmedAtString.size());
+
+			crypto_generichash_update(&state, (const unsigned char*)ledgerAnchorString.data(), ledgerAnchorString.size());
 			
 			crypto_generichash_update(&state, (const unsigned char*)signatureMapString.data(), signatureMapString.size());
 			for (auto& accountBalance : mAccountBalances) {
 				auto gdd = accountBalance.getBalance().getGradidoCent();
 				crypto_generichash_update(&state, (const unsigned char*)&gdd, sizeof(gdd));
-			}			
+			}	
+			crypto_generichash_update(&state, (const unsigned char*)&mBalanceDerivationType, sizeof(BalanceDerivationType));
 			crypto_generichash_final(&state, hash->data(), hash->size());
 			return hash;
 		}
@@ -169,15 +177,13 @@ namespace gradido {
 				return false;
 			}
 
-			if (mMessageId && other.mMessageId) {
-				if (!mMessageId->isTheSame(other.mMessageId)) {
-					return false;
-				}
-				if (!(!mMessageId && !other.mMessageId)) {
-					return false;
-				}
+			if (!mLedgerAnchor.isTheSame(mLedgerAnchor)) {
+				return false;
 			}
 			if (mAccountBalances.size() != other.mAccountBalances.size()) {
+				return false;
+			}
+			if (mBalanceDerivationType != other.mBalanceDerivationType) {
 				return false;
 			}
 			

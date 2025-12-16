@@ -8,10 +8,10 @@ namespace gradido {
         namespace confirmTransaction {
             TimeoutDeferredTransferTransactionRole::TimeoutDeferredTransferTransactionRole(
                 std::shared_ptr<const data::GradidoTransaction> gradidoTransaction,
-                memory::ConstBlockPtr messageId,
+                const data::LedgerAnchor& ledgerAnchor,
                 Timestamp confirmedAt,
                 std::shared_ptr<blockchain::Abstract> blockchain
-            ) : TransactionBodyRole(gradidoTransaction, messageId, confirmedAt, blockchain)
+            ) : TransactionBodyRole(gradidoTransaction, ledgerAnchor, confirmedAt, blockchain)
             {
 
             }

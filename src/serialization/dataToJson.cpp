@@ -11,6 +11,7 @@
 #include "gradido_blockchain/data/GradidoTimeoutDeferredTransfer.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/data/GradidoTransfer.h"
+#include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/data/RegisterAddress.h"
 #include "gradido_blockchain/data/SignatureMap.h"
 #include "gradido_blockchain/data/SignaturePair.h"
@@ -18,14 +19,12 @@
 #include "gradido_blockchain/data/TimestampSeconds.h"
 #include "gradido_blockchain/data/TransferAmount.h"
 #include "gradido_blockchain/data/TransactionTriggerEvent.h"
-#include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/serialization/toJson.h"
 
 #include "magic_enum/magic_enum.hpp"
 
 using namespace rapidjson;
 using namespace gradido::data;
-using namespace gradido::interaction;
 
 namespace serialization {
 
@@ -180,6 +179,24 @@ namespace serialization {
 		}
 	})
 
+	DEFINE_TO_JSON(LedgerAnchor, {
+		auto type = value.getType();
+		obj.AddMember("type", toJson(type, alloc), alloc);
+		switch (type) {
+		case LedgerAnchor::Type::IOTA_MESSAGE_ID:
+			obj.AddMember("iotaMessageId", toJson(value.getIotaMessageId(), alloc), alloc);
+			break;
+		case LedgerAnchor::Type::HIERO_TRANSACTION_ID:
+			obj.AddMember("hieroTransactionId", toJson(value.getHieroTransactionId(), alloc), alloc);
+			break;
+		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_ID:
+			obj.AddMember("legacyTransactionId", value.getLegacyTransactionId(), alloc);
+			break;
+		case LedgerAnchor::Type::NODE_TRIGGER_TRANSACTION_ID:
+			obj.AddMember("nodeTriggeredTransactionId", value.getNodeTriggeredTransactionId(), alloc);
+		}
+	})
+
 	DEFINE_TO_JSON(GradidoTransaction, {
 		obj.AddMember("signatureMap", toJson(value.getSignatureMap().getSignaturePairs(), alloc), alloc);
 		try {
@@ -191,12 +208,9 @@ namespace serialization {
 		catch (std::exception& ex) {
 			obj.AddMember("bodyBytes", toJson(std::string(ex.what()), alloc), alloc);
 		}
-		auto paringMessageId = value.getParingMessageId();
-		if (paringMessageId) {
-			obj.AddMember("paringMessageId", toJson(paringMessageId, alloc), alloc);
-		}
+		obj.AddMember("pairingLedgerAnchor", toJson(value.getPairingLedgerAnchor(), alloc), alloc);
 	})
-
+	
 	DEFINE_TO_JSON(ConfirmedTransaction, {
 		obj.AddMember("id", value.getId(), alloc);
 		auto gradidoTransaction = value.getGradidoTransaction();
@@ -209,16 +223,8 @@ namespace serialization {
 		if (runningHash) {
 			obj.AddMember("runningHash", toJson(runningHash, alloc), alloc);
 		}
-		auto messageId = value.getMessageId();
-		if (messageId) {
-			deserialize::Context context(messageId, deserialize::Type::HIERO_TRANSACTION_ID);
-			context.run();
-			if (context.isHieroTransactionId()) {
-				obj.AddMember("messageId", toJson(context.getHieroTransactionId().toString(), alloc), alloc);
-			} else {
-				obj.AddMember("messageId", toJson(messageId, alloc), alloc);
-			}
-		}
+		obj.AddMember("ledgerAnchor", toJson(value.getLedgerAnchor(), alloc), alloc);
 		obj.AddMember("accountBalances", toJson(value.getAccountBalances(), alloc), alloc);
+		obj.AddMember("balanceDerivationType", toJson(value.getBalanceDerivationType(), alloc), alloc);
 	})
 }

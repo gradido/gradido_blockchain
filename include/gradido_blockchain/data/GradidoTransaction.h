@@ -3,6 +3,7 @@
 
 #include "TransactionBody.h"
 #include "SignatureMap.h"
+#include "LedgerAnchor.h"
 
 namespace gradido {
 	class GradidoTransactionBuilder;
@@ -15,12 +16,12 @@ namespace gradido {
 			GradidoTransaction(
 				const SignatureMap& signatureMap,
 				memory::ConstBlockPtr bodyBytes,
-				memory::ConstBlockPtr paringMessageId = nullptr
-			) : mSignatureMap(signatureMap), mBodyBytes(bodyBytes), mParingMessageId(paringMessageId) {}
+				const LedgerAnchor& pairingLedgerAnchor = LedgerAnchor()
+			) : mSignatureMap(signatureMap), mBodyBytes(bodyBytes), mPairingLedgerAnchor(pairingLedgerAnchor) {}
 
 			// copy constructor
 			GradidoTransaction(const GradidoTransaction& other)
-				: GradidoTransaction(other.mSignatureMap, other.mBodyBytes, other.mParingMessageId) {}
+				: GradidoTransaction(other.mSignatureMap, other.mBodyBytes, other.mPairingLedgerAnchor) {}
 
 			~GradidoTransaction() {}
 
@@ -40,12 +41,12 @@ namespace gradido {
 			inline const SignatureMap& getSignatureMap() const { return mSignatureMap; }
 			inline SignatureMap& getSignatureMap() { return mSignatureMap; }
 			inline memory::ConstBlockPtr getBodyBytes() const { return mBodyBytes; }
-			inline memory::ConstBlockPtr getParingMessageId() const { return mParingMessageId; }
+			inline const LedgerAnchor& getPairingLedgerAnchor() const { return mPairingLedgerAnchor; }
 
 		protected:
 			SignatureMap			mSignatureMap;
 			memory::ConstBlockPtr	mBodyBytes;
-			memory::ConstBlockPtr	mParingMessageId;
+			LedgerAnchor			mPairingLedgerAnchor;
 
 			mutable ConstTransactionBodyPtr mTransactionBody;
 			mutable std::mutex mTransactionBodyMutex;

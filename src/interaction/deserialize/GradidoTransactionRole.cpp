@@ -1,6 +1,7 @@
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/interaction/deserialize/GradidoTransactionRole.h"
+#include "gradido_blockchain/interaction/deserialize/LedgerAnchorRole.h"
 
 namespace gradido {
 	namespace interaction {
@@ -14,7 +15,6 @@ namespace gradido {
 			{
 				data::SignatureMap signatures;
 				memory::BlockPtr bodyBytesPtr;
-				memory::BlockPtr paringMessageIdPtr = nullptr;
 				
 				const auto& sigMap = &message["sig_map"_f];
 				if (sigMap->has_value() && sigMap->value()["sig_pair"_f].size()) {
@@ -31,11 +31,8 @@ namespace gradido {
 				if (bodyBytes->has_value()) {
 					bodyBytesPtr = std::make_shared<memory::Block>(bodyBytes->value());
 				}
-				const auto& paringMessageId = &message["parent_message_id"_f];
-				if (paringMessageId->has_value()) {
-					paringMessageIdPtr = std::make_shared<memory::Block>(paringMessageId->value());
-				}
-				mGradidoTransaction = std::make_unique<const data::GradidoTransaction>(signatures, bodyBytesPtr, paringMessageIdPtr);
+				LedgerAnchorRole ledgerAnchorRole(message["pairing_ledger_anchor"_f].value());
+				mGradidoTransaction = std::make_unique<const data::GradidoTransaction>(signatures, bodyBytesPtr, ledgerAnchorRole);
 			}
 		}
 	}

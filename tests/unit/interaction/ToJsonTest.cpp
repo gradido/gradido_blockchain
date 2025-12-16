@@ -1,7 +1,9 @@
 #include "gtest/gtest.h"
 #include "../KeyPairs.h"
 #include "const.h"
+#include "gradido_blockchain/data/BalanceDerivationType.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/serialization/toJsonString.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
@@ -154,7 +156,7 @@ TEST(ToJsonTest, GradidoTransaction) {
 	));
 	GradidoTransaction transaction(signatures, bodyBytes);
 
-	EXPECT_EQ(toJsonString(transaction), "{\"signatureMap\":[{\"pubkey\":\"f4dd3989f7554b7ab32e3dd0b7f9e11afce90a1811e9d1f677169eb44bf44272\",\"signature\":\"b4c8d994c7c08a6b13685d33767fc843061a6bcfa0d3c415335567610c0deeaa45efce6e038ca7c1d21bcfba98b0f6fa9ed6c75f9cda6ce186db400120c09a02\"}],\"bodyBytes\":\"cannot deserialize from body bytes\"}");
+	EXPECT_EQ(toJsonString(transaction), "{\"signatureMap\":[{\"pubkey\":\"f4dd3989f7554b7ab32e3dd0b7f9e11afce90a1811e9d1f677169eb44bf44272\",\"signature\":\"b4c8d994c7c08a6b13685d33767fc843061a6bcfa0d3c415335567610c0deeaa45efce6e038ca7c1d21bcfba98b0f6fa9ed6c75f9cda6ce186db400120c09a02\"}],\"bodyBytes\":\"cannot deserialize from body bytes\",\"pairingLedgerAnchor\":{\"type\":\"UNSPECIFIED\"}}");
 }
 
 TEST(ToJsonTest, CompleteConfirmedTransaction) {
@@ -179,12 +181,13 @@ TEST(ToJsonTest, CompleteConfirmedTransaction) {
 		std::move(gradidoTransaction),
 		confirmedAt,
 		VERSION_STRING,
-		make_shared<memory::Block>(32),
+		LedgerAnchor(memory::Block(32)),
 		{ 
 			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), ""},
 			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483), ""}
-		}
+		},
+		BalanceDerivationType::EXTERN
 	);
-	EXPECT_EQ(toJsonString(confirmedTransaction), "{\"id\":7,\"gradidoTransaction\":{\"signatureMap\":[{\"pubkey\":\"81670329946988edf451f4c424691d83cf5a90439042882d5bb72243ef551ef4\",\"signature\":\"04e0d0f6c4bbd2d87dc879fc5f72be48dbf682c888757fd5d3d6da0af4026fec848f60ddfdfcd284862a7f7a68a08330274d4190325d346059b39303cc40240a\"}],\"bodyBytes\":{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Danke fuer dein Sein!\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"transfer\":{\"sender\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":\"100.2516\"},\"recipient\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\"}}},\"confirmedAt\":\"2021-01-01 01:22:10.0000\",\"versionNumber\":\"3.5\",\"runningHash\":\"28a58de12318789f59ee15373a1ef8337da0e2cd66f266bf756590ffb5447ecc\",\"messageId\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"accountBalances\":[{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"balance\":\"100.0000\"},{\"pubkey\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\",\"balance\":\"899.7483\"}]}");	
+	EXPECT_EQ(toJsonString(confirmedTransaction), "{\"id\":7,\"gradidoTransaction\":{\"signatureMap\":[{\"pubkey\":\"81670329946988edf451f4c424691d83cf5a90439042882d5bb72243ef551ef4\",\"signature\":\"04e0d0f6c4bbd2d87dc879fc5f72be48dbf682c888757fd5d3d6da0af4026fec848f60ddfdfcd284862a7f7a68a08330274d4190325d346059b39303cc40240a\"}],\"bodyBytes\":{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Danke fuer dein Sein!\"}],\"createdAt\":\"2021-01-01 00:00:00.0000\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"transfer\":{\"sender\":{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"amount\":\"100.2516\"},\"recipient\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\"}},\"pairingLedgerAnchor\":{\"type\":\"UNSPECIFIED\"}},\"confirmedAt\":\"2021-01-01 01:22:10.0000\",\"versionNumber\":\"3.5\",\"runningHash\":\"d9f3dc8a3c6477939d74dc0cdac36f10ca61be423a7ceceb936f608a0f5bab0d\",\"ledgerAnchor\":{\"type\":\"IOTA_MESSAGE_ID\",\"iotaMessageId\":\"0000000000000000000000000000000000000000000000000000000000000000\"},\"accountBalances\":[{\"pubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"balance\":\"100.0000\"},{\"pubkey\":\"244d28d7cc5be8fe8fb0d8e1d1b90de7603386082d793ce8874f6357e6e532ad\",\"balance\":\"899.7483\"}],\"balanceDerivationType\":\"EXTERN\"}");	
 	// printf("json pretty: %s\n", toJsonString(confirmedTransaction, true).data());
 }

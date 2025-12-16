@@ -1,6 +1,7 @@
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
+#include "gradido_blockchain/data/BalanceDerivationType.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/interaction/confirmTransaction/AbstractRole.h"
@@ -26,10 +27,10 @@ namespace gradido {
 
             AbstractRole::AbstractRole(
                 std::shared_ptr<const data::GradidoTransaction> gradidoTransaction,
-                memory::ConstBlockPtr messageId,
+                const data::LedgerAnchor& ledgerAnchor,
                 Timestamp confirmedAt,
                 std::shared_ptr<blockchain::Abstract> blockchain
-            ): mGradidoTransaction(gradidoTransaction), mMessageId(messageId), mConfirmedAt(confirmedAt), mBlockchain(blockchain)
+            ): mGradidoTransaction(gradidoTransaction), mLedgerAnchor(ledgerAnchor), mConfirmedAt(confirmedAt), mBlockchain(blockchain), mBalanceDerivationType(BalanceDerivationType::NODE)
             {
                 if (!gradidoTransaction) {
                     throw GradidoNullPointerException("missing transaction", "GradidoTransactionPtr", __FUNCTION__);
@@ -39,19 +40,33 @@ namespace gradido {
             std::shared_ptr<const data::ConfirmedTransaction> AbstractRole::createConfirmedTransaction(
                 uint64_t id,
                 std::shared_ptr<const ConfirmedTransaction> lastConfirmedTransaction
-            ) const {
-               return make_shared<data::ConfirmedTransaction>(
+            ) {
+                std::vector<AccountBalance> accountBalances;
+                if (BalanceDerivationType::NODE == mBalanceDerivationType) {
+                    accountBalances = calculateAccountBalances(id - 1);
+                }
+                else {
+                    accountBalances = mAccountBalances;
+                }
+                
+                return make_shared<data::ConfirmedTransaction>(
                    id,
                    //std::make_unique<data::GradidoTransaction>(*mGradidoTransaction),
                    std::make_shared<data::GradidoTransaction>(*mGradidoTransaction),
                    // mGradidoTransaction, // don't work as native node module. TODO: find underlying issue
                    mConfirmedAt,
                    GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
-                   mMessageId,
-                   calculateAccountBalances(id - 1),
+                   mLedgerAnchor,
+                   accountBalances,
+                   mBalanceDerivationType,
                    lastConfirmedTransaction
                 );
+            }
 
+            void AbstractRole::setAccountBalances(std::vector<data::AccountBalance>&& accountBalances)
+            {
+                mAccountBalances = std::move(accountBalances);
+                mBalanceDerivationType = BalanceDerivationType::EXTERN;
             }
 
             AccountBalance AbstractRole::calculateAccountBalance(

@@ -1,5 +1,6 @@
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/interaction/serialize/GradidoTransactionRole.h"
+#include "gradido_blockchain/interaction/serialize/LedgerAnchorRole.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
 namespace gradido {
@@ -18,9 +19,8 @@ namespace gradido {
 				if (mGradidoTransaction.getBodyBytes()) {
 					gradidoTransactionMessage["body_bytes"_f] = mGradidoTransaction.getBodyBytes()->copyAsVector();
 				}
-				if (mGradidoTransaction.getParingMessageId()) {
-					gradidoTransactionMessage["parent_message_id"_f] = mGradidoTransaction.getParingMessageId()->copyAsVector();
-				}					
+				LedgerAnchorRole ledgerAnchorRole(mGradidoTransaction.getPairingLedgerAnchor());
+				gradidoTransactionMessage["pairing_ledger_anchor"_f] = ledgerAnchorRole.getMessage();
 				gradidoTransactionMessage["sig_map"_f] = mSigantureMapRole.getMessage();
 				return gradidoTransactionMessage;
 			}
@@ -31,9 +31,8 @@ namespace gradido {
 				if (mGradidoTransaction.getBodyBytes()) {
 					size += mGradidoTransaction.getBodyBytes()->size();
 				}
-				if (mGradidoTransaction.getParingMessageId()) {
-					size += mGradidoTransaction.getParingMessageId()->size();
-				}
+
+				size += LedgerAnchorRole::serializedSize(mGradidoTransaction.getPairingLedgerAnchor());
 				return size;
 			}
 

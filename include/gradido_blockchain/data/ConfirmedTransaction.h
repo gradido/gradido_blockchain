@@ -3,6 +3,8 @@
 
 #include "GradidoTransaction.h"
 #include "AccountBalance.h"
+#include "BalanceDerivationType.h"
+#include "LedgerAnchor.h"
 #include "gradido_blockchain/crypto/SignatureOctet.h"
 
 namespace gradido {
@@ -18,8 +20,9 @@ namespace gradido {
 				std::shared_ptr<const GradidoTransaction> gradidoTransaction,
 				Timestamp confirmedAt,
 				const std::string& versionNumber,
-				memory::ConstBlockPtr messageId,
+				const LedgerAnchor& ledgerAnchor,
 				std::vector<AccountBalance> accountBalances,
+				BalanceDerivationType balanceDerivationType,
 				std::shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction = nullptr
 			);
 			//! copy running hash
@@ -29,8 +32,9 @@ namespace gradido {
 				Timestamp confirmedAt,
 				const std::string& versionNumber,
 				memory::ConstBlockPtr runningHash,
-				memory::ConstBlockPtr messageId,
-				std::vector<AccountBalance> accountBalances
+				const LedgerAnchor& ledgerAnchor,
+				std::vector<AccountBalance> accountBalances,
+				BalanceDerivationType balanceDerivationType
 			);
 
 			~ConfirmedTransaction() {}
@@ -44,7 +48,7 @@ namespace gradido {
 			inline Timestamp getConfirmedAt() const { return mConfirmedAt; } 
 			inline const std::string& getVersionNumber() const { return mVersionNumber; }
 			inline memory::ConstBlockPtr getRunningHash() const { return mRunningHash; }
-			inline memory::ConstBlockPtr getMessageId() const { return mMessageId; }
+			inline const LedgerAnchor& getLedgerAnchor() const { return mLedgerAnchor; }
 			inline const std::vector<AccountBalance>& getAccountBalances() const { return mAccountBalances; }
 			bool hasAccountBalance(const memory::Block& publicKey) const;
 			//! \return accountBalance if found one with same public key or an new empty AccountBalance with this public key
@@ -54,6 +58,9 @@ namespace gradido {
 				const std::string& communityId,
 				Timepoint endDate = std::chrono::system_clock::now()
 			) const;
+			BalanceDerivationType getBalanceDerivationType() const { return mBalanceDerivationType; }
+			bool isBalanceNodeComputed() const { return BalanceDerivationType::NODE == mBalanceDerivationType; }
+			bool isBalanceExternComputed() const { return BalanceDerivationType::EXTERN == mBalanceDerivationType; }
 			bool isInvolved(const memory::Block& publicKey) const;
 			std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
 			bool isTheSame(const ConfirmedTransaction& other) const;
@@ -66,8 +73,9 @@ namespace gradido {
 			Timestamp									mConfirmedAt;
 			std::string   								mVersionNumber;
 			memory::ConstBlockPtr 						mRunningHash;
-			memory::ConstBlockPtr 						mMessageId;
+			LedgerAnchor								mLedgerAnchor;
 			std::vector<AccountBalance>					mAccountBalances;
+			BalanceDerivationType						mBalanceDerivationType;
 
 		private:
 			// for faster public key comparisation

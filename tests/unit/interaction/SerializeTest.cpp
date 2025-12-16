@@ -2,7 +2,9 @@
 #include "../KeyPairs.h"
 #include "../serializedTransactions.h"
 #include "const.h"
+#include "gradido_blockchain/data/BalanceDerivationType.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/data/TransactionTriggerEvent.h"
 #include "gradido_blockchain/data/hiero/AccountId.h"
 #include "gradido_blockchain/data/hiero/TopicId.h"
@@ -35,7 +37,7 @@ TEST(SerializeTest, HieroTopicId)
 
 TEST(SerializeTest, HieroTransactionId)
 {
-	hiero::TransactionId transactionId("0.0.121212@172618921.29182");
+	hiero::TransactionId transactionId = defaultHieroTransactionId;
 	serialize::Context c(transactionId);
 	auto serialized = c.run();
 	ASSERT_EQ(serialized->convertToBase64(), std::string(hieroTransactionIdBase64));
@@ -245,11 +247,12 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		confirmedAt,
 		GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
 		make_shared<memory::Block>(crypto_generichash_BYTES),
-		make_shared<memory::Block>(memory::Block::fromBase64(hieroTransactionIdBase64)),
+		LedgerAnchor(defaultHieroTransactionId),
 		{
 			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), ""},
 			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483), ""}
-		}
+		},
+		BalanceDerivationType::EXTERN
 	);
 	serialize::Context c(confirmedTransaction);
 	auto serialized = c.run();
