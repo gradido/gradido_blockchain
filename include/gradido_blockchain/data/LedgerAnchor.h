@@ -18,7 +18,11 @@ namespace gradido {
 				IOTA_MESSAGE_ID = 1,
 				HIERO_TRANSACTION_ID = 2,
 				LEGACY_GRADIDO_DB_TRANSACTION_ID = 3,
-				NODE_TRIGGER_TRANSACTION_ID = 4
+				NODE_TRIGGER_TRANSACTION_ID = 4,
+				LEGACY_GRADIDO_DB_COMMUNITY_ID = 5,
+				LEGACY_GRADIDO_DB_USER_ID = 6,
+				LEGACY_GRADIDO_DB_CONTRIBUTION_ID = 7,
+				LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID = 8
 			};
 			LedgerAnchor();
 			explicit LedgerAnchor(const memory::Block& iotaMessageId);
@@ -30,6 +34,10 @@ namespace gradido {
 			inline bool isHieroTransactionId() const noexcept { return std::holds_alternative<hiero::TransactionId>(mValue); }
 			inline bool isLegacyGradidoDbTransactionId() const noexcept { return Type::LEGACY_GRADIDO_DB_TRANSACTION_ID == mType; }
 			inline bool isNodeTriggeredTransactionId() const noexcept { return Type::NODE_TRIGGER_TRANSACTION_ID == mType; }
+			inline bool isLegacyGradidoDbCommunityId() const noexcept { return Type::LEGACY_GRADIDO_DB_COMMUNITY_ID == mType; }
+			inline bool isLegacyGradidoDbUserId() const noexcept { return Type::LEGACY_GRADIDO_DB_USER_ID == mType; }
+			inline bool isLegacyGradidoDbContributionId() const noexcept { return Type::LEGACY_GRADIDO_DB_CONTRIBUTION_ID == mType; }
+			inline bool isLegacyGradidoDbTransactionLinkId() const noexcept { return Type::LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID == mType; }
 			inline Type getType() const noexcept { return mType; }
 
 			inline const memory::Block& getIotaMessageId() const { return std::get<memory::Block>(mValue); }

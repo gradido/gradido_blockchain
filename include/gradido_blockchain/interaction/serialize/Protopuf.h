@@ -159,7 +159,11 @@ namespace gradido {
                 bytes_field<"iota_message_id", 2>,
                 message_field<"hiero_transaction_id", 3, HieroTransactionIdMessage>,
                 uint64_field<"legacy_transaction_id", 4>,
-                uint64_field<"node_trigger_transaction_id", 5>
+                uint64_field<"node_trigger_transaction_id", 5>,
+                uint64_field<"legacy_community_id", 6>,
+                uint64_field<"legacy_user_id", 7>,
+                uint64_field<"legacy_contribution_id", 8>,
+                uint64_field<"legacy_transaction_link_id", 9>
             >;
 
             // gradido_transaction.proto

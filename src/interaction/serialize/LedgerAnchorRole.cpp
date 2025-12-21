@@ -21,6 +21,18 @@ namespace gradido {
 				else if (mLedgerAnchor.isIotaMessageId()) {
 					message["iota_message_id"_f] = mLedgerAnchor.getIotaMessageId().copyAsVector();
 				}
+				else if (mLedgerAnchor.isLegacyGradidoDbCommunityId()) {
+					message["legacy_community_id"_f] = mLedgerAnchor.getLegacyTransactionId();
+				}
+				else if (mLedgerAnchor.isLegacyGradidoDbUserId()) {
+					message["legacy_user_id"_f] = mLedgerAnchor.getLegacyTransactionId();
+				}
+				else if (mLedgerAnchor.isLegacyGradidoDbContributionId()) {
+					message["legacy_contribution_id"_f] = mLedgerAnchor.getLegacyTransactionId();
+				} 
+				else if (mLedgerAnchor.isLegacyGradidoDbTransactionLinkId()) {
+					message["legacy_transaction_link_id"_f] = mLedgerAnchor.getLegacyTransactionId();
+				}
 				return message;
 			}
 
