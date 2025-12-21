@@ -2,6 +2,7 @@
 #include "gradido_blockchain/interaction/deserialize/AccountBalanceRole.h"
 #include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/interaction/deserialize/GradidoTransactionRole.h"
+#include "gradido_blockchain/interaction/deserialize/LedgerAnchorRole.h"
 #include "gradido_blockchain/interaction/deserialize/TimestampRole.h"
 #include "gradido_blockchain/interaction/deserialize/Exceptions.h"
 #include "gradido_blockchain/interaction/serialize/GradidoTransactionRole.h"
@@ -33,10 +34,6 @@ namespace gradido {
 				if (!message["running_hash"_f].has_value()) {
 					throw MissingMemberException(exceptionMessage, "running_hash");
 				}
-				if (message["message_id"_f].has_value()) {
-					// throw MissingMemberException(exceptionMessage, "message_id");
-					messageId = make_shared<const Block>(message["message_id"_f].value());
-				}
 				std::vector<data::AccountBalance> accountBalances;
 				auto accountBalanceMessages = message["account_balances"_f];
 				if (accountBalanceMessages.size()) {
@@ -51,8 +48,9 @@ namespace gradido {
 					TimestampRole(message["confirmed_at"_f].value()).data(),
 					message["version_number"_f].value(),
 					make_shared<Block>(message["running_hash"_f].value()),
-					messageId,
-					accountBalances
+					LedgerAnchorRole(message["ledger_anchor"_f].value()),
+					accountBalances,
+					message["balance_derivation"_f].value()
 				);
 			}
 

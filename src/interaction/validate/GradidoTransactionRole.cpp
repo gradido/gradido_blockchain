@@ -57,15 +57,15 @@ namespace gradido {
 					case data::CrossGroupType::INBOUND: break; // happen before OUTBOUND, can only be checked after both transactions are written to blockchain
 					case data::CrossGroupType::OUTBOUND:
 					case data::CrossGroupType::CROSS:
-						if (!mGradidoTransaction.getParingMessageId()) {
+						if (mGradidoTransaction.getPairingLedgerAnchor().empty()) {
 							throw TransactionValidationInvalidInputException(
-								"parent message id not set for outbound or cross",
-								"parent_message_id",
-								"bytes[32]"
+								"pairing ledger anchor not set for outbound or cross",
+								"pairing_ledger_anchor",
+								"LedgerAnchor"
 							);
 						}
 						else {
-							pairTransactionEntry = otherBlockchain->findByMessageId(mGradidoTransaction.getParingMessageId());
+							pairTransactionEntry = otherBlockchain->findByLedgerAnchor(mGradidoTransaction.getPairingLedgerAnchor());
 							if (!pairTransactionEntry) {
 								throw TransactionValidationException("pairing transaction not found");
 							}

@@ -14,10 +14,10 @@ namespace gradido {
 
             TransactionBodyRole::TransactionBodyRole(
                 std::shared_ptr<const data::GradidoTransaction> gradidoTransaction,
-                memory::ConstBlockPtr messageId,
+                const data::LedgerAnchor& ledgerAnchor,
                 Timestamp confirmedAt,
                 std::shared_ptr<blockchain::Abstract> blockchain
-            ) : AbstractRole(gradidoTransaction, messageId, confirmedAt, blockchain),
+            ) : AbstractRole(gradidoTransaction, ledgerAnchor, confirmedAt, blockchain),
                 mBody(gradidoTransaction->getTransactionBody()) 
             {
             }

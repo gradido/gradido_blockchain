@@ -6,6 +6,7 @@
 #include "TransactionsIndex.h"
 #include "gradido_blockchain/crypto/SignatureOctet.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
+#include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/memory/BlockKey.h"
 
@@ -14,6 +15,9 @@
 #include <shared_mutex>		
 
 namespace gradido {
+	namespace data {
+		class AccountBalance;
+	}
 	namespace blockchain {
 		class InMemoryProvider;
 		/*
@@ -39,9 +43,14 @@ namespace gradido {
 			//! \return false if transaction already exist
 			virtual bool createAndAddConfirmedTransaction(
 				data::ConstGradidoTransactionPtr gradidoTransaction,
-				memory::ConstBlockPtr messageId, 
+				const data::LedgerAnchor& ledgerAnchor,
 				data::Timestamp confirmedAt
 			) override;
+			bool createAndAddConfirmedTransactionExtern(
+				data::ConstGradidoTransactionPtr gradidoTransaction,
+				uint64_t legacyTransactionNr,
+				std::vector<data::AccountBalance> accountBalances
+			);
 			virtual void addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent) override;
 			virtual void removeTransactionTriggerEvent(const data::TransactionTriggerEvent& transactionTriggerEvent) override;
 
@@ -62,10 +71,10 @@ namespace gradido {
 			ConstTransactionEntryPtr getTransactionForId(uint64_t transactionId) const;
 
 			// this implementation use a map for direct search and don't use filter at all
-			ConstTransactionEntryPtr findByMessageId(
-				memory::ConstBlockPtr messageId,
+			ConstTransactionEntryPtr findByLedgerAnchor(
+				const data::LedgerAnchor& ledgerAnchor,
 				const Filter& filter = Filter::ALL_TRANSACTIONS
-			) const;
+			) const override;
 
 			AbstractProvider* getProvider() const;
 
@@ -82,7 +91,7 @@ namespace gradido {
 
 			// update map and multimap on every transaction add and remove
 			//! find transaction nr by hiero transaction id
-			std::unordered_map<hiero::TransactionId, uint64_t, hiero::TransactionIdHasher> mHieroTransactionIdTransactionNrs;
+			std::unordered_map<data::LedgerAnchor, uint64_t> mLedgerAnchorTransactionNrs;
 			//! find transactionEntry by transaction nr
 			std::map<uint64_t, ConstTransactionEntryPtr> mTransactionsByNr;
 			// for fast doublette check

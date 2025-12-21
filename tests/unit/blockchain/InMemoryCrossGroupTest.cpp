@@ -1,13 +1,15 @@
+#include "../interaction/const.h"
 #include "InMemoryCrossGroupTest.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/blockchain/InMemory.h"
 #include "gradido_blockchain/data/EncryptedMemo.h"
+#include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 
 using gradido::blockchain::InMemory;
 using gradido::blockchain::InMemoryProvider;
-using gradido::data::EncryptedMemo;
+using gradido::data::EncryptedMemo, gradido::data::LedgerAnchor;
 using gradido::GradidoTransactionBuilder;
 
 #define VERSION_STRING "3.5"
@@ -32,8 +34,7 @@ void InMemoryCrossGroupTest::SetUp()
 		)
 		.sign(g_KeyPairs[0])
 		;
-	gradido::interaction::serialize::Context serializeTransactionId({ mLastCreatedAt, hieroAccount });
-	mBlockchain->createAndAddConfirmedTransaction(builder.build(), serializeTransactionId.run(), mLastCreatedAt);
+	mBlockchain->createAndAddConfirmedTransaction(builder.build(), LedgerAnchor({ mLastCreatedAt, hieroAccount }), mLastCreatedAt);
 }
 
 void InMemoryCrossGroupTest::TearDown()

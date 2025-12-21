@@ -3,9 +3,11 @@
 
 #include <chrono>
 #include "gradido_blockchain/data/EncryptedMemo.h"
+#include "gradido_blockchain/data/hiero/AccountId.h"
+#include "gradido_blockchain/data/hiero/TransactionId.h"
 
 #define VERSION_STRING "3.5"
-#define GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING "3.6"
+#define GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING "3.7"
 
 const auto createdAt = std::chrono::system_clock::from_time_t(1609459200); //2021-01-01 00:00:00 UTC
 const auto confirmedAt = std::chrono::system_clock::from_time_t(1609464130);
@@ -19,4 +21,7 @@ const auto deferredTransferMemoString = "Link zum einloesen";
 const auto aFilledMemoString = std::string(451, 'a');
 const auto hallMemoString = "hall";
 const auto completeTransactionMemoString = "Danke fuer dein Sein!";
+
+const hiero::AccountId defaultHieroAccount(0, 0, 2);
+const hiero::TransactionId defaultHieroTransactionId("0.0.121212@172618921.29182");
 #endif //__GRADIDO_BLOCKCHAIN_TEST_INTERACTION_CONST_H

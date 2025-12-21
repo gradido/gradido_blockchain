@@ -17,6 +17,9 @@
 #include <list>
 
 namespace gradido {	
+	namespace data {
+		class LedgerAnchor;
+	}
 	namespace interaction {
 		namespace createConfirmedTransaction {
 			class Context;
@@ -35,7 +38,11 @@ namespace gradido {
 			//! validate and generate confirmed transaction
 			//! throw if gradido transaction isn't valid
 			//! \return false if transaction already exist
-			virtual bool createAndAddConfirmedTransaction(data::ConstGradidoTransactionPtr gradidoTransaction, memory::ConstBlockPtr messageId, data::Timestamp confirmedAt) = 0;
+			virtual bool createAndAddConfirmedTransaction(
+				data::ConstGradidoTransactionPtr gradidoTransaction, 
+				const data::LedgerAnchor& ledgerAnchor,
+				data::Timestamp confirmedAt
+			) = 0;
 			virtual void addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent) = 0;
 			virtual void removeTransactionTriggerEvent(const data::TransactionTriggerEvent& transactionTriggerEvent) = 0;
 
@@ -58,8 +65,8 @@ namespace gradido {
 			virtual ConstTransactionEntryPtr getTransactionForId(uint64_t transactionId) const = 0;
 
 			//! \param filter use to speed up search if infos exist to narrow down search transactions range
-			virtual ConstTransactionEntryPtr findByMessageId(
-				memory::ConstBlockPtr messageId,
+			virtual ConstTransactionEntryPtr findByLedgerAnchor(
+				const data::LedgerAnchor& ledgerAnchor,
 				const Filter& filter = Filter::ALL_TRANSACTIONS
 			) const;
 

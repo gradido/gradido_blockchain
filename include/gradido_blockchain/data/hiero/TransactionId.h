@@ -128,7 +128,7 @@ namespace std {
 	template <>
 	struct hash<hiero::TransactionId> {
 		std::size_t operator()(const hiero::TransactionId& tid) const noexcept {
-			return std::hash<int64_t>()(tid.getTransactionValidStart().getSeconds());
+			return tid.getTransactionValidStart().getSeconds();
 		}
 	};
 }

@@ -1,5 +1,6 @@
 #include "EmptyInMemoryTest.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
+#include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
@@ -35,9 +36,8 @@ TEST_F(EmptyInMemoryTest, AddCommunityRootAsFirst) {
 	auto communityRootRaw = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
 	interaction::deserialize::Context deserializer(communityRootRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
 	deserializer.run();
-	interaction::serialize::Context serializeTransactionId({ confirmedAt, hieroAccount });
 	ASSERT_TRUE(deserializer.isGradidoTransaction());	
-	EXPECT_TRUE(mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), serializeTransactionId.run(), confirmedAt));
+	EXPECT_TRUE(mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), LedgerAnchor({ confirmedAt, hieroAccount }), confirmedAt));
 }
 
 TEST_F(EmptyInMemoryTest, InvalidRegisterAddressAsFirst) {
@@ -46,9 +46,8 @@ TEST_F(EmptyInMemoryTest, InvalidRegisterAddressAsFirst) {
 	interaction::serialize::Context deserializeTransactionId({ confirmedAt, hieroAccount });
 	deserializer.run();
 	ASSERT_TRUE(deserializer.isGradidoTransaction());
-	interaction::serialize::Context serializeTransactionId({ confirmedAt, hieroAccount });
 	EXPECT_THROW(
-		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), serializeTransactionId.run(), confirmedAt),
+		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), LedgerAnchor({ confirmedAt, hieroAccount }), confirmedAt),
 		BlockchainOrderException
 	);
 }
@@ -57,9 +56,8 @@ TEST_F(EmptyInMemoryTest, InvalidGradidoCreationAsFirst) {
 	interaction::deserialize::Context deserializer(creationRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
 	deserializer.run();
 	ASSERT_TRUE(deserializer.isGradidoTransaction());
-	interaction::serialize::Context serializeTransactionId({ confirmedAt, hieroAccount });
 	EXPECT_THROW(
-		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), serializeTransactionId.run(), confirmedAt),
+		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), LedgerAnchor({ confirmedAt, hieroAccount }), confirmedAt),
 		validate::WrongAddressTypeException
 	);
 }
@@ -68,9 +66,8 @@ TEST_F(EmptyInMemoryTest, InvalidGradidoTransferAsFirst) {
 	interaction::deserialize::Context deserializer(transferRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
 	deserializer.run();
 	ASSERT_TRUE(deserializer.isGradidoTransaction());
-	interaction::serialize::Context serializeTransactionId({ confirmedAt, hieroAccount });
 	EXPECT_THROW(
-		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), serializeTransactionId.run(), confirmedAt),
+		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), LedgerAnchor({ confirmedAt, hieroAccount }), confirmedAt),
 		InsufficientBalanceException
 	);
 }
@@ -80,9 +77,8 @@ TEST_F(EmptyInMemoryTest, InvalidGradidoDeferredTransferAsFirst) {
 	interaction::deserialize::Context deserializer(deferredTransferRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
 	deserializer.run();
 	ASSERT_TRUE(deserializer.isGradidoTransaction());
-	interaction::serialize::Context serializeTransactionId({ confirmedAt, hieroAccount });
 	EXPECT_THROW(
-		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), serializeTransactionId.run(), confirmedAt),
+		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), LedgerAnchor({ confirmedAt, hieroAccount }), confirmedAt),
 		InsufficientBalanceException
 	);
 }

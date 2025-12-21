@@ -52,6 +52,23 @@ namespace gradido {
 
 					return str;
 				}
+
+				// TODO: check exact values in protobuf manuel and in protopuf implementation
+				static size_t serializedSize(uint64_t ui64Value) {
+					if (ui64Value < 128) {
+						return 1;
+					}
+					else if (ui64Value < 16000) {
+						return 2;
+					}
+					else if (ui64Value < 2000000) {
+						return 3;
+					}
+					else if (ui64Value < pow(2, 35)) {
+						return 5;
+					}
+					return 10;
+				}
 			};
 		}
 	}

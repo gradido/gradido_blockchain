@@ -1,5 +1,7 @@
 #include "gtest/gtest.h"
+#include "gradido_blockchain/data/BalanceDerivationType.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
@@ -25,8 +27,9 @@ TEST(ValidateConfirmedTransactionTest, validCommunityRootGradidoTransaction) {
 		make_unique<GradidoTransaction>(*deserializer.getGradidoTransaction()),
 		confirmedAt,
 		GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
-		make_shared<memory::Block>(memory::Block::fromBase64(hieroTransactionIdBase64)),
-		{}
+		LedgerAnchor(defaultHieroTransactionId),
+		{},
+		BalanceDerivationType::EXTERN
 	);
 
 	validate::Context c(confirmedTransaction);
@@ -44,8 +47,9 @@ TEST(ValidateConfirmedTransactionTest, invalidWrongVersion) {
 		make_unique<GradidoTransaction>(*deserializer.getGradidoTransaction()),
 		confirmedAt,
 		"1",
-		make_shared<memory::Block>(32),
-		{}
+		LedgerAnchor(defaultHieroTransactionId),
+		{},
+		BalanceDerivationType::EXTERN
 	);
 
 	validate::Context c(confirmedTransaction);
@@ -64,14 +68,16 @@ TEST(ValidateConfirmedTransactionTest, invalidMessageID) {
 		make_unique<GradidoTransaction>(*deserializer.getGradidoTransaction()),
 		confirmedAt,
 		GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
-		make_shared<memory::Block>(10),
-		{}
+		LedgerAnchor(),
+		{},
+		BalanceDerivationType::EXTERN
 	);
 
 	validate::Context c(confirmedTransaction);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
 
+/* rule disabled for the time, because hedera move the confirmation date before the creation date
 TEST(ValidateConfirmedTransactionTest, invalidConfirmedBeforeCreated) {
 	auto communityRootRaw = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
 	interaction::deserialize::Context deserializer(communityRootRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
@@ -83,10 +89,12 @@ TEST(ValidateConfirmedTransactionTest, invalidConfirmedBeforeCreated) {
 		make_unique<GradidoTransaction>(*deserializer.getGradidoTransaction()),
 		createdAt - chrono::seconds{ 1 },
 		GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
-		make_shared<memory::Block>(32),
-		{}
+		LedgerAnchor(defaultHieroTransactionId),
+		{},
+		BalanceDerivationType::EXTERN
 	);
 
 	validate::Context c(confirmedTransaction);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
+*/

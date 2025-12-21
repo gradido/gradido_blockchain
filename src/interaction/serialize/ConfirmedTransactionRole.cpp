@@ -1,5 +1,7 @@
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/serialize/ConfirmedTransactionRole.h"
+#include "gradido_blockchain/interaction/serialize/HieroTransactionIdRole.h"
+#include "gradido_blockchain/interaction/serialize/LedgerAnchorRole.h"
 #include "gradido_blockchain/interaction/serialize/Exceptions.h"
 
 namespace gradido {
@@ -40,10 +42,11 @@ namespace gradido {
 				};
 				message["version_number"_f] = mConfirmedTransaction.getVersionNumber();
 				message["running_hash"_f] = mConfirmedTransaction.getRunningHash()->copyAsVector();
-				if (mConfirmedTransaction.getMessageId()) {
-					message["message_id"_f] = mConfirmedTransaction.getMessageId()->copyAsVector();
-				}
+				LedgerAnchorRole ledgerAnchorRole(mConfirmedTransaction.getLedgerAnchor());
+				const auto& ledgerAnchor = mConfirmedTransaction.getLedgerAnchor();
+				message["ledger_anchor"_f] = ledgerAnchorRole.getMessage();
 				message["account_balances"_f] = accountBalanceMessages;
+				message["balance_derivation"_f] = mConfirmedTransaction.getBalanceDerivationType();
 				
 				return message;
 			}
@@ -55,8 +58,9 @@ namespace gradido {
 					+ crypto_generichash_BYTES 
 					+ 32 
 					+ mConfirmedTransaction.getAccountBalances().size() * 42
-					+ 10;
+					+ 12;
 				size += mGradidoTransactionRole.calculateSerializedSize();
+				size += LedgerAnchorRole::serializedSize(mConfirmedTransaction.getLedgerAnchor());
 				//printf("calculated confirmed transaction size: %lld\n", size);
 				return size;
 			}

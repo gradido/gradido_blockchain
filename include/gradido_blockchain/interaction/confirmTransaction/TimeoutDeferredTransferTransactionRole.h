@@ -11,7 +11,7 @@ namespace gradido {
             public:
                 TimeoutDeferredTransferTransactionRole(
                     std::shared_ptr<const data::GradidoTransaction> gradidoTransaction,
-                    memory::ConstBlockPtr messageId,
+                    const data::LedgerAnchor& ledgerAnchor,
                     data::Timestamp confirmedAt,
                     std::shared_ptr<blockchain::Abstract> blockchain
                 );

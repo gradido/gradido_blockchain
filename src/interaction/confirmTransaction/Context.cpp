@@ -1,6 +1,7 @@
 #include "gradido_blockchain/interaction/confirmTransaction/Context.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/TransactionRelationType.h"
+#include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/interaction/confirmTransaction/CommunityRootTransactionRole.h"
@@ -24,27 +25,28 @@ using namespace std;
 namespace gradido {
 	using namespace data;
 	using namespace blockchain;
+	using data::LedgerAnchor;
 
     namespace interaction {
         namespace confirmTransaction {
 
 			std::shared_ptr<AbstractRole> Context::createRole(
 				std::shared_ptr<const data::GradidoTransaction> gradidoTransaction,
-				memory::ConstBlockPtr messageId,
+				const data::LedgerAnchor& ledgerAnchor,
 				data::Timestamp confirmedAt
 			) const {
 				// attention! work only if order in enum don't change
 				// todo: check if it is possible to use a template class for that
 				const std::array<std::function<std::shared_ptr<AbstractRole>()>, enum_integer(TransactionType::MAX_VALUE)> roleCreators = {
 					[&]() { return nullptr; },
-					[&]() { return std::make_shared<CreationTransactionRole>(gradidoTransaction, messageId, confirmedAt, mBlockchain); },
-					[&]() { return std::make_shared<TransferTransactionRole>(gradidoTransaction, messageId, confirmedAt, mBlockchain); },
+					[&]() { return std::make_shared<CreationTransactionRole>(gradidoTransaction, ledgerAnchor, confirmedAt, mBlockchain); },
+					[&]() { return std::make_shared<TransferTransactionRole>(gradidoTransaction, ledgerAnchor, confirmedAt, mBlockchain); },
 					[&]() { return nullptr; },
-					[&]() { return std::make_shared<RegisterAddressRole>(gradidoTransaction, messageId, confirmedAt, mBlockchain); },
-					[&]() { return std::make_shared<DeferredTransferTransactionRole>(gradidoTransaction, messageId, confirmedAt, mBlockchain); },
-					[&]() { return std::make_shared<CommunityRootTransactionRole>(gradidoTransaction, messageId, confirmedAt, mBlockchain); },
-					[&]() { return std::make_shared<RedeemDeferredTransferTransactionRole>(gradidoTransaction, messageId, confirmedAt, mBlockchain); },
-					[&]() { return std::make_shared<TimeoutDeferredTransferTransactionRole>(gradidoTransaction, messageId, confirmedAt, mBlockchain); }
+					[&]() { return std::make_shared<RegisterAddressRole>(gradidoTransaction, ledgerAnchor, confirmedAt, mBlockchain); },
+					[&]() { return std::make_shared<DeferredTransferTransactionRole>(gradidoTransaction, ledgerAnchor, confirmedAt, mBlockchain); },
+					[&]() { return std::make_shared<CommunityRootTransactionRole>(gradidoTransaction, ledgerAnchor, confirmedAt, mBlockchain); },
+					[&]() { return std::make_shared<RedeemDeferredTransferTransactionRole>(gradidoTransaction, ledgerAnchor, confirmedAt, mBlockchain); },
+					[&]() { return std::make_shared<TimeoutDeferredTransferTransactionRole>(gradidoTransaction, ledgerAnchor, confirmedAt, mBlockchain); }
 				};
 
 				auto type = gradidoTransaction->getTransactionBody()->getTransactionType();
@@ -126,7 +128,7 @@ namespace gradido {
 					createTransactionByEvent::Context createTransactionByEvent(mBlockchain);
 					if (!mBlockchain->createAndAddConfirmedTransaction(
 						createTransactionByEvent.run(transactionTriggerEvent),
-						nullptr,
+						LedgerAnchor(transactionTriggerEvent->getLinkedTransactionId(), LedgerAnchor::Type::NODE_TRIGGER_TRANSACTION_ID),
 						transactionTriggerEvent->getTargetDate()
 					)
 						) {
