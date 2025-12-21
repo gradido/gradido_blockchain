@@ -49,7 +49,7 @@ namespace gradido {
 			bool createAndAddConfirmedTransactionExtern(
 				data::ConstGradidoTransactionPtr gradidoTransaction,
 				uint64_t legacyTransactionNr,
-				std::vector<data::AccountBalance>&& accountBalances
+				std::vector<data::AccountBalance> accountBalances
 			);
 			virtual void addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent) override;
 			virtual void removeTransactionTriggerEvent(const data::TransactionTriggerEvent& transactionTriggerEvent) override;
