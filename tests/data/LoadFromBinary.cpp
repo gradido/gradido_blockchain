@@ -175,7 +175,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 		try {
 			deserializer.run();
 			if (deserializer.getType() == deserialize::Type::UNKNOWN) {
-				printf("unknown type, size: %u", transactionSize);
+				printf("unknown type, size: %u\n", transactionSize);
 				break;
 			}
 			// transactions.emplace(transactions.end(), deserializer.getGradidoTransaction());

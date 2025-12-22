@@ -52,7 +52,7 @@ namespace gradido {
                    id,
                    //std::make_unique<data::GradidoTransaction>(*mGradidoTransaction),
                    std::make_shared<data::GradidoTransaction>(*mGradidoTransaction),
-                   //mGradidoTransaction, // don't work as native node module. TODO: find underlying issue
+                   // mGradidoTransaction, // don't work as native node module. TODO: find underlying issue
                    mConfirmedAt,
                    GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
                    mLedgerAnchor,
