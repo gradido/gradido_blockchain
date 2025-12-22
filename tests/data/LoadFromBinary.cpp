@@ -1,5 +1,6 @@
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
+#include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/data/hiero/AccountId.h"
 #include "gradido_blockchain/lib/Profiler.h"
@@ -28,7 +29,7 @@ using std::make_shared, std::shared_ptr;
 using hiero::TransactionId, hiero::AccountId;
 
 using gradido::blockchain::InMemoryProvider;
-using gradido::data::GradidoTransaction, gradido::data::ConstGradidoTransactionPtr;
+using gradido::data::GradidoTransaction, gradido::data::ConstGradidoTransactionPtr, gradido::data::LedgerAnchor;
 using serialization::toJsonString;
 using namespace gradido::interaction;
 
@@ -171,24 +172,31 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 		auto buffer = make_shared<memory::Block>(transactionSize);
 		f.read((char*)(buffer->data()), transactionSize);
 		deserialize::Context deserializer(buffer, deserialize::Type::GRADIDO_TRANSACTION);
-		deserializer.run();
-		// transactions.emplace(transactions.end(), deserializer.getGradidoTransaction());
-		// printf("\r%llu", transactions.size());
-		auto tx = deserializer.getGradidoTransaction();
-		// trigger body deserialization
 		try {
-			if (tx->getTransactionBody()->isCommunityRoot()) {
-				printf("community root \n");
-				int zahl = 1;
+			deserializer.run();
+			if (deserializer.getType() == deserialize::Type::UNKNOWN) {
+				printf("unknown type, size: %u", transactionSize);
+				break;
 			}
-			
-			// printf("added: %s\n", toJsonString(*tx, true).data());
-			mTransactions.emplace_back(tx);
+			// transactions.emplace(transactions.end(), deserializer.getGradidoTransaction());
+			// printf("\r%llu", transactions.size());
+			auto tx = deserializer.getGradidoTransaction();
+			if (!tx && deserializer.getType() == deserialize::Type::UNKNOWN) {
+				break;
+			}
+			// trigger body deserialization
+			try {
+				// printf("added: %s\n", toJsonString(*tx, true).data());
+				mTransactions.emplace_back(tx);
+			}
+			catch (...) {
+				printf("cannot deserialize transaction body from: %s\n", toJsonString(*tx, true).data());
+				printf("size: %u\n", transactionSize);
+			}
 		}
 		catch (...) {
-			printf("cannot deserialize transaction body from: %s\n", toJsonString(*tx, true).data());
-			printf("size: %u\n", transactionSize);
-		}		
+			printf("error on transaction deserialize: %u\n", transactionSize);
+		}
 	}
 	// printf("\n");
 	printf("%s time to load and deserialize %d transactions from binary file\n",
@@ -197,12 +205,13 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 	timeUsed.reset();
 	int count = 0;
 	for (auto& tx : mTransactions) {
+		if (!tx->getTransactionBody()) {
+			break;
+		}
 		auto createdAt = tx->getTransactionBody()->getCreatedAt();
 		TransactionId transactionId(createdAt, defaultHieroAccount);
-		serialize::Context serializer(transactionId);
-		auto transactionIdRaw = serializer.run();
 		try {
-			blockchain->createAndAddConfirmedTransaction(tx, transactionIdRaw, createdAt);
+			blockchain->createAndAddConfirmedTransaction(tx, LedgerAnchor(transactionId), createdAt);
 		}
 		catch (GradidoBlockchainException& ex) {
 			printf("\nexception: %s\n", ex.getFullString().data());

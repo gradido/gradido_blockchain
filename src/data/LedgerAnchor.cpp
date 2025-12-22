@@ -4,7 +4,9 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
 #include "loguru/loguru.hpp"
+#include "magic_enum/magic_enum.hpp"
 
+using namespace magic_enum;
 using std::shared_ptr, std::to_string;
 using memory::ConstBlockPtr;
 using hiero::TransactionId;
@@ -33,14 +35,21 @@ namespace gradido {
 		LedgerAnchor::LedgerAnchor(uint64_t transactionId, Type type)
 			: mType(type)
 		{
-			if (Type::LEGACY_GRADIDO_DB_TRANSACTION_ID == type) {
+			if (Type::LEGACY_GRADIDO_DB_TRANSACTION_ID == type ||
+				Type::LEGACY_GRADIDO_DB_COMMUNITY_ID == type ||
+				Type::LEGACY_GRADIDO_DB_USER_ID == type ||
+				Type::LEGACY_GRADIDO_DB_CONTRIBUTION_ID == type ||
+				Type::LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID == type) {
 				mValue = AnchorValue(std::in_place_index<3>, transactionId);
 			}
 			else if (Type::NODE_TRIGGER_TRANSACTION_ID == type) {
 				mValue = AnchorValue(std::in_place_index<4>, transactionId);
 			}
 			else {
-				throw GradidoNodeInvalidDataException("for uint64_t transactionId only types LEGACY_GRADIDO_DB_TRANSACTION_ID and NODE_TRIGGER_TRANSACTION_ID are allowed");
+				throw GradidoInvalidEnumException(
+					"for uint64_t transactionId only types LEGACY_GRADIDO_DB_* and NODE_TRIGGER_TRANSACTION_ID are allowed",
+					enum_name(type).data()
+				);
 			}
 		}
 
@@ -85,7 +94,7 @@ namespace gradido {
 					LOG_F(WARNING, "empty node triggered transaction id in ledger anchor");
 					return "empty node triggered transaction id";
 				}
-				return to_string(getLegacyTransactionId());
+				return to_string(getNodeTriggeredTransactionId());
 			}
 			return "empty";
 		}
