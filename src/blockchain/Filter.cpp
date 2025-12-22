@@ -90,6 +90,15 @@ namespace gradido {
 			0, 0, nullptr, SearchDirection::DESC, Pagination(0, 0)
 		);
 
+		Filter Filter::lastBalanceFor(memory::ConstBlockPtr updatedBalancePublicKey)
+		{
+			Filter f;
+			f.updatedBalancePublicKey = updatedBalancePublicKey;
+			f.pagination.size = 1;
+			f.searchDirection = SearchDirection::DESC;
+			return f;
+		}
+
 		FilterResult Filter::matches(std::shared_ptr<const TransactionEntry> entry, FilterCriteria type) const
 		{
 			// without needing deserialize transaction
@@ -142,6 +151,12 @@ namespace gradido {
 					return FilterResult::DISMISS;
 				}				
 			}	
+			if ((type & FilterCriteria::UPDATED_BALANCED_PUBLIC_KEY) == FilterCriteria::UPDATED_BALANCED_PUBLIC_KEY)
+			{
+				if (updatedBalancePublicKey && !confirmedTransaction->isBalanceUpdated(*updatedBalancePublicKey)) {
+					return FilterResult::DISMISS;
+				}
+			}
 
 			if ((type & FilterCriteria::FILTER_FUNCTION) == FilterCriteria::FILTER_FUNCTION) {
 				if (filterFunction) {

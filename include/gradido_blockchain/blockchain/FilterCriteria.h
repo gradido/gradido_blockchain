@@ -15,7 +15,8 @@ namespace gradido {
 			TIMEPOINT_INTERVAL = 1UL << 3,
 			FILTER_FUNCTION = 1UL << 4,
 			TRANSACTION_TYPE = 1UL << 5,
-			MAX = (1UL << 6) - 1
+			UPDATED_BALANCED_PUBLIC_KEY = 1UL << 6,
+			MAX = (1UL << 7) - 1
 		};
 
 		constexpr inline FilterCriteria operator | (FilterCriteria lhs, FilterCriteria rhs)

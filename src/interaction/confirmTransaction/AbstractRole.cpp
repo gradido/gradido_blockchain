@@ -79,7 +79,7 @@ namespace gradido {
                 FilterBuilder builder;
                 GradidoUnit previousDecayedAccountBalance;
                 mBlockchain->findOne(builder
-                    .setInvolvedPublicKey(publicKey)
+                    .setUpdatedBalancePublicKey(publicKey)
                     .setSearchDirection(SearchDirection::DESC)
                     .setMaxTransactionNr(maxTransactionNr)
                     .setCoinCommunityId(communityId)

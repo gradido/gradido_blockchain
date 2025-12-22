@@ -123,12 +123,20 @@ namespace gradido {
 					return false;
 				}
 			}
-			for (auto& accountBalance: mAccountBalances) {
+			if (isBalanceUpdated(publicKey)) {
+				return true;
+			}
+			return getGradidoTransaction()->isInvolved(publicKey);
+		}
+
+		bool ConfirmedTransaction::isBalanceUpdated(const memory::Block& publicKey) const
+		{
+			for (auto& accountBalance : mAccountBalances) {
 				if (accountBalance.getPublicKey()->isTheSame(publicKey)) {
 					return true;
 				}
 			}
-			return getGradidoTransaction()->isInvolved(publicKey);
+			return false;
 		}
 
 		std::vector<memory::ConstBlockPtr> ConfirmedTransaction::getInvolvedAddresses() const

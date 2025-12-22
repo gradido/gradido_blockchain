@@ -70,7 +70,8 @@ namespace gradido {
 				date::month month,
 				uint64_t transactionNr,
 				const uint32_t* addressIndices,
-				uint16_t addressIndiceCount
+				uint16_t addressIndiceCount,
+				uint8_t isBalanceChanging
 			);
 			void clearIndexEntries(); 			
 			uint64_t				 mMaxTransactionNr;
@@ -83,9 +84,12 @@ namespace gradido {
 				uint32_t						coinCommunityIdIndex;
 				gradido::data::TransactionType	transactionType;
 				uint8_t							addressIndiceCount;
+				// Bitmask for addressIndices, if bit is set, transaction has changed account balance of addressIndex
+				uint8_t							isBalanceChanging;
 				gradido::blockchain::FilterResult isMatchingFilter(
 					const gradido::blockchain::Filter& filter, 
 					const uint32_t publicKeyIndex,
+					const uint32_t balanceChangingIndex,
 					gradido::blockchain::AbstractProvider* blockchainProvider
 				) const;
 			};
@@ -121,7 +125,6 @@ namespace gradido {
 			}
 			return interval;
 		}
-
 	}
 }
 #endif //__GRADIDO_BLOCKCHAIN_BLOCKCHAIN_TRANSACTION_INDEX_H

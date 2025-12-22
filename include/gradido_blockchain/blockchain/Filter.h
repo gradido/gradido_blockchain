@@ -56,16 +56,18 @@ namespace gradido {
 			uint64_t maxTransactionNr;
 			//! return only transaction in which the public key is involved, either directly in the transaction or as signer
 			memory::ConstBlockPtr involvedPublicKey;
+			//! return only transaction in which public key account balance was changed
+			memory::ConstBlockPtr updatedBalancePublicKey;
 			//! search direction and result order, default: DESC
 			SearchDirection searchDirection;
+			//! transaction type
+			data::TransactionType transactionType;
 			//! search result scope 
 			Pagination pagination;				
 			//! for colored coins, default = "" no filtering
 			std::string coinCommunityId;
 			//! interval between two dates with 1 month resolution
-			TimepointInterval timepointInterval;
-			//! transaction type
-			data::TransactionType transactionType;
+			TimepointInterval timepointInterval;			
 
 			//! for advanced filtering, to prevent unnecessary copy around large amounts of transactions
 			//! see FilterFunctionResult for more infos
@@ -81,6 +83,7 @@ namespace gradido {
 			static const Filter LAST_TRANSACTION;
 			static const Filter FIRST_TRANSACTION;
 			static const Filter ALL_TRANSACTIONS;
+			static Filter lastBalanceFor(memory::ConstBlockPtr updatedBalancePublicKey);
 		}; 
 	}
 }

@@ -46,6 +46,14 @@ namespace gradido {
 				);
 			};
 
+			auto updateBalanceChangingTx = [&](const ConstBlockPtr& pubKeyPtr) -> bool {
+				assert(pubKeyPtr);
+				return updateLastBalanceChangingTransactionNr(
+					publicKeyDictionary.getIndexForBinary(*pubKeyPtr),
+					txNr
+				);
+			};
+
 			if (body->isCommunityRoot()) 
 			{
 				const auto& communityRoot = body->getCommunityRoot();
@@ -76,6 +84,11 @@ namespace gradido {
 					LOG_F(WARNING, "couldn't add deferred address Key to Address Indices");
 				}
 			}
+			const auto& accountBalances = transactionEntry.getConfirmedTransaction()->getAccountBalances();
+			for (const auto& accountBalance : accountBalances) {
+				updateBalanceChangingTx(accountBalance.getPublicKey());
+			}
+
 		}
 
 		bool AddressIndex::addTransactionNrForIndex(uint32_t publicKeyIndex, uint64_t transactionNr, data::AddressType addressType)
@@ -105,6 +118,16 @@ namespace gradido {
 			}
 		}
 
+		bool AddressIndex::updateLastBalanceChangingTransactionNr(uint32_t publicKeyIndex, uint64_t transactionNr)
+		{
+			auto it = mIndexTransactionNrs.find(publicKeyIndex);
+			if (it != mIndexTransactionNrs.end()) {
+				it->second.lastBalanceChangingTransactionNr = transactionNr;
+				return true;
+			}
+			return false;
+		}
+
 		const vector<uint64_t>& AddressIndex::getTransactionsNrs(uint32_t publicKeyIndex) const
 		{
 			auto it = mIndexTransactionNrs.find(publicKeyIndex);
@@ -121,6 +144,15 @@ namespace gradido {
 				return AddressType::NONE;
 			}
 			return it->second.addressType;
+		}
+
+		uint64_t AddressIndex::lastBalanceChanged(uint32_t publicKeyIndex) const
+		{
+			auto it = mIndexTransactionNrs.find(publicKeyIndex);
+			if (it == mIndexTransactionNrs.end()) {
+				return 0;
+			}
+			return it->second.lastBalanceChangingTransactionNr;
 		}
 
 		bool AddressIndex::isExist(uint32_t publicKeyIndex) const
