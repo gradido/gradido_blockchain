@@ -97,6 +97,9 @@ namespace gradido {
 				auto type = role->getValidationType();
 				if (lastConfirmedTransaction) {
 					type = type | interaction::validate::Type::PREVIOUS;
+					if (!role->isExternBalanceDerivationType()) {
+						type = type | interaction::validate::Type::PREVIOUS_BALANCE;
+					}
 				}
 				validate.setSenderPreviousConfirmedTransaction(lastConfirmedTransaction);
 				// throw if some error occure				

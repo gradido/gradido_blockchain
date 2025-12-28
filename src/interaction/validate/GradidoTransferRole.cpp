@@ -70,6 +70,10 @@ namespace gradido {
 					if (!senderPreviousConfirmedTransaction) {
 						throw BlockchainOrderException("transfer transaction not allowed as first transaction on blockchain");
 					}
+				}
+
+				if ((type & Type::PREVIOUS_BALANCE) == Type::PREVIOUS_BALANCE)
+				{
 					validatePrevious(*senderPreviousConfirmedTransaction, blockchain);
 				}
 			}
