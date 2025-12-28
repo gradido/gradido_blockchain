@@ -68,8 +68,8 @@ namespace gradido {
 
 				// simple validate
 				// to expensive, better check in other thread before adding to blockchain
-				// interaction::validate::Context validateGradidoTransaction(*role->getGradidoTransaction());
-				//validateGradidoTransaction.run(interaction::validate::Type::SINGLE, mBlockchain);
+				interaction::validate::Context validateGradidoTransaction(*role->getGradidoTransaction());
+				validateGradidoTransaction.run(interaction::validate::Type::SINGLE, mBlockchain);
 
 				// check if already exist
 				auto tx = role->getGradidoTransaction();
