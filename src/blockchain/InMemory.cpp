@@ -81,14 +81,14 @@ namespace gradido {
 
 		bool InMemory::createAndAddConfirmedTransactionExtern(
 			data::ConstGradidoTransactionPtr gradidoTransaction,
-			uint64_t legacyTransactionNr,
+			const data::LedgerAnchor& ledgerAnchor,
 			std::vector<data::AccountBalance> accountBalances
 		) {
 			auto blockchain = getProvider()->findBlockchain(mCommunityId);
 			confirmTransaction::Context context(blockchain);
 			auto role = context.createRole(
 				gradidoTransaction,
-				LedgerAnchor(legacyTransactionNr, LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_ID),
+				ledgerAnchor,
 				gradidoTransaction->getTransactionBody()->getCreatedAt()
 			);
 			if (!role) {
