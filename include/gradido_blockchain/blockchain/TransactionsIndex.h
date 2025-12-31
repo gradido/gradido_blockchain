@@ -43,7 +43,7 @@ namespace gradido {
 			//! \brief search transaction nrs for search criteria in filter, ignore filter function
 			//! \return transaction nrs
 			std::vector<uint64_t> findTransactions(const gradido::blockchain::Filter& filter) const;
-			data::AddressType getAddressType(const memory::Block& publicKey) const;
+			data::AddressType getAddressType(const memory::ConstBlockPtr& publicKeyPtr) const;
 
 			//! count all, ignore pagination
 			size_t countTransactions(const gradido::blockchain::Filter& filter) const;
@@ -93,7 +93,7 @@ namespace gradido {
 					gradido::blockchain::AbstractProvider* blockchainProvider
 				) const;
 			};
-			Dictionary mPublicKeyDictionary;
+			PublicKeyDictionary mPublicKeyDictionary;
 			AddressIndex mAddressIndex;
 			std::map<uint32_t, data::AddressType> mPublicKeyAddressTypes;
 			AbstractProvider* mBlockchainProvider;

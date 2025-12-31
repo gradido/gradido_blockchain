@@ -23,12 +23,12 @@ namespace gradido {
 			inline uint32_t getCommunityIdIndex(std::string_view communityId);
 			inline const std::string getCommunityIdString(uint32_t index);
 		protected: 
-			Dictionary mCoinCommunityIdDicitionary;
+			CommunityIdDictionary mCoinCommunityIdDicitionary;
 		};
 
 		uint32_t AbstractProvider::getCommunityIdIndex(const std::string& communityId)
 		{
-			return mCoinCommunityIdDicitionary.getIndexForBinary(communityId);
+			return mCoinCommunityIdDicitionary.getIndexForData(communityId).value();
 		}
 		uint32_t AbstractProvider::getCommunityIdIndex(std::string_view communityId)
 		{
@@ -36,7 +36,7 @@ namespace gradido {
 		}
 		const std::string AbstractProvider::getCommunityIdString(uint32_t index)
 		{
-			return mCoinCommunityIdDicitionary.getBinaryForIndex(index)->copyAsString();
+			return mCoinCommunityIdDicitionary.getDataForIndex(index).value();
 		}
 
 		class GroupNotFoundException : public GradidoBlockchainException

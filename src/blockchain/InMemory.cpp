@@ -225,7 +225,7 @@ namespace gradido {
 			if (!filter.involvedPublicKey) {
 				throw GradidoNodeInvalidDataException("missing public key, please use filter with involvedPublicKey set");
 			}
-			return mTransactionsIndex.getAddressType(*filter.involvedPublicKey);
+			return mTransactionsIndex.getAddressType(filter.involvedPublicKey);
 		}
 
 		

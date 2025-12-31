@@ -1,7 +1,6 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/blockchain/AddressIndex.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
-#include "gradido_blockchain/lib/Dictionary.h"
 #include "gradido_blockchain/memory/Block.h"
 
 #include "loguru/loguru.hpp"
@@ -32,7 +31,7 @@ namespace gradido {
 			mIndexTransactionNrs.clear();
 		}
 
-		void AddressIndex::addTransaction(const TransactionEntry& transactionEntry, const Dictionary& publicKeyDictionary)
+		void AddressIndex::addTransaction(const TransactionEntry& transactionEntry, const PublicKeyDictionary& publicKeyDictionary)
 		{
 			const auto& body = transactionEntry.getConfirmedTransaction()->getGradidoTransaction()->getTransactionBody();
 			uint64_t txNr = transactionEntry.getTransactionNr();
@@ -40,7 +39,7 @@ namespace gradido {
 			auto addKey = [&](const ConstBlockPtr& pubKeyPtr, AddressType type) -> bool {			
 				assert(pubKeyPtr);
 				return addTransactionNrForIndex(
-					publicKeyDictionary.getIndexForBinary(*pubKeyPtr),
+					publicKeyDictionary.getIndexForData(pubKeyPtr).value(),
 					txNr,
 					type
 				);
@@ -49,7 +48,7 @@ namespace gradido {
 			auto updateBalanceChangingTx = [&](const ConstBlockPtr& pubKeyPtr) -> bool {
 				assert(pubKeyPtr);
 				return updateLastBalanceChangingTransactionNr(
-					publicKeyDictionary.getIndexForBinary(*pubKeyPtr),
+					publicKeyDictionary.getIndexForData(pubKeyPtr).value(),
 					txNr
 				);
 			};
