@@ -42,7 +42,8 @@ template<
 class Dictionary
 {
 public:
-	Dictionary(const char* name) : mName(name) {}
+	template<typename... BackendArgs>
+	Dictionary(const char* name, BackendArgs&&... args) : mName(name), mBackend(std::forward<BackendArgs>(args)...) {}
 	virtual ~Dictionary() {};
 
 	/*!
