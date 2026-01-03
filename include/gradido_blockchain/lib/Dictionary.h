@@ -103,6 +103,8 @@ public:
 	 */
 	uint32_t getNextIndex() const;
 
+	inline Backend& getBackend() { return mBackend; }
+
 protected:
 	std::string mName;
 	Backend mBackend;
