@@ -1,10 +1,13 @@
 #ifndef __GRADIDO_BLOCKCHAIN_LIB_DICTIONARY_BACKENDS_H
 #define __GRADIDO_BLOCKCHAIN_LIB_DICTIONARY_BACKENDS_H
 
+#include "DictionaryExceptions.h"
+
 #include <optional>
 #include <unordered_map>
 #include <deque>
 #include <mutex>
+#include <limits>
 #include <shared_mutex>
 
 namespace dictionary_backend
@@ -39,25 +42,23 @@ namespace dictionary_backend
 			return mIndexDataLookup[index];
 		}
 
-		bool addDataIndex(DataType data, uint32_t index)
+		uint32_t getOrAddIndexForData(const DataType& data) 
 		{
-			if (index != mIndexDataLookup.size()) { return false; }
-			mIndexDataLookup.push_back(data);
-			auto insert2 = mDataIndexLookup.insert({ data, index });
-			if (!insert2.second) {
-				mIndexDataLookup.pop_back();
-				return false;
+			if (mIndexDataLookup.size() >= static_cast<size_t>(std::numeric_limits<uint32_t>::max())) {
+				throw DictionaryOverflowException("try to add more index data set's as uint32_t as index can handle");
 			}
-			return true;
+			uint32_t index = static_cast<uint32_t>(mIndexDataLookup.size());
+			auto insertIt = mDataIndexLookup.insert({ data, index });
+			if (!insertIt.second) {
+				return insertIt.first->second;
+			}
+			mIndexDataLookup.push_back(data);
+			return index;
 		}
 
-		uint32_t getNextIndex() const {
-			return mIndexDataLookup.size();
-		}
 	protected:
-		using MapType = std::unordered_map<DataType, uint32_t, Hash, Equal>;
 		// for finding index for specific data
-		MapType mDataIndexLookup;
+		std::unordered_map<DataType, uint32_t, Hash, Equal> mDataIndexLookup;
 		// for finding data for a specific index
 		std::deque<DataType> mIndexDataLookup;
 	};
@@ -87,17 +88,12 @@ namespace dictionary_backend
 			return mMemoryBackend.getDataForIndex(index);
 		}
 
-		bool addDataIndex(DataType data, uint32_t index)
+		uint32_t getOrAddIndexForData(const DataType& data)
 		{
 			std::lock_guard _lock(mWorkingMutex);
-			return mMemoryBackend.addDataIndex(data, index);
+			return mMemoryBackend.getOrAddIndexForData(data);
 		}
 
-		uint32_t getNextIndex() const 
-		{
-			std::lock_guard _lock(mWorkingMutex);
-			return mMemoryBackend.getNextIndex();
-		}
 	protected:
 		Memory<DataType, Hash, Equal> mMemoryBackend;
 		mutable std::mutex mWorkingMutex;
@@ -129,16 +125,10 @@ namespace dictionary_backend
 			return mMemoryBackend.getDataForIndex(index);
 		}
 
-		bool addDataIndex(DataType data, uint32_t index)
+		uint32_t getOrAddIndexForData(const DataType& data)
 		{
 			std::unique_lock _lock(mSharedMutex);
-			return mMemoryBackend.addDataIndex(data, index);
-		}
-
-		uint32_t getNextIndex() const
-		{
-			std::shared_lock _lock(mSharedMutex);
-			return mMemoryBackend.getNextIndex();
+			return mMemoryBackend.getOrAddIndexForData(data);
 		}
 
 	protected:
