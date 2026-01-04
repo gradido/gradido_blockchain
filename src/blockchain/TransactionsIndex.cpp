@@ -22,8 +22,7 @@ namespace gradido {
 	namespace blockchain {
 
 		TransactionsIndex::TransactionsIndex(AbstractProvider* blockchainProvider)
-			: mMaxTransactionNr(0), mMinTransactionNr(0),
-			mPublicKeyDictionary("PublicKey"), mBlockchainProvider(blockchainProvider)
+			: mMaxTransactionNr(0), mMinTransactionNr(0), mBlockchainProvider(blockchainProvider)
 		{
 
 		}
@@ -36,7 +35,6 @@ namespace gradido {
 		void TransactionsIndex::reset()
 		{
 			clearIndexEntries();
-			mPublicKeyDictionary.reset();
 			mMaxTransactionNr = 0;
 			mMinTransactionNr = 0;
 		}
@@ -61,8 +59,8 @@ namespace gradido {
 							Value entry(kObjectType);
 							entry.AddMember("transactionNr", transactionsIndexEntry.transactionNr, alloc);
 							entry.AddMember("transactionType", serialization::toJson(transactionsIndexEntry.transactionType, alloc), alloc);
-							if (transactionsIndexEntry.coinCommunityIdIndex) {
-								entry.AddMember("coinCommunityIdIndex", transactionsIndexEntry.coinCommunityIdIndex, alloc);
+							if (transactionsIndexEntry.coinCommunityIdIndex.has_value()) {
+								entry.AddMember("coinCommunityIdIndex", transactionsIndexEntry.coinCommunityIdIndex.value(), alloc);
 							}
 							if (transactionsIndexEntry.addressIndiceCount) {
 								Value addressIndices(kArrayType);
@@ -84,7 +82,7 @@ namespace gradido {
 
 		bool TransactionsIndex::addIndicesForTransaction(
 			gradido::data::TransactionType transactionType,
-			uint32_t coinCommunityIdIndex,
+			std::optional<uint32_t> coinCommunityIdIndex,
 			date::year year,
 			date::month month,
 			uint64_t transactionNr,
@@ -137,7 +135,7 @@ namespace gradido {
 			return true;
 		}
 
-		bool TransactionsIndex::addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry)
+		bool TransactionsIndex::addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry, IMutableDictionary<memory::ConstBlockPtr>& publicKeyDictionary)
 		{
 			auto transactionNr = transactionEntry->getTransactionNr();
 
@@ -148,7 +146,7 @@ namespace gradido {
 				mMinTransactionNr = transactionNr;
 			}
 
-			uint32_t coinCommunityIndex = 0;
+			std::optional<uint32_t> coinCommunityIndex = std::nullopt;
 			
 			if (!transactionEntry->getCoinCommunityId().empty()) {
 				coinCommunityIndex = mBlockchainProvider->getCommunityIdIndex(transactionEntry->getCoinCommunityId());
@@ -160,13 +158,13 @@ namespace gradido {
 			publicKeyIndices.reserve(involvedPublicKeys.size());
 			uint8_t balanceChangingBitMask = 0;
 			for (auto& pubKey : involvedPublicKeys) {
-				auto publicKeyIndex = mPublicKeyDictionary.getOrAddIndexForData(pubKey);
+				auto publicKeyIndex = publicKeyDictionary.getOrAddIndexForData(pubKey);
 				publicKeyIndices.push_back(publicKeyIndex);
 				if (publicKeyIndices.size() < 8 && confirmedTransaction->isBalanceUpdated(*pubKey)) {
 					balanceChangingBitMask |= 1u << (publicKeyIndices.size() - 1);
 				}
 			}
-			mAddressIndex.addTransaction(*transactionEntry, mPublicKeyDictionary);
+			mAddressIndex.addTransaction(*transactionEntry, publicKeyDictionary);
 			// TODO: fill address types into mPublicKeyAddressTypes, use it for check address request
 			return addIndicesForTransaction(
 				transactionEntry->getTransactionType(),
@@ -181,14 +179,14 @@ namespace gradido {
 
 		}
 		
-		std::vector<uint64_t> TransactionsIndex::findTransactions(const Filter& originalFilter) const
+		std::vector<uint64_t> TransactionsIndex::findTransactions(const Filter& originalFilter, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const
 		{
 			uint32_t updatedBalancePublicKeyIndex = 0;
 			uint64_t lastBalanceChangedTransactionNr = 0;
 			Filter filter = originalFilter;
 
 			if (filter.updatedBalancePublicKey && !filter.updatedBalancePublicKey->isEmpty()) {
-				auto updatedBalancePublicKeyIndexOptional = mPublicKeyDictionary.getIndexForData(filter.updatedBalancePublicKey);
+				auto updatedBalancePublicKeyIndexOptional = publicKeyDictionary.getIndexForData(filter.updatedBalancePublicKey);
 				if (updatedBalancePublicKeyIndexOptional.has_value()) {
 					updatedBalancePublicKeyIndex = updatedBalancePublicKeyIndexOptional.value();
 					lastBalanceChangedTransactionNr = mAddressIndex.lastBalanceChanged(updatedBalancePublicKeyIndex);
@@ -223,7 +221,7 @@ namespace gradido {
 
 			uint32_t publicKeyIndex = 0;
 			if (filter.involvedPublicKey && !filter.involvedPublicKey->isEmpty()) {
-				auto involvedPublicKeyIndexOptional = mPublicKeyDictionary.getIndexForData(filter.involvedPublicKey);
+				auto involvedPublicKeyIndexOptional = publicKeyDictionary.getIndexForData(filter.involvedPublicKey);
 				if (involvedPublicKeyIndexOptional.has_value()) {
 					publicKeyIndex = involvedPublicKeyIndexOptional.value();
 				}
@@ -286,16 +284,16 @@ namespace gradido {
 			return result;
 		}
 
-		AddressType TransactionsIndex::getAddressType(const memory::ConstBlockPtr& publicKeyPtr) const
+		AddressType TransactionsIndex::getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const
 		{
-			auto publicKeyIndexOptional = mPublicKeyDictionary.getIndexForData(publicKeyPtr);
+			auto publicKeyIndexOptional = publicKeyDictionary.getIndexForData(publicKeyPtr);
 			if (!publicKeyIndexOptional.has_value()) {
 				return AddressType::NONE;
 			}
 			return mAddressIndex.getAddressType(publicKeyIndexOptional.value());
 		}
 
-		size_t TransactionsIndex::countTransactions(const Filter& originalFilter) const
+		size_t TransactionsIndex::countTransactions(const Filter& originalFilter, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const
 		{
 			// prefilter, early exit
 			uint32_t updatedBalancePublicKeyIndex = 0;
@@ -303,7 +301,7 @@ namespace gradido {
 			Filter filter = originalFilter;
 
 			if (filter.updatedBalancePublicKey && !filter.updatedBalancePublicKey->isEmpty()) {
-				auto updatedBalancePublicKeyIndexOptional = mPublicKeyDictionary.getIndexForData(filter.updatedBalancePublicKey);
+				auto updatedBalancePublicKeyIndexOptional = publicKeyDictionary.getIndexForData(filter.updatedBalancePublicKey);
 				if (updatedBalancePublicKeyIndexOptional.has_value()) {
 					updatedBalancePublicKeyIndex = updatedBalancePublicKeyIndexOptional.value();
 					lastBalanceChangedTransactionNr = mAddressIndex.lastBalanceChanged(updatedBalancePublicKeyIndex);
@@ -323,7 +321,7 @@ namespace gradido {
 
 			uint32_t publicKeyIndex = 0;
 			if (filter.involvedPublicKey && !filter.involvedPublicKey->isEmpty()) {
-				auto involvedPublicKeyIndexOptional = mPublicKeyDictionary.getIndexForData(filter.involvedPublicKey);
+				auto involvedPublicKeyIndexOptional = publicKeyDictionary.getIndexForData(filter.involvedPublicKey);
 				if (involvedPublicKeyIndexOptional.has_value()) {
 					publicKeyIndex = involvedPublicKeyIndexOptional.value();
 				}
@@ -431,11 +429,11 @@ namespace gradido {
 				&& filter.transactionType != transactionType) {
 				return FilterResult::DISMISS;
 			}
-			uint32_t coinCommunityKeyIndex = 0;
+			std::optional<uint32_t> coinCommunityKeyIndex = std::nullopt;
 			if (!filter.coinCommunityId.empty()) {
 				coinCommunityKeyIndex = blockchainProvider->getCommunityIdIndex(filter.coinCommunityId);
 			}
-			if (coinCommunityKeyIndex && coinCommunityKeyIndex != coinCommunityIdIndex) {
+			if (coinCommunityKeyIndex.has_value() && coinCommunityKeyIndex.value() != coinCommunityIdIndex) {
 				return FilterResult::DISMISS;
 			}
 			if (filter.minTransactionNr && filter.minTransactionNr > transactionNr) {

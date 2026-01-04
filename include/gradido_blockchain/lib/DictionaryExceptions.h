@@ -15,13 +15,10 @@ public:
 class DictionaryOverflowException : public DictionaryException
 {
 public:
-	explicit DictionaryOverflowException(const char* what) noexcept
-		: DictionaryException(what) {}
+	explicit DictionaryOverflowException(const char* what, std::string_view dictionaryName) noexcept
+		: DictionaryException(what), mDictionaryName(dictionaryName) {}
 
 	std::string getFullString() const;
-	inline void setDictionaryName(std::string_view dictionaryName) {
-		mDictionaryName = dictionaryName;
-	}
 
 protected:
 	std::string mDictionaryName;

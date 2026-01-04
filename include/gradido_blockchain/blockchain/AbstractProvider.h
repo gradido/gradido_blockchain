@@ -18,25 +18,25 @@ namespace gradido {
 			virtual std::shared_ptr<Abstract> findBlockchain(std::string_view communityId) = 0;
 
 			// access community id index
-			inline uint32_t getCommunityIdIndex(const std::string& communityId);
-			inline uint32_t getCommunityIdIndex(std::string_view communityId);
-			inline const std::string getCommunityIdString(uint32_t index);
+			inline std::optional<uint32_t> getCommunityIdIndex(const std::string& communityId);
+			inline std::optional<uint32_t> getCommunityIdIndex(std::string_view communityId);
+			inline std::optional<std::string> getCommunityIdString(uint32_t index);
 		protected: 
 			// TODO: move into overall provider if different providers in a system should be supported at the same time
-			StringRuntimeDictionary mCommunityIdDicitionary;
+			RuntimeDictionary<std::string> mCommunityIdDicitionary;
 		};
 
-		uint32_t AbstractProvider::getCommunityIdIndex(const std::string& communityId)
+		std::optional<uint32_t> AbstractProvider::getCommunityIdIndex(const std::string& communityId)
 		{
 			return mCommunityIdDicitionary.getIndexForData(communityId).value();
 		}
 
-		uint32_t AbstractProvider::getCommunityIdIndex(std::string_view communityId)
+		std::optional<uint32_t> AbstractProvider::getCommunityIdIndex(std::string_view communityId)
 		{
 			return getCommunityIdIndex(std::string(communityId));
 		}
 
-		const std::string AbstractProvider::getCommunityIdString(uint32_t index)
+		std::optional<std::string> AbstractProvider::getCommunityIdString(uint32_t index)
 		{
 			return mCommunityIdDicitionary.getDataForIndex(index).value();
 		}

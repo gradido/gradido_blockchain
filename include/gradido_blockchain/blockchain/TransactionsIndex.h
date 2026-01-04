@@ -5,7 +5,7 @@
 #include "Filter.h"
 #include "TransactionEntry.h"
 #include "gradido_blockchain/data/AddressType.h"
-#include "gradido_blockchain/lib/Dictionary.h"
+#include "gradido_blockchain/lib/DictionaryInterface.h"
 
 #include "rapidjson/document.h"
 
@@ -38,15 +38,15 @@ namespace gradido {
 
 			rapidjson::Value serializeToJson(rapidjson::Document::AllocatorType& alloc) const;
 
-			bool addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry);
+			bool addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry, IMutableDictionary<memory::ConstBlockPtr>& publicKeyDictionary);
 
 			//! \brief search transaction nrs for search criteria in filter, ignore filter function
 			//! \return transaction nrs
-			std::vector<uint64_t> findTransactions(const gradido::blockchain::Filter& filter) const;
-			data::AddressType getAddressType(const memory::ConstBlockPtr& publicKeyPtr) const;
+			std::vector<uint64_t> findTransactions(const gradido::blockchain::Filter& filter, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
+			data::AddressType getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
 
 			//! count all, ignore pagination
-			size_t countTransactions(const gradido::blockchain::Filter& filter) const;
+			size_t countTransactions(const gradido::blockchain::Filter& filter, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
 
 			//! \brief find transaction nrs from specific month and year
 			//! \return {0, 0} if nothing found
@@ -65,7 +65,7 @@ namespace gradido {
 		protected:
 			bool addIndicesForTransaction(
 				gradido::data::TransactionType transactionType,
-				uint32_t coinCommunityIdIndex,
+				std::optional<uint32_t> coinCommunityIdIndex,
 				date::year year,
 				date::month month,
 				uint64_t transactionNr,
@@ -81,7 +81,7 @@ namespace gradido {
 			{
 				uint64_t						transactionNr;
 				uint32_t*						addressIndices;
-				uint32_t						coinCommunityIdIndex;
+				std::optional<uint32_t>			coinCommunityIdIndex;
 				gradido::data::TransactionType	transactionType;
 				uint8_t							addressIndiceCount;
 				// Bitmask for addressIndices, if bit is set, transaction has changed account balance of addressIndex
@@ -93,7 +93,6 @@ namespace gradido {
 					gradido::blockchain::AbstractProvider* blockchainProvider
 				) const;
 			};
-			PublicKeyRuntimeDictionary mPublicKeyDictionary;
 			AddressIndex mAddressIndex;
 			std::map<uint32_t, data::AddressType> mPublicKeyAddressTypes;
 			AbstractProvider* mBlockchainProvider;
