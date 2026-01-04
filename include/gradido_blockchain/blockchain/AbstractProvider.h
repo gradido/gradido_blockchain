@@ -23,7 +23,7 @@ namespace gradido {
 			inline uint32_t getCommunityIdIndex(std::string_view communityId);
 			inline const std::string getCommunityIdString(uint32_t index);
 		protected: 
-			CommunityIdDictionary mCoinCommunityIdDicitionary;
+			CommunityIdRuntimeDictionary mCoinCommunityIdDicitionary;
 		};
 
 		uint32_t AbstractProvider::getCommunityIdIndex(const std::string& communityId)

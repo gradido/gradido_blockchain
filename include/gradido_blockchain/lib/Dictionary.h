@@ -57,6 +57,7 @@ public:
 	std::optional<uint32_t> getIndexForData(const DataType& data) const;	
 
 	/*!
+	 * TODO: remove usage 
 	 * @brief Returns the data associated with a given index.
 	 * @param index The index to look up.
 	 * @return The data value associated with the index.
@@ -85,11 +86,11 @@ namespace memory {
 	using ConstBlockPtr = std::shared_ptr<const Block>;
 }
 
-using PublicKeyDictionary = 
+using PublicKeyRuntimeDictionary =
 	Dictionary<memory::ConstBlockPtr, 
 	dictionary_backend::Memory<memory::ConstBlockPtr, memory::ConstBlockPtrHash, memory::ConstBlockPtrEqual>
 >;
-using CommunityIdDictionary = Dictionary<std::string>;
+using CommunityIdRuntimeDictionary = Dictionary<std::string>;
 
 template<typename DataType, class Backend>
 void Dictionary<DataType, Backend>::reset()

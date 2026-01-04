@@ -93,7 +93,7 @@ namespace gradido {
 					gradido::blockchain::AbstractProvider* blockchainProvider
 				) const;
 			};
-			PublicKeyDictionary mPublicKeyDictionary;
+			PublicKeyRuntimeDictionary mPublicKeyDictionary;
 			AddressIndex mAddressIndex;
 			std::map<uint32_t, data::AddressType> mPublicKeyAddressTypes;
 			AbstractProvider* mBlockchainProvider;

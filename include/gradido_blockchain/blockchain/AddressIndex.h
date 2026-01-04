@@ -23,7 +23,7 @@ namespace gradido {
 
 			//! public keys need to be already in publicKeyDictionary
 			//! \return added entries count
-			void addTransaction(const TransactionEntry& transactionEntry, const PublicKeyDictionary& publicKeyDictionary);
+			void addTransaction(const TransactionEntry& transactionEntry, const PublicKeyRuntimeDictionary& publicKeyDictionary);
 			const std::vector<uint64_t>& getTransactionsNrs(uint32_t publicKeyIndex) const;
 			bool isExist(uint32_t publicKeyIndex) const;
 			data::AddressType getAddressType(uint32_t publicKeyIndex) const;
