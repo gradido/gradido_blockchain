@@ -86,11 +86,18 @@ namespace memory {
 	using ConstBlockPtr = std::shared_ptr<const Block>;
 }
 
-using PublicKeyRuntimeDictionary =
-	Dictionary<memory::ConstBlockPtr, 
+using PublicKeyRuntimeDictionary = Dictionary<
+	memory::ConstBlockPtr, 
 	dictionary_backend::Memory<memory::ConstBlockPtr, memory::ConstBlockPtrHash, memory::ConstBlockPtrEqual>
 >;
-using CommunityIdRuntimeDictionary = Dictionary<std::string>;
+
+template<class Backend>
+using PublicKeyDictionary = Dictionary<memory::ConstBlockPtr, Backend>;
+
+template<class Backend>
+using StringDictionary = Dictionary<std::string, Backend>;
+
+using StringRuntimeDictionary = StringDictionary<dictionary_backend::Memory<std::string>>;
 
 template<typename DataType, class Backend>
 void Dictionary<DataType, Backend>::reset()
