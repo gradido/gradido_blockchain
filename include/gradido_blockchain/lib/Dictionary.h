@@ -74,29 +74,29 @@ template<
 class ThreadsafeRuntimeDictionary : public RuntimeDictionary<DataType, Hash, Equal>
 {
 public:
-	ThreadsafeRuntimeDictionary(std::string_view name) : RuntimeDictionary(name) {}
+	ThreadsafeRuntimeDictionary(std::string_view name) : RuntimeDictionary<DataType, Hash, Equal>(name) {}
 
 	virtual void reset() override {
 		std::unique_lock _lock(mSharedMutex);
-		RuntimeDictionary::reset();
+		RuntimeDictionary<DataType, Hash, Equal>::reset();
 	}
 
 	virtual std::optional<uint32_t> getIndexForData(const DataType& data) const override
 	{
 		std::shared_lock _lock(mSharedMutex);
-		return RuntimeDictionary::getIndexForData(data);
+		return RuntimeDictionary<DataType, Hash, Equal>::getIndexForData(data);
 	}
 
 	virtual std::optional<const DataType&> getDataForIndex(uint32_t index) const override
 	{
 		std::shared_lock _lock(mSharedMutex);
-		return RuntimeDictionary::getDataForIndex(index);
+		return RuntimeDictionary<DataType, Hash, Equal>::getDataForIndex(index);
 	}
 
 	virtual uint32_t getOrAddIndexForData(const DataType& data) override
 	{
 		std::unique_lock _lock(mSharedMutex);
-		return RuntimeDictionary::getOrAddIndexForData(data);
+		return RuntimeDictionary<DataType, Hash, Equal>::getOrAddIndexForData(data);
 	}
 
 protected:
