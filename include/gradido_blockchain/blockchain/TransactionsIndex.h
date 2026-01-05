@@ -4,6 +4,7 @@
 #include "AddressIndex.h"
 #include "Filter.h"
 #include "TransactionEntry.h"
+#include "gradido_blockchain/export.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
 
@@ -30,7 +31,7 @@ namespace gradido {
 		* map: uint64 transaction nr, uint32 file cursor
 		* map: uint32 address index, uint64 transaction nr
 		*/
-		class TransactionsIndex
+		class GRADIDOBLOCKCHAIN_EXPORT TransactionsIndex
 		{
 		public:
 			TransactionsIndex(AbstractProvider* blockchainProvider);
