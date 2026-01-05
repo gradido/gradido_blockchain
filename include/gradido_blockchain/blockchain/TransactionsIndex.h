@@ -20,6 +20,8 @@ namespace memory {
 namespace gradido {
 	namespace blockchain {
 
+		class AbstractProvider;
+
 	/*!
 		* @author einhornimmond
 		* @date 2025-12-12
