@@ -13,7 +13,7 @@ public:
 		: GradidoBlockchainException(what) {}
 };
 
-class DictionaryOverflowException : public DictionaryException
+class GRADIDOBLOCKCHAIN_EXPORT DictionaryOverflowException : public DictionaryException
 {
 public:
 	explicit DictionaryOverflowException(const char* what, std::string_view dictionaryName) noexcept
