@@ -7,6 +7,7 @@
 #include "gradido_blockchain/interaction/deserialize/HieroAccountIdRole.h"
 #include "gradido_blockchain/interaction/deserialize/HieroTopicIdRole.h"
 #include "gradido_blockchain/interaction/deserialize/HieroTransactionIdRole.h"
+#include "gradido_blockchain/interaction/deserialize/LedgerAnchorRole.h"
 #include "gradido_blockchain/interaction/deserialize/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/deserialize/TransactionTriggerEventRole.h"
 
@@ -115,6 +116,18 @@ namespace gradido {
 						if (Type::HIERO_TRANSACTION_ID == mType) {
 							LOG_F(WARNING, "couldn't deserialize as hiero transaction id, maybe wrong type? exception: %s", ex.what());
 						}
+					}
+				}
+				if (Type::LEDGER_ANCHOR == mType) {
+					try {
+						auto result = message_coder<LedgerAnchorMessage>::decode(mData->span());
+						if (!result.has_value()) return;
+						const auto& [ledgerAnchor, bufferEnd2] = *result;
+						mLedgerAnchor = LedgerAnchorRole(ledgerAnchor);
+						return;
+					}
+					catch (std::exception& ex) {
+						LOG_F(WARNING, "couldn't deserialize as ledger anchor, maybe wrong type? exception: %s", ex.what());
 					}
 				}
 				try {

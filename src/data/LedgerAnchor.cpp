@@ -20,6 +20,12 @@ namespace gradido {
 
 		}
 
+		LedgerAnchor::LedgerAnchor(const LedgerAnchor& other)
+			: mType(other.mType), mValue(other.mValue)
+		{
+
+		}
+
 		LedgerAnchor::LedgerAnchor(const memory::Block& iotaMessageId)
 			: mType(Type::IOTA_MESSAGE_ID), mValue(iotaMessageId)
 		{
