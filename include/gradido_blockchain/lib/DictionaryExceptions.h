@@ -1,11 +1,12 @@
 #ifndef __GRADIDO_BLOCKCHAIN_LIB_DICTIONARY_EXCEPTIONS_H
 #define __GRADIDO_BLOCKCHAIN_LIB_DICTIONARY_EXCEPTIONS_H
 
+#include "gradido_blockchain/export.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
 #include <string_view>
 
-class DictionaryException : public GradidoBlockchainException
+class GRADIDOBLOCKCHAIN_EXPORT DictionaryException : public GradidoBlockchainException
 {
 public:
 	explicit DictionaryException(const char* what) noexcept 
