@@ -25,4 +25,18 @@ protected:
 	std::string mDictionaryName;
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT DictionaryMissingEntryException : public DictionaryException
+{
+public:
+	explicit DictionaryMissingEntryException(const char* what, std::string_view missingEntryValue) noexcept
+		: DictionaryException(what), mMissingEntryValue(missingEntryValue) {
+	}
+
+	std::string getFullString() const;
+
+protected:
+	std::string mMissingEntryValue;
+};
+
+
 #endif // __GRADIDO_BLOCKCHAIN_LIB_DICTIONARY_EXCEPTIONS_H

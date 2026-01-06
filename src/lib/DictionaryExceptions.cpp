@@ -6,3 +6,10 @@ std::string DictionaryOverflowException::getFullString() const
     result += ",    Dictionary name: " + mDictionaryName;
 	return result;  
 }
+
+std::string DictionaryMissingEntryException::getFullString() const
+{
+    std::string result = what();
+    result += ", missing entry: " + mMissingEntryValue;
+    return result;
+}
