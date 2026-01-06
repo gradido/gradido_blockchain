@@ -99,6 +99,7 @@ namespace gradido {
 			AddressIndex mAddressIndex;
 			std::map<uint32_t, data::AddressType> mPublicKeyAddressTypes;
 			AbstractProvider* mBlockchainProvider;
+			// TODO: check if replace std::list<std::vector> with std::deque make sense (performance side)
 			std::map<date::year, std::map<date::month, std::list<std::vector<TransactionsIndexEntry>>>> mYearMonthAddressIndexEntries;
 		};
 

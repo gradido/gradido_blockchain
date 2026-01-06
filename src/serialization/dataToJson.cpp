@@ -194,6 +194,19 @@ namespace serialization {
 			break;
 		case LedgerAnchor::Type::NODE_TRIGGER_TRANSACTION_ID:
 			obj.AddMember("nodeTriggeredTransactionId", value.getNodeTriggeredTransactionId(), alloc);
+			break;
+		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_COMMUNITY_ID:
+			obj.AddMember("legacyCommunityId", value.getLegacyTransactionId(), alloc);
+			break;
+		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_CONTRIBUTION_ID:
+			obj.AddMember("legacyContributionId", value.getLegacyTransactionId(), alloc);
+			break;
+		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID:
+			obj.AddMember("legacyTransactionLinkId", value.getLegacyTransactionId(), alloc);
+			break;
+		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_USER_ID:
+			obj.AddMember("legacyUserId", value.getLegacyTransactionId(), alloc);
+			break;
 		}
 	})
 
