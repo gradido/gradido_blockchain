@@ -242,6 +242,9 @@ namespace gradido {
 			iterateRangeInOrder(interval.begin(), interval.end(), filter.searchDirection,
 				[&](const date::year_month& timepoint) -> bool
 				{
+					if (!filter.pagination.hasCapacityLeft(result.size())) {
+						return false;
+					}
 					// if for a year/month combination no entries exist, return true, so continue the loop
 					auto yearIt = mYearMonthAddressIndexEntries.find(timepoint.year());
 					if (yearIt == mYearMonthAddressIndexEntries.end()) {
@@ -256,12 +259,18 @@ namespace gradido {
 						monthIt->second.begin(), monthIt->second.end(), filter.searchDirection,
 						[&](const std::vector<TransactionsIndexEntry>& transactionIndexEntriesVector) -> bool
 						{
+							if (!filter.pagination.hasCapacityLeft(result.size())) {
+								return false;
+							}
 							iterateRangeInOrder(
 								transactionIndexEntriesVector.begin(),
 								transactionIndexEntriesVector.end(),
 								filter.searchDirection,
 								[&](const TransactionsIndexEntry& entry)
 								{
+									if (!filter.pagination.hasCapacityLeft(result.size())) {
+										return false;
+									}
 									auto filterResult = entry.isMatchingFilter(filter, publicKeyIndex, updatedBalancePublicKeyIndex, mBlockchainProvider);
 									if ((filterResult & FilterResult::USE) == FilterResult::USE) {
 										if (paginationCursor >= filter.pagination.skipEntriesCount()) {
@@ -269,7 +278,7 @@ namespace gradido {
 										}
 										paginationCursor++;
 									}
-									if (!filter.pagination.hasCapacityLeft(result.size()) || (filterResult & FilterResult::STOP) == FilterResult::STOP) {
+									if ((filterResult & FilterResult::STOP) == FilterResult::STOP) {
 										return false;
 									}
 									return true;
