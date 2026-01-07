@@ -3,14 +3,14 @@
 #include <cstring>
 
 namespace memory {
-	Manager::Manager() : mInitalized(true)
+	Manager::Manager(): mInitalized(true)
 	{
 	}
-	Manager::~Manager() 
-	{ 
-		mInitalized = false; 
+	Manager::~Manager()
+	{
+		mInitalized = false;
 	}
-	Manager* Manager::getInstance() 
+	Manager* Manager::getInstance()
 	{
 		static Manager one;
 		return &one;
@@ -18,17 +18,19 @@ namespace memory {
 
 	uint8_t* Manager::getBlock(size_t size)
 	{
-		if (size == 0) return nullptr;
 		if (!mInitalized) {
-			auto block = (uint8_t*)malloc(size);
-			std::memset(block, 0, size);
-			return block;
+			return static_cast<uint8_t*>(malloc(size));
 		}
-		std::lock_guard _lock(mBlockStacksMutex);
-		auto it = mBlockStacks.find(size);
-		if (it == mBlockStacks.end()) {
-			it = mBlockStacks.insert({ size, new BlockStack(size) }).first;
+		if (size == 0) return nullptr;
+		{
+			std::shared_lock _lock(mBlockStacksMutex);
+			auto it = mBlockStacks.find(size);
+			if (it != mBlockStacks.end()) {
+				return it->second->getBlock();
+			}
 		}
+		std::unique_lock _lock(mBlockStacksMutex);
+		auto it = mBlockStacks.insert({ size, new BlockStack(size) }).first;
 		return it->second->getBlock();
 	}
 
@@ -38,7 +40,7 @@ namespace memory {
 			free(data);
 			return;
 		}
-		std::lock_guard _lock(mBlockStacksMutex);
+		std::shared_lock _lock(mBlockStacksMutex);
 		auto it = mBlockStacks.find(size);
 		if (it != mBlockStacks.end()) {
 			it->second->releaseBlock(data);
