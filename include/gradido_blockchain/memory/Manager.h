@@ -4,7 +4,8 @@
 #include "BlockStack.h"
 #include "gradido_blockchain/export.h"
 
-#include <map>
+#include <unordered_map>
+#include <shared_mutex>
 
 namespace memory {
 	class GRADIDOBLOCKCHAIN_EXPORT Manager
@@ -18,10 +19,9 @@ namespace memory {
 
 	protected:
 		Manager();
-
 		bool mInitalized;
-		std::mutex mBlockStacksMutex;
-		std::map<size_t, BlockStack*> mBlockStacks;
+		std::shared_mutex mBlockStacksMutex;
+		std::unordered_map<size_t, BlockStack*> mBlockStacks;
 	};
 }
 
