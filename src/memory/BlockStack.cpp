@@ -1,7 +1,4 @@
 #include "gradido_blockchain/memory/BlockStack.h"
-#include "loguru/loguru.hpp"
-
-#include <cstring>
 
 namespace memory {
 	BlockStack::BlockStack(size_t size)
@@ -9,12 +6,6 @@ namespace memory {
 	{
 	}
 	
-	BlockStack::~BlockStack()
-	{
-		LOG_F(INFO, "release memory page stack: %d, stack size: %d", static_cast<int>(mSize), static_cast<int>(mBlockStack.size()));
-		clear();
-	}
-
 	uint8_t* BlockStack::getBlock()
 	{
 		if (!mSize) {
@@ -50,16 +41,6 @@ namespace memory {
 		}
 		else {
 			mBlockStack.push(memory);
-		}
-	}
-
-	void BlockStack::clear()
-	{
-		std::scoped_lock _lock(mMutex);
-		while (mBlockStack.size() > 0) {
-			auto block = mBlockStack.top();
-			mBlockStack.pop();
-			free(block);
 		}
 	}
 }
