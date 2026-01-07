@@ -1,5 +1,6 @@
 #include "gradido_blockchain/memory/BlockStack.h"
 
+#include <cstring>
 namespace memory {
 	BlockStack::BlockStack(size_t size)
 		: mSize(size)
