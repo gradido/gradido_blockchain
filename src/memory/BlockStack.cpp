@@ -17,17 +17,19 @@ namespace memory {
 
 	uint8_t* BlockStack::getBlock()
 	{
-		std::scoped_lock _lock(mMutex);
-
 		if (!mSize) {
 			return nullptr;
 		}
 		uint8_t* block = nullptr;
-		if (mBlockStack.size() == 0) {
+		{
+			std::scoped_lock _lock(mMutex);
+			if (!mBlockStack.empty()) {
+				block = mBlockStack.top();
+				mBlockStack.pop();
+			}
+		}
+		if (!block) {
 			block = static_cast<uint8_t*>(malloc(mSize));
-		} else {
-			block = mBlockStack.top();
-			mBlockStack.pop();
 		}
 		memset(block, 0, mSize);
 		return block;
