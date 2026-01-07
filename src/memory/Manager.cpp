@@ -2,13 +2,38 @@
 #include <cassert>
 #include <cstring>
 
+inline static int roundUpToBucket(size_t size)
+{
+	if (size <= 16)  return 0;
+	if (size <= 32)  return 1;
+	if (size <= 64)  return 2;
+	if (size <= 128) return 3;
+	if (size <= 256) return 4;
+	if (size <= 512) return 5;
+	if (size <= 1024)return 6;
+	if (size <= 2048)return 7;
+	return -1;
+}
+
 namespace memory {
-	Manager::Manager(): mInitalized(true)
+	Manager::Manager() : mBlockStacks({
+			{ 16 },
+			{ 32 },
+			{ 64 },
+			{ 128 },
+			{ 256 },
+			{ 512 },
+			{ 1024 },
+			{ 2048 }
+		})
 	{
+		;
+		// mInitalized = true;
 	}
 	Manager::~Manager()
 	{
-		mInitalized = false;
+		//mBlockStacks.clear();
+		// mInitalized = false;
 	}
 	Manager* Manager::getInstance()
 	{
@@ -18,35 +43,31 @@ namespace memory {
 
 	uint8_t* Manager::getBlock(size_t size)
 	{
-		if (!mInitalized) {
-			return static_cast<uint8_t*>(malloc(size));
+		if (0 == size) {
+			return nullptr;
 		}
-		if (size == 0) return nullptr;
-		{
-			std::shared_lock _lock(mBlockStacksMutex);
-			auto it = mBlockStacks.find(size);
-			if (it != mBlockStacks.end()) {
-				return it->second->getBlock();
-			}
+		auto bucketIndex = roundUpToBucket(size);
+
+		if (bucketIndex < 0) {
+			auto data = static_cast<uint8_t*>(malloc(size));
+			memset(data, 0, size);
+			return data;
 		}
-		std::unique_lock _lock(mBlockStacksMutex);
-		auto it = mBlockStacks.insert({ size, new BlockStack(size) }).first;
-		return it->second->getBlock();
+		return mBlockStacks[bucketIndex].getBlock();
 	}
 
 	void Manager::releaseBlock(size_t size, uint8_t* data)
 	{
-		if (!mInitalized) {
-			free(data);
+		if (0 == size) {
 			return;
 		}
-		std::shared_lock _lock(mBlockStacksMutex);
-		auto it = mBlockStacks.find(size);
-		if (it != mBlockStacks.end()) {
-			it->second->releaseBlock(data);
+
+		auto bucketIndex = roundUpToBucket(size);
+		if (bucketIndex < 0) {
+			free(data);
 		}
 		else {
-			free(data);
+			mBlockStacks[bucketIndex].releaseBlock(data);
 		}
 	}
 
