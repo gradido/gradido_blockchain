@@ -184,30 +184,21 @@ namespace serialization {
 		obj.AddMember("type", toJson(type, alloc), alloc);
 		switch (type) {
 		case LedgerAnchor::Type::IOTA_MESSAGE_ID:
-			obj.AddMember("iotaMessageId", toJson(value.getIotaMessageId(), alloc), alloc);
+			obj.AddMember("value", toJson(value.getIotaMessageId(), alloc), alloc);
 			break;
 		case LedgerAnchor::Type::HIERO_TRANSACTION_ID:
-			obj.AddMember("hieroTransactionId", toJson(value.getHieroTransactionId(), alloc), alloc);
+			obj.AddMember("value", toJson(value.getHieroTransactionId(), alloc), alloc);
 			break;
 		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_ID:
-			obj.AddMember("legacyTransactionId", value.getLegacyTransactionId(), alloc);
+		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_COMMUNITY_ID:
+		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_CONTRIBUTION_ID:
+		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID:
+		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_USER_ID:
+			obj.AddMember("value", value.getLegacyTransactionId(), alloc);
 			break;
 		case LedgerAnchor::Type::NODE_TRIGGER_TRANSACTION_ID:
-			obj.AddMember("nodeTriggeredTransactionId", value.getNodeTriggeredTransactionId(), alloc);
+			obj.AddMember("value", value.getNodeTriggeredTransactionId(), alloc);
 			break;
-		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_COMMUNITY_ID:
-			obj.AddMember("legacyCommunityId", value.getLegacyTransactionId(), alloc);
-			break;
-		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_CONTRIBUTION_ID:
-			obj.AddMember("legacyContributionId", value.getLegacyTransactionId(), alloc);
-			break;
-		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID:
-			obj.AddMember("legacyTransactionLinkId", value.getLegacyTransactionId(), alloc);
-			break;
-		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_USER_ID:
-			obj.AddMember("legacyUserId", value.getLegacyTransactionId(), alloc);
-			break;
-		}
 	})
 
 	DEFINE_TO_JSON(GradidoTransaction, {
