@@ -199,6 +199,10 @@ namespace serialization {
 		case LedgerAnchor::Type::NODE_TRIGGER_TRANSACTION_ID:
 			obj.AddMember("value", value.getNodeTriggeredTransactionId(), alloc);
 			break;
+		default:
+			obj.AddMember("value", {}, alloc);
+			break;
+		}
 	})
 
 	DEFINE_TO_JSON(GradidoTransaction, {
