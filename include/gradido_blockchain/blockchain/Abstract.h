@@ -55,6 +55,8 @@ namespace gradido {
 
 			// main search function, do all the work, reference from other functions
 			virtual TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const = 0;
+			// find all optimized for counting transaction nrs, better not use the filter.function for that, because this would slow down
+			virtual size_t countAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
 			// only if you expect only one result
 			virtual ConstTransactionEntryPtr findOne(const Filter& filter = Filter::LAST_TRANSACTION) const;
 
