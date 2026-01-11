@@ -65,6 +65,8 @@ namespace gradido {
 			date::year_month getNewestYearMonth() const;
 			inline TimepointInterval filteredTimepointInterval(const gradido::blockchain::Filter& filter) const;
 
+			static inline bool canMatchWithoutDeserialize(const Filter& filter);
+
 		protected:
 			bool addIndicesForTransaction(
 				gradido::data::TransactionType transactionType,
@@ -127,6 +129,14 @@ namespace gradido {
 				}
 			}
 			return interval;
+		}
+
+		bool TransactionsIndex::canMatchWithoutDeserialize(const Filter& filter)
+		{
+			if (filter.filterFunction) {
+				return false;
+			}
+			return true;
 		}
 	}
 }
