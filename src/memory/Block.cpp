@@ -1,9 +1,12 @@
-#include "gradido_blockchain/memory/Block.h"
-#include "gradido_blockchain/GradidoBlockchainException.h"
-#include "gradido_blockchain/memory/Manager.h"
 #include "gradido_blockchain/crypto/SignatureOctet.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain/memory/Block.h"
+#include "gradido_blockchain/memory/Manager.h"
 
 #include "loguru/loguru.hpp"
+
+using std::string;
+using std::vector, std::byte;
 
 namespace memory {
 
@@ -20,18 +23,18 @@ namespace memory {
 		memcpy(mData, data, size);
 	}
 
-	Block::Block(const std::vector<unsigned char>& data)
+	Block::Block(const vector<unsigned char>& data)
 		: Block(data.size(), data.data())
 	{
 	}
 
-	Block::Block(std::span<std::byte> data)
+	Block::Block(std::span<byte> data)
 		: Block(data.size(), reinterpret_cast<const unsigned char*>(data.data()))
 	{
 
 	}
 
-	Block::Block(const std::string& data)
+	Block::Block(const string& data)
 		: Block(data.size(), (const unsigned char*)data.data())
 	{
 
@@ -100,37 +103,37 @@ namespace memory {
 		}
 	}
 
-	std::string Block::convertToHex() const
+	string Block::convertToHex() const
 	{
 		if (!mSize) return "";
 		uint32_t hexSize = mSize * 2 + 1;
 		Block hexMem(hexSize);
 		sodium_bin2hex((char*)hexMem.data(), hexSize, mData, mSize);
-		std::string hex((char*)hexMem.data(), hexMem.size()-1);
+		string hex((char*)hexMem.data(), hexMem.size()-1);
 		return hex;
 	}
 
-	std::string Block::convertToBase64(int variant/* = sodium_base64_VARIANT_ORIGINAL*/) const
+	string Block::convertToBase64(int variant/* = sodium_base64_VARIANT_ORIGINAL*/) const
 	{
 		if (!mSize) return "";
 		size_t encodedSize = sodium_base64_encoded_len(mSize, variant);
-		memory::Block base64(encodedSize);
+		Block base64(encodedSize);
 
 		if (nullptr == sodium_bin2base64((char*)base64.data(), encodedSize, mData, mSize, variant)) {
 			return "";
 		}
 
-		std::string base64String((const char*)base64.data(), encodedSize - 1);
+		string base64String((const char*)base64.data(), encodedSize - 1);
 		return base64String;
 	}
 
-	std::string Block::copyAsString() const
+	string Block::copyAsString() const
 	{
 		if (!mSize) return "";
 		return { (char*)mData, mSize };
 	}
 
-	std::vector<uint8_t> Block::copyAsVector() const
+	vector<uint8_t> Block::copyAsVector() const
 	{
 		if (!mSize) return {};
 		return { mData, mData + mSize };
@@ -165,7 +168,7 @@ namespace memory {
 	{
 		size_t binSize = (size / 4) * 3;
 		
-		memory::Block bin(binSize);
+		Block bin(binSize);
 		size_t resultBinSize = 0;
 		const char* firstInvalidByte = nullptr;
 		auto convertResult = sodium_base642bin(bin, binSize, base64String, size, nullptr, &resultBinSize, &firstInvalidByte, variant);
@@ -173,7 +176,7 @@ namespace memory {
 			throw GradidoInvalidBase64Exception("invalid base64", base64String, firstInvalidByte - base64String);
 		}
 		if (resultBinSize < binSize) {
-			memory::Block bin_real(resultBinSize, bin);
+			Block bin_real(resultBinSize, bin);
 			return bin_real;
 		}
 		bin.mShortHash = SignatureOctet(bin.data(), bin.size());
@@ -202,9 +205,15 @@ namespace memory {
 		return true;
 	}
 
-	// *************** Cached Memory Block *************************
-	// call getMemory of MemoryManager
-	
 
-
+	// named hash function/struct and comparisation for explicit using in unordered_map
+	size_t ConstBlockPtrHash::operator()(const ConstBlockPtr& s) const noexcept
+	{
+		if (!s) { return 0; }
+		int64_t octet = s->hash().octet;
+		if (!octet) { octet = SignatureOctet(*s).octet; }
+		return std::hash<int64_t>()(octet);
+	}
 }
+
+

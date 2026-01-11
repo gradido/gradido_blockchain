@@ -16,6 +16,7 @@ namespace gradido {
 				HIERO_ACCOUNT_ID,
 				HIERO_TOPIC_ID,
 				HIERO_TRANSACTION_ID,
+				LEDGER_ANCHOR,
 				MAX
 			};
 

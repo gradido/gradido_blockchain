@@ -14,12 +14,9 @@ namespace memory {
 	{
 	public:
 		BlockStack(size_t size);
-		~BlockStack();
 
 		uint8_t* getBlock();
 		void releaseBlock(uint8_t* memory);
-
-		void clear();
 
 	protected:
 		std::stack<uint8_t*> mBlockStack;

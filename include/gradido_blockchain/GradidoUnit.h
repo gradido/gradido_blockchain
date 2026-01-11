@@ -65,11 +65,11 @@ public:
 
 	//! be aware that in production we started with decay calculation at a specific date
 	static Duration calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime);
-    static GradidoUnit zero() { return GradidoUnit(); }
+  static GradidoUnit zero() { return GradidoUnit(); }
 
 protected:
-    // will be understood as gdd cent with 4 after comma, so gdd = gddCent / 10000
-    GradidoUnit(int64_t gddCent) : mGradidoCent(gddCent) {}
+  // will be understood as gdd cent with 4 after comma, so gdd = gddCent / 10000
+  GradidoUnit(int64_t gddCent) : mGradidoCent(gddCent) {}
 	static double roundToPrecision(double GradidoUnit, uint8_t precision);
 
 	int64_t mGradidoCent;

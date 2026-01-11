@@ -30,7 +30,9 @@ namespace gradido {
 
 	namespace blockchain {
 		InMemory::InMemory(string_view communityId)
-			: Abstract(communityId), mTransactionsIndex(getProvider()), mSortedDirty(false), mExitCalled(false)
+			: Abstract(communityId), 
+			mPublicKeyDirectory(std::string(communityId) + std::string("_publicKeyDictionary")),
+			mTransactionsIndex(getProvider()), mSortedDirty(false), mExitCalled(false)
 		{
 
 		}
@@ -45,6 +47,7 @@ namespace gradido {
 			mSortedDirty = false;
 			mSortedTransactions.clear();
 			mTransactionsIndex.reset();
+			mPublicKeyDirectory.reset();
 		}
 
 		void InMemory::exit()
@@ -81,14 +84,14 @@ namespace gradido {
 
 		bool InMemory::createAndAddConfirmedTransactionExtern(
 			data::ConstGradidoTransactionPtr gradidoTransaction,
-			uint64_t legacyTransactionNr,
+			const data::LedgerAnchor& ledgerAnchor,
 			std::vector<data::AccountBalance> accountBalances
 		) {
 			auto blockchain = getProvider()->findBlockchain(mCommunityId);
 			confirmTransaction::Context context(blockchain);
 			auto role = context.createRole(
 				gradidoTransaction,
-				LedgerAnchor(legacyTransactionNr, LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_ID),
+				ledgerAnchor,
 				gradidoTransaction->getTransactionBody()->getCreatedAt()
 			);
 			if (!role) {
@@ -195,7 +198,7 @@ namespace gradido {
 			TransactionEntries result;
 			// if pagination is used, filterCopy contain count of still to find transactions
 			Filter filterCopy(filter);
-			auto transactionNrs = mTransactionsIndex.findTransactions(filterCopy);
+			auto transactionNrs = mTransactionsIndex.findTransactions(filterCopy, mPublicKeyDirectory);
 			for (auto transactionNr : transactionNrs) {
 				if (!filter.pagination.hasCapacityLeft(result.size())) {
 					break;
@@ -225,7 +228,7 @@ namespace gradido {
 			if (!filter.involvedPublicKey) {
 				throw GradidoNodeInvalidDataException("missing public key, please use filter with involvedPublicKey set");
 			}
-			return mTransactionsIndex.getAddressType(*filter.involvedPublicKey);
+			return mTransactionsIndex.getAddressType(filter.involvedPublicKey, mPublicKeyDirectory);
 		}
 
 		
@@ -263,7 +266,7 @@ namespace gradido {
 			std::lock_guard _lock(mWorkMutex);
 			mSortedDirty = true;
 			auto confirmedTransaction = transactionEntry->getConfirmedTransaction();
-			mTransactionsIndex.addIndicesForTransaction(transactionEntry);
+			mTransactionsIndex.addIndicesForTransaction(transactionEntry, mPublicKeyDirectory);
 			mLedgerAnchorTransactionNrs.insert({ confirmedTransaction->getLedgerAnchor(), confirmedTransaction->getId() });
 			mTransactionsByNr.insert({ confirmedTransaction->getId(), transactionEntry });
 			auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();

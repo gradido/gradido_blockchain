@@ -3,10 +3,12 @@
 
 #include "Type.h"
 #include "gradido_blockchain/memory/Block.h"
+#include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/data/TransactionTriggerEvent.h"
 #include "gradido_blockchain/data/hiero/AccountId.h"
 #include "gradido_blockchain/data/hiero/TopicId.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
+
 
 // TODO: rewrite maybe with template traits, example from chatgpt
 /*
@@ -65,6 +67,7 @@ namespace gradido {
 				inline bool isHieroAccountId() const { return Type::HIERO_ACCOUNT_ID == mType; }
 				inline bool isHieroTopicId() const { return Type::HIERO_TOPIC_ID == mType; }
 				inline bool isHieroTransactionId() const { return Type::HIERO_TRANSACTION_ID == mType; }
+				inline bool isLedgerAnchor() const { return Type::LEDGER_ANCHOR == mType; }
 				
 				Type getType() const { return mType; }
 
@@ -75,6 +78,7 @@ namespace gradido {
 				inline hiero::TransactionId getHieroTransactionId() { return mHieroTransactionId; }
 				inline hiero::TopicId getHieroTopicId() { return mHieroTopicId; }
 				inline data::TransactionTriggerEvent getTransactionTriggerEvent() { return mTransactionTriggerEvent; }
+				inline data::LedgerAnchor getLedgerAnchor() { return mLedgerAnchor; }
 
 			protected:
 				memory::ConstBlockPtr mData;
@@ -86,6 +90,7 @@ namespace gradido {
 				hiero::TopicId mHieroTopicId;
 				hiero::TransactionId mHieroTransactionId;
 				data::TransactionTriggerEvent mTransactionTriggerEvent;
+				data::LedgerAnchor mLedgerAnchor;
 			};
 		}
 	}

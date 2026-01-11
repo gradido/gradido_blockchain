@@ -98,11 +98,24 @@ namespace memory {
 	using BlockPtr = std::shared_ptr<Block>;
 	using ConstBlockPtr = std::shared_ptr<const Block>;
 
-	struct ConstBlockPtrComparator {
+	struct GRADIDOBLOCKCHAIN_EXPORT ConstBlockPtrComparator {
 		bool operator()(ConstBlockPtr a, ConstBlockPtr b) const
 		{
 			// Compare based on string length 
 			return *a < *b;
+		}
+	};
+	struct GRADIDOBLOCKCHAIN_EXPORT ConstBlockPtrHash
+	{
+		size_t operator()(const ConstBlockPtr& s) const noexcept;
+	};
+
+	struct GRADIDOBLOCKCHAIN_EXPORT ConstBlockPtrEqual
+	{
+		bool operator()(const ConstBlockPtr& a, const ConstBlockPtr& b) const noexcept {
+			if (!a && !b) { return true; }
+			if (!a || !b) { return false; }
+			return a->isTheSame(b);
 		}
 	};
 }
