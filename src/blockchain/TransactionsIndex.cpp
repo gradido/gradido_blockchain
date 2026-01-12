@@ -1,5 +1,6 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
+#include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/TransactionsIndex.h"
 #include "gradido_blockchain/blockchain/RangeUtils.h"
 #include "gradido_blockchain/memory/Block.h"
@@ -18,6 +19,7 @@ const size_t TRANSACTION_ENTRY_VECTOR_SIZE = 100;
 namespace gradido {
 	using data::AddressType;
 	using data::TransactionType;
+	using blockchain::Filter;
 
 	namespace blockchain {
 
@@ -190,7 +192,7 @@ namespace gradido {
 				if (updatedBalancePublicKeyIndexOptional.has_value()) {
 					updatedBalancePublicKeyIndex = updatedBalancePublicKeyIndexOptional.value();
 					lastBalanceChangedTransactionNr = mAddressIndex.lastBalanceChanged(updatedBalancePublicKeyIndex);
-					if (!filter.maxTransactionNr || filter.maxTransactionNr > lastBalanceChangedTransactionNr) {
+					if (lastBalanceChangedTransactionNr && (!filter.maxTransactionNr || filter.maxTransactionNr > lastBalanceChangedTransactionNr)) {
 						filter.maxTransactionNr = lastBalanceChangedTransactionNr;
 					}
 				}
@@ -314,7 +316,7 @@ namespace gradido {
 				if (updatedBalancePublicKeyIndexOptional.has_value()) {
 					updatedBalancePublicKeyIndex = updatedBalancePublicKeyIndexOptional.value();
 					lastBalanceChangedTransactionNr = mAddressIndex.lastBalanceChanged(updatedBalancePublicKeyIndex);
-					if (!filter.maxTransactionNr || filter.maxTransactionNr > lastBalanceChangedTransactionNr) {
+					if (lastBalanceChangedTransactionNr && (!filter.maxTransactionNr || filter.maxTransactionNr > lastBalanceChangedTransactionNr)) {
 						filter.maxTransactionNr = lastBalanceChangedTransactionNr;
 					}
 				}

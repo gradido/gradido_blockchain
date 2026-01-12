@@ -51,21 +51,27 @@ namespace gradido {
 		}
 
 			
-		data::AddressType Abstract::getAddressType(const Filter& filter/* = Filter::ALL_TRANSACTIONS */) const
+		data::AddressType Abstract::getAddressType(const Filter& filter/* = Filter::LAST_TRANSACTION */) const
+		{
+			return getAddressTypeSlow(filter);
+		}
+
+		data::AddressType Abstract::getAddressTypeSlow(const Filter& filter/* = Filter::LAST_TRANSACTION */) const
 		{
 			if (!filter.involvedPublicKey) {
 				throw GradidoNodeInvalidDataException("involvedPublicKey must be set in filter for searching for address type");
 			}
 			auto firstTransaction = findOne(Filter::FIRST_TRANSACTION);
-			if(!firstTransaction) return data::AddressType::NONE;
+			if (!firstTransaction) return data::AddressType::NONE;
 			assert(firstTransaction->getTransactionBody()->isCommunityRoot());
 			auto communityRoot = firstTransaction->getTransactionBody()->getCommunityRoot();
-			if(communityRoot->getAufPubkey()->isTheSame(filter.involvedPublicKey)) {
+			if (communityRoot->getAufPubkey()->isTheSame(filter.involvedPublicKey)) {
 				return data::AddressType::COMMUNITY_AUF;
-			} else if(communityRoot->getGmwPubkey()->isTheSame(filter.involvedPublicKey)) {
+			}
+			else if (communityRoot->getGmwPubkey()->isTheSame(filter.involvedPublicKey)) {
 				return data::AddressType::COMMUNITY_GMW;
 			}
-			
+
 			// copy filter
 			Filter f(filter);
 			f.transactionType = data::TransactionType::REGISTER_ADDRESS;
