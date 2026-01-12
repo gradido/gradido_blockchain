@@ -41,7 +41,8 @@ namespace serialization {
 	template<>
 	Value toJson(const Timepoint& timepoint, Document::AllocatorType& alloc) 
 	{
-		return toJson(DataTypeConverter::timePointToString(timepoint), alloc);
+		std::string utcTimepointString = DataTypeConverter::timePointToString(timepoint) + "Z";
+		return toJson(utcTimepointString, alloc);
 	}
 
 	template<>
