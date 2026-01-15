@@ -47,6 +47,7 @@ namespace gradido {
 			//! \return transaction nrs
 			std::vector<uint64_t> findTransactions(const gradido::blockchain::Filter& filter, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
 			data::AddressType getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
+			inline void updateAddressIndex(ConstTransactionEntryPtr transactionEntry, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
 
 			//! count all, ignore pagination
 			size_t countTransactions(const gradido::blockchain::Filter& filter, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
@@ -64,6 +65,8 @@ namespace gradido {
 			date::year_month getOldestYearMonth() const;
 			date::year_month getNewestYearMonth() const;
 			inline TimepointInterval filteredTimepointInterval(const gradido::blockchain::Filter& filter) const;
+
+			static inline bool canMatchWithoutDeserialize(const Filter& filter);
 
 		protected:
 			bool addIndicesForTransaction(
@@ -96,12 +99,21 @@ namespace gradido {
 					gradido::blockchain::AbstractProvider* blockchainProvider
 				) const;
 			};
-			AddressIndex mAddressIndex;
+			// is used like a cache, even from const
+			mutable AddressIndex mAddressIndex;
 			std::map<uint32_t, data::AddressType> mPublicKeyAddressTypes;
 			AbstractProvider* mBlockchainProvider;
 			// TODO: check if replace std::list<std::vector> with std::deque make sense (performance side)
+			// TODO: check if flatten maps to std::vector<FlatTransactionsIndexEntry> mEntries[month * years] make sense
 			std::map<date::year, std::map<date::month, std::list<std::vector<TransactionsIndexEntry>>>> mYearMonthAddressIndexEntries;
 		};
+
+		void TransactionsIndex::updateAddressIndex(
+			ConstTransactionEntryPtr transactionEntry,
+			const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary
+		) const {
+			mAddressIndex.addTransaction(*transactionEntry, publicKeyDictionary);
+		}
 
 		bool TransactionsIndex::hasTransactionNr(uint64_t transactionNr) const
 		{ 
@@ -127,6 +139,14 @@ namespace gradido {
 				}
 			}
 			return interval;
+		}
+
+		bool TransactionsIndex::canMatchWithoutDeserialize(const Filter& filter)
+		{
+			if (filter.filterFunction) {
+				return false;
+			}
+			return true;
 		}
 	}
 }
