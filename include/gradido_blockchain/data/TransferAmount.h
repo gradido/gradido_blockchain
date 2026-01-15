@@ -24,6 +24,8 @@ namespace gradido {
 			inline GradidoUnit getAmount() const { return mAmount; }
 			inline const std::string& getCommunityId() const { return mCommunityId; }
 
+			inline void updateCoinColor(const std::string& communityId) { mCommunityId = communityId; }
+
 		protected:
 			memory::ConstBlockPtr mPublicKey;
 			GradidoUnit mAmount;

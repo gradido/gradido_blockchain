@@ -133,10 +133,10 @@ namespace gradido {
 				}
 			}
 			if (!countRemoved) {
-				LOG_F(WARNING, "couldn't find transactionTriggerEvent for removal for transaction: %llu", transactionTriggerEvent.getLinkedTransactionId());
+				LOG_F(WARNING, "couldn't find transactionTriggerEvent for removal for transaction: %lu", transactionTriggerEvent.getLinkedTransactionId());
 			}
 			else if (countRemoved > 1) {
-				LOG_F(WARNING, "find more than one transactionTriggerEvent for removal for transaction: %llu", transactionTriggerEvent.getLinkedTransactionId());
+				LOG_F(WARNING, "find more than one transactionTriggerEvent for removal for transaction: %lu", transactionTriggerEvent.getLinkedTransactionId());
 			}
 		}
 

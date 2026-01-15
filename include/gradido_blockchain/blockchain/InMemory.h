@@ -76,7 +76,7 @@ namespace gradido {
 			ConstTransactionEntryPtr findOne(const Filter& filter = Filter::LAST_TRANSACTION) const override;
 			data::AddressType getAddressType(const Filter& filter = Filter::ALL_TRANSACTIONS) const override;
 
-			ConstTransactionEntryPtr getTransactionForId(uint64_t transactionId) const;
+			ConstTransactionEntryPtr getTransactionForId(uint64_t transactionId) const override;
 
 			// this implementation use a map for direct search and don't use filter at all
 			ConstTransactionEntryPtr findByLedgerAnchor(
@@ -84,7 +84,7 @@ namespace gradido {
 				const Filter& filter = Filter::ALL_TRANSACTIONS
 			) const override;
 
-			AbstractProvider* getProvider() const;
+			AbstractProvider* getProvider() const override;
 
 		protected:
 			InMemory(std::string_view communityId);

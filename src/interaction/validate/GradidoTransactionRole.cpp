@@ -54,8 +54,8 @@ namespace gradido {
 					std::shared_ptr<const blockchain::TransactionEntry> pairTransactionEntry;
 					switch (body->getType()) {
 					case data::CrossGroupType::LOCAL: break; // no cross group
-					case data::CrossGroupType::INBOUND: break; // happen before OUTBOUND, can only be checked after both transactions are written to blockchain
-					case data::CrossGroupType::OUTBOUND:
+					case data::CrossGroupType::OUTBOUND: break; // happen first, no pairing transaction yet
+					case data::CrossGroupType::INBOUND:
 					case data::CrossGroupType::CROSS:
 						if (mGradidoTransaction.getPairingLedgerAnchor().empty()) {
 							throw TransactionValidationInvalidInputException(
