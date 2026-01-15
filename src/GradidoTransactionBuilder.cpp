@@ -104,7 +104,6 @@ namespace gradido {
 			mBodyByteSignatureMaps[0].bodyBytes,
 			mLedgerAnchor
 		);
-		reset();
 		return std::move(result);
 	}
 
