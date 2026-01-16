@@ -24,15 +24,6 @@ namespace gradido {
 		}
 		bool GradidoTransaction::isPairing(const GradidoTransaction& other) const
 		{
-			auto& sigPairs = mSignatureMap.getSignaturePairs();
-			auto& otherSigPairs = other.getSignatureMap().getSignaturePairs();
-
-			// compare signature pairs, should be all the same 
-			if (sigPairs.size() != otherSigPairs.size() ||
-				!std::equal(sigPairs.begin(), sigPairs.end(), otherSigPairs.begin())
-				) {
-				return false;
-			}
 			return getTransactionBody()->isPairing(*other.getTransactionBody());
 		}
 
