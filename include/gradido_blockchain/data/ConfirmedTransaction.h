@@ -62,6 +62,7 @@ namespace gradido {
 			bool isBalanceNodeComputed() const { return BalanceDerivationType::NODE == mBalanceDerivationType; }
 			bool isBalanceExternComputed() const { return BalanceDerivationType::EXTERN == mBalanceDerivationType; }
 			bool isInvolved(const memory::Block& publicKey) const;
+			bool isBalanceUpdated(const memory::Block& publicKey) const;
 			std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
 			bool isTheSame(const ConfirmedTransaction& other) const;
 

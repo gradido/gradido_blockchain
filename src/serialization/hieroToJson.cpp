@@ -1,12 +1,13 @@
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/data/hiero/AccountId.h"
+#include "gradido_blockchain/data/hiero/TopicId.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/serialization/toJson.h"
 
 #include "rapidjson/document.h"
 
 using rapidjson::Document;
-using hiero::TransactionId, hiero::AccountId;
+using hiero::TransactionId, hiero::AccountId, hiero::TopicId;
 
 namespace serialization {
 	DEFINE_TO_JSON(AccountId, {
@@ -30,5 +31,11 @@ namespace serialization {
 		if (value.getNonce()) {
 			obj.AddMember("nonce", value.getNonce(), alloc);
 		}
+	})
+
+	DEFINE_TO_JSON(TopicId, {
+		obj.AddMember("shard", value.getShardNum(), alloc);
+		obj.AddMember("realm", value.getRealmNum(), alloc);
+		obj.AddMember("topic", value.getTopicNum(), alloc);
 	})
 }

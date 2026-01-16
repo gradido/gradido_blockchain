@@ -67,6 +67,7 @@ namespace gradido {
 				assert(role);
 
 				// simple validate
+				// to expensive, better check in other thread before adding to blockchain
 				interaction::validate::Context validateGradidoTransaction(*role->getGradidoTransaction());
 				validateGradidoTransaction.run(interaction::validate::Type::SINGLE, mBlockchain);
 
@@ -96,6 +97,9 @@ namespace gradido {
 				auto type = role->getValidationType();
 				if (lastConfirmedTransaction) {
 					type = type | interaction::validate::Type::PREVIOUS;
+					if (!role->isExternBalanceDerivationType()) {
+						type = type | interaction::validate::Type::PREVIOUS_BALANCE;
+					}
 				}
 				validate.setSenderPreviousConfirmedTransaction(lastConfirmedTransaction);
 				// throw if some error occure				

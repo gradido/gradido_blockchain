@@ -30,6 +30,7 @@ namespace gradido {
 
             inline uint64_t getDeferredTransferTransactionNr() const { return mDeferredTransferTransactionNr; }
             inline const GradidoTransfer& getTransfer() const { return mTransfer; }
+            inline void updateCoinColor(const std::string& communityId) { mTransfer.updateCoinColor(communityId); }
 
         protected:
             uint64_t mDeferredTransferTransactionNr;

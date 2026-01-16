@@ -48,7 +48,6 @@ namespace gradido {
                 else {
                     accountBalances = mAccountBalances;
                 }
-                
                 return make_shared<data::ConfirmedTransaction>(
                    id,
                    //std::make_unique<data::GradidoTransaction>(*mGradidoTransaction),
@@ -78,22 +77,12 @@ namespace gradido {
             {
                 FilterBuilder builder;
                 GradidoUnit previousDecayedAccountBalance;
-                mBlockchain->findOne(builder
-                    .setInvolvedPublicKey(publicKey)
-                    .setSearchDirection(SearchDirection::DESC)
-                    .setMaxTransactionNr(maxTransactionNr)
-                    .setCoinCommunityId(communityId)
-                    .setFilterFunction([publicKey, communityId, &previousDecayedAccountBalance, this](const TransactionEntry& entry) -> FilterResult
-                        {
-                            auto confirmedTransction = entry.getConfirmedTransaction();
-                            if (confirmedTransction->hasAccountBalance(*publicKey)) {
-                                previousDecayedAccountBalance = confirmedTransction->getDecayedAccountBalance(publicKey, communityId, mConfirmedAt);
-                                return FilterResult::STOP;
-                            }
-                            return FilterResult::DISMISS;
-                        })
-                    .build()
-                );
+                auto f = Filter::lastBalanceFor(publicKey);
+                f.coinCommunityId = communityId;
+                const auto& lastBalanceChangingTransaction = mBlockchain->findOne(f);
+                if (lastBalanceChangingTransaction) {
+                    previousDecayedAccountBalance = lastBalanceChangingTransaction->getConfirmedTransaction()->getDecayedAccountBalance(publicKey, communityId, mConfirmedAt);
+                }
                 GradidoUnit newBalance = previousDecayedAccountBalance + amount;
                 if (newBalance < GradidoUnit::zero()) {
                     if (newBalance + GradidoUnit::fromGradidoCent(100) < GradidoUnit::zero()) {

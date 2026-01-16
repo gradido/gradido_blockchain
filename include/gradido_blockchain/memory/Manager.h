@@ -4,8 +4,9 @@
 #include "BlockStack.h"
 #include "gradido_blockchain/export.h"
 
-#include <unordered_map>
-#include <shared_mutex>
+#include <array>
+constexpr size_t kBuckets[] = { 16,32,64,128,256,512,1024,2048 };
+constexpr size_t kNumBuckets = sizeof(kBuckets) / sizeof(kBuckets[0]);
 
 namespace memory {
 	class GRADIDOBLOCKCHAIN_EXPORT Manager
@@ -19,9 +20,10 @@ namespace memory {
 
 	protected:
 		Manager();
-		bool mInitalized;
-		std::shared_mutex mBlockStacksMutex;
-		std::unordered_map<size_t, BlockStack*> mBlockStacks;
+		// bool mInitalized;
+		//std::unordered_map<size_t, BlockStack*> mBlockStacks;
+		std::array<BlockStack, kNumBuckets> mBlockStacks;
+
 	};
 }
 

@@ -46,12 +46,12 @@ namespace gradido {
 							recipientAmount.toString().data()
 						);
 					}
-					if (recipientAmount < GradidoUnit(1.0)) {
+					if (recipientAmount < GradidoUnit::fromGradidoCent(2000)) {
 						throw TransactionValidationInvalidInputException(
-							"creation amount to low, min 1 GDD",
+							"creation amount to low, min 0.2 GDD",
 							"amount",
 							"string",
-							">= 1",
+							">= 0.2",
 							recipientAmount.toString().data()
 						);
 					}

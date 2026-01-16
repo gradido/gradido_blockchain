@@ -1,5 +1,6 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
+#include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/TransactionsIndex.h"
 #include "gradido_blockchain/blockchain/RangeUtils.h"
 #include "gradido_blockchain/memory/Block.h"
@@ -7,11 +8,7 @@
 
 #include "loguru/loguru.hpp"
 
-using namespace gradido::blockchain;
-using namespace gradido::data;
 using namespace rapidjson;
-
-using gradido::blockchain::AbstractProvider;
 
 using std::make_shared;
 using memory::Block;
@@ -21,12 +18,13 @@ const size_t TRANSACTION_ENTRY_VECTOR_SIZE = 100;
 
 namespace gradido {
 	using data::AddressType;
+	using data::TransactionType;
+	using blockchain::Filter;
 
 	namespace blockchain {
 
 		TransactionsIndex::TransactionsIndex(AbstractProvider* blockchainProvider)
-			: mMaxTransactionNr(0), mMinTransactionNr(0),
-			mPublicKeyDictionary("PublicKey"), mBlockchainProvider(blockchainProvider)
+			: mMaxTransactionNr(0), mMinTransactionNr(0), mBlockchainProvider(blockchainProvider)
 		{
 
 		}
@@ -39,7 +37,6 @@ namespace gradido {
 		void TransactionsIndex::reset()
 		{
 			clearIndexEntries();
-			mPublicKeyDictionary.reset();
 			mMaxTransactionNr = 0;
 			mMinTransactionNr = 0;
 		}
@@ -64,8 +61,8 @@ namespace gradido {
 							Value entry(kObjectType);
 							entry.AddMember("transactionNr", transactionsIndexEntry.transactionNr, alloc);
 							entry.AddMember("transactionType", serialization::toJson(transactionsIndexEntry.transactionType, alloc), alloc);
-							if (transactionsIndexEntry.coinCommunityIdIndex) {
-								entry.AddMember("coinCommunityIdIndex", transactionsIndexEntry.coinCommunityIdIndex, alloc);
+							if (transactionsIndexEntry.coinCommunityIdIndex.has_value()) {
+								entry.AddMember("coinCommunityIdIndex", transactionsIndexEntry.coinCommunityIdIndex.value(), alloc);
 							}
 							if (transactionsIndexEntry.addressIndiceCount) {
 								Value addressIndices(kArrayType);
@@ -87,12 +84,13 @@ namespace gradido {
 
 		bool TransactionsIndex::addIndicesForTransaction(
 			gradido::data::TransactionType transactionType,
-			uint32_t coinCommunityIdIndex,
+			std::optional<uint32_t> coinCommunityIdIndex,
 			date::year year,
 			date::month month,
 			uint64_t transactionNr,
 			const uint32_t* addressIndices,
-			uint16_t addressIndiceCount
+			uint16_t addressIndiceCount,
+			uint8_t isBalanceChanging
 		)
 		{
 			if (transactionNr > mMaxTransactionNr) {
@@ -124,6 +122,7 @@ namespace gradido {
 			entry.coinCommunityIdIndex = coinCommunityIdIndex;
 			entry.transactionType = transactionType;
 			entry.addressIndiceCount = addressIndiceCount;
+			entry.isBalanceChanging = isBalanceChanging;
 			if (addressIndiceCount > 256) {
 				throw GradidoNodeInvalidDataException("addressIndiceCount is bigger than 256, that cannot be");
 			}
@@ -138,7 +137,7 @@ namespace gradido {
 			return true;
 		}
 
-		bool TransactionsIndex::addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry)
+		bool TransactionsIndex::addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry, IMutableDictionary<memory::ConstBlockPtr>& publicKeyDictionary)
 		{
 			auto transactionNr = transactionEntry->getTransactionNr();
 
@@ -149,20 +148,25 @@ namespace gradido {
 				mMinTransactionNr = transactionNr;
 			}
 
-			uint32_t coinCommunityIndex = 0;
+			std::optional<uint32_t> coinCommunityIndex = std::nullopt;
 			
 			if (!transactionEntry->getCoinCommunityId().empty()) {
 				coinCommunityIndex = mBlockchainProvider->getCommunityIdIndex(transactionEntry->getCoinCommunityId());
 			}
 			
-			auto involvedPublicKeys = transactionEntry->getConfirmedTransaction()->getInvolvedAddresses();
+			const auto& confirmedTransaction = transactionEntry->getConfirmedTransaction();
+			auto involvedPublicKeys = confirmedTransaction->getInvolvedAddresses();
 			std::vector<uint32_t> publicKeyIndices;
 			publicKeyIndices.reserve(involvedPublicKeys.size());
+			uint8_t balanceChangingBitMask = 0;
 			for (auto& pubKey : involvedPublicKeys) {
-				auto publicKeyIndex = mPublicKeyDictionary.getOrAddIndexForBinary(pubKey);
+				auto publicKeyIndex = publicKeyDictionary.getOrAddIndexForData(pubKey);
 				publicKeyIndices.push_back(publicKeyIndex);
+				if (publicKeyIndices.size() < 8 && confirmedTransaction->isBalanceUpdated(*pubKey)) {
+					balanceChangingBitMask |= 1u << (publicKeyIndices.size() - 1);
+				}
 			}
-			mAddressIndex.addTransaction(*transactionEntry, mPublicKeyDictionary);
+			mAddressIndex.addTransaction(*transactionEntry, publicKeyDictionary);
 			// TODO: fill address types into mPublicKeyAddressTypes, use it for check address request
 			return addIndicesForTransaction(
 				transactionEntry->getTransactionType(),
@@ -171,14 +175,47 @@ namespace gradido {
 				transactionEntry->getMonth(),
 				transactionNr,
 				publicKeyIndices.data(),
-				static_cast<uint16_t>(publicKeyIndices.size())
+				static_cast<uint16_t>(publicKeyIndices.size()),
+				balanceChangingBitMask
 			);
 
 		}
 		
-		std::vector<uint64_t> TransactionsIndex::findTransactions(const gradido::blockchain::Filter& filter) const
+		std::vector<uint64_t> TransactionsIndex::findTransactions(const Filter& originalFilter, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const
 		{
-			// prefilter
+			uint32_t updatedBalancePublicKeyIndex = 0;
+			uint64_t lastBalanceChangedTransactionNr = 0;
+			Filter filter = originalFilter;
+
+			if (filter.updatedBalancePublicKey && !filter.updatedBalancePublicKey->isEmpty()) {
+				auto updatedBalancePublicKeyIndexOptional = publicKeyDictionary.getIndexForData(filter.updatedBalancePublicKey);
+				if (updatedBalancePublicKeyIndexOptional.has_value()) {
+					updatedBalancePublicKeyIndex = updatedBalancePublicKeyIndexOptional.value();
+					lastBalanceChangedTransactionNr = mAddressIndex.lastBalanceChanged(updatedBalancePublicKeyIndex);
+					if (lastBalanceChangedTransactionNr && (!filter.maxTransactionNr || filter.maxTransactionNr > lastBalanceChangedTransactionNr)) {
+						filter.maxTransactionNr = lastBalanceChangedTransactionNr;
+					}
+				}
+				else {
+					return {};
+				}
+			}
+			
+			// if user ask for last balance changing transaction
+			if (
+				lastBalanceChangedTransactionNr
+				&& filter.pagination.size == 1 && filter.pagination.page < 2
+				&& filter.searchDirection == SearchDirection::DESC
+				&& filter.timepointInterval.isEmpty()
+				&& !filter.filterFunction
+				&& filter.coinCommunityId.empty()
+				) {
+				if (lastBalanceChangedTransactionNr >= filter.minTransactionNr && lastBalanceChangedTransactionNr <= filter.maxTransactionNr) {
+					return { lastBalanceChangedTransactionNr };
+				}
+
+			}
+			// prefilter			
 			if ((filter.minTransactionNr && filter.minTransactionNr > mMaxTransactionNr) ||
 				(filter.maxTransactionNr && filter.maxTransactionNr < mMinTransactionNr)) {
 				return {};
@@ -186,14 +223,16 @@ namespace gradido {
 
 			uint32_t publicKeyIndex = 0;
 			if (filter.involvedPublicKey && !filter.involvedPublicKey->isEmpty()) {
-				if (mPublicKeyDictionary.hasBinary(*filter.involvedPublicKey)) {
-					publicKeyIndex = mPublicKeyDictionary.getIndexForBinary(*filter.involvedPublicKey);
+				auto involvedPublicKeyIndexOptional = publicKeyDictionary.getIndexForData(filter.involvedPublicKey);
+				if (involvedPublicKeyIndexOptional.has_value()) {
+					publicKeyIndex = involvedPublicKeyIndexOptional.value();
 				}
 				else {
 					// if public key not exist, no transaction can match
 					return {};
 				}
 			}
+			
 
 			std::vector<uint64_t> result;
 			if (filter.pagination.size) {
@@ -205,6 +244,9 @@ namespace gradido {
 			iterateRangeInOrder(interval.begin(), interval.end(), filter.searchDirection,
 				[&](const date::year_month& timepoint) -> bool
 				{
+					if (!filter.pagination.hasCapacityLeft(result.size())) {
+						return false;
+					}
 					// if for a year/month combination no entries exist, return true, so continue the loop
 					auto yearIt = mYearMonthAddressIndexEntries.find(timepoint.year());
 					if (yearIt == mYearMonthAddressIndexEntries.end()) {
@@ -219,20 +261,26 @@ namespace gradido {
 						monthIt->second.begin(), monthIt->second.end(), filter.searchDirection,
 						[&](const std::vector<TransactionsIndexEntry>& transactionIndexEntriesVector) -> bool
 						{
+							if (!filter.pagination.hasCapacityLeft(result.size())) {
+								return false;
+							}
 							iterateRangeInOrder(
 								transactionIndexEntriesVector.begin(),
 								transactionIndexEntriesVector.end(),
 								filter.searchDirection,
 								[&](const TransactionsIndexEntry& entry)
 								{
-									auto filterResult = entry.isMatchingFilter(filter, publicKeyIndex, mBlockchainProvider);
+									if (!filter.pagination.hasCapacityLeft(result.size())) {
+										return false;
+									}
+									auto filterResult = entry.isMatchingFilter(filter, publicKeyIndex, updatedBalancePublicKeyIndex, mBlockchainProvider);
 									if ((filterResult & FilterResult::USE) == FilterResult::USE) {
 										if (paginationCursor >= filter.pagination.skipEntriesCount()) {
 											result.push_back(entry.transactionNr);
 										}
 										paginationCursor++;
 									}
-									if (!filter.pagination.hasCapacityLeft(result.size()) || (filterResult & FilterResult::STOP) == FilterResult::STOP) {
+									if ((filterResult & FilterResult::STOP) == FilterResult::STOP) {
 										return false;
 									}
 									return true;
@@ -247,17 +295,36 @@ namespace gradido {
 			return result;
 		}
 
-		AddressType TransactionsIndex::getAddressType(const memory::Block& publicKey) const
+		AddressType TransactionsIndex::getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const
 		{
-			if (!mPublicKeyDictionary.hasBinary(publicKey)) {
+			auto publicKeyIndexOptional = publicKeyDictionary.getIndexForData(publicKeyPtr);
+			if (!publicKeyIndexOptional.has_value()) {
 				return AddressType::NONE;
 			}
-			return mAddressIndex.getAddressType(mPublicKeyDictionary.getIndexForBinary(publicKey));
+			return mAddressIndex.getAddressType(publicKeyIndexOptional.value());
 		}
 
-		size_t TransactionsIndex::countTransactions(const gradido::blockchain::Filter& filter) const
+		size_t TransactionsIndex::countTransactions(const Filter& originalFilter, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const
 		{
 			// prefilter, early exit
+			uint32_t updatedBalancePublicKeyIndex = 0;
+			uint64_t lastBalanceChangedTransactionNr = 0;
+			Filter filter = originalFilter;
+
+			if (filter.updatedBalancePublicKey && !filter.updatedBalancePublicKey->isEmpty()) {
+				auto updatedBalancePublicKeyIndexOptional = publicKeyDictionary.getIndexForData(filter.updatedBalancePublicKey);
+				if (updatedBalancePublicKeyIndexOptional.has_value()) {
+					updatedBalancePublicKeyIndex = updatedBalancePublicKeyIndexOptional.value();
+					lastBalanceChangedTransactionNr = mAddressIndex.lastBalanceChanged(updatedBalancePublicKeyIndex);
+					if (lastBalanceChangedTransactionNr && (!filter.maxTransactionNr || filter.maxTransactionNr > lastBalanceChangedTransactionNr)) {
+						filter.maxTransactionNr = lastBalanceChangedTransactionNr;
+					}
+				}
+				else {
+					return 0;
+				}
+			}
+
 			if ((filter.minTransactionNr && filter.minTransactionNr > mMaxTransactionNr) ||
 				(filter.maxTransactionNr && filter.maxTransactionNr < mMinTransactionNr)) {
 				return 0;
@@ -265,13 +332,17 @@ namespace gradido {
 
 			uint32_t publicKeyIndex = 0;
 			if (filter.involvedPublicKey && !filter.involvedPublicKey->isEmpty()) {
-				if (mPublicKeyDictionary.hasBinary(*filter.involvedPublicKey)) {
-					publicKeyIndex = mPublicKeyDictionary.getIndexForBinary(*filter.involvedPublicKey);
+				auto involvedPublicKeyIndexOptional = publicKeyDictionary.getIndexForData(filter.involvedPublicKey);
+				if (involvedPublicKeyIndexOptional.has_value()) {
+					publicKeyIndex = involvedPublicKeyIndexOptional.value();
 				}
 				else {
 					// if public key not exist, no transaction can match
 					return 0;
 				}
+			}
+			if (filter.updatedBalancePublicKey && !filter.updatedBalancePublicKey->isEmpty() && !updatedBalancePublicKeyIndex) {
+				return 0;
 			}
 
 			auto interval = filteredTimepointInterval(filter);
@@ -295,7 +366,7 @@ namespace gradido {
 							iterateRangeInOrder(transactionIndexEntriesVector.begin(), transactionIndexEntriesVector.end(), SearchDirection::ASC,
 								[&](const TransactionsIndexEntry& entry) -> bool
 								{
-									auto filterResult = entry.isMatchingFilter(filter, publicKeyIndex, mBlockchainProvider);
+									auto filterResult = entry.isMatchingFilter(filter, publicKeyIndex, updatedBalancePublicKeyIndex, mBlockchainProvider);
 									if ((filterResult & FilterResult::USE) == FilterResult::USE) {
 										++result;
 									}
@@ -361,6 +432,7 @@ namespace gradido {
 		FilterResult TransactionsIndex::TransactionsIndexEntry::isMatchingFilter(
 			const gradido::blockchain::Filter& filter, 
 			const uint32_t publicKeyIndex,
+			const uint32_t balanceChangingIndex,
 			gradido::blockchain::AbstractProvider* blockchainProvider
 		) const
 		{
@@ -368,38 +440,44 @@ namespace gradido {
 				&& filter.transactionType != transactionType) {
 				return FilterResult::DISMISS;
 			}
-			uint32_t coinCommunityKeyIndex = 0;
+			std::optional<uint32_t> coinCommunityKeyIndex = std::nullopt;
 			if (!filter.coinCommunityId.empty()) {
 				coinCommunityKeyIndex = blockchainProvider->getCommunityIdIndex(filter.coinCommunityId);
 			}
-			if (coinCommunityKeyIndex && coinCommunityKeyIndex != coinCommunityIdIndex) {
+			if (coinCommunityKeyIndex.has_value() && coinCommunityKeyIndex.value() != coinCommunityIdIndex) {
 				return FilterResult::DISMISS;
 			}
 			if (filter.minTransactionNr && filter.minTransactionNr > transactionNr) {
+				if (filter.searchDirection == SearchDirection::DESC) {
+					return FilterResult::STOP;
+				}
 				return FilterResult::DISMISS;
 			}
 			if (filter.maxTransactionNr && filter.maxTransactionNr < transactionNr) {
+				if (filter.searchDirection == SearchDirection::ASC) {
+					return FilterResult::STOP;
+				}
 				return FilterResult::DISMISS;
 			}
-			/*uint32_t publicKeyIndex = 0;
-			if (filter.involvedPublicKey && !filter.involvedPublicKey->isEmpty()) {
-				auto involvedPublicKeyCopy = filter.involvedPublicKey->copyAsString();
-				if (publicKeysDictionary.hasString(involvedPublicKeyCopy)) {
-					publicKeyIndex = publicKeysDictionary.getIndexForString(involvedPublicKeyCopy);
-				}
-			}*/
-			if (publicKeyIndex) {
-				bool found = false;
-				for (int iPublicKeyIndices = 0; iPublicKeyIndices < addressIndiceCount; iPublicKeyIndices++) {
-					if (publicKeyIndex == addressIndices[iPublicKeyIndices]) {
-						found = true;
-						break;
+
+			if (balanceChangingIndex && addressIndiceCount <= 8) {
+				for (int iPublicKeyIndex = 0; iPublicKeyIndex < addressIndiceCount; iPublicKeyIndex++) {
+					if ((isBalanceChanging & (1u << iPublicKeyIndex)) && balanceChangingIndex == addressIndices[iPublicKeyIndex]) {
+						return FilterResult::USE;
 					}
 				}
-				if (!found) {
-					return FilterResult::DISMISS;
-				}
+				return FilterResult::DISMISS;
 			}
+			
+			if (publicKeyIndex || (balanceChangingIndex && addressIndiceCount > 8)) {
+				for (int iPublicKeyIndex = 0; iPublicKeyIndex < addressIndiceCount; iPublicKeyIndex++) {
+					if (publicKeyIndex == addressIndices[iPublicKeyIndex]) {
+						return FilterResult::USE;
+					}
+				}
+				return FilterResult::DISMISS;
+			}
+			
 			return FilterResult::USE;
 		}
 	}

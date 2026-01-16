@@ -21,19 +21,21 @@ namespace gradido {
                 //! previous transaction belonging to same address
                 //! sender by transfer transaction
                 PREVIOUS = 2,
+                //! check account balance with previous transactions, only for BalanceDerivationType = Node
+                PREVIOUS_BALANCE = 4,
                 //! check all transaction from same address in same month
                 //! by creation the target date month
-                MONTH_RANGE = 4,
+                MONTH_RANGE = 8,
                 //! check paired transaction on another group by cross group transactions
-                PAIRED = 8,
+                PAIRED = 16,
                 //! check if transaction is valid for account
                 //! check if account exist on blockchain
                 //! check sender and recipient account, at least remote access needed for cross group transactions
-                ACCOUNT = 16,
+                ACCOUNT = 32,
                 //! check all transactions in the group which connected with this transaction address(es)
-                CONNECTED_GROUP = 32,
+                CONNECTED_GROUP = 64,
                 //! check all transactions which connected with this transaction
-                CONNECTED_BLOCKCHAIN = 64
+                CONNECTED_BLOCKCHAIN = 128
             };
 
             constexpr inline Type operator | (Type lhs, Type rhs)

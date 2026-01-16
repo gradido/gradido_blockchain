@@ -4,8 +4,9 @@
 #include "AddressIndex.h"
 #include "Filter.h"
 #include "TransactionEntry.h"
+#include "gradido_blockchain/export.h"
 #include "gradido_blockchain/data/AddressType.h"
-#include "gradido_blockchain/lib/Dictionary.h"
+#include "gradido_blockchain/lib/DictionaryInterface.h"
 
 #include "rapidjson/document.h"
 
@@ -20,6 +21,8 @@ namespace memory {
 namespace gradido {
 	namespace blockchain {
 
+		class AbstractProvider;
+
 	/*!
 		* @author einhornimmond
 		* @date 2025-12-12
@@ -28,7 +31,7 @@ namespace gradido {
 		* map: uint64 transaction nr, uint32 file cursor
 		* map: uint32 address index, uint64 transaction nr
 		*/
-		class TransactionsIndex
+		class GRADIDOBLOCKCHAIN_EXPORT TransactionsIndex
 		{
 		public:
 			TransactionsIndex(AbstractProvider* blockchainProvider);
@@ -38,15 +41,16 @@ namespace gradido {
 
 			rapidjson::Value serializeToJson(rapidjson::Document::AllocatorType& alloc) const;
 
-			bool addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry);
+			bool addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry, IMutableDictionary<memory::ConstBlockPtr>& publicKeyDictionary);
 
 			//! \brief search transaction nrs for search criteria in filter, ignore filter function
 			//! \return transaction nrs
-			std::vector<uint64_t> findTransactions(const gradido::blockchain::Filter& filter) const;
-			data::AddressType getAddressType(const memory::Block& publicKey) const;
+			std::vector<uint64_t> findTransactions(const gradido::blockchain::Filter& filter, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
+			data::AddressType getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
+			inline void updateAddressIndex(ConstTransactionEntryPtr transactionEntry, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
 
 			//! count all, ignore pagination
-			size_t countTransactions(const gradido::blockchain::Filter& filter) const;
+			size_t countTransactions(const gradido::blockchain::Filter& filter, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
 
 			//! \brief find transaction nrs from specific month and year
 			//! \return {0, 0} if nothing found
@@ -62,15 +66,18 @@ namespace gradido {
 			date::year_month getNewestYearMonth() const;
 			inline TimepointInterval filteredTimepointInterval(const gradido::blockchain::Filter& filter) const;
 
+			static inline bool canMatchWithoutDeserialize(const Filter& filter);
+
 		protected:
 			bool addIndicesForTransaction(
 				gradido::data::TransactionType transactionType,
-				uint32_t coinCommunityIdIndex,
+				std::optional<uint32_t> coinCommunityIdIndex,
 				date::year year,
 				date::month month,
 				uint64_t transactionNr,
 				const uint32_t* addressIndices,
-				uint16_t addressIndiceCount
+				uint16_t addressIndiceCount,
+				uint8_t isBalanceChanging
 			);
 			void clearIndexEntries(); 			
 			uint64_t				 mMaxTransactionNr;
@@ -80,21 +87,33 @@ namespace gradido {
 			{
 				uint64_t						transactionNr;
 				uint32_t*						addressIndices;
-				uint32_t						coinCommunityIdIndex;
+				std::optional<uint32_t>			coinCommunityIdIndex;
 				gradido::data::TransactionType	transactionType;
 				uint8_t							addressIndiceCount;
+				// Bitmask for addressIndices, if bit is set, transaction has changed account balance of addressIndex
+				uint8_t							isBalanceChanging;
 				gradido::blockchain::FilterResult isMatchingFilter(
 					const gradido::blockchain::Filter& filter, 
 					const uint32_t publicKeyIndex,
+					const uint32_t balanceChangingIndex,
 					gradido::blockchain::AbstractProvider* blockchainProvider
 				) const;
 			};
-			Dictionary mPublicKeyDictionary;
-			AddressIndex mAddressIndex;
+			// is used like a cache, even from const
+			mutable AddressIndex mAddressIndex;
 			std::map<uint32_t, data::AddressType> mPublicKeyAddressTypes;
 			AbstractProvider* mBlockchainProvider;
+			// TODO: check if replace std::list<std::vector> with std::deque make sense (performance side)
+			// TODO: check if flatten maps to std::vector<FlatTransactionsIndexEntry> mEntries[month * years] make sense
 			std::map<date::year, std::map<date::month, std::list<std::vector<TransactionsIndexEntry>>>> mYearMonthAddressIndexEntries;
 		};
+
+		void TransactionsIndex::updateAddressIndex(
+			ConstTransactionEntryPtr transactionEntry,
+			const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary
+		) const {
+			mAddressIndex.addTransaction(*transactionEntry, publicKeyDictionary);
+		}
 
 		bool TransactionsIndex::hasTransactionNr(uint64_t transactionNr) const
 		{ 
@@ -122,6 +141,13 @@ namespace gradido {
 			return interval;
 		}
 
+		bool TransactionsIndex::canMatchWithoutDeserialize(const Filter& filter)
+		{
+			if (filter.filterFunction) {
+				return false;
+			}
+			return true;
+		}
 	}
 }
 #endif //__GRADIDO_BLOCKCHAIN_BLOCKCHAIN_TRANSACTION_INDEX_H

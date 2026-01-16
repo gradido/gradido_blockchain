@@ -25,6 +25,7 @@ namespace gradido {
 				LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID = 8
 			};
 			LedgerAnchor();
+			LedgerAnchor(const LedgerAnchor& other);
 			explicit LedgerAnchor(const memory::Block& iotaMessageId);
 			explicit LedgerAnchor(const hiero::TransactionId& hieroTransactionId);
 			explicit LedgerAnchor(uint64_t transactionId, Type type);

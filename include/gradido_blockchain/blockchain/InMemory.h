@@ -8,11 +8,19 @@
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/export.h"
-#include "gradido_blockchain/memory/BlockKey.h"
+#include "gradido_blockchain/lib/Dictionary.h"
 
 #include <vector>
 #include <unordered_map>
 #include <shared_mutex>		
+#include <memory>
+
+namespace memory {
+	class Block;
+	using ConstBlockPtr = std::shared_ptr<const Block>;
+	struct ConstBlockPtrHash;
+	struct ConstBlockPtrEqual;
+}
 
 namespace gradido {
 	namespace data {
@@ -48,7 +56,7 @@ namespace gradido {
 			) override;
 			bool createAndAddConfirmedTransactionExtern(
 				data::ConstGradidoTransactionPtr gradidoTransaction,
-				uint64_t legacyTransactionNr,
+				const data::LedgerAnchor& ledgerAnchor,
 				std::vector<data::AccountBalance> accountBalances
 			);
 			virtual void addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent) override;
@@ -68,7 +76,7 @@ namespace gradido {
 			ConstTransactionEntryPtr findOne(const Filter& filter = Filter::LAST_TRANSACTION) const override;
 			data::AddressType getAddressType(const Filter& filter = Filter::ALL_TRANSACTIONS) const override;
 
-			ConstTransactionEntryPtr getTransactionForId(uint64_t transactionId) const;
+			ConstTransactionEntryPtr getTransactionForId(uint64_t transactionId) const override;
 
 			// this implementation use a map for direct search and don't use filter at all
 			ConstTransactionEntryPtr findByLedgerAnchor(
@@ -76,11 +84,12 @@ namespace gradido {
 				const Filter& filter = Filter::ALL_TRANSACTIONS
 			) const override;
 
-			AbstractProvider* getProvider() const;
+			AbstractProvider* getProvider() const override;
 
 		protected:
 			InMemory(std::string_view communityId);
 
+			RuntimeDictionary<memory::ConstBlockPtr, memory::ConstBlockPtrHash, memory::ConstBlockPtrEqual> mPublicKeyDirectory;
 			TransactionsIndex mTransactionsIndex;
 
 			// if called, mWorkMutex should be locked exclusive

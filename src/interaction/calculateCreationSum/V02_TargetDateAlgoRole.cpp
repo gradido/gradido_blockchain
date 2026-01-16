@@ -31,7 +31,7 @@ namespace gradido {
 				builder
 					// static filter
 					.setMaxTransactionNr(mTransactionNrMax)
-					.setInvolvedPublicKey(mPublicKey)
+					.setUpdatedBalancePublicKey(mPublicKey)
 					.setTimepointInterval({ beforeReceived, mDate })
 					.setTransactionType(data::TransactionType::CREATION)
 					// dynamic filter

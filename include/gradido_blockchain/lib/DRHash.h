@@ -1,7 +1,7 @@
 /*/*************************************************************************
  *                                                                         *
  * Core, Core-Lib for my programs, Core doesn't need any libraries	   *
- * Copyright (C) 2012, 2013, 2014 Dario Rekowski                           *
+ * Copyright (C) 2012, 2013, 2014 ***REMOVED***
  * Email: ***REMOVED***   Web: ***REMOVED***                *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *

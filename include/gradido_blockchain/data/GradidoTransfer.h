@@ -20,6 +20,7 @@ namespace gradido {
 			bool isInvolved(const memory::Block& publicKey) const;
 
 			inline const TransferAmount& getSender() const { return mSender; }
+			inline void updateCoinColor(const std::string& communityId) { mSender.updateCoinColor(communityId); }
 			inline memory::ConstBlockPtr getRecipient() const { return mRecipient; }
 
 		protected:

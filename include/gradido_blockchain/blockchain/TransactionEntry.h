@@ -31,6 +31,8 @@ namespace gradido {
 
 			TransactionEntry(data::ConstConfirmedTransactionPtr confirmedTransaction);
 
+			TransactionEntry(memory::ConstBlockPtr serializedTransaction, data::ConstConfirmedTransactionPtr confirmedTransaction);
+
 			//! \brief init entry object without indices
 			TransactionEntry(
 				uint64_t transactionNr,

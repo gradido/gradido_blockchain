@@ -21,6 +21,7 @@ namespace serialization {
 		obj.AddMember("minTransactionNr", value.minTransactionNr, alloc);
 		obj.AddMember("maxTransactionNr", value.maxTransactionNr, alloc);
 		obj.AddMember("involvedPubkey", toJson(value.involvedPublicKey, alloc), alloc);
+		obj.AddMember("updatedBalancePublicKey", toJson(value.updatedBalancePublicKey, alloc), alloc);
 		obj.AddMember("searchDirection", toJson(value.searchDirection, alloc), alloc);
 		obj.AddMember("pagination", toJson(value.pagination, alloc), alloc);
 		obj.AddMember("coinCommunityId", toJson(value.coinCommunityId, alloc), alloc);

@@ -34,7 +34,7 @@ namespace gradido {
 				GradidoUnit balance(GradidoUnit::zero());
 				Timepoint lastDate;
 				mBlockchain->findAll(builder
-					.setInvolvedPublicKey(publicKey)
+					.setUpdatedBalancePublicKey(publicKey)
 					.setMinTransactionNr(startTransactionNr)
 					.setSearchDirection(SearchDirection::ASC)
 					.setCoinCommunityId(communityId)
@@ -72,16 +72,13 @@ namespace gradido {
 				GradidoUnit balance(GradidoUnit::zero());
 				Timepoint lastDate;
 				mBlockchain->findAll(builder
-					.setInvolvedPublicKey(publicKey)
+					.setUpdatedBalancePublicKey(publicKey)
 					.setMaxTransactionNr(maxTransactionNr)
 					.setSearchDirection(SearchDirection::DESC)
 					.setCoinCommunityId(communityId)
 					.setFilterFunction([&](const TransactionEntry& entry) -> FilterResult {
 						auto confirmedTransaction = entry.getConfirmedTransaction();
 						if (confirmedTransaction->getConfirmedAt().getAsTimepoint() > endDate) {
-							return FilterResult::DISMISS;
-						}
-						if (!confirmedTransaction->hasAccountBalance(*publicKey)) {
 							return FilterResult::DISMISS;
 						}
 						

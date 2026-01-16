@@ -104,7 +104,6 @@ namespace gradido {
 			mBodyByteSignatureMaps[0].bodyBytes,
 			mLedgerAnchor
 		);
-		reset();
 		return std::move(result);
 	}
 
@@ -435,7 +434,7 @@ namespace gradido {
 	void GradidoTransactionBuilder::switchBuildState()
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
-		// the context use a refernce to TransactionBody, so I can change it afterwards 
+		// the context use a reference to TransactionBody, so it can be changed afterwards
 		interaction::serialize::Context serializer(*mBody);
 		mBodyByteSignatureMaps.push_back(BodyBytesSignatureMap());
 		if (isCrossCommunityTransaction()) {
@@ -448,6 +447,14 @@ namespace gradido {
 			// prepare inbound body
 			mBody->mType = CrossGroupType::INBOUND;
 			mBody->mOtherGroup = mSenderCommunity;
+			if (mBody->isTransfer() || mBody->isRedeemDeferredTransfer()) {
+				// update coin color for outbound transaction
+				std::string coinColorCommunityId = mBody->getTransferAmount().getCommunityId();
+				if (coinColorCommunityId.empty()) {
+					coinColorCommunityId = mSenderCommunity;
+				}
+				mBody->updateCoinColor(mSenderCommunity);
+			}
 			mBodyByteSignatureMaps.push_back(BodyBytesSignatureMap());
 			mBodyByteSignatureMaps[1].bodyBytes = serializer.run();
 		}
@@ -459,7 +466,7 @@ namespace gradido {
 	}
 
 
-	// ------------------------- exception implement ------------------------- 
+	// ------------------------- exception implement -------------------------
 	GradidoTransactionWrongBuildingStateBuilderException::GradidoTransactionWrongBuildingStateBuilderException(
 		const char* what,
 		string_view expectedBuildState,

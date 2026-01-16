@@ -1,5 +1,7 @@
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/data/hiero/AccountId.h"
 #include "gradido_blockchain/lib/Profiler.h"
@@ -29,6 +31,8 @@ using hiero::TransactionId, hiero::AccountId;
 
 using gradido::blockchain::InMemoryProvider;
 using gradido::data::GradidoTransaction, gradido::data::ConstGradidoTransactionPtr;
+using gradido::data::ConfirmedTransaction, gradido::data::ConstConfirmedTransactionPtr;
+using gradido::data::LedgerAnchor;
 using serialization::toJsonString;
 using namespace gradido::interaction;
 
@@ -164,45 +168,61 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 	auto provider = InMemoryProvider::getInstance();
 	auto blockchain = provider->findBlockchain("test");
 	AccountId defaultHieroAccount(0, 0, 2);
-	list<ConstGradidoTransactionPtr> mTransactions;
+	list<ConstConfirmedTransactionPtr> mTransactions;
+	int count = 0;
 
 	while (f.good()) {
 		f.read((char*)&transactionSize, sizeof(uint16_t));
 		auto buffer = make_shared<memory::Block>(transactionSize);
 		f.read((char*)(buffer->data()), transactionSize);
-		deserialize::Context deserializer(buffer, deserialize::Type::GRADIDO_TRANSACTION);
-		deserializer.run();
-		// transactions.emplace(transactions.end(), deserializer.getGradidoTransaction());
-		// printf("\r%llu", transactions.size());
-		auto tx = deserializer.getGradidoTransaction();
-		// trigger body deserialization
+		deserialize::Context deserializer(buffer, deserialize::Type::CONFIRMED_TRANSACTION);
 		try {
-			if (tx->getTransactionBody()->isCommunityRoot()) {
-				printf("community root \n");
-				int zahl = 1;
+			deserializer.run();
+			if (deserializer.getType() == deserialize::Type::UNKNOWN) {
+				printf("unknown type, size: %u\n", transactionSize);
+				break;
 			}
-			
-			// printf("added: %s\n", toJsonString(*tx, true).data());
-			mTransactions.emplace_back(tx);
+			// transactions.emplace(transactions.end(), deserializer.getGradidoTransaction());
+			// printf("\r%llu", transactions.size());
+			auto tx = deserializer.getConfirmedTransaction();
+			if (!tx && deserializer.getType() == deserialize::Type::UNKNOWN) {
+				break;
+			}
+			if (count > 10000) {
+				printf("%u: %s\n\n", transactionSize, serialization::toJsonString(*tx, true).data());
+			}
+			// trigger body deserialization
+			try {
+				// printf("added: %s\n", toJsonString(*tx, true).data());
+				mTransactions.emplace_back(tx);
+			}
+			catch (...) {
+				printf("cannot deserialize transaction body from: %s\n", toJsonString(*tx, true).data());
+				printf("size: %u\n", transactionSize);
+			}
 		}
 		catch (...) {
-			printf("cannot deserialize transaction body from: %s\n", toJsonString(*tx, true).data());
-			printf("size: %u\n", transactionSize);
-		}		
+			printf("error on transaction deserialize: %u\n", transactionSize);
+		}
+		count++;
+		if (count > 10100) break;
 	}
 	// printf("\n");
 	printf("%s time to load and deserialize %d transactions from binary file\n",
 		timeUsed.string().data(), mTransactions.size()
 	);
+	return;
 	timeUsed.reset();
-	int count = 0;
+	count = 0;
 	for (auto& tx : mTransactions) {
-		auto createdAt = tx->getTransactionBody()->getCreatedAt();
+		if (!tx || !tx->getGradidoTransaction()->getTransactionBody()) {
+			break;
+		}
+		auto createdAt = tx->getGradidoTransaction()->getTransactionBody()->getCreatedAt();
 		TransactionId transactionId(createdAt, defaultHieroAccount);
-		serialize::Context serializer(transactionId);
-		auto transactionIdRaw = serializer.run();
 		try {
-			blockchain->createAndAddConfirmedTransaction(tx, transactionIdRaw, createdAt);
+			// blockchain->createAndAddConfirmedTransaction(tx, LedgerAnchor(transactionId), createdAt);
+			printf("%llu: %s\n\n", tx->getId(), serialization::toJsonString(*tx, true).data());
 		}
 		catch (GradidoBlockchainException& ex) {
 			printf("\nexception: %s\n", ex.getFullString().data());
@@ -220,6 +240,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 			throw;
 		}
 		count++;
+		if (count > 100) break;
 		printf("\rtransactions: %d", count);
 		// if (timeUsed.seconds() > 30.0) break;
 	}

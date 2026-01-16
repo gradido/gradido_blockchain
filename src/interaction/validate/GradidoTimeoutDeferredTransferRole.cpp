@@ -8,13 +8,17 @@
 
 #include "date/date.h"
 
+using std::shared_ptr;
+
 namespace gradido {
-	using namespace blockchain;
+	using data::Timestamp, data::ConfirmedTransaction, data::GradidoTimeoutDeferredTransfer;
+	using blockchain::Abstract;
+
 	namespace interaction {
 		namespace validate {
 
 			GradidoTimeoutDeferredTransferRole::GradidoTimeoutDeferredTransferRole(
-				std::shared_ptr<const data::GradidoTimeoutDeferredTransfer> timeoutDeferredTransfer
+				shared_ptr<const GradidoTimeoutDeferredTransfer> timeoutDeferredTransfer
 			) : mTimeoutDeferredTransfer(timeoutDeferredTransfer)
 			{
 				assert(timeoutDeferredTransfer);
@@ -24,9 +28,9 @@ namespace gradido {
 
 			void GradidoTimeoutDeferredTransferRole::run(
 				Type type,
-				std::shared_ptr<blockchain::Abstract> blockchain,
-				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
-				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
+				shared_ptr<Abstract> blockchain,
+				shared_ptr<const ConfirmedTransaction> senderPreviousConfirmedTransaction,
+				shared_ptr<const ConfirmedTransaction> recipientPreviousConfirmedTransaction
 			) {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
 					if (mTimeoutDeferredTransfer->getDeferredTransferTransactionNr() <= 3) {
@@ -73,9 +77,10 @@ namespace gradido {
 					assert(body->isDeferredTransfer());
 					auto deferredTransfer = deferredTransferEntry->getTransactionBody()->getDeferredTransfer();
 					calculateAccountBalance::Context calculateAccountBalance(blockchain);
+					Timestamp beforeCreateAt(mCreatedAt.getSeconds(), mCreatedAt.getNanos() - 1000);
 					auto balance = calculateAccountBalance.fromEnd(
 						deferredTransfer->getRecipientPublicKey(), 
-						mCreatedAt, 
+						beforeCreateAt,
 						deferredTransfer->getTransfer().getSender().getCommunityId()
 					);
 					if(GradidoUnit::zero() == balance) {

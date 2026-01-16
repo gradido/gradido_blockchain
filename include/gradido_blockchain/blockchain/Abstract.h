@@ -55,13 +55,17 @@ namespace gradido {
 
 			// main search function, do all the work, reference from other functions
 			virtual TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const = 0;
+			// find all optimized for counting transaction nrs, better not use the filter.function for that, because this would slow down
+			virtual size_t countAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
 			// only if you expect only one result
 			virtual ConstTransactionEntryPtr findOne(const Filter& filter = Filter::LAST_TRANSACTION) const;
 
-			//! analyze only registerAddress Transactions
+			//! analyze only registerAddress Transactions, will use getAddressTypeSlow in basic version
 			//! \param use filter to check existing of a address in a subrange of transactions
 			//!        check for user and account public keys
-			virtual data::AddressType getAddressType(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
+			virtual data::AddressType getAddressType(const Filter& filter = Filter::LAST_TRANSACTION) const;
+			//! uncached version of getAddressType which will search via findOne in blockchain
+			data::AddressType getAddressTypeSlow(const Filter& filter = Filter::LAST_TRANSACTION) const;
 			virtual ConstTransactionEntryPtr getTransactionForId(uint64_t transactionId) const = 0;
 
 			//! \param filter use to speed up search if infos exist to narrow down search transactions range

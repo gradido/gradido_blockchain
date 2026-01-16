@@ -1,7 +1,7 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/blockchain/AddressIndex.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
-#include "gradido_blockchain/lib/Dictionary.h"
+#include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/memory/Block.h"
 
 #include "loguru/loguru.hpp"
@@ -32,28 +32,27 @@ namespace gradido {
 			mIndexTransactionNrs.clear();
 		}
 
-		void AddressIndex::addTransaction(const TransactionEntry& transactionEntry, const Dictionary& publicKeyDictionary)
+		void AddressIndex::addTransaction(const TransactionEntry& transactionEntry, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary)
 		{
 			const auto& body = transactionEntry.getConfirmedTransaction()->getGradidoTransaction()->getTransactionBody();
 			uint64_t txNr = transactionEntry.getTransactionNr();
 
-			auto addKey = [&](const ConstBlockPtr& pubKeyPtr, AddressType type) -> bool {			
+			auto getPublicKeyIndex = [&](const ConstBlockPtr pubKeyPtr) -> uint32_t {
 				assert(pubKeyPtr);
-				return addTransactionNrForIndex(
-					publicKeyDictionary.getIndexForBinary(*pubKeyPtr),
-					txNr,
-					type
-				);
+				auto index = publicKeyDictionary.getIndexForData(pubKeyPtr);
+				if (!index.has_value()) {
+					throw DictionaryMissingEntryException("AddressIndex: missing index of public key in Dictionary", pubKeyPtr->convertToHex());
+				}
+				return index.value();
 			};
 
 			if (body->isCommunityRoot()) 
 			{
 				const auto& communityRoot = body->getCommunityRoot();
-					
-				if (!addKey(communityRoot->getAufPubkey(), AddressType::COMMUNITY_AUF)) {
+				if (!addTransactionNrForIndex(getPublicKeyIndex(communityRoot->getAufPubkey()), txNr, AddressType::COMMUNITY_AUF)) {
 					LOG_F(WARNING, "couldn't add Community Auf Key to Address Indices");
 				}
-				if (!addKey(communityRoot->getGmwPubkey(), AddressType::COMMUNITY_GMW)) {
+				if (!addTransactionNrForIndex(getPublicKeyIndex(communityRoot->getGmwPubkey()), txNr, AddressType::COMMUNITY_GMW)) {
 					LOG_F(WARNING, "couldn't add Community GMW Key to Address Indices");
 				}
 			} 
@@ -61,20 +60,24 @@ namespace gradido {
 			{
 				const auto& registerAddress = body->getRegisterAddress();
 
-				if (!addKey(registerAddress->getUserPublicKey(), registerAddress->getAddressType())) {
+				if (!addTransactionNrForIndex(getPublicKeyIndex(registerAddress->getUserPublicKey()), txNr, registerAddress->getAddressType())) {
 					LOG_F(WARNING, "couldn't add register user Key to Address Indices");
 				}
 
-				if (!addKey(registerAddress->getAccountPublicKey(), registerAddress->getAddressType())) {
+				if (!addTransactionNrForIndex(getPublicKeyIndex(registerAddress->getAccountPublicKey()), txNr, registerAddress->getAddressType())) {
 					LOG_F(WARNING, "couldn't add register address Key to Address Indices");
 				}				
 			}
 			else if (body->isDeferredTransfer()) 
 			{
 				const auto& deferredTransfer = body->getDeferredTransfer();
-				if (!addKey(deferredTransfer->getRecipientPublicKey(), AddressType::DEFERRED_TRANSFER)) {
+				if (!addTransactionNrForIndex(getPublicKeyIndex(deferredTransfer->getRecipientPublicKey()), txNr, AddressType::DEFERRED_TRANSFER)) {
 					LOG_F(WARNING, "couldn't add deferred address Key to Address Indices");
 				}
+			}
+			const auto& accountBalances = transactionEntry.getConfirmedTransaction()->getAccountBalances();
+			for (const auto& accountBalance : accountBalances) {
+				updateLastBalanceChangingTransactionNr(getPublicKeyIndex(accountBalance.getPublicKey()), txNr);
 			}
 		}
 
@@ -105,6 +108,16 @@ namespace gradido {
 			}
 		}
 
+		bool AddressIndex::updateLastBalanceChangingTransactionNr(uint32_t publicKeyIndex, uint64_t transactionNr)
+		{
+			auto it = mIndexTransactionNrs.find(publicKeyIndex);
+			if (it != mIndexTransactionNrs.end()) {
+				it->second.lastBalanceChangingTransactionNr = transactionNr;
+				return true;
+			}
+			return false;
+		}
+
 		const vector<uint64_t>& AddressIndex::getTransactionsNrs(uint32_t publicKeyIndex) const
 		{
 			auto it = mIndexTransactionNrs.find(publicKeyIndex);
@@ -121,6 +134,15 @@ namespace gradido {
 				return AddressType::NONE;
 			}
 			return it->second.addressType;
+		}
+
+		uint64_t AddressIndex::lastBalanceChanged(uint32_t publicKeyIndex) const
+		{
+			auto it = mIndexTransactionNrs.find(publicKeyIndex);
+			if (it == mIndexTransactionNrs.end()) {
+				return 0;
+			}
+			return it->second.lastBalanceChangingTransactionNr;
 		}
 
 		bool AddressIndex::isExist(uint32_t publicKeyIndex) const

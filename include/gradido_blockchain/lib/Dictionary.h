@@ -1,126 +1,106 @@
 #ifndef __GRADIDO_BLOCKCHAIN_LIB_DICTIONARY_H
 #define __GRADIDO_BLOCKCHAIN_LIB_DICTIONARY_H
 
-#include "gradido_blockchain/crypto/SignatureOctet.h"
-#include "gradido_blockchain/GradidoBlockchainException.h"
+#include "DictionaryExceptions.h"
+#include "DictionaryInterface.h"
 
 #include <unordered_map>
+#include <optional>
+#include <deque>
 #include <shared_mutex>
 #include <memory>
 
-/*!
-* @author Dario Rekowski
-* @date 2020-02-06
-*
-* @brief Create Indices for strings, for more efficient working with strings in memory
-* So basically every one use only the uint32_t index value for comparisation and stuff and only if the real value is needed,
-* they will ask the Dictionary for the real value
-*
-*/
 
-namespace memory {
-	class Block;
-	using ConstBlockPtr = std::shared_ptr<const Block>;
-}
-
-class Dictionary
+template<
+	typename DataType,
+	typename Hash = std::hash<DataType>,
+	typename Equal = std::equal_to<DataType>
+>
+class RuntimeDictionary: public IMutableDictionary<DataType>
 {
 public:
-	Dictionary(const char* name);
-	virtual ~Dictionary();
-	
-	//! empty 
-	virtual void reset();
+	RuntimeDictionary(std::string_view name) :mName(name) {}
 
-	virtual uint32_t getIndexForBinary(const memory::Block& binary) const;
-	virtual inline bool hasBinary(const memory::Block& binary) const {
-		return findIndexForBinary(binary) != 0;
+	virtual void reset() override {
+		mDataIndexLookup.clear();
+		mIndexDataLookup.clear();
 	}
 
-	virtual memory::ConstBlockPtr getBinaryForIndex(uint32_t index) const;		
-	virtual bool hasIndex(uint32_t index) const;
+	virtual std::optional<uint32_t> getIndexForData(const DataType& data) const override
+	{
+		auto it = mDataIndexLookup.find(data);
+		if (it == mDataIndexLookup.end()) {
+			return std::nullopt;
+		}
+		return it->second;
+	}
 
-	//! \brief Get or add index if not exist in cache or file, maybe I/O read.
-	//! \param address User public key as binary string
-	//! \param lastIndex Last knowing index for group.
-	//! \return Index for address.
-	virtual uint32_t getOrAddIndexForBinary(memory::ConstBlockPtr binary);
+	virtual std::optional<DataType> getDataForIndex(uint32_t index) const override
+	{
+		if (index >= mIndexDataLookup.size()) {
+			return std::nullopt;
+		}
+		return mIndexDataLookup[index];
+	}
 
-	//! \brief Add index
-	//! \return False if index address already exist, else true.
-	virtual bool addBinaryIndex(memory::ConstBlockPtr binary, uint32_t index);
-
-	virtual inline uint32_t getLastIndex() { return mLastIndex; }
+	virtual uint32_t getOrAddIndexForData(const DataType& data) override
+	{
+		// TODO: write unit test to test boundaries
+		if (mIndexDataLookup.size() > static_cast<size_t>(std::numeric_limits<uint32_t>::max())) {
+			throw DictionaryOverflowException("try to add more index data set's as uint32_t as index can handle", mName);
+		}
+		uint32_t index = static_cast<uint32_t>(mIndexDataLookup.size());
+		auto insertIt = mDataIndexLookup.insert({ data, index });
+		if (!insertIt.second) {
+			return insertIt.first->second;
+		}
+		mIndexDataLookup.push_back(data);
+		return index;
+	}
 
 protected:
-	bool hasBinaryIndexPair(const memory::Block& binary, uint32_t index) const;
-	uint32_t findIndexForBinary(const memory::Block& binary) const;
-
-	typedef std::pair<memory::ConstBlockPtr, uint32_t> BinaryIndexPair;
-
 	std::string mName;
-	uint32_t mLastIndex;	
-	// for finding index for a specific binary data blob
-	std::unordered_multimap<SignatureOctet, BinaryIndexPair> mBinaryIndexLookup;
-	// for finding binary data blob for a specific index
-	std::unordered_map<uint32_t, memory::ConstBlockPtr> mIndexBinaryLookup;
+	// for finding index for specific data
+	std::unordered_map<DataType, uint32_t, Hash, Equal> mDataIndexLookup;
+	// for finding data for a specific index
+	std::deque<DataType> mIndexDataLookup;
 };
 
-class DictionaryThreadsafe : protected Dictionary
+template<
+	typename DataType,
+	typename Hash = std::hash<DataType>,
+	typename Equal = std::equal_to<DataType>
+>
+class ThreadsafeRuntimeDictionary : public RuntimeDictionary<DataType, Hash, Equal>
 {
 public:
-	using Dictionary::Dictionary;
+	ThreadsafeRuntimeDictionary(std::string_view name) : RuntimeDictionary<DataType, Hash, Equal>(name) {}
 
-	virtual void reset() override;
+	virtual void reset() override {
+		std::unique_lock _lock(mSharedMutex);
+		RuntimeDictionary<DataType, Hash, Equal>::reset();
+	}
 
-	virtual uint32_t getIndexForBinary(const memory::Block& binary) const override;
+	virtual std::optional<uint32_t> getIndexForData(const DataType& data) const override
+	{
+		std::shared_lock _lock(mSharedMutex);
+		return RuntimeDictionary<DataType, Hash, Equal>::getIndexForData(data);
+	}
 
-	virtual memory::ConstBlockPtr getBinaryForIndex(uint32_t index) const override;
-	virtual bool hasIndex(uint32_t index) const override;
+	virtual std::optional<const DataType&> getDataForIndex(uint32_t index) const override
+	{
+		std::shared_lock _lock(mSharedMutex);
+		return RuntimeDictionary<DataType, Hash, Equal>::getDataForIndex(index);
+	}
 
-	//! \brief Get or add index if not exist in cache or file, maybe I/O read.
-	//! \param address User public key as binary string
-	//! \param lastIndex Last knowing index for group.
-	//! \return Index for address.
-	virtual uint32_t getOrAddIndexForBinary(memory::ConstBlockPtr binary) override;
-
-	//! \brief Add index
-	//! \return False if index address already exist, else true.
-	virtual bool addBinaryIndex(memory::ConstBlockPtr binary, uint32_t index) override;
-
-	virtual inline uint32_t getLastIndex() override { std::shared_lock _lock(mSharedMutex);  return mLastIndex; }
-protected:
-	mutable std::shared_mutex mSharedMutex;
-};
-
-
-class DictionaryException : public GradidoBlockchainException
-{
-public:
-	explicit DictionaryException(const char* what, const char* dictionaryName) noexcept;
-protected:
-	std::string mDictionaryName;
-};
-
-class DictionaryNotFoundException : public DictionaryException
-{
-public:
-	explicit DictionaryNotFoundException(const char* what, const char* dictionaryName, const char* key) noexcept;
-	std::string getFullString() const;
+	virtual uint32_t getOrAddIndexForData(const DataType& data) override
+	{
+		std::unique_lock _lock(mSharedMutex);
+		return RuntimeDictionary<DataType, Hash, Equal>::getOrAddIndexForData(data);
+	}
 
 protected:
-	std::string mKey;
-};
-
-class DictionaryInvalidNewKeyException : public DictionaryException
-{
-public:
-	explicit DictionaryInvalidNewKeyException(const char* what, const char* dictionaryName, uint32_t newKey, uint32_t oldKey) noexcept;
-	std::string getFullString() const;
-
-protected:
-	uint32_t mNewKey;
-	uint32_t mOldKey;
+	std::shared_mutex mSharedMutex;
 };
 
 #endif //__GRADIDO_BLOCKCHAIN_LIB_DICTIONARY_H

@@ -22,9 +22,12 @@ namespace gradido {
 		}
 
 		TransactionEntry::TransactionEntry(data::ConstConfirmedTransactionPtr confirmedTransaction)
-			: mTransactionNr(confirmedTransaction->getId()),
-			mSerializedTransaction(interaction::serialize::Context(*confirmedTransaction).run()),
-			mConfirmedTransaction(confirmedTransaction)
+			: TransactionEntry(interaction::serialize::Context(*confirmedTransaction).run(), confirmedTransaction)
+		{
+		}		
+
+		TransactionEntry::TransactionEntry(memory::ConstBlockPtr serializedTransaction, data::ConstConfirmedTransactionPtr confirmedTransaction)
+			: mTransactionNr(confirmedTransaction->getId()), mSerializedTransaction(serializedTransaction), mConfirmedTransaction(confirmedTransaction)
 		{
 			auto receivedDate = timepointAsYearMonthDay(confirmedTransaction->getConfirmedAt().getAsTimepoint());
 			mMonth = receivedDate.month();
@@ -32,7 +35,7 @@ namespace gradido {
 			auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
 			mTransactionType = body->getTransactionType();
 			mCoinCommunityId = getCoinCommunityId(*body);
-		}		
+		}
 
 		TransactionEntry::TransactionEntry(
 			uint64_t transactionNr,

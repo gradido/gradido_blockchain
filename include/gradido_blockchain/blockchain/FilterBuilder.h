@@ -10,24 +10,26 @@ namespace gradido {
 		public:
 			inline void reset() { mFilter = Filter(); }
 			// default is 0
-			inline FilterBuilder& setMinTransactionNr(uint64_t _minTransactionNr) { mFilter.minTransactionNr = _minTransactionNr; return *this;}
+			inline FilterBuilder& setMinTransactionNr(uint64_t minTransactionNr) { mFilter.minTransactionNr = minTransactionNr; return *this;}
 			// default is 0, no max use all
-			inline FilterBuilder& setMaxTransactionNr(uint64_t _maxTransactionNr) { mFilter.maxTransactionNr = _maxTransactionNr; return *this; }
+			inline FilterBuilder& setMaxTransactionNr(uint64_t maxTransactionNr) { mFilter.maxTransactionNr = maxTransactionNr; return *this; }
 			// default is nullptr, don't filter for public keys
-			inline FilterBuilder& setInvolvedPublicKey(memory::ConstBlockPtr _involvedPublicKey) { mFilter.involvedPublicKey = _involvedPublicKey; return *this; }
+			inline FilterBuilder& setInvolvedPublicKey(memory::ConstBlockPtr involvedPublicKey) { mFilter.involvedPublicKey = involvedPublicKey; return *this; }
+			// default is nullptr
+			inline FilterBuilder& setUpdatedBalancePublicKey(memory::ConstBlockPtr updatedBalancePublicKey) { mFilter.updatedBalancePublicKey = updatedBalancePublicKey; return *this; }
 			// default is DESC
-			inline FilterBuilder& setSearchDirection(SearchDirection _searchDirection) { mFilter.searchDirection = _searchDirection; return *this; }
+			inline FilterBuilder& setSearchDirection(SearchDirection searchDirection) { mFilter.searchDirection = searchDirection; return *this; }
 			// default is no pagination, result all 
-			inline FilterBuilder& setPagination(Pagination _pagination) { mFilter.pagination = _pagination; return *this;}
+			inline FilterBuilder& setPagination(Pagination pagination) { mFilter.pagination = pagination; return *this;}
 			// default is nullptr, don't filter for coin color
-			inline FilterBuilder& setCoinCommunityId(std::string_view _coinCommunityId) { mFilter.coinCommunityId = _coinCommunityId; return *this; }
+			inline FilterBuilder& setCoinCommunityId(std::string_view coinCommunityId) { mFilter.coinCommunityId = coinCommunityId; return *this; }
 			// default is zero, don't filter for date
-			inline FilterBuilder& setTimepointInterval(TimepointInterval _timepointInterval) { mFilter.timepointInterval = _timepointInterval; return *this; }
+			inline FilterBuilder& setTimepointInterval(TimepointInterval timepointInterval) { mFilter.timepointInterval = timepointInterval; return *this; }
 			// default is none, don't filter for transaction type
-			inline FilterBuilder& setTransactionType(data::TransactionType _transactionType) { mFilter.transactionType = _transactionType; return *this; }
+			inline FilterBuilder& setTransactionType(data::TransactionType transactionType) { mFilter.transactionType = transactionType; return *this; }
 
-			inline FilterBuilder& setFilterFunction(std::function<FilterResult(const TransactionEntry&)> _filterFunction) {
-				mFilter.filterFunction = _filterFunction;
+			inline FilterBuilder& setFilterFunction(std::function<FilterResult(const TransactionEntry&)> filterFunction) {
+				mFilter.filterFunction = filterFunction;
 				return *this;
 			}
 

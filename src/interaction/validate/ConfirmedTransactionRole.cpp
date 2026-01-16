@@ -1,5 +1,6 @@
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/data/BalanceDerivationType.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/validate/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
@@ -13,6 +14,7 @@ using namespace std::chrono;
 using namespace magic_enum;
 
 namespace gradido {
+	using data::BalanceDerivationType;
 	namespace interaction {
 		namespace validate {
 			void ConfirmedTransactionRole::run(
@@ -134,8 +136,15 @@ namespace gradido {
 						}
 					}
 				}
+				auto modifiedType = type;
+				if (
+					BalanceDerivationType::EXTERN == mConfirmedTransaction.getBalanceDerivationType()
+					&& (modifiedType & Type::PREVIOUS_BALANCE) == Type::PREVIOUS_BALANCE
+				) {
+					modifiedType = modifiedType - Type::PREVIOUS_BALANCE;
+				}
 				GradidoTransactionRole(*mConfirmedTransaction.getGradidoTransaction()).run(
-					type,
+					modifiedType,
 					blockchain,
 					senderPreviousConfirmedTransaction,
 					recipientPreviousConfirmedTransaction

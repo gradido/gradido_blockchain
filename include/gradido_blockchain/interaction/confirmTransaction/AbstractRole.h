@@ -59,6 +59,8 @@ namespace gradido {
                 //! \param accountBalances move
                 void setAccountBalances(std::vector<data::AccountBalance> accountBalances);
 
+                inline bool isExternBalanceDerivationType() const { return data::BalanceDerivationType::EXTERN == mBalanceDerivationType; }
+
             protected:
                 data::AccountBalance calculateAccountBalance(
                     memory::ConstBlockPtr publicKey, 
