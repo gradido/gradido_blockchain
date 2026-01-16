@@ -20,6 +20,10 @@ namespace gradido {
 			inline bool operator==(const TransferAmount& other) const {
 				return mPublicKey && mPublicKey->isTheSame(other.mPublicKey) && mAmount == other.mAmount && mCommunityId == other.mCommunityId;
 			}
+			inline bool isPairing(const TransferAmount& other) const {
+				return mPublicKey && mPublicKey->isTheSame(other.mPublicKey)
+					&& mAmount == other.mAmount;
+			}
 			inline memory::ConstBlockPtr getPublicKey() const { return mPublicKey; }
 			inline GradidoUnit getAmount() const { return mAmount; }
 			inline const std::string& getCommunityId() const { return mCommunityId; }

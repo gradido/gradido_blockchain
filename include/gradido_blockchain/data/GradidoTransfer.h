@@ -18,6 +18,10 @@ namespace gradido {
 
 			inline std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const { return { mSender.getPublicKey(), mRecipient}; }
 			bool isInvolved(const memory::Block& publicKey) const;
+			inline bool isPairing(const GradidoTransfer& other) const {
+				return mSender.isPairing(other.mSender)
+					&& mRecipient && other.mRecipient && mRecipient->isTheSame(other.mRecipient);
+			}
 
 			inline const TransferAmount& getSender() const { return mSender; }
 			inline void updateCoinColor(const std::string& communityId) { mSender.updateCoinColor(communityId); }

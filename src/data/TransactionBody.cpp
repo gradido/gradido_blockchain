@@ -32,13 +32,13 @@ namespace gradido {
 				return *mRegisterAddress == *other.mRegisterAddress;
 			}
 			if (isTransfer() && other.isTransfer()) {
-				return *mTransfer == *other.mTransfer;
+				return mTransfer->isPairing(*other.mTransfer);
 			}
 			if (isDeferredTransfer() && other.isDeferredTransfer()) {
 				return *mDeferredTransfer == *other.mDeferredTransfer;
 			}
 			if (isRedeemDeferredTransfer() && other.isRedeemDeferredTransfer()) {
-				return *mRedeemDeferredTransfer == *other.mRedeemDeferredTransfer;
+				return mRedeemDeferredTransfer->isPairing(*other.mRedeemDeferredTransfer);
 			}
 			if (isTimeoutDeferredTransfer() && other.isTimeoutDeferredTransfer()) {
 				return *mTimeoutDeferredTransfer == *other.mTimeoutDeferredTransfer;

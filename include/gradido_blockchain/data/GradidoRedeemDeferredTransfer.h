@@ -22,6 +22,10 @@ namespace gradido {
             inline bool operator==(const GradidoRedeemDeferredTransfer& other) const {
                 return mTransfer == other.getTransfer() && mDeferredTransferTransactionNr == other.getDeferredTransferTransactionNr();
             }
+            inline bool isPairing(const GradidoRedeemDeferredTransfer& other) const {
+                return mTransfer.isPairing(other.getTransfer())
+                    && mDeferredTransferTransactionNr == other.getDeferredTransferTransactionNr();
+            }
 
             inline std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const { return mTransfer.getInvolvedAddresses(); }
             inline bool isInvolved(const memory::Block& publicKey) const { return mTransfer.isInvolved(publicKey); }
