@@ -6,63 +6,62 @@
 #include "gradido_blockchain/memory/Block.h"
 
 namespace gradido {
-    namespace blockchain {
-        class Abstract;
-        class AbstractProvider;
-    }
-    namespace data {
-        class ConfirmedTransaction;
-        class SignatureMap;
-    }
+  namespace blockchain {
+    class Abstract;
+    class AbstractProvider;
+  }
+  namespace data {
+    class ConfirmedTransaction;
+    class SignatureMap;
+  }
 	namespace interaction {
 		namespace validate {
             
-            class AbstractRole 
-            {
-            public:
-                AbstractRole() : mMinSignatureCount(0) {}
-                virtual ~AbstractRole() {}
-                // test if transaction is valid, throw an exception on error
-                virtual void run(
-                    Type type = Type::SINGLE,
-                    std::shared_ptr<blockchain::Abstract> blockchain = nullptr,
-                    std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction = nullptr,
-                    std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction = nullptr
-                ) = 0;
+      class AbstractRole 
+      {
+      public:
+        AbstractRole() : mMinSignatureCount(0) {}
+        virtual ~AbstractRole() {}
+        // test if transaction is valid, throw an exception on error
+        virtual void run(
+          Type type = Type::SINGLE,
+          std::shared_ptr<blockchain::Abstract> blockchain = nullptr,
+          std::shared_ptr<const data::ConfirmedTransaction> ownBlockchainPreviousConfirmedTransaction = nullptr,
+          std::shared_ptr<const data::ConfirmedTransaction> otherBlockchainPreviousConfirmedTransaction = nullptr
+        ) = 0;
 
-                inline void setConfirmedAt(data::TimestampSeconds confirmedAt) { mConfirmedAt = confirmedAt; }
-                inline void setCreatedAt(data::Timestamp createdAt) { mCreatedAt = createdAt; }
+        inline void setConfirmedAt(data::TimestampSeconds confirmedAt) { mConfirmedAt = confirmedAt; }
+        inline void setCreatedAt(data::Timestamp createdAt) { mCreatedAt = createdAt; }
 
-                //! \param blockchain can be nullptr, so if overloading this function, don't forget to check
-                virtual void checkRequiredSignatures(
-                    const data::SignatureMap& signatureMap,
-                    std::shared_ptr<blockchain::Abstract> blockchain = nullptr
-                ) const;
+        //! \param blockchain can be nullptr, so if overloading this function, don't forget to check
+        virtual void checkRequiredSignatures(
+          const data::SignatureMap& signatureMap,
+          std::shared_ptr<blockchain::Abstract> blockchain = nullptr
+        ) const;
 			        
-            protected:
-                bool isValidCommunityAlias(std::string_view communityAlias) const;
-                void validateEd25519PublicKey(memory::ConstBlockPtr ed25519PublicKey, const char* name) const;                    
-                void validateEd25519Signature(memory::ConstBlockPtr ed25519Signature, const char* name) const;
+      protected:
+        bool isValidCommunityAlias(std::string_view communityAlias) const;
+        void validateEd25519PublicKey(memory::ConstBlockPtr ed25519PublicKey, const char* name) const;                    
+        void validateEd25519Signature(memory::ConstBlockPtr ed25519Signature, const char* name) const;
 
 				void isPublicKeyForbidden(memory::ConstBlockPtr pubkey) const;
 
-                //! throw if blockchainProvider is null or no blockchain can be found for communityId
-                //! \return valid blockchain pointer
-                std::shared_ptr<blockchain::Abstract> findBlockchain(
-                    blockchain::AbstractProvider* blockchainProvider,
-                    std::string_view communityId,
-                    const char* callerFunction
-                );
+        //! throw if blockchainProvider is null or no blockchain can be found for communityId
+        //! \return valid blockchain pointer
+        std::shared_ptr<blockchain::Abstract> findBlockchain(
+          blockchain::AbstractProvider* blockchainProvider,
+          std::string_view communityId,
+          const char* callerFunction
+        );
 
-                const static std::string mCommunityIdRegexString;
-                data::TimestampSeconds mConfirmedAt;
-                data::Timestamp mCreatedAt;
+        data::TimestampSeconds mConfirmedAt;
+        data::Timestamp mCreatedAt;
 				uint32_t mMinSignatureCount;
 				std::vector<memory::ConstBlockPtr> mRequiredSignPublicKeys;
 				std::vector<memory::ConstBlockPtr> mForbiddenSignPublicKeys;
-            };
-        }
+      };
     }
+  }
 }
 
 

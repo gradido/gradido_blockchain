@@ -8,11 +8,12 @@
 
 #include "date/date.h"
 
+#include <memory>
+
 using std::shared_ptr;
 
 namespace gradido {
 	using data::Timestamp, data::ConfirmedTransaction, data::GradidoTimeoutDeferredTransfer;
-	using blockchain::Abstract;
 
 	namespace interaction {
 		namespace validate {
@@ -28,9 +29,9 @@ namespace gradido {
 
 			void GradidoTimeoutDeferredTransferRole::run(
 				Type type,
-				shared_ptr<Abstract> blockchain,
-				shared_ptr<const ConfirmedTransaction> senderPreviousConfirmedTransaction,
-				shared_ptr<const ConfirmedTransaction> recipientPreviousConfirmedTransaction
+				shared_ptr<blockchain::Abstract> blockchain,
+				shared_ptr<const ConfirmedTransaction> ownBlockchainPreviousConfirmedTransaction,
+				shared_ptr<const ConfirmedTransaction> otherBlockchainPreviousConfirmedTransaction
 			) {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
 					if (mTimeoutDeferredTransfer->getDeferredTransferTransactionNr() <= 3) {

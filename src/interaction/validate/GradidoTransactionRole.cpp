@@ -2,6 +2,9 @@
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/CrossGroupType.h"
+#include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransactionRole.h"
 #include "gradido_blockchain/interaction/validate/TransactionBodyRole.h"
@@ -9,23 +12,29 @@
 
 #include "magic_enum/magic_enum.hpp"
 
+#include <memory>
+
 using namespace magic_enum;
+using std::shared_ptr;
 
 namespace gradido {
+	using blockchain::TransactionEntry;
+	using data::ConfirmedTransaction, data::CrossGroupType;
+
 	namespace interaction {
 		namespace validate {
 
 			void GradidoTransactionRole::run(
 				Type type,
-				std::shared_ptr<blockchain::Abstract> blockchain,
-				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
-				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
+				shared_ptr<blockchain::Abstract> blockchain,
+				shared_ptr<const ConfirmedTransaction> ownBlockchainPreviousConfirmedTransaction,
+				shared_ptr<const ConfirmedTransaction> otherBlockchainPreviousConfirmedTransaction
 			) {
 				const auto& body = mGradidoTransaction.getTransactionBody();
 				TransactionBodyRole bodyRole(*body);
 				bodyRole.setConfirmedAt(mConfirmedAt);
 				// recursive validation					
-				bodyRole.run(type, blockchain, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
+				bodyRole.run(type, blockchain, ownBlockchainPreviousConfirmedTransaction, otherBlockchainPreviousConfirmedTransaction);
 
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
@@ -51,12 +60,12 @@ namespace gradido {
 					assert(blockchain);
 					auto otherBlockchain = findBlockchain(blockchain->getProvider(), body->getOtherGroup(), __FUNCTION__);
 					
-					std::shared_ptr<const blockchain::TransactionEntry> pairTransactionEntry;
+					shared_ptr<const TransactionEntry> pairTransactionEntry;
 					switch (body->getType()) {
-					case data::CrossGroupType::LOCAL: break; // no cross group
-					case data::CrossGroupType::OUTBOUND: break; // happen first, no pairing transaction yet
-					case data::CrossGroupType::INBOUND:
-					case data::CrossGroupType::CROSS:
+					case CrossGroupType::LOCAL: break; // no cross group
+					case CrossGroupType::OUTBOUND: break; // happen first, no pairing transaction yet
+					case CrossGroupType::INBOUND:
+					case CrossGroupType::CROSS:
 						if (mGradidoTransaction.getPairingLedgerAnchor().empty()) {
 							throw TransactionValidationInvalidInputException(
 								"pairing ledger anchor not set for outbound or cross",

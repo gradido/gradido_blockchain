@@ -4,11 +4,16 @@
 
 #include "date/date.h"
 
+#include <memory>
+
+using std::shared_ptr;
+
 namespace gradido {
+	using data::ConfirmedTransaction, data::CommunityRoot;
 	namespace interaction {
 		namespace validate {
 
-			CommunityRootRole::CommunityRootRole(std::shared_ptr<const data::CommunityRoot> communityRoot)
+			CommunityRootRole::CommunityRootRole(shared_ptr<const CommunityRoot> communityRoot)
 				: mCommunityRoot(communityRoot) 
 			{
 				assert(communityRoot);
@@ -19,9 +24,9 @@ namespace gradido {
 
 			void CommunityRootRole::run(
 				Type type,
-				std::shared_ptr<blockchain::Abstract> blockchain,
-				std::shared_ptr<const data::ConfirmedTransaction> previousConfirmedTransaction,
-				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
+				shared_ptr<blockchain::Abstract> blockchain,
+				shared_ptr<const ConfirmedTransaction> ownBlockchainPreviousConfirmedTransaction,
+				shared_ptr<const ConfirmedTransaction> otherBlockchainPreviousConfirmedTransaction
 			) {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
 					validateEd25519PublicKey(mCommunityRoot->getPublicKey(), "pubkey");
@@ -37,7 +42,7 @@ namespace gradido {
 					if (aufPubkey == pubkey) { throw TransactionValidationException("aufPubkey and pubkey are the same"); }
 				}
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS) {
-					if (previousConfirmedTransaction) {
+					if (ownBlockchainPreviousConfirmedTransaction) {
 						throw TransactionValidationException("community root must be the first transaction in the blockchain!");
 					}
 				}

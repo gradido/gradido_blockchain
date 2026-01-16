@@ -32,13 +32,13 @@ namespace gradido {
 
 			void Context::run(Type type/* = Type::SINGLE*/, std::shared_ptr<blockchain::Abstract> blockchain /*= nullptr*/)
 			{
-				if (!mSenderPreviousConfirmedTransaction && blockchain) {
+				if (!mOwnBlockchainPreviousConfirmedTransaction && blockchain) {
 					auto transactionEntry = blockchain->findOne(blockchain::Filter::LAST_TRANSACTION);
 					if (transactionEntry) {
-						mSenderPreviousConfirmedTransaction = transactionEntry->getConfirmedTransaction();
+						mOwnBlockchainPreviousConfirmedTransaction = transactionEntry->getConfirmedTransaction();
 					}
 				}
-				mRole->run(type, blockchain, mSenderPreviousConfirmedTransaction, mRecipientPreviousConfirmedTransaction);
+				mRole->run(type, blockchain, mOwnBlockchainPreviousConfirmedTransaction, mOtherBlockchainPreviousConfirmedTransaction);
 			}
 		}
 	}

@@ -1,6 +1,7 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
-#include "gradido_blockchain/blockchain/FilterBuilder.h"
+#include "gradido_blockchain/blockchain/Filter.h"
+#include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/interaction/calculateCreationSum/Context.h"
 #include "gradido_blockchain/interaction/validate/GradidoCreationRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
@@ -9,12 +10,22 @@
 
 #include "date/date.h"
 
+#include <memory>
+#include <string>
+
+using std::shared_ptr;
+using std::string, std::to_string;
+
+using DataTypeConverter::timePointToString;
+
 namespace gradido {
 	using blockchain::Filter;
+	using data::AddressType, data::SignatureMap, data::GradidoCreation, data::ConfirmedTransaction;
+
 	namespace interaction {
 		namespace validate {
 
-			GradidoCreationRole::GradidoCreationRole(std::shared_ptr<const data::GradidoCreation> gradidoCreation)
+			GradidoCreationRole::GradidoCreationRole(shared_ptr<const GradidoCreation> gradidoCreation)
 				: mGradidoCreation(gradidoCreation)
 			{
 				assert(gradidoCreation);
@@ -25,13 +36,13 @@ namespace gradido {
 
 			void GradidoCreationRole::run(
 				Type type,
-				std::shared_ptr<blockchain::Abstract> blockchain,
-				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
-				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
+				shared_ptr<blockchain::Abstract> blockchain,
+				shared_ptr<const ConfirmedTransaction> ownBlockchainPreviousConfirmedTransaction,
+				shared_ptr<const ConfirmedTransaction> otherBlockchainPreviousConfirmedTransaction
 			) {
 				const auto& recipient = mGradidoCreation->getRecipient();
 				TransferAmountRole transferAmountRole(mGradidoCreation->getRecipient());
-				transferAmountRole.run(type, blockchain, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
+				transferAmountRole.run(type, blockchain, ownBlockchainPreviousConfirmedTransaction, otherBlockchainPreviousConfirmedTransaction);
 
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
@@ -59,10 +70,7 @@ namespace gradido {
 
 				if ((type & Type::MONTH_RANGE) == Type::MONTH_RANGE)
 				{
-					if (!recipientPreviousConfirmedTransaction && senderPreviousConfirmedTransaction) {
-						recipientPreviousConfirmedTransaction = senderPreviousConfirmedTransaction;
-					}
-					if (!recipientPreviousConfirmedTransaction) {
+					if (!ownBlockchainPreviousConfirmedTransaction) {
 						throw GradidoNullPointerException(
 							"missing previous confirmed transaction for interaction::validate Creation",
 							"data::ConstConfirmedTransactionPtr",
@@ -75,7 +83,7 @@ namespace gradido {
 						mConfirmedAt,
 						mGradidoCreation->getTargetDate(),
 						mGradidoCreation->getRecipient().getPublicKey(),
-						recipientPreviousConfirmedTransaction->getId()
+						ownBlockchainPreviousConfirmedTransaction->getId()
 					);
 
 					GradidoUnit sum = calculateCreationSum.run(*blockchain);
@@ -84,7 +92,7 @@ namespace gradido {
 						auto targetDate = mGradidoCreation->getTargetDate();
 						auto ymd = date::year_month_day{ date::floor<date::days>(targetDate.getAsTimepoint()) };
 						sum -= recipient.getAmount();
-						std::string message = "creation more than ";
+						string message = "creation more than ";
 						message += calculateCreationSum.getLimit().toString() + " not allowed";
 
 						throw InvalidCreationException(
@@ -95,18 +103,18 @@ namespace gradido {
 					}
 				}
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
-					Filter filter;
+					Filter filter(Filter::LAST_TRANSACTION);
 					filter.involvedPublicKey = mGradidoCreation->getRecipient().getPublicKey();
 					auto addressType = blockchain->getAddressType(filter);
-					if (data::AddressType::COMMUNITY_HUMAN != addressType) {
+					if (AddressType::COMMUNITY_HUMAN != addressType) {
 						throw WrongAddressTypeException("wrong address type for creation", addressType, mGradidoCreation->getRecipient().getPublicKey());
 					}
 				}
 			}
 
 			void GradidoCreationRole::checkRequiredSignatures(
-				const data::SignatureMap& signatureMap,
-				std::shared_ptr<blockchain::Abstract> blockchain /*  = nullptr*/
+				const SignatureMap& signatureMap,
+				shared_ptr<blockchain::Abstract> blockchain /*  = nullptr*/
 			) const
 			{
 				AbstractRole::checkRequiredSignatures(signatureMap, blockchain);
@@ -114,12 +122,12 @@ namespace gradido {
 				auto& signPairs = signatureMap.getSignaturePairs();
 				// check for account type
 				for (auto& signPair : signPairs) {
-					Filter filter;
+					Filter filter(Filter::LAST_TRANSACTION);
 					filter.involvedPublicKey = signPair.getPublicKey();
-					filter.searchDirection = blockchain::SearchDirection::DESC;
 					filter.timepointInterval = TimepointInterval(blockchain->getStartDate(), mCreatedAt);
+
 					auto signerAccountType = blockchain->getAddressType(filter);
-					if (data::AddressType::COMMUNITY_HUMAN != signerAccountType) {
+					if (AddressType::COMMUNITY_HUMAN != signerAccountType) {
 						throw WrongAddressTypeException(
 							"signer for creation doesn't have a community human account",
 							signerAccountType,
@@ -140,9 +148,9 @@ namespace gradido {
 				{
 					if (static_cast<unsigned>(target_date.month()) + targetDateReceivedDistanceMonth < static_cast<unsigned>(received.month())) {
 						std::string expected = ">= "
-							+ DataTypeConverter::timePointToString(createdAtTimePoint)
+							+ timePointToString(createdAtTimePoint)
 							+ " - "
-							+ std::to_string(static_cast<unsigned>(targetDateReceivedDistanceMonth))
+							+ to_string(static_cast<unsigned>(targetDateReceivedDistanceMonth))
 							+ " months"
 						;
 						throw TransactionValidationInvalidInputException(
@@ -150,50 +158,50 @@ namespace gradido {
 							"target_date",
 							"TimestampSeconds",
 							expected.data(),
-							DataTypeConverter::timePointToString(mGradidoCreation->getTargetDate().getAsTimepoint()).data()
+							timePointToString(mGradidoCreation->getTargetDate().getAsTimepoint()).data()
 						);
 					}
 					if (target_date.month() > received.month()) {
-						std::string expected = "<= " + std::to_string(static_cast<unsigned>(received.month()));
+						string expected = "<= " + to_string(static_cast<unsigned>(received.month()));
 						throw TransactionValidationInvalidInputException(
 							"year is the same, target date month is invalid",
 						 	"target_date",
 							"TimestampSeconds",
 							expected.data(),
-							std::to_string(static_cast<unsigned>(target_date.month())).data()
+							to_string(static_cast<unsigned>(target_date.month())).data()
 						);
 					}
 				}
 				else if (target_date.year() > received.year())
 				{
-					std::string expected = "<= " + std::to_string(static_cast<int>(received.year()));
+					string expected = "<= " + to_string(static_cast<int>(received.year()));
 					throw TransactionValidationInvalidInputException(
 						"target date year is in future",
 						"target_date",
 						"TimestampSeconds",
 						expected.data(),
-						std::to_string(static_cast<int>(target_date.year())).data()
+						to_string(static_cast<int>(target_date.year())).data()
 					);
 				}
 				else if (static_cast<int>(target_date.year()) + 1 < static_cast<int>(received.year()))
 				{
-					std::string expected = " >= " + std::to_string(static_cast<int>(received.year())) + " - 1 year";
+					string expected = " >= " + to_string(static_cast<int>(received.year())) + " - 1 year";
 					throw TransactionValidationInvalidInputException(
 						"target date year is in past",
 						"target_date",
 						"TimestampSeconds",
 						expected.data(),
-						std::to_string(static_cast<int>(target_date.year())).data()
+						to_string(static_cast<int>(target_date.year())).data()
 					);
 				}
 				else
 				{
 					// target_date.year +1 == now.year
 					if (static_cast<unsigned>(target_date.month()) + targetDateReceivedDistanceMonth < static_cast<unsigned>(received.month()) + 12) {
-						std::string expected = ">= "
-							+ DataTypeConverter::timePointToString(createdAtTimePoint)
+						string expected = ">= "
+							+ timePointToString(createdAtTimePoint)
 							+ " - "
-							+ std::to_string(static_cast<unsigned>(targetDateReceivedDistanceMonth))
+							+ to_string(static_cast<unsigned>(targetDateReceivedDistanceMonth))
 							+ " months"
 						;
 						throw TransactionValidationInvalidInputException(
@@ -201,7 +209,7 @@ namespace gradido {
 							"target_date",
 							"TimestampSeconds",
 							expected.data(),
-							DataTypeConverter::timePointToString(mGradidoCreation->getTargetDate().getAsTimepoint()).data()
+							timePointToString(mGradidoCreation->getTargetDate().getAsTimepoint()).data()
 						);
 					}
 				}
