@@ -34,15 +34,11 @@ namespace gradido {
 				mForbiddenSignPublicKeys.push_back(mGradidoCreation->getRecipient().getPublicKey());
 			}
 
-			void GradidoCreationRole::run(
-				Type type,
-				shared_ptr<blockchain::Abstract> blockchain,
-				shared_ptr<const ConfirmedTransaction> ownBlockchainPreviousConfirmedTransaction,
-				shared_ptr<const ConfirmedTransaction> otherBlockchainPreviousConfirmedTransaction
-			) {
+			void GradidoCreationRole::run(Type type, ContextData& c)
+			{
 				const auto& recipient = mGradidoCreation->getRecipient();
 				TransferAmountRole transferAmountRole(mGradidoCreation->getRecipient());
-				transferAmountRole.run(type, blockchain, ownBlockchainPreviousConfirmedTransaction, otherBlockchainPreviousConfirmedTransaction);
+				transferAmountRole.run(type, c);
 
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
@@ -70,7 +66,7 @@ namespace gradido {
 
 				if ((type & Type::MONTH_RANGE) == Type::MONTH_RANGE)
 				{
-					if (!ownBlockchainPreviousConfirmedTransaction) {
+					if (!c.senderPreviousConfirmedTransaction) {
 						throw GradidoNullPointerException(
 							"missing previous confirmed transaction for interaction::validate Creation",
 							"data::ConstConfirmedTransactionPtr",
@@ -83,10 +79,10 @@ namespace gradido {
 						mConfirmedAt,
 						mGradidoCreation->getTargetDate(),
 						mGradidoCreation->getRecipient().getPublicKey(),
-						ownBlockchainPreviousConfirmedTransaction->getId()
+						c.senderPreviousConfirmedTransaction->getId()
 					);
 
-					GradidoUnit sum = calculateCreationSum.run(*blockchain);
+					GradidoUnit sum = calculateCreationSum.run(*c.senderBlockchain);
 					sum += recipient.getAmount();
 					if (sum > calculateCreationSum.getLimit()) {
 						auto targetDate = mGradidoCreation->getTargetDate();
@@ -105,7 +101,7 @@ namespace gradido {
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
 					Filter filter(Filter::LAST_TRANSACTION);
 					filter.involvedPublicKey = mGradidoCreation->getRecipient().getPublicKey();
-					auto addressType = blockchain->getAddressType(filter);
+					auto addressType = c.senderBlockchain->getAddressType(filter);
 					if (AddressType::COMMUNITY_HUMAN != addressType) {
 						throw WrongAddressTypeException("wrong address type for creation", addressType, mGradidoCreation->getRecipient().getPublicKey());
 					}

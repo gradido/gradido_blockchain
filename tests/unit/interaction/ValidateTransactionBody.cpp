@@ -11,7 +11,7 @@ using namespace std;
 
 TEST(ValidateTransactionBody, InvalidMissingSpecificTransaction)
 {
-	TransactionBody body(createdAt, VERSION_STRING);
+	TransactionBody body(createdAt, GRADIDO_TRANSACTION_BODY_VERSION_STRING);
 	validate::Context c(body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationException);
 }
@@ -25,7 +25,7 @@ TEST(ValidateTransactionBody, InvalidVersion)
 
 TEST(ValidateTransactionBody, InvalidOtherGroup)
 {
-	TransactionBody body(createdAt, VERSION_STRING, CrossGroupType::LOCAL, "<script>");
+	TransactionBody body(createdAt, GRADIDO_TRANSACTION_BODY_VERSION_STRING, CrossGroupType::LOCAL, "<script>");
 	validate::Context c(body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }

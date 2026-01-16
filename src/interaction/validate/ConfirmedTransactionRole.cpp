@@ -9,20 +9,22 @@
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
 #include "magic_enum/magic_enum.hpp"
+#include <memory>
+#include <string>
 
 using namespace std::chrono;
-using namespace magic_enum;
+using magic_enum::enum_name;
+using std::shared_ptr;
+using std::string, std::to_string;
+using DataTypeConverter::timePointToString, DataTypeConverter::timespanToString;
 
 namespace gradido {
-	using data::BalanceDerivationType;
+	using data::BalanceDerivationType, data::ConfirmedTransaction;
 	namespace interaction {
 		namespace validate {
-			void ConfirmedTransactionRole::run(
-				Type type,
-				std::shared_ptr<blockchain::Abstract> blockchain,
-				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
-				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
-			) {
+
+			void ConfirmedTransactionRole::run(Type type, ContextData& c)
+			{
 				auto body = mConfirmedTransaction.getGradidoTransaction()->getTransactionBody();
 				auto createdAt = mConfirmedTransaction.getGradidoTransaction()->getTransactionBody()->getCreatedAt().getAsTimepoint();
 				auto confirmedAt = mConfirmedTransaction.getConfirmedAt().getAsTimepoint();
@@ -69,7 +71,7 @@ namespace gradido {
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS) {
 					if (mConfirmedTransaction.getId() > 1) {
 						auto previousTransactionId = mConfirmedTransaction.getId() - 1;
-						auto previousTransaction = blockchain->getTransactionForId(previousTransactionId);
+						auto previousTransaction = c.senderBlockchain->getTransactionForId(previousTransactionId);
 						if (!previousTransaction) {
 							GradidoBlockchainTransactionNotFoundException exception("previous transaction not found");
 							throw exception.setTransactionId(previousTransactionId);
@@ -80,22 +82,22 @@ namespace gradido {
 						}
 						
 						if (confirmedAt - createdAt > MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION) {
-							std::string message = "timespan between created and received are more than " + DataTypeConverter::timespanToString(MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION);
-							std::string expected = "<= (" + DataTypeConverter::timePointToString(createdAt) + " + " + DataTypeConverter::timespanToString(MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION) + ")";
+							string message = "timespan between created and received are more than " + timespanToString(MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION);
+							string expected = "<= (" + timePointToString(createdAt) + " + " + timespanToString(MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION) + ")";
 							TransactionValidationInvalidInputException exception(
 								message.data(),
 								"confirmed_at",
 								"TimestampSeconds",
 								expected.data(),
-								DataTypeConverter::timePointToString(confirmedAt).data()
+								timePointToString(confirmedAt).data()
 							);
 							exception.setTransactionBody(*body);
 							throw exception;
 						}
 						auto runningHash = mConfirmedTransaction.calculateRunningHash(previousConfirmedTransaction);
 						if (!mConfirmedTransaction.getRunningHash() || runningHash->size() != mConfirmedTransaction.getRunningHash()->size()) {
-							std::string fieldTypeWithSize = "binary[" + std::to_string(crypto_generichash_BYTES) + "]";
-							std::string actual = "0";
+							string fieldTypeWithSize = "binary[" + to_string(crypto_generichash_BYTES) + "]";
+							string actual = "0";
 							if(mConfirmedTransaction.getRunningHash()) {
 								actual = std::to_string(mConfirmedTransaction.getRunningHash()->size());
 							}
@@ -103,13 +105,13 @@ namespace gradido {
 								"stored running hash size isn't equal to calculated running hash size",
 								"running_hash",
 								fieldTypeWithSize.data(),
-								std::to_string(runningHash->size()).data(),
+								to_string(runningHash->size()).data(),
 								actual.data()
 							);
 						}
 						if(!runningHash->isTheSame(mConfirmedTransaction.getRunningHash())) {
-							std::string fieldTypeWithSize = "binary[" + std::to_string(crypto_generichash_BYTES) + "]";
-							std::string actual = "";
+							string fieldTypeWithSize = "binary[" + to_string(crypto_generichash_BYTES) + "]";
+							string actual = "";
 							if(mConfirmedTransaction.getRunningHash()) {
 								actual = mConfirmedTransaction.getRunningHash()->convertToHex();
 							}
@@ -130,8 +132,8 @@ namespace gradido {
 								"current transaction was imported from db while last transaction was confirmed by ledger",
 								"ledger_anchor",
 								"LedgerAnchor",
-								magic_enum::enum_name(ledgerAnchor.getType()).data(),
-								magic_enum::enum_name(previousLedgerAnchor.getType()).data()
+								enum_name(ledgerAnchor.getType()).data(),
+								enum_name(previousLedgerAnchor.getType()).data()
 							);
 						}
 					}
@@ -143,12 +145,7 @@ namespace gradido {
 				) {
 					modifiedType = modifiedType - Type::PREVIOUS_BALANCE;
 				}
-				GradidoTransactionRole(*mConfirmedTransaction.getGradidoTransaction()).run(
-					modifiedType,
-					blockchain,
-					senderPreviousConfirmedTransaction,
-					recipientPreviousConfirmedTransaction
-				);
+				GradidoTransactionRole(*mConfirmedTransaction.getGradidoTransaction()).run(modifiedType, c);
 			}
 		}
 	}

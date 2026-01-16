@@ -4,14 +4,15 @@
 #include "Type.h"
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/memory/Block.h"
+#include "ContextData.h"
+
+#include <memory>
 
 namespace gradido {
   namespace blockchain {
-    class Abstract;
     class AbstractProvider;
   }
   namespace data {
-    class ConfirmedTransaction;
     class SignatureMap;
   }
 	namespace interaction {
@@ -23,12 +24,7 @@ namespace gradido {
         AbstractRole() : mMinSignatureCount(0) {}
         virtual ~AbstractRole() {}
         // test if transaction is valid, throw an exception on error
-        virtual void run(
-          Type type = Type::SINGLE,
-          std::shared_ptr<blockchain::Abstract> blockchain = nullptr,
-          std::shared_ptr<const data::ConfirmedTransaction> ownBlockchainPreviousConfirmedTransaction = nullptr,
-          std::shared_ptr<const data::ConfirmedTransaction> otherBlockchainPreviousConfirmedTransaction = nullptr
-        ) = 0;
+        virtual void run(Type type, ContextData& c) = 0;
 
         inline void setConfirmedAt(data::TimestampSeconds confirmedAt) { mConfirmedAt = confirmedAt; }
         inline void setCreatedAt(data::Timestamp createdAt) { mCreatedAt = createdAt; }

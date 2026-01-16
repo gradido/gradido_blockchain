@@ -1,4 +1,5 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/TransferAmount.h"
 #include "gradido_blockchain/interaction/validate/TransferAmountRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
@@ -6,12 +7,7 @@
 namespace gradido {
 	namespace interaction {
 		namespace validate {
-			void TransferAmountRole::run(
-				Type type,
-				std::shared_ptr<blockchain::Abstract> blockchain,
-				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
-				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
-			) {
+			void TransferAmountRole::run(Type type, ContextData& c) {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
 					auto& coinCommunityId = mTransferAmount.getCommunityId();
 					if (!coinCommunityId.empty() && !isValidCommunityAlias(coinCommunityId)) {
@@ -19,13 +15,13 @@ namespace gradido {
 								"invalid character, only lowercase english latin letter, numbers and -",
 								"community_id",
 								"string",
-								mCommunityIdRegexString.data(),
+								COMMUNITY_ID_REGEX_STRING,
 								coinCommunityId.data()
 							);
 					}
 
-					if (blockchain) {
-						auto communityId = blockchain->getCommunityId();
+					if (c.senderBlockchain) {
+						auto communityId = c.senderBlockchain->getCommunityId();
 						if (!communityId.empty() && coinCommunityId == communityId) {
 							std::string expected = "!= " + std::string(communityId);
 							throw TransactionValidationInvalidInputException(

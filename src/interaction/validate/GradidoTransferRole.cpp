@@ -3,17 +3,19 @@
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/GradidoTransfer.h"
-#include "gradido_blockchain/interaction/validate/LocalGradidoTransferRole.h"
+#include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/interaction/validate/TransferAmountRole.h"
 
 #include <cassert>
 #include <memory>
+#include <string_view>
 
 #include "date/date.h"
 
 using std::shared_ptr;
+using std::string_view;
 
 namespace gradido {
 	using blockchain::Filter;
@@ -21,8 +23,8 @@ namespace gradido {
 	namespace interaction {
 		namespace validate {
 
-			LocalGradidoTransferRole::LocalGradidoTransferRole(shared_ptr<const GradidoTransfer> gradidoTransfer)
-				: mGradidoTransfer(gradidoTransfer)
+			GradidoTransferRole::GradidoTransferRole(shared_ptr<const GradidoTransfer> gradidoTransfer, string_view otherCommunity)
+				: mGradidoTransfer(gradidoTransfer), mOtherCommunity(otherCommunity)
 			{
 				assert(gradidoTransfer);
 				// prepare for signature check
@@ -30,14 +32,10 @@ namespace gradido {
 				mRequiredSignPublicKeys.push_back(gradidoTransfer->getSender().getPublicKey());
 			}
 
-			void LocalGradidoTransferRole::run(
-				Type type,
-				shared_ptr<blockchain::Abstract> blockchain,
-				shared_ptr<const ConfirmedTransaction> ownBlockchainPreviousConfirmedTransaction,
-				shared_ptr<const ConfirmedTransaction> otherBlockchainPreviousConfirmedTransaction
-			) {
+			void GradidoTransferRole::run(Type type, ContextData& c)
+			{
 				TransferAmountRole transferAmountRole(mGradidoTransfer->getSender());
-				transferAmountRole.run(type, blockchain, ownBlockchainPreviousConfirmedTransaction, otherBlockchainPreviousConfirmedTransaction);
+				transferAmountRole.run(type, c);
 				auto& sender = mGradidoTransfer->getSender();
 
 				if ((type & Type::SINGLE) == Type::SINGLE)
@@ -50,31 +48,31 @@ namespace gradido {
 				}
 
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
-					assert(blockchain);
-					std::shared_ptr<blockchain::Abstract> recipientBlockchain;
-					if (!ownBlockchainPreviousConfirmedTransaction) {
-						throw BlockchainOrderException("transfer transaction not allowed as first transaction on blockchain");
+					assert(c.senderBlockchain);
+					
+					if (!c.senderPreviousConfirmedTransaction) {
+						throw BlockchainOrderException("transfer transaction not allowed as first transaction on sender blockchain");
 					}
-					validateAccount(
-						*ownBlockchainPreviousConfirmedTransaction,
-						blockchain
-					);
+					if (!c.recipientPreviousConfirmedTransaction) {
+						throw BlockchainOrderException("transfer transaction not allowed as first transaction on recipient blockchain");
+					}
+					validateAccount(c);
 				}
 
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS)
 				{
-					if (!ownBlockchainPreviousConfirmedTransaction) {
+					if (!c.senderPreviousConfirmedTransaction) {
 						throw BlockchainOrderException("transfer transaction not allowed as first transaction on blockchain");
 					}
 				}
 
 				if ((type & Type::PREVIOUS_BALANCE) == Type::PREVIOUS_BALANCE)
 				{
-					validatePrevious(*ownBlockchainPreviousConfirmedTransaction, blockchain);
+					validatePrevious(*c.senderPreviousConfirmedTransaction, c.senderBlockchain);
 				}
 			}
 
-			void LocalGradidoTransferRole::validatePrevious(
+			void GradidoTransferRole::validatePrevious(
 				const ConfirmedTransaction& previousConfirmedTransaction,
 				shared_ptr<blockchain::Abstract> blockchain
 			) {
@@ -94,17 +92,16 @@ namespace gradido {
 				}
 			}
 
-			void LocalGradidoTransferRole::validateAccount(
-				const ConfirmedTransaction& ownBlockchainPreviousConfirmedTransaction,
-				shared_ptr<blockchain::Abstract> blockchain
-			) {
-				assert(blockchain);
+			void GradidoTransferRole::validateAccount(ContextData& c)
+			{
+				assert(c.senderBlockchain);
+				assert(c.recipientBlockchain);
 				Filter filter;
 				filter.involvedPublicKey = mGradidoTransfer->getSender().getPublicKey();
-				filter.maxTransactionNr = ownBlockchainPreviousConfirmedTransaction.getId();
+				filter.maxTransactionNr = c.senderPreviousConfirmedTransaction->getId();
 
 				// check if sender address was registered
-				auto senderAddressType = blockchain->getAddressType(filter);
+				auto senderAddressType = c.senderBlockchain->getAddressType(filter);
 				if (AddressType::NONE == senderAddressType) {
 					throw WrongAddressTypeException(
 						"sender address not registered", 
@@ -122,7 +119,8 @@ namespace gradido {
 
 				// check if recipient address was registered
 				filter.involvedPublicKey = mGradidoTransfer->getRecipient();
-				auto recipientAddressType = blockchain->getAddressType(filter);
+				filter.maxTransactionNr = c.recipientPreviousConfirmedTransaction->getId();
+				auto recipientAddressType = c.recipientBlockchain->getAddressType(filter);
 				if (AddressType::NONE == recipientAddressType) {
 					throw WrongAddressTypeException("recipient address not registered", recipientAddressType, mGradidoTransfer->getRecipient());
 				}

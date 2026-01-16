@@ -14,12 +14,7 @@ namespace gradido {
 			public:
 				TransferAmountRole(const data::TransferAmount& transferAmount) : mTransferAmount(transferAmount) {}
 
-				void run(
-					Type type,
-					std::shared_ptr<blockchain::Abstract> blockchain,
-					std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
-					std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
-				);
+				void run(Type type, ContextData& c);
 
 			protected:
 				const data::TransferAmount& mTransferAmount;

@@ -16,12 +16,7 @@ namespace gradido {
 				GradidoTransactionRole(const data::GradidoTransaction& gradidoTransaction)
 					: mGradidoTransaction(gradidoTransaction) {}
 
-				void run(
-					Type type,
-					std::shared_ptr<blockchain::Abstract> blockchain,
-					std::shared_ptr<const data::ConfirmedTransaction> ownBlockchainPreviousConfirmedTransaction,
-					std::shared_ptr<const data::ConfirmedTransaction> otherBlockchainPreviousConfirmedTransaction
-				);
+				void run(Type type, ContextData& c);
 			protected:
 				const data::GradidoTransaction& mGradidoTransaction;
 			};

@@ -16,7 +16,7 @@ TEST(ValidateGradidoTransferTest, Valid) {
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 			g_KeyPairs[5]->getPublicKey()
@@ -35,7 +35,7 @@ TEST(ValidateGradidoTransferTest, Outbound) {
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 			g_KeyPairs[5]->getPublicKey()
@@ -55,7 +55,7 @@ TEST(ValidateGradidoTransferTest, invalidMemoEmpty) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 			g_KeyPairs[5]->getPublicKey()
@@ -76,7 +76,7 @@ TEST(ValidateGradidoTransferTest, invalidMemoToShort) {
 	builder
 		.addMemo(hallMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 			g_KeyPairs[5]->getPublicKey()
@@ -97,7 +97,7 @@ TEST(ValidateGradidoTransferTest, invalidMemoToBig) {
 	builder
 		.addMemo(aFilledMemoString) // fill with 451 x a
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 			g_KeyPairs[5]->getPublicKey()
@@ -120,7 +120,7 @@ TEST(ValidateGradidoTransferTest, InvalidAmountZero) {
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::zero()), // zero amount
 			g_KeyPairs[5]->getPublicKey()
@@ -139,7 +139,7 @@ TEST(ValidateGradidoTransferTest, InvalidAmountNegative) {
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000).negated()), // negative amount
 			g_KeyPairs[5]->getPublicKey()
@@ -160,7 +160,7 @@ TEST(ValidateGradidoTransferTest, InvalidCoinCommunityIdIdenticalToBlockchainCom
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
 			// coin community id is identical to blockchain community id to which transaction belong
 			// not needed so it is a error
@@ -182,7 +182,7 @@ TEST(ValidateGradidoTransferTest, InvalidCoinCommunityId) {
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
 			// invalid character in coin community id
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), "<script>"),
@@ -204,7 +204,7 @@ TEST(ValidateGradidoTransferTest, SenderAndRecipientIdentical) {
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 			g_KeyPairs[4]->getPublicKey()

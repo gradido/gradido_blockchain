@@ -52,7 +52,7 @@ TEST(SerializeTest, HieroTransactionId)
 
 TEST(SerializeTest, TransactionBodyWithoutMemo)
 {
-	TransactionBody body(createdAt, VERSION_STRING);
+	TransactionBody body(createdAt, GRADIDO_TRANSACTION_BODY_VERSION_STRING);
 	serialize::Context c(body);
 	auto serialized = c.run();
 	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
@@ -65,7 +65,7 @@ TEST(SerializeTest, CommunityRootBody)
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setCommunityRoot(
 			g_KeyPairs[0]->getPublicKey(),
 			g_KeyPairs[1]->getPublicKey(),
@@ -89,7 +89,7 @@ TEST(SerializeTest, RegisterAddressBody) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
@@ -113,7 +113,7 @@ TEST(SerializeTest, GradidoCreationBody) {
 	builder
 		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionCreation(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000)),
 			TimestampSeconds(1609459000)
@@ -134,7 +134,7 @@ TEST(SerializeTest, GradidoTransferBody) {
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
 			g_KeyPairs[5]->getPublicKey()
@@ -155,7 +155,7 @@ TEST(SerializeTest, GradidoDeferredTransferBody) {
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500)),
@@ -178,7 +178,7 @@ TEST(SerializeTest, CommunityFriendsUpdateBody) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setCommunityFriendsUpdate(true)
 		.sign(g_KeyPairs[0])
 	;
@@ -237,7 +237,7 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		)
 		.setCreatedAt(createdAt)
 		.addMemo(completeTransactionMemoString)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.sign(g_KeyPairs[0])
 		.build();
 

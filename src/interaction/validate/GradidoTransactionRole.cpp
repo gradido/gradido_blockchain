@@ -24,17 +24,13 @@ namespace gradido {
 	namespace interaction {
 		namespace validate {
 
-			void GradidoTransactionRole::run(
-				Type type,
-				shared_ptr<blockchain::Abstract> blockchain,
-				shared_ptr<const ConfirmedTransaction> ownBlockchainPreviousConfirmedTransaction,
-				shared_ptr<const ConfirmedTransaction> otherBlockchainPreviousConfirmedTransaction
-			) {
+			void GradidoTransactionRole::run(Type type, ContextData& c)
+			{
 				const auto& body = mGradidoTransaction.getTransactionBody();
 				TransactionBodyRole bodyRole(*body);
 				bodyRole.setConfirmedAt(mConfirmedAt);
 				// recursive validation					
-				bodyRole.run(type, blockchain, ownBlockchainPreviousConfirmedTransaction, otherBlockchainPreviousConfirmedTransaction);
+				bodyRole.run(type, c);
 
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
@@ -54,11 +50,11 @@ namespace gradido {
 					}
 				}
 				// check signatures
-				bodyRole.checkRequiredSignatures(mGradidoTransaction.getSignatureMap(), blockchain);
+				bodyRole.checkRequiredSignatures(mGradidoTransaction.getSignatureMap(), c.senderBlockchain);
 
 				if ((type & Type::PAIRED) == Type::PAIRED && !body->getOtherGroup().empty()) {
-					assert(blockchain);
-					auto otherBlockchain = findBlockchain(blockchain->getProvider(), body->getOtherGroup(), __FUNCTION__);
+					assert(c.senderBlockchain);
+					auto otherBlockchain = findBlockchain(c.senderBlockchain->getProvider(), body->getOtherGroup(), __FUNCTION__);
 					
 					shared_ptr<const TransactionEntry> pairTransactionEntry;
 					switch (body->getType()) {

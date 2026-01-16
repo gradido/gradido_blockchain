@@ -27,12 +27,8 @@ namespace gradido {
 				mMinSignatureCount = 0;
 			}
 
-			void GradidoTimeoutDeferredTransferRole::run(
-				Type type,
-				shared_ptr<blockchain::Abstract> blockchain,
-				shared_ptr<const ConfirmedTransaction> ownBlockchainPreviousConfirmedTransaction,
-				shared_ptr<const ConfirmedTransaction> otherBlockchainPreviousConfirmedTransaction
-			) {
+			void GradidoTimeoutDeferredTransferRole::run(Type type, ContextData& c) 
+			{
 				if ((type & Type::SINGLE) == Type::SINGLE) {
 					if (mTimeoutDeferredTransfer->getDeferredTransferTransactionNr() <= 3) {
 						throw TransactionValidationInvalidInputException(
@@ -45,8 +41,8 @@ namespace gradido {
 					}
 				}
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS) {
-					assert(blockchain);
-					auto deferredTransferEntry = blockchain->getTransactionForId(mTimeoutDeferredTransfer->getDeferredTransferTransactionNr());
+					assert(c.senderBlockchain);
+					auto deferredTransferEntry = c.senderBlockchain->getTransactionForId(mTimeoutDeferredTransfer->getDeferredTransferTransactionNr());
 					if (!deferredTransferEntry) {
 						throw TransactionValidationInvalidInputException(
 							"deferredTransferTransactionNr is invalid, couldn't find transaction",
@@ -72,12 +68,12 @@ namespace gradido {
 
 				}
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
-					assert(blockchain);
-					auto deferredTransferEntry = blockchain->getTransactionForId(mTimeoutDeferredTransfer->getDeferredTransferTransactionNr());
+					assert(c.senderBlockchain);
+					auto deferredTransferEntry = c.senderBlockchain->getTransactionForId(mTimeoutDeferredTransfer->getDeferredTransferTransactionNr());
 					auto body = deferredTransferEntry->getTransactionBody();
 					assert(body->isDeferredTransfer());
 					auto deferredTransfer = deferredTransferEntry->getTransactionBody()->getDeferredTransfer();
-					calculateAccountBalance::Context calculateAccountBalance(blockchain);
+					calculateAccountBalance::Context calculateAccountBalance(c.senderBlockchain);
 					Timestamp beforeCreateAt(mCreatedAt.getSeconds(), mCreatedAt.getNanos() - 1000);
 					auto balance = calculateAccountBalance.fromEnd(
 						deferredTransfer->getRecipientPublicKey(), 

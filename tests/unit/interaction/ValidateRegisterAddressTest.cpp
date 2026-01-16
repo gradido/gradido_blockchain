@@ -14,7 +14,7 @@ TEST(ValidateRegisterAddressTest, Valid) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
@@ -35,7 +35,7 @@ TEST(ValidateRegisterAddressTest, InvalidAddressTypeGMW) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_GMW,
@@ -56,7 +56,7 @@ TEST(ValidateRegisterAddressTest, InvalidAddressTypeAUF) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_AUF,
@@ -77,7 +77,7 @@ TEST(ValidateRegisterAddressTest, InvalidAddressTypeNONE) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::NONE,

@@ -72,7 +72,7 @@ TEST(DeserializeTest, CommunityRootBody)
 	ASSERT_TRUE(transaction);
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
-	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
+	EXPECT_EQ(body->getVersionNumber(), GRADIDO_TRANSACTION_BODY_VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
 
@@ -103,7 +103,7 @@ TEST(DeserializeTest, RegisterAddressBody) {
 	ASSERT_TRUE(transaction);
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
-	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
+	EXPECT_EQ(body->getVersionNumber(), GRADIDO_TRANSACTION_BODY_VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
 
@@ -137,7 +137,7 @@ TEST(DeserializeTest, GradidoCreationBody) {
 	ASSERT_TRUE(transaction);
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
-	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
+	EXPECT_EQ(body->getVersionNumber(), GRADIDO_TRANSACTION_BODY_VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
 	auto& memos = body->getMemos();
@@ -173,7 +173,7 @@ TEST(DeserializeTest, GradidoTransferBody) {
 	ASSERT_TRUE(transaction);
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
-	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
+	EXPECT_EQ(body->getVersionNumber(), GRADIDO_TRANSACTION_BODY_VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
 	auto& memos = body->getMemos();
@@ -208,7 +208,7 @@ TEST(DeserializeTest, GradidoDeferredTransferBody) {
 	ASSERT_TRUE(transaction);
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
-	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
+	EXPECT_EQ(body->getVersionNumber(), GRADIDO_TRANSACTION_BODY_VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
 	auto& memos = body->getMemos();
@@ -244,7 +244,7 @@ TEST(DeserializeTest, CommunityFriendsUpdateBody) {
 	ASSERT_TRUE(transaction);
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
-	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
+	EXPECT_EQ(body->getVersionNumber(), GRADIDO_TRANSACTION_BODY_VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
 	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
 

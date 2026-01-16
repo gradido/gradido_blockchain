@@ -1,5 +1,6 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/Filter.h"
+#include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/interaction/validate/GradidoRedeemDeferredTransferRole.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
@@ -31,12 +32,8 @@ namespace gradido {
 				mRequiredSignPublicKeys.push_back(redeemDeferredTransfer->getTransfer().getSender().getPublicKey());
 			}
 
-			void GradidoRedeemDeferredTransferRole::run(
-				Type type,
-				shared_ptr<blockchain::Abstract> blockchain,
-				shared_ptr<const ConfirmedTransaction> ownBlockchainPreviousConfirmedTransaction,
-				shared_ptr<const ConfirmedTransaction> otherBlockchainPreviousConfirmedTransaction
-			) {
+			void GradidoRedeemDeferredTransferRole::run(Type type, ContextData& c)
+			{
 				if ((type & Type::SINGLE) == Type::SINGLE) {
 					if (mRedeemDeferredTransfer->getDeferredTransferTransactionNr() <= 3) {
 						throw TransactionValidationInvalidInputException(
@@ -49,8 +46,8 @@ namespace gradido {
 					}
 				}
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS) {
-					assert(blockchain);
-					auto deferredTransferEntry = blockchain->getTransactionForId(mRedeemDeferredTransfer->getDeferredTransferTransactionNr());
+					assert(c.senderBlockchain);
+					auto deferredTransferEntry = c.senderBlockchain->getTransactionForId(mRedeemDeferredTransfer->getDeferredTransferTransactionNr());
 					if (!deferredTransferEntry) {
 						throw TransactionValidationInvalidInputException(
 							"deferredTransferTransactionNr is invalid, couldn't find transaction",
@@ -79,18 +76,32 @@ namespace gradido {
 							mRedeemDeferredTransfer->getSenderPublicKey()->convertToHex().data()
 						);
 					}
+
+					auto expectedMaxConfirmedAt = mCreatedAt.getAsTimepoint() + MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION;
+					auto deferredTransferConfirmedAt = deferredTransferEntry->getConfirmedTransaction()->getConfirmedAt().getAsTimepoint();
+					if (deferredTransferConfirmedAt + deferredTransfer->getTimeoutDuration().getAsDuration() < expectedMaxConfirmedAt) {
+						string expected("< ");
+						expected += DataTypeConverter::timePointToString(deferredTransferConfirmedAt + deferredTransfer->getTimeoutDuration().getAsDuration());
+						throw TransactionValidationInvalidInputException(
+							"redeem timeouted deferred transfer",
+							"createdAt",
+							"Timestamp",
+							expected.data(),
+							DataTypeConverter::timePointToString(expectedMaxConfirmedAt).data()
+						);
+					}
 				}
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
-					if (!ownBlockchainPreviousConfirmedTransaction) {
+					if (!c.senderPreviousConfirmedTransaction) {
 						throw BlockchainOrderException("deferred transfer transaction not allowed as first transaction on blockchain");
 					}
-					assert(blockchain);
+					assert(c.senderBlockchain);
 					Filter filter(Filter::LAST_TRANSACTION);
 					filter.involvedPublicKey = mRedeemDeferredTransfer->getSenderPublicKey();
-					filter.maxTransactionNr = ownBlockchainPreviousConfirmedTransaction->getId();
+					filter.maxTransactionNr = c.senderPreviousConfirmedTransaction->getId();
 
 					// check if sender address is deferred transfer
-					auto senderAddressType = blockchain->getAddressType(filter);
+					auto senderAddressType = c.senderBlockchain->getAddressType(filter);
 					if (AddressType::NONE == senderAddressType) {
 						throw WrongAddressTypeException(
 							"sender address not registered",
@@ -107,7 +118,7 @@ namespace gradido {
 					}
 					// check if recipient address was registered
 					filter.involvedPublicKey = mRedeemDeferredTransfer->getRecipientPublicKey();
-					auto recipientAddressType = blockchain->getAddressType(filter);
+					auto recipientAddressType = c.senderBlockchain->getAddressType(filter);
 					if (AddressType::NONE == recipientAddressType) {
 						throw WrongAddressTypeException(
 							"recipient address not registered",
@@ -134,7 +145,7 @@ namespace gradido {
 				if ((modifiedType & Type::ACCOUNT) == Type::ACCOUNT) {
 					modifiedType = modifiedType - Type::ACCOUNT;
 				}
-				transferRole.run(modifiedType, blockchain, ownBlockchainPreviousConfirmedTransaction, otherBlockchainPreviousConfirmedTransaction);
+				transferRole.run(modifiedType, c);
 			}
 
 		}

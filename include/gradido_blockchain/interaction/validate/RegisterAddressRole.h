@@ -4,6 +4,9 @@
 #include "AbstractRole.h"
 
 namespace gradido {
+	namespace data {
+		class RegisterAddress;
+	}
 	namespace interaction {
 		namespace validate {
 			class RegisterAddressRole : public AbstractRole
@@ -11,12 +14,7 @@ namespace gradido {
 			public:
 				RegisterAddressRole(std::shared_ptr<const data::RegisterAddress> registerAddress);
 
-				void run(
-					Type type,
-					std::shared_ptr<blockchain::Abstract> blockchain,
-					std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
-					std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
-				);
+				void run(Type type, ContextData& c);
 				void checkRequiredSignatures(
 					const data::SignatureMap& signatureMap,
 					std::shared_ptr<blockchain::Abstract> blockchain = nullptr

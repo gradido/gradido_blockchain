@@ -72,10 +72,10 @@ namespace gradido {
 
 		protected:
 			std::vector<EncryptedMemo>				mMemos;
-			Timestamp								mCreatedAt;
-			std::string								mVersionNumber;
-			CrossGroupType							mType;
-			std::string								mOtherGroup;
+			Timestamp													mCreatedAt;
+			std::string												mVersionNumber;
+			CrossGroupType										mType;
+			std::string												mOtherGroup;
 
 			std::shared_ptr<GradidoTransfer>        mTransfer;
 			std::shared_ptr<GradidoCreation>        mCreation;

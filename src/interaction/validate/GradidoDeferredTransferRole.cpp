@@ -3,7 +3,7 @@
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/interaction/validate/GradidoDeferredTransferRole.h"
-#include "gradido_blockchain/interaction/validate/LocalGradidoTransferRole.h"
+#include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
@@ -31,12 +31,8 @@ namespace gradido {
 				mRequiredSignPublicKeys.push_back(deferredTransfer->getTransfer().getSender().getPublicKey());
 			}
 
-			void GradidoDeferredTransferRole::run(
-				Type type,
-				shared_ptr<blockchain::Abstract> blockchain,
-				shared_ptr<const ConfirmedTransaction> ownBlockchainPreviousConfirmedTransaction,
-				shared_ptr<const ConfirmedTransaction> otherBlockchainPreviousConfirmedTransaction
-			) {
+			void GradidoDeferredTransferRole::run(Type type, ContextData& c) 
+			{
 				if ((type & Type::SINGLE) == Type::SINGLE) {
 					if (mDeferredTransfer->getTimeoutDuration().getAsDuration() > GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL) {
 						string expected = timespanToString(mDeferredTransfer->getTimeoutDuration().getAsDuration())
@@ -64,16 +60,16 @@ namespace gradido {
 					}
 				}
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
-					if (!ownBlockchainPreviousConfirmedTransaction) {
+					if (!c.senderPreviousConfirmedTransaction) {
 						throw BlockchainOrderException("deferred transfer transaction not allowed as first transaction on blockchain");
 					}
-					assert(blockchain);
+					assert(c.senderBlockchain);
 					Filter filter(Filter::LAST_TRANSACTION);
 					filter.involvedPublicKey = mDeferredTransfer->getSenderPublicKey();
-					filter.maxTransactionNr = ownBlockchainPreviousConfirmedTransaction->getId();
+					filter.maxTransactionNr = c.senderPreviousConfirmedTransaction->getId();
 
 					// check if sender address was registered
-					auto senderAddressType = blockchain->getAddressType(filter);
+					auto senderAddressType = c.senderBlockchain->getAddressType(filter);
 					if (AddressType::NONE == senderAddressType) {
 						throw WrongAddressTypeException(
 							"sender address not registered",
@@ -90,7 +86,7 @@ namespace gradido {
 					}
 					// check if recipient address was registered
 					filter.involvedPublicKey = mDeferredTransfer->getRecipientPublicKey();
-					auto recipientAddressType = blockchain->getAddressType(filter);
+					auto recipientAddressType = c.senderBlockchain->getAddressType(filter);
 					// with deferred transfer recipient address is completely new 
 					if (AddressType::NONE != recipientAddressType) {
 						throw WrongAddressTypeException("deferred transfer address already exist", recipientAddressType, mDeferredTransfer->getRecipientPublicKey());
@@ -98,7 +94,7 @@ namespace gradido {
 				}
 				// make copy from GradidoTransfer
 				auto transfer = std::make_shared<data::GradidoTransfer>(mDeferredTransfer->getTransfer());
-				LocalGradidoTransferRole transferRole(transfer);
+				GradidoTransferRole transferRole(transfer, "");
 				transferRole.setConfirmedAt(mConfirmedAt);
 				transferRole.setCreatedAt(mCreatedAt);
 				// transfer check without account check, account block differ to much
@@ -106,9 +102,8 @@ namespace gradido {
 				if ((modifiedType & Type::ACCOUNT) == Type::ACCOUNT) {
 					modifiedType = modifiedType - Type::ACCOUNT;
 				}
-				transferRole.run(modifiedType, blockchain, ownBlockchainPreviousConfirmedTransaction, otherBlockchainPreviousConfirmedTransaction);
+				transferRole.run(modifiedType, c);
 			}
-
 		}
 	}
 }

@@ -1,3 +1,4 @@
+#include "gradido_blockchain/interaction/validate/ContextData.h"
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/interaction/validate/ConfirmedTransactionRole.h"
@@ -32,13 +33,17 @@ namespace gradido {
 
 			void Context::run(Type type/* = Type::SINGLE*/, std::shared_ptr<blockchain::Abstract> blockchain /*= nullptr*/)
 			{
-				if (!mOwnBlockchainPreviousConfirmedTransaction && blockchain) {
+				if (!mSenderPreviousConfirmedTransaction && blockchain) {
 					auto transactionEntry = blockchain->findOne(blockchain::Filter::LAST_TRANSACTION);
 					if (transactionEntry) {
-						mOwnBlockchainPreviousConfirmedTransaction = transactionEntry->getConfirmedTransaction();
+						mSenderPreviousConfirmedTransaction = transactionEntry->getConfirmedTransaction();
 					}
 				}
-				mRole->run(type, blockchain, mOwnBlockchainPreviousConfirmedTransaction, mOtherBlockchainPreviousConfirmedTransaction);
+				ContextData c(blockchain, mSenderPreviousConfirmedTransaction);
+				if (mRecipientPreviousConfirmedTransaction) {
+					c.recipientPreviousConfirmedTransaction = mRecipientPreviousConfirmedTransaction;
+				}
+				mRole->run(type, c);
 			}
 		}
 	}

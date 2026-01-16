@@ -22,12 +22,8 @@ namespace gradido {
 				mRequiredSignPublicKeys.push_back(mCommunityRoot->getPublicKey());
 			}
 
-			void CommunityRootRole::run(
-				Type type,
-				shared_ptr<blockchain::Abstract> blockchain,
-				shared_ptr<const ConfirmedTransaction> ownBlockchainPreviousConfirmedTransaction,
-				shared_ptr<const ConfirmedTransaction> otherBlockchainPreviousConfirmedTransaction
-			) {
+			void CommunityRootRole::run(Type type, ContextData& c) 
+			{
 				if ((type & Type::SINGLE) == Type::SINGLE) {
 					validateEd25519PublicKey(mCommunityRoot->getPublicKey(), "pubkey");
 					validateEd25519PublicKey(mCommunityRoot->getGmwPubkey(), "gmwPubkey");
@@ -42,7 +38,7 @@ namespace gradido {
 					if (aufPubkey == pubkey) { throw TransactionValidationException("aufPubkey and pubkey are the same"); }
 				}
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS) {
-					if (ownBlockchainPreviousConfirmedTransaction) {
+					if (c.senderPreviousConfirmedTransaction) {
 						throw TransactionValidationException("community root must be the first transaction in the blockchain!");
 					}
 				}

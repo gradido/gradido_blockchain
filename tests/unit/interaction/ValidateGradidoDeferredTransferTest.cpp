@@ -18,7 +18,7 @@ TEST(ValidateGradidoDeferredTransferTest, Valid) {
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
@@ -39,7 +39,7 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoEmpty) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
@@ -62,7 +62,7 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoToShort) {
 	builder
 		.addMemo(hallMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
@@ -85,7 +85,7 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoToBig) {
 	builder
 		.addMemo(aFilledMemoString) // fill with 451 x a
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
@@ -109,7 +109,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidAmountZero) {
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::zero()), // zero amount
@@ -130,7 +130,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidAmountNegative) {
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000).negated()), // negative amount
@@ -152,7 +152,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityIdIdenticalToBlock
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				// coin community id is identical to blockchain community id to which transaction belong
@@ -176,7 +176,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityId) {
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				// invalid character in coin community id
@@ -199,7 +199,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutAboveMaxHardLimit) {
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
@@ -220,7 +220,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutIdenticalToCreatedAt) {
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
@@ -241,7 +241,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutBeforeCreatedAt) {
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),

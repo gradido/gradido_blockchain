@@ -25,12 +25,8 @@ namespace gradido {
 				mMinSignatureCount = 2;
 			}
 
-			void RegisterAddressRole::run(
-				Type type,
-				std::shared_ptr<blockchain::Abstract> blockchain,
-				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
-				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
-			) {
+			void RegisterAddressRole::run(Type type, ContextData& c)
+			{
 				auto addressType = mRegisterAddress->getAddressType();
 				auto accountPubkey = mRegisterAddress->getAccountPublicKey();
 				auto userPubkey = mRegisterAddress->getUserPublicKey();
@@ -66,11 +62,11 @@ namespace gradido {
 
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) 
 				{
-					assert(blockchain);
+					assert(c.senderBlockchain);
 					blockchain::FilterBuilder filterBuilder;
 
 					std::shared_ptr<const blockchain::TransactionEntry> transactionWithSameAddress;
-					if (!senderPreviousConfirmedTransaction) {
+					if (!c.senderPreviousConfirmedTransaction) {
 						throw GradidoNullPointerException(
 							"missing previous confirmed transaction for sender in interaction::validate RegisterAddress Type::ACCOUNT",
 							"data::ConstConfirmedTransactionPtr",
@@ -85,10 +81,10 @@ namespace gradido {
 								__FUNCTION__
 							);
 						}						
-						transactionWithSameAddress = blockchain->findOne(
+						transactionWithSameAddress = c.senderBlockchain->findOne(
 							filterBuilder
 							.setInvolvedPublicKey(userPubkey)
-							.setMaxTransactionNr(senderPreviousConfirmedTransaction->getId())
+							.setMaxTransactionNr(c.senderPreviousConfirmedTransaction->getId())
 							.setSearchDirection(blockchain::SearchDirection::DESC)
 							.build()
 						);
@@ -109,10 +105,10 @@ namespace gradido {
 								enum_name(addressType).data()
 							);
 						}
-						transactionWithSameAddress = blockchain->findOne(
+						transactionWithSameAddress = c.senderBlockchain->findOne(
 							filterBuilder
 							.setInvolvedPublicKey(userPubkey)
-							.setMaxTransactionNr(senderPreviousConfirmedTransaction->getId())
+							.setMaxTransactionNr(c.senderPreviousConfirmedTransaction->getId())
 							.setTransactionType(data::TransactionType::REGISTER_ADDRESS)
 							.setSearchDirection(blockchain::SearchDirection::DESC)
 							.setPagination({ 1 })
