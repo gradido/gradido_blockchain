@@ -24,7 +24,7 @@ namespace gradido {
 		namespace validate {
 
 			GradidoTransferRole::GradidoTransferRole(shared_ptr<const GradidoTransfer> gradidoTransfer, string_view otherCommunity)
-				: mGradidoTransfer(gradidoTransfer), mOtherCommunity(otherCommunity)
+				: mGradidoTransfer(gradidoTransfer), mOtherCommunity(otherCommunity), mCrossGroupType(data::CrossGroupType::LOCAL)
 			{
 				assert(gradidoTransfer);
 				// prepare for signature check
@@ -35,6 +35,7 @@ namespace gradido {
 			void GradidoTransferRole::run(Type type, ContextData& c)
 			{
 				TransferAmountRole transferAmountRole(mGradidoTransfer->getSender());
+				transferAmountRole.setCrossGroupType(mCrossGroupType);
 				transferAmountRole.run(type, c);
 				auto& sender = mGradidoTransfer->getSender();
 
@@ -49,7 +50,6 @@ namespace gradido {
 
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
 					assert(c.senderBlockchain);
-					
 					if (!c.senderPreviousConfirmedTransaction) {
 						throw BlockchainOrderException("transfer transaction not allowed as first transaction on sender blockchain");
 					}

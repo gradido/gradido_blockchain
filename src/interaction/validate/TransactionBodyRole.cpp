@@ -132,7 +132,7 @@ namespace gradido {
 							->getConfirmedTransaction()
 							;
 					}
-					
+
 					specificRole.run(type, c);
 				}
 				catch (TransactionValidationException& ex) {
@@ -148,33 +148,37 @@ namespace gradido {
 				}
 
 				if (mBody.isTransfer()) {
-					mSpecificTransactionRole = make_unique<GradidoTransferRole>(mBody.getTransfer(), mBody.getOtherGroup());
-				} 
+					auto specificRole = make_unique<GradidoTransferRole>(mBody.getTransfer(), mBody.getOtherGroup());
+					specificRole->setCrossGroupType(mBody.getType());
+					mSpecificTransactionRole = std::move(specificRole);
+				}
 				else if (mBody.isCreation()) {
 					mSpecificTransactionRole = make_unique<GradidoCreationRole>(mBody.getCreation());
 					// check target date for creation transactions
 					dynamic_cast<GradidoCreationRole*>(mSpecificTransactionRole.get())->validateTargetDate(mBody.getCreatedAt().getAsTimepoint());
-				} 
+				}
 				else if (mBody.isCommunityFriendsUpdate()) {
 					// currently empty
 					throw GradidoNotImplementedException("interaction::validate missing role for communityFriendsUpdate");
-				} 
+				}
 				else if (mBody.isRegisterAddress()) {
 					mSpecificTransactionRole = make_unique<RegisterAddressRole>(mBody.getRegisterAddress());
-				} 
+				}
 				else if (mBody.isDeferredTransfer()) {
 					mSpecificTransactionRole = make_unique<GradidoDeferredTransferRole>(mBody.getDeferredTransfer());
 				}
 				else if (mBody.isRedeemDeferredTransfer()) {
-					mSpecificTransactionRole = make_unique<GradidoRedeemDeferredTransferRole>(mBody.getRedeemDeferredTransfer());
+					auto specificRole = make_unique<GradidoRedeemDeferredTransferRole>(mBody.getRedeemDeferredTransfer());
+					specificRole->setCrossGroupType(mBody.getType());
+					mSpecificTransactionRole = std::move(specificRole);
 				}
 				else if (mBody.isTimeoutDeferredTransfer()) {
 					mSpecificTransactionRole = make_unique<GradidoTimeoutDeferredTransferRole>(mBody.getTimeoutDeferredTransfer());
 				}
 				else if (mBody.isCommunityRoot()) {
 					mSpecificTransactionRole = make_unique<CommunityRootRole>(mBody.getCommunityRoot());
-				} 
-				
+				}
+
 				if (!mSpecificTransactionRole) {
 					throw TransactionValidationException("body without specific transaction");
 				}
@@ -182,7 +186,7 @@ namespace gradido {
 				mSpecificTransactionRole->setConfirmedAt(mConfirmedAt);
 				return *mSpecificTransactionRole;
 			}
-			
+
 			bool TransactionBodyRole::isLikelyPlainText(const Block& data)
 			{
 				// Regular expression pattern that matches printable UTF-8 characters,

@@ -4,6 +4,9 @@
 #include "gradido_blockchain/interaction/validate/TransferAmountRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 
+#include <memory>
+using std::shared_ptr;
+
 namespace gradido {
 	namespace interaction {
 		namespace validate {
@@ -19,9 +22,14 @@ namespace gradido {
 								coinCommunityId.data()
 							);
 					}
-
-					if (c.senderBlockchain) {
-						auto communityId = c.senderBlockchain->getCommunityId();
+					shared_ptr<const blockchain::Abstract> blockchain = nullptr;
+					if (c.senderBlockchain && (data::CrossGroupType::LOCAL == mCrossGroupType || data::CrossGroupType::OUTBOUND == mCrossGroupType)) {
+						blockchain = c.senderBlockchain;
+					} else if (c.recipientBlockchain && data::CrossGroupType::INBOUND == mCrossGroupType) {
+						blockchain = c.recipientBlockchain;
+					}
+					if (blockchain) {
+						auto communityId = blockchain->getCommunityId();
 						if (!communityId.empty() && coinCommunityId == communityId) {
 							std::string expected = "!= " + std::string(communityId);
 							throw TransactionValidationInvalidInputException(

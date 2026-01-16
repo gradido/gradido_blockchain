@@ -14,9 +14,12 @@ namespace gradido {
 			public:
 				GradidoRedeemDeferredTransferRole(std::shared_ptr<const data::GradidoRedeemDeferredTransfer> redeemDeferredTransfer);
 
+				inline void setCrossGroupType(data::CrossGroupType crossGroupType) { mCrossGroupType = crossGroupType; }
+
 				void run(Type type, ContextData& c);
 			protected:
 				std::shared_ptr<const data::GradidoRedeemDeferredTransfer> mRedeemDeferredTransfer;
+				data::CrossGroupType mCrossGroupType;
 			};
 		}
 	}

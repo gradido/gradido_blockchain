@@ -23,7 +23,7 @@ namespace gradido {
 		namespace validate {
 
 			GradidoDeferredTransferRole::GradidoDeferredTransferRole(shared_ptr<const GradidoDeferredTransfer> deferredTransfer)
-				: mDeferredTransfer(deferredTransfer) 
+				: mDeferredTransfer(deferredTransfer)
 			{
 				assert(deferredTransfer);
 				// prepare for signature check
@@ -31,13 +31,13 @@ namespace gradido {
 				mRequiredSignPublicKeys.push_back(deferredTransfer->getTransfer().getSender().getPublicKey());
 			}
 
-			void GradidoDeferredTransferRole::run(Type type, ContextData& c) 
+			void GradidoDeferredTransferRole::run(Type type, ContextData& c)
 			{
 				if ((type & Type::SINGLE) == Type::SINGLE) {
 					if (mDeferredTransfer->getTimeoutDuration().getAsDuration() > GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL) {
 						string expected = timespanToString(mDeferredTransfer->getTimeoutDuration().getAsDuration())
 						+ " <= " 
-						+ timespanToString(GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL);						
+						+ timespanToString(GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL);
 						throw TransactionValidationInvalidInputException(
 							"timeoutDuration is to long", 
 							"timeout_duration", 

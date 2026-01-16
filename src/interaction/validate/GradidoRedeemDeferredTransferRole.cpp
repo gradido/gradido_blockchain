@@ -24,7 +24,7 @@ namespace gradido {
 
 			GradidoRedeemDeferredTransferRole::GradidoRedeemDeferredTransferRole(
 				shared_ptr<const GradidoRedeemDeferredTransfer> redeemDeferredTransfer
-			) : mRedeemDeferredTransfer(redeemDeferredTransfer)
+			) : mRedeemDeferredTransfer(redeemDeferredTransfer), mCrossGroupType(data::CrossGroupType::LOCAL)
 			{
 				assert(redeemDeferredTransfer);
 				// prepare for signature check
@@ -140,6 +140,7 @@ namespace gradido {
 				GradidoTransferRole transferRole(transfer, "");
 				transferRole.setConfirmedAt(mConfirmedAt);
 				transferRole.setCreatedAt(mCreatedAt);
+				transferRole.setCrossGroupType(mCrossGroupType);
 				// transfer check without account check, account block differ to much
 				auto modifiedType = type;
 				if ((modifiedType & Type::ACCOUNT) == Type::ACCOUNT) {
