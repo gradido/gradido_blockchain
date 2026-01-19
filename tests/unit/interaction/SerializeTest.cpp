@@ -115,7 +115,7 @@ TEST(SerializeTest, GradidoCreationBody) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000)),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 0),
 			TimestampSeconds(1609459000)
 		)
 		.sign(g_KeyPairs[6])
@@ -136,7 +136,7 @@ TEST(SerializeTest, GradidoTransferBody) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.sign(g_KeyPairs[4])
@@ -158,7 +158,7 @@ TEST(SerializeTest, GradidoDeferredTransferBody) {
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500)),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500), 0),
 				g_KeyPairs[5]->getPublicKey()
 			),
 			timeoutDuration
@@ -232,7 +232,8 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		.setTransactionTransfer(
 			TransferAmount(
 				g_KeyPairs[4]->getPublicKey(), // sender
-				GradidoUnit::fromGradidoCent(1002516)
+				GradidoUnit::fromGradidoCent(1002516),
+				0
 			), g_KeyPairs[5]->getPublicKey() // recipient
 		)
 		.setCreatedAt(createdAt)
@@ -249,8 +250,8 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		make_shared<memory::Block>(crypto_generichash_BYTES),
 		LedgerAnchor(defaultHieroTransactionId),
 		{
-			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), ""},
-			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483), ""}
+			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), 0},
+			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483), 0}
 		},
 		BalanceDerivationType::EXTERN
 	);

@@ -25,24 +25,8 @@ namespace gradido {
 			void Context::run()
 			{
 				// TODO: shorten code with help of template
-				if(!mData) {
+				if (!mData) {
 					throw GradidoNullPointerException("mData is empty", "memory::ConstBlockPtr", "gradido::interaction_deserialize::Context::run");
-				}
-				if (Type::TRANSACTION_BODY == mType || Type::UNKNOWN == mType) {
-					try {
-						auto result = message_coder<TransactionBodyMessage>::decode(mData->span());
-						if (!result.has_value()) return;
-						const auto& [body, bufferEnd2] = *result;
-						mTransactionBody = std::make_shared<data::TransactionBody>(TransactionBodyRole(body).getBody());
-						mType = Type::TRANSACTION_BODY;
-						return;
-					}
-					catch (std::exception& ex) {
-						if (Type::TRANSACTION_BODY == mType) {
-							LOG_F(WARNING, "couldn't deserialize as transaction body, maybe wrong type? exception: %s", ex.what());
-						}
-						mType = Type::UNKNOWN;
-					}
 				}
 				if (Type::GRADIDO_TRANSACTION == mType || Type::UNKNOWN == mType) {
 					try {
@@ -60,6 +44,7 @@ namespace gradido {
 						mType = Type::UNKNOWN;
 					}
 				}
+				
 				if (Type::TRANSACTION_TRIGGER_EVENT == mType || Type::UNKNOWN == mType) {
 					try {
 						auto result = message_coder<TransactionTriggerEventMessage>::decode(mData->span());
@@ -111,7 +96,7 @@ namespace gradido {
 						const auto& [hieroTransactionId, bufferEnd2] = *result;
 						mHieroTransactionId = HieroTransactionIdRole(hieroTransactionId);
 						return;
-					} 
+					}
 					catch (std::exception& ex) {
 						if (Type::HIERO_TRANSACTION_ID == mType) {
 							LOG_F(WARNING, "couldn't deserialize as hiero transaction id, maybe wrong type? exception: %s", ex.what());
@@ -130,11 +115,37 @@ namespace gradido {
 						LOG_F(WARNING, "couldn't deserialize as ledger anchor, maybe wrong type? exception: %s", ex.what());
 					}
 				}
+				LOG_F(WARNING, "couldn't find correct type, maybe you need call the other run function with communityIdIndex as parameter");
+			}
+
+			void Context::run(uint32_t communityIdIndex)
+			{
+				// TODO: shorten code with help of template
+				if(!mData) {
+					throw GradidoNullPointerException("mData is empty", "memory::ConstBlockPtr", "gradido::interaction_deserialize::Context::run");
+				}
+				if (Type::TRANSACTION_BODY == mType || Type::UNKNOWN == mType) {
+					try {
+						auto result = message_coder<TransactionBodyMessage>::decode(mData->span());
+						if (!result.has_value()) return;
+						const auto& [body, bufferEnd2] = *result;
+						mTransactionBody = std::make_shared<data::TransactionBody>(TransactionBodyRole(body, communityIdIndex).getBody());
+						mType = Type::TRANSACTION_BODY;
+						return;
+					}
+					catch (std::exception& ex) {
+						if (Type::TRANSACTION_BODY == mType) {
+							LOG_F(WARNING, "couldn't deserialize as transaction body, maybe wrong type? exception: %s", ex.what());
+						}
+						mType = Type::UNKNOWN;
+					}
+				}
+				
 				try {
 					auto result = message_coder<ConfirmedTransactionMessage>::decode(mData->span());
 					if (!result.has_value()) return;
 					const auto& [confirmedTransaction, bufferEnd2] = *result;
-					mConfirmedTransaction = ConfirmedTransactionRole(confirmedTransaction).getConfirmedTransaction();
+					mConfirmedTransaction = ConfirmedTransactionRole(confirmedTransaction, communityIdIndex).getConfirmedTransaction();
 					mType = Type::CONFIRMED_TRANSACTION;
 					return;
 				}

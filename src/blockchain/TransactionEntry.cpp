@@ -1,15 +1,22 @@
 #include "date/date.h"
 
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
+#include "gradido_blockchain/memory/Block.h"
+
+using std::optional, std::nullopt;
+using memory::ConstBlockPtr;
 
 namespace gradido {
+	using data::ConstConfirmedTransactionPtr;
 	namespace blockchain {
 
-		TransactionEntry::TransactionEntry(memory::ConstBlockPtr serializedTransaction)
-			: mTransactionNr(0), mSerializedTransaction(serializedTransaction)
+		TransactionEntry::TransactionEntry(ConstBlockPtr serializedTransaction, uint32_t blockchainCommunityIdIndex)
+			: mTransactionNr(0), mSerializedTransaction(serializedTransaction), mBlockchainCommunityIdIndex(blockchainCommunityIdIndex)
 		{
 			auto confirmedTransaction = getConfirmedTransaction();
 
@@ -18,23 +25,30 @@ namespace gradido {
 			mMonth = receivedDate.month();
 			mYear = receivedDate.year();
 			mTransactionType = confirmedTransaction->getGradidoTransaction()->getTransactionBody()->getTransactionType();
-			mCoinCommunityId = getCoinCommunityId(*confirmedTransaction->getGradidoTransaction()->getTransactionBody());
+			mCoinCommunityIdIndex = getCoinCommunityIdIndex(*confirmedTransaction->getGradidoTransaction()->getTransactionBody());
 		}
 
-		TransactionEntry::TransactionEntry(data::ConstConfirmedTransactionPtr confirmedTransaction)
-			: TransactionEntry(interaction::serialize::Context(*confirmedTransaction).run(), confirmedTransaction)
+		TransactionEntry::TransactionEntry(ConstConfirmedTransactionPtr confirmedTransaction, uint32_t blockchainCommunityIdIndex)
+			: TransactionEntry(interaction::serialize::Context(*confirmedTransaction).run(blockchainCommunityIdIndex), confirmedTransaction, blockchainCommunityIdIndex)
 		{
 		}		
 
-		TransactionEntry::TransactionEntry(memory::ConstBlockPtr serializedTransaction, data::ConstConfirmedTransactionPtr confirmedTransaction)
-			: mTransactionNr(confirmedTransaction->getId()), mSerializedTransaction(serializedTransaction), mConfirmedTransaction(confirmedTransaction)
+		TransactionEntry::TransactionEntry(
+			ConstBlockPtr serializedTransaction, 
+			ConstConfirmedTransactionPtr confirmedTransaction, 
+			uint32_t blockchainCommunityIdIndex
+		)
+			: mTransactionNr(confirmedTransaction->getId()),
+			mSerializedTransaction(serializedTransaction),
+			mBlockchainCommunityIdIndex(blockchainCommunityIdIndex),
+			mConfirmedTransaction(confirmedTransaction)
 		{
 			auto receivedDate = timepointAsYearMonthDay(confirmedTransaction->getConfirmedAt().getAsTimepoint());
 			mMonth = receivedDate.month();
 			mYear = receivedDate.year();
 			auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
 			mTransactionType = body->getTransactionType();
-			mCoinCommunityId = getCoinCommunityId(*body);
+			mCoinCommunityIdIndex = getCoinCommunityIdIndex(*body);
 		}
 
 		TransactionEntry::TransactionEntry(
@@ -42,18 +56,20 @@ namespace gradido {
 			date::month month,
 			date::year year,
 			data::TransactionType transactionType,
-			std::string communityId
+			optional<uint32_t> coinCommunityIdIndex,
+			uint32_t blockchainCommunityIdIndex
 		) : 
 			mTransactionNr(transactionNr),
 			mMonth(month),
 			mYear(year),
 			mTransactionType(transactionType),
-			mCoinCommunityId(communityId)
+			mCoinCommunityIdIndex(coinCommunityIdIndex),
+			mBlockchainCommunityIdIndex(blockchainCommunityIdIndex)
 		{
 
 		}
 
-		data::ConstConfirmedTransactionPtr TransactionEntry::getConfirmedTransaction() const
+		ConstConfirmedTransactionPtr TransactionEntry::getConfirmedTransaction() const
 		{
 			std::lock_guard _lock(mFastMutex);
 			if (!mConfirmedTransaction) {
@@ -67,12 +83,11 @@ namespace gradido {
 			return mConfirmedTransaction;
 		}
 
-		std::string TransactionEntry::getCoinCommunityId(const data::TransactionBody& body)
-		{
+		optional<uint32_t> TransactionEntry::getCoinCommunityIdIndex(const data::TransactionBody& body) {
 			if (body.hasTransferAmount()) {
-				return body.getTransferAmount().getCommunityId();
+				body.getTransferAmount().getCoinCommunityIdIndex();
 			}
-			return "";
+			return nullopt;
 		}
 	}
 }

@@ -12,35 +12,6 @@ namespace gradido {
 		namespace validate {
 			void TransferAmountRole::run(Type type, ContextData& c) {
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					auto& coinCommunityId = mTransferAmount.getCommunityId();
-					if (!coinCommunityId.empty() && !isValidCommunityAlias(coinCommunityId)) {
-						throw TransactionValidationInvalidInputException(
-								"invalid character, only lowercase english latin letter, numbers and -",
-								"community_id",
-								"string",
-								COMMUNITY_ID_REGEX_STRING,
-								coinCommunityId.data()
-							);
-					}
-					shared_ptr<const blockchain::Abstract> blockchain = nullptr;
-					if (c.senderBlockchain && (data::CrossGroupType::LOCAL == mCrossGroupType || data::CrossGroupType::OUTBOUND == mCrossGroupType)) {
-						blockchain = c.senderBlockchain;
-					} else if (c.recipientBlockchain && data::CrossGroupType::INBOUND == mCrossGroupType) {
-						blockchain = c.recipientBlockchain;
-					}
-					if (blockchain) {
-						auto communityId = blockchain->getCommunityId();
-						if (!communityId.empty() && coinCommunityId == communityId) {
-							std::string expected = "!= " + std::string(communityId);
-							throw TransactionValidationInvalidInputException(
-								"coin communityId shouldn't be set if it is the same as blockchain communityId",
-								"community_id",
-								"string",
-								expected.data(),
-								coinCommunityId.data()
-							);
-						}
-					}
 					if (mTransferAmount.getAmount() <= GradidoUnit::zero()) {
 						throw TransactionValidationInvalidInputException("zero or negative amount", "amount", "string");
 					}

@@ -6,8 +6,8 @@ namespace gradido {
 		TransferAmount::TransferAmount(
 			memory::ConstBlockPtr pubkeyPtr,
 			const GradidoUnit& amount,
-			const std::string& communityId /* = ""*/
-		) : mPublicKey(pubkeyPtr), mAmount(amount), mCommunityId(communityId)
+			uint32_t coinCommunityIdIndex
+		) : mPublicKey(pubkeyPtr), mAmount(amount), mCoinCommunityIdIndex(coinCommunityIdIndex)
 		{
 			KeyPairEd25519::validatePublicKey(pubkeyPtr);
 		}

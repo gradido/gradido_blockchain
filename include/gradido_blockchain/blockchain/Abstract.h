@@ -32,7 +32,7 @@ namespace gradido {
 		{
 			friend interaction::createConfirmedTransaction::Context;
 		public:
-			Abstract(std::string_view communityId);
+			Abstract(uint32_t communityIdIndex);
 			virtual ~Abstract() {}
 
 			//! validate and generate confirmed transaction
@@ -74,12 +74,12 @@ namespace gradido {
 				const Filter& filter = Filter::ALL_TRANSACTIONS
 			) const;
 
-			inline std::string_view getCommunityId() const { return mCommunityId; }
+			inline uint32_t getCommunityIdIndex() const { return mCommunityIdIndex; }
 			inline data::Timestamp getStartDate() const { return mStartDate; }
 			virtual AbstractProvider* getProvider() const = 0;
 
 		protected:
-			std::string mCommunityId;
+			uint32_t mCommunityIdIndex;
 			data::Timestamp mStartDate;			
 		};
 			

@@ -33,13 +33,13 @@ namespace gradido {
 					uint64_t startTransactionNr, 
 					memory::ConstBlockPtr publicKey, 
 					Timepoint endDate,
-					const std::string& communityId
+					std::optional<uint32_t> coinCommunityIdIndex
 				) const;
 				// calculate balance address from last transaction found for the pubkey with transaction <= maxTransactionNr
 				GradidoUnit fromEnd(
 					memory::ConstBlockPtr publicKey, 
 					Timepoint endDate, 
-					const std::string& communityId,
+					std::optional<uint32_t> coinCommunityIdIndex,
 					uint64_t maxTransactionNr = 0
 				) const;
 					

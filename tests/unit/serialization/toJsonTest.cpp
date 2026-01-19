@@ -19,7 +19,7 @@ TEST(ToJsonTest, Filter) {
 	filter.involvedPublicKey = std::make_shared<memory::Block>(memory::Block::fromHex(std::string_view("1234567890abcdef")));
 	filter.searchDirection = SearchDirection::ASC;
 	filter.pagination = Pagination{1, 2};
-	filter.coinCommunityId = "fedcba9876543210";
+	filter.coinCommunityIdIndex = 0;
 	filter.timepointInterval = TimepointInterval(startDate, endDate);
 	filter.transactionType = TransactionType::COMMUNITY_ROOT;
 	filter.filterFunction = [](const TransactionEntry&) -> FilterResult { 
@@ -60,7 +60,7 @@ TEST(ToJsonTest, Filter) {
 	EXPECT_STREQ("ASC", json["searchDirection"].GetString());
 	EXPECT_EQ(1, json["pagination"]["size"].GetInt());
 	EXPECT_EQ(2, json["pagination"]["page"].GetInt());
-	EXPECT_STREQ("fedcba9876543210", json["coinCommunityId"].GetString());
+	EXPECT_STREQ("testCommunity", json["coinCommunityId"].GetString());
 	// EXPECT_EQ(startDate.time_since_epoch().count(), json["timepointInterval"]["start"]["value"].GetInt64());
 	// EXPECT_EQ(endDate.time_since_epoch().count() + 1, json["timepointInterval"]["end"]["value"].GetInt64());
 	EXPECT_STREQ("COMMUNITY_ROOT", json["transactionType"].GetString());

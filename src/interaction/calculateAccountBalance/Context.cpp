@@ -27,24 +27,27 @@ namespace gradido {
 				uint64_t startTransactionNr,
 				memory::ConstBlockPtr publicKey,
 				Timepoint endDate,
-				const std::string& communityId
+				std::optional<uint32_t> coinCommunityIdIndex
 			) const 
 			{
 				FilterBuilder builder;
 				GradidoUnit balance(GradidoUnit::zero());
 				Timepoint lastDate;
+				auto coinCommunityIdIndexValue = coinCommunityIdIndex.has_value()
+					? coinCommunityIdIndex.value()
+					: mBlockchain->getCommunityIdIndex();
 				mBlockchain->findAll(builder
 					.setUpdatedBalancePublicKey(publicKey)
 					.setMinTransactionNr(startTransactionNr)
 					.setSearchDirection(SearchDirection::ASC)
-					.setCoinCommunityId(communityId)
+					.setCoinCommunityIdIndex(coinCommunityIdIndex)
 					.setFilterFunction([&](const TransactionEntry& entry) -> FilterResult {
 						auto confirmedTransaction = entry.getConfirmedTransaction();
 						if (confirmedTransaction->getConfirmedAt().getAsTimepoint() > endDate) {
 							return FilterResult::STOP;
 						}
 						if (GradidoUnit::zero() == balance) {
-							balance = confirmedTransaction->getAccountBalance(publicKey, communityId).getBalance();
+							balance = confirmedTransaction->getAccountBalance(publicKey, coinCommunityIdIndexValue).getBalance();
 							lastDate = confirmedTransaction->getConfirmedAt();
 						}
 						else {
@@ -64,25 +67,28 @@ namespace gradido {
 			GradidoUnit Context::fromEnd(
 				memory::ConstBlockPtr publicKey,
 				Timepoint endDate,
-				const std::string& communityId,
+				std::optional<uint32_t> coinCommunityIdIndex,
 				uint64_t maxTransactionNr/* = 0 */
 			) const 
 			{
 				FilterBuilder builder;
 				GradidoUnit balance(GradidoUnit::zero());
 				Timepoint lastDate;
+				auto coinCommunityIdIndexValue = coinCommunityIdIndex.has_value()
+					? coinCommunityIdIndex.value()
+					: mBlockchain->getCommunityIdIndex();
 				mBlockchain->findAll(builder
 					.setUpdatedBalancePublicKey(publicKey)
 					.setMaxTransactionNr(maxTransactionNr)
 					.setSearchDirection(SearchDirection::DESC)
-					.setCoinCommunityId(communityId)
+					.setCoinCommunityIdIndex(coinCommunityIdIndex)
 					.setFilterFunction([&](const TransactionEntry& entry) -> FilterResult {
 						auto confirmedTransaction = entry.getConfirmedTransaction();
 						if (confirmedTransaction->getConfirmedAt().getAsTimepoint() > endDate) {
 							return FilterResult::DISMISS;
 						}
 						
-						balance = confirmedTransaction->getAccountBalance(publicKey, communityId).getBalance();
+						balance = confirmedTransaction->getAccountBalance(publicKey, coinCommunityIdIndexValue).getBalance();
 						lastDate = confirmedTransaction->getConfirmedAt();
 						return FilterResult::STOP;
 						

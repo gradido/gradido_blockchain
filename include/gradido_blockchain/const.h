@@ -22,6 +22,6 @@ constexpr auto GRADIDO_ENCRYPTED_MEMO_COMPRESSION_DEFAULT_SKIP_SIZE_BYTES = 120;
 constexpr auto PHRASE_WORD_COUNT = 24;
 
 // allowed character for community id
-constexpr const char* COMMUNITY_ID_REGEX_STRING = "^[a-z0-9-]{3,120}$";
+constexpr const char* COMMUNITY_ID_REGEX_STRING = "^[a-z0-9_-]{3,120}$";
 
 #endif //__GRADIDO_BLOCKCHAIN_CONST_H

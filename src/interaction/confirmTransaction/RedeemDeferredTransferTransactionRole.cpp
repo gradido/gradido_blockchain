@@ -36,7 +36,7 @@ namespace gradido {
             {
                 auto& transfer = mBody->getRedeemDeferredTransfer()->getTransfer();
                 auto& transferAmount = transfer.getSender();
-                auto& communityId = transferAmount.getCommunityId();
+                auto coinCommunityIdIndex = transferAmount.getCoinCommunityIdIndex();
                 auto deferredTransferEntry = mBlockchain->getTransactionForId(mBody->getRedeemDeferredTransfer()->getDeferredTransferTransactionNr());
                 auto deferredTransferConfirmedAt = deferredTransferEntry->getConfirmedTransaction()->getConfirmedAt();
                 auto deferredTransferTransaction = deferredTransferEntry->getTransactionBody()->getDeferredTransfer();
@@ -47,18 +47,18 @@ namespace gradido {
                 if (transfer.getRecipient()->isTheSame(deferredTransferAmount.getPublicKey())) {
                     return {
                         // sender
-                        AccountBalance(transferAmount.getPublicKey(), GradidoUnit::zero(), communityId),
+                        AccountBalance(transferAmount.getPublicKey(), GradidoUnit::zero(), coinCommunityIdIndex),
                         // recipient and change
-                        calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, decayedDeferredAmount, communityId)
+                        calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, decayedDeferredAmount, coinCommunityIdIndex)
                     };
                 }
                 return {
                     // sender
-                    AccountBalance(transferAmount.getPublicKey(), GradidoUnit::zero(), communityId),
+                    AccountBalance(transferAmount.getPublicKey(), GradidoUnit::zero(), coinCommunityIdIndex),
                     // recipient
-                    calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, transferAmount.getAmount(), communityId),
+                    calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, transferAmount.getAmount(), coinCommunityIdIndex),
                     // change back to original sender of deferred transfer
-                    calculateAccountBalance(deferredTransferAmount.getPublicKey(), maxTransactionNr, change, communityId)
+                    calculateAccountBalance(deferredTransferAmount.getPublicKey(), maxTransactionNr, change, coinCommunityIdIndex)
                 };
 
             }

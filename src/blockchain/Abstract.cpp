@@ -5,8 +5,8 @@
 namespace gradido {
 	namespace blockchain {
 
-		Abstract::Abstract(std::string_view communityId)
-			: mCommunityId(communityId)
+		Abstract::Abstract(uint32_t communityIdIndex)
+			: mCommunityIdIndex(communityIdIndex)
 		{
 
 		}

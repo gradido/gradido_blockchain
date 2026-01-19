@@ -87,7 +87,7 @@ namespace gradido {
 			AbstractProvider* getProvider() const override;
 
 		protected:
-			InMemory(std::string_view communityId);
+			InMemory(std::string_view uniqueCommunityAlias, uint32_t communityIdIndex);
 
 			RuntimeDictionary<memory::ConstBlockPtr, memory::ConstBlockPtrHash, memory::ConstBlockPtrEqual> mPublicKeyDirectory;
 			TransactionsIndex mTransactionsIndex;

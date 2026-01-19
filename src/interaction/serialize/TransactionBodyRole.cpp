@@ -1,7 +1,11 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/interaction/serialize/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/serialize/Exceptions.h"
+#include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
+
+#include "loguru/loguru.hpp"
 
 namespace gradido {
 	using namespace data;
@@ -153,10 +157,21 @@ namespace gradido {
 
 			TransferAmountMessage TransactionBodyRole::createTransferAmountMessage(const data::TransferAmount& amount) const
 			{
+				std::string coinCommunityId;
+				if (amount.getCoinCommunityIdIndex() != mBlockchainCommunityIdIndex) {
+					auto coinCommunityIdOptional = g_appContext->getCommunityIds().getDataForIndex(amount.getCoinCommunityIdIndex());
+					if (!coinCommunityIdOptional.has_value()) {
+						throw DictionaryMissingEntryException(
+							"missing community id for index in serialize::TransactionBodyRole::createTransferAmountMessage", 
+							std::to_string(amount.getCoinCommunityIdIndex())
+						);
+					}
+					coinCommunityId = g_appContext->getCommunityIds().getDataForIndex(amount.getCoinCommunityIdIndex()).value();
+				}
 				return TransferAmountMessage{
 					amount.getPublicKey()->copyAsVector(),
 					amount.getAmount().getGradidoCent(),
-					amount.getCommunityId()
+					coinCommunityId
 				};
 			}
 
@@ -239,7 +254,23 @@ namespace gradido {
 				if (!amount.getPublicKey()) {
 					throw MissingMemberException("missing member by serializing TransferAmount", "amount.pubkey");
 				}
-				return amount.getPublicKey()->size() + 8 + amount.getCommunityId().size() + 12;
+				size_t coinCommunityStringSize = 0;
+				if (!mBlockchainCommunityIdIndex.has_value()) {
+					GradidoNodeInvalidDataException(
+						"missing blockchainCommunityIdIndex, please call serialize::Context run with blockchainCommunityIdIndex as parameter for TransactionBodyRole"
+					); 
+				}
+				if (amount.getCoinCommunityIdIndex() != mBlockchainCommunityIdIndex.value()) {
+					auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(amount.getCoinCommunityIdIndex());
+					if (!communityIdOptional.has_value()) {
+						throw DictionaryMissingEntryException(
+							"missing community id for index in serialize::TransactionBodyRole::createTransferAmountMessage",
+							std::to_string(amount.getCoinCommunityIdIndex())
+						);
+					}
+					coinCommunityStringSize = communityIdOptional.value().size();
+				}
+				return amount.getPublicKey()->size() + 8 + coinCommunityStringSize + 12;
 			}
 				
 		}

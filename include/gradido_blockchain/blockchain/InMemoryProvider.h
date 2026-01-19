@@ -1,13 +1,13 @@
 #ifndef __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_IN_MEMORY_PROVIDER_H
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_IN_MEMORY_PROVIDER_H
 
-#include "gradido_blockchain/lib/StringViewCompare.h"
 #include "AbstractProvider.h"
 #include "InMemory.h"
 #include "gradido_blockchain/export.h"
 
-#include <map>
-#include <mutex>
+#include <vector>
+#include <string>
+#include <shared_mutex>
 
 namespace gradido {
 	namespace blockchain {
@@ -16,11 +16,12 @@ namespace gradido {
 		public:
 			static InMemoryProvider* getInstance();
 
-			std::shared_ptr<Abstract> findBlockchain(std::string_view communityId);
+			std::shared_ptr<Abstract> findBlockchain(uint32_t communityIdIndex) const override;
+			std::shared_ptr<Abstract> findBlockchain(const std::string& communityId) override;
 			void clear();
 		protected:
-			std::map<std::string, std::shared_ptr<InMemory>, StringViewCompare> mBlockchainsPerGroup;
-			std::mutex mWorkMutex;
+			std::vector<std::shared_ptr<InMemory>> mBlockchainsPerGroup;
+			mutable std::shared_mutex mWorkMutex;
 
 		private:
 			InMemoryProvider();

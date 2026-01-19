@@ -25,7 +25,7 @@ public:
 	 * @param data The data value to look up.
 	 * @return The index associated with the data or nullopt if not exist
 	 */
-	virtual std::optional<uint32_t> getIndexForData(const DataType& data) const = 0;
+	virtual std::optional<size_t> getIndexForData(const DataType& data) const = 0;
 	/*!
 	 * TODO: remove usage
 	 * @brief Returns the data associated with a given index.
@@ -33,7 +33,7 @@ public:
 	 * @return The data value associated with the index.
 	 * @throws DictionaryNotFoundException if the index does not exist.
 	 */
-	virtual std::optional<DataType> getDataForIndex(uint32_t index) const = 0;
+	virtual std::optional<DataType> getDataForIndex(size_t index) const = 0;
 };
 
 
@@ -50,7 +50,7 @@ public:
 	 * @param data The data value to look up or insert.
 	 * @return The index associated with the data (new or existing).
 	 */
-	virtual uint32_t getOrAddIndexForData(const DataType& data) = 0;
+	virtual size_t getOrAddIndexForData(const DataType& data) = 0;
 };
 
 #endif //__GRADIDO_BLOCKCHAIN_LIB_DICTIONARY_INTERFACE_H

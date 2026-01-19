@@ -12,16 +12,17 @@ namespace gradido {
 		{
 			friend GradidoTransactionBuilder;
 		public:
-			GradidoTransaction() {}
+			GradidoTransaction(): mCommunityIdIndex(0) {}
 			GradidoTransaction(
 				const SignatureMap& signatureMap,
 				memory::ConstBlockPtr bodyBytes,
+				uint32_t communityIdIndex,
 				const LedgerAnchor& pairingLedgerAnchor = LedgerAnchor()
-			) : mSignatureMap(signatureMap), mBodyBytes(bodyBytes), mPairingLedgerAnchor(pairingLedgerAnchor) {}
+			) : mSignatureMap(signatureMap), mBodyBytes(bodyBytes), mCommunityIdIndex(communityIdIndex), mPairingLedgerAnchor(pairingLedgerAnchor) {}
 
 			// copy constructor
 			GradidoTransaction(const GradidoTransaction& other)
-				: GradidoTransaction(other.mSignatureMap, other.mBodyBytes, other.mPairingLedgerAnchor) {}
+				: GradidoTransaction(other.mSignatureMap, other.mBodyBytes, other.mCommunityIdIndex, other.mPairingLedgerAnchor) {}
 
 			~GradidoTransaction() {}
 
@@ -46,7 +47,8 @@ namespace gradido {
 		protected:
 			SignatureMap			mSignatureMap;
 			memory::ConstBlockPtr	mBodyBytes;
-			LedgerAnchor			mPairingLedgerAnchor;
+			uint32_t					mCommunityIdIndex;
+			LedgerAnchor			mPairingLedgerAnchor;			
 
 			mutable ConstTransactionBodyPtr mTransactionBody;
 			mutable std::mutex mTransactionBodyMutex;

@@ -66,7 +66,7 @@ namespace gradido {
                     memory::ConstBlockPtr publicKey, 
                     uint64_t maxTransactionNr, 
                     GradidoUnit amount,
-                    const std::string& communityId
+                    uint32_t coinCommunityIdIndex
                 ) const;
 
                 std::shared_ptr<const data::GradidoTransaction> mGradidoTransaction;

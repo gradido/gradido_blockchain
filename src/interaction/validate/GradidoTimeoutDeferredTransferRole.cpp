@@ -78,7 +78,7 @@ namespace gradido {
 					auto balance = calculateAccountBalance.fromEnd(
 						deferredTransfer->getRecipientPublicKey(), 
 						beforeCreateAt,
-						deferredTransfer->getTransfer().getSender().getCommunityId()
+						deferredTransfer->getTransfer().getSender().getCoinCommunityIdIndex()
 					);
 					if(GradidoUnit::zero() == balance) {
 						throw TransactionValidationInvalidInputException(

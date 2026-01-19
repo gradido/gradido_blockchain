@@ -1,3 +1,4 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/serialize/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/interaction/serialize/HieroTransactionIdRole.h"
@@ -9,7 +10,8 @@ namespace gradido {
 		namespace serialize {
 
 			ConfirmedTransactionRole::ConfirmedTransactionRole(const data::ConfirmedTransaction& confirmedTransaction)
-				: mConfirmedTransaction(confirmedTransaction), mGradidoTransactionRole(*mConfirmedTransaction.getGradidoTransaction()) 
+				: mConfirmedTransaction(confirmedTransaction), 
+				mGradidoTransactionRole(*mConfirmedTransaction.getGradidoTransaction())
 			{
 			}
 
@@ -28,8 +30,13 @@ namespace gradido {
 					AccountBalanceMessage accountBalanceMessage;
 					accountBalanceMessage["pubkey"_f] = accountBalance.getPublicKey()->copyAsVector();
 					accountBalanceMessage["balance"_f] = accountBalance.getBalance().getGradidoCent();
-					if (!accountBalance.getCommunityId().empty()) {
-						accountBalanceMessage["community_id"_f] = accountBalance.getCommunityId();
+					if (!mBlockchainCommunityIdIndex.has_value()) {
+						GradidoNodeInvalidDataException(
+							"missing blockchainCommunityIdIndex, please call serialize::Context run with blockchainCommunityIdIndex as parameter for ConfirmedTransactionRole"
+						);
+					}
+					if (accountBalance.getCoinCommunityIdIndex() != mBlockchainCommunityIdIndex.value()) {
+						accountBalanceMessage["community_id"_f] = g_appContext->getCommunityIds().getDataForIndex(accountBalance.getCoinCommunityIdIndex());
 					}
 					accountBalanceMessages.push_back(accountBalanceMessage);
 				}			

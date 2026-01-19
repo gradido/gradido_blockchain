@@ -23,8 +23,8 @@ namespace gradido {
 
 	namespace blockchain {
 
-		TransactionsIndex::TransactionsIndex(AbstractProvider* blockchainProvider)
-			: mMaxTransactionNr(0), mMinTransactionNr(0), mBlockchainProvider(blockchainProvider)
+		TransactionsIndex::TransactionsIndex()
+			: mMaxTransactionNr(0), mMinTransactionNr(0)
 		{
 
 		}
@@ -61,9 +61,8 @@ namespace gradido {
 							Value entry(kObjectType);
 							entry.AddMember("transactionNr", transactionsIndexEntry.transactionNr, alloc);
 							entry.AddMember("transactionType", serialization::toJson(transactionsIndexEntry.transactionType, alloc), alloc);
-							if (transactionsIndexEntry.coinCommunityIdIndex.has_value()) {
-								entry.AddMember("coinCommunityIdIndex", transactionsIndexEntry.coinCommunityIdIndex.value(), alloc);
-							}
+							entry.AddMember("coinCommunityIdIndex", transactionsIndexEntry.coinCommunityIdIndex, alloc);
+
 							if (transactionsIndexEntry.addressIndiceCount) {
 								Value addressIndices(kArrayType);
 								for (int i = 0; i < transactionsIndexEntry.addressIndiceCount; i++) {
@@ -84,7 +83,7 @@ namespace gradido {
 
 		bool TransactionsIndex::addIndicesForTransaction(
 			gradido::data::TransactionType transactionType,
-			std::optional<uint32_t> coinCommunityIdIndex,
+			uint32_t coinCommunityIdIndex,
 			date::year year,
 			date::month month,
 			uint64_t transactionNr,
@@ -148,11 +147,9 @@ namespace gradido {
 				mMinTransactionNr = transactionNr;
 			}
 
-			std::optional<uint32_t> coinCommunityIndex = std::nullopt;
-			
-			if (!transactionEntry->getCoinCommunityId().empty()) {
-				coinCommunityIndex = mBlockchainProvider->getCommunityIdIndex(transactionEntry->getCoinCommunityId());
-			}
+			uint32_t coinCommunityIndex = transactionEntry->getCoinCommunityIdIndex().has_value()
+				? transactionEntry->getCoinCommunityIdIndex().value()
+				: transactionEntry->getBlockchainCommunityIdIndex();
 			
 			const auto& confirmedTransaction = transactionEntry->getConfirmedTransaction();
 			auto involvedPublicKeys = confirmedTransaction->getInvolvedAddresses();
@@ -208,7 +205,7 @@ namespace gradido {
 				&& filter.searchDirection == SearchDirection::DESC
 				&& filter.timepointInterval.isEmpty()
 				&& !filter.filterFunction
-				&& filter.coinCommunityId.empty()
+				&& !filter.coinCommunityIdIndex.has_value()
 				) {
 				if (lastBalanceChangedTransactionNr >= filter.minTransactionNr && lastBalanceChangedTransactionNr <= filter.maxTransactionNr) {
 					return { lastBalanceChangedTransactionNr };
@@ -273,7 +270,7 @@ namespace gradido {
 									if (!filter.pagination.hasCapacityLeft(result.size())) {
 										return false;
 									}
-									auto filterResult = entry.isMatchingFilter(filter, publicKeyIndex, updatedBalancePublicKeyIndex, mBlockchainProvider);
+									auto filterResult = entry.isMatchingFilter(filter, publicKeyIndex, updatedBalancePublicKeyIndex);
 									if ((filterResult & FilterResult::USE) == FilterResult::USE) {
 										if (paginationCursor >= filter.pagination.skipEntriesCount()) {
 											result.push_back(entry.transactionNr);
@@ -366,7 +363,7 @@ namespace gradido {
 							iterateRangeInOrder(transactionIndexEntriesVector.begin(), transactionIndexEntriesVector.end(), SearchDirection::ASC,
 								[&](const TransactionsIndexEntry& entry) -> bool
 								{
-									auto filterResult = entry.isMatchingFilter(filter, publicKeyIndex, updatedBalancePublicKeyIndex, mBlockchainProvider);
+									auto filterResult = entry.isMatchingFilter(filter, publicKeyIndex, updatedBalancePublicKeyIndex);
 									if ((filterResult & FilterResult::USE) == FilterResult::USE) {
 										++result;
 									}
@@ -432,19 +429,14 @@ namespace gradido {
 		FilterResult TransactionsIndex::TransactionsIndexEntry::isMatchingFilter(
 			const gradido::blockchain::Filter& filter, 
 			const uint32_t publicKeyIndex,
-			const uint32_t balanceChangingIndex,
-			gradido::blockchain::AbstractProvider* blockchainProvider
+			const uint32_t balanceChangingIndex
 		) const
 		{
 			if (filter.transactionType != TransactionType::NONE
 				&& filter.transactionType != transactionType) {
 				return FilterResult::DISMISS;
-			}
-			std::optional<uint32_t> coinCommunityKeyIndex = std::nullopt;
-			if (!filter.coinCommunityId.empty()) {
-				coinCommunityKeyIndex = blockchainProvider->getCommunityIdIndex(filter.coinCommunityId);
-			}
-			if (coinCommunityKeyIndex.has_value() && coinCommunityKeyIndex.value() != coinCommunityIdIndex) {
+			}			
+			if (filter.coinCommunityIdIndex.has_value() && coinCommunityIdIndex != filter.coinCommunityIdIndex.value()) {
 				return FilterResult::DISMISS;
 			}
 			if (filter.minTransactionNr && filter.minTransactionNr > transactionNr) {

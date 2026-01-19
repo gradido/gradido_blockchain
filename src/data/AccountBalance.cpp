@@ -10,8 +10,8 @@ namespace gradido {
 		{
 		}
 		
-		AccountBalance::AccountBalance(ConstBlockPtr publicKey, GradidoUnit balance, const string& communityId)
-			: mPublicKey(publicKey), mBalance(balance), mCommunityId(communityId) 
+		AccountBalance::AccountBalance(ConstBlockPtr publicKey, GradidoUnit balance, uint32_t coinCommunityIdIndex)
+			: mPublicKey(publicKey), mBalance(balance), mCoinCommunityIdIndex(coinCommunityIdIndex)
 		{
 		}
 

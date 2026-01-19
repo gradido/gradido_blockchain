@@ -9,6 +9,7 @@
 #include <array>
 #include <vector>
 #include <string>
+#include <optional>
 #include "protopuf/message.h"
 #include "sodium.h"
 
@@ -21,11 +22,17 @@ namespace gradido {
 			class AbstractRole
 			{
 			public:
+				AbstractRole() : mBlockchainCommunityIdIndex(0) {}
 				virtual ~AbstractRole() {};
 				virtual memory::ConstBlockPtr run() const = 0; 
 				virtual size_t calculateSerializedSize() const = 0;
+				inline void setBlockchainCommunityIdIndex(uint32_t blockchainCommunityIdIndex) {
+					mBlockchainCommunityIdIndex = blockchainCommunityIdIndex;
+				}
 
 			protected:
+
+				std::optional<uint32_t> mBlockchainCommunityIdIndex;
 
 				template <typename T>
 				memory::ConstBlockPtr encode(T message) const 

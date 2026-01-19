@@ -17,7 +17,7 @@ namespace gradido {
 	namespace interaction {
 		namespace deserialize {
 		
-			TransactionBodyRole::TransactionBodyRole(const TransactionBodyMessage& bodyMessage)
+			TransactionBodyRole::TransactionBodyRole(const TransactionBodyMessage& bodyMessage, uint32 communityIdIndex)
 			{
 				const char* rootExceptionMessage = "missing member on deserialize transaction body";
 				
@@ -49,7 +49,7 @@ namespace gradido {
 					if (!bodyMessage["transfer"_f].value()["sender"_f].has_value()) {
 						throw MissingMemberException("missing member on deserialize transaction body transfer transaction", "transfer.sender");
 					}
-					mTransactionBody->mTransfer = std::move(GradidoTransferRole(bodyMessage["transfer"_f].value()).run());
+					mTransactionBody->mTransfer = std::move(GradidoTransferRole(bodyMessage["transfer"_f].value(), communityIdIndex).run());
 				}
 				else if (bodyMessage["creation"_f].has_value()) {
 					auto creationMessage = bodyMessage["creation"_f].value();
@@ -61,7 +61,7 @@ namespace gradido {
 						throw MissingMemberException(exceptionMessage, "target_date");
 					}
 					mTransactionBody->mCreation = make_shared<data::GradidoCreation>(
-						TransferAmountRole(creationMessage["recipient"_f].value()).data(),
+						TransferAmountRole(creationMessage["recipient"_f].value(), communityIdIndex).data(),
 						TimestampSecondsRole(creationMessage["target_date"_f].value()).data()
 					);
 				}
@@ -89,7 +89,7 @@ namespace gradido {
 						throw MissingMemberException(exceptionMessage, "timeout_duration");
 					}
 					mTransactionBody->mDeferredTransfer = make_shared<data::GradidoDeferredTransfer>(
-						*GradidoTransferRole(deferredTransferMessage["transfer"_f].value()).run().get(),
+						*GradidoTransferRole(deferredTransferMessage["transfer"_f].value(), communityIdIndex).run().get(),
 						DurationSecondsRole(deferredTransferMessage["timeout_duration"_f].value()).data()
 					);
 				}
@@ -104,7 +104,7 @@ namespace gradido {
 					}
 					mTransactionBody->mRedeemDeferredTransfer = make_shared<data::GradidoRedeemDeferredTransfer>(
 						redeemDeferredTransferMessage["deferred_transfer_transaction_nr"_f].value(),
-						*GradidoTransferRole(redeemDeferredTransferMessage["transfer"_f].value()).run().get()
+						*GradidoTransferRole(redeemDeferredTransferMessage["transfer"_f].value(), communityIdIndex).run().get()
 					);
 				}
 				else if (bodyMessage["timeout_deferred_transfer"_f].has_value()) {

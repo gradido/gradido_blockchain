@@ -52,7 +52,6 @@ namespace gradido {
 			//! throw if not exist on this transaction type
 			const TransferAmount& getTransferAmount() const;
 			bool hasTransferAmount() const;
-			void updateCoinColor(const std::string& communityId);
 
 			std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
 			inline const std::vector<EncryptedMemo>& getMemos() const { return mMemos; }

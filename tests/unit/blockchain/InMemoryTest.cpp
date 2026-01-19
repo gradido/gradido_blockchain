@@ -176,7 +176,7 @@ bool InMemoryTest::createGradidoCreation(
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(recipientPublicKey, amount),
+			TransferAmount(recipientPublicKey, amount, 0),
 			targetDate
 		)
 		.sign(g_KeyPairs[signerKeyPairIndex])
@@ -200,7 +200,7 @@ bool InMemoryTest::createGradidoTransfer(
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount),
+			TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount, 0),
 			g_KeyPairs[recipientKeyPairIndex]->getPublicKey()
 		)
 		.sign(g_KeyPairs[senderKeyPairIndex])
@@ -226,7 +226,7 @@ bool InMemoryTest::createGradidoDeferredTransfer(
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount),
+				TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount, 0),
 				g_KeyPairs[recipientKeyPairIndex]->getPublicKey()
 			), DurationSeconds(timeoutDuration)
 		)
@@ -255,7 +255,7 @@ bool InMemoryTest::createGradidoRedeemDeferredTransfer(
 		.setRedeemDeferredTransfer(
 			deferredTransferNr,
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount),
+				TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount, 0),
 				g_KeyPairs[recipientKeyPairIndex]->getPublicKey()
 			)
 		)
@@ -279,7 +279,7 @@ GradidoUnit InMemoryTest::getBalance(int keyPairIndex, Timepoint date)
 		throw std::runtime_error("invalid key pair index");
 	}
 	interaction::calculateAccountBalance::Context c(mBlockchain);
-	return c.fromEnd(g_KeyPairs[keyPairIndex]->getPublicKey(), date, "");
+	return c.fromEnd(g_KeyPairs[keyPairIndex]->getPublicKey(), date, 0);
 }
 
 TEST_F(InMemoryTest, FindCommunityRootTransactionByType)
@@ -393,8 +393,8 @@ TEST_F(InMemoryTest, CreationTransactions)
 	
 	EXPECT_EQ(getBalance(8, mLastConfirmedAt), GradidoUnit(1000.0));
 	auto balanceCalculator = calculateAccountBalance::Context(mBlockchain);
-	auto gmwBalance = balanceCalculator.fromEnd(g_KeyPairs[1]->getPublicKey(), mLastConfirmedAt, "");
-	auto aufBalance = balanceCalculator.fromEnd(g_KeyPairs[2]->getPublicKey(), mLastConfirmedAt, "");
+	auto gmwBalance = balanceCalculator.fromEnd(g_KeyPairs[1]->getPublicKey(), mLastConfirmedAt, 0);
+	auto aufBalance = balanceCalculator.fromEnd(g_KeyPairs[2]->getPublicKey(), mLastConfirmedAt, 0);
 	auto creationSum = getBalance(8, mLastConfirmedAt) + getBalance(6, mLastConfirmedAt);
 	EXPECT_EQ(gmwBalance, creationSum);
 	EXPECT_EQ(aufBalance, creationSum);
@@ -528,8 +528,8 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	auto lastTransactionEntry = mBlockchain->findOne(Filter::LAST_TRANSACTION);
 	auto confirmedTransaction = lastTransactionEntry->getConfirmedTransaction();
 	ASSERT_EQ(confirmedTransaction->getAccountBalances().size(), 2);
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[secondRecipientKeyPairIndex]->getPublicKey(), "").getBalance(), GradidoUnit(996.3677));
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[recipientKeyPairIndex]->getPublicKey(), "").getBalance(), GradidoUnit::zero());
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[secondRecipientKeyPairIndex]->getPublicKey(), 0).getBalance(), GradidoUnit(996.3677));
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[recipientKeyPairIndex]->getPublicKey(), 0).getBalance(), GradidoUnit::zero());
 	// check accounts
 	blockedDeferredTransferBalance = GradidoUnit(483.0).calculateCompoundInterest(createdAt, createdAt + secondTimeoutDuration);
 	deferredTransferBalance = getBalance(recipientKeyPairIndex, firstDeferredTransferCreatedAt + timeoutDuration + chrono::hours(1));
@@ -558,8 +558,8 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	lastTransactionEntry = mBlockchain->findOne(Filter::LAST_TRANSACTION);
 	confirmedTransaction = lastTransactionEntry->getConfirmedTransaction();
 	ASSERT_EQ(confirmedTransaction->getAccountBalances().size(), 2);
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[6]->getPublicKey(), "").getBalance(), originalSenderBalance);
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[thirdRecipientKeyPairIndex]->getPublicKey(), "").getBalance(), deferredFullBalance);
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[6]->getPublicKey(), 0).getBalance(), originalSenderBalance);
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[thirdRecipientKeyPairIndex]->getPublicKey(), 0).getBalance(), deferredFullBalance);
 
 	// redeem second deferred transfer
 	auto previousCreatedAt = createdAt;
@@ -570,11 +570,11 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	lastTransactionEntry = mBlockchain->findOne(Filter::LAST_TRANSACTION);
 	confirmedTransaction = lastTransactionEntry->getConfirmedTransaction();
 	ASSERT_EQ(confirmedTransaction->getAccountBalances().size(), 3);
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[secondRecipientKeyPairIndex]->getPublicKey(), "").getBalance(),
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[secondRecipientKeyPairIndex]->getPublicKey(), 0).getBalance(),
 		originalSenderBalance + deferredFullBalance - GradidoUnit(400.0)
 	);
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[thirdRecipientKeyPairIndex]->getPublicKey(), "").getBalance(), GradidoUnit::zero());
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[8]->getPublicKey(), "").getBalance(), GradidoUnit(400.0));
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[thirdRecipientKeyPairIndex]->getPublicKey(), 0).getBalance(), GradidoUnit::zero());
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[8]->getPublicKey(), 0).getBalance(), GradidoUnit(400.0));
 	auto transactions = mBlockchain->findAll();
 	EXPECT_EQ(transactions.size(), 9);
 	// logBlockchain();
@@ -653,8 +653,8 @@ TEST_F(InMemoryTest, ManyTransactions)
 	
 	// printf gmw and auf account
 	calculateAccountBalance::Context balanceCalculator(mBlockchain);
-	auto gmwBalance = balanceCalculator.fromEnd(g_KeyPairs[1]->getPublicKey(), mLastConfirmedAt, "");
-	auto aufBalance = balanceCalculator.fromEnd(g_KeyPairs[2]->getPublicKey(), mLastConfirmedAt, "");
+	auto gmwBalance = balanceCalculator.fromEnd(g_KeyPairs[1]->getPublicKey(), mLastConfirmedAt, 0);
+	auto aufBalance = balanceCalculator.fromEnd(g_KeyPairs[2]->getPublicKey(), mLastConfirmedAt, 0);
 	
 	ASSERT_EQ(gmwBalance, decayedAmountSum);
 	ASSERT_EQ(aufBalance, decayedAmountSum);

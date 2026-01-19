@@ -22,15 +22,15 @@ namespace gradido {
                 assert(deferredTransferEntry->getTransactionBody()->isDeferredTransfer());
                 auto& deferredTransfer = deferredTransferEntry->getTransactionBody()->getDeferredTransfer()->getTransfer();
                 auto& deferredTransferAmount = deferredTransfer.getSender();
-                auto& communityId = deferredTransferAmount.getCommunityId();
+                auto coinCommunityIdIndex = deferredTransferAmount.getCoinCommunityIdIndex();
                 auto deferredTransferConfirmedAt = deferredTransferEntry->getConfirmedTransaction()->getConfirmedAt();
                 auto decayedDeferredAmount = deferredTransferAmount.getAmount().calculateDecay(deferredTransferConfirmedAt, mConfirmedAt);
 
                 return {
                     // original sender
-                    calculateAccountBalance(deferredTransferAmount.getPublicKey(), maxTransactionNr, decayedDeferredAmount, communityId),
+                    calculateAccountBalance(deferredTransferAmount.getPublicKey(), maxTransactionNr, decayedDeferredAmount, coinCommunityIdIndex),
                     // deferred transfer address 
-                    AccountBalance(deferredTransfer.getRecipient(), GradidoUnit::zero(), communityId)
+                    AccountBalance(deferredTransfer.getRecipient(), GradidoUnit::zero(), coinCommunityIdIndex)
                 };
             }
         }

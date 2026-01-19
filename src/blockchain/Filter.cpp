@@ -27,7 +27,7 @@ namespace gradido {
 			memory::ConstBlockPtr _involvedPublicKey /*= nullptr*/,
 			SearchDirection _searchDirection /*= SearchDirection::DESC*/,
 			Pagination _pagination /*= Pagination(0)*/,
-			std::string_view _coinCommunityId /*= std::string_view() */,
+			std::optional<uint32_t> _coinCommunityIdIndex /*= std::nullopt() */,
 			TimepointInterval _timepointInterval/* = MonthYearInterval()*/,
 			data::TransactionType _transactionType /* = data::TransactionType::NONE*/,
 			std::function<FilterResult(const TransactionEntry&)> _filterFunction/* = nullptr*/
@@ -37,7 +37,7 @@ namespace gradido {
 			involvedPublicKey(_involvedPublicKey),
 			searchDirection(_searchDirection),
 			pagination(_pagination),
-			coinCommunityId(_coinCommunityId),
+			coinCommunityIdIndex(_coinCommunityIdIndex),
 			timepointInterval(_timepointInterval),
 			transactionType(_transactionType),
 			filterFunction(_filterFunction)
@@ -66,14 +66,14 @@ namespace gradido {
 			uint64_t _maxTransactionNr,
 			memory::ConstBlockPtr _involvedPublicKey,
 			SearchDirection _searchDirection,
-			std::string_view coinCommunityId,
+			std::optional<uint32_t> _coinCommunityIdIndex,
 			std::function<FilterResult(const TransactionEntry&)> _filterFunction
 		) :
 			minTransactionNr(0),
 			maxTransactionNr(_maxTransactionNr),
 			involvedPublicKey(_involvedPublicKey),
 			searchDirection(_searchDirection),
-			coinCommunityId(coinCommunityId),
+			coinCommunityIdIndex(_coinCommunityIdIndex),
 			transactionType(data::TransactionType::NONE),
 			filterFunction(_filterFunction)
 		{
@@ -111,14 +111,17 @@ namespace gradido {
 					return FilterResult::DISMISS;
 				}
 			}
-			if ((type & FilterCriteria::COIN_COMMUNITY) == FilterCriteria::COIN_COMMUNITY && !coinCommunityId.empty())
+			if ((type & FilterCriteria::COIN_COMMUNITY) == FilterCriteria::COIN_COMMUNITY && coinCommunityIdIndex.has_value())
 			{
-				std::string_view entryCoinCommunityId = entry->getCoinCommunityId();
+				// if transaction hasn't explicit set coin community index, then it belongs to his blockchain
+				auto entryCoinCommunityIdIndex = entry->getCoinCommunityIdIndex();
+				if (!entryCoinCommunityIdIndex.has_value()) {
+					entryCoinCommunityIdIndex = entry->getBlockchainCommunityIdIndex();
+				}
+				assert(entryCoinCommunityIdIndex.has_value());
 				// only if coin community id was set transaction 
-				if (!entryCoinCommunityId.empty()) {
-					if (coinCommunityId != entryCoinCommunityId) {
+				if (coinCommunityIdIndex.value() != entryCoinCommunityIdIndex.value()) {
 						return FilterResult::DISMISS;
-					}
 				}					
 			}
 			if ((type & FilterCriteria::TRANSACTION_TYPE) == FilterCriteria::TRANSACTION_TYPE) {
@@ -173,7 +176,7 @@ namespace gradido {
 				!involvedPublicKey->isTheSame(other.involvedPublicKey) ||
 				searchDirection != other.searchDirection ||
 				pagination != other.pagination ||
-				coinCommunityId != other.coinCommunityId ||
+				coinCommunityIdIndex != other.coinCommunityIdIndex ||
 				timepointInterval != other.timepointInterval ||
 				transactionType != other.transactionType) {
 				return false;

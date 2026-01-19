@@ -83,7 +83,7 @@ namespace gradido {
 				auto finalBalance = c.fromEnd(
 					sender.getPublicKey(),
 					mConfirmedAt, // calculate decay after last transaction balance until confirmation date
-					sender.getCommunityId(),
+					sender.getCoinCommunityIdIndex(),
 					previousConfirmedTransaction.getId() // calculate until this transaction nr
 				);
 					

@@ -45,8 +45,8 @@ namespace gradido {
 						.setInvolvedPublicKey(publicKey)
 						.setSearchDirection(SearchDirection::DESC)
 						.setMaxTransactionNr(maxTransactionNr)
-						.setFilterFunction([publicKey](const TransactionEntry& entry) -> FilterResult {
-							if (entry.getConfirmedTransaction()->hasAccountBalance(*publicKey)) {
+						.setFilterFunction([&](const TransactionEntry& entry) -> FilterResult {
+							if (entry.getConfirmedTransaction()->hasAccountBalance(*publicKey, mBlockchain->getCommunityIdIndex())) {
 								return FilterResult::USE | FilterResult::STOP;
 							}
 							return FilterResult::DISMISS;

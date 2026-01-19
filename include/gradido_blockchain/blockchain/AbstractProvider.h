@@ -6,6 +6,7 @@
 #include "gradido_blockchain/memory/Block.h"
 
 #include <memory>
+#include <string>
 
 namespace gradido {
 	namespace blockchain {
@@ -13,33 +14,13 @@ namespace gradido {
 		class AbstractProvider
 		{
 		public:
-			AbstractProvider() : mCommunityIdDicitionary("CommunityId") {}
+			AbstractProvider() = default;
 			virtual ~AbstractProvider() {}
-			virtual std::shared_ptr<Abstract> findBlockchain(std::string_view communityId) = 0;
-
-			// access community id index
-			inline std::optional<uint32_t> getCommunityIdIndex(const std::string& communityId);
-			inline std::optional<uint32_t> getCommunityIdIndex(std::string_view communityId);
-			inline std::optional<std::string> getCommunityIdString(uint32_t index);
-		protected: 
-			// TODO: move into overall provider if different providers in a system should be supported at the same time
-			RuntimeDictionary<std::string> mCommunityIdDicitionary;
+			// return nullptr if not found
+			virtual std::shared_ptr<Abstract> findBlockchain(uint32_t communityIdIndex) const = 0;
+			// create new if not found
+			virtual std::shared_ptr<Abstract> findBlockchain(const std::string& communityId) = 0;
 		};
-
-		std::optional<uint32_t> AbstractProvider::getCommunityIdIndex(const std::string& communityId)
-		{
-			return mCommunityIdDicitionary.getIndexForData(communityId).value();
-		}
-
-		std::optional<uint32_t> AbstractProvider::getCommunityIdIndex(std::string_view communityId)
-		{
-			return getCommunityIdIndex(std::string(communityId));
-		}
-
-		std::optional<std::string> AbstractProvider::getCommunityIdString(uint32_t index)
-		{
-			return mCommunityIdDicitionary.getDataForIndex(index).value();
-		}
 
 		class GroupNotFoundException : public GradidoBlockchainException
 		{

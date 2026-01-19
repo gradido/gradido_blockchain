@@ -22,7 +22,7 @@ namespace gradido {
 			// default is no pagination, result all 
 			inline FilterBuilder& setPagination(Pagination pagination) { mFilter.pagination = pagination; return *this;}
 			// default is nullptr, don't filter for coin color
-			inline FilterBuilder& setCoinCommunityId(std::string_view coinCommunityId) { mFilter.coinCommunityId = coinCommunityId; return *this; }
+			inline FilterBuilder& setCoinCommunityIdIndex(std::optional<uint32_t> coinCommunityIdIndex) { mFilter.coinCommunityIdIndex = coinCommunityIdIndex; return *this; }
 			// default is zero, don't filter for date
 			inline FilterBuilder& setTimepointInterval(TimepointInterval timepointInterval) { mFilter.timepointInterval = timepointInterval; return *this; }
 			// default is none, don't filter for transaction type

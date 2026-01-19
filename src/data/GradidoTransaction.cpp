@@ -15,7 +15,7 @@ namespace gradido {
 			}
 
 			deserialize::Context c(mBodyBytes, deserialize::Type::TRANSACTION_BODY);
-			c.run();
+			c.run(mCommunityIdIndex);
 			if (!c.isTransactionBody()) {
 				throw GradidoNullPointerException("cannot deserialize from body bytes", "TransactionBody", __FUNCTION__);
 			}

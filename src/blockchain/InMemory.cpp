@@ -29,10 +29,10 @@ namespace gradido {
 	using namespace interaction;
 
 	namespace blockchain {
-		InMemory::InMemory(string_view communityId)
-			: Abstract(communityId), 
-			mPublicKeyDirectory(std::string(communityId) + std::string("_publicKeyDictionary")),
-			mTransactionsIndex(getProvider()), mSortedDirty(false), mExitCalled(false)
+		InMemory::InMemory(string_view uniqueCommunityAlias, uint32_t communityIdÍndex)
+			: Abstract(communityIdÍndex),
+			mPublicKeyDirectory(std::string(uniqueCommunityAlias) + std::string("_publicKeyDictionary")),
+			mTransactionsIndex(), mSortedDirty(false), mExitCalled(false)
 		{
 
 		}
@@ -61,7 +61,7 @@ namespace gradido {
 			const data::LedgerAnchor& ledgerAnchor,
 			Timestamp confirmedAt
 		) {
-			auto blockchain = getProvider()->findBlockchain(mCommunityId);
+			auto blockchain = getProvider()->findBlockchain(mCommunityIdIndex);
 			confirmTransaction::Context context(blockchain);
 			auto role = context.createRole(gradidoTransaction, ledgerAnchor, confirmedAt);
 			if (!role) {
@@ -75,7 +75,7 @@ namespace gradido {
 					__FUNCTION__
 				);
 			}
-			auto transactionEntry = std::make_shared<TransactionEntry>(confirmedTransaction);
+			auto transactionEntry = std::make_shared<TransactionEntry>(confirmedTransaction, mCommunityIdIndex);
 			pushTransactionEntry(transactionEntry);
 			mTransactionFingerprintTransactionEntry.insert({ *confirmedTransaction->getGradidoTransaction()->getFingerprint(), transactionEntry });
 			role->runPastAddToBlockchain(confirmedTransaction, blockchain);
@@ -87,7 +87,7 @@ namespace gradido {
 			const data::LedgerAnchor& ledgerAnchor,
 			std::vector<data::AccountBalance> accountBalances
 		) {
-			auto blockchain = getProvider()->findBlockchain(mCommunityId);
+			auto blockchain = getProvider()->findBlockchain(mCommunityIdIndex);
 			confirmTransaction::Context context(blockchain);
 			auto role = context.createRole(
 				gradidoTransaction,
@@ -106,7 +106,7 @@ namespace gradido {
 					__FUNCTION__
 				);
 			}
-			auto transactionEntry = std::make_shared<TransactionEntry>(confirmedTransaction);
+			auto transactionEntry = std::make_shared<TransactionEntry>(confirmedTransaction, mCommunityIdIndex);
 			pushTransactionEntry(transactionEntry);
 			mTransactionFingerprintTransactionEntry.insert({ *confirmedTransaction->getGradidoTransaction()->getFingerprint(), transactionEntry });
 			role->runPastAddToBlockchain(confirmedTransaction, blockchain);

@@ -12,11 +12,12 @@ namespace gradido {
             class GradidoTransferRole
             {
             public:
-                GradidoTransferRole(const GradidoTransferMessage& gradidoTransfer);
+                GradidoTransferRole(const GradidoTransferMessage& gradidoTransfer, uint32_t communityIdIndex);
                 ~GradidoTransferRole() {}
                 std::unique_ptr<data::GradidoTransfer> run() const;
             protected:
                 const GradidoTransferMessage& mGradidoTransferMessage;
+                uint32_t mCommunityIdIndex;
             };
         }
     }

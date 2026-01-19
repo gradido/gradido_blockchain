@@ -89,24 +89,24 @@ namespace gradido {
 			return hash;
 		}
 
-		bool ConfirmedTransaction::hasAccountBalance(const memory::Block& publicKey) const
+		bool ConfirmedTransaction::hasAccountBalance(const memory::Block& publicKey, uint32_t communityIdIndex) const
 		{
 			for (auto& accountBalance : mAccountBalances) {
-				if (publicKey.isTheSame(accountBalance.getPublicKey())) {
-					return true;
+				if (accountBalance.isTheSame(accountBalance)) { 
+					return true; 
 				}
 			}
 			return false;
 		}
 
-		AccountBalance ConfirmedTransaction::getAccountBalance(memory::ConstBlockPtr publicKey, const std::string& communityId) const
+		AccountBalance ConfirmedTransaction::getAccountBalance(memory::ConstBlockPtr publicKey, uint32_t communityIdIndex) const
 		{
 			for (auto& accountBalance : mAccountBalances) {
-				if (accountBalance.getPublicKey()->isTheSame(publicKey) && accountBalance.getCommunityId().compare(communityId) == 0) {
+				if (accountBalance.isTheSame(accountBalance)) {
 					return accountBalance;
 				}
 			}
-			return AccountBalance(publicKey, GradidoUnit::zero(), communityId);
+			return AccountBalance(publicKey, GradidoUnit::zero(), communityIdIndex);
 		}
 
 		bool ConfirmedTransaction::isInvolved(const memory::Block& publicKey) const

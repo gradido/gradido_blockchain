@@ -12,7 +12,7 @@ namespace gradido {
             class TransferAmountRole
             {
             public:
-                TransferAmountRole(const TransferAmountMessage& transferAmount);
+                TransferAmountRole(const TransferAmountMessage& transferAmount, uint32_t communityIdIndex);
                 ~TransferAmountRole() {};
                 inline operator const data::TransferAmount&() const { return *mTransferAmount.get(); }
                 inline const data::TransferAmount& data() const { return *mTransferAmount.get(); }

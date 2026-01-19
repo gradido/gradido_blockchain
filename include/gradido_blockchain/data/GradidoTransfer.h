@@ -24,7 +24,6 @@ namespace gradido {
 			}
 
 			inline const TransferAmount& getSender() const { return mSender; }
-			inline void updateCoinColor(const std::string& communityId) { mSender.updateCoinColor(communityId); }
 			inline memory::ConstBlockPtr getRecipient() const { return mRecipient; }
 
 		protected:

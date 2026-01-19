@@ -1,3 +1,4 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/const.h"
@@ -139,7 +140,7 @@ namespace gradido {
 			}
 			shared_ptr<blockchain::Abstract> AbstractRole::findBlockchain(
 				blockchain::AbstractProvider* blockchainProvider,
-				string_view communityId,
+				const std::string& communityId,
 				const char* callerFunction
 			) {
 				if (!blockchainProvider) {

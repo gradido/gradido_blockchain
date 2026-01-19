@@ -16,7 +16,8 @@ namespace gradido {
 			class TransactionBodyRole: public AbstractRole
 			{
 			public:
-				TransactionBodyRole(const data::TransactionBody& body) : mBody(body) {}
+				TransactionBodyRole(const data::TransactionBody& body) 
+					: mBody(body) {}
 				~TransactionBodyRole() {};
 
 				RUM_IMPLEMENTATION

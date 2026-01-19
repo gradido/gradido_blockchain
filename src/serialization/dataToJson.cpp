@@ -1,3 +1,4 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/data/AccountBalance.h"
 #include "gradido_blockchain/data/CommunityFriendsUpdate.h"
@@ -25,6 +26,7 @@
 
 using namespace rapidjson;
 using namespace gradido::data;
+using gradido::g_appContext;
 
 namespace serialization {
 
@@ -32,9 +34,9 @@ namespace serialization {
 	DEFINE_TO_JSON(TransferAmount, {
 		obj.AddMember("pubkey", toJson(value.getPublicKey(), alloc), alloc);
 		obj.AddMember("amount", toJson(value.getAmount(), alloc), alloc);
-		auto communityId = value.getCommunityId();
-		if (!communityId.empty()) {
-			obj.AddMember("communityId", toJson(communityId, alloc), alloc);
+		auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(value.getCoinCommunityIdIndex());
+		if (communityIdOptional.has_value()) {
+			obj.AddMember("coinCommunityId", toJson(communityIdOptional.value(), alloc), alloc);
 		}
 	})
 
@@ -47,9 +49,9 @@ namespace serialization {
 	DEFINE_TO_JSON(AccountBalance, {
 		obj.AddMember("pubkey", toJson(value.getPublicKey(), alloc), alloc);
 		obj.AddMember("balance", toJson(value.getBalance(), alloc), alloc);
-		auto communityId = value.getCommunityId();
-		if (!communityId.empty()) {
-			obj.AddMember("communityId", toJson(communityId, alloc), alloc);
+		auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(value.getCoinCommunityIdIndex());
+		if (communityIdOptional.has_value()) {
+			obj.AddMember("coinCommunityId", toJson(communityIdOptional.value(), alloc), alloc);
 		}
 	})
 

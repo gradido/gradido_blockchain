@@ -13,7 +13,7 @@ namespace gradido {
 			class TransactionBodyRole
 			{
 			public:
-				TransactionBodyRole(const TransactionBodyMessage& bodyMessage);
+				TransactionBodyRole(const TransactionBodyMessage& bodyMessage, uint32 communityIdIndex);
 				~TransactionBodyRole();
 
 				inline data::TransactionBody& getBody() { return *mTransactionBody; }

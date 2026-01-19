@@ -46,7 +46,7 @@ namespace gradido {
         //! \return valid blockchain pointer
         std::shared_ptr<blockchain::Abstract> findBlockchain(
           blockchain::AbstractProvider* blockchainProvider,
-          std::string_view communityId,
+          const std::string& communityId,
           const char* callerFunction
         );
 

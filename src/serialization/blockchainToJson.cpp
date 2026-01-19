@@ -24,7 +24,9 @@ namespace serialization {
 		obj.AddMember("updatedBalancePublicKey", toJson(value.updatedBalancePublicKey, alloc), alloc);
 		obj.AddMember("searchDirection", toJson(value.searchDirection, alloc), alloc);
 		obj.AddMember("pagination", toJson(value.pagination, alloc), alloc);
-		obj.AddMember("coinCommunityId", toJson(value.coinCommunityId, alloc), alloc);
+		if (value.coinCommunityIdIndex.has_value()) {
+			obj.AddMember("coinCommunityIdIndex", value.coinCommunityIdIndex.value(), alloc);
+		}
 		obj.AddMember("timepointInterval", toJson(value.timepointInterval, alloc), alloc);
 		obj.AddMember("transactionType", toJson(value.transactionType, alloc), alloc);
 		obj.AddMember("filterFunction", value.filterFunction != nullptr, alloc);

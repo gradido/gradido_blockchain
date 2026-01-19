@@ -72,16 +72,20 @@ namespace gradido {
                 memory::ConstBlockPtr publicKey,
                 uint64_t maxTransactionNr,
                 GradidoUnit amount,
-                const std::string& communityId
+                uint32_t coinCommunityIdIndex
             ) const 
             {
                 FilterBuilder builder;
                 GradidoUnit previousDecayedAccountBalance;
                 auto f = Filter::lastBalanceFor(publicKey);
-                f.coinCommunityId = communityId;
+                f.coinCommunityIdIndex = coinCommunityIdIndex;
                 const auto& lastBalanceChangingTransaction = mBlockchain->findOne(f);
                 if (lastBalanceChangingTransaction) {
-                    previousDecayedAccountBalance = lastBalanceChangingTransaction->getConfirmedTransaction()->getDecayedAccountBalance(publicKey, communityId, mConfirmedAt);
+                    previousDecayedAccountBalance = lastBalanceChangingTransaction->getConfirmedTransaction()->getDecayedAccountBalance(
+                      publicKey, 
+                      coinCommunityIdIndex,
+                      mConfirmedAt
+                    );
                 }
                 GradidoUnit newBalance = previousDecayedAccountBalance + amount;
                 if (newBalance < GradidoUnit::zero()) {
@@ -95,7 +99,7 @@ namespace gradido {
                         newBalance = GradidoUnit::zero();
                     }
                 }
-                return AccountBalance(publicKey, newBalance, communityId);
+                return AccountBalance(publicKey, newBalance, coinCommunityIdIndex);
             }
         }
     }

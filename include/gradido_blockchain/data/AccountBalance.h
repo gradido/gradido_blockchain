@@ -3,6 +3,7 @@
 
 #include "gradido_blockchain/GradidoUnit.h"
 #include <string>
+#include <optional>
 
 namespace memory {
     class Block;
@@ -16,18 +17,18 @@ namespace gradido {
         public:
             // empty constructor needed for swig
             AccountBalance();
-            AccountBalance(memory::ConstBlockPtr publicKey, GradidoUnit balance, const std::string& communityId);
+            AccountBalance(memory::ConstBlockPtr publicKey, GradidoUnit balance, uint32_t communityIdIndex);
             ~AccountBalance();
 
             inline memory::ConstBlockPtr getPublicKey() const { return mPublicKey; }
             inline GradidoUnit getBalance() const { return mBalance; }
-            inline const std::string& getCommunityId() const { return mCommunityId; }
+            inline uint32_t getCoinCommunityIdIndex() const { return mCoinCommunityIdIndex; }
             inline bool isTheSame(const AccountBalance& other) const;
 
         protected:
             memory::ConstBlockPtr mPublicKey;
             GradidoUnit mBalance;
-            std::string mCommunityId; // empty for home community
+            uint32_t mCoinCommunityIdIndex;
         };
        
         bool AccountBalance::isTheSame(const AccountBalance& other) const
@@ -38,13 +39,9 @@ namespace gradido {
             if (mBalance != other.mBalance) {
                 return false;
             }
-            if (!mCommunityId.empty() || !other.mCommunityId.empty()) {
-                throw GradidoNotImplementedException("comparing AccountBalances between foreign and home community");
-            }
-            // TODO: think about a way for getting correct community id for home community
-            /*if (mCommunityId != other.mCommunityId) {
+            if (mCoinCommunityIdIndex != other.mCoinCommunityIdIndex) {
                 return false;
-            }*/
+            }
             return true;
         }
     }

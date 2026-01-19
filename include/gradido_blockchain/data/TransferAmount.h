@@ -13,12 +13,12 @@ namespace gradido {
 			TransferAmount(
 				memory::ConstBlockPtr pubkeyPtr,
 				const GradidoUnit& amount,
-				const std::string& communityId = ""
+				uint32_t coinCommunityIdIndex
 			);
 			~TransferAmount() {}
 
 			inline bool operator==(const TransferAmount& other) const {
-				return mPublicKey && mPublicKey->isTheSame(other.mPublicKey) && mAmount == other.mAmount && mCommunityId == other.mCommunityId;
+				return mPublicKey && mPublicKey->isTheSame(other.mPublicKey) && mAmount == other.mAmount && mCoinCommunityIdIndex == other.mCoinCommunityIdIndex;
 			}
 			inline bool isPairing(const TransferAmount& other) const {
 				return mPublicKey && mPublicKey->isTheSame(other.mPublicKey)
@@ -26,14 +26,12 @@ namespace gradido {
 			}
 			inline memory::ConstBlockPtr getPublicKey() const { return mPublicKey; }
 			inline GradidoUnit getAmount() const { return mAmount; }
-			inline const std::string& getCommunityId() const { return mCommunityId; }
-
-			inline void updateCoinColor(const std::string& communityId) { mCommunityId = communityId; }
+			inline uint32_t getCoinCommunityIdIndex() const { return mCoinCommunityIdIndex; }
 
 		protected:
 			memory::ConstBlockPtr mPublicKey;
 			GradidoUnit mAmount;
-			std::string mCommunityId;
+			uint32_t mCoinCommunityIdIndex;
 		};
 	}
 }

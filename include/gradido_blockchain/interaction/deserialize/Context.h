@@ -58,6 +58,7 @@ namespace gradido {
 				Context(memory::ConstBlockPtr rawData, Type hint = Type::UNKNOWN)
 					: mData(rawData), mType(hint) {}
 				~Context();
+				void run(uint32_t communityIdIndex);
 				void run();
 
 				inline bool isGradidoTransaction() const { return Type::GRADIDO_TRANSACTION == mType; }

@@ -14,7 +14,7 @@ namespace gradido {
 	namespace interaction {
 		namespace deserialize {
 
-			ConfirmedTransactionRole::ConfirmedTransactionRole(const ConfirmedTransactionMessage& message)
+			ConfirmedTransactionRole::ConfirmedTransactionRole(const ConfirmedTransactionMessage& message, uint32_t communityIdIndex)
 			{
 				const char* exceptionMessage = "missing member on deserialize confirmed transaction";
 				ConstBlockPtr messageId = nullptr;
@@ -39,7 +39,7 @@ namespace gradido {
 				if (accountBalanceMessages.size()) {
 					accountBalances.reserve(accountBalanceMessages.size());
 					for (int i = 0; i < accountBalanceMessages.size(); i++) {
-						accountBalances.push_back(AccountBalanceRole(accountBalanceMessages[i]));
+						accountBalances.push_back(AccountBalanceRole(accountBalanceMessages[i], communityIdIndex));
 					}
 				}
 				mConfirmedTransaction = std::make_shared<data::ConfirmedTransaction>(

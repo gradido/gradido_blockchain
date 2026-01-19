@@ -1,3 +1,4 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 #include "gradido_blockchain/data/AddressType.h"
@@ -436,32 +437,35 @@ namespace gradido {
 		checkBuildState(BuildingState::BUILDING_BODY);
 		// the context use a reference to TransactionBody, so it can be changed afterwards
 		interaction::serialize::Context serializer(*mBody);
+		auto senderCommunityIdIndexOptional = g_appContext->getCommunityIds().getIndexForData(mSenderCommunity);
+		uint32_t senderCommunityIdIndex = 0;
+		if (!senderCommunityIdIndexOptional.has_value()) {
+			throw GradidoTransactionBuilderException("couldn't get index for sender community");
+		}
+		senderCommunityIdIndex = senderCommunityIdIndexOptional.value();
+
 		mBodyByteSignatureMaps.push_back(BodyBytesSignatureMap());
 		if (isCrossCommunityTransaction()) {
 			mState = BuildingState::CROSS_COMMUNITY;
 			// prepare outbound body
 			mBody->mType = CrossGroupType::OUTBOUND;
 			mBody->mOtherGroup = mRecipientCommunity;
-			mBodyByteSignatureMaps[0].bodyBytes = serializer.run();
+			mBodyByteSignatureMaps[0].bodyBytes = serializer.run(senderCommunityIdIndex);
 
 			// prepare inbound body
+			auto recipientCommunityIdIndexOptional = g_appContext->getCommunityIds().getIndexForData(mRecipientCommunity);
+			if (!recipientCommunityIdIndexOptional.has_value()) {
+				throw GradidoTransactionBuilderException("couldn't get index for recipient community");
+			}
 			mBody->mType = CrossGroupType::INBOUND;
 			mBody->mOtherGroup = mSenderCommunity;
-			if (mBody->isTransfer() || mBody->isRedeemDeferredTransfer()) {
-				// update coin color for outbound transaction
-				std::string coinColorCommunityId = mBody->getTransferAmount().getCommunityId();
-				if (coinColorCommunityId.empty()) {
-					coinColorCommunityId = mSenderCommunity;
-				}
-				mBody->updateCoinColor(mSenderCommunity);
-			}
 			mBodyByteSignatureMaps.push_back(BodyBytesSignatureMap());
-			mBodyByteSignatureMaps[1].bodyBytes = serializer.run();
+			mBodyByteSignatureMaps[1].bodyBytes = serializer.run(recipientCommunityIdIndexOptional.value());
 		}
 		else {
 			mState = BuildingState::LOCAL;
 			mBody->mType = CrossGroupType::LOCAL;
-			mBodyByteSignatureMaps[0].bodyBytes = serializer.run();
+			mBodyByteSignatureMaps[0].bodyBytes = serializer.run(senderCommunityIdIndex);
 		}
 	}
 

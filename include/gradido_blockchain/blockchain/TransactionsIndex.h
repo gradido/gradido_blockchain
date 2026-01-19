@@ -34,7 +34,7 @@ namespace gradido {
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionsIndex
 		{
 		public:
-			TransactionsIndex(AbstractProvider* blockchainProvider);
+			TransactionsIndex();
 			~TransactionsIndex();
 
 			void reset();
@@ -71,7 +71,7 @@ namespace gradido {
 		protected:
 			bool addIndicesForTransaction(
 				gradido::data::TransactionType transactionType,
-				std::optional<uint32_t> coinCommunityIdIndex,
+				uint32_t coinCommunityIdIndex,
 				date::year year,
 				date::month month,
 				uint64_t transactionNr,
@@ -87,7 +87,7 @@ namespace gradido {
 			{
 				uint64_t						transactionNr;
 				uint32_t*						addressIndices;
-				std::optional<uint32_t>			coinCommunityIdIndex;
+				uint32_t 						coinCommunityIdIndex;
 				gradido::data::TransactionType	transactionType;
 				uint8_t							addressIndiceCount;
 				// Bitmask for addressIndices, if bit is set, transaction has changed account balance of addressIndex
@@ -95,14 +95,12 @@ namespace gradido {
 				gradido::blockchain::FilterResult isMatchingFilter(
 					const gradido::blockchain::Filter& filter, 
 					const uint32_t publicKeyIndex,
-					const uint32_t balanceChangingIndex,
-					gradido::blockchain::AbstractProvider* blockchainProvider
+					const uint32_t balanceChangingIndex
 				) const;
 			};
 			// is used like a cache, even from const
 			mutable AddressIndex mAddressIndex;
 			std::map<uint32_t, data::AddressType> mPublicKeyAddressTypes;
-			AbstractProvider* mBlockchainProvider;
 			// TODO: check if replace std::list<std::vector> with std::deque make sense (performance side)
 			// TODO: check if flatten maps to std::vector<FlatTransactionsIndexEntry> mEntries[month * years] make sense
 			std::map<date::year, std::map<date::month, std::list<std::vector<TransactionsIndexEntry>>>> mYearMonthAddressIndexEntries;

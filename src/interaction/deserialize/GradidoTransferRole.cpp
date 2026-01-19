@@ -6,14 +6,14 @@
 namespace gradido {
     namespace interaction {
         namespace deserialize {
-			GradidoTransferRole::GradidoTransferRole(const GradidoTransferMessage& gradidoTransfer)
-				: mGradidoTransferMessage(gradidoTransfer)
+			GradidoTransferRole::GradidoTransferRole(const GradidoTransferMessage& gradidoTransfer, uint32_t communityIdIndex)
+				: mGradidoTransferMessage(gradidoTransfer), mCommunityIdIndex(communityIdIndex)
 			{
 
 			}
 
 			std::unique_ptr<data::GradidoTransfer> GradidoTransferRole::run() const
-            {
+      {
 				const char* exception = "missing member on deserialize GradidoTransfer";
 				if (!mGradidoTransferMessage["sender"_f].has_value()) {
 					throw MissingMemberException(exception, "sender");
@@ -22,10 +22,10 @@ namespace gradido {
 					throw MissingMemberException(exception, "recipient");
 				}
 				return std::make_unique<data::GradidoTransfer>(
-					TransferAmountRole(mGradidoTransferMessage["sender"_f].value()).data(),
+					TransferAmountRole(mGradidoTransferMessage["sender"_f].value(), mCommunityIdIndex).data(),
 					std::make_shared<memory::Block>(mGradidoTransferMessage["recipient"_f].value())
 				);
-            }
-        }
+				}
+      }
     }
 }

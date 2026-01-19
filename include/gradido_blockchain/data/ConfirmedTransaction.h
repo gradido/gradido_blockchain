@@ -50,12 +50,12 @@ namespace gradido {
 			inline memory::ConstBlockPtr getRunningHash() const { return mRunningHash; }
 			inline const LedgerAnchor& getLedgerAnchor() const { return mLedgerAnchor; }
 			inline const std::vector<AccountBalance>& getAccountBalances() const { return mAccountBalances; }
-			bool hasAccountBalance(const memory::Block& publicKey) const;
+			bool hasAccountBalance(const memory::Block& publicKey, uint32_t communityIdIndex) const;
 			//! \return accountBalance if found one with same public key or an new empty AccountBalance with this public key
-			AccountBalance getAccountBalance(memory::ConstBlockPtr publicKey, const std::string& communityId) const;
+			AccountBalance getAccountBalance(memory::ConstBlockPtr publicKey, uint32_t communityIdIndex) const;
 			inline GradidoUnit getDecayedAccountBalance(
 				memory::ConstBlockPtr publicKey,
-				const std::string& communityId,
+				uint32_t coinCommunityIdIndex,
 				Timepoint endDate = std::chrono::system_clock::now()
 			) const;
 			BalanceDerivationType getBalanceDerivationType() const { return mBalanceDerivationType; }
@@ -85,10 +85,10 @@ namespace gradido {
 
 		GradidoUnit ConfirmedTransaction::getDecayedAccountBalance(
 			memory::ConstBlockPtr publicKey,
-			const std::string& communityId,
+			uint32_t coinCommunityIdIndex,
 			Timepoint endDate/* = std::chrono::system_clock::now()*/
 		) const {
-			return getAccountBalance(publicKey, communityId).getBalance().calculateDecay(mConfirmedAt, endDate);
+			return getAccountBalance(publicKey, coinCommunityIdIndex).getBalance().calculateDecay(mConfirmedAt, endDate);
 		}
 
 

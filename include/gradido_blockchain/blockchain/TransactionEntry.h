@@ -1,6 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_TRANSACTION_ENTRY_H
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_TRANSACTION_ENTRY_H
 
+#include "gradido_blockchain/types.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/TransactionType.h"
 
@@ -8,9 +9,12 @@
 
 #include <vector>
 #include <list>
+#include <optional>
 
 namespace gradido {
 	namespace blockchain {
+
+		class AbstractProvider;
 
 		/*!
 		* @author Dario Rekowski
@@ -24,14 +28,17 @@ namespace gradido {
 		{
 		public:
 			TransactionEntry()
-				: mTransactionNr(0), mMonth(0), mYear(0), mTransactionType(data::TransactionType::NONE) {}
+				: mTransactionNr(0), mMonth(0), mYear(0), mTransactionType(data::TransactionType::NONE), mBlockchainCommunityIdIndex(0) {}
 
 			//! \brief init entry object from serialized transaction, deserialize transaction to get infos
-			TransactionEntry(memory::ConstBlockPtr serializedTransaction);
+			TransactionEntry(memory::ConstBlockPtr serializedTransaction, uint32_t blockchainCommunityIdIndex);
+			TransactionEntry(data::ConstConfirmedTransactionPtr confirmedTransaction, uint32_t blockchainCommunityIdIndex);
 
-			TransactionEntry(data::ConstConfirmedTransactionPtr confirmedTransaction);
-
-			TransactionEntry(memory::ConstBlockPtr serializedTransaction, data::ConstConfirmedTransactionPtr confirmedTransaction);
+			TransactionEntry(
+				memory::ConstBlockPtr serializedTransaction, 
+				data::ConstConfirmedTransactionPtr confirmedTransaction, 
+				uint32_t blockchainCommunityIdIndex
+			);
 
 			//! \brief init entry object without indices
 			TransactionEntry(
@@ -39,7 +46,8 @@ namespace gradido {
 				date::month month,
 				date::year year,
 				data::TransactionType transactionType,
-				std::string communityId
+				std::optional<uint32_t> coinCommunityIdIndex,
+			  uint32_t blockchainCommunityIdIndex
 			);
 			virtual ~TransactionEntry() {}
 
@@ -53,8 +61,9 @@ namespace gradido {
 			inline date::month getMonth() const { return mMonth; }
 			inline date::year getYear() const { return mYear; }
 			inline data::TransactionType getTransactionType() const { return mTransactionType; }
-			inline std::string_view getCoinCommunityId() const { return mCoinCommunityId; }
-			static std::string getCoinCommunityId(const data::TransactionBody& body);
+			inline std::optional<uint32_t> getCoinCommunityIdIndex() const { return mCoinCommunityIdIndex; }
+			inline uint32_t getBlockchainCommunityIdIndex() const { return mBlockchainCommunityIdIndex; }
+			static std::optional<uint32_t> getCoinCommunityIdIndex(const data::TransactionBody& body);
 			inline data::ConstTransactionBodyPtr getTransactionBody() const { return getConfirmedTransaction()->getGradidoTransaction()->getTransactionBody(); }
 
 			// default transactions
@@ -73,7 +82,9 @@ namespace gradido {
 			date::month mMonth;
 			date::year mYear;
 			data::TransactionType mTransactionType;
-			std::string mCoinCommunityId;
+			std::optional<uint32_t> mCoinCommunityIdIndex;
+			uint32_t mBlockchainCommunityIdIndex;
+
 			mutable std::mutex mFastMutex;
 			mutable data::ConstConfirmedTransactionPtr mConfirmedTransaction;
 		};

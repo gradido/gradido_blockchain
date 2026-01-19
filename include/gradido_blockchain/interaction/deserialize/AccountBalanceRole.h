@@ -12,7 +12,7 @@ namespace gradido {
             class AccountBalanceRole
             {
             public:
-                AccountBalanceRole(const AccountBalanceMessage& accountBalance);
+                AccountBalanceRole(const AccountBalanceMessage& accountBalance, uint32_t communityIdIndex);
                 inline operator const data::AccountBalance& () const { return mAccountBalance; }
                 inline const data::AccountBalance& data() const { return mAccountBalance; }
             protected:

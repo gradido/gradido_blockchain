@@ -70,19 +70,6 @@ namespace gradido {
 			return isTransfer() || isDeferredTransfer() || isRedeemDeferredTransfer() || isCreation();
 		}
 
-		void TransactionBody::updateCoinColor(const std::string& communityId)
-		{
-			if (isTransfer()) {
-				mTransfer->updateCoinColor(communityId);
-			}
-			else if (isRedeemDeferredTransfer()) {
-				mRedeemDeferredTransfer->updateCoinColor(communityId);
-			}
-			else {
-				throw GradidoNodeInvalidDataException("cannnot update coin color for this transaction type");
-			}
-		}
-
 		std::vector<memory::ConstBlockPtr> TransactionBody::getInvolvedAddresses() const
 		{
 			if (isCommunityFriendsUpdate()) return {};
