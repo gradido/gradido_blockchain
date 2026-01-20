@@ -107,12 +107,11 @@ namespace gradido {
 		GradidoTransactionBuilder& setTransactionBody(std::unique_ptr<data::TransactionBody> body);
 
 		GradidoTransactionBuilder& setTransactionBody(memory::ConstBlockPtr bodyBytes);
-		//! set sender community for cross community transaction
 		//! Outbound transaction goes onto sender community blockchain and mark the starting point of transaction
-		GradidoTransactionBuilder& setSenderCommunity(const std::string& senderCommunity);
+		GradidoTransactionBuilder& setSenderCommunity(const std::string& senderCommunityId);
 		//! set recipient community for cross community transaction
 		//! Inbound transaction goes onto recipient community blockchain and mark the end point of transaction
-		GradidoTransactionBuilder& setRecipientCommunity(const std::string& recipientCommunity);
+		GradidoTransactionBuilder& setRecipientCommunity(const std::string& recipientCommunityId);
 		GradidoTransactionBuilder& sign(std::shared_ptr<KeyPairEd25519> keyPair);
 		//! \param paringMessageId usually only for cross community transactions, the iota message id of outbound transaction
 		GradidoTransactionBuilder& setParentLedgerAnchor(const data::LedgerAnchor& ledgerAnchor);
@@ -143,8 +142,8 @@ namespace gradido {
 
 		BuildingState mState;
 		std::unique_ptr<data::TransactionBody> mBody;
-		std::string mSenderCommunity;
-		std::string mRecipientCommunity;
+		std::optional<uint32_t> mSenderCommunityIdIndex;
+		std::optional<uint32_t> mRecipientCommunityIdIndex;
 		// for local transaction it contain only one entry
 		// for cross group transaction it contain outbound on index = 0 and inbound on index = 1
 		std::vector<BodyBytesSignatureMap> mBodyByteSignatureMaps;

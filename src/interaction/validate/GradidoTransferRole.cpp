@@ -23,8 +23,8 @@ namespace gradido {
 	namespace interaction {
 		namespace validate {
 
-			GradidoTransferRole::GradidoTransferRole(shared_ptr<const GradidoTransfer> gradidoTransfer, string_view otherCommunity)
-				: mGradidoTransfer(gradidoTransfer), mOtherCommunity(otherCommunity), mCrossGroupType(data::CrossGroupType::LOCAL)
+			GradidoTransferRole::GradidoTransferRole(shared_ptr<const GradidoTransfer> gradidoTransfer)
+				: mGradidoTransfer(gradidoTransfer), mCrossGroupType(data::CrossGroupType::LOCAL)
 			{
 				assert(gradidoTransfer);
 				// prepare for signature check

@@ -20,13 +20,16 @@
 #include "gradido_blockchain/data/TimestampSeconds.h"
 #include "gradido_blockchain/data/TransferAmount.h"
 #include "gradido_blockchain/data/TransactionTriggerEvent.h"
+#include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/serialization/toJson.h"
 
 #include "magic_enum/magic_enum.hpp"
+#include <string>
 
 using namespace rapidjson;
 using namespace gradido::data;
 using gradido::g_appContext;
+using std::to_string;
 
 namespace serialization {
 
@@ -147,9 +150,13 @@ namespace serialization {
 		obj.AddMember("createdAt", toJson(value.getCreatedAt().getAsTimepoint(), alloc), alloc);
 		obj.AddMember("versionNumber", toJson(value.getVersionNumber(), alloc), alloc);
 		obj.AddMember("type", toJson(value.getType(), alloc), alloc);
-		auto otherGroup = value.getOtherGroup();
-		if (!otherGroup.empty()) {
-			obj.AddMember("otherGroup", toJson(otherGroup, alloc), alloc);
+		auto otherCommunityIdIndex = value.getOtherCommunityIdIndex();
+		if (otherCommunityIdIndex.has_value()) {
+			auto otherCommunityIdString = g_appContext->getCommunityIds().getDataForIndex(otherCommunityIdIndex.value());
+			if (!otherCommunityIdString.has_value()) {
+				throw DictionaryMissingEntryException("couldn't find communityId", to_string(otherCommunityIdIndex.value()));
+			}
+			obj.AddMember("otherCommunity", toJson(otherCommunityIdString.value(), alloc), alloc);
 		}
 		switch (value.getTransactionType()) {
 		case TransactionType::TRANSFER: 

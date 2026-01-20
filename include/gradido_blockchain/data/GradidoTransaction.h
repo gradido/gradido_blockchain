@@ -42,6 +42,7 @@ namespace gradido {
 			inline const SignatureMap& getSignatureMap() const { return mSignatureMap; }
 			inline SignatureMap& getSignatureMap() { return mSignatureMap; }
 			inline memory::ConstBlockPtr getBodyBytes() const { return mBodyBytes; }
+			inline uint32_t getCommunityIdIndex() const { return mCommunityIdIndex; }
 			inline const LedgerAnchor& getPairingLedgerAnchor() const { return mPairingLedgerAnchor; }
 
 		protected:

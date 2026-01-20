@@ -3,7 +3,6 @@
 
 #include "gradido_blockchain/GradidoUnit.h"
 #include <string>
-#include <optional>
 
 namespace memory {
     class Block;

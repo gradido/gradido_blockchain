@@ -140,7 +140,7 @@ namespace gradido {
 			}
 			shared_ptr<blockchain::Abstract> AbstractRole::findBlockchain(
 				blockchain::AbstractProvider* blockchainProvider,
-				const std::string& communityId,
+				uint32_t communityIdIndex,
 				const char* callerFunction
 			) {
 				if (!blockchainProvider) {
@@ -150,9 +150,9 @@ namespace gradido {
 						callerFunction
 					);
 				}
-				auto blockchain = blockchainProvider->findBlockchain(communityId);
+				auto blockchain = blockchainProvider->findBlockchain(communityIdIndex);
 				if (!blockchain) {
-					throw CommunityNotFoundException("missing blockchain for interaction::validate", communityId);
+					throw CommunityNotFoundException("missing blockchain for interaction::validate", communityIdIndex);
 				}
 				return blockchain;
 			}

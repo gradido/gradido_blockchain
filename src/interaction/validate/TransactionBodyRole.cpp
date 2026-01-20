@@ -100,21 +100,11 @@ namespace gradido {
 								}
 							}
 						}
-						auto& otherGroup = mBody.getOtherGroup();
-						if (!otherGroup.empty() && !isValidCommunityAlias(otherGroup)) {
-							throw TransactionValidationInvalidInputException(
-								"invalid character, only lowercase english latin letter, numbers and -",
-								"other_group", 
-								"string",
-								COMMUNITY_ID_REGEX_STRING,
-								otherGroup.data()
-							);
-						}
 					}
 
 					auto& specificRole = getSpecificTransactionRole();
-					if (!mBody.getOtherGroup().empty() && c.senderBlockchain) {
-						auto otherBlockchain = findBlockchain(c.senderBlockchain->getProvider(), mBody.getOtherGroup(), __FUNCTION__);
+					if (mBody.getOtherCommunityIdIndex().has_value() && c.senderBlockchain) {
+						auto otherBlockchain = findBlockchain(c.senderBlockchain->getProvider(), mBody.getOtherCommunityIdIndex().value(), __FUNCTION__);
 
 						if (mBody.getType() == CrossGroupType::OUTBOUND) {
 							c.recipientBlockchain = otherBlockchain;
@@ -148,7 +138,7 @@ namespace gradido {
 				}
 
 				if (mBody.isTransfer()) {
-					auto specificRole = make_unique<GradidoTransferRole>(mBody.getTransfer(), mBody.getOtherGroup());
+					auto specificRole = make_unique<GradidoTransferRole>(mBody.getTransfer());
 					specificRole->setCrossGroupType(mBody.getType());
 					mSpecificTransactionRole = std::move(specificRole);
 				}

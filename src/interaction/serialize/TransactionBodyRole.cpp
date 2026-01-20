@@ -16,7 +16,7 @@ namespace gradido {
 			TransactionBodyMessage TransactionBodyRole::getMessage() const
 			{
 				auto createdAt = mBody.getCreatedAt();
-				auto otherGroup = mBody.getOtherGroup();
+				auto otherGroup = mBody.getOtherCommunityIdIndex();
 				TransactionBodyMessage message;	
 				message["memos"_f].reserve(mBody.getMemos().size());
 				for (auto& encryptedMemo : mBody.getMemos()) {
@@ -28,8 +28,8 @@ namespace gradido {
 				message["created_at"_f] = TimestampMessage{ createdAt.getSeconds(), createdAt.getNanos() };
 				message["version_number"_f] = mBody.getVersionNumber();
 				message["type"_f] = mBody.getType();
-				if (otherGroup.size()) {
-					message["other_group"_f] = otherGroup;
+				if (otherGroup.has_value()) {
+					message["other_group"_f] = g_appContext->getCommunityIds().getDataForIndex(otherGroup.value());
 				}
 
 				if (mBody.isCommunityRoot()) 
@@ -158,7 +158,7 @@ namespace gradido {
 			TransferAmountMessage TransactionBodyRole::createTransferAmountMessage(const data::TransferAmount& amount) const
 			{
 				std::string coinCommunityId;
-				if (amount.getCoinCommunityIdIndex() != mBlockchainCommunityIdIndex) {
+				if (amount.getCoinCommunityIdIndex() != mBody.getCommunityIdIndex()) {
 					auto coinCommunityIdOptional = g_appContext->getCommunityIds().getDataForIndex(amount.getCoinCommunityIdIndex());
 					if (!coinCommunityIdOptional.has_value()) {
 						throw DictionaryMissingEntryException(
@@ -177,8 +177,17 @@ namespace gradido {
 
 			size_t TransactionBodyRole::calculateSerializedSize() const
 			{
+				auto otherGroupIdIndex = mBody.getOtherCommunityIdIndex();
+				size_t otherGroupStringSize = 0;
+				if (otherGroupIdIndex.has_value()) {
+					auto otherGroupStringOptional = g_appContext->getCommunityIds().getDataForIndex(otherGroupIdIndex.value());
+					if (!otherGroupStringOptional.has_value()) {
+						throw MissingMemberException("cannot get community id for index", "otherGroup");
+					}
+					otherGroupStringSize = otherGroupStringOptional.value().size();
+				}
 										// timestamp						  // enum
-				auto size = 12 + mBody.getVersionNumber().size() + 1 + mBody.getOtherGroup().size() + 3;
+				auto size = 12 + mBody.getVersionNumber().size() + 1 + otherGroupStringSize + 3;
 				for (auto& encryptedMemo : mBody.getMemos()) {
 					size += 8 + encryptedMemo.getMemo().size();
 				}
@@ -255,12 +264,7 @@ namespace gradido {
 					throw MissingMemberException("missing member by serializing TransferAmount", "amount.pubkey");
 				}
 				size_t coinCommunityStringSize = 0;
-				if (!mBlockchainCommunityIdIndex.has_value()) {
-					GradidoNodeInvalidDataException(
-						"missing blockchainCommunityIdIndex, please call serialize::Context run with blockchainCommunityIdIndex as parameter for TransactionBodyRole"
-					); 
-				}
-				if (amount.getCoinCommunityIdIndex() != mBlockchainCommunityIdIndex.value()) {
+				if (amount.getCoinCommunityIdIndex() != mBody.getCommunityIdIndex()) {
 					auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(amount.getCoinCommunityIdIndex());
 					if (!communityIdOptional.has_value()) {
 						throw DictionaryMissingEntryException(

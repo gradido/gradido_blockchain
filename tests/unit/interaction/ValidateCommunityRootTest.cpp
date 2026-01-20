@@ -22,6 +22,7 @@ TEST(ValidateCommunityRootTest, Valid)
 			g_KeyPairs[1]->getPublicKey(),
 			g_KeyPairs[2]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
 	;
 	auto transaction = builder.build();

@@ -52,9 +52,9 @@ namespace gradido {
 				// check signatures
 				bodyRole.checkRequiredSignatures(mGradidoTransaction.getSignatureMap(), c.senderBlockchain);
 
-				if ((type & Type::PAIRED) == Type::PAIRED && !body->getOtherGroup().empty()) {
+				if ((type & Type::PAIRED) == Type::PAIRED && body->getOtherCommunityIdIndex().has_value()) {
 					assert(c.senderBlockchain);
-					auto otherBlockchain = findBlockchain(c.senderBlockchain->getProvider(), body->getOtherGroup(), __FUNCTION__);
+					auto otherBlockchain = findBlockchain(c.senderBlockchain->getProvider(), body->getOtherCommunityIdIndex().value(), __FUNCTION__);
 					
 					shared_ptr<const TransactionEntry> pairTransactionEntry;
 					switch (body->getType()) {

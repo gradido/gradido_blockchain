@@ -20,7 +20,7 @@ namespace gradido {
       std::unique_ptr<IMutableDictionary<std::string>> communityIds
       // std::unique_ptr<IMutableDictionary<memory::ConstBlockPtr>> publicKeys
     );
-    uint32_t addCommunityId(const std::string& communityId);
+    uint32_t getOrAddCommunityIdIndex(const std::string& communityId);
     inline const IDictionary<std::string>& getCommunityIds() const { return *mCommunityIds; }
     // inline IMutableDictionary<memory::ConstBlockPtr>& getPublicKeys() { return *mPublicKeys; }
   protected:

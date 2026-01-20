@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
+#include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "../KeyPairs.h"
 #include "const.h"
@@ -25,6 +26,7 @@ TEST(ValidateGradidoDeferredTransferTest, Valid) {
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -46,6 +48,7 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoEmpty) {
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -69,6 +72,7 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoToShort) {
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -92,6 +96,7 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoToBig) {
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -116,6 +121,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidAmountZero) {
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -137,6 +143,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidAmountNegative) {
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -146,29 +153,6 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidAmountNegative) {
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
 
-TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityIdIdenticalToBlockchainCommunityId) {
-	GradidoTransactionBuilder builder;
-	builder
-		.addMemo(deferredTransferMemoString)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
-		.setDeferredTransfer(
-			GradidoTransfer(
-				// coin community id is identical to blockchain community id to which transaction belong
-				// not needed so it is a error
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0),
-				g_KeyPairs[5]->getPublicKey()
-			), timeoutDuration
-		)
-		.sign(g_KeyPairs[4])
-	;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isDeferredTransfer());
-
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(validate::Type::SINGLE), validate::TransactionValidationInvalidInputException);
-}
 
 TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityId) {
 	GradidoTransactionBuilder builder;
@@ -183,14 +167,9 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityId) {
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
-		.sign(g_KeyPairs[4])
+		.setSenderCommunity(communityId)
 		;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isDeferredTransfer());
-
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(validate::Type::SINGLE), validate::TransactionValidationInvalidInputException);
+	EXPECT_THROW(builder.sign(g_KeyPairs[4]), DictionaryMissingEntryException);
 }
 
 TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutAboveMaxHardLimit) {
@@ -205,6 +184,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutAboveMaxHardLimit) {
 				g_KeyPairs[5]->getPublicKey()
 			), DurationSeconds(chrono::seconds(7962400))
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -226,6 +206,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutIdenticalToCreatedAt) {
 				g_KeyPairs[5]->getPublicKey()
 			), DurationSeconds(std::chrono::seconds(0))
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -247,6 +228,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutBeforeCreatedAt) {
 				g_KeyPairs[5]->getPublicKey()
 			), DurationSeconds(-chrono::seconds(1))
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();

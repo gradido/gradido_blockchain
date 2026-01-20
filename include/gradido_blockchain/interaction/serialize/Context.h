@@ -51,10 +51,6 @@ namespace gradido {
 
 				~Context() {}
 				inline memory::ConstBlockPtr run() { return mRole->run(); }
-				inline memory::ConstBlockPtr run(uint32_t blockchainCommunityIdIndex) { 
-					mRole->setBlockchainCommunityIdIndex(blockchainCommunityIdIndex);
-					return mRole->run();
-				}
 
 			protected:
 				std::unique_ptr<AbstractRole> mRole;

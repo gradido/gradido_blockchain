@@ -52,7 +52,7 @@ TEST(SerializeTest, HieroTransactionId)
 
 TEST(SerializeTest, TransactionBodyWithoutMemo)
 {
-	TransactionBody body(createdAt, GRADIDO_TRANSACTION_BODY_VERSION_STRING);
+	TransactionBody body(createdAt, GRADIDO_TRANSACTION_BODY_VERSION_STRING, 0);
 	serialize::Context c(body);
 	auto serialized = c.run();
 	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
@@ -71,6 +71,7 @@ TEST(SerializeTest, CommunityRootBody)
 			g_KeyPairs[1]->getPublicKey(),
 			g_KeyPairs[2]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
 	;
 	auto transaction = builder.build();
@@ -96,6 +97,7 @@ TEST(SerializeTest, RegisterAddressBody) {
 			nullptr,
 			g_KeyPairs[4]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
 		.sign(g_KeyPairs[4])
 	;
@@ -118,6 +120,7 @@ TEST(SerializeTest, GradidoCreationBody) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 0),
 			TimestampSeconds(1609459000)
 		)
+		.setRecipientCommunity(communityId)
 		.sign(g_KeyPairs[6])
 	;
 	auto transaction = builder.build();
@@ -139,6 +142,7 @@ TEST(SerializeTest, GradidoTransferBody) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0),
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 	;
 	auto transaction = builder.build();
@@ -163,6 +167,7 @@ TEST(SerializeTest, GradidoDeferredTransferBody) {
 			),
 			timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 	;
 	auto transaction = builder.build();
@@ -180,6 +185,7 @@ TEST(SerializeTest, CommunityFriendsUpdateBody) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setCommunityFriendsUpdate(true)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
 	;
 	auto transaction = builder.build();
@@ -197,7 +203,7 @@ TEST(SerializeTest, GradidoTransaction) {
 	//printf("signature: %s\n", sign->convertToHex().data());
 	SignatureMap signatureMap;
 	signatureMap.push({ g_KeyPairs[3]->getPublicKey(), make_shared<memory::Block>(g_KeyPairs[3]->sign(*bodyBytes))});
-	GradidoTransaction transaction(signatureMap, bodyBytes);
+	GradidoTransaction transaction(signatureMap, bodyBytes, 0);
 
 	serialize::Context c(transaction);
 	auto serialized = c.run();
@@ -239,6 +245,7 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		.setCreatedAt(createdAt)
 		.addMemo(completeTransactionMemoString)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
 		.build();
 

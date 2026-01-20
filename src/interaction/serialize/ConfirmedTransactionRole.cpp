@@ -26,16 +26,12 @@ namespace gradido {
 				}
 				std::vector<AccountBalanceMessage> accountBalanceMessages;
 				accountBalanceMessages.reserve(mConfirmedTransaction.getAccountBalances().size());
+				auto blockchainCommunityIdIndex = mConfirmedTransaction.getGradidoTransaction()->getCommunityIdIndex();
 				for (auto& accountBalance : mConfirmedTransaction.getAccountBalances()) {
 					AccountBalanceMessage accountBalanceMessage;
 					accountBalanceMessage["pubkey"_f] = accountBalance.getPublicKey()->copyAsVector();
 					accountBalanceMessage["balance"_f] = accountBalance.getBalance().getGradidoCent();
-					if (!mBlockchainCommunityIdIndex.has_value()) {
-						GradidoNodeInvalidDataException(
-							"missing blockchainCommunityIdIndex, please call serialize::Context run with blockchainCommunityIdIndex as parameter for ConfirmedTransactionRole"
-						);
-					}
-					if (accountBalance.getCoinCommunityIdIndex() != mBlockchainCommunityIdIndex.value()) {
+					if (accountBalance.getCoinCommunityIdIndex() != blockchainCommunityIdIndex) {
 						accountBalanceMessage["community_id"_f] = g_appContext->getCommunityIds().getDataForIndex(accountBalance.getCoinCommunityIdIndex());
 					}
 					accountBalanceMessages.push_back(accountBalanceMessage);

@@ -67,7 +67,7 @@ namespace gradido {
 			GradidoUnit Context::fromEnd(
 				memory::ConstBlockPtr publicKey,
 				Timepoint endDate,
-				std::optional<uint32_t> coinCommunityIdIndex,
+				std::optional<uint32_t> coinCommunityIdIndex/* = nullopt*/,
 				uint64_t maxTransactionNr/* = 0 */
 			) const 
 			{

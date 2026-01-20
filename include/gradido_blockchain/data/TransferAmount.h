@@ -15,6 +15,11 @@ namespace gradido {
 				const GradidoUnit& amount,
 				uint32_t coinCommunityIdIndex
 			);
+			TransferAmount(
+				memory::ConstBlockPtr pubkeyPtr,
+				const GradidoUnit& amount,
+				const std::string& coinCommunityId
+			);
 			~TransferAmount() {}
 
 			inline bool operator==(const TransferAmount& other) const {

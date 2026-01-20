@@ -29,7 +29,7 @@ namespace gradido {
 		}
 
 		TransactionEntry::TransactionEntry(ConstConfirmedTransactionPtr confirmedTransaction, uint32_t blockchainCommunityIdIndex)
-			: TransactionEntry(interaction::serialize::Context(*confirmedTransaction).run(blockchainCommunityIdIndex), confirmedTransaction, blockchainCommunityIdIndex)
+			: TransactionEntry(interaction::serialize::Context(*confirmedTransaction).run(), confirmedTransaction, blockchainCommunityIdIndex)
 		{
 		}		
 

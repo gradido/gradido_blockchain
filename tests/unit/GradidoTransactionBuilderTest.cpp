@@ -13,11 +13,13 @@ using namespace std::chrono;
 TEST(GradidoTransactionBuilderTest, SignTransaction) {	
 	auto body = make_unique<TransactionBody>(
 		std::chrono::system_clock::from_time_t(1609459200),
-		VERSION_STRING
+		VERSION_STRING,
+		0
 	);
 	GradidoTransactionBuilder builder;
 	auto gradidoTransaction = builder
 		.setTransactionBody(std::move(body))
+		.setSenderCommunity("test-community")
 		.sign(g_KeyPairs[0])
 		.build();
 

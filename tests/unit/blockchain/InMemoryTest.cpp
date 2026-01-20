@@ -1,7 +1,7 @@
 #include "../main.h"
 #include "InMemoryTest.h"
 #include "../serializedTransactions.h"
-
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
@@ -28,6 +28,8 @@ using namespace date;
 using namespace magic_enum;
 using magic_enum::iostream_operators::operator<<;
 
+using gradido::AppContext, gradido::g_appContext;
+
 #define VERSION_STRING "3.5"
 static EncryptedMemo memo("dummy memo");
 const hiero::AccountId hieroAccount(0, 0, 121);
@@ -50,7 +52,7 @@ void InMemoryTest::SetUp()
 	gen = mt19937(rd()); // mersenne_twister_engine seeded with rd()
 	randTimeRange = uniform_int_distribution<int>(2400, 2 * 24 * 60 * 60);
 	mKeyPairCursor = 3;
-	mCommunityId = "testCommunity";
+	mCommunityId = "test-community";
 	mLastCreatedAt = std::chrono::system_clock::from_time_t(1641681324);
 	mBlockchain = InMemoryProvider::getInstance()->findBlockchain(mCommunityId);
 
@@ -63,6 +65,7 @@ void InMemoryTest::SetUp()
 			g_KeyPairs[1]->getPublicKey(),
 			g_KeyPairs[2]->getPublicKey()
 		)
+		.setSenderCommunity(mCommunityId)
 		.sign(g_KeyPairs[0])
 		;
 	mBlockchain->createAndAddConfirmedTransaction(builder.build(), LedgerAnchor({ mLastCreatedAt, hieroAccount }), mLastCreatedAt);
@@ -114,6 +117,7 @@ void InMemoryTest::createRegisterAddress(int keyPairIndexStart)
 			nullptr,
 			g_KeyPairs[accountPubkeyIndex]->getPublicKey()
 		)
+		.setSenderCommunity(mCommunityId)
 		.sign(g_KeyPairs[accountPubkeyIndex])
 		// sign with community root key
 		.sign(g_KeyPairs[0])
@@ -141,6 +145,7 @@ std::shared_ptr<KeyPairEd25519> InMemoryTest::createRegisterAddressGenerateKeyPa
 			nullptr,
 			accountKeyPair->getPublicKey()
 		)
+		.setSenderCommunity(mCommunityId)
 		// sign with community root key
 		.sign(g_KeyPairs[0])
 		.sign(accountKeyPair)
@@ -179,6 +184,7 @@ bool InMemoryTest::createGradidoCreation(
 			TransferAmount(recipientPublicKey, amount, 0),
 			targetDate
 		)
+		.setRecipientCommunity(mCommunityId)
 		.sign(g_KeyPairs[signerKeyPairIndex])
 		;
 	auto confirmedAt = generateNewConfirmedAt(createdAt);
@@ -203,6 +209,7 @@ bool InMemoryTest::createGradidoTransfer(
 			TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount, 0),
 			g_KeyPairs[recipientKeyPairIndex]->getPublicKey()
 		)
+		.setSenderCommunity(mCommunityId)
 		.sign(g_KeyPairs[senderKeyPairIndex])
 	;
 	auto confirmedAt = generateNewConfirmedAt(createdAt);
@@ -230,6 +237,7 @@ bool InMemoryTest::createGradidoDeferredTransfer(
 				g_KeyPairs[recipientKeyPairIndex]->getPublicKey()
 			), DurationSeconds(timeoutDuration)
 		)
+		.setSenderCommunity(mCommunityId)
 		.sign(g_KeyPairs[senderKeyPairIndex])
 	;	
 	auto confirmedAt = generateNewConfirmedAt(createdAt);
@@ -259,6 +267,7 @@ bool InMemoryTest::createGradidoRedeemDeferredTransfer(
 				g_KeyPairs[recipientKeyPairIndex]->getPublicKey()
 			)
 		)
+		.setSenderCommunity(mCommunityId)
 		.sign(g_KeyPairs[senderKeyPairIndex])
 		;
 	auto confirmedAt = generateNewConfirmedAt(createdAt);
@@ -393,8 +402,8 @@ TEST_F(InMemoryTest, CreationTransactions)
 	
 	EXPECT_EQ(getBalance(8, mLastConfirmedAt), GradidoUnit(1000.0));
 	auto balanceCalculator = calculateAccountBalance::Context(mBlockchain);
-	auto gmwBalance = balanceCalculator.fromEnd(g_KeyPairs[1]->getPublicKey(), mLastConfirmedAt, 0);
-	auto aufBalance = balanceCalculator.fromEnd(g_KeyPairs[2]->getPublicKey(), mLastConfirmedAt, 0);
+	auto gmwBalance = balanceCalculator.fromEnd(g_KeyPairs[1]->getPublicKey(), mLastConfirmedAt);
+	auto aufBalance = balanceCalculator.fromEnd(g_KeyPairs[2]->getPublicKey(), mLastConfirmedAt);
 	auto creationSum = getBalance(8, mLastConfirmedAt) + getBalance(6, mLastConfirmedAt);
 	EXPECT_EQ(gmwBalance, creationSum);
 	EXPECT_EQ(aufBalance, creationSum);

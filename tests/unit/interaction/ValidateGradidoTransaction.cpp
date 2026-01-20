@@ -34,6 +34,7 @@ TEST(ValidateGradidoTransaction, validCommunityRootGradidoTransaction)
 			g_KeyPairs[1]->getPublicKey(),
 			g_KeyPairs[2]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
 		;
 	auto transaction = builder.build();
@@ -55,6 +56,7 @@ TEST(ValidateGradidoTransaction, invalidCommunityRootWrongSigner)
 			g_KeyPairs[1]->getPublicKey(),
 			g_KeyPairs[2]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[1])
 		;
 	auto transaction = builder.build();
@@ -76,6 +78,7 @@ TEST(ValidateGradidoTransaction, validRegisterAddressTransaction)
 			nullptr,
 			g_KeyPairs[4]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
 		.sign(g_KeyPairs[4])
 		;
@@ -97,6 +100,7 @@ TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionMissingSignatu
 			nullptr,
 			g_KeyPairs[4]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
 		;
 	auto transaction = builder.build();
@@ -119,6 +123,7 @@ TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionMissingRequire
 			nullptr,
 			g_KeyPairs[4]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
 		.sign(g_KeyPairs[3])
 		;
@@ -138,9 +143,10 @@ TEST(ValidateGradidoTransaction, validGradidoCreationTransaction)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), communityId),
 			TimestampSeconds(1609459000)
 		)
+		.setRecipientCommunity(communityId)
 		.sign(g_KeyPairs[6])
 		;
 	auto transaction = builder.build();
@@ -158,9 +164,10 @@ TEST(ValidateGradidoTransaction, invalidGradidoCreationTransactionWrongSignature
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), communityId),
 			TimestampSeconds(1609459000)
 		)
+		.setRecipientCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -178,9 +185,10 @@ TEST(ValidateGradidoTransaction, validGradidoTransferTransaction)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityId),
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -197,9 +205,10 @@ TEST(ValidateGradidoTransaction, invalidGradidoTransferTransactionWrongSignature
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityId),
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[3])
 		;
 	auto transaction = builder.build();
@@ -218,11 +227,12 @@ TEST(ValidateGradidoTransaction, validGradidoDeferredTransferTransaction)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500ll), 0),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500ll), communityId),
 				g_KeyPairs[5]->getPublicKey()
 			),
 			timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -241,11 +251,12 @@ TEST(ValidateGradidoTransaction, invalidGradidoDeferredTransferTransactionWrongS
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500ll), 0),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500ll), communityId),
 				g_KeyPairs[5]->getPublicKey()
 			),
 			timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[5])
 		;
 	auto transaction = builder.build();

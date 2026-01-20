@@ -62,15 +62,9 @@ using std::make_unique;
 using memory::ConstBlockPtr, memory::ConstBlockPtrHash; memory::ConstBlockPtrEqual;
 
 // GTEST_API_ 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) 
+{
 	g_appContext = make_unique<AppContext>(make_unique<ThreadsafeRuntimeDictionary<std::string>>("communityIdDictionary"));
-	try {
-		g_appContext->addCommunityId("test-community");
-	}
-	catch (std::exception& ex) {
-		printf("ex: %s\n", ex.what());
-	}
-
 	testing::InitGoogleTest(&argc, argv);
 	generateKeyPairs();
 	CryptoConfig::g_ServerCryptoKey = std::make_shared<memory::Block>(memory::Block::fromHex("153afcd54ef316e45cd3e5ed4567cd21", 32));

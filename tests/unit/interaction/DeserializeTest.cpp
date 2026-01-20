@@ -62,7 +62,7 @@ TEST(DeserializeTest, CommunityRootBody)
 {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
 	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
-	context.run();
+	context.run(0);
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
@@ -93,7 +93,7 @@ TEST(DeserializeTest, CommunityRootBody)
 TEST(DeserializeTest, RegisterAddressBody) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(registeAddressTransactionBase64));
 	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
-	context.run();
+	context.run(0);
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
@@ -127,7 +127,7 @@ TEST(DeserializeTest, GradidoCreationBody) {
 
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(creationTransactionBase64));
 	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
-	context.run();
+	context.run(0);
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
@@ -163,7 +163,7 @@ TEST(DeserializeTest, GradidoCreationBody) {
 TEST(DeserializeTest, GradidoTransferBody) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(transferTransactionBase64));
 	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
-	context.run();
+	context.run(0);
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
@@ -198,7 +198,7 @@ TEST(DeserializeTest, GradidoTransferBody) {
 TEST(DeserializeTest, GradidoDeferredTransferBody) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(deferredTransferTransactionBase64));
 	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
-	context.run();
+	context.run(0);
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
@@ -234,7 +234,7 @@ TEST(DeserializeTest, GradidoDeferredTransferBody) {
 TEST(DeserializeTest, CommunityFriendsUpdateBody) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(communityFriendsUpdateBase64));
 	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
-	context.run();
+	context.run(0);
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
@@ -263,7 +263,7 @@ TEST(DeserializeTest, CommunityFriendsUpdateBody) {
 TEST(DeserializeTest, GradidoTransaction) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(gradidoTransactionSignedInvalidBody));
 	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
-	context.run();
+	context.run(0);
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
@@ -310,7 +310,7 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_FALSE(g_KeyPairs[2]->verify(*bodyBytes, *firstSignature));
 
 	deserialize::Context secondContext(bodyBytes);
-	secondContext.run();
+	secondContext.run(0);
 
 	ASSERT_TRUE(secondContext.isTransactionBody());
 	EXPECT_FALSE(secondContext.isConfirmedTransaction());

@@ -10,7 +10,7 @@ namespace gradido {
 			class GradidoTransferRole : public AbstractRole
 			{
 			public:
-				GradidoTransferRole(std::shared_ptr<const data::GradidoTransfer> gradidoTransfer, std::string_view otherCommunity);
+				GradidoTransferRole(std::shared_ptr<const data::GradidoTransfer> gradidoTransfer);
 
 				void run(Type type, ContextData& c);
 				inline void setCrossGroupType(data::CrossGroupType crossGroupType) { mCrossGroupType = crossGroupType; }
@@ -26,7 +26,6 @@ namespace gradido {
 				void validateAccount(ContextData& c);
 
 				std::shared_ptr<const data::GradidoTransfer> mGradidoTransfer;
-				std::string_view mOtherCommunity;
 				data::CrossGroupType mCrossGroupType;
 			};
 		}

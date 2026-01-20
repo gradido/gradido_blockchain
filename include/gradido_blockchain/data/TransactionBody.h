@@ -14,6 +14,8 @@
 #include "CrossGroupType.h"
 #include "TransactionType.h"
 
+#include <optional>
+
 namespace gradido {
 	class GradidoTransactionBuilder;
 	namespace interaction {
@@ -27,13 +29,14 @@ namespace gradido {
 			friend GradidoTransactionBuilder;
 			friend interaction::deserialize::TransactionBodyRole;
 		public:
-			TransactionBody() : mType(CrossGroupType::LOCAL) {}
+			TransactionBody() : mType(CrossGroupType::LOCAL), mCommunityIdIndex(0) {}
 			TransactionBody(
-				Timepoint _createdAt,
-				const std::string& _versionNumber,
-				CrossGroupType _type = CrossGroupType::LOCAL,
-				const std::string& _otherGroup = ""
-			) : mCreatedAt(_createdAt), mVersionNumber(_versionNumber), mType(_type), mOtherGroup(_otherGroup) {};
+				Timepoint createdAt,
+				const std::string& versionNumber,
+				uint32_t communityIdIndex,
+				CrossGroupType type = CrossGroupType::LOCAL,
+				std::optional<uint32_t> otherCommunityIdIndex = std::nullopt
+			) : mCreatedAt(createdAt), mVersionNumber(versionNumber), mType(type), mCommunityIdIndex(communityIdIndex), mOtherCommunityIdIndex(otherCommunityIdIndex) {};
 
 			~TransactionBody() {}
 
@@ -58,7 +61,8 @@ namespace gradido {
 			inline Timestamp getCreatedAt() const { return mCreatedAt; }
 			inline const std::string& getVersionNumber() const { return mVersionNumber; }
 			inline CrossGroupType getType() const { return mType; }
-			inline const std::string& getOtherGroup() const { return mOtherGroup; }
+			inline uint32_t getCommunityIdIndex() const { return mCommunityIdIndex; }
+			inline std::optional<uint32_t> getOtherCommunityIdIndex() const { return mOtherCommunityIdIndex; }
 
 			inline std::shared_ptr<const GradidoTransfer> getTransfer() const { return mTransfer; }
 			inline std::shared_ptr<const GradidoCreation> getCreation() const { return mCreation; }
@@ -74,7 +78,8 @@ namespace gradido {
 			Timestamp													mCreatedAt;
 			std::string												mVersionNumber;
 			CrossGroupType										mType;
-			std::string												mOtherGroup;
+			uint32_t													mCommunityIdIndex;
+			std::optional<uint32_t> 					mOtherCommunityIdIndex;
 
 			std::shared_ptr<GradidoTransfer>        mTransfer;
 			std::shared_ptr<GradidoCreation>        mCreation;

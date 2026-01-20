@@ -13,7 +13,7 @@ namespace gradido {
 			class GradidoTransactionRole
 			{
 			public:
-				GradidoTransactionRole(const GradidoTransactionMessage& message);
+				GradidoTransactionRole(const GradidoTransactionMessage& message, uint32_t communityIdIndex);
 				~GradidoTransactionRole();
 
 				inline std::unique_ptr<const data::GradidoTransaction> getGradidoTransaction() { return std::move(mGradidoTransaction); }

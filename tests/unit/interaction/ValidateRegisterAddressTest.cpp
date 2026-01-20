@@ -21,6 +21,7 @@ TEST(ValidateRegisterAddressTest, Valid) {
 			nullptr, 
 			g_KeyPairs[4]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
 		.sign(g_KeyPairs[4])
 	;
@@ -42,6 +43,7 @@ TEST(ValidateRegisterAddressTest, InvalidAddressTypeGMW) {
 			nullptr,
 			g_KeyPairs[4]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
 		.sign(g_KeyPairs[4])
 		;
@@ -63,6 +65,7 @@ TEST(ValidateRegisterAddressTest, InvalidAddressTypeAUF) {
 			nullptr,
 			g_KeyPairs[4]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
 		.sign(g_KeyPairs[4])
 		;
@@ -84,6 +87,7 @@ TEST(ValidateRegisterAddressTest, InvalidAddressTypeNONE) {
 			nullptr,
 			g_KeyPairs[4]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
 		.sign(g_KeyPairs[4])
 		;

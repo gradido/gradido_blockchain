@@ -94,7 +94,7 @@ namespace gradido {
 				}
 				// make copy from GradidoTransfer
 				auto transfer = std::make_shared<data::GradidoTransfer>(mDeferredTransfer->getTransfer());
-				GradidoTransferRole transferRole(transfer, "");
+				GradidoTransferRole transferRole(transfer);
 				transferRole.setConfirmedAt(mConfirmedAt);
 				transferRole.setCreatedAt(mCreatedAt);
 				// transfer check without account check, account block differ to much

@@ -17,7 +17,7 @@ namespace gradido {
 			AbstractProvider() = default;
 			virtual ~AbstractProvider() {}
 			// return nullptr if not found
-			virtual std::shared_ptr<Abstract> findBlockchain(uint32_t communityIdIndex) const = 0;
+			virtual std::shared_ptr<Abstract> findBlockchain(uint32_t communityIdIndex) = 0;
 			// create new if not found
 			virtual std::shared_ptr<Abstract> findBlockchain(const std::string& communityId) = 0;
 		};

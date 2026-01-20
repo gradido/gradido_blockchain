@@ -22,7 +22,7 @@ namespace gradido {
 
   }
 
-  uint32_t AppContext::addCommunityId(const std::string& communityId)
+  uint32_t AppContext::getOrAddCommunityIdIndex(const std::string& communityId)
   {
     // return 0;
     if (!isValidCommunityAlias(communityId)) {

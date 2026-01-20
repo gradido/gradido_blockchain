@@ -5,9 +5,10 @@
 #include "InMemory.h"
 #include "gradido_blockchain/export.h"
 
-#include <vector>
+#include <unordered_map>
 #include <string>
 #include <shared_mutex>
+#include <optional>
 
 namespace gradido {
 	namespace blockchain {
@@ -16,16 +17,17 @@ namespace gradido {
 		public:
 			static InMemoryProvider* getInstance();
 
-			std::shared_ptr<Abstract> findBlockchain(uint32_t communityIdIndex) const override;
+			std::shared_ptr<Abstract> findBlockchain(uint32_t communityIdIndex) override;
 			std::shared_ptr<Abstract> findBlockchain(const std::string& communityId) override;
 			void clear();
 		protected:
-			std::vector<std::shared_ptr<InMemory>> mBlockchainsPerGroup;
+			std::unordered_map<uint32_t, std::shared_ptr<InMemory>> mBlockchainsPerGroup;
 			mutable std::shared_mutex mWorkMutex;
 
 		private:
 			InMemoryProvider();
 			~InMemoryProvider();
+			std::shared_ptr<Abstract> addBlockchain(const std::string& communityId, std::optional<uint32_t> communityIdIndex);
 
 			/* Explicitly disallow copying. */
 			InMemoryProvider(const InMemoryProvider&) = delete;

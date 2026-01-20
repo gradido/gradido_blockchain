@@ -21,7 +21,7 @@ namespace gradido {
 			// memo, type and createdAt must be the same, otherGroup must be different
 			if (mMemos != other.mMemos ||
 				mCreatedAt != other.mCreatedAt ||
-				mOtherGroup == other.mOtherGroup
+				mOtherCommunityIdIndex == other.mOtherCommunityIdIndex
 				) {
 				return false;
 			}

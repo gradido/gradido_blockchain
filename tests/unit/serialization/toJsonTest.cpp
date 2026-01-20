@@ -60,7 +60,7 @@ TEST(ToJsonTest, Filter) {
 	EXPECT_STREQ("ASC", json["searchDirection"].GetString());
 	EXPECT_EQ(1, json["pagination"]["size"].GetInt());
 	EXPECT_EQ(2, json["pagination"]["page"].GetInt());
-	EXPECT_STREQ("testCommunity", json["coinCommunityId"].GetString());
+	EXPECT_EQ(0, json["coinCommunityIdIndex"].GetInt());
 	// EXPECT_EQ(startDate.time_since_epoch().count(), json["timepointInterval"]["start"]["value"].GetInt64());
 	// EXPECT_EQ(endDate.time_since_epoch().count() + 1, json["timepointInterval"]["end"]["value"].GetInt64());
 	EXPECT_STREQ("COMMUNITY_ROOT", json["transactionType"].GetString());

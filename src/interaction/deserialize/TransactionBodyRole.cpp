@@ -1,3 +1,4 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/data/EncryptedMemo.h"
 #include "gradido_blockchain/interaction/deserialize/DurationSecondsRole.h"
@@ -42,7 +43,10 @@ namespace gradido {
 				mTransactionBody->mCreatedAt = TimestampRole(bodyMessage["created_at"_f].value()).data();
 				mTransactionBody->mVersionNumber = bodyMessage["version_number"_f].value();
 				mTransactionBody->mType = bodyMessage["type"_f].value();
-				mTransactionBody->mOtherGroup = bodyMessage["other_group"_f].value_or("");
+				auto otherGroupString = bodyMessage["other_group"_f].value_or("");
+				if (bodyMessage["other_group"_f].has_value()) {
+					mTransactionBody->mCommunityIdIndex = g_appContext->getOrAddCommunityIdIndex(bodyMessage["other_group"_f].value());
+				}
 
 				if (bodyMessage["transfer"_f].has_value()) {
 					auto transferMessage = bodyMessage["transfer"_f].value();

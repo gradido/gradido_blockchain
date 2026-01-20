@@ -2,6 +2,7 @@
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
+#include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "../KeyPairs.h"
 #include "const.h"
@@ -21,6 +22,7 @@ TEST(ValidateGradidoCreationTest, valid) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 0),
 			TimestampSeconds(1609459000)
 		)
+		.setRecipientCommunity(communityId)
 		.sign(g_KeyPairs[6])
 	;
 	auto transaction = builder.build();
@@ -40,6 +42,7 @@ TEST(ValidateGradidoCreationTest, invalidMemoEmpty) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 0),
 			TimestampSeconds(1609459000)
 		)
+		.setRecipientCommunity(communityId)
 		.sign(g_KeyPairs[6])
 		;
 	auto transaction = builder.build();
@@ -61,6 +64,7 @@ TEST(ValidateGradidoCreationTest, invalidMemoToShort) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 0),
 			TimestampSeconds(1609459000)
 		)
+		.setRecipientCommunity(communityId)
 		.sign(g_KeyPairs[6])
 		;
 	auto transaction = builder.build();
@@ -82,6 +86,7 @@ TEST(ValidateGradidoCreationTest, invalidMemoToBig) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 0),
 			TimestampSeconds(1609459000)
 		)
+		.setRecipientCommunity(communityId)
 		.sign(g_KeyPairs[6])
 		;
 	auto transaction = builder.build();
@@ -104,6 +109,7 @@ TEST(ValidateGradidoCreationTest, invalidAmountNegative) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000).negated(), 0),
 			TimestampSeconds(1609459000)
 		)
+		.setRecipientCommunity(communityId)
 		.sign(g_KeyPairs[6])
 		;
 	auto transaction = builder.build();
@@ -124,6 +130,7 @@ TEST(ValidateGradidoCreationTest, invalidAmountZero) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::zero(), 0),
 			TimestampSeconds(1609459000)
 		)
+		.setRecipientCommunity(communityId)
 		.sign(g_KeyPairs[6])
 		;
 	auto transaction = builder.build();
@@ -144,6 +151,7 @@ TEST(ValidateGradidoCreationTest, invalidAmountToBig) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(20000000), 0),
 			TimestampSeconds(1609459000)
 		)
+		.setRecipientCommunity(communityId)
 		.sign(g_KeyPairs[6])
 		;
 	auto transaction = builder.build();
@@ -153,27 +161,6 @@ TEST(ValidateGradidoCreationTest, invalidAmountToBig) {
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
 
-
-TEST(ValidateGradidoCreationTest, InvalidCoinCommunityIdIdenticalToBlockchainCommunityId) {
-	GradidoTransactionBuilder builder;
-	builder
-		.addMemo(creationMemoString)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
-		.setTransactionCreation(
-			// coin community id is identical to blockchain community id to which transaction belong
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 0),
-			TimestampSeconds(1609459000)
-		)
-		.sign(g_KeyPairs[6])
-		;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isCreation());
-
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(validate::Type::SINGLE), validate::TransactionValidationInvalidInputException);
-}
 
 TEST(ValidateGradidoCreationTest, InvalidCoinCommunityId) {
 	GradidoTransactionBuilder builder;
@@ -185,14 +172,9 @@ TEST(ValidateGradidoCreationTest, InvalidCoinCommunityId) {
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 1),
 			TimestampSeconds(1609459000)
 		)
-		.sign(g_KeyPairs[6])
-		;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isCreation());
+		.setRecipientCommunity(communityId);
 
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(validate::Type::SINGLE), validate::TransactionValidationInvalidInputException);
+	EXPECT_THROW(builder.sign(g_KeyPairs[6]), DictionaryMissingEntryException);
 }
 
 // TODO: invalid target date with both algos

@@ -28,23 +28,7 @@ namespace gradido {
 				if (!mData) {
 					throw GradidoNullPointerException("mData is empty", "memory::ConstBlockPtr", "gradido::interaction_deserialize::Context::run");
 				}
-				if (Type::GRADIDO_TRANSACTION == mType || Type::UNKNOWN == mType) {
-					try {
-						auto result = message_coder<GradidoTransactionMessage>::decode(mData->span());
-						if (!result.has_value()) return;
-						const auto& [gradidoTransaction, bufferEnd2] = *result;
-						mGradidoTransaction = std::move(GradidoTransactionRole(gradidoTransaction).getGradidoTransaction());
-						mType = Type::GRADIDO_TRANSACTION;
-						return;
-					}
-					catch (std::exception& ex) {
-						if (Type::GRADIDO_TRANSACTION == mType) {
-							LOG_F(WARNING, "couldn't deserialize as gradido transaction, maybe wrong type? exception: %s", ex.what());
-						}
-						mType = Type::UNKNOWN;
-					}
-				}
-				
+								
 				if (Type::TRANSACTION_TRIGGER_EVENT == mType || Type::UNKNOWN == mType) {
 					try {
 						auto result = message_coder<TransactionTriggerEventMessage>::decode(mData->span());
@@ -73,6 +57,7 @@ namespace gradido {
 						if (Type::HIERO_ACCOUNT_ID == mType) {
 							LOG_F(WARNING, "couldn't deserialize as hiero account id, maybe wrong type? exception: %s", ex.what());
 						}
+						mType = Type::UNKNOWN;
 					}
 				}
 				if (Type::HIERO_TOPIC_ID == mType || Type::UNKNOWN == mType) {
@@ -87,6 +72,7 @@ namespace gradido {
 						if (Type::HIERO_TOPIC_ID == mType) {
 							LOG_F(WARNING, "couldn't deserialize as hiero topic id, maybe wrong type? exception: %s", ex.what());
 						}
+						mType = Type::UNKNOWN;
 					}
 				}
 				if (Type::HIERO_TRANSACTION_ID == mType || Type::UNKNOWN == mType) {
@@ -101,6 +87,7 @@ namespace gradido {
 						if (Type::HIERO_TRANSACTION_ID == mType) {
 							LOG_F(WARNING, "couldn't deserialize as hiero transaction id, maybe wrong type? exception: %s", ex.what());
 						}
+						mType = Type::UNKNOWN;
 					}
 				}
 				if (Type::LEDGER_ANCHOR == mType) {
@@ -113,6 +100,7 @@ namespace gradido {
 					}
 					catch (std::exception& ex) {
 						LOG_F(WARNING, "couldn't deserialize as ledger anchor, maybe wrong type? exception: %s", ex.what());
+						mType = Type::UNKNOWN;
 					}
 				}
 				LOG_F(WARNING, "couldn't find correct type, maybe you need call the other run function with communityIdIndex as parameter");
@@ -123,6 +111,22 @@ namespace gradido {
 				// TODO: shorten code with help of template
 				if(!mData) {
 					throw GradidoNullPointerException("mData is empty", "memory::ConstBlockPtr", "gradido::interaction_deserialize::Context::run");
+				}
+				if (Type::GRADIDO_TRANSACTION == mType || Type::UNKNOWN == mType) {
+					try {
+						auto result = message_coder<GradidoTransactionMessage>::decode(mData->span());
+						if (!result.has_value()) return;
+						const auto& [gradidoTransaction, bufferEnd2] = *result;
+						mGradidoTransaction = std::move(GradidoTransactionRole(gradidoTransaction, communityIdIndex).getGradidoTransaction());
+						mType = Type::GRADIDO_TRANSACTION;
+						return;
+					}
+					catch (std::exception& ex) {
+						if (Type::GRADIDO_TRANSACTION == mType) {
+							LOG_F(WARNING, "couldn't deserialize as gradido transaction, maybe wrong type? exception: %s", ex.what());
+						}
+						mType = Type::UNKNOWN;
+					}
 				}
 				if (Type::TRANSACTION_BODY == mType || Type::UNKNOWN == mType) {
 					try {

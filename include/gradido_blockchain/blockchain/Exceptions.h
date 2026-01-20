@@ -60,6 +60,7 @@ namespace gradido {
 		{
 		public:
 			explicit CommunityNotFoundException(const char* what, std::string_view communityId) noexcept;
+			explicit CommunityNotFoundException(const char* what, uint32_t communityIdIndex) noexcept;
 			std::string getFullString() const;
 
 		protected:

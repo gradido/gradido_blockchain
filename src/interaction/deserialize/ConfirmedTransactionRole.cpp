@@ -44,7 +44,7 @@ namespace gradido {
 				}
 				mConfirmedTransaction = std::make_shared<data::ConfirmedTransaction>(
 					message["id"_f].value(),
-					GradidoTransactionRole(message["transaction"_f].value()).getGradidoTransaction(),
+					GradidoTransactionRole(message["transaction"_f].value(), communityIdIndex).getGradidoTransaction(),
 					TimestampRole(message["confirmed_at"_f].value()).data(),
 					message["version_number"_f].value(),
 					make_shared<Block>(message["running_hash"_f].value()),

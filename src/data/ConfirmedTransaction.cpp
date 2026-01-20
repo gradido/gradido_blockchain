@@ -102,7 +102,7 @@ namespace gradido {
 		AccountBalance ConfirmedTransaction::getAccountBalance(memory::ConstBlockPtr publicKey, uint32_t communityIdIndex) const
 		{
 			for (auto& accountBalance : mAccountBalances) {
-				if (accountBalance.isTheSame(accountBalance)) {
+				if (accountBalance.getPublicKey()->isTheSame(publicKey) && communityIdIndex == accountBalance.getCoinCommunityIdIndex()) {
 					return accountBalance;
 				}
 			}

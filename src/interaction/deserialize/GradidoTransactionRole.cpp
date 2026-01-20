@@ -11,7 +11,7 @@ namespace gradido {
 
 			}
 			
-			GradidoTransactionRole::GradidoTransactionRole(const GradidoTransactionMessage& message)
+			GradidoTransactionRole::GradidoTransactionRole(const GradidoTransactionMessage& message, uint32_t communityIdIndex)
 			{
 				data::SignatureMap signatures;
 				memory::BlockPtr bodyBytesPtr;
@@ -32,7 +32,7 @@ namespace gradido {
 					bodyBytesPtr = std::make_shared<memory::Block>(bodyBytes->value());
 				}
 				LedgerAnchorRole ledgerAnchorRole(message["pairing_ledger_anchor"_f].value());
-				mGradidoTransaction = std::make_unique<const data::GradidoTransaction>(signatures, bodyBytesPtr, ledgerAnchorRole);
+				mGradidoTransaction = std::make_unique<const data::GradidoTransaction>(signatures, bodyBytesPtr, communityIdIndex, ledgerAnchorRole);
 			}
 		}
 	}

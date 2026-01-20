@@ -137,7 +137,7 @@ namespace gradido {
 
 				// make copy from GradidoTransfer
 				auto transfer = std::make_shared<data::GradidoTransfer>(mRedeemDeferredTransfer->getTransfer());
-				GradidoTransferRole transferRole(transfer, "");
+				GradidoTransferRole transferRole(transfer);
 				transferRole.setConfirmedAt(mConfirmedAt);
 				transferRole.setCreatedAt(mCreatedAt);
 				transferRole.setCrossGroupType(mCrossGroupType);
