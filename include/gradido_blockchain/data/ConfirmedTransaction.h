@@ -7,6 +7,8 @@
 #include "LedgerAnchor.h"
 #include "gradido_blockchain/crypto/SignatureOctet.h"
 
+#include <optional>
+
 namespace gradido {
 	namespace data {
 
@@ -50,12 +52,12 @@ namespace gradido {
 			inline memory::ConstBlockPtr getRunningHash() const { return mRunningHash; }
 			inline const LedgerAnchor& getLedgerAnchor() const { return mLedgerAnchor; }
 			inline const std::vector<AccountBalance>& getAccountBalances() const { return mAccountBalances; }
-			bool hasAccountBalance(const memory::Block& publicKey, uint32_t communityIdIndex) const;
+			bool hasAccountBalance(const memory::Block& publicKey, std::optional<uint32_t> communityIdIndex) const;
 			//! \return accountBalance if found one with same public key or an new empty AccountBalance with this public key
-			AccountBalance getAccountBalance(memory::ConstBlockPtr publicKey, uint32_t communityIdIndex) const;
+			AccountBalance getAccountBalance(memory::ConstBlockPtr publicKey, std::optional<uint32_t> communityIdIndex) const;
 			inline GradidoUnit getDecayedAccountBalance(
 				memory::ConstBlockPtr publicKey,
-				uint32_t coinCommunityIdIndex,
+				std::optional<uint32_t> coinCommunityIdIndex,
 				Timepoint endDate = std::chrono::system_clock::now()
 			) const;
 			BalanceDerivationType getBalanceDerivationType() const { return mBalanceDerivationType; }
@@ -85,7 +87,7 @@ namespace gradido {
 
 		GradidoUnit ConfirmedTransaction::getDecayedAccountBalance(
 			memory::ConstBlockPtr publicKey,
-			uint32_t coinCommunityIdIndex,
+			std::optional<uint32_t> coinCommunityIdIndex,
 			Timepoint endDate/* = std::chrono::system_clock::now()*/
 		) const {
 			return getAccountBalance(publicKey, coinCommunityIdIndex).getBalance().calculateDecay(mConfirmedAt, endDate);

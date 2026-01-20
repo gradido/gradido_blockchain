@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_DATA_ACCOUNT_BALANCE_H
 
 #include "gradido_blockchain/GradidoUnit.h"
+#include <optional>
 #include <string>
 
 namespace memory {
@@ -23,6 +24,7 @@ namespace gradido {
             inline GradidoUnit getBalance() const { return mBalance; }
             inline uint32_t getCoinCommunityIdIndex() const { return mCoinCommunityIdIndex; }
             inline bool isTheSame(const AccountBalance& other) const;
+            inline bool belongsTo(const memory::Block& publicKey, std::optional<uint32_t> communityIdIndex) const;
 
         protected:
             memory::ConstBlockPtr mPublicKey;
@@ -42,6 +44,17 @@ namespace gradido {
                 return false;
             }
             return true;
+        }
+
+        bool AccountBalance::belongsTo(const memory::Block& publicKey, std::optional<uint32_t> communityIdIndex) const
+        {
+          if (!mPublicKey->isTheSame(publicKey)) {
+            return false;
+          }
+          if (communityIdIndex.has_value() && communityIdIndex != mCoinCommunityIdIndex) {
+            return false;
+          }
+          return true;
         }
     }
 }
