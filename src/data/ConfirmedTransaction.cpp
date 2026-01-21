@@ -1,3 +1,4 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
@@ -12,6 +13,7 @@
 
 using DataTypeConverter::timePointToString;
 using memory::Block, memory::ConstBlockPtr;
+using gradido::g_appContext;
 using std::optional;
 using std::shared_ptr;
 using std::string;
@@ -84,16 +86,16 @@ namespace gradido {
 				crypto_generichash_update(&state, (const unsigned char*)prevHashHex.data(), prevHashHex.size());
 			}
 			crypto_generichash_update(&state, (const unsigned char*)transactionIdString.data(), transactionIdString.size());
-			
+
 			crypto_generichash_update(&state, (const unsigned char*)confirmedAtString.data(), confirmedAtString.size());
 
 			crypto_generichash_update(&state, (const unsigned char*)ledgerAnchorString.data(), ledgerAnchorString.size());
-			
+
 			crypto_generichash_update(&state, (const unsigned char*)signatureMapString.data(), signatureMapString.size());
 			for (auto& accountBalance : mAccountBalances) {
 				auto gdd = accountBalance.getBalance().getGradidoCent();
 				crypto_generichash_update(&state, (const unsigned char*)&gdd, sizeof(gdd));
-			}	
+			}
 			crypto_generichash_update(&state, (const unsigned char*)&mBalanceDerivationType, sizeof(BalanceDerivationType));
 			crypto_generichash_final(&state, hash->data(), hash->size());
 			return hash;
@@ -102,7 +104,7 @@ namespace gradido {
 		bool ConfirmedTransaction::hasAccountBalance(const Block& publicKey, optional<uint32_t> communityIdIndex) const
 		{
 			for (auto& accountBalance : mAccountBalances) {
-				{ 
+				{
 					if (accountBalance.belongsTo(publicKey, communityIdIndex)) {
 						return true;
 					}
@@ -117,6 +119,15 @@ namespace gradido {
 				if (accountBalance.belongsTo(*publicKey, communityIdIndex)) {
 					return accountBalance;
 				}
+			}
+			return AccountBalance(publicKey, GradidoUnit::zero(), mGradidoTransaction->getCommunityIdIndex());
+		}
+
+		AccountBalance ConfirmedTransaction::getAccountBalance(memory::ConstBlockPtr publicKey, const std::string& communityIdIndex) const
+		{
+			auto communityIdIdx = g_appContext->getCommunityIds().getIndexForData(communityIdIndex);
+			if (communityIdIdx.has_value()) {
+				return getAccountBalance(publicKey, communityIdIdx.value());
 			}
 			return AccountBalance(publicKey, GradidoUnit::zero(), mGradidoTransaction->getCommunityIdIndex());
 		}
@@ -176,8 +187,8 @@ namespace gradido {
 			}
 			LOG_F(WARNING, "missing running hash from confirmed transaction, make full comparisation");
 
-			if (mId != other.mId) { 
-				return false; 
+			if (mId != other.mId) {
+				return false;
 			}
 			if (!mGradidoTransaction || !other.mGradidoTransaction) {
 				LOG_F(WARNING, "missing gradido transaction for compare confirmed transaction");
@@ -206,7 +217,7 @@ namespace gradido {
 			if (mBalanceDerivationType != other.mBalanceDerivationType) {
 				return false;
 			}
-			
+
 			for (size_t i = 0; i < mAccountBalances.size(); i++) {
 				if (!mAccountBalances[i].isTheSame(other.mAccountBalances[i])) {
 					LOG_F(WARNING, "assume same account balance order, consider this result as instable");

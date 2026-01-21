@@ -67,6 +67,7 @@ protected:
     Timepoint mLastConfirmedAt;
     int mKeyPairCursor;
     std::string mCommunityId;
+    uint32_t communityIdIndex;
     std::shared_ptr<gradido::blockchain::Abstract> mBlockchain;
 
 public:
