@@ -12,7 +12,7 @@ namespace memory {
 
 namespace gradido {
     namespace data {
-        class GRADIDOBLOCKCHAIN_EXPORT AccountBalance 
+        class GRADIDOBLOCKCHAIN_EXPORT AccountBalance
         {
         public:
             // empty constructor needed for swig
@@ -32,7 +32,7 @@ namespace gradido {
             GradidoUnit mBalance;
             uint32_t mCoinCommunityIdIndex;
         };
-       
+
         bool AccountBalance::isTheSame(const AccountBalance& other) const
         {
             if (!mPublicKey->isTheSame(other.mPublicKey)) {

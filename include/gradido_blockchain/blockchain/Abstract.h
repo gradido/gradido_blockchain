@@ -43,6 +43,12 @@ namespace gradido {
 				const data::LedgerAnchor& ledgerAnchor,
 				data::Timestamp confirmedAt
 			) = 0;
+
+			virtual bool createAndAddConfirmedTransactionExtern(
+				data::ConstGradidoTransactionPtr gradidoTransaction,
+				const data::LedgerAnchor& ledgerAnchor,
+				std::vector<data::AccountBalance> accountBalances
+			) = 0;
 			virtual void addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent) = 0;
 			virtual void removeTransactionTriggerEvent(const data::TransactionTriggerEvent& transactionTriggerEvent) = 0;
 
@@ -80,9 +86,9 @@ namespace gradido {
 
 		protected:
 			uint32_t mCommunityIdIndex;
-			data::Timestamp mStartDate;			
+			data::Timestamp mStartDate;
 		};
-			
+
 	}
 }
 

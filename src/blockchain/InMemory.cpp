@@ -178,7 +178,7 @@ namespace gradido {
 				return startIt->second;
 			}
 			return nullptr;
-		}		
+		}
 
 		const TransactionEntries& InMemory::getSortedTransactions()
 		{
@@ -213,7 +213,7 @@ namespace gradido {
 					break;
 				}
 			}
-			return result;	
+			return result;
 		}
 
 		ConstTransactionEntryPtr InMemory::findOne(const Filter& filter/* = Filter::LAST_TRANSACTION*/) const
