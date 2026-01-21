@@ -18,6 +18,7 @@ namespace gradido {
             // empty constructor needed for swig
             AccountBalance();
             AccountBalance(memory::ConstBlockPtr publicKey, GradidoUnit balance, uint32_t communityIdIndex);
+            AccountBalance(memory::ConstBlockPtr publicKey, GradidoUnit balance, const std::string& communityId);
             ~AccountBalance();
 
             inline memory::ConstBlockPtr getPublicKey() const { return mPublicKey; }
