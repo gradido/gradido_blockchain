@@ -329,7 +329,7 @@ namespace gradido {
 		}
 
 		mBody->mTimeoutDeferredTransfer = std::move(timeoutDeferredTransfer);
-		// special case, because TimeoutDeferredTransfer didn't need singnatures
+		// special case, because TimeoutDeferredTransfer didn't need signatures
 		switchBuildState();
 		mSpecificTransactionChoosen = true;
 		return *this;

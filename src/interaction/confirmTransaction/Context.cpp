@@ -142,6 +142,7 @@ namespace gradido {
 				}
 				catch (std::exception& e) {
 					mBlockchain->addTransactionTriggerEvent(transactionTriggerEvent);
+					LOG_F(ERROR, "Error processing transaction trigger event for transaction: %u", transactionTriggerEvent->getLinkedTransactionId());
 					throw;
 				}
 				return false;

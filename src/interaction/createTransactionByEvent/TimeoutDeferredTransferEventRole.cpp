@@ -20,8 +20,8 @@ namespace gradido {
 				GradidoTransactionBuilder builder;
 				return builder
 					.setCreatedAt(mTransactionTriggerEvent->getTargetDate())
-					.setTimeoutDeferredTransfer(mTransactionTriggerEvent->getLinkedTransactionId())
 					.setSenderCommunity(blockchain.getCommunityIdIndex())
+					.setTimeoutDeferredTransfer(mTransactionTriggerEvent->getLinkedTransactionId())
 					.build()
 					;
 			}
