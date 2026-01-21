@@ -17,11 +17,11 @@ namespace gradido {
 	using namespace data;
 	namespace interaction {
 		namespace deserialize {
-		
+
 			TransactionBodyRole::TransactionBodyRole(const TransactionBodyMessage& bodyMessage, uint32 communityIdIndex)
 			{
 				const char* rootExceptionMessage = "missing member on deserialize transaction body";
-				
+
 				if (!bodyMessage["created_at"_f].has_value()) {
 					throw MissingMemberException(rootExceptionMessage, "created_at");
 				}
@@ -39,11 +39,10 @@ namespace gradido {
 						mTransactionBody->mMemos.push_back(EncryptedMemoRole(memoMessages[i]));
 					}
 				}
-				
+
 				mTransactionBody->mCreatedAt = TimestampRole(bodyMessage["created_at"_f].value()).data();
 				mTransactionBody->mVersionNumber = bodyMessage["version_number"_f].value();
 				mTransactionBody->mType = bodyMessage["type"_f].value();
-				auto otherGroupString = bodyMessage["other_group"_f].value_or("");
 				if (bodyMessage["other_group"_f].has_value()) {
 					mTransactionBody->mCommunityIdIndex = g_appContext->getOrAddCommunityIdIndex(bodyMessage["other_group"_f].value());
 				}

@@ -17,11 +17,11 @@ namespace gradido {
 			{
 				auto createdAt = mBody.getCreatedAt();
 				auto otherGroup = mBody.getOtherCommunityIdIndex();
-				TransactionBodyMessage message;	
+				TransactionBodyMessage message;
 				message["memos"_f].reserve(mBody.getMemos().size());
 				for (auto& encryptedMemo : mBody.getMemos()) {
 					message["memos"_f].push_back(EncryptedMemoMessage(
-						encryptedMemo.getKeyType(), 
+						encryptedMemo.getKeyType(),
 						encryptedMemo.getMemo().copyAsVector()
 					));
 				}
@@ -29,10 +29,14 @@ namespace gradido {
 				message["version_number"_f] = mBody.getVersionNumber();
 				message["type"_f] = mBody.getType();
 				if (otherGroup.has_value()) {
-					message["other_group"_f] = g_appContext->getCommunityIds().getDataForIndex(otherGroup.value());
+					auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(otherGroup.value());
+					if (!communityIdOptional.has_value()) {
+						throw DictionaryMissingEntryException("missing entry by serializing TransactionBody", "other_group");
+					}
+					message["other_group"_f] = communityIdOptional.value();
 				}
 
-				if (mBody.isCommunityRoot()) 
+				if (mBody.isCommunityRoot())
 				{
 					auto communityRoot = mBody.getCommunityRoot();
 					if (!communityRoot->getPublicKey()) {
