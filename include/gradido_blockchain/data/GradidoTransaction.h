@@ -49,7 +49,7 @@ namespace gradido {
 			SignatureMap			mSignatureMap;
 			memory::ConstBlockPtr	mBodyBytes;
 			uint32_t					mCommunityIdIndex;
-			LedgerAnchor			mPairingLedgerAnchor;			
+			LedgerAnchor			mPairingLedgerAnchor;
 
 			mutable ConstTransactionBodyPtr mTransactionBody;
 			mutable std::mutex mTransactionBodyMutex;

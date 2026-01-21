@@ -44,7 +44,7 @@ namespace gradido {
 				mTransactionBody->mVersionNumber = bodyMessage["version_number"_f].value();
 				mTransactionBody->mType = bodyMessage["type"_f].value();
 				if (bodyMessage["other_group"_f].has_value()) {
-					mTransactionBody->mCommunityIdIndex = g_appContext->getOrAddCommunityIdIndex(bodyMessage["other_group"_f].value());
+					mTransactionBody->mOtherCommunityIdIndex = g_appContext->getOrAddCommunityIdIndex(bodyMessage["other_group"_f].value());
 				}
 
 				if (bodyMessage["transfer"_f].has_value()) {
