@@ -63,7 +63,7 @@ namespace gradido {
 			}
 
 			std::shared_ptr<const data::ConfirmedTransaction> Context::run(std::shared_ptr<AbstractRole> role)
-            {				
+      {
 				assert(role);
 
 				// simple validate
@@ -88,7 +88,7 @@ namespace gradido {
 						throw BlockchainOrderException("previous transaction is younger");
 					}
 				}
-				
+
 				auto confirmedTransaction = role->createConfirmedTransaction(id, lastConfirmedTransaction);
 				role->runPreValidate(confirmedTransaction, mBlockchain);
 
@@ -102,12 +102,12 @@ namespace gradido {
 					}
 				}
 				validate.setSenderPreviousConfirmedTransaction(lastConfirmedTransaction);
-				// throw if some error occure				
+				// throw if some error occure
 
 				validate.run(type, mBlockchain);
-				
+
 				return confirmedTransaction;
-            }
+      }
 
 			bool Context::processTransactionTrigger(Timepoint endDate)
 			{
@@ -142,10 +142,10 @@ namespace gradido {
 				}
 				catch (std::exception& e) {
 					mBlockchain->addTransactionTriggerEvent(transactionTriggerEvent);
-					throw e;
+					throw;
 				}
 				return false;
 			}
-        }
     }
+  }
 }
