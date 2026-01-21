@@ -1,3 +1,4 @@
+#include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/types.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
@@ -20,6 +21,7 @@ namespace gradido {
 				return builder
 					.setCreatedAt(mTransactionTriggerEvent->getTargetDate())
 					.setTimeoutDeferredTransfer(mTransactionTriggerEvent->getLinkedTransactionId())
+					.setSenderCommunity(blockchain.getCommunityIdIndex())
 					.build()
 					;
 			}

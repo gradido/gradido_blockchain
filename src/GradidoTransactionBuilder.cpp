@@ -378,10 +378,24 @@ namespace gradido {
 		return *this;
 	}
 
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setSenderCommunity(uint32_t senderCommunityIdIndex)
+	{
+		checkBuildState(BuildingState::BUILDING_BODY);
+		mSenderCommunityIdIndex = senderCommunityIdIndex;
+		return *this;
+	}
+
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setRecipientCommunity(const string& recipientCommunityId)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		mRecipientCommunityIdIndex = g_appContext->getOrAddCommunityIdIndex(recipientCommunityId);
+		return *this;
+	}
+
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setRecipientCommunity(uint32_t recipientCommunityIdIndex)
+	{
+		checkBuildState(BuildingState::BUILDING_BODY);
+		mRecipientCommunityIdIndex = recipientCommunityIdIndex;
 		return *this;
 	}
 
