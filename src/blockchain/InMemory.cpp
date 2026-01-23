@@ -17,6 +17,7 @@
 #include "magic_enum/magic_enum.hpp"
 
 #include <algorithm>
+#include <string_view>
 
 using namespace magic_enum;
 using std::string_view;
@@ -29,8 +30,8 @@ namespace gradido {
 	using namespace interaction;
 
 	namespace blockchain {
-		InMemory::InMemory(string_view uniqueCommunityAlias, uint32_t communityIdÍndex)
-			: Abstract(communityIdÍndex),
+		InMemory::InMemory(string_view uniqueCommunityAlias, uint32_t communityIdIndex)
+			: Abstract(communityIdIndex),
 			mPublicKeyDirectory(std::string(uniqueCommunityAlias) + std::string("_publicKeyDictionary")),
 			mTransactionsIndex(), mSortedDirty(false), mExitCalled(false)
 		{
@@ -177,7 +178,7 @@ namespace gradido {
 				return startIt->second;
 			}
 			return nullptr;
-		}		
+		}
 
 		const TransactionEntries& InMemory::getSortedTransactions()
 		{
@@ -212,7 +213,7 @@ namespace gradido {
 					break;
 				}
 			}
-			return result;	
+			return result;
 		}
 
 		ConstTransactionEntryPtr InMemory::findOne(const Filter& filter/* = Filter::LAST_TRANSACTION*/) const

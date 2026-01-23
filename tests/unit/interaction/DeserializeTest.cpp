@@ -298,8 +298,8 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_EQ(confirmedTransaction->getId(), 7);
 	EXPECT_EQ(confirmedTransaction->getConfirmedAt(), confirmedAt);
 	EXPECT_EQ(confirmedTransaction->getVersionNumber(), GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING);
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[4]->getPublicKey(), 0).getBalance(), GradidoUnit::fromGradidoCent(1000000));
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[5]->getPublicKey(), 0).getBalance(), GradidoUnit::fromGradidoCent(8997483));
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[4]->getPublicKey(), communityIdIndex).getBalance(), GradidoUnit::fromGradidoCent(1000000));
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[5]->getPublicKey(), communityIdIndex).getBalance(), GradidoUnit::fromGradidoCent(8997483));
 	ASSERT_EQ(confirmedTransaction->getRunningHash()->size(), crypto_generichash_BYTES);
 	EXPECT_EQ(confirmedTransaction->getRunningHash()->convertToHex(), "0000000000000000000000000000000000000000000000000000000000000000");
 

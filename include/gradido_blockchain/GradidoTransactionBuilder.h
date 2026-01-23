@@ -8,6 +8,8 @@
 #include "gradido_blockchain/data/LedgerAnchor.h"
 
 #include <memory>
+#include <optional>
+#include <vector>
 #include <string>
 #include <string_view>
 
@@ -109,9 +111,11 @@ namespace gradido {
 		GradidoTransactionBuilder& setTransactionBody(memory::ConstBlockPtr bodyBytes);
 		//! Outbound transaction goes onto sender community blockchain and mark the starting point of transaction
 		GradidoTransactionBuilder& setSenderCommunity(const std::string& senderCommunityId);
+		GradidoTransactionBuilder& setSenderCommunity(uint32_t senderCommunityIdIndex);
 		//! set recipient community for cross community transaction
 		//! Inbound transaction goes onto recipient community blockchain and mark the end point of transaction
 		GradidoTransactionBuilder& setRecipientCommunity(const std::string& recipientCommunityId);
+		GradidoTransactionBuilder& setRecipientCommunity(uint32_t recipientCommunityIdIndex);
 		GradidoTransactionBuilder& sign(std::shared_ptr<KeyPairEd25519> keyPair);
 		//! \param paringMessageId usually only for cross community transactions, the iota message id of outbound transaction
 		GradidoTransactionBuilder& setParentLedgerAnchor(const data::LedgerAnchor& ledgerAnchor);

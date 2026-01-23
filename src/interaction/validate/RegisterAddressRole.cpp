@@ -41,14 +41,15 @@ namespace gradido {
 						data::AddressType::NONE == addressType) {
 						throw WrongAddressTypeException(
 							"register address transaction not allowed with community auf or gmw account or None",
-							addressType, 
-							mRegisterAddress->getUserPublicKey()
+							addressType,
+							mRegisterAddress->getUserPublicKey(),
+							c.senderBlockchain->getCommunityIdIndex()
 						);
 					}
-					
+
 					if (accountPubkey) {
 						validateEd25519PublicKey(accountPubkey, "accountPubkey");
-					}					
+					}
 					if (userPubkey) {
 						validateEd25519PublicKey(userPubkey, "userPubkey");
 					}
@@ -60,7 +61,7 @@ namespace gradido {
 					}
 				}
 
-				if ((type & Type::ACCOUNT) == Type::ACCOUNT) 
+				if ((type & Type::ACCOUNT) == Type::ACCOUNT)
 				{
 					assert(c.senderBlockchain);
 					blockchain::FilterBuilder filterBuilder;
@@ -80,7 +81,7 @@ namespace gradido {
 								"memory::ConstBlockPtr",
 								__FUNCTION__
 							);
-						}						
+						}
 						transactionWithSameAddress = c.senderBlockchain->findOne(
 							filterBuilder
 							.setInvolvedPublicKey(userPubkey)

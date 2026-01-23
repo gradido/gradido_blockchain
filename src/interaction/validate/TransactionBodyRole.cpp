@@ -100,6 +100,15 @@ namespace gradido {
 								}
 							}
 						}
+						if (mBody.getType() != CrossGroupType::LOCAL && !mBody.getOtherCommunityIdIndex().has_value()) {
+							throw TransactionValidationInvalidInputException(
+								"missing other community id index for cross group transaction",
+								"other_community_id_index",
+								"std::optional<uint32>",
+								"has value",
+								"null"
+							);
+						}
 					}
 
 					auto& specificRole = getSpecificTransactionRole();
@@ -108,11 +117,11 @@ namespace gradido {
 
 						if (mBody.getType() == CrossGroupType::OUTBOUND) {
 							c.recipientBlockchain = otherBlockchain;
-						} 
+						}
 						else if (mBody.getType() == CrossGroupType::INBOUND) {
 							c.recipientBlockchain = c.senderBlockchain;
 							c.senderBlockchain = otherBlockchain;
-						} 
+						}
 						else {
 							throw GradidoNodeInvalidDataException("Invalid branch, CrossGroupType::CROSS not implemented yet");
 						}

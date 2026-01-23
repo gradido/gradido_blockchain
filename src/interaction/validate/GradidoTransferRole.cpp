@@ -86,7 +86,7 @@ namespace gradido {
 					sender.getCoinCommunityIdIndex(),
 					previousConfirmedTransaction.getId() // calculate until this transaction nr
 				);
-					
+
 				if (sender.getAmount() > finalBalance + GradidoUnit::fromGradidoCent(100)) {
 					throw InsufficientBalanceException("not enough Gradido Balance for send coins", sender.getAmount(), finalBalance);
 				}
@@ -104,16 +104,18 @@ namespace gradido {
 				auto senderAddressType = c.senderBlockchain->getAddressType(filter);
 				if (AddressType::NONE == senderAddressType) {
 					throw WrongAddressTypeException(
-						"sender address not registered", 
-						senderAddressType, 
-						mGradidoTransfer->getSender().getPublicKey()
+						"sender address not registered",
+						senderAddressType,
+						mGradidoTransfer->getSender().getPublicKey(),
+						c.senderBlockchain->getCommunityIdIndex()
 					);
 				}
 				if (AddressType::DEFERRED_TRANSFER == senderAddressType) {
 					throw WrongAddressTypeException(
 						"sender address is deferred transfer, please use redeemDeferredTransferTransaction for that",
 						senderAddressType,
-						mGradidoTransfer->getSender().getPublicKey()
+						mGradidoTransfer->getSender().getPublicKey(),
+						c.senderBlockchain->getCommunityIdIndex()
 					);
 				}
 
@@ -122,10 +124,20 @@ namespace gradido {
 				filter.maxTransactionNr = c.recipientPreviousConfirmedTransaction->getId();
 				auto recipientAddressType = c.recipientBlockchain->getAddressType(filter);
 				if (AddressType::NONE == recipientAddressType) {
-					throw WrongAddressTypeException("recipient address not registered", recipientAddressType, mGradidoTransfer->getRecipient());
+					throw WrongAddressTypeException(
+						"recipient address not registered", 
+						recipientAddressType, 
+						mGradidoTransfer->getRecipient(),
+						c.recipientBlockchain->getCommunityIdIndex()
+					);
 				}
 				if (AddressType::DEFERRED_TRANSFER == recipientAddressType) {
-					throw WrongAddressTypeException("recipient cannot be a deferred transfer address", recipientAddressType, mGradidoTransfer->getRecipient());
+					throw WrongAddressTypeException(
+						"recipient cannot be a deferred transfer address",
+						recipientAddressType,
+						mGradidoTransfer->getRecipient(),
+						c.recipientBlockchain->getCommunityIdIndex()
+					);
 				}
 			}
 		}

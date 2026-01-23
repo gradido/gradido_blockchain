@@ -13,6 +13,7 @@ const auto targetDate = std::chrono::system_clock::from_time_t(1609459000);
 const auto timeout = std::chrono::system_clock::from_time_t(1609465000);
 const auto timeoutDuration = gradido::data::DurationSeconds(std::chrono::months(3));
 const auto communityId = "test-community";
+const uint32_t communityIdIndex = 0;
 
 const auto creationMemoString = "Deine erste Schoepfung ;)";
 const auto transferMemoString = "Ich teile mit dir";

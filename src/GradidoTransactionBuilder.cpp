@@ -102,11 +102,12 @@ namespace gradido {
 	unique_ptr<GradidoTransaction> GradidoTransactionBuilder::buildOutbound()
 	{
 		checkBuildState(BuildingState::CROSS_COMMUNITY);
+		assert(mSenderCommunityIdIndex.has_value());
 		assert(mBodyByteSignatureMaps.size());
 		auto result = make_unique<GradidoTransaction>(
 			mBodyByteSignatureMaps[0].signatureMap,
 			mBodyByteSignatureMaps[0].bodyBytes,
-			mBody->getCommunityIdIndex(),
+			mSenderCommunityIdIndex.value(),
 			mLedgerAnchor
 		);
 		return std::move(result);
@@ -115,6 +116,7 @@ namespace gradido {
 	unique_ptr<GradidoTransaction> GradidoTransactionBuilder::buildInbound()
 	{
 		checkBuildState(BuildingState::CROSS_COMMUNITY);
+		assert(mRecipientCommunityIdIndex.has_value());
 		assert(mBodyByteSignatureMaps.size() > 1);
 		if(mLedgerAnchor.empty()) {
 			throw GradidoTransactionBuilderException("missing pairing ledger anchor from outbound transaction for inbound transaction");
@@ -122,7 +124,7 @@ namespace gradido {
 		auto result = make_unique<GradidoTransaction>(
 			mBodyByteSignatureMaps[1].signatureMap,
 			mBodyByteSignatureMaps[1].bodyBytes,
-			mBody->getCommunityIdIndex(),
+			mRecipientCommunityIdIndex.value(),
 			mLedgerAnchor
 		);
 		reset();
@@ -329,7 +331,7 @@ namespace gradido {
 		}
 
 		mBody->mTimeoutDeferredTransfer = std::move(timeoutDeferredTransfer);
-		// special case, because TimeoutDeferredTransfer didn't need singnatures
+		// special case, because TimeoutDeferredTransfer didn't need signatures
 		switchBuildState();
 		mSpecificTransactionChoosen = true;
 		return *this;
@@ -378,10 +380,24 @@ namespace gradido {
 		return *this;
 	}
 
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setSenderCommunity(uint32_t senderCommunityIdIndex)
+	{
+		checkBuildState(BuildingState::BUILDING_BODY);
+		mSenderCommunityIdIndex = senderCommunityIdIndex;
+		return *this;
+	}
+
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setRecipientCommunity(const string& recipientCommunityId)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		mRecipientCommunityIdIndex = g_appContext->getOrAddCommunityIdIndex(recipientCommunityId);
+		return *this;
+	}
+
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setRecipientCommunity(uint32_t recipientCommunityIdIndex)
+	{
+		checkBuildState(BuildingState::BUILDING_BODY);
+		mRecipientCommunityIdIndex = recipientCommunityIdIndex;
 		return *this;
 	}
 

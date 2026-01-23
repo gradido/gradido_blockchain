@@ -96,6 +96,8 @@ namespace gradido {
 						throw BlockchainOrderException("deferred transfer transaction not allowed as first transaction on blockchain");
 					}
 					assert(c.senderBlockchain);
+					assert(c.recipientBlockchain);
+					// validate addresses
 					Filter filter(Filter::LAST_TRANSACTION);
 					filter.involvedPublicKey = mRedeemDeferredTransfer->getSenderPublicKey();
 					filter.maxTransactionNr = c.senderPreviousConfirmedTransaction->getId();
@@ -106,31 +108,35 @@ namespace gradido {
 						throw WrongAddressTypeException(
 							"sender address not registered",
 							senderAddressType,
-							mRedeemDeferredTransfer->getSenderPublicKey()
+							mRedeemDeferredTransfer->getSenderPublicKey(),
+							c.senderBlockchain->getCommunityIdIndex()
 						);
 					}
 					else if (AddressType::DEFERRED_TRANSFER != senderAddressType) {
 						throw WrongAddressTypeException(
 							"sender address isn't a deferred transfer",
 							senderAddressType,
-							mRedeemDeferredTransfer->getSenderPublicKey()
+							mRedeemDeferredTransfer->getSenderPublicKey(),
+							c.senderBlockchain->getCommunityIdIndex()
 						);
 					}
 					// check if recipient address was registered
 					filter.involvedPublicKey = mRedeemDeferredTransfer->getRecipientPublicKey();
-					auto recipientAddressType = c.senderBlockchain->getAddressType(filter);
+					auto recipientAddressType = c.recipientBlockchain->getAddressType(filter);
 					if (AddressType::NONE == recipientAddressType) {
 						throw WrongAddressTypeException(
 							"recipient address not registered",
-							recipientAddressType, 
-							mRedeemDeferredTransfer->getRecipientPublicKey()
+							recipientAddressType,
+							mRedeemDeferredTransfer->getRecipientPublicKey(),
+							c.recipientBlockchain->getCommunityIdIndex()
 						);
 					}
 					if (AddressType::DEFERRED_TRANSFER == recipientAddressType) {
 						throw WrongAddressTypeException(
-							"recipient cannot be a deferred transfer address", 
-							recipientAddressType, 
-							mRedeemDeferredTransfer->getRecipientPublicKey()
+							"recipient cannot be a deferred transfer address",
+							recipientAddressType,
+							mRedeemDeferredTransfer->getRecipientPublicKey(),
+							c.recipientBlockchain->getCommunityIdIndex()
 						);
 					}
 				}

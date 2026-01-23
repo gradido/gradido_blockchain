@@ -159,7 +159,7 @@ namespace serialization {
 			obj.AddMember("otherCommunity", toJson(otherCommunityIdString.value(), alloc), alloc);
 		}
 		switch (value.getTransactionType()) {
-		case TransactionType::TRANSFER: 
+		case TransactionType::TRANSFER:
 			obj.AddMember("transfer", toJson(*value.getTransfer(), alloc), alloc);
 			break;
 		case TransactionType::CREATION:
@@ -174,7 +174,7 @@ namespace serialization {
 		case TransactionType::DEFERRED_TRANSFER:
 			obj.AddMember("deferredTransfer", toJson(*value.getDeferredTransfer(), alloc), alloc);
 			break;
-		case TransactionType::COMMUNITY_ROOT: 
+		case TransactionType::COMMUNITY_ROOT:
 			obj.AddMember("communityRoot", toJson(*value.getCommunityRoot(), alloc), alloc);
 			break;
 		case TransactionType::REDEEM_DEFERRED_TRANSFER:

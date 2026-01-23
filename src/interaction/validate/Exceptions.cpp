@@ -1,3 +1,4 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
@@ -7,8 +8,12 @@
 #include "loguru/loguru.hpp"
 #include "magic_enum/magic_enum.hpp"
 
+#include <string>
+
 using namespace rapidjson;
 using namespace magic_enum;
+
+using std::string, std::to_string;
 
 namespace gradido {
 	namespace interaction {
@@ -106,7 +111,7 @@ namespace gradido {
 				if(!mActual.empty()) {
 					detailsObjs.AddMember("actual", Value(mActual.data(), alloc), alloc);
 				}
-				
+
 				return std::move(detailsObjs);
 			}
 
@@ -363,10 +368,20 @@ namespace gradido {
 			}
 
 			// **************************** Wrong Address Type Exception ***********************************
-			WrongAddressTypeException::WrongAddressTypeException(const char* what, data::AddressType type, memory::ConstBlockPtr pubkey) noexcept
+			WrongAddressTypeException::WrongAddressTypeException(
+				const char* what,
+				data::AddressType type,
+				memory::ConstBlockPtr pubkey,
+				uint32_t communityIdIndex
+			) noexcept
 				: TransactionValidationException(what), mType(type), mPublicKey(pubkey)
 			{
-
+				auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex);
+				if (communityIdOptional.has_value()) {
+					mCommunityId = communityIdOptional.value();
+				} else {
+					mCommunityId = to_string(communityIdIndex);
+				}
 			}
 			std::string WrongAddressTypeException::getFullString() const noexcept
 			{
@@ -376,12 +391,13 @@ namespace gradido {
 				if (mPublicKey) {
 					pubkeyHex = mPublicKey->convertToHex();
 				}
-				size_t resultSize = strlen(what()) + addressTypeName.size() + 2 + 14 + 10 + pubkeyHex.size();
+				size_t resultSize = strlen(what()) + addressTypeName.size() + 2 + 14 + 10 + pubkeyHex.size() + 15 + mCommunityId.size();
 				result.reserve(resultSize);
 				result = what();
 				result += ", address type: ";
 				result += addressTypeName;
 				result += ", pubkey: " + pubkeyHex;
+				result += ", communityId: " + mCommunityId;
 
 				return result;
 			}
@@ -393,6 +409,7 @@ namespace gradido {
 
 				auto addressTypeName = enum_name(mType);
 				jsonDetails.AddMember("addressType", Value(addressTypeName.data(), addressTypeName.size(), alloc), alloc);
+				jsonDetails.AddMember("communityId", Value(mCommunityId.data(), alloc), alloc);
 				return std::move(jsonDetails);
 			}
 		}

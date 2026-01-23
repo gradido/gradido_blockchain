@@ -74,22 +74,29 @@ namespace gradido {
 						throw WrongAddressTypeException(
 							"sender address not registered",
 							senderAddressType,
-							mDeferredTransfer->getSenderPublicKey()
+							mDeferredTransfer->getSenderPublicKey(),
+							c.senderBlockchain->getCommunityIdIndex()
 						);
 					}
 					else if (AddressType::DEFERRED_TRANSFER == senderAddressType) {
 						throw WrongAddressTypeException(
 							"sender address is deferred transfer, please use redeemDeferredTransferTransaction for that",
 							senderAddressType,
-							mDeferredTransfer->getSenderPublicKey()
+							mDeferredTransfer->getSenderPublicKey(),
+							c.senderBlockchain->getCommunityIdIndex()
 						);
 					}
 					// check if recipient address was registered
 					filter.involvedPublicKey = mDeferredTransfer->getRecipientPublicKey();
 					auto recipientAddressType = c.senderBlockchain->getAddressType(filter);
-					// with deferred transfer recipient address is completely new 
+					// with deferred transfer recipient address is completely new
 					if (AddressType::NONE != recipientAddressType) {
-						throw WrongAddressTypeException("deferred transfer address already exist", recipientAddressType, mDeferredTransfer->getRecipientPublicKey());
+						throw WrongAddressTypeException(
+							"deferred transfer address already exist",
+							recipientAddressType,
+							mDeferredTransfer->getRecipientPublicKey(),
+							c.senderBlockchain->getCommunityIdIndex()
+						);
 					}
 				}
 				// make copy from GradidoTransfer

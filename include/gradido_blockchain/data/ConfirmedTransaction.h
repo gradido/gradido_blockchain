@@ -55,6 +55,7 @@ namespace gradido {
 			bool hasAccountBalance(const memory::Block& publicKey, std::optional<uint32_t> communityIdIndex) const;
 			//! \return accountBalance if found one with same public key or an new empty AccountBalance with this public key
 			AccountBalance getAccountBalance(memory::ConstBlockPtr publicKey, std::optional<uint32_t> communityIdIndex) const;
+			AccountBalance getAccountBalance(memory::ConstBlockPtr publicKey, const std::string& communityIdIndex) const;
 			inline GradidoUnit getDecayedAccountBalance(
 				memory::ConstBlockPtr publicKey,
 				std::optional<uint32_t> coinCommunityIdIndex,

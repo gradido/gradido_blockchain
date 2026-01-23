@@ -39,7 +39,7 @@ namespace gradido {
 		{
 			friend InMemoryProvider;
 		public:
-			
+
 			~InMemory();
 
 			// remove all transactions and start over
@@ -58,7 +58,7 @@ namespace gradido {
 				data::ConstGradidoTransactionPtr gradidoTransaction,
 				const data::LedgerAnchor& ledgerAnchor,
 				std::vector<data::AccountBalance> accountBalances
-			);
+			) override;
 			virtual void addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent) override;
 			virtual void removeTransactionTriggerEvent(const data::TransactionTriggerEvent& transactionTriggerEvent) override;
 
@@ -95,7 +95,7 @@ namespace gradido {
 			// if called, mWorkMutex should be locked exclusive
 			void pushTransactionEntry(ConstTransactionEntryPtr transactionEntry);
 			void removeTransactionEntry(ConstTransactionEntryPtr transactionEntry);
-			
+
 			mutable std::recursive_mutex mWorkMutex;
 
 			// update map and multimap on every transaction add and remove

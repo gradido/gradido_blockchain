@@ -20,9 +20,8 @@ namespace gradido {
 			ConstBlockPtr pubkeyPtr,
 			const GradidoUnit& amount,
 			const std::string& coinCommunityId
-		) : mPublicKey(pubkeyPtr), mAmount(amount)
+		) : mPublicKey(pubkeyPtr), mAmount(amount), mCoinCommunityIdIndex(g_appContext->getOrAddCommunityIdIndex(coinCommunityId))
 		{
-			mCoinCommunityIdIndex = g_appContext->getOrAddCommunityIdIndex(coinCommunityId);
 			KeyPairEd25519::validatePublicKey(pubkeyPtr);
 		}
 	}
