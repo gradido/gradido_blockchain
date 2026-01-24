@@ -125,11 +125,11 @@ namespace gradido {
 						else {
 							throw GradidoNodeInvalidDataException("Invalid branch, CrossGroupType::CROSS not implemented yet");
 						}
-						c.recipientPreviousConfirmedTransaction = 
-							c.recipientBlockchain
-							->findOne(Filter::LAST_TRANSACTION)
-							->getConfirmedTransaction()
-							;
+						auto lastRecipientEntry = c.recipientBlockchain->findOne(Filter::LAST_TRANSACTION);
+						if (!lastRecipientEntry) {
+							throw GradidoNodeInvalidDataException("missing last transaction of other community id");
+						}
+						c.recipientPreviousConfirmedTransaction = lastRecipientEntry->getConfirmedTransaction();
 					}
 
 					specificRole.run(type, c);

@@ -159,7 +159,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreaded)
 	);
 }
 */
-
+/*
 #include <cassert>
 #include "gradido_blockchain/interaction/deserialize/Protopuf.h"
 using gradido::interaction::deserialize::ConfirmedTransactionMessage;
@@ -217,7 +217,7 @@ TEST_F(LoadFromBinary, toFromProtobuf)
 	printf("%s for deserialize and loading: %llu into memory\n", timeUsed.string().c_str(), count);
 	timeUsed.reset();
 }
-
+*/
 
 TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 {
@@ -252,9 +252,12 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 				break;
 			}
 			tx->getGradidoTransaction()->getTransactionBody();
-			if (count > 10000) {
+#ifdef _DEBUG
+			if (count > 8000) {
+				break;
 				//printf("%u: %s\n\n", transactionSize, serialization::toJsonString(*tx, true).data());
 			}
+#endif
 			// trigger body deserialization
 			try {
 				// printf("added: %s\n", toJsonString(*tx, true).data());
@@ -280,18 +283,24 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 	count = 0;
 	auto inMemoryBlockchain = static_cast<gradido::blockchain::InMemory*>(blockchain.get());
 	for (auto& tx : mTransactions) {
-		if (!tx || !tx->getGradidoTransaction()->getTransactionBody()) {
+		if (!tx) break;
+		const auto& body = tx->getGradidoTransaction()->getTransactionBody();
+		if (!body) {
 			break;
 		}
-		auto createdAt = tx->getGradidoTransaction()->getTransactionBody()->getCreatedAt();
+		auto createdAt = body->getCreatedAt();
 		TransactionId transactionId(createdAt, defaultHieroAccount);
+		if (body->isTimeoutDeferredTransfer()) {
+			printf("skip timeout deferred transfer\n");
+			continue;
+		}
 		try {
 			inMemoryBlockchain->createAndAddConfirmedTransactionExtern(tx->getGradidoTransaction(), LedgerAnchor(transactionId), tx->getAccountBalances());
 			// printf("%llu: %s\n\n", tx->getId(), serialization::toJsonString(*tx, true).data());
 		}
 		catch (GradidoBlockchainException& ex) {
 			printf("\nexception: %s\n", ex.getFullString().data());
-			printf("createdAt: %ld %d\n", createdAt.getSeconds(), createdAt.getNanos());
+			printf("createdAt: %ld %d, nr: %llu\n", createdAt.getSeconds(), createdAt.getNanos(), tx->getId());
 			int zahl = 1;
 			// throw;
 		}

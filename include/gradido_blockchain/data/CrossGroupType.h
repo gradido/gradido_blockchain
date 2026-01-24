@@ -3,7 +3,7 @@
 
 namespace gradido {
         namespace data {
-            enum class CrossGroupType {
+            enum class CrossGroupType: uint8_t {
                 LOCAL = 0,
                 INBOUND = 1,
                 OUTBOUND = 2,
