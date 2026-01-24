@@ -13,20 +13,15 @@
 #include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/GradidoUnit.h"
 #include "PublicKeyIndex.h"
+#include "TransactionTimestamps.h"
 
 namespace gradido::data::compact {
     struct GRADIDOBLOCKCHAIN_EXPORT ConfirmedGradidoTx 
     {
-        // timestamps confirmedAt and createdAt packed to save 8 Bytes padding
-        uint64_t seconds[2];
-        uint32_t nanoseconds[2];
+        TransactionTimestamps timestamps;
 
-        inline Timestamp getConfirmedAt() const {
-          return Timestamp(seconds[0], nanoseconds[0]);
-        }
-        inline Timestamp getCreatedAt() const {
-          return Timestamp(seconds[1], nanoseconds[1]);
-        } 
+        inline Timestamp getConfirmedAt() const { return timestamps.getConfirmedAt(); }
+        inline Timestamp getCreatedAt() const { return timestamps.getCreatedAt(); }
 
         // txId and pairingTxId packed to save 8 Bytes padding
         uint64_t txNrs[2];
