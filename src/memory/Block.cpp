@@ -39,6 +39,13 @@ namespace memory {
 	{
 
 	}
+
+	Block::Block(PublicKey publicKey)
+		: Block(publicKey.size(), publicKey.data())
+	{
+
+	}
+
 	// copy
 	Block::Block(Block& other)
 		: Block(other.size(), other.data())

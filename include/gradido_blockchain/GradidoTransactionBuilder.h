@@ -4,6 +4,7 @@
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/types.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/data/SignatureMap.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 
@@ -89,11 +90,11 @@ namespace gradido {
 		GradidoTransactionBuilder& setTransactionTransfer(std::unique_ptr<data::GradidoTransfer> transfer);
 
 		GradidoTransactionBuilder& setCommunityRoot(
-			memory::ConstBlockPtr pubkey,
-			memory::ConstBlockPtr gmwPubkey,
-			memory::ConstBlockPtr aufPubkey
+			const PublicKey& pubkey,
+			const PublicKey& gmwPubkey,
+			const PublicKey& aufPubkey
 		);
-		GradidoTransactionBuilder& setCommunityRoot(std::unique_ptr<data::CommunityRoot> communityRoot);
+		// GradidoTransactionBuilder& setCommunityRoot(std::unique_ptr<data::CommunityRoot> communityRoot);
 
 		GradidoTransactionBuilder& setRedeemDeferredTransfer(uint64_t deferredTransferTransactionNr, data::GradidoTransfer transactionTransfer);
 		GradidoTransactionBuilder& setRedeemDeferredTransfer(std::unique_ptr<data::GradidoRedeemDeferredTransfer> redeemDeferredTransfer);

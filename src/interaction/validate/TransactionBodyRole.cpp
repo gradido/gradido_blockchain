@@ -175,7 +175,7 @@ namespace gradido {
 					mSpecificTransactionRole = make_unique<GradidoTimeoutDeferredTransferRole>(mBody.getTimeoutDeferredTransfer());
 				}
 				else if (mBody.isCommunityRoot()) {
-					mSpecificTransactionRole = make_unique<CommunityRootRole>(mBody.getCommunityRoot());
+					mSpecificTransactionRole = make_unique<CommunityRootRole>(mBody.getCommunityRoot().value());
 				}
 
 				if (!mSpecificTransactionRole) {

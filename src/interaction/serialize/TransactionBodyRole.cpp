@@ -7,6 +7,12 @@
 
 #include "loguru/loguru.hpp"
 
+#include <span>
+#include <cstddef>
+
+using std::byte;
+using std::span;
+
 namespace gradido {
 	using namespace data;
 	using namespace std;
@@ -39,20 +45,19 @@ namespace gradido {
 				if (mBody.isCommunityRoot())
 				{
 					auto communityRoot = mBody.getCommunityRoot();
-					if (!communityRoot->getPublicKey()) {
-						throw MissingMemberException("missing member by serializing CommunityRoot Transaction", "pubkey");
+					if (!communityRoot) {
+						throw MissingMemberException("missing member by serializing TransactionBody", "CommunityRoot");
 					}
-					if (!communityRoot->getGmwPubkey()) {
-						throw MissingMemberException("missing member by serializing CommunityRoot Transaction", "gmwPubkey");
-					}
-					if (!communityRoot->getAufPubkey()) {
-						throw MissingMemberException("missing member by serializing CommunityRoot Transaction", "aufPubkey");
-					}
+					// span<byte>{ reinterpret_cast<byte*>(bodyBytes.data()), bodyBytes.size() };
+					auto communityRootValue = communityRoot.value();
+					auto publicKey = communityRootValue.publicKeyIndex.getRawKey();
+					auto gmwPublicKey = communityRootValue.gmwPublicKeyIndex.getRawKey();
+					auto aufPublicKey = communityRootValue.aufPublicKeyIndex.getRawKey();
 
-					message["community_root"_f] = CommunityRootMessage {
-						communityRoot->getPublicKey()->copyAsVector(),
-						communityRoot->getGmwPubkey()->copyAsVector(),
-						communityRoot->getAufPubkey()->copyAsVector()
+					message["community_root"_f] = CommunityRootMessage{
+						publicKey.copyAsVector(),
+						gmwPublicKey.copyAsVector(),
+						aufPublicKey.copyAsVector()
 					};
 				} 
 				else if (mBody.isRegisterAddress())
@@ -198,21 +203,8 @@ namespace gradido {
 				//printf("body base size: %lld\n", size);
 
 				if (mBody.isCommunityRoot()) {
-					auto communityRoot = mBody.getCommunityRoot();
-					if (!communityRoot->getPublicKey()) {
-						throw MissingMemberException("missing member by serializing CommunityRoot Transaction", "pubkey");
-					}
-					if (!communityRoot->getGmwPubkey()) {
-						throw MissingMemberException("missing member by serializing CommunityRoot Transaction", "gmwPubkey");
-					}
-					if (!communityRoot->getAufPubkey()) {
-						throw MissingMemberException("missing member by serializing CommunityRoot Transaction", "aufPubkey");
-					}
 					// 3x pubkey
-					size += 8
-						+ communityRoot->getPublicKey()->size()
-						+ communityRoot->getGmwPubkey()->size()
-						+ communityRoot->getAufPubkey()->size();
+					size += 8 + 32 * 3;
 					// printf("calculated size for community root: %lld\n", size);
 				}
 				else if (mBody.isRegisterAddress()) {

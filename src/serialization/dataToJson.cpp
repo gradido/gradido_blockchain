@@ -175,7 +175,9 @@ namespace serialization {
 			obj.AddMember("deferredTransfer", toJson(*value.getDeferredTransfer(), alloc), alloc);
 			break;
 		case TransactionType::COMMUNITY_ROOT:
-			obj.AddMember("communityRoot", toJson(*value.getCommunityRoot(), alloc), alloc);
+			if (value.getCommunityRoot()) {
+				obj.AddMember("communityRoot", toJson(value.getCommunityRoot().value(), alloc), alloc);
+			}
 			break;
 		case TransactionType::REDEEM_DEFERRED_TRANSFER:
 			obj.AddMember("redeemDeferredTransfer", toJson(*value.getRedeemDeferredTransfer(), alloc), alloc);

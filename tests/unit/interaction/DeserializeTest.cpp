@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "../KeyPairs.h"
@@ -83,10 +84,13 @@ TEST(DeserializeTest, CommunityRootBody)
 	EXPECT_FALSE(body->isRegisterAddress());
 	EXPECT_FALSE(body->isTransfer());
 
-	auto communityRoot = body->getCommunityRoot();
-	EXPECT_TRUE(communityRoot->getPublicKey()->isTheSame(g_KeyPairs[0]->getPublicKey()));
-	EXPECT_TRUE(communityRoot->getGmwPubkey()->isTheSame(g_KeyPairs[1]->getPublicKey()));
-	EXPECT_TRUE(communityRoot->getAufPubkey()->isTheSame(g_KeyPairs[2]->getPublicKey()));
+	auto communityRoot = body->getCommunityRoot().value();
+	auto communityRootPublicKey = g_appContext->getPublicKey(communityRoot.publicKeyIndex).value();
+	auto communityRootGmwPubkey = g_appContext->getPublicKey(communityRoot.gmwPublicKeyIndex).value();
+	auto communityRootAufPubkey = g_appContext->getPublicKey(communityRoot.aufPublicKeyIndex).value();
+	EXPECT_TRUE(communityRootPublicKey.isTheSame(g_KeyPairs[0]->getPublicKey()->data()));
+	EXPECT_TRUE(communityRootGmwPubkey.isTheSame(g_KeyPairs[1]->getPublicKey()->data()));
+	EXPECT_TRUE(communityRootAufPubkey.isTheSame(g_KeyPairs[2]->getPublicKey()->data()));
 }
 
 

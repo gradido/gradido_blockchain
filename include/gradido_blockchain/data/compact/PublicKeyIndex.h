@@ -9,8 +9,13 @@ namespace gradido::data::compact {
   struct GRADIDOBLOCKCHAIN_EXPORT PublicKeyIndex 
   {
     static PublicKeyIndex fromPublicKey(uint32_t communityIdIndex, const PublicKey& publicKey);
+    PublicKey getRawKey() const;
     uint32_t communityIdIndex;
-    uint32_t publicKeyIndex;        
+    uint32_t publicKeyIndex;  
+
+    inline bool operator==(const PublicKeyIndex& other) const {
+      return communityIdIndex == other.communityIdIndex && publicKeyIndex == other.publicKeyIndex;
+    }
   };
 }
 

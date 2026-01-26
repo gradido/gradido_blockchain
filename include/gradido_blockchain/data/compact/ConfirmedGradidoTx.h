@@ -2,7 +2,11 @@
 #define __GRADIDO_BLOCKCHAIN_DATA_COMPACT_CONFIRMED_GRADIDO_TX_H__  
 
 #include "AccountBalance.h"
+#include "CommunityRootTx.h"
+#include "PublicKeyIndex.h"
+#include "TransactionTimestamps.h"
 #include "TxId.h"
+
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/BalanceDerivationType.h"
@@ -12,8 +16,8 @@
 #include "gradido_blockchain/data/TimestampSeconds.h"
 #include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/GradidoUnit.h"
-#include "PublicKeyIndex.h"
-#include "TransactionTimestamps.h"
+
+
 
 namespace gradido::data::compact {
     struct GRADIDOBLOCKCHAIN_EXPORT ConfirmedGradidoTx 
@@ -69,11 +73,7 @@ namespace gradido::data::compact {
             PublicKeyIndex userPublicKeyIndex; // 8 Bytes
             PublicKeyIndex accountPublicKeyIndex; // 8 Bytes
           } registerAddress;
-          struct {
-            PublicKeyIndex communityPublicKeyIndex; // 8 Bytes
-            PublicKeyIndex communityAufPublicKeyIndex; // 8 Bytes
-            PublicKeyIndex communityGmwPublicKeyIndex; // 8 Bytes
-          } communityRoot;
+          CommunityRootTx communityRoot;
         };        
     };
 }

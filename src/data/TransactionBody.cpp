@@ -1,19 +1,29 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/TransactionBody.h"
+#include "gradido_blockchain/data/TransactionType.h"
+#include "gradido_blockchain/memory/Block.h"
+
+#include <memory>
+#include <vector>
+
+using memory::Block, memory::ConstBlockPtr;
+using std::shared_ptr, std::make_shared;
+using std::vector;
 
 namespace gradido {
 	namespace data {
 
 		TransactionType TransactionBody::getTransactionType() const
 		{
-			if (isTransfer()) return data::TransactionType::TRANSFER;
-			else if (isCreation()) return data::TransactionType::CREATION;
-			else if (isCommunityFriendsUpdate()) return data::TransactionType::COMMUNITY_FRIENDS_UPDATE;
-			else if (isRegisterAddress()) return data::TransactionType::REGISTER_ADDRESS;
-			else if (isDeferredTransfer()) return data::TransactionType::DEFERRED_TRANSFER;
-			else if (isCommunityRoot()) return data::TransactionType::COMMUNITY_ROOT;
-			else if (isRedeemDeferredTransfer()) return data::TransactionType::REDEEM_DEFERRED_TRANSFER;
-			else if (isTimeoutDeferredTransfer()) return data::TransactionType::TIMEOUT_DEFERRED_TRANSFER;
-			return data::TransactionType::NONE;
+			if (isTransfer()) return TransactionType::TRANSFER;
+			else if (isCreation()) return TransactionType::CREATION;
+			else if (isCommunityFriendsUpdate()) return TransactionType::COMMUNITY_FRIENDS_UPDATE;
+			else if (isRegisterAddress()) return TransactionType::REGISTER_ADDRESS;
+			else if (isDeferredTransfer()) return TransactionType::DEFERRED_TRANSFER;
+			else if (isCommunityRoot()) return TransactionType::COMMUNITY_ROOT;
+			else if (isRedeemDeferredTransfer()) return TransactionType::REDEEM_DEFERRED_TRANSFER;
+			else if (isTimeoutDeferredTransfer()) return TransactionType::TIMEOUT_DEFERRED_TRANSFER;
+			return TransactionType::NONE;
 		}
 
 		bool TransactionBody::isPairing(const TransactionBody& other) const
@@ -46,9 +56,13 @@ namespace gradido {
 			return false;
 		}
 
-		bool TransactionBody::isInvolved(const memory::Block& publicKey) const
+		bool TransactionBody::isInvolved(const Block& publicKey) const
 		{
-			if (isCommunityRoot()) return mCommunityRoot->isInvolved(publicKey);
+			if (isCommunityRoot()) {
+				assert(publicKey.size() == 32);
+				auto publicKeyIndex = g_appContext->getOrAddPublicKeyIndex(mCommunityIdIndex, { publicKey.data() });
+				return mSpecific.communityRoot.isInvolved({mCommunityIdIndex,publicKeyIndex});
+			}
 			if (isRegisterAddress()) return mRegisterAddress->isInvolved(publicKey);
 			if (isTransfer()) return mTransfer->isInvolved(publicKey);
 			if (isCreation()) return mCreation->isInvolved(publicKey);
@@ -70,10 +84,16 @@ namespace gradido {
 			return isTransfer() || isDeferredTransfer() || isRedeemDeferredTransfer() || isCreation();
 		}
 
-		std::vector<memory::ConstBlockPtr> TransactionBody::getInvolvedAddresses() const
+		vector<ConstBlockPtr> TransactionBody::getInvolvedAddresses() const
 		{
 			if (isCommunityFriendsUpdate()) return {};
-			if (isCommunityRoot()) return mCommunityRoot->getInvolvedAddresses();
+			if (isCommunityRoot()) {				
+				return {
+					make_shared<const Block>(g_appContext->getPublicKey(mSpecific.communityRoot.publicKeyIndex).value().data()),
+					make_shared<const Block>(g_appContext->getPublicKey(mSpecific.communityRoot.gmwPublicKeyIndex).value().data()),
+					make_shared<const Block>(g_appContext->getPublicKey(mSpecific.communityRoot.aufPublicKeyIndex).value().data())
+				};
+			}
 			if (isRegisterAddress()) return mRegisterAddress->getInvolvedAddresses();
 			if (isTransfer()) return mTransfer->getInvolvedAddresses();
 			if (isCreation()) return mCreation->getInvolvedAddresses();

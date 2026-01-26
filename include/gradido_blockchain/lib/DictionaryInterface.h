@@ -34,6 +34,8 @@ public:
 	 * @throws DictionaryNotFoundException if the index does not exist.
 	 */
 	virtual std::optional<DataType> getDataForIndex(size_t index) const = 0;
+
+	virtual bool hasIndex(size_t index) const = 0;
 };
 
 

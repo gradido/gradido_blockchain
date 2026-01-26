@@ -3,6 +3,7 @@
 
 #include "gradido_blockchain/GradidoUnit.h"
 #include "MemoKeyType.h"
+#include "gradido_blockchain/memory/Block.h"
 
 class AuthenticatedEncryption;
 

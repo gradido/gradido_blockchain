@@ -1,9 +1,11 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/RegisterAddress.h"
 #include "gradido_blockchain/interaction/validate/RegisterAddressRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
+#include "gradido_blockchain/memory/Block.h"
 
 #include "date/date.h"
 #include "magic_enum/magic_enum.hpp"
@@ -11,7 +13,8 @@
 #include <memory>
 #include <string>
 
-using std::shared_ptr;
+using memory::Block, memory::ConstBlockPtr;
+using std::shared_ptr, std::make_shared;
 using std::string;
 
 using namespace magic_enum;
@@ -165,18 +168,19 @@ namespace gradido {
 				bool foundCommunityRootSigner = false;
 
 				// check for account type
+				auto communityRootPublicKey = g_appContext->getPublicKey(communityRoot->getTransactionBody()->getCommunityRoot().value().publicKeyIndex).value();
 				for (auto& signPair : signPairs) {
 					if(signPair.getPublicKey()->isTheSame(mRegisterAddress->getAccountPublicKey()) ||
 					   signPair.getPublicKey()->isTheSame(mRegisterAddress->getUserPublicKey())) {
 						continue;
 					}
-					if (signPair.getPublicKey()->isTheSame(communityRoot->getTransactionBody()->getCommunityRoot()->getPublicKey())) {
+					if (communityRootPublicKey.isTheSame(signPair.getPublicKey()->data())) {
 						foundCommunityRootSigner = true;
 						break;
 					}
 				}
 				if (!foundCommunityRootSigner) {
-					throw TransactionValidationRequiredSignMissingException({ communityRoot->getTransactionBody()->getCommunityRoot()->getPublicKey()});
+					throw TransactionValidationRequiredSignMissingException({ make_shared<const Block>(communityRootPublicKey)});
 				}
 			}
 		}

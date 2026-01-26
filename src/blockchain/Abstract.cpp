@@ -1,3 +1,4 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
@@ -64,12 +65,16 @@ namespace gradido {
 			auto firstTransaction = findOne(Filter::FIRST_TRANSACTION);
 			if (!firstTransaction) return data::AddressType::NONE;
 			assert(firstTransaction->getTransactionBody()->isCommunityRoot());
-			auto communityRoot = firstTransaction->getTransactionBody()->getCommunityRoot();
-			if (communityRoot->getAufPubkey()->isTheSame(filter.involvedPublicKey)) {
-				return data::AddressType::COMMUNITY_AUF;
-			}
-			else if (communityRoot->getGmwPubkey()->isTheSame(filter.involvedPublicKey)) {
-				return data::AddressType::COMMUNITY_GMW;
+			auto communityRoot = firstTransaction->getTransactionBody()->getCommunityRoot().value();
+			if (filter.involvedPublicKey) {
+				assert(filter.involvedPublicKey->size() == 32);
+				auto involvedPublicKeyIndex = g_appContext->getOrAddPublicKeyIndex(mCommunityIdIndex, { filter.involvedPublicKey->data() });
+				if (communityRoot.aufPublicKeyIndex.publicKeyIndex == involvedPublicKeyIndex) {
+					return data::AddressType::COMMUNITY_AUF;
+				}
+				else if (communityRoot.gmwPublicKeyIndex.publicKeyIndex == involvedPublicKeyIndex) {
+					return data::AddressType::COMMUNITY_GMW;
+				}
 			}
 
 			// copy filter

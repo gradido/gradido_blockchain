@@ -93,6 +93,18 @@ namespace gradido {
     return blockchain->getPublicKeyDictionary().getDataForIndex(index.publicKeyIndex);
   }
 
+  bool AppContext::hasPublicKey(data::compact::PublicKeyIndex index) const noexcept
+  {
+    if (!mCommunityIds || mCommunityContexts.size() <= index.communityIdIndex) {
+      return false;
+    }
+    const auto& blockchain = mCommunityContexts[index.communityIdIndex].getBlockchain();
+    if (!blockchain) {
+      return false;
+    }
+    return blockchain->getPublicKeyDictionary().hasIndex(index.publicKeyIndex);
+  }
+
   uint32_t AppContext::getOrAddPublicKeyIndex(uint32_t communityIdIndex, const PublicKey& publicKey)
   {
     if (!mCommunityIds || mCommunityContexts.size() <= communityIdIndex) {

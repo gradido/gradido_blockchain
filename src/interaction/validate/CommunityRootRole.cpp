@@ -1,41 +1,52 @@
-#include "gradido_blockchain/data/CommunityRoot.h"
+#include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/data/compact/CommunityRootTx.h"
 #include "gradido_blockchain/interaction/validate/CommunityRootRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
+#include "gradido_blockchain/memory/Block.h"
 
 #include "date/date.h"
 
 #include <memory>
 
-using std::shared_ptr;
+using memory::ConstBlockPtr;
+using std::shared_ptr, std::make_shared;
+
 
 namespace gradido {
-	using data::ConfirmedTransaction, data::CommunityRoot;
+	using data::ConfirmedTransaction;
+	using data::compact::CommunityRootTx;
 	namespace interaction {
 		namespace validate {
 
-			CommunityRootRole::CommunityRootRole(shared_ptr<const CommunityRoot> communityRoot)
-				: mCommunityRoot(communityRoot) 
+			CommunityRootRole::CommunityRootRole(CommunityRootTx&& communityRoot)
+				: mCommunityRoot(std::move(communityRoot)) 
 			{
-				assert(communityRoot);
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mRequiredSignPublicKeys.push_back(mCommunityRoot->getPublicKey());
+				// TODO: update mRequiredSignPublicKeys using indices
+				mRequiredSignPublicKeys.emplace_back(make_shared<const memory::Block>(communityRoot.publicKeyIndex.getRawKey()));
 			}
 
 			void CommunityRootRole::run(Type type, ContextData& c) 
 			{
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					validateEd25519PublicKey(mCommunityRoot->getPublicKey(), "pubkey");
-					validateEd25519PublicKey(mCommunityRoot->getGmwPubkey(), "gmwPubkey");
-					validateEd25519PublicKey(mCommunityRoot->getAufPubkey(), "aufPubkey");
-
-					const auto& pubkey = *mCommunityRoot->getPublicKey();
-					const auto& gmwPubkey = *mCommunityRoot->getGmwPubkey();
-					const auto& aufPubkey = *mCommunityRoot->getAufPubkey();
-
-					if (gmwPubkey == aufPubkey) { throw TransactionValidationException("gmw and auf are the same"); }
-					if (pubkey == gmwPubkey) { throw TransactionValidationException("gmw and pubkey are the same"); }
-					if (aufPubkey == pubkey) { throw TransactionValidationException("aufPubkey and pubkey are the same"); }
+					if (
+						!g_appContext->hasPublicKey(mCommunityRoot.publicKeyIndex) ||
+						!g_appContext->hasPublicKey(mCommunityRoot.gmwPublicKeyIndex) ||
+						!g_appContext->hasPublicKey(mCommunityRoot.aufPublicKeyIndex)
+						) {
+						throw TransactionValidationException("at least one public key index is invalid");
+					}
+					
+					if (mCommunityRoot.gmwPublicKeyIndex == mCommunityRoot.aufPublicKeyIndex) {
+						throw TransactionValidationException("gmw and auf are the same"); 
+					}
+					if (mCommunityRoot.publicKeyIndex == mCommunityRoot.gmwPublicKeyIndex) { 
+						throw TransactionValidationException("gmw and pubkey are the same"); 
+					}
+					if (mCommunityRoot.aufPublicKeyIndex == mCommunityRoot.publicKeyIndex) { 
+						throw TransactionValidationException("aufPubkey and pubkey are the same");
+					}
 				}
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS) {
 					if (c.senderPreviousConfirmedTransaction) {

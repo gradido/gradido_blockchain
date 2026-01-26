@@ -1,6 +1,7 @@
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/data/EncryptedMemo.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/interaction/deserialize/DurationSecondsRole.h"
 #include "gradido_blockchain/interaction/deserialize/EncryptedMemoRole.h"
 #include "gradido_blockchain/interaction/deserialize/TransactionBodyRole.h"
@@ -15,6 +16,7 @@ using namespace std;
 
 namespace gradido {
 	using namespace data;
+	using data::compact::PublicKeyIndex;
 	namespace interaction {
 		namespace deserialize {
 
@@ -132,11 +134,12 @@ namespace gradido {
 					if (!communityRootMessage["auf_pubkey"_f].has_value()) {
 						throw MissingMemberException(exceptionMessage, "auf_pubkey");
 					}
-					mTransactionBody->mCommunityRoot = make_shared<data::CommunityRoot>(
-						std::make_shared<memory::Block>(communityRootMessage["pubkey"_f].value()),
-						std::make_shared<memory::Block>(communityRootMessage["gmw_pubkey"_f].value()),
-						std::make_shared<memory::Block>(communityRootMessage["auf_pubkey"_f].value())
-					);
+					mTransactionBody->mTransactionType = TransactionType::COMMUNITY_ROOT;
+					mTransactionBody->mSpecific.communityRoot = {
+						.publicKeyIndex = PublicKeyIndex::fromPublicKey(communityIdIndex, communityRootMessage["pubkey"_f].value()),
+						.gmwPublicKeyIndex = PublicKeyIndex::fromPublicKey(communityIdIndex, communityRootMessage["gmw_pubkey"_f].value()),
+						.aufPublicKeyIndex = PublicKeyIndex::fromPublicKey(communityIdIndex, communityRootMessage["auf_pubkey"_f].value()),
+					};
 				}
 			}
 

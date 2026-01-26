@@ -1,3 +1,11 @@
+#include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/blockchain/FilterBuilder.h"
+#include "gradido_blockchain/blockchain/SearchDirection.h"
+#include "gradido_blockchain/blockchain/TransactionEntry.h"
+#include "gradido_blockchain/blockchain/TransactionRelationType.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/Context.h"
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/CommunityRootTransactionRole.h"
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/CreationTransactionRole.h"
@@ -6,31 +14,34 @@
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/RegisterAddressTransactionRole.h"
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/TimeoutDeferredTransferTransactionRole.h"
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/TransferTransactionRole.h"
-#include "gradido_blockchain/data/ConfirmedTransaction.h"
-#include "gradido_blockchain/blockchain/Abstract.h"
-#include "gradido_blockchain/blockchain/FilterBuilder.h"
-#include "gradido_blockchain/blockchain/TransactionEntry.h"
-#include "gradido_blockchain/blockchain/TransactionRelationType.h"
+#include "gradido_blockchain/memory/Block.h"
 
 #include "magic_enum/magic_enum.hpp"
 
+#include <memory>
+
 using namespace magic_enum;
+using memory::Block, memory::ConstBlockPtr;
+using std::shared_ptr, std::make_shared;
 
 namespace gradido {
-	using namespace data;
-	using namespace blockchain;
+	using data::ConfirmedTransaction, data::TransactionBody, data::TransactionType;
+	using blockchain::Filter, blockchain::FilterBuilder, blockchain::FilterResult;
+	using blockchain::SearchDirection;
+	using blockchain::TransactionEntry, blockchain::TransactionRelationType;
+
 	namespace interaction {
 		namespace advancedBlockchainFilter {
-			std::shared_ptr<const TransactionEntry> Context::findRelatedTransaction(
-				std::shared_ptr<const ConfirmedTransaction> parent,
+			shared_ptr<const TransactionEntry> Context::findRelatedTransaction(
+				shared_ptr<const ConfirmedTransaction> parent,
 				TransactionRelationType type
 			) {
 				return findRelatedTransaction(parent->getGradidoTransaction()->getTransactionBody(), type, parent->getId() - 1);
 			}
 
-			std::shared_ptr<const TransactionEntry> Context::findRelatedTransaction(
-				std::shared_ptr<const data::TransactionBody> parentBody,
-				blockchain::TransactionRelationType type,
+			shared_ptr<const TransactionEntry> Context::findRelatedTransaction(
+				shared_ptr<const TransactionBody> parentBody,
+				TransactionRelationType type,
 				uint64_t maxTransactionNr
 			) {
 				auto transactionRole = getRole(parentBody);
@@ -64,10 +75,10 @@ namespace gradido {
 				}
 			}
 
-			std::shared_ptr<AbstractTransactionRole> Context::getRole(std::shared_ptr<const data::TransactionBody> transactionBody)
+			shared_ptr<AbstractTransactionRole> Context::getRole(shared_ptr<const TransactionBody> transactionBody)
 			{
 				// attention! work only if order in enum don't change
-				static const std::array<std::function<std::shared_ptr<AbstractTransactionRole>()>, enum_integer(TransactionType::MAX_VALUE)> roleCreators = {
+				static const std::array<std::function<shared_ptr<AbstractTransactionRole>()>, enum_integer(TransactionType::MAX_VALUE)> roleCreators = {
 					[&]() { return std::make_shared<CreationTransactionRole>(transactionBody); },
 					[&]() { return std::make_shared<TransferTransactionRole>(transactionBody); },
 					[&]() { return nullptr; },
@@ -91,7 +102,7 @@ namespace gradido {
 				return result;
 			}
 
-			memory::ConstBlockPtr Context::getPublicKeyForRelation(blockchain::TransactionRelationType type, std::shared_ptr<AbstractTransactionRole> role)
+			ConstBlockPtr Context::getPublicKeyForRelation(blockchain::TransactionRelationType type, shared_ptr<AbstractTransactionRole> role)
 			{
 				if (TransactionRelationType::RecipientPrevious == type) {
 					return role->getRecipientPublicKey();
@@ -103,12 +114,12 @@ namespace gradido {
 				{
 					auto firstTransactionEntry = mBlockchain->findOne(Filter::FIRST_TRANSACTION);
 					assert(firstTransactionEntry->getTransactionBody()->isCommunityRoot());
-					auto communityRoot = firstTransactionEntry->getTransactionBody()->getCommunityRoot();
-					if (TransactionRelationType::AufPrevious == type) {
-						return communityRoot->getAufPubkey();
+					auto communityRoot = firstTransactionEntry->getTransactionBody()->getCommunityRoot().value();
+					if (TransactionRelationType::GmwPrevious == type) {
+						return make_shared<const Block>(g_appContext->getPublicKey(communityRoot.gmwPublicKeyIndex).value());
 					}
-					else if (TransactionRelationType::GmwPrevious == type) {
-						return communityRoot->getGmwPubkey();
+					else if (TransactionRelationType::AufPrevious == type) {
+						return make_shared<const Block>(g_appContext->getPublicKey(communityRoot.aufPublicKeyIndex).value());
 					}
 				}
 				return nullptr;

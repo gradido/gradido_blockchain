@@ -123,11 +123,14 @@ namespace gradido {
 			return AccountBalance(publicKey, GradidoUnit::zero(), mGradidoTransaction->getCommunityIdIndex());
 		}
 
-		AccountBalance ConfirmedTransaction::getAccountBalance(memory::ConstBlockPtr publicKey, const std::string& communityIdIndex) const
+		AccountBalance ConfirmedTransaction::getAccountBalance(memory::ConstBlockPtr publicKey, const std::string& communityId) const
 		{
-			auto communityIdIdx = g_appContext->getCommunityIds().getIndexForData(communityIdIndex);
-			if (communityIdIdx.has_value()) {
-				return getAccountBalance(publicKey, communityIdIdx.value());
+			auto communityIdIndex = g_appContext->getCommunityIds().getIndexForData(communityId);
+			if (communityIdIndex.has_value()) {
+				return getAccountBalance(publicKey, static_cast<uint32_t>(communityIdIndex.value()));
+			}
+			else {
+				LOG_F(WARNING, "community id index not found for: %s", communityId.c_str());
 			}
 			return AccountBalance(publicKey, GradidoUnit::zero(), mGradidoTransaction->getCommunityIdIndex());
 		}

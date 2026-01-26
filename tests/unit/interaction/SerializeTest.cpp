@@ -67,9 +67,9 @@ TEST(SerializeTest, CommunityRootBody)
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setCommunityRoot(
-			g_KeyPairs[0]->getPublicKey(),
-			g_KeyPairs[1]->getPublicKey(),
-			g_KeyPairs[2]->getPublicKey()
+			g_KeyPairs[0]->getPublicKey()->data(),
+			g_KeyPairs[1]->getPublicKey()->data(),
+			g_KeyPairs[2]->getPublicKey()->data()
 		)
 		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])

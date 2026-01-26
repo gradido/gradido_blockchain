@@ -48,11 +48,11 @@ namespace gradido {
 
 			if (body->isCommunityRoot()) 
 			{
-				const auto& communityRoot = body->getCommunityRoot();
-				if (!addTransactionNrForIndex(getPublicKeyIndex(communityRoot->getAufPubkey()), txNr, AddressType::COMMUNITY_AUF)) {
+				auto communityRoot = body->getCommunityRoot().value();
+				if (!addTransactionNrForIndex(communityRoot.aufPublicKeyIndex.publicKeyIndex, txNr, AddressType::COMMUNITY_AUF)) {
 					LOG_F(WARNING, "couldn't add Community Auf Key to Address Indices");
 				}
-				if (!addTransactionNrForIndex(getPublicKeyIndex(communityRoot->getGmwPubkey()), txNr, AddressType::COMMUNITY_GMW)) {
+				if (!addTransactionNrForIndex(communityRoot.gmwPublicKeyIndex.publicKeyIndex, txNr, AddressType::COMMUNITY_GMW)) {
 					LOG_F(WARNING, "couldn't add Community GMW Key to Address Indices");
 				}
 			} 

@@ -35,6 +35,9 @@ namespace gradido {
     if (!mBlockchain) {
       throw GradidoNodeInvalidDataException("blockchain ptr is empty");
     }
+    if (publicKey.isEmpty()) {
+      throw GradidoNodeInvalidDataException("empty public key");
+    }
     return mBlockchain->getOrAddPublicKey(publicKey);
   }
 }

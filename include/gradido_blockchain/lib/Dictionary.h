@@ -43,6 +43,12 @@ public:
 		return mIndexDataLookup[index];
 	}
 
+	virtual bool hasIndex(size_t index) const override
+	{
+		if (index >= mIndexDataLookup.size()) { return false; }
+		return true;
+	}
+
 	virtual size_t getOrAddIndexForData(const DataType& data) override
 	{
 		// TODO: write unit test to test boundaries
@@ -91,6 +97,12 @@ public:
 	{
 		std::shared_lock _lock(mSharedMutex);
 		return RuntimeDictionary<DataType, Hash, Equal>::getDataForIndex(index);
+	}
+
+	virtual bool hasIndex(size_t index) const override
+	{
+		std::shared_lock _lock(mSharedMutex);
+		return RuntimeDictionary<DataType, Hash, Equal>::hasIndex(index);
 	}
 
 	virtual size_t getOrAddIndexForData(const DataType& data) override

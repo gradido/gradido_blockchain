@@ -74,6 +74,8 @@ namespace gradido {
    * @enduml
    */
     std::optional<PublicKey> getPublicKey(data::compact::PublicKeyIndex index) const noexcept;
+
+    bool hasPublicKey(data::compact::PublicKeyIndex index) const noexcept;
     uint32_t getOrAddPublicKeyIndex(uint32_t communityIdIndex, const PublicKey& publicKey);
   protected:
     bool isValidCommunityAlias(const std::string& communityId) const;
