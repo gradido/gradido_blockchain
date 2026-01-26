@@ -30,7 +30,7 @@ namespace gradido::data::compact {
         // for cross group transactions, else empty
         inline TxId getPairingTxId() const { return TxId(txNrs[1], communityIdIndex[1]); }
         
-        // account balances and memos via txId in separate list/manager/thingy
+        // memos and public key/ signature pairs via txId in separate list/manager/thingy
         
         // enums, usually uint8_t
         CrossGroupType crossGroupType;

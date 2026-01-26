@@ -6,7 +6,8 @@
 #include "gradido_blockchain/export.h"
 
 namespace gradido::data::compact {
-    struct GRADIDOBLOCKCHAIN_EXPORT RedeemDeferredTransferTx {
+    struct GRADIDOBLOCKCHAIN_EXPORT RedeemDeferredTransferTx 
+    {
         TxId deferredTransferTransactionNr;
         AccountBalance changeAccountBalance;
     };

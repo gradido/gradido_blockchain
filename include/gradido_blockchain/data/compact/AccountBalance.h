@@ -6,7 +6,8 @@
 #include "PublicKeyIndex.h"
 
 namespace gradido::data::compact {
-  struct GRADIDOBLOCKCHAIN_EXPORT AccountBalance {
+  struct GRADIDOBLOCKCHAIN_EXPORT AccountBalance 
+  {
     GradidoUnit balance;
     PublicKeyIndex publicKeyIndex;
   };

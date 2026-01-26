@@ -85,11 +85,14 @@ namespace gradido {
 			) const override;
 
 			AbstractProvider* getProvider() const override;
+			const IDictionary<PublicKey>& getPublicKeyDictionary() const override { return mPublicKeyDirectory; }
+			uint32_t getOrAddPublicKey(const PublicKey& publicKey) override;
 
 		protected:
 			InMemory(std::string_view uniqueCommunityAlias, uint32_t communityIdIndex);
 
-			RuntimeDictionary<memory::ConstBlockPtr, memory::ConstBlockPtrHash, memory::ConstBlockPtrEqual> mPublicKeyDirectory;
+			RuntimeDictionary<memory::ConstBlockPtr, memory::ConstBlockPtrHash, memory::ConstBlockPtrEqual> mDepractedPublicKeyDirectory;
+			RuntimeDictionary<PublicKey, PublicKeyHash, PublicKeyEqual> mPublicKeyDirectory;
 			TransactionsIndex mTransactionsIndex;
 
 			// if called, mWorkMutex should be locked exclusive

@@ -22,10 +22,10 @@ namespace memory {
 
 namespace gradido {
 	namespace data {
-		enum class AddressType;
+		enum class AddressType: uint8_t;
 		class CommunityFriendsUpdate;
 		class CommunityRoot;
-		enum class CrossGroupType;
+		enum class CrossGroupType: uint8_t;
 		class DurationSeconds;
 		class EncryptedMemo;
 		class GradidoTransaction;

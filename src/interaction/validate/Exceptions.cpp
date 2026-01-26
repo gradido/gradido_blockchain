@@ -372,15 +372,18 @@ namespace gradido {
 				const char* what,
 				data::AddressType type,
 				memory::ConstBlockPtr pubkey,
-				uint32_t communityIdIndex
+				std::optional<uint32_t> communityIdIndex
 			) noexcept
 				: TransactionValidationException(what), mType(type), mPublicKey(pubkey)
 			{
-				auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex);
-				if (communityIdOptional.has_value()) {
-					mCommunityId = communityIdOptional.value();
-				} else {
-					mCommunityId = to_string(communityIdIndex);
+				if (communityIdIndex) {
+					auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex.value());
+					if (communityIdOptional.has_value()) {
+						mCommunityId = communityIdOptional.value();
+					}
+					else {
+						mCommunityId = to_string(communityIdIndex.value());
+					}
 				}
 			}
 			std::string WrongAddressTypeException::getFullString() const noexcept
@@ -397,7 +400,9 @@ namespace gradido {
 				result += ", address type: ";
 				result += addressTypeName;
 				result += ", pubkey: " + pubkeyHex;
-				result += ", communityId: " + mCommunityId;
+				if (!mCommunityId.empty()) {
+					result += ", communityId: " + mCommunityId;
+				}
 
 				return result;
 			}

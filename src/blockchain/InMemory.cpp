@@ -32,6 +32,7 @@ namespace gradido {
 	namespace blockchain {
 		InMemory::InMemory(string_view uniqueCommunityAlias, uint32_t communityIdIndex)
 			: Abstract(communityIdIndex),
+			mDepractedPublicKeyDirectory(std::string(uniqueCommunityAlias) + std::string("_publicKeyDictionary")),
 			mPublicKeyDirectory(std::string(uniqueCommunityAlias) + std::string("_publicKeyDictionary")),
 			mTransactionsIndex(), mSortedDirty(false), mExitCalled(false)
 		{
@@ -48,6 +49,7 @@ namespace gradido {
 			mSortedDirty = false;
 			mSortedTransactions.clear();
 			mTransactionsIndex.reset();
+			mDepractedPublicKeyDirectory.reset();
 			mPublicKeyDirectory.reset();
 		}
 
@@ -199,7 +201,7 @@ namespace gradido {
 			TransactionEntries result;
 			// if pagination is used, filterCopy contain count of still to find transactions
 			Filter filterCopy(filter);
-			auto transactionNrs = mTransactionsIndex.findTransactions(filterCopy, mPublicKeyDirectory);
+			auto transactionNrs = mTransactionsIndex.findTransactions(filterCopy, mDepractedPublicKeyDirectory);
 			for (auto transactionNr : transactionNrs) {
 				if (!filter.pagination.hasCapacityLeft(result.size())) {
 					break;
@@ -229,7 +231,7 @@ namespace gradido {
 			if (!filter.involvedPublicKey) {
 				throw GradidoNodeInvalidDataException("missing public key, please use filter with involvedPublicKey set");
 			}
-			return mTransactionsIndex.getAddressType(filter.involvedPublicKey, mPublicKeyDirectory);
+			return mTransactionsIndex.getAddressType(filter.involvedPublicKey, mDepractedPublicKeyDirectory);
 		}
 
 		
@@ -262,12 +264,17 @@ namespace gradido {
 			return InMemoryProvider::getInstance();
 		}
 
+		uint32_t InMemory::getOrAddPublicKey(const PublicKey& publicKey)
+		{
+			return mPublicKeyDirectory.getOrAddIndexForData(publicKey);
+		}
+
 		void InMemory::pushTransactionEntry(ConstTransactionEntryPtr transactionEntry)
 		{
 			std::lock_guard _lock(mWorkMutex);
 			mSortedDirty = true;
 			auto confirmedTransaction = transactionEntry->getConfirmedTransaction();
-			mTransactionsIndex.addIndicesForTransaction(transactionEntry, mPublicKeyDirectory);
+			mTransactionsIndex.addIndicesForTransaction(transactionEntry, mDepractedPublicKeyDirectory);
 			mLedgerAnchorTransactionNrs.insert({ confirmedTransaction->getLedgerAnchor(), confirmedTransaction->getId() });
 			mTransactionsByNr.insert({ confirmedTransaction->getId(), transactionEntry });
 			auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();

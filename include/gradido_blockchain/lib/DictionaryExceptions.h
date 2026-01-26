@@ -38,5 +38,19 @@ protected:
 	std::string mMissingEntryValue;
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT DictionaryHoleException : public DictionaryException
+{
+public:
+	explicit DictionaryHoleException(const char* what, const char* name, size_t currentSize, size_t newIndex) noexcept
+		: DictionaryException(what), mName(name), mCurrentSize(currentSize), mNewIndex(newIndex) { }
+
+	std::string getFullString() const;
+
+protected:
+	std::string mName;
+	size_t mCurrentSize;
+	size_t mNewIndex;
+};
+
 
 #endif // __GRADIDO_BLOCKCHAIN_LIB_DICTIONARY_EXCEPTIONS_H

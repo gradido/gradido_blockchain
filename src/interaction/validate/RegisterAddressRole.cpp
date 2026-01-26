@@ -1,18 +1,27 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
+#include "gradido_blockchain/data/AddressType.h"
+#include "gradido_blockchain/data/RegisterAddress.h"
 #include "gradido_blockchain/interaction/validate/RegisterAddressRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 
 #include "date/date.h"
 #include "magic_enum/magic_enum.hpp"
 
+#include <memory>
+#include <string>
+
+using std::shared_ptr;
+using std::string;
+
 using namespace magic_enum;
 
 namespace gradido {
+	using data::AddressType, data::RegisterAddress;
 	namespace interaction {
 		namespace validate {
 
-			RegisterAddressRole::RegisterAddressRole(std::shared_ptr<const data::RegisterAddress> registerAddress)
+			RegisterAddressRole::RegisterAddressRole(shared_ptr<const RegisterAddress> registerAddress)
 				: mRegisterAddress(registerAddress) 
 			{
 				assert(registerAddress);
@@ -31,19 +40,24 @@ namespace gradido {
 				auto accountPubkey = mRegisterAddress->getAccountPublicKey();
 				auto userPubkey = mRegisterAddress->getUserPublicKey();
 
-				if (data::AddressType::COMMUNITY_PROJECT == addressType ||
-					data::AddressType::COMMUNITY_HUMAN == addressType) {
+				if (AddressType::COMMUNITY_PROJECT == addressType ||
+					AddressType::COMMUNITY_HUMAN == addressType) {
 				}
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
-					if (data::AddressType::COMMUNITY_GMW == addressType ||
-						data::AddressType::COMMUNITY_AUF == addressType ||
-						data::AddressType::NONE == addressType) {
+					if (AddressType::COMMUNITY_GMW == addressType ||
+						AddressType::COMMUNITY_AUF == addressType ||
+						AddressType::NONE == addressType) 
+					{
+						std::optional<uint32_t> communityIdIndex = std::nullopt;
+						if (c.senderBlockchain) {
+							communityIdIndex = c.senderBlockchain->getCommunityIdIndex();
+						}
 						throw WrongAddressTypeException(
 							"register address transaction not allowed with community auf or gmw account or None",
 							addressType,
 							mRegisterAddress->getUserPublicKey(),
-							c.senderBlockchain->getCommunityIdIndex()
+							communityIdIndex
 						);
 					}
 

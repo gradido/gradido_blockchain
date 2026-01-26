@@ -5,7 +5,8 @@
 #include "gradido_blockchain/types.h"
 
 namespace gradido::data::compact {
-  struct GRADIDOBLOCKCHAIN_EXPORT TxId {
+  struct GRADIDOBLOCKCHAIN_EXPORT TxId
+  {
 
     TxId() : nr(0), communityIdIndex(0) {}
     TxId(uint64_t nr, uint32_t communityIdIndex) : nr(nr), communityIdIndex(communityIdIndex) {}

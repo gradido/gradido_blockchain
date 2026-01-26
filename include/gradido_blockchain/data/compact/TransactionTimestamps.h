@@ -9,7 +9,8 @@ namespace gradido::data::compact {
   // for two timestamps, which are related to each other
   // createdAt is the first timestamp
   // confirmedAt is the second timestamp
-  struct GRADIDOBLOCKCHAIN_EXPORT TransactionTimestamps {
+  struct GRADIDOBLOCKCHAIN_EXPORT TransactionTimestamps 
+  {
     uint64_t createdSeconds;
     uint32_t createdNanos;
     // hedera is a bit special, confirmedAt can be before createdAt
