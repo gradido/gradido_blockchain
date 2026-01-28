@@ -91,7 +91,6 @@ namespace gradido {
 		protected:
 			InMemory(std::string_view uniqueCommunityAlias, uint32_t communityIdIndex);
 
-			RuntimeDictionary<memory::ConstBlockPtr, memory::ConstBlockPtrHash, memory::ConstBlockPtrEqual> mDepractedPublicKeyDirectory;
 			RuntimeDictionary<PublicKey, PublicKeyHash, PublicKeyEqual> mPublicKeyDirectory;
 			TransactionsIndex mTransactionsIndex;
 

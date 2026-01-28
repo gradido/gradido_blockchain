@@ -1,8 +1,9 @@
-#include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/TransactionsIndex.h"
 #include "gradido_blockchain/blockchain/RangeUtils.h"
+#include "gradido_blockchain/data/adapter/PublicKey.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/serialization/toJson.h"
 
@@ -17,6 +18,7 @@ using memory::Block;
 const size_t TRANSACTION_ENTRY_VECTOR_SIZE = 100;
 
 namespace gradido {
+	using data::adapter::toPublicKey;
 	using data::AddressType;
 	using data::TransactionType;
 	using blockchain::Filter;
@@ -136,7 +138,7 @@ namespace gradido {
 			return true;
 		}
 
-		bool TransactionsIndex::addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry, IMutableDictionary<memory::ConstBlockPtr>& publicKeyDictionary)
+		bool TransactionsIndex::addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry, IMutableDictionary<PublicKey>& publicKeyDictionary)
 		{
 			auto transactionNr = transactionEntry->getTransactionNr();
 
@@ -157,7 +159,7 @@ namespace gradido {
 			publicKeyIndices.reserve(involvedPublicKeys.size());
 			uint8_t balanceChangingBitMask = 0;
 			for (auto& pubKey : involvedPublicKeys) {
-				auto publicKeyIndex = publicKeyDictionary.getOrAddIndexForData(pubKey);
+				auto publicKeyIndex = publicKeyDictionary.getOrAddIndexForData(toPublicKey(pubKey));
 				publicKeyIndices.push_back(publicKeyIndex);
 				if (publicKeyIndices.size() < 8 && confirmedTransaction->isBalanceUpdated(*pubKey)) {
 					balanceChangingBitMask |= 1u << (publicKeyIndices.size() - 1);
@@ -178,14 +180,14 @@ namespace gradido {
 
 		}
 		
-		std::vector<uint64_t> TransactionsIndex::findTransactions(const Filter& originalFilter, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const
+		std::vector<uint64_t> TransactionsIndex::findTransactions(const Filter& originalFilter, const IDictionary<PublicKey>& publicKeyDictionary) const
 		{
 			uint32_t updatedBalancePublicKeyIndex = 0;
 			uint64_t lastBalanceChangedTransactionNr = 0;
 			Filter filter = originalFilter;
 
 			if (filter.updatedBalancePublicKey && !filter.updatedBalancePublicKey->isEmpty()) {
-				auto updatedBalancePublicKeyIndexOptional = publicKeyDictionary.getIndexForData(filter.updatedBalancePublicKey);
+				auto updatedBalancePublicKeyIndexOptional = publicKeyDictionary.getIndexForData(toPublicKey(filter.updatedBalancePublicKey));
 				if (updatedBalancePublicKeyIndexOptional.has_value()) {
 					updatedBalancePublicKeyIndex = updatedBalancePublicKeyIndexOptional.value();
 					lastBalanceChangedTransactionNr = mAddressIndex.lastBalanceChanged(updatedBalancePublicKeyIndex);
@@ -220,7 +222,7 @@ namespace gradido {
 
 			uint32_t publicKeyIndex = 0;
 			if (filter.involvedPublicKey && !filter.involvedPublicKey->isEmpty()) {
-				auto involvedPublicKeyIndexOptional = publicKeyDictionary.getIndexForData(filter.involvedPublicKey);
+				auto involvedPublicKeyIndexOptional = publicKeyDictionary.getIndexForData(toPublicKey(filter.involvedPublicKey));
 				if (involvedPublicKeyIndexOptional.has_value()) {
 					publicKeyIndex = involvedPublicKeyIndexOptional.value();
 				}
@@ -292,16 +294,16 @@ namespace gradido {
 			return result;
 		}
 
-		AddressType TransactionsIndex::getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const
+		AddressType TransactionsIndex::getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<PublicKey>& publicKeyDictionary) const
 		{
-			auto publicKeyIndexOptional = publicKeyDictionary.getIndexForData(publicKeyPtr);
+			auto publicKeyIndexOptional = publicKeyDictionary.getIndexForData(toPublicKey(publicKeyPtr));
 			if (!publicKeyIndexOptional.has_value()) {
 				return AddressType::NONE;
 			}
 			return mAddressIndex.getAddressType(publicKeyIndexOptional.value());
 		}
 
-		size_t TransactionsIndex::countTransactions(const Filter& originalFilter, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const
+		size_t TransactionsIndex::countTransactions(const Filter& originalFilter, const IDictionary<PublicKey>& publicKeyDictionary) const
 		{
 			// prefilter, early exit
 			uint32_t updatedBalancePublicKeyIndex = 0;
@@ -309,7 +311,7 @@ namespace gradido {
 			Filter filter = originalFilter;
 
 			if (filter.updatedBalancePublicKey && !filter.updatedBalancePublicKey->isEmpty()) {
-				auto updatedBalancePublicKeyIndexOptional = publicKeyDictionary.getIndexForData(filter.updatedBalancePublicKey);
+				auto updatedBalancePublicKeyIndexOptional = publicKeyDictionary.getIndexForData(toPublicKey(filter.updatedBalancePublicKey));
 				if (updatedBalancePublicKeyIndexOptional.has_value()) {
 					updatedBalancePublicKeyIndex = updatedBalancePublicKeyIndexOptional.value();
 					lastBalanceChangedTransactionNr = mAddressIndex.lastBalanceChanged(updatedBalancePublicKeyIndex);
@@ -329,7 +331,7 @@ namespace gradido {
 
 			uint32_t publicKeyIndex = 0;
 			if (filter.involvedPublicKey && !filter.involvedPublicKey->isEmpty()) {
-				auto involvedPublicKeyIndexOptional = publicKeyDictionary.getIndexForData(filter.involvedPublicKey);
+				auto involvedPublicKeyIndexOptional = publicKeyDictionary.getIndexForData(toPublicKey(filter.involvedPublicKey));
 				if (involvedPublicKeyIndexOptional.has_value()) {
 					publicKeyIndex = involvedPublicKeyIndexOptional.value();
 				}

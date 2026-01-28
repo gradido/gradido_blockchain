@@ -5,6 +5,7 @@
 #include "Filter.h"
 #include "TransactionEntry.h"
 #include "gradido_blockchain/export.h"
+#include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
 
@@ -41,16 +42,16 @@ namespace gradido {
 
 			rapidjson::Value serializeToJson(rapidjson::Document::AllocatorType& alloc) const;
 
-			bool addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry, IMutableDictionary<memory::ConstBlockPtr>& publicKeyDictionary);
+			bool addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry, IMutableDictionary<PublicKey>& publicKeyDictionary);
 
 			//! \brief search transaction nrs for search criteria in filter, ignore filter function
 			//! \return transaction nrs
-			std::vector<uint64_t> findTransactions(const gradido::blockchain::Filter& filter, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
-			data::AddressType getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
-			inline void updateAddressIndex(ConstTransactionEntryPtr transactionEntry, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
+			std::vector<uint64_t> findTransactions(const gradido::blockchain::Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary) const;
+			data::AddressType getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<PublicKey>& publicKeyDictionary) const;
+			inline void updateAddressIndex(ConstTransactionEntryPtr transactionEntry, const IDictionary<PublicKey>& publicKeyDictionary) const;
 
 			//! count all, ignore pagination
-			size_t countTransactions(const gradido::blockchain::Filter& filter, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
+			size_t countTransactions(const gradido::blockchain::Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary) const;
 
 			//! \brief find transaction nrs from specific month and year
 			//! \return {0, 0} if nothing found
@@ -108,7 +109,7 @@ namespace gradido {
 
 		void TransactionsIndex::updateAddressIndex(
 			ConstTransactionEntryPtr transactionEntry,
-			const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary
+			const IDictionary<PublicKey>& publicKeyDictionary
 		) const {
 			mAddressIndex.addTransaction(*transactionEntry, publicKeyDictionary);
 		}

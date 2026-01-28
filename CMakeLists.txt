@@ -186,9 +186,10 @@ endif()
 ############################## bind source files ###################################
 FILE(GLOB CRYPTO "include/gradido_blockchain/crypto/*.h" "src/crypto/*.cpp")
 FILE(GLOB DATA "include/gradido_blockchain/data/*.h" "src/data/*.cpp")
+FILE(GLOB DATA_ADAPTER "include/gradido_blockchain/data/adapter/*.h" "src/data/adapter/*.cpp")
+FILE(GLOB DATA_COMPACT "include/gradido_blockchain/data/compact/*.h" "src/data/compact/*.cpp")
 FILE(GLOB DATA_IOTA "include/gradido_blockchain/data/iota/*.h" "src/data/iota/*.cpp")
 FILE(GLOB DATA_HIERO "include/gradido_blockchain/data/hiero/*.h" "src/data/hiero/*.cpp")
-FILE(GLOB DATA_COMPACT "include/gradido_blockchain/data/compact/*.h" "src/data/compact/*.cpp")
 FILE(GLOB HTTP "include/gradido_blockchain/http/*.h" "src/http/*.cpp")
 FILE(GLOB INTERACTION "include/gradido_blockchain/interaction/*.h" "src/interaction/*.cpp")
 FILE(GLOB LIB_SRC "include/gradido_blockchain/lib/*.h" "src/lib/*.cpp")
@@ -237,7 +238,7 @@ FILE(GLOB INTERACTION_VALIDATE
 SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${BLOCKCHAIN}
 	${CRYPTO}
-	${DATA} ${DATA_IOTA} ${DATA_HIERO} ${DATA_COMPACT}
+	${DATA} ${DATA_ADAPTER} ${DATA_COMPACT} ${DATA_IOTA} ${DATA_HIERO} 
 	${INTERACTION}
 	${LIB_SRC}
 	${MAIN}
@@ -264,7 +265,8 @@ if(MSVC)
 	# src
 	source_group("blockchain" FILES ${BLOCKCHAIN})
 	source_group("crypto" FILES ${CRYPTO})
-	source_group("data\\compact" FILES ${DATA_COMPACT})
+	source_group("data\\adapter" FILES ${DATA_ADAPTER})
+	source_group("data\\compact" FILES ${DATA_COMPACT})	
 	source_group("data\\iota" FILES ${DATA_IOTA})
 	source_group("data\\hiero" FILES ${DATA_HIERO})
 	source_group("data" FILES ${DATA})

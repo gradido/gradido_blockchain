@@ -1,6 +1,7 @@
-#include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/blockchain/AddressIndex.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
+#include "gradido_blockchain/data/adapter/PublicKey.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/memory/Block.h"
 
@@ -12,7 +13,7 @@ using std::make_pair, std::vector, std::move;
 using memory::ConstBlockPtr;
 
 namespace gradido {
-
+	using data::adapter::toPublicKey;
 	using data::AddressType;
 
 	namespace blockchain {
@@ -32,14 +33,14 @@ namespace gradido {
 			mIndexTransactionNrs.clear();
 		}
 
-		void AddressIndex::addTransaction(const TransactionEntry& transactionEntry, const IDictionary<ConstBlockPtr>& publicKeyDictionary)
+		void AddressIndex::addTransaction(const TransactionEntry& transactionEntry, const IDictionary<PublicKey>& publicKeyDictionary)
 		{
 			const auto& body = transactionEntry.getConfirmedTransaction()->getGradidoTransaction()->getTransactionBody();
 			uint64_t txNr = transactionEntry.getTransactionNr();
 
 			auto getPublicKeyIndex = [&](const ConstBlockPtr pubKeyPtr) -> uint32_t {
 				assert(pubKeyPtr);
-				auto index = publicKeyDictionary.getIndexForData(pubKeyPtr);
+				auto index = publicKeyDictionary.getIndexForData(toPublicKey(pubKeyPtr));
 				if (!index.has_value()) {
 					throw DictionaryMissingEntryException("AddressIndex: missing index of public key in Dictionary", pubKeyPtr->convertToHex());
 				}

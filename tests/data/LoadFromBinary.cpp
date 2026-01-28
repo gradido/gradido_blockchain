@@ -162,33 +162,34 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreaded)
 /*
 #include <cassert>
 #include "gradido_blockchain/interaction/deserialize/Protopuf.h"
+#include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 using gradido::interaction::deserialize::ConfirmedTransactionMessage;
 using gradido::interaction::deserialize::TransactionBodyMessage;
 TEST_F(LoadFromBinary, toFromProtobuf)
 {
-	
 	std::ifstream f("data.bin", ifstream::in | ifstream::binary);
 	uint16_t transactionSize = 0;
 	Profiler timeUsed;
 	// std::deque<std::shared_ptr<memory::Block>> transactionBins;
-	std::deque<ConfirmedTransactionMessage> transactions;
+	std::deque<gradido::data::compact::ConfirmedGradidoTx> transactions;
 	printf("message size: %llu\n", sizeof(ConfirmedTransactionMessage));
-	const size_t bufferSize = 800;
-	std::array<uint8_t, bufferSize> buffer;
+	//const size_t bufferSize = 800;
+	//std::array<uint8_t, bufferSize> buffer;
 	size_t count = 0;
 	int biggestTransactionSize = 0;
 	while (f.good()) {
 		f.read((char*)&transactionSize, sizeof(uint16_t));
 		if (transactionSize > 10000) break;
-		if (transactionSize > bufferSize) {
-			printf("buffer overflow, transaction size: %u\n", transactionSize);
-			break;
-		}
+		// if (transactionSize > bufferSize) {
+		// 	printf("buffer overflow, transaction size: %u\n", transactionSize);
+		// 	break;
+		// }
 		if (transactionSize > biggestTransactionSize) {
 			biggestTransactionSize = transactionSize;
 		}
+		Block buffer(transactionSize);
 		f.read((char*)(buffer.data()), transactionSize);
-		auto bufferSpan = std::span<std::byte>{reinterpret_cast<std::byte*>(buffer.data()), transactionSize};
+		auto bufferSpan = buffer.span();//  std::span<std::byte>{reinterpret_cast<std::byte*>(buffer.data()), transactionSize};
 		try {
 			auto result = message_coder<ConfirmedTransactionMessage>::decode(bufferSpan);
 			assert(result.has_value());
@@ -199,6 +200,7 @@ TEST_F(LoadFromBinary, toFromProtobuf)
 			auto bodyResult = message_coder<TransactionBodyMessage>::decode(bodyBytesSpan);
 			assert(bodyResult.has_value());
 			auto& [transactionBody, bufferEnd3] = *bodyResult;
+			transactions.emplace_back();
 			// transactions.emplace_back(std::move(confirmedTransaction));
 			//
 			// auto result2 = message_coder<ConfirmedTransactionMessage>::encode(confirmedTransaction, bufferSpan);
@@ -217,16 +219,42 @@ TEST_F(LoadFromBinary, toFromProtobuf)
 	printf("%s for deserialize and loading: %llu into memory\n", timeUsed.string().c_str(), count);
 	timeUsed.reset();
 }
-*/
+// */
 
 TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 {
-	std::ifstream f("data.bin", ifstream::in | ifstream::binary);
-	uint16_t transactionSize = 0;
-
-	// list<ConstGradidoTransactionPtr> transactions;
 	Profiler timeUsed;
-	std::string communityId = "gradido-community";
+	uint16_t transactionSize = 0;
+	std::vector<memory::ConstBlockPtr> herzlichRawTxs;
+	{
+		std::ifstream herzlicht("herzlicht.dat", ifstream::in | ifstream::binary);
+		while (herzlicht.good()) {
+			herzlicht.read((char*)&transactionSize, sizeof(uint16_t));
+			if (transactionSize > 800) break;
+			auto buffer = make_shared<memory::Block>(transactionSize);
+			herzlicht.read((char*)(buffer->data()), transactionSize);
+			herzlichRawTxs.emplace_back(buffer);
+		}
+	}
+	std::vector<memory::ConstBlockPtr> wekingheimRawTxs;
+	{
+		std::ifstream wekingheim("wekingheim.dat", ifstream::in | ifstream::binary);
+		while (wekingheim.good()) {
+			wekingheim.read((char*)&transactionSize, sizeof(uint16_t));
+			if (transactionSize > 800) break;
+			auto buffer = make_shared<memory::Block>(transactionSize);
+			wekingheim.read((char*)(buffer->data()), transactionSize);
+			herzlichRawTxs.emplace_back(buffer);
+		}
+	}
+	printf("%s to load wekingheim and herzlicht raws\n", timeUsed.string().c_str());
+
+	// std::ifstream f("data.bin", ifstream::in | ifstream::binary);
+	std::ifstream academy("gradido_akademie.dat", ifstream::in | ifstream::binary);
+	
+	// list<ConstGradidoTransactionPtr> transactions;
+	timeUsed.reset();
+	std::string communityId = "gradido-akademie";
 	auto provider = InMemoryProvider::getInstance();
 	auto blockchain = provider->findBlockchain(communityId);
 	auto communityIdIndex = g_appContext->getCommunityIds().getIndexForData(communityId).value();
@@ -234,10 +262,10 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 	list<ConstConfirmedTransactionPtr> mTransactions;
 	int count = 0;
 
-	while (f.good()) {
-		f.read((char*)&transactionSize, sizeof(uint16_t));
+	while (academy.good()) {
+		academy.read((char*)&transactionSize, sizeof(uint16_t));
 		auto buffer = make_shared<memory::Block>(transactionSize);
-		f.read((char*)(buffer->data()), transactionSize);
+		academy.read((char*)(buffer->data()), transactionSize);
 		deserialize::Context deserializer(buffer, deserialize::Type::CONFIRMED_TRANSACTION);
 		try {
 			deserializer.run(communityIdIndex);
@@ -272,7 +300,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 			printf("error on transaction deserialize: %u\n", transactionSize);
 		}
 		count++;
-		// if (count > 10100) break;
+		// if (count > 8000) break;
 	}
 	// printf("\n");
 	printf("%s time to load and deserialize %d transactions from binary file\n",
@@ -302,16 +330,16 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 			printf("\nexception: %s\n", ex.getFullString().data());
 			printf("createdAt: %ld %d, nr: %llu\n", createdAt.getSeconds(), createdAt.getNanos(), tx->getId());
 			int zahl = 1;
-			// throw;
+			throw;
 		}
 		catch (std::exception& ex) {
 			printf("\nex: %s\n", ex.what());
 			int zahl = 2;
-			// throw;
+			throw;
 		}
 		catch (...) {
 			printf("\nunknow exceptions\n");
-			// throw;
+			throw;
 		}
 		count++;
 		// if (count > 100) break;
