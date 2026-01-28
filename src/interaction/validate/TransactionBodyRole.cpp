@@ -161,7 +161,7 @@ namespace gradido {
 					throw GradidoNotImplementedException("interaction::validate missing role for communityFriendsUpdate");
 				}
 				else if (mBody.isRegisterAddress()) {
-					mSpecificTransactionRole = make_unique<RegisterAddressRole>(mBody.getRegisterAddress());
+					mSpecificTransactionRole = make_unique<RegisterAddressRole>(mBody.getRegisterAddress().value());
 				}
 				else if (mBody.isDeferredTransfer()) {
 					mSpecificTransactionRole = make_unique<GradidoDeferredTransferRole>(mBody.getDeferredTransfer());

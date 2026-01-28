@@ -1,16 +1,20 @@
 #include "gradido_blockchain/interaction/deserialize/Exceptions.h"
 
-#include "gradido_blockchain/interaction/serialize/Exceptions.h"
+#include <string>
+using std::string;
 
-namespace gradido {
-	namespace interaction {
-		namespace deserialize {
-			std::string MissingMemberException::getFullString() const
-			{
-				std::string result(what());
-				result += ", member name: " + mMemberName;
-				return result;
-			}
-		}
+namespace gradido::interaction::deserialize {	
+	string MissingMemberException::getFullString() const
+	{
+		string result(what());
+		result += ", member name: " + mMemberName;
+		return result;
+	}
+
+	string EmptyMemberException::getFullString() const 
+	{
+		string result(what());
+		result += ", member name: " + mMemberName;
+		return result;
 	}
 }

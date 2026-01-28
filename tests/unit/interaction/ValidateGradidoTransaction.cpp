@@ -29,12 +29,13 @@ TEST(ValidateGradidoTransaction, validCommunityRootGradidoTransaction)
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setCommunityRoot(
 			g_KeyPairs[0]->getPublicKey()->data(),
 			g_KeyPairs[1]->getPublicKey()->data(),
 			g_KeyPairs[2]->getPublicKey()->data()
 		)
-		.setSenderCommunity(communityId)
+
 		.sign(g_KeyPairs[0])
 		;
 	auto transaction = builder.build();
@@ -51,12 +52,12 @@ TEST(ValidateGradidoTransaction, invalidCommunityRootWrongSigner)
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setCommunityRoot(
 			g_KeyPairs[0]->getPublicKey()->data(),
 			g_KeyPairs[1]->getPublicKey()->data(),
 			g_KeyPairs[2]->getPublicKey()->data()
 		)
-		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[1])
 		;
 	auto transaction = builder.build();
@@ -72,14 +73,15 @@ TEST(ValidateGradidoTransaction, validRegisterAddressTransaction)
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
-			nullptr,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
-		)
-		.setSenderCommunity(communityId)
+		)		
 		.sign(g_KeyPairs[0])
+		.sign(g_KeyPairs[3])
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -94,13 +96,13 @@ TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionMissingSignatu
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
-			nullptr,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
-		)
-		.setSenderCommunity(communityId)
+		)		
 		.sign(g_KeyPairs[0])
 		;
 	auto transaction = builder.build();
@@ -117,14 +119,15 @@ TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionMissingRequire
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
-			nullptr,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
-		)
-		.setSenderCommunity(communityId)
+		)		
 		.sign(g_KeyPairs[0])
+		.sign(g_KeyPairs[2])
 		.sign(g_KeyPairs[3])
 		;
 	auto transaction = builder.build();

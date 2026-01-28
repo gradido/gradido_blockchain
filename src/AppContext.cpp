@@ -22,8 +22,9 @@ namespace gradido {
   regex regExCommunityAlias(COMMUNITY_ID_REGEX_STRING);
 
   AppContext::AppContext(
-    unique_ptr<IMutableDictionary<string>> communityIds
-  ) : mCommunityIds(std::move(communityIds))//, mPublicKeys(std::move(publicKeys))
+    unique_ptr<IMutableDictionary<string>> communityIds,
+    unique_ptr<IMutableDictionary<GenericHash>> userNameHashs
+  ) : mCommunityIds(std::move(communityIds)), mUserNameHashs(std::move(userNameHashs))
   {
 
   }
@@ -48,6 +49,19 @@ namespace gradido {
       throw DictionaryHoleException("community contexts deque has a hole", "communityIds", mCommunityContexts.size(), index);
     }
     
+    return index;
+  }
+
+  uint32_t AppContext::getOrAddUserNameHashIndex(const GenericHash& hash)
+  {
+    if (hash.isEmpty()) {
+      throw GradidoNodeInvalidDataException("try to add empty user name hash");
+    }
+    auto index = mUserNameHashs->getOrAddIndexForData(hash);
+    if (static_cast<uint32_t>(index) != index) {
+      LOG_F(FATAL, "more user name hashes as expected, uint32_t don't is enough");
+      throw GradidoNotImplementedException("more user name hashes with more then uint32_t index can handle isn't implemented");
+    }
     return index;
   }
 

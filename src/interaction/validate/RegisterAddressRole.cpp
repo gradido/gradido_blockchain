@@ -1,8 +1,13 @@
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
+#include "gradido_blockchain/blockchain/SearchDirection.h"
+#include "gradido_blockchain/blockchain/TransactionEntry.h"
+#include "gradido_blockchain/data/adapter/PublicKey.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/RegisterAddress.h"
+#include "gradido_blockchain/data/SignatureMap.h"
+#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/interaction/validate/RegisterAddressRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/memory/Block.h"
@@ -11,37 +16,37 @@
 #include "magic_enum/magic_enum.hpp"
 
 #include <memory>
+#include <optional>
 #include <string>
 
 using memory::Block, memory::ConstBlockPtr;
+using std::optional, std::nullopt;
 using std::shared_ptr, std::make_shared;
 using std::string;
 
 using namespace magic_enum;
 
 namespace gradido {
-	using data::AddressType, data::RegisterAddress;
+	using blockchain::Filter, blockchain::FilterBuilder, blockchain::SearchDirection, blockchain::TransactionEntry;
+	using data::adapter::toConstBlockPtr;
+	using data::AddressType, data::RegisterAddress, data::SignatureMap, data::TransactionType;
 	namespace interaction {
 		namespace validate {
 
-			RegisterAddressRole::RegisterAddressRole(shared_ptr<const RegisterAddress> registerAddress)
+			RegisterAddressRole::RegisterAddressRole(const data::compact::RegisterAddressTx& registerAddress)
 				: mRegisterAddress(registerAddress) 
 			{
-				assert(registerAddress);
-				if (registerAddress->getAccountPublicKey()) {
-					mRequiredSignPublicKeys.push_back(registerAddress->getAccountPublicKey());
-				}
-				else if (registerAddress->getUserPublicKey()) {
-					mRequiredSignPublicKeys.push_back(registerAddress->getUserPublicKey());
-				}
-				mMinSignatureCount = 2;
+				mRequiredSignPublicKeyIndices[0] = registerAddress.accountPublicKeyIndex;
+				mRequiredSignPublicKeyIndices[1] = registerAddress.userPublicKeyIndex;
+				mMinSignatureCount = 3;
+				mRequiredSignPublicKeyIndicesCount = 2;
 			}
 
 			void RegisterAddressRole::run(Type type, ContextData& c)
 			{
-				auto addressType = mRegisterAddress->getAddressType();
-				auto accountPubkey = mRegisterAddress->getAccountPublicKey();
-				auto userPubkey = mRegisterAddress->getUserPublicKey();
+				auto addressType = mRegisterAddress.addressType;
+				auto accountPubkeyIndex = mRegisterAddress.accountPublicKeyIndex;
+				auto userPubkeyIndex = mRegisterAddress.userPublicKeyIndex;
 
 				if (AddressType::COMMUNITY_PROJECT == addressType ||
 					AddressType::COMMUNITY_HUMAN == addressType) {
@@ -52,38 +57,34 @@ namespace gradido {
 						AddressType::COMMUNITY_AUF == addressType ||
 						AddressType::NONE == addressType) 
 					{
-						std::optional<uint32_t> communityIdIndex = std::nullopt;
+						optional<uint32_t> communityIdIndex = std::nullopt;
 						if (c.senderBlockchain) {
 							communityIdIndex = c.senderBlockchain->getCommunityIdIndex();
 						}
 						throw WrongAddressTypeException(
 							"register address transaction not allowed with community auf or gmw account or None",
 							addressType,
-							mRegisterAddress->getUserPublicKey(),
+							userPubkeyIndex,
 							communityIdIndex
 						);
 					}
-
-					if (accountPubkey) {
-						validateEd25519PublicKey(accountPubkey, "accountPubkey");
+					if (!g_appContext->hasPublicKey(accountPubkeyIndex)) {
+						throw TransactionValidationInvalidInputException("missing key for index", "account public key");
 					}
-					if (userPubkey) {
-						validateEd25519PublicKey(userPubkey, "userPubkey");
+					if (!g_appContext->hasPublicKey(userPubkeyIndex)) {
+						throw TransactionValidationInvalidInputException("missing key for index", "user public key");
 					}
-					if (accountPubkey && userPubkey && accountPubkey->isTheSame(userPubkey)) {
+					if (accountPubkeyIndex == userPubkeyIndex) {
 						throw TransactionValidationException("accountPubkey and userPubkey are the same");
-					}
-					if (!accountPubkey && !userPubkey) {
-						throw TransactionValidationException("accountPubkey and userPubkey are both empty, at least one is needed");
 					}
 				}
 
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT)
 				{
 					assert(c.senderBlockchain);
-					blockchain::FilterBuilder filterBuilder;
+					FilterBuilder filterBuilder;
 
-					std::shared_ptr<const blockchain::TransactionEntry> transactionWithSameAddress;
+					shared_ptr<const TransactionEntry> transactionWithSameAddress;
 					if (!c.senderPreviousConfirmedTransaction) {
 						throw GradidoNullPointerException(
 							"missing previous confirmed transaction for sender in interaction::validate RegisterAddress Type::ACCOUNT",
@@ -91,55 +92,41 @@ namespace gradido {
 							__FUNCTION__
 						);
 					}
-					if (data::AddressType::SUBACCOUNT == addressType) {
-						if (!userPubkey) {
-							throw GradidoNullPointerException(
-								"missing user pubkey for subaccount",
-								"memory::ConstBlockPtr",
-								__FUNCTION__
-							);
-						}
+					if (AddressType::SUBACCOUNT == addressType) {
 						transactionWithSameAddress = c.senderBlockchain->findOne(
 							filterBuilder
-							.setInvolvedPublicKey(userPubkey)
+							.setInvolvedPublicKey(toConstBlockPtr(userPubkeyIndex))
 							.setMaxTransactionNr(c.senderPreviousConfirmedTransaction->getId())
-							.setSearchDirection(blockchain::SearchDirection::DESC)
+							.setSearchDirection(SearchDirection::DESC)
 							.build()
 						);
 						if (!transactionWithSameAddress) {
 							throw AddressAlreadyExistException(
 								"cannot register sub address because user is missing",
-								userPubkey->convertToHex(),
+								userPubkeyIndex.toString(),
 								addressType
 							);
 						}
 						transactionWithSameAddress.reset();
 					}
 					else {
-						if (!userPubkey) {
-							throw GradidoUnhandledEnum(
-								"register address has invalid type for account validation",
-								enum_type_name<decltype(addressType)>().data(),
-								enum_name(addressType).data()
-							);
-						}
 						transactionWithSameAddress = c.senderBlockchain->findOne(
 							filterBuilder
-							.setInvolvedPublicKey(userPubkey)
+							.setInvolvedPublicKey(toConstBlockPtr(userPubkeyIndex))
 							.setMaxTransactionNr(c.senderPreviousConfirmedTransaction->getId())
-							.setTransactionType(data::TransactionType::REGISTER_ADDRESS)
-							.setSearchDirection(blockchain::SearchDirection::DESC)
+							.setTransactionType(TransactionType::REGISTER_ADDRESS)
+							.setSearchDirection(SearchDirection::DESC)
 							.setPagination({ 1 })
 							.build()
 						);
 						if (transactionWithSameAddress) {
 							if (
-								(accountPubkey && transactionWithSameAddress->getTransactionBody()->isInvolved(*accountPubkey)) ||
-								(userPubkey && transactionWithSameAddress->getTransactionBody()->isInvolved(*userPubkey))
+								(transactionWithSameAddress->getTransactionBody()->isInvolved(accountPubkeyIndex)) ||
+								(transactionWithSameAddress->getTransactionBody()->isInvolved(userPubkeyIndex))
 								) {
 								throw AddressAlreadyExistException(
 									"cannot register address because it already exist",
-									userPubkey->convertToHex(),
+									userPubkeyIndex.toString(),
 									addressType
 								);
 							}
@@ -149,8 +136,8 @@ namespace gradido {
 			}
 
 			void RegisterAddressRole::checkRequiredSignatures(
-				const data::SignatureMap& signatureMap,
-				std::shared_ptr<blockchain::Abstract> blockchain /*  = nullptr*/
+				const SignatureMap& signatureMap,
+				shared_ptr<blockchain::Abstract> blockchain /*  = nullptr*/
 			) const
 			{
 				AbstractRole::checkRequiredSignatures(signatureMap, blockchain);
@@ -158,29 +145,30 @@ namespace gradido {
 				auto& signPairs = signatureMap.getSignaturePairs();
 
 				// get community root transaction
-				blockchain::Filter filter;
-				filter.transactionType = data::TransactionType::COMMUNITY_ROOT;
-				filter.searchDirection = blockchain::SearchDirection::ASC;
-				auto communityRoot = blockchain->findOne(filter);
-				if (!communityRoot) {
+				auto communityRootTx = blockchain->findOne(Filter::FIRST_TRANSACTION);
+				if (!communityRootTx) {
 					throw BlockchainOrderException("cannot find community root transaction before register address");
+				}
+				auto communityRoot = communityRootTx->getTransactionBody()->getCommunityRoot();
+				if (!communityRoot) {
+					throw GradidoNodeInvalidDataException("first transaction isn't valid community root transaction");
 				}
 				bool foundCommunityRootSigner = false;
 
 				// check for account type
-				auto communityRootPublicKey = g_appContext->getPublicKey(communityRoot->getTransactionBody()->getCommunityRoot().value().publicKeyIndex).value();
 				for (auto& signPair : signPairs) {
-					if(signPair.getPublicKey()->isTheSame(mRegisterAddress->getAccountPublicKey()) ||
-					   signPair.getPublicKey()->isTheSame(mRegisterAddress->getUserPublicKey())) {
+					auto signPublicKey = signPair.getPublicKey();
+					if(signPublicKey->isTheSame(mRegisterAddress.accountPublicKeyIndex) ||
+						signPublicKey->isTheSame(mRegisterAddress.userPublicKeyIndex)) {
 						continue;
 					}
-					if (communityRootPublicKey.isTheSame(signPair.getPublicKey()->data())) {
+					if (signPublicKey->isTheSame(communityRoot->publicKeyIndex)) {
 						foundCommunityRootSigner = true;
 						break;
 					}
 				}
 				if (!foundCommunityRootSigner) {
-					throw TransactionValidationRequiredSignMissingException({ make_shared<const Block>(communityRootPublicKey)});
+					throw TransactionValidationRequiredSignMissingException({ communityRoot->publicKeyIndex });
 				}
 			}
 		}

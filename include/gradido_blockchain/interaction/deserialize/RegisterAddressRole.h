@@ -4,8 +4,8 @@
 #include "Protopuf.h"
 
 namespace gradido {
-    namespace data {
-        class RegisterAddress;
+    namespace data::compact {
+        class RegisterAddressTx;
     }
     namespace interaction {
         namespace deserialize {
@@ -14,7 +14,7 @@ namespace gradido {
             public:
                 RegisterAddressRole(const RegisterAddressMessage& registerAddressMessage);
                 ~RegisterAddressRole() {}
-                std::unique_ptr<data::RegisterAddress> run() const;
+                data::compact::RegisterAddressTx run(uint32_t communityIdIndex) const;
             protected:
                 const RegisterAddressMessage& mRegisterAddressMessage;
             };

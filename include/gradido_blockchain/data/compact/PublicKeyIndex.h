@@ -9,13 +9,16 @@ namespace gradido::data::compact {
   struct GRADIDOBLOCKCHAIN_EXPORT PublicKeyIndex 
   {
     static PublicKeyIndex fromPublicKey(uint32_t communityIdIndex, const PublicKey& publicKey);
+    // get raw key from app context->communityContext or exception when not found
     PublicKey getRawKey() const;
+    // return a string, communityid . public key hex if found, or ids when not found
+    std::string toString() const noexcept;
+
     uint32_t communityIdIndex;
     uint32_t publicKeyIndex;  
 
-    inline bool operator==(const PublicKeyIndex& other) const {
-      return communityIdIndex == other.communityIdIndex && publicKeyIndex == other.publicKeyIndex;
-    }
+    inline bool operator==(const PublicKeyIndex&) const = default;
+    inline bool operator!=(const PublicKeyIndex&) const = default;
   };
 }
 

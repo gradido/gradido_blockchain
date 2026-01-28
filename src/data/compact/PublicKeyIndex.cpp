@@ -29,4 +29,26 @@ namespace gradido::data::compact {
       }
       return rawPublicKey.value();
     }
+
+    string PublicKeyIndex::toString() const noexcept
+    {
+      string result;
+      auto communityId = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex);
+      if (communityId) {
+        result = communityId.value();
+      }
+      else {
+        result = to_string(communityIdIndex);
+      }
+      result += '.';
+
+      auto rawPublicKey = g_appContext->getPublicKey(*this);
+      if (!rawPublicKey) {
+        result += to_string(publicKeyIndex);
+      }
+      else {
+        result += rawPublicKey->convertToHex();
+      }
+      return result;
+    }
 }

@@ -62,24 +62,30 @@ namespace gradido {
 				} 
 				else if (mBody.isRegisterAddress())
 				{
-					auto registerAddress = mBody.getRegisterAddress();
-					auto userPubkey = registerAddress->getUserPublicKey();
-					auto nameHash = registerAddress->getNameHash();
-					auto accountPubkey = registerAddress->getAccountPublicKey();
+					auto registerAddress = mBody.getRegisterAddress().value();
+					auto userPubkey = g_appContext->getPublicKey(registerAddress.userPublicKeyIndex);
+					auto nameHash = g_appContext->getUseNameHashs().getDataForIndex(registerAddress.nameHashIndex);
+					auto accountPubkey = g_appContext->getPublicKey(registerAddress.accountPublicKeyIndex);
 
-					RegisterAddressMessage registerAddressMessage;
-					if (userPubkey) {
-						registerAddressMessage["user_pubkey"_f] = userPubkey->copyAsVector();
+					if (!userPubkey || !nameHash || !accountPubkey) {
+						throw MissingMemberException("missing member of register address transaction", "userPublicKey||accountPublicKey||nameHash");
 					}
-					registerAddressMessage["address_type"_f] = registerAddress->getAddressType();
-					if (nameHash) {
-						registerAddressMessage["name_hash"_f] = nameHash->copyAsVector();
-					}
-					if (accountPubkey) {
-						registerAddressMessage["account_pubkey"_f] = accountPubkey->copyAsVector();
-					}
-					registerAddressMessage["derivation_index"_f] = registerAddress->getDerivationIndex();
+					
+					message["register_address"_f] = RegisterAddressMessage{
+						userPubkey->copyAsVector(),
+						registerAddress.addressType,
+						nameHash->copyAsVector(),
+						accountPubkey->copyAsVector(),
+						registerAddress.derivationIndex
+					};
+					
+					/*registerAddressMessage["user_pubkey"_f] = userPubkey->copyAsVector();
+					registerAddressMessage["address_type"_f] = registerAddress.addressType;
+					registerAddressMessage["name_hash"_f] = nameHash->copyAsVector();
+					registerAddressMessage["account_pubkey"_f] = accountPubkey->copyAsVector();
+					registerAddressMessage["derivation_index"_f] = registerAddress.derivationIndex;
 					message["register_address"_f] = registerAddressMessage;
+					*/
 				}
 				else if (mBody.isCreation())
 				{
@@ -209,10 +215,7 @@ namespace gradido {
 				}
 				else if (mBody.isRegisterAddress()) {
 					auto registerAddress = mBody.getRegisterAddress();
-					size += 4;
-					if (registerAddress->getUserPublicKey()) size += registerAddress->getUserPublicKey()->size();
-					if (registerAddress->getNameHash()) size += registerAddress->getNameHash()->size();
-					if (registerAddress->getAccountPublicKey()) size += registerAddress->getAccountPublicKey()->size();
+					size += 4 + 32 * 3;
 					size += 2 + 4;
 					// printf("calculated size for register address: %lld\n", size);
 				}

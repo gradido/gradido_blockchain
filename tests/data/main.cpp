@@ -30,6 +30,7 @@
 #include <cstdio>
 #include "gtest/gtest.h"
 #include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/crypto/CryptoConfig.h"
 #include "gradido_blockchain/lib/Dictionary.h"
 #include "gradido_blockchain/version.h"
@@ -59,7 +60,10 @@ using std::unique_ptr, std::make_unique;
 // GTEST_API_ 
 int main(int argc, char** argv) {
 	testing::InitGoogleTest(&argc, argv);
-	g_appContext = make_unique<AppContext>(make_unique<ThreadsafeRuntimeDictionary<std::string>>("communityIdDictionary"));
+	g_appContext = make_unique<AppContext>(
+		make_unique<ThreadsafeRuntimeDictionary<std::string>>("communityIdDictionary"),
+		make_unique<ThreadsafeRuntimeDictionary<GenericHash, GenericHashHash, GenericHashEqual>>("userNameHashDictionary")
+	);
 	CryptoConfig::g_ServerCryptoKey = std::make_shared<memory::Block>(memory::Block::fromHex("153afcd54ef316e45cd3e5ed4567cd21", 32));
 	//printf("Running main() from %s\n", __FILE__);
 	//

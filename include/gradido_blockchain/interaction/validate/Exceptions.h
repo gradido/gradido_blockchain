@@ -3,6 +3,7 @@
 
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/data/AddressType.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/TransactionType.h"
 
 #include "gradido_blockchain/GradidoUnit.h"
@@ -86,12 +87,13 @@ namespace gradido {
 			{
 			public:
 				explicit TransactionValidationForbiddenSignException(memory::ConstBlockPtr forbiddenPubkey) noexcept;
+				explicit TransactionValidationForbiddenSignException(data::compact::PublicKeyIndex publicKeyIndex) noexcept;
 				~TransactionValidationForbiddenSignException();
 
 				std::string getFullString() const noexcept;
 				rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 			protected:
-				memory::ConstBlockPtr mForbiddenPubkey;
+				std::string mForbiddenPubkeyHex;
 
 			};
 
@@ -112,6 +114,7 @@ namespace gradido {
 			{
 			public:
 				explicit TransactionValidationRequiredSignMissingException(const std::vector<memory::ConstBlockPtr>& missingPublicKeys) noexcept;
+				explicit TransactionValidationRequiredSignMissingException(const std::vector<data::compact::PublicKeyIndex>& missingPublicKeyIndices) noexcept;
 
 			protected:
 				std::vector<std::string> mMissingPublicKeysHex;
@@ -169,13 +172,14 @@ namespace gradido {
 			{
 			public:
 				explicit WrongAddressTypeException(const char* what, data::AddressType type, memory::ConstBlockPtr pubkey, std::optional<uint32_t> communityIdIndex) noexcept;
+				explicit WrongAddressTypeException(const char* what, data::AddressType type, data::compact::PublicKeyIndex pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept;
 
 				std::string getFullString() const noexcept;
 				rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 
 			protected:
 				data::AddressType mType;
-				memory::ConstBlockPtr mPublicKey;
+				std::string mPublicKeyHex;
 				std::string mCommunityId;
 			};
 		}

@@ -169,7 +169,9 @@ namespace serialization {
 			obj.AddMember("communityFriendsUpdate", toJson(*value.getCommunityFriendsUpdate(), alloc), alloc);
 			break;
 		case TransactionType::REGISTER_ADDRESS:
-			obj.AddMember("registerAddress", toJson(*value.getRegisterAddress(), alloc), alloc);
+			if (value.getRegisterAddress()) {
+				obj.AddMember("registerAddress", toJson(value.getRegisterAddress().value(), alloc), alloc);
+			}
 			break;
 		case TransactionType::DEFERRED_TRANSFER:
 			obj.AddMember("deferredTransfer", toJson(*value.getDeferredTransfer(), alloc), alloc);

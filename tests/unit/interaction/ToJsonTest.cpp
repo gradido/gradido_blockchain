@@ -32,12 +32,12 @@ TEST(ToJsonTest, CommunityRootBody)
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setCommunityRoot(
 			g_KeyPairs[0]->getPublicKey()->data(),
 			g_KeyPairs[1]->getPublicKey()->data(),
 			g_KeyPairs[2]->getPublicKey()->data()
 		)
-		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
 	;
 	auto transaction = builder.build();
@@ -52,21 +52,22 @@ TEST(ToJsonTest, RegisterAddressBody) {
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
-			nullptr,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()	
 		)
-		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
+		.sign(g_KeyPairs[3])
 		.sign(g_KeyPairs[4])
 	;
 	auto transaction = builder.build();
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body->isRegisterAddress());
 
-	EXPECT_EQ(toJsonString(*body), "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"registerAddress\":{\"userPubkey\":\"f4dd3989f7554b7ab32e3dd0b7f9e11afce90a1811e9d1f677169eb44bf44272\",\"addressType\":\"COMMUNITY_HUMAN\",\"accountPubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"derivationIndex\":1}}");
+	EXPECT_EQ(toJsonString(*body), "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"registerAddress\":{\"userPubkey\":\"f4dd3989f7554b7ab32e3dd0b7f9e11afce90a1811e9d1f677169eb44bf44272\",\"addressType\":\"COMMUNITY_HUMAN\",\"nameHash\":\"63cd158ea565aa4bfd161fb87ef2c9906f3d700f9be0733265fe87732ff53710\",\"accountPubkey\":\"db0ed6125a14f030abed1bfc831e0a218cf9fabfcee7ecd581c0c0e788f017c7\",\"derivationIndex\":1}}");
 }
 
 TEST(ToJsonTest, GradidoCreationBody) {

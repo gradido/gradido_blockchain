@@ -23,8 +23,8 @@ namespace gradido {
 			{
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				// TODO: update mRequiredSignPublicKeys using indices
-				mRequiredSignPublicKeys.emplace_back(make_shared<const memory::Block>(communityRoot.publicKeyIndex.getRawKey()));
+				mRequiredSignPublicKeyIndices[0] = communityRoot.publicKeyIndex;
+				mRequiredSignPublicKeyIndicesCount = 1;
 			}
 
 			void CommunityRootRole::run(Type type, ContextData& c) 

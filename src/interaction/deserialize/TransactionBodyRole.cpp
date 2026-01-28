@@ -80,8 +80,9 @@ namespace gradido {
 					);
 				}
 				else if (bodyMessage["register_address"_f].has_value()) {
-					mTransactionBody->mRegisterAddress = std::move(
-						RegisterAddressRole(bodyMessage["register_address"_f].value()).run()
+					mTransactionBody->mTransactionType = TransactionType::REGISTER_ADDRESS;
+					mTransactionBody->mSpecific.registerAddress = std::move(
+						RegisterAddressRole(bodyMessage["register_address"_f].value()).run(communityIdIndex)
 					);
 				}
 				else if (bodyMessage["deferred_transfer"_f].has_value()) {

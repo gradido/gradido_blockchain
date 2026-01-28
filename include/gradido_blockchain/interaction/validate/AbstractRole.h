@@ -2,10 +2,12 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_ABSTRACT_ROLE_H
 
 #include "Type.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "ContextData.h"
 
+#include <array>
 #include <memory>
 
 namespace gradido {
@@ -21,7 +23,11 @@ namespace gradido {
       class AbstractRole 
       {
       public:
-        AbstractRole() : mMinSignatureCount(0) {}
+        AbstractRole() 
+          : mMinSignatureCount(0), mRequiredSignPublicKeyIndicesCount(0), mForbiddenSignPublicKeyIndicesCount(0), 
+          mRequiredSignPublicKeyIndices{}, mForbiddenSignPublicKeyIndices{} 
+        {
+        }
         virtual ~AbstractRole() {}
         // test if transaction is valid, throw an exception on error
         virtual void run(Type type, ContextData& c) = 0;
@@ -41,6 +47,9 @@ namespace gradido {
         void validateEd25519Signature(memory::ConstBlockPtr ed25519Signature, const char* name) const;
 
 				void isPublicKeyForbidden(memory::ConstBlockPtr pubkey) const;
+        void isPublicKeyForbidden(data::compact::PublicKeyIndex publicKeyIndex) const;
+
+        std::vector<data::compact::PublicKeyIndex> getRequiredSignPublicKeyIndicesVector() const;
 
         //! throw if blockchainProvider is null or no blockchain can be found for communityId
         //! \return valid blockchain pointer
@@ -53,8 +62,12 @@ namespace gradido {
         data::TimestampSeconds mConfirmedAt;
         data::Timestamp mCreatedAt;
 				uint32_t mMinSignatureCount;
+        uint8_t  mRequiredSignPublicKeyIndicesCount;
+        uint8_t  mForbiddenSignPublicKeyIndicesCount;
 				std::vector<memory::ConstBlockPtr> mRequiredSignPublicKeys;
+        std::array<data::compact::PublicKeyIndex, 2> mRequiredSignPublicKeyIndices;
 				std::vector<memory::ConstBlockPtr> mForbiddenSignPublicKeys;
+        std::array<data::compact::PublicKeyIndex, 1> mForbiddenSignPublicKeyIndices;
       };
     }
   }

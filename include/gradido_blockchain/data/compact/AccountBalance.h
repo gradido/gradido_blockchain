@@ -3,13 +3,14 @@
 
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/GradidoUnit.h"
-#include "PublicKeyIndex.h"
 
 namespace gradido::data::compact {
+  // account balance belong to community
   struct GRADIDOBLOCKCHAIN_EXPORT AccountBalance 
   {
     GradidoUnit balance;
-    PublicKeyIndex publicKeyIndex;
+    uint32_t    coinCommunityIdIndex;
+    uint32_t    publicKeyIndex;
   };
 }
 

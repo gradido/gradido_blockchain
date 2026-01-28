@@ -1,4 +1,5 @@
 #include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/data/adapter/PublicKey.h"
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/memory/Block.h"
@@ -12,6 +13,7 @@ using std::vector;
 
 namespace gradido {
 	namespace data {
+		using adapter::toPublicKeyIndex, adapter::toConstBlockPtr;
 
 		TransactionType TransactionBody::getTransactionType() const
 		{
@@ -39,7 +41,7 @@ namespace gradido {
 				return *mCommunityFriendsUpdate == *other.mCommunityFriendsUpdate;
 			}
 			if (isRegisterAddress() && other.isRegisterAddress()) {
-				return *mRegisterAddress == *other.mRegisterAddress;
+				return mSpecific.registerAddress == other.mSpecific.registerAddress;
 			}
 			if (isTransfer() && other.isTransfer()) {
 				return mTransfer->isPairing(*other.mTransfer);
@@ -58,18 +60,26 @@ namespace gradido {
 
 		bool TransactionBody::isInvolved(const Block& publicKey) const
 		{
-			if (isCommunityRoot()) {
-				assert(publicKey.size() == 32);
-				auto publicKeyIndex = g_appContext->getOrAddPublicKeyIndex(mCommunityIdIndex, { publicKey.data() });
-				return mSpecific.communityRoot.isInvolved({mCommunityIdIndex,publicKeyIndex});
-			}
-			if (isRegisterAddress()) return mRegisterAddress->isInvolved(publicKey);
+			if (isCommunityRoot()) return mSpecific.communityRoot.isInvolved(toPublicKeyIndex(publicKey, mCommunityIdIndex));
+			if (isRegisterAddress()) return mSpecific.registerAddress.isInvolved(toPublicKeyIndex(publicKey, mCommunityIdIndex));
 			if (isTransfer()) return mTransfer->isInvolved(publicKey);
 			if (isCreation()) return mCreation->isInvolved(publicKey);
 			if (isDeferredTransfer()) return mDeferredTransfer->isInvolved(publicKey);
 			if (isRedeemDeferredTransfer()) return mRedeemDeferredTransfer->isInvolved(publicKey);
 			return false;
 		}
+
+		bool TransactionBody::isInvolved(compact::PublicKeyIndex publicKeyIndex) const
+		{
+			if (isCommunityRoot()) return mSpecific.communityRoot.isInvolved(publicKeyIndex);
+			if (isRegisterAddress()) return mSpecific.registerAddress.isInvolved(publicKeyIndex);
+			if (isTransfer()) return mTransfer->isInvolved(*toConstBlockPtr(publicKeyIndex));
+			if (isCreation()) return mCreation->isInvolved(*toConstBlockPtr(publicKeyIndex));
+			if (isDeferredTransfer()) return mDeferredTransfer->isInvolved(*toConstBlockPtr(publicKeyIndex));
+			if (isRedeemDeferredTransfer()) return mRedeemDeferredTransfer->isInvolved(*toConstBlockPtr(publicKeyIndex));
+			return false;
+		}
+
 
 		const TransferAmount& TransactionBody::getTransferAmount() const
 		{
@@ -87,14 +97,19 @@ namespace gradido {
 		vector<ConstBlockPtr> TransactionBody::getInvolvedAddresses() const
 		{
 			if (isCommunityFriendsUpdate()) return {};
-			if (isCommunityRoot()) {				
+			if (isCommunityRoot()) {
 				return {
-					make_shared<const Block>(g_appContext->getPublicKey(mSpecific.communityRoot.publicKeyIndex).value().data()),
-					make_shared<const Block>(g_appContext->getPublicKey(mSpecific.communityRoot.gmwPublicKeyIndex).value().data()),
-					make_shared<const Block>(g_appContext->getPublicKey(mSpecific.communityRoot.aufPublicKeyIndex).value().data())
+					toConstBlockPtr(mSpecific.communityRoot.publicKeyIndex),
+					toConstBlockPtr(mSpecific.communityRoot.gmwPublicKeyIndex),
+					toConstBlockPtr(mSpecific.communityRoot.aufPublicKeyIndex)
 				};
 			}
-			if (isRegisterAddress()) return mRegisterAddress->getInvolvedAddresses();
+			if (isRegisterAddress()) {
+				return {
+					toConstBlockPtr(mSpecific.registerAddress.accountPublicKeyIndex),
+					toConstBlockPtr(mSpecific.registerAddress.userPublicKeyIndex)
+				};
+			}
 			if (isTransfer()) return mTransfer->getInvolvedAddresses();
 			if (isCreation()) return mCreation->getInvolvedAddresses();
 			if (isDeferredTransfer()) return mDeferredTransfer->getInvolvedAddresses();

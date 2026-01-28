@@ -84,6 +84,9 @@ struct ByteArrayEqual
 typedef ByteArray<32> PublicKey;
 typedef ByteArrayHash<32> PublicKeyHash;
 typedef ByteArrayEqual<32> PublicKeyEqual;
+typedef ByteArray<32> GenericHash;
+typedef ByteArrayHash<32> GenericHashHash;
+typedef ByteArrayEqual<32> GenericHashEqual;
 typedef ByteArray<64> Signature;
 typedef ByteArray<64> PrivateKey;
 

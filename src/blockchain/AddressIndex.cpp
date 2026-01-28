@@ -32,7 +32,7 @@ namespace gradido {
 			mIndexTransactionNrs.clear();
 		}
 
-		void AddressIndex::addTransaction(const TransactionEntry& transactionEntry, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary)
+		void AddressIndex::addTransaction(const TransactionEntry& transactionEntry, const IDictionary<ConstBlockPtr>& publicKeyDictionary)
 		{
 			const auto& body = transactionEntry.getConfirmedTransaction()->getGradidoTransaction()->getTransactionBody();
 			uint64_t txNr = transactionEntry.getTransactionNr();
@@ -60,11 +60,11 @@ namespace gradido {
 			{
 				const auto& registerAddress = body->getRegisterAddress();
 
-				if (!addTransactionNrForIndex(getPublicKeyIndex(registerAddress->getUserPublicKey()), txNr, registerAddress->getAddressType())) {
+				if (!addTransactionNrForIndex(registerAddress->userPublicKeyIndex.publicKeyIndex, txNr, registerAddress->addressType)) {
 					LOG_F(WARNING, "couldn't add register user Key to Address Indices");
 				}
 
-				if (!addTransactionNrForIndex(getPublicKeyIndex(registerAddress->getAccountPublicKey()), txNr, registerAddress->getAddressType())) {
+				if (!addTransactionNrForIndex(registerAddress->accountPublicKeyIndex.publicKeyIndex, txNr, registerAddress->addressType)) {
 					LOG_F(WARNING, "couldn't add register address Key to Address Indices");
 				}				
 			}

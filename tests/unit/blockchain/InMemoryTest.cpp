@@ -61,12 +61,12 @@ void InMemoryTest::SetUp()
 	builder
 		.setCreatedAt(mLastCreatedAt)
 		.setVersionNumber(VERSION_STRING)
+		.setSenderCommunity(mCommunityId)
 		.setCommunityRoot(
 			g_KeyPairs[0]->getPublicKey()->data(),
 			g_KeyPairs[1]->getPublicKey()->data(),
 			g_KeyPairs[2]->getPublicKey()->data()
-		)
-		.setSenderCommunity(mCommunityId)
+		)		
 		.sign(g_KeyPairs[0])
 		;
 	mBlockchain->createAndAddConfirmedTransaction(builder.build(), LedgerAnchor({ mLastCreatedAt, hieroAccount }), mLastCreatedAt);
@@ -112,13 +112,14 @@ void InMemoryTest::createRegisterAddress(int keyPairIndexStart)
 	builder
 		.setCreatedAt(generateNewCreatedAt())
 		.setVersionNumber(VERSION_STRING)
+		.setSenderCommunity(mCommunityId)
 		.setRegisterAddress(
 			g_KeyPairs[userPubkeyIndex]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
-			nullptr,
+			make_shared<const Block>(g_KeyPairs[userPubkeyIndex]->getPublicKey()->calculateHash()),
 			g_KeyPairs[accountPubkeyIndex]->getPublicKey()
-		)
-		.setSenderCommunity(mCommunityId)
+		)		
+		.sign(g_KeyPairs[userPubkeyIndex])
 		.sign(g_KeyPairs[accountPubkeyIndex])
 		// sign with community root key
 		.sign(g_KeyPairs[0])
@@ -140,13 +141,13 @@ std::shared_ptr<KeyPairEd25519> InMemoryTest::createRegisterAddressGenerateKeyPa
 	builder
 		.setCreatedAt(generateNewCreatedAt())
 		.setVersionNumber(VERSION_STRING)
+		.setSenderCommunity(mCommunityId)
 		.setRegisterAddress(
 			userKeyPair->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
-			nullptr,
+			make_shared<const Block>(userKeyPair->getPublicKey()->calculateHash()),
 			accountKeyPair->getPublicKey()
-		)
-		.setSenderCommunity(mCommunityId)
+		)		
 		// sign with community root key
 		.sign(g_KeyPairs[0])
 		.sign(accountKeyPair)

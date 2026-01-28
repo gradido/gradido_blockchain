@@ -14,7 +14,7 @@ namespace gradido {
   public:
     CommunityContext(const std::string& communityId, uint32_t communityIdIndex);
     ~CommunityContext() = default;
-    void setBlockchain(std::shared_ptr<blockchain::Abstract> blockchain);
+    inline void setBlockchain(std::shared_ptr<blockchain::Abstract> blockchain) { mBlockchain = blockchain; }
     inline const std::shared_ptr<blockchain::Abstract>& getBlockchain() const { return mBlockchain; }
     inline const std::string& getCommunityId() const { return mCommunityId; }
     inline uint32_t getCommunityIdIndex() const { return mCommunityIdIndex; }

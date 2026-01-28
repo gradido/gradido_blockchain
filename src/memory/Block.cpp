@@ -1,10 +1,12 @@
 #include "gradido_blockchain/crypto/SignatureOctet.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/memory/Manager.h"
 
 #include "loguru/loguru.hpp"
 
+using gradido::data::compact::PublicKeyIndex;
 using std::string;
 using std::vector, std::byte;
 
@@ -188,6 +190,22 @@ namespace memory {
 		}
 		bin.mShortHash = SignatureOctet(bin.data(), bin.size());
 		return bin;
+	}
+	bool Block::isTheSame(PublicKeyIndex publicKeyIndex) const
+	{
+		if (mSize != 32) {
+			return false;
+		}
+		auto publicKey = publicKeyIndex.getRawKey();
+		return memcmp(publicKey.data(), mData, 32) == 0;
+	}
+
+	bool Block::isTheSame(const PublicKey& publicKey) const
+	{
+		if (mSize != 32) {
+			return false;
+		}
+		return memcmp(publicKey.data(), mData, 32) == 0;
 	}
 
 	bool Block::isTheSame(const Block& b) const

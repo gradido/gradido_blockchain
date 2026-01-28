@@ -17,6 +17,19 @@ namespace gradido {
 				std::string mMemberName;
 
 			};
+
+			class GRADIDOBLOCKCHAIN_EXPORT EmptyMemberException : public GradidoBlockchainException
+			{
+			public:
+				explicit EmptyMemberException(const char* what, const char* memberName) noexcept
+					: GradidoBlockchainException(what), mMemberName(memberName) {
+				}
+				std::string getFullString() const;
+
+			protected:
+				std::string mMemberName;
+
+			};
 		}
 	}
 }

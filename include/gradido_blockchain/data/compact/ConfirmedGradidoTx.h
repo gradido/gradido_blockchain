@@ -3,6 +3,7 @@
 
 #include "AccountBalance.h"
 #include "CommunityRootTx.h"
+#include "RegisterAddressTx.h"
 #include "PublicKeyIndex.h"
 #include "TransactionTimestamps.h"
 #include "TxId.h"
@@ -66,13 +67,7 @@ namespace gradido::data::compact {
           struct {
             TxId deferredTransferTransactionNr; // 16 Bytes, contain 4 Bytes padding
           } timeoutDeferredTransfer;
-          struct {
-            AddressType addressType; // 1 Byte
-            uint16_t derivationIndex; // 2 Byte (for the time beeing, update if more than 65535 are needed) 
-            uint32_t nameHashIndex; // 4 Bytes
-            PublicKeyIndex userPublicKeyIndex; // 8 Bytes
-            PublicKeyIndex accountPublicKeyIndex; // 8 Bytes
-          } registerAddress;
+          RegisterAddressTx registerAddress;
           CommunityRootTx communityRoot;
         };        
     };

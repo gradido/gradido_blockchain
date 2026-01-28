@@ -15,14 +15,15 @@ TEST(ValidateRegisterAddressTest, Valid) {
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
-			nullptr, 
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
 		)
-		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
+		.sign(g_KeyPairs[3])
 		.sign(g_KeyPairs[4])
 	;
 	auto transaction = builder.build();
@@ -37,13 +38,13 @@ TEST(ValidateRegisterAddressTest, InvalidAddressTypeGMW) {
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_GMW,
-			nullptr,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
 		)
-		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
 		.sign(g_KeyPairs[4])
 		;
@@ -59,13 +60,13 @@ TEST(ValidateRegisterAddressTest, InvalidAddressTypeAUF) {
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_AUF,
-			nullptr,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
-		)
-		.setSenderCommunity(communityId)
+		)		
 		.sign(g_KeyPairs[0])
 		.sign(g_KeyPairs[4])
 		;
@@ -81,13 +82,13 @@ TEST(ValidateRegisterAddressTest, InvalidAddressTypeNONE) {
 	builder
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::NONE,
-			nullptr,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
-		)
-		.setSenderCommunity(communityId)
+		)		
 		.sign(g_KeyPairs[0])
 		.sign(g_KeyPairs[4])
 		;

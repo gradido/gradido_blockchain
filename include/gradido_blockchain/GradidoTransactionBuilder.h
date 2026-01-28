@@ -78,10 +78,17 @@ namespace gradido {
 		GradidoTransactionBuilder& setRegisterAddress(
 			memory::ConstBlockPtr userPubkey,
 			data::AddressType type,
-			memory::ConstBlockPtr nameHash = nullptr,
-			memory::ConstBlockPtr accountPubkey = nullptr
+			memory::ConstBlockPtr nameHash,
+			memory::ConstBlockPtr accountPubkey
 		);
-		GradidoTransactionBuilder& setRegisterAddress(std::unique_ptr<data::RegisterAddress> registerAddress);
+
+		GradidoTransactionBuilder& setRegisterAddress(
+			const PublicKey& userPubkey,
+			data::AddressType type,
+			const GenericHash& nameHash,
+			const PublicKey& accountPubkey
+		);
+		// GradidoTransactionBuilder& setRegisterAddress(std::unique_ptr<data::RegisterAddress> registerAddress);
 
 		GradidoTransactionBuilder& setTransactionCreation(const data::TransferAmount& recipient, Timepoint targetDate);
 		GradidoTransactionBuilder& setTransactionCreation(std::unique_ptr<data::GradidoCreation> creation);
@@ -93,6 +100,11 @@ namespace gradido {
 			const PublicKey& pubkey,
 			const PublicKey& gmwPubkey,
 			const PublicKey& aufPubkey
+		);
+		GradidoTransactionBuilder& setCommunityRoot(
+			memory::ConstBlockPtr pubkey,
+			memory::ConstBlockPtr gmwPubkey,
+			memory::ConstBlockPtr aufPubkey
 		);
 		// GradidoTransactionBuilder& setCommunityRoot(std::unique_ptr<data::CommunityRoot> communityRoot);
 
