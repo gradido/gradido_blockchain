@@ -74,7 +74,7 @@ namespace gradido {
 			std::lock_guard _lock(mFastMutex);
 			if (!mConfirmedTransaction) {
 				interaction::deserialize::Context c(mSerializedTransaction, interaction::deserialize::Type::CONFIRMED_TRANSACTION);
-				c.run();
+				c.run(mBlockchainCommunityIdIndex);
 				if (!c.isConfirmedTransaction()) {
 					throw InvalidGradidoTransaction("v3_3::TransactionEntry::getConfirmedTransaction called, don't get expected ConfirmedTransaction", mSerializedTransaction);
 				}
