@@ -33,7 +33,7 @@ using std::to_string;
 
 namespace serialization {
 
-	// basic 
+	// basic
 	DEFINE_TO_JSON(TransferAmount, {
 		obj.AddMember("pubkey", toJson(value.getPublicKey(), alloc), alloc);
 		obj.AddMember("amount", toJson(value.getAmount(), alloc), alloc);

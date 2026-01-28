@@ -28,19 +28,19 @@ namespace serialization {
         BODY																	 \
         return obj;																 \
     }																			 \
-    template GRADIDOBLOCKCHAIN_EXPORT rapidjson::Value toJson(const TYPE& value, Document::AllocatorType& alloc);    
+    template GRADIDOBLOCKCHAIN_EXPORT rapidjson::Value toJson(const TYPE& value, Document::AllocatorType& alloc);
 // DEFINE_TO_JSON end
-#else 
+#else
 #define DEFINE_TO_JSON(TYPE, BODY)												 \
     template<>																	 \
     rapidjson::Value toJson(const TYPE& value, Document::AllocatorType& alloc) { \
         rapidjson::Value obj(rapidjson::kObjectType);                            \
         BODY																	 \
         return obj;																 \
-    }																			 
+    }
 // DEFINE_TO_JSON end
 #endif
-  
+
 	// for compile time check if for a type a toJson specialization exists
 	// C++20 concept-based detection - works reliably with Clang (zig c++)
 	template<typename T>
@@ -72,7 +72,7 @@ namespace serialization {
 
 	template<typename T>
 	requires (!HasToJson<T>) && is_json_container_v<T>
-	rapidjson::Value toJson(const T& container, rapidjson::Document::AllocatorType& alloc) 
+	rapidjson::Value toJson(const T& container, rapidjson::Document::AllocatorType& alloc)
 	{
 		rapidjson::Value arr(rapidjson::kArrayType);
 		for (const auto& el : container) {
@@ -83,10 +83,10 @@ namespace serialization {
 
 	// Specialization for maps
 	template<typename K, typename V>
-	rapidjson::Value toJson(const std::map<K, V>& m, rapidjson::Document::AllocatorType& alloc) 
+	rapidjson::Value toJson(const std::map<K, V>& m, rapidjson::Document::AllocatorType& alloc)
 	{
 		rapidjson::Value obj(rapidjson::kObjectType);
-		for (auto& [k,v] : m) 
+		for (auto& [k,v] : m)
 		{
 			obj.AddMember(
 				rapidjson::Value(std::to_string(k).c_str(), alloc),
@@ -99,7 +99,7 @@ namespace serialization {
 	// Fallback for types with their own JsonConverter
 	/*template<typename T>
 	requires has_to_json_v<T>
-	rapidjson::Value toJson(const T& value, rapidjson::Document::AllocatorType& alloc) 
+	rapidjson::Value toJson(const T& value, rapidjson::Document::AllocatorType& alloc)
 	{
 		return toJson<T>(value, alloc);
 	}*/
@@ -115,7 +115,7 @@ namespace serialization {
 	inline rapidjson::Value toJson(const std::string& s, rapidjson::Document::AllocatorType& alloc) {
 		return rapidjson::Value(s.data(), s.size(), alloc);
 	}
-  
+
 	template<typename T>
 	requires std::is_enum_v<T>
 	rapidjson::Value toJson(const T& value, rapidjson::Document::AllocatorType& alloc) {
