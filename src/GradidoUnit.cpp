@@ -1,4 +1,5 @@
 #include "gradido_blockchain/GradidoUnit.h"
+#include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
 #include <cmath>
@@ -25,7 +26,6 @@ string GradidoUnit::toString(int precision/* = 4*/) const
 		decimal = round(decimal * factor) / factor;
 	}
 	ss << decimal;
-
 	return ss.str();
 }
 
