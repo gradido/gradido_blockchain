@@ -1,3 +1,4 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
@@ -29,6 +30,7 @@ using std::make_shared, std::shared_ptr;
 
 using hiero::TransactionId, hiero::AccountId;
 
+using gradido::g_appContext;
 using gradido::blockchain::InMemoryProvider;
 using gradido::data::GradidoTransaction, gradido::data::ConstGradidoTransactionPtr;
 using gradido::data::ConfirmedTransaction, gradido::data::ConstConfirmedTransactionPtr;
@@ -164,7 +166,8 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 
 	// list<ConstGradidoTransactionPtr> transactions;
 	Profiler timeUsed;
-	std::string communityId = "test";
+	std::string communityId = "gradido-akademie";
+	auto communityIdIndex = g_appContext->getOrAddCommunityIdIndex(communityId);
 	auto provider = InMemoryProvider::getInstance();
 	auto blockchain = provider->findBlockchain("test");
 	AccountId defaultHieroAccount(0, 0, 2);
@@ -177,7 +180,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 		f.read((char*)(buffer->data()), transactionSize);
 		deserialize::Context deserializer(buffer, deserialize::Type::CONFIRMED_TRANSACTION);
 		try {
-			deserializer.run();
+			deserializer.run(communityIdIndex);
 			if (deserializer.getType() == deserialize::Type::UNKNOWN) {
 				printf("unknown type, size: %u\n", transactionSize);
 				break;
@@ -185,11 +188,11 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 			// transactions.emplace(transactions.end(), deserializer.getGradidoTransaction());
 			// printf("\r%llu", transactions.size());
 			auto tx = deserializer.getConfirmedTransaction();
-			if (!tx && deserializer.getType() == deserialize::Type::UNKNOWN) {
+			if (!tx || deserializer.getType() == deserialize::Type::UNKNOWN) {
 				break;
 			}
 			if (count > 10000) {
-				printf("%u: %s\n\n", transactionSize, serialization::toJsonString(*tx, true).data());
+				// printf("%u: %s\n\n", transactionSize, serialization::toJsonString(*tx, true).data());
 			}
 			// trigger body deserialization
 			try {
@@ -205,13 +208,13 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 			printf("error on transaction deserialize: %u\n", transactionSize);
 		}
 		count++;
-		if (count > 10100) break;
+	//	if (count > 10100) break;
 	}
 	// printf("\n");
 	printf("%s time to load and deserialize %d transactions from binary file\n",
 		timeUsed.string().data(), mTransactions.size()
 	);
-	return;
+	// return;
 	timeUsed.reset();
 	count = 0;
 	for (auto& tx : mTransactions) {
@@ -222,7 +225,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 		TransactionId transactionId(createdAt, defaultHieroAccount);
 		try {
 			// blockchain->createAndAddConfirmedTransaction(tx, LedgerAnchor(transactionId), createdAt);
-			printf("%llu: %s\n\n", tx->getId(), serialization::toJsonString(*tx, true).data());
+			// printf("%llu: %s\n\n", tx->getId(), serialization::toJsonString(*tx, true).data());
 		}
 		catch (GradidoBlockchainException& ex) {
 			printf("\nexception: %s\n", ex.getFullString().data());
@@ -240,12 +243,13 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 			throw;
 		}
 		count++;
-		if (count > 100) break;
+		// if (count > 100) break;
 		printf("\rtransactions: %d", count);
 		// if (timeUsed.seconds() > 30.0) break;
 	}
 	printf("\n");
-	printf("%s time for adding %d transactions to blockchain\n", timeUsed.string().data(), count);
+	//printf("%s time for adding %d transactions to blockchain\n", timeUsed.string().data(), count);
+	printf("%s time for deserialize transaction bodys\n", timeUsed.string().data(), count);
 	int zahl = 1;
 }
 // */
