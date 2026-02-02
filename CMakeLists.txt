@@ -186,6 +186,8 @@ endif()
 ############################## bind source files ###################################
 FILE(GLOB CRYPTO "include/gradido_blockchain/crypto/*.h" "src/crypto/*.cpp")
 FILE(GLOB DATA "include/gradido_blockchain/data/*.h" "src/data/*.cpp")
+FILE(GLOB DATA_ADAPTER "include/gradido_blockchain/data/adapter/*.h" "src/data/adapter/*.cpp")
+FILE(GLOB DATA_COMPACT "include/gradido_blockchain/data/compact/*.h" "src/data/compact/*.cpp")
 FILE(GLOB DATA_IOTA "include/gradido_blockchain/data/iota/*.h" "src/data/iota/*.cpp")
 FILE(GLOB DATA_HIERO "include/gradido_blockchain/data/hiero/*.h" "src/data/hiero/*.cpp")
 FILE(GLOB HTTP "include/gradido_blockchain/http/*.h" "src/http/*.cpp")
@@ -236,7 +238,7 @@ FILE(GLOB INTERACTION_VALIDATE
 SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${BLOCKCHAIN}
 	${CRYPTO}
-	${DATA} ${DATA_IOTA} ${DATA_HIERO}
+	${DATA} ${DATA_IOTA} ${DATA_HIERO} ${DATA_ADAPTER} ${DATA_COMPACT}
 	${INTERACTION}
 	${LIB_SRC}
 	${MAIN}
@@ -263,8 +265,10 @@ if(MSVC)
 	# src
 	source_group("blockchain" FILES ${BLOCKCHAIN})
 	source_group("crypto" FILES ${CRYPTO})
+	source_group("data\\adapter" FILES ${DATA_ADAPTER})
+	source_group("data\\compact" FILES ${DATA_COMPACT})
 	source_group("data\\iota" FILES ${DATA_IOTA})
-	source_group("data\\hiero" FILES ${DATA_HIERO})
+	source_group("data\\hiero" FILES ${DATA_HIERO})		
 	source_group("data" FILES ${DATA})
 	if(ENABLE_HTTP)
 		source_group("http" FILES ${HTTP})
@@ -335,11 +339,42 @@ add_subdirectory(dependencies/miniz)
 set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP})
 
 ######################################################################
+# in zig rewritten parts
+add_custom_target(gradido_protobuf_zig_build
+    COMMAND ${CMAKE_COMMAND} -E env zig build
+        -Doptimize=ReleaseSmall
+    WORKING_DIRECTORY
+        ${CMAKE_SOURCE_DIR}/dependencies/gradido_protobuf_zig
+		VERBATIM
+)
+add_custom_command(
+    OUTPUT
+        ${CMAKE_BINARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}gradido_protobuf_zig${CMAKE_STATIC_LIBRARY_SUFFIX}
+    COMMAND zig build
+        -Doptimize=ReleaseSmall
+        -fPIC
+        -target native
+        -name gradido_protobuf_zig
+    DEPENDS
+        ${CMAKE_SOURCE_DIR}/dependencies/gradido_protobuf_zig/src/gradido_protobuf_zig.zig
+    WORKING_DIRECTORY
+        ${CMAKE_SOURCE_DIR}/dependencies/gradido_protobuf_zig
+)
+add_library(gradido_protobuf_zig STATIC IMPORTED)
+
+set_target_properties(gradido_protobuf_zig PROPERTIES
+    IMPORTED_LOCATION
+        "${CMAKE_SOURCE_DIR}/dependencies/gradido_protobuf_zig/zig-out/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gradido_protobuf_zig${CMAKE_STATIC_LIBRARY_SUFFIX}"
+    INTERFACE_INCLUDE_DIRECTORIES
+        "${CMAKE_SOURCE_DIR}/dependencies/gradido_protobuf_zig/include"
+)
+add_dependencies(gradido_protobuf_zig gradido_protobuf_zig_build)
+######################################################################
 
 add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
-target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz)
+target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz gradido_protobuf_zig)
 if(OpenSSL_FOUND)
 	target_link_libraries(GradidoBlockchain OpenSSL::SSL OpenSSL::Crypto)
 endif()

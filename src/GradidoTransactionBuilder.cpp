@@ -17,11 +17,11 @@
 #include "gradido_blockchain/data/SignaturePair.h"
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/data/TransactionBody.h"
+#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/data/TransferAmount.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/memory/Block.h"
-
 
 #include "magic_enum/magic_enum.hpp"
 #include <chrono>
@@ -59,12 +59,13 @@ namespace gradido {
 	using data::SignaturePair;
 	using data::Timestamp;
 	using data::TransactionBody;
+	using data::TransactionType;
 	using data::TransferAmount;
 
-	GradidoTransactionBuilder::GradidoTransactionBuilder() 
-	  : mState(BuildingState::BUILDING_BODY), 
+	GradidoTransactionBuilder::GradidoTransactionBuilder()
+		: mState(BuildingState::BUILDING_BODY),
 		mBody(make_unique<TransactionBody>(
-			system_clock::now(), GRADIDO_TRANSACTION_BODY_VERSION_STRING, 0, CrossGroupType::LOCAL
+			system_clock::now(), 0, CrossGroupType::LOCAL
 		)),
 		mSpecificTransactionChoosen(false)
 	{
@@ -73,13 +74,12 @@ namespace gradido {
 
 	GradidoTransactionBuilder::~GradidoTransactionBuilder()
 	{
-
 	}
 
 	void GradidoTransactionBuilder::reset() 
 	{
 		mState = BuildingState::BUILDING_BODY;
-		mBody = make_unique<data::TransactionBody>(system_clock::now(), GRADIDO_TRANSACTION_BODY_VERSION_STRING, 0, CrossGroupType::LOCAL);
+		mBody = make_unique<data::TransactionBody>(system_clock::now(), 0, CrossGroupType::LOCAL);
 		mSenderCommunityIdIndex = nullopt;
 		mRecipientCommunityIdIndex = nullopt;
 		mBodyByteSignatureMaps.clear();
@@ -149,8 +149,8 @@ namespace gradido {
 		if (mSpecificTransactionChoosen) {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
-
-		mBody->mDeferredTransfer = std::move(deferredTransfer);
+		mBody->mTransactionType = TransactionType::DEFERRED_TRANSFER;
+		mBody->mSpecific = std::move(deferredTransfer);
 
 		mSpecificTransactionChoosen = true;
 		return *this;
@@ -171,8 +171,8 @@ namespace gradido {
 		if (mSpecificTransactionChoosen) {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
-
-		mBody->mCommunityFriendsUpdate = std::move(communityFriendsUpdate);
+		mBody->mTransactionType = TransactionType::COMMUNITY_FRIENDS_UPDATE;
+		mBody->mSpecific = std::move(communityFriendsUpdate);
 
 		mSpecificTransactionChoosen = true;
 		return *this;
@@ -203,8 +203,8 @@ namespace gradido {
 		if (mSpecificTransactionChoosen) {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
-
-		mBody->mRegisterAddress = std::move(registerAddress);
+		mBody->mTransactionType = TransactionType::REGISTER_ADDRESS;
+		mBody->mSpecific = std::move(registerAddress);
 
 		mSpecificTransactionChoosen = true;
 		return *this;
@@ -226,7 +226,8 @@ namespace gradido {
 		if (mSpecificTransactionChoosen) {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
-		mBody->mCreation = std::move(creation);
+		mBody->mTransactionType = TransactionType::CREATION;
+		mBody->mSpecific = std::move(creation);
 
 		mSpecificTransactionChoosen = true;
 		return *this;
@@ -253,8 +254,8 @@ namespace gradido {
 		if (mSpecificTransactionChoosen) {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
-
-		mBody->mTransfer = std::move(transfer);
+		mBody->mTransactionType = TransactionType::TRANSFER;
+		mBody->mSpecific = std::move(transfer);
 
 		mSpecificTransactionChoosen = true;
 		return *this;
@@ -282,8 +283,8 @@ namespace gradido {
 		if (mSpecificTransactionChoosen) {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
-
-		mBody->mCommunityRoot = std::move(communityRoot);
+		mBody->mTransactionType = TransactionType::COMMUNITY_ROOT;
+		mBody->mSpecific = std::move(communityRoot);
 
 		mSpecificTransactionChoosen = true;
 		return *this;
@@ -306,8 +307,8 @@ namespace gradido {
 		if (mSpecificTransactionChoosen) {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
-
-		mBody->mRedeemDeferredTransfer = std::move(redeemDeferredTransfer);
+		mBody->mTransactionType = TransactionType::REDEEM_DEFERRED_TRANSFER;
+		mBody->mSpecific = std::move(redeemDeferredTransfer);
 
 		mSpecificTransactionChoosen = true;
 		return *this;
@@ -329,8 +330,8 @@ namespace gradido {
 		if (mSpecificTransactionChoosen) {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
-
-		mBody->mTimeoutDeferredTransfer = std::move(timeoutDeferredTransfer);
+		mBody->mTransactionType = TransactionType::TIMEOUT_DEFERRED_TRANSFER;
+		mBody->mSpecific = std::move(timeoutDeferredTransfer);
 		// special case, because TimeoutDeferredTransfer didn't need signatures
 		switchBuildState();
 		mSpecificTransactionChoosen = true;
@@ -351,7 +352,7 @@ namespace gradido {
 
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setVersionNumber(string_view versionNumber) {
 		checkBuildState(BuildingState::BUILDING_BODY);
-		mBody->mVersionNumber = versionNumber;
+		// mBody->mVersionNumber = versionNumber;
 		return *this;
 	}
 

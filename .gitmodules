@@ -37,3 +37,6 @@
 [submodule "dependencies/vcpkg"]
 	path = dependencies/vcpkg
 	url = https://github.com/microsoft/vcpkg.git
+[submodule "dependencies/gradido_protobuf_zig"]
+	path = dependencies/gradido_protobuf_zig
+	url = https://github.com/einhornimmond/gradido_protobuf_zig

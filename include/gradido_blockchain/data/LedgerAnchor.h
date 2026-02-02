@@ -4,6 +4,8 @@
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/types.h"
 #include "gradido_blockchain/memory/Block.h"
+#include "gradido_blockchain/data/adapter/hiero.h"
+#include "gradido_blockchain/data/compact/HieroTransactionId.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 
 #include <variant>
@@ -32,7 +34,7 @@ namespace gradido {
 			~LedgerAnchor();
 
 			inline bool isIotaMessageId() const noexcept { return std::holds_alternative<memory::Block>(mValue); }
-			inline bool isHieroTransactionId() const noexcept { return std::holds_alternative<hiero::TransactionId>(mValue); }
+			inline bool isHieroTransactionId() const noexcept { return std::holds_alternative<compact::HieroTransactionId>(mValue); }
 			inline bool isLegacyGradidoDbTransactionId() const noexcept { return Type::LEGACY_GRADIDO_DB_TRANSACTION_ID == mType; }
 			inline bool isNodeTriggeredTransactionId() const noexcept { return Type::NODE_TRIGGER_TRANSACTION_ID == mType; }
 			inline bool isLegacyGradidoDbCommunityId() const noexcept { return Type::LEGACY_GRADIDO_DB_COMMUNITY_ID == mType; }
@@ -42,7 +44,7 @@ namespace gradido {
 			inline Type getType() const noexcept { return mType; }
 
 			inline const memory::Block& getIotaMessageId() const { return std::get<memory::Block>(mValue); }
-			inline const hiero::TransactionId& getHieroTransactionId() const { return std::get<hiero::TransactionId>(mValue); }
+			inline const hiero::TransactionId getHieroTransactionId() const { return adapter::fromCompact(std::get<compact::HieroTransactionId>(mValue)); }
 			inline uint64_t getLegacyTransactionId() const { return std::get<3>(mValue); }
 			inline uint64_t getNodeTriggeredTransactionId() const { return std::get<4>(mValue); }
 
@@ -56,7 +58,7 @@ namespace gradido {
 			using AnchorValue = std::variant<
 				std::monostate,
 				memory::Block,
-				hiero::TransactionId,
+				compact::HieroTransactionId,
 				uint64_t,
 				uint64_t
 			>;

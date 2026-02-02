@@ -25,7 +25,7 @@ namespace gradido {
 		enum class AddressType;
 		class CommunityFriendsUpdate;
 		class CommunityRoot;
-		enum class CrossGroupType;
+		enum class CrossGroupType: uint8_t;
 		class DurationSeconds;
 		class EncryptedMemo;
 		class GradidoTransaction;

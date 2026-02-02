@@ -1,4 +1,5 @@
 #include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/const.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/data/AccountBalance.h"
 #include "gradido_blockchain/data/CommunityFriendsUpdate.h"
@@ -148,7 +149,7 @@ namespace serialization {
 	DEFINE_TO_JSON(TransactionBody, {
 		obj.AddMember("memos", toJson(value.getMemos(), alloc), alloc);
 		obj.AddMember("createdAt", toJson(value.getCreatedAt().getAsTimepoint(), alloc), alloc);
-		obj.AddMember("versionNumber", toJson(value.getVersionNumber(), alloc), alloc);
+		obj.AddMember("versionNumber", Value(GRADIDO_TRANSACTION_BODY_VERSION_STRING, alloc), alloc);
 		obj.AddMember("type", toJson(value.getType(), alloc), alloc);
 		auto otherCommunityIdIndex = value.getOtherCommunityIdIndex();
 		if (otherCommunityIdIndex.has_value()) {
@@ -235,7 +236,6 @@ namespace serialization {
 			obj.AddMember("gradidoTransaction", toJson(*gradidoTransaction, alloc), alloc);
 		}
 		obj.AddMember("confirmedAt", toJson(value.getConfirmedAt().getAsTimepoint(), alloc), alloc);
-		obj.AddMember("versionNumber", toJson(value.getVersionNumber(), alloc), alloc);
 		auto runningHash = value.getRunningHash();
 		if (runningHash) {
 			obj.AddMember("runningHash", toJson(runningHash, alloc), alloc);

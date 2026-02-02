@@ -1,4 +1,5 @@
 #include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/serialize/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/interaction/serialize/HieroTransactionIdRole.h"
@@ -43,7 +44,7 @@ namespace gradido {
 						mConfirmedTransaction.getConfirmedAt().getSeconds(),
 						mConfirmedTransaction.getConfirmedAt().getNanos()
 				};
-				message["version_number"_f] = mConfirmedTransaction.getVersionNumber();
+				message["version_number"_f] = GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING;
 				message["running_hash"_f] = mConfirmedTransaction.getRunningHash()->copyAsVector();
 				LedgerAnchorRole ledgerAnchorRole(mConfirmedTransaction.getLedgerAnchor());
 				const auto& ledgerAnchor = mConfirmedTransaction.getLedgerAnchor();
@@ -57,7 +58,7 @@ namespace gradido {
 			size_t ConfirmedTransactionRole::calculateSerializedSize() const
 			{
 				size_t size = 8 + 8 + 4 
-					+ mConfirmedTransaction.getVersionNumber().size()
+					+ strlen(GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING)
 					+ crypto_generichash_BYTES 
 					+ 32 
 					+ mConfirmedTransaction.getAccountBalances().size() * 42

@@ -46,15 +46,6 @@ namespace gradido {
 				}
 				try {
 					if ((type & Type::SINGLE) == Type::SINGLE) {
-						if (mBody.getVersionNumber() != GRADIDO_TRANSACTION_BODY_VERSION_STRING) {
-							throw TransactionValidationInvalidInputException(
-								"wrong version",
-								"version_number",
-								"string",
-								GRADIDO_TRANSACTION_BODY_VERSION_STRING,
-								mBody.getVersionNumber().data()
-							);
-						}
 						// memo is only mandatory for transfer and creation transactions
 						if (mBody.isDeferredTransfer() || mBody.isTransfer() || mBody.isCreation()) {
 							auto &memos = mBody.getMemos();

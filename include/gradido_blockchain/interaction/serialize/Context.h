@@ -9,7 +9,7 @@
 #include "HieroTransactionIdRole.h"
 #include "LedgerAnchorRole.h"
 #include "SignatureMapRole.h"
-#include "TransactionBodyRole.h"
+#include "TransactionBodyZigRole.h"
 #include "TransactionTriggerEventRole.h"
 
 #include <memory>
@@ -37,7 +37,7 @@ namespace gradido {
 				Context(const data::SignatureMap& signatureMap)
 					: mRole(std::make_unique<SignatureMapRole>(signatureMap)) {}
 				Context(const data::TransactionBody& body)
-					: mRole(std::make_unique<TransactionBodyRole>(body)) {}
+					: mRole(std::make_unique<TransactionBodyZigRole>(body)) {}
 				Context(const data::TransactionTriggerEvent& transactionTriggerEvent)
 					: mRole(std::make_unique<TransactionTriggerEventRole>(transactionTriggerEvent)) {}
 				

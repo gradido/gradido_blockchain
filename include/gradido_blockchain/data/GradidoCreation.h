@@ -11,6 +11,9 @@ namespace gradido {
 		public:
 			GradidoCreation(const TransferAmount& recipient, Timepoint targetDate)
 				: mRecipient(recipient), mTargetDate(targetDate) {}
+			GradidoCreation(const TransferAmount& recipient, TimestampSeconds targetDate)
+				: mRecipient(recipient), mTargetDate(targetDate) {
+			}
 
 			~GradidoCreation() {}
 

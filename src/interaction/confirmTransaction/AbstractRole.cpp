@@ -54,7 +54,6 @@ namespace gradido {
                    std::make_shared<data::GradidoTransaction>(*mGradidoTransaction),
                    // mGradidoTransaction, // don't work as native node module. TODO: find underlying issue
                    mConfirmedAt,
-                   GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
                    mLedgerAnchor,
                    accountBalances,
                    mBalanceDerivationType,

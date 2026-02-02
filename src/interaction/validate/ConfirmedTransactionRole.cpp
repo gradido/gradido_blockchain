@@ -30,17 +30,6 @@ namespace gradido {
 				auto confirmedAt = mConfirmedTransaction.getConfirmedAt().getAsTimepoint();
 
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					if (mConfirmedTransaction.getVersionNumber() != GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING) {
-						TransactionValidationInvalidInputException exception(
-							"wrong version",
-							"version_number",
-							"string",
-							GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
-							mConfirmedTransaction.getVersionNumber().data()
-						);
-						exception.setTransactionBody(*body);
-						throw exception;
-					}	
 					if (mConfirmedTransaction.getLedgerAnchor().empty()) {
 						TransactionValidationInvalidInputException exception(
 							"invalid",

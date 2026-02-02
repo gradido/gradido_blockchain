@@ -21,7 +21,6 @@ namespace gradido {
 				uint64_t id,
 				std::shared_ptr<const GradidoTransaction> gradidoTransaction,
 				Timestamp confirmedAt,
-				const std::string& versionNumber,
 				const LedgerAnchor& ledgerAnchor,
 				std::vector<AccountBalance> accountBalances,
 				BalanceDerivationType balanceDerivationType,
@@ -32,7 +31,6 @@ namespace gradido {
 				uint64_t id,
 				std::shared_ptr<const GradidoTransaction> gradidoTransaction,
 				Timestamp confirmedAt,
-				const std::string& versionNumber,
 				memory::ConstBlockPtr runningHash,
 				const LedgerAnchor& ledgerAnchor,
 				std::vector<AccountBalance> accountBalances,
@@ -48,7 +46,6 @@ namespace gradido {
 			inline uint64_t getId() const { return  mId; }
 			inline std::shared_ptr<const data::GradidoTransaction> getGradidoTransaction() const { return mGradidoTransaction; }
 			inline Timestamp getConfirmedAt() const { return mConfirmedAt; } 
-			inline const std::string& getVersionNumber() const { return mVersionNumber; }
 			inline memory::ConstBlockPtr getRunningHash() const { return mRunningHash; }
 			inline const LedgerAnchor& getLedgerAnchor() const { return mLedgerAnchor; }
 			inline const std::vector<AccountBalance>& getAccountBalances() const { return mAccountBalances; }
@@ -75,7 +72,6 @@ namespace gradido {
 			uint64_t                    				mId;
 			std::shared_ptr<const data::GradidoTransaction> mGradidoTransaction;
 			Timestamp									mConfirmedAt;
-			std::string   								mVersionNumber;
 			memory::ConstBlockPtr 						mRunningHash;
 			LedgerAnchor								mLedgerAnchor;
 			std::vector<AccountBalance>					mAccountBalances;

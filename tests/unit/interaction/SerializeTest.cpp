@@ -52,7 +52,7 @@ TEST(SerializeTest, HieroTransactionId)
 
 TEST(SerializeTest, TransactionBodyWithoutMemo)
 {
-	TransactionBody body(createdAt, GRADIDO_TRANSACTION_BODY_VERSION_STRING, 0);
+	TransactionBody body(createdAt, 0);
 	serialize::Context c(body);
 	auto serialized = c.run();
 	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());

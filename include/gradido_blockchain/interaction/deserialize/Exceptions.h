@@ -17,6 +17,19 @@ namespace gradido {
 				std::string mMemberName;
 
 			};
+
+			class GRADIDOBLOCKCHAIN_EXPORT InvalidMemberException : public GradidoBlockchainException
+			{
+			public: 
+				explicit InvalidMemberException(const char* what, const char* memberName, const char* memberValue, const char* expectedValue) noexcept
+					: GradidoBlockchainException(what), mMemberName(memberName), mMemberValue(memberValue), mExpectedValue(expectedValue) { }
+				std::string getFullString() const;
+
+			protected: 
+				std::string mMemberName;
+				std::string mMemberValue;
+				std::string mExpectedValue;
+			};
 		}
 	}
 }

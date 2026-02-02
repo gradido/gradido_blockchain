@@ -27,7 +27,6 @@ namespace gradido {
 			uint64_t id,
 			shared_ptr<const GradidoTransaction> gradidoTransaction,
 			Timestamp confirmedAt,
-			const string& versionNumber,
 			const LedgerAnchor& ledgerAnchor,
 			vector<AccountBalance> accountBalances,
 			BalanceDerivationType balanceDerivationType,
@@ -35,7 +34,6 @@ namespace gradido {
 		) : mId(id),
 			mGradidoTransaction(gradidoTransaction),
 			mConfirmedAt(confirmedAt),
-			mVersionNumber(versionNumber),
 			mLedgerAnchor(ledgerAnchor),
 			mAccountBalances(accountBalances),
 			mBalanceDerivationType(balanceDerivationType)
@@ -48,7 +46,6 @@ namespace gradido {
 			uint64_t id,
 			shared_ptr<const GradidoTransaction> gradidoTransaction,
 			Timestamp confirmedAt,
-			const string& versionNumber,
 			ConstBlockPtr runningHash,
 			const LedgerAnchor& ledgerAnchor,
 			std::vector<AccountBalance> accountBalances,
@@ -56,7 +53,6 @@ namespace gradido {
 		) : mId(id),
 			mGradidoTransaction(gradidoTransaction),
 			mConfirmedAt(confirmedAt),
-			mVersionNumber(versionNumber),
 			mRunningHash(runningHash),
 			mLedgerAnchor(ledgerAnchor),
 			mAccountBalances(accountBalances),
@@ -201,10 +197,6 @@ namespace gradido {
 			}
 
 			if (mConfirmedAt != other.mConfirmedAt) {
-				return false;
-			}
-
-			if (mVersionNumber != other.mVersionNumber) {
 				return false;
 			}
 

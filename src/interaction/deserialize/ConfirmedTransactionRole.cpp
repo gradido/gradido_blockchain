@@ -1,3 +1,4 @@
+#include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/deserialize/AccountBalanceRole.h"
 #include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionRole.h"
@@ -28,8 +29,9 @@ namespace gradido {
 				if (!message["confirmed_at"_f].has_value()) {
 					throw MissingMemberException(exceptionMessage, "confirmed_at");
 				}
-				if (!message["version_number"_f].has_value()) {
-					throw MissingMemberException(exceptionMessage, "version_number");
+				const auto& v = message["version_number"_f];
+				if(!v || strcmp(v.value().data(), GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING) != 0) {
+					throw InvalidMemberException("missing or invalid", "version_number", v ? v.value().data() : "", GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING);
 				}
 				if (!message["running_hash"_f].has_value()) {
 					throw MissingMemberException(exceptionMessage, "running_hash");
@@ -46,7 +48,6 @@ namespace gradido {
 					message["id"_f].value(),
 					GradidoTransactionRole(message["transaction"_f].value(), communityIdIndex).getGradidoTransaction(),
 					TimestampRole(message["confirmed_at"_f].value()).data(),
-					message["version_number"_f].value(),
 					make_shared<Block>(message["running_hash"_f].value()),
 					LedgerAnchorRole(message["ledger_anchor"_f].value()),
 					accountBalances,

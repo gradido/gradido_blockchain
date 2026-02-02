@@ -1,4 +1,5 @@
 #include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/interaction/serialize/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/serialize/Exceptions.h"
@@ -26,7 +27,7 @@ namespace gradido {
 					));
 				}
 				message["created_at"_f] = TimestampMessage{ createdAt.getSeconds(), createdAt.getNanos() };
-				message["version_number"_f] = mBody.getVersionNumber();
+				message["version_number"_f] = GRADIDO_TRANSACTION_BODY_VERSION_STRING;
 				message["type"_f] = mBody.getType();
 				if (otherGroup.has_value()) {
 					auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(otherGroup.value());
@@ -191,7 +192,7 @@ namespace gradido {
 					otherGroupStringSize = otherGroupStringOptional.value().size();
 				}
 										// timestamp						  // enum
-				auto size = 12 + mBody.getVersionNumber().size() + 1 + otherGroupStringSize + 3;
+				auto size = 12 + strlen(GRADIDO_TRANSACTION_BODY_VERSION_STRING) + 1 + otherGroupStringSize + 3;
 				for (auto& encryptedMemo : mBody.getMemos()) {
 					size += 8 + encryptedMemo.getMemo().size();
 				}
