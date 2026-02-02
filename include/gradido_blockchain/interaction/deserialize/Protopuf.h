@@ -185,6 +185,17 @@ namespace gradido {
                 enum_field<"balance_derivation", 8, data::BalanceDerivationType>
             >;
 
+            // confirmed_transaction.proto
+            // reduced version for indexing
+            using ConfirmedTransactionIndexMessage = message<
+              uint64_field<"id", 1>,
+              message_field<"transaction", 2, GradidoTransactionMessage>,
+              message_field<"confirmed_at", 3, TimestampMessage>,
+              message_field<"ledger_anchor", 6, LedgerAnchorMessage>,// singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
+              message_field<"account_balances", 7, AccountBalanceMessage, repeated>,//, singular, std::vector<StringCachedAlloc>>
+              enum_field<"balance_derivation", 8, data::BalanceDerivationType>
+            >;
+
             // -- helper classes
             using TransactionTriggerEventMessage = message<
                 uint64_field<"linked_transaction_nr", 1>,

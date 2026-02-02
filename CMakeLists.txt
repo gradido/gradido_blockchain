@@ -339,11 +339,34 @@ add_subdirectory(dependencies/miniz)
 set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP})
 
 ######################################################################
+# in zig rewritten parts
+add_library(gradido_protobuf_zig STATIC IMPORTED)
+
+set_target_properties(gradido_protobuf_zig PROPERTIES
+    IMPORTED_LOCATION
+        "${CMAKE_SOURCE_DIR}/dependencies/gradido_protobuf_zig/zig-out/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gradido_protobuf_zig${CMAKE_STATIC_LIBRARY_SUFFIX}"
+    INTERFACE_INCLUDE_DIRECTORIES
+        "${CMAKE_SOURCE_DIR}/dependencies/gradido_protobuf_zig/include"
+)
+add_custom_command(
+    OUTPUT
+        ${CMAKE_BINARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}gradido_protobuf_zig${CMAKE_STATIC_LIBRARY_SUFFIX}
+    COMMAND zig build
+        -Doptimize=ReleaseSmall
+        -fPIC
+        -target native
+        -name gradido_protobuf_zig
+    DEPENDS
+        ${CMAKE_SOURCE_DIR}/dependencies/gradido_protobuf_zig/src/gradido_protobuf_zig.zig
+    WORKING_DIRECTORY
+        ${CMAKE_SOURCE_DIR}/dependencies/gradido_protobuf_zig
+)
+######################################################################
 
 add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
-target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz)
+target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz gradido_protobuf_zig)
 if(OpenSSL_FOUND)
 	target_link_libraries(GradidoBlockchain OpenSSL::SSL OpenSSL::Crypto)
 endif()

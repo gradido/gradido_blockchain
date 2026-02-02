@@ -11,7 +11,7 @@ namespace gradido {
          : mKeyType(MemoKeyType::COMMUNITY_SECRET), mMemo(0)
         {
             auto compressedMemo = compress(memo);
-            mMemo = std::make_shared<memory::Block>(SealedBoxes::encrypt(communityKeyPair, compressedMemo.copyAsString()));
+            mMemo = SealedBoxes::encrypt(communityKeyPair, compressedMemo.copyAsString());
         }
 
         EncryptedMemo::EncryptedMemo(
@@ -22,16 +22,16 @@ namespace gradido {
         {
             auto compressedMemo = compress(memo);
             if (firstKeyPair.hasPrivateKey()) {
-                mMemo = std::make_shared<memory::Block>(firstKeyPair.encrypt(compressedMemo, secondKeyPair));
+                mMemo = firstKeyPair.encrypt(compressedMemo, secondKeyPair);
             }
             else {
-                mMemo = std::make_shared<memory::Block>(secondKeyPair.encrypt(compressedMemo, firstKeyPair));
+                mMemo = secondKeyPair.encrypt(compressedMemo, firstKeyPair);
             }
         }
 
         std::string EncryptedMemo::decrypt(const AuthenticatedEncryption& communityKeyPair) const
         {
-            return decompress(SealedBoxes::decrypt(communityKeyPair, *mMemo)).copyAsString();
+            return decompress(SealedBoxes::decrypt(communityKeyPair, mMemo)).copyAsString();
         }
 
         std::string EncryptedMemo::decrypt(
@@ -41,10 +41,10 @@ namespace gradido {
         {
             memory::Block compressedMemo(0);
             if (firstKeyPair.hasPrivateKey()) {
-                compressedMemo = firstKeyPair.decrypt(*mMemo, secondKeyPair);
+                compressedMemo = firstKeyPair.decrypt(mMemo, secondKeyPair);
             }
             else {
-                compressedMemo = secondKeyPair.decrypt(*mMemo, firstKeyPair);
+                compressedMemo = secondKeyPair.decrypt(mMemo, firstKeyPair);
             }
             return decompress(compressedMemo).copyAsString();
         }
