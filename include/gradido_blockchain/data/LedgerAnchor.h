@@ -48,7 +48,7 @@ namespace gradido {
 			inline uint64_t getLegacyTransactionId() const { return std::get<3>(mValue); }
 			inline uint64_t getNodeTriggeredTransactionId() const { return std::get<4>(mValue); }
 
-			inline bool isTheSame(const LedgerAnchor& other) const { return mValue == other.mValue; }
+			inline bool isTheSame(const LedgerAnchor& other) const { return mType == other.mType && mValue == other.mValue; }
 			std::string toString() const;
 			inline bool empty() const { return Type::UNSPECIFIED == mType || std::holds_alternative<std::monostate>(mValue); }
 
