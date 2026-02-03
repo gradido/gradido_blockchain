@@ -134,6 +134,23 @@ namespace gradido {
 			grdw_body->type = adapter::toGrdw(mType);
 			grdw_body->transaction_type = adapter::toGrdw(mTransactionType);
 			grdw_gradido_transfer grdwTransfer;
+			
+			if (TransactionType::REGISTER_ADDRESS == mTransactionType) {
+				auto registerAddress = getRegisterAddress();
+				auto accountPubkey = registerAddress->getAccountPublicKey();
+				auto userPubkey = registerAddress->getUserPublicKey();
+				auto nameHash = registerAddress->getNameHash();
+				if (!accountPubkey || accountPubkey->size() != 32 || !nameHash || nameHash->size() != 32 || !userPubkey || userPubkey->size() != 32) {
+					throw GradidoNodeInvalidDataException("at least one of account public key, name hash, user public key isn't 32 Bytes");
+				}
+				grdw_body->data.register_address = grdw_register_address_new(
+					userPubkey->data(),
+					adapter::toGrdw(getRegisterAddress()->getAddressType()),
+					nameHash->data(),
+					accountPubkey->data(),
+					getRegisterAddress()->getDerivationIndex()
+				);
+			}
 
 			switch (mTransactionType) {
 			case TransactionType::TRANSFER: 
@@ -148,15 +165,7 @@ namespace gradido {
 					adapter::toGrdw(getCreation()->getTargetDate())
 				);
 				break;
-			case TransactionType::REGISTER_ADDRESS:
-				grdw_body->data.register_address = grdw_register_address_new(
-					getRegisterAddress()->getUserPublicKey()->data(),
-					adapter::toGrdw(getRegisterAddress()->getAddressType()),
-					getRegisterAddress()->getNameHash()->data(),
-					getRegisterAddress()->getAccountPublicKey()->data(),
-					getRegisterAddress()->getDerivationIndex()
-				);
-				break;
+			case TransactionType::REGISTER_ADDRESS: break;
 			case TransactionType::DEFERRED_TRANSFER:
 				assert(getDeferredTransfer()->getRecipientPublicKey()->size() == 32);
 				grdwTransfer.sender = adapter::toGrdw(getTransferAmount(), mCommunityIdIndex);

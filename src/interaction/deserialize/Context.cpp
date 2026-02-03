@@ -8,7 +8,7 @@
 #include "gradido_blockchain/interaction/deserialize/HieroTopicIdRole.h"
 #include "gradido_blockchain/interaction/deserialize/HieroTransactionIdRole.h"
 #include "gradido_blockchain/interaction/deserialize/LedgerAnchorRole.h"
-#include "gradido_blockchain/interaction/deserialize/TransactionBodyRole.h"
+#include "gradido_blockchain/interaction/deserialize/TransactionBodyZigRole.h"
 #include "gradido_blockchain/interaction/deserialize/TransactionTriggerEventRole.h"
 
 
@@ -130,10 +130,14 @@ namespace gradido {
 				}
 				if (Type::TRANSACTION_BODY == mType || Type::UNKNOWN == mType) {
 					try {
-						auto result = message_coder<TransactionBodyMessage>::decode(mData->span());
+						auto role = TransactionBodyZigRole(mData);
+						role.run(communityIdIndex);
+						mTransactionBody = role.getBody();
+						/*auto result = message_coder<TransactionBodyMessage>::decode(mData->span());
 						if (!result.has_value()) throw GradidoNodeInvalidDataException("protopuf failed with deserialize");
 						const auto& [body, bufferEnd2] = *result;
-						mTransactionBody = std::make_shared<data::TransactionBody>(TransactionBodyRole(body, communityIdIndex).getBody());
+						*/
+						// mTransactionBody = std::make_shared<data::TransactionBody>(TransactionBodyRole(body, communityIdIndex).getBody());
 						mType = Type::TRANSACTION_BODY;
 						return;
 					}

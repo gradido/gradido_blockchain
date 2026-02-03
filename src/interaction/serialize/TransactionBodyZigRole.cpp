@@ -19,7 +19,7 @@ namespace gradido::interaction::serialize {
       grdw_transaction_body_free_deep(&body);
       size_t bodyBytesSize = encodeResult;
       while (!staticResultBuffer[--bodyBytesSize]);
-      return make_shared<const Block>(bodyBytesSize, staticResultBuffer);
+      return make_shared<const Block>(bodyBytesSize+1, staticResultBuffer);
     }
     
     size_t TransactionBodyZigRole::calculateSerializedSize() const 

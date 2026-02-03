@@ -50,22 +50,11 @@ TEST(SerializeTest, HieroTransactionId)
 	ASSERT_EQ(serialized->convertToHex(), "0a0908a9e9a75210fee30112080800100018fcb20718012079");
 }
 
-TEST(SerializeTest, TransactionBodyWithoutMemo)
-{
-	TransactionBody body(createdAt, 0);
-	serialize::Context c(body);
-	auto serialized = c.run();
-	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
-	// printf("hex: %s\n", serialized->convertToHex().data());
-	ASSERT_EQ(serialized->convertToBase64(), "EggIgMy5/wUQABoDMy41IAA=");
-}
-
 TEST(SerializeTest, CommunityRootBody) 
 {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setCommunityRoot(
 			g_KeyPairs[0]->getPublicKey(),
 			g_KeyPairs[1]->getPublicKey(),

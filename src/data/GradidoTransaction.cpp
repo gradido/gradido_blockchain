@@ -1,6 +1,10 @@
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
+#include "gradido_blockchain/serialization/toJsonString.h"
+
+#include "loguru/loguru.hpp"
+using serialization::toJsonString;
 
 namespace gradido {
 	namespace data {
@@ -17,6 +21,7 @@ namespace gradido {
 			deserialize::Context c(mBodyBytes, deserialize::Type::TRANSACTION_BODY);
 			c.run(mCommunityIdIndex);
 			if (!c.isTransactionBody()) {
+				LOG_F(ERROR, "Transaction Body:\nxxd -r -ps <<< \"%s\" | protoscope\ncannot be deserialized", mBodyBytes->convertToHex().c_str());
 				throw GradidoNullPointerException("cannot deserialize from body bytes", "TransactionBody", __FUNCTION__);
 			}
 			mTransactionBody = c.getTransactionBody();
