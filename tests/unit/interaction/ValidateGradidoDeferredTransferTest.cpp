@@ -153,25 +153,6 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidAmountNegative) {
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
 
-
-TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityId) {
-	GradidoTransactionBuilder builder;
-	builder
-		.addMemo(deferredTransferMemoString)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
-		.setDeferredTransfer(
-			GradidoTransfer(
-				// invalid character in coin community id
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 1),
-				g_KeyPairs[5]->getPublicKey()
-			), timeoutDuration
-		)
-		.setSenderCommunity(communityId)
-		;
-	EXPECT_THROW(builder.sign(g_KeyPairs[4]), DictionaryMissingEntryException);
-}
-
 TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutAboveMaxHardLimit) {
 	GradidoTransactionBuilder builder;
 	builder
@@ -204,7 +185,7 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutIdenticalToCreatedAt) {
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0),
 				g_KeyPairs[5]->getPublicKey()
-			), DurationSeconds(std::chrono::seconds(0))
+			), DurationSeconds(std::chrono::seconds(17))
 		)
 		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])

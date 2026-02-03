@@ -115,7 +115,7 @@ void InMemoryTest::createRegisterAddress(int keyPairIndexStart)
 		.setRegisterAddress(
 			g_KeyPairs[userPubkeyIndex]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
-			nullptr,
+			make_shared<const Block>(g_KeyPairs[userPubkeyIndex]->getPublicKey()->calculateHash()),
 			g_KeyPairs[accountPubkeyIndex]->getPublicKey()
 		)
 		.setSenderCommunity(mCommunityId)
@@ -143,7 +143,7 @@ std::shared_ptr<KeyPairEd25519> InMemoryTest::createRegisterAddressGenerateKeyPa
 		.setRegisterAddress(
 			userKeyPair->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
-			nullptr,
+			make_shared<const Block>(userKeyPair->getPublicKey()->calculateHash()),
 			accountKeyPair->getPublicKey()
 		)
 		.setSenderCommunity(mCommunityId)

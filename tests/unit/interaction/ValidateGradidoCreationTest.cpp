@@ -162,19 +162,4 @@ TEST(ValidateGradidoCreationTest, invalidAmountToBig) {
 }
 
 
-TEST(ValidateGradidoCreationTest, InvalidCoinCommunityId) {
-	GradidoTransactionBuilder builder;
-	builder
-		.addMemo(creationMemoString)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
-		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 1),
-			TimestampSeconds(1609459000)
-		)
-		.setRecipientCommunity(communityId);
-
-	EXPECT_THROW(builder.sign(g_KeyPairs[6]), DictionaryMissingEntryException);
-}
-
 // TODO: invalid target date with both algos

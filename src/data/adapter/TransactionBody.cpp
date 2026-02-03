@@ -29,7 +29,7 @@ namespace gradido::data::adapter {
     assert(amount.getPublicKey()->size() == 32);
     grdw_transfer_amount grdwAmount;
     memcpy(grdwAmount.pubkey, amount.getPublicKey()->data(), 32);
-    grdwAmount.amount = amount.getAmount();
+    grdwAmount.amount = amount.getAmount().getGradidoCent();
     if (amount.getCoinCommunityIdIndex() == communityIdIndex) {
       grdwAmount.community_id = nullptr;
     }

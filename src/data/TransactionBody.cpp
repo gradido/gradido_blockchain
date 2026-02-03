@@ -98,6 +98,9 @@ namespace gradido {
 					fromGrdw(grdw_body->data.community_root->auf_pubkey)
 				);
 				break;
+			case TransactionType::COMMUNITY_FRIENDS_UPDATE:
+				result->mSpecific = make_shared<CommunityFriendsUpdate>(grdw_body->data.community_friends_update->color_fusion);
+				break;
 			default: throw GradidoUnhandledEnum("missing implementation for TransactionBody::fromGrdw", "TransactionType", to_string(grdw_body->transaction_type).c_str());
 			}
 			return result;
@@ -195,6 +198,9 @@ namespace gradido {
 					getCommunityRoot()->getGmwPubkey()->data(),
 					getCommunityRoot()->getAufPubkey()->data()
 				);
+				break;
+			case TransactionType::COMMUNITY_FRIENDS_UPDATE:
+				grdw_body->data.community_friends_update = grdw_community_friends_update_new(getCommunityFriendsUpdate()->getColorFusion());
 				break;
 			default: throw GradidoUnhandledEnum("missing implementation for TransactionBody::toGrdw", "TransactionType", to_string(static_cast<int>(mTransactionType)).c_str());
 			}

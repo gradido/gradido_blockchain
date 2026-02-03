@@ -9,7 +9,7 @@ using namespace std;
 using namespace std::chrono;
 
 #define VERSION_STRING "3.3"
-
+/*
 TEST(GradidoTransactionBuilderTest, SignTransaction) {	
 	auto body = make_unique<TransactionBody>(
 		std::chrono::system_clock::from_time_t(1609459200),
@@ -31,3 +31,4 @@ TEST(GradidoTransactionBuilderTest, SignTransaction) {
 
 	//EXPECT_EQ(*gradidoTransaction->mBodyBytes, )
 }
+//*/

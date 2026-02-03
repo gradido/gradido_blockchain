@@ -1,4 +1,5 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/interaction/validate/RegisterAddressRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
@@ -43,7 +44,7 @@ namespace gradido {
 							"register address transaction not allowed with community auf or gmw account or None",
 							addressType,
 							mRegisterAddress->getUserPublicKey(),
-							c.senderBlockchain->getCommunityIdIndex()
+							c.senderBlockchain ? c.senderBlockchain->getCommunityIdIndex() : -1
 						);
 					}
 

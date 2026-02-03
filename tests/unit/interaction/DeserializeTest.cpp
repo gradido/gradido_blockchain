@@ -116,7 +116,7 @@ TEST(DeserializeTest, RegisterAddressBody) {
 	EXPECT_EQ(registerAddress->getAddressType(), AddressType::COMMUNITY_HUMAN);
 	EXPECT_EQ(registerAddress->getDerivationIndex(), 1);
 	EXPECT_TRUE(registerAddress->getUserPublicKey()->isTheSame(g_KeyPairs[3]->getPublicKey()));
-	EXPECT_FALSE(registerAddress->getNameHash());
+	EXPECT_TRUE(registerAddress->getNameHash());
 	EXPECT_TRUE(registerAddress->getAccountPublicKey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
 }
 

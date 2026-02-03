@@ -18,7 +18,7 @@ TEST(ValidateRegisterAddressTest, Valid) {
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
-			nullptr, 
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
 		)
 		.setSenderCommunity(communityId)
@@ -40,7 +40,7 @@ TEST(ValidateRegisterAddressTest, InvalidAddressTypeGMW) {
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_GMW,
-			nullptr,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
 		)
 		.setSenderCommunity(communityId)
@@ -62,7 +62,7 @@ TEST(ValidateRegisterAddressTest, InvalidAddressTypeAUF) {
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_AUF,
-			nullptr,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
 		)
 		.setSenderCommunity(communityId)
@@ -84,7 +84,7 @@ TEST(ValidateRegisterAddressTest, InvalidAddressTypeNONE) {
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::NONE,
-			nullptr,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
 		)
 		.setSenderCommunity(communityId)
@@ -103,7 +103,7 @@ TEST(ValidateRegisterAddressTest, UserAndAccountPublicKeySame) {
 		AddressType::COMMUNITY_HUMAN,
 		1,
 		g_KeyPairs[3]->getPublicKey(),
-		nullptr,
+		make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 		g_KeyPairs[3]->getPublicKey()
 	), GradidoNodeInvalidDataException);
 }
@@ -115,7 +115,7 @@ TEST(ValidateRegisterAddressTest, NullptrPublicKey) {
 		nullptr,
 		nullptr,
 		nullptr
-	), GradidoNodeInvalidDataException);
+	), GradidoNullPointerException);
 }
 
 TEST(ValidateRegisterAddressTest, EmptyUserPublicKey) {
@@ -123,7 +123,7 @@ TEST(ValidateRegisterAddressTest, EmptyUserPublicKey) {
 		AddressType::COMMUNITY_HUMAN,
 		1,
 		std::make_shared<memory::Block>(32),
-		nullptr,
+		make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 		g_KeyPairs[4]->getPublicKey()
 	), GradidoNodeInvalidDataException);
 }
@@ -133,7 +133,7 @@ TEST(ValidateRegisterAddressTest, EmptyAccountPublicKey) {
 		AddressType::COMMUNITY_HUMAN,
 		1,
 		g_KeyPairs[3]->getPublicKey(),
-		nullptr,
+		make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 		std::make_shared<memory::Block>(32)
 	), GradidoNodeInvalidDataException);
 }
@@ -144,7 +144,7 @@ TEST(ValidateRegisterAddressTest, InvalidUserPublicKey) {
 		AddressType::COMMUNITY_HUMAN,
 		1,
 		std::make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a", 18)),
-		nullptr,
+		make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 		g_KeyPairs[4]->getPublicKey()
 	), Ed25519InvalidKeyException);
 }
@@ -154,7 +154,7 @@ TEST(ValidateRegisterAddressTest, InvalidAccountPublicKey) {
 		AddressType::COMMUNITY_HUMAN,
 		1,
 		g_KeyPairs[3]->getPublicKey(),
-		nullptr,
+		make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 		std::make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a", 18))
 	), Ed25519InvalidKeyException);
 }
