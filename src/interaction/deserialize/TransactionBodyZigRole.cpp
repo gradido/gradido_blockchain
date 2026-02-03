@@ -31,7 +31,7 @@ namespace gradido {
       memset(staticBuffer, 0, STATIC_BUFFER_SIZE);
       memcpy(staticBuffer, mBodyBytes->data(), mBodyBytes->size());
       int result = 0;
-      for (int i = 1; i < 16; ++i) {
+      for (int i = 0; i < 16; ++i) {
         result = grdw_transaction_body_decode(&body, staticBuffer, mBodyBytes->size()+i);
         if (result > 0) break;
       }
