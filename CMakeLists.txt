@@ -344,7 +344,7 @@ add_custom_target(gradido_protobuf_zig_build
     COMMAND ${CMAKE_COMMAND} -E env zig build
         -Doptimize=ReleaseSmall
     WORKING_DIRECTORY
-        ${CMAKE_SOURCE_DIR}/dependencies/gradido_protobuf_zig
+        ${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig
 		VERBATIM
 )
 add_custom_command(
@@ -356,17 +356,17 @@ add_custom_command(
         -target native
         -name gradido_protobuf_zig
     DEPENDS
-        ${CMAKE_SOURCE_DIR}/dependencies/gradido_protobuf_zig/src/gradido_protobuf_zig.zig
+        ${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig/src/gradido_protobuf_zig.zig
     WORKING_DIRECTORY
-        ${CMAKE_SOURCE_DIR}/dependencies/gradido_protobuf_zig
+        ${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig
 )
 add_library(gradido_protobuf_zig STATIC IMPORTED)
 
 set_target_properties(gradido_protobuf_zig PROPERTIES
     IMPORTED_LOCATION
-        "${CMAKE_SOURCE_DIR}/dependencies/gradido_protobuf_zig/zig-out/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gradido_protobuf_zig${CMAKE_STATIC_LIBRARY_SUFFIX}"
+        "${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig/zig-out/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gradido_protobuf_zig${CMAKE_STATIC_LIBRARY_SUFFIX}"
     INTERFACE_INCLUDE_DIRECTORIES
-        "${CMAKE_SOURCE_DIR}/dependencies/gradido_protobuf_zig/include"
+        "${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig/include"
 )
 add_dependencies(gradido_protobuf_zig gradido_protobuf_zig_build)
 ######################################################################
