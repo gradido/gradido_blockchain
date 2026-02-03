@@ -12,10 +12,10 @@ namespace gradido {
 		public:
 			RegisterAddress(
 				AddressType _addressType,
-				uint32_t _derivationIndex = 1,
-				memory::ConstBlockPtr userPubkeyPtr = nullptr,
-				memory::ConstBlockPtr nameHashPtr = nullptr,
-				memory::ConstBlockPtr accountPubkeyPtr = nullptr
+				uint32_t _derivationIndex,
+				memory::ConstBlockPtr userPubkeyPtr,
+				memory::ConstBlockPtr nameHashPtr,
+				memory::ConstBlockPtr accountPubkeyPtr
 			);
 
 			~RegisterAddress() {}

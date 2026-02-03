@@ -32,7 +32,7 @@ namespace gradido {
 				if (Type::TRANSACTION_TRIGGER_EVENT == mType || Type::UNKNOWN == mType) {
 					try {
 						auto result = message_coder<TransactionTriggerEventMessage>::decode(mData->span());
-						if (!result.has_value()) return;
+						if (!result.has_value()) throw GradidoNodeInvalidDataException("protopuf failed with deserialize");
 						const auto& [transactionTriggerEvent, bufferEnd2] = *result;
 						mTransactionTriggerEvent = TransactionTriggerEventRole(transactionTriggerEvent);
 						mType = Type::TRANSACTION_TRIGGER_EVENT;
@@ -48,7 +48,7 @@ namespace gradido {
 				if (Type::HIERO_ACCOUNT_ID == mType || Type::UNKNOWN == mType) {
 					try {
 						auto result = message_coder<HieroAccountIdMessage>::decode(mData->span());
-						if (!result.has_value()) return;
+						if (!result.has_value()) throw GradidoNodeInvalidDataException("protopuf failed with deserialize");;
 						const auto& [hieroAccountId, bufferEnd2] = *result;
 						mHieroAccountId = HieroAccountIdRole(hieroAccountId);
 						return;
@@ -63,7 +63,7 @@ namespace gradido {
 				if (Type::HIERO_TOPIC_ID == mType || Type::UNKNOWN == mType) {
 					try {
 						auto result = message_coder<HieroTopicIdMessage>::decode(mData->span());
-						if (!result.has_value()) return;
+						if (!result.has_value()) throw GradidoNodeInvalidDataException("protopuf failed with deserialize");;
 						const auto& [hieroTopicId, bufferEnd2] = *result;
 						mHieroTopicId = HieroTopicIdRole(hieroTopicId);
 						return;
@@ -78,7 +78,7 @@ namespace gradido {
 				if (Type::HIERO_TRANSACTION_ID == mType || Type::UNKNOWN == mType) {
 					try {
 						auto result = message_coder<HieroTransactionIdMessage>::decode(mData->span());
-						if (!result.has_value()) return;
+						if (!result.has_value()) throw GradidoNodeInvalidDataException("protopuf failed with deserialize");;
 						const auto& [hieroTransactionId, bufferEnd2] = *result;
 						mHieroTransactionId = HieroTransactionIdRole(hieroTransactionId);
 						return;
@@ -93,7 +93,7 @@ namespace gradido {
 				if (Type::LEDGER_ANCHOR == mType) {
 					try {
 						auto result = message_coder<LedgerAnchorMessage>::decode(mData->span());
-						if (!result.has_value()) return;
+						if (!result.has_value()) throw GradidoNodeInvalidDataException("protopuf failed with deserialize");;
 						const auto& [ledgerAnchor, bufferEnd2] = *result;
 						mLedgerAnchor = LedgerAnchorRole(ledgerAnchor);
 						return;
@@ -115,7 +115,7 @@ namespace gradido {
 				if (Type::GRADIDO_TRANSACTION == mType || Type::UNKNOWN == mType) {
 					try {
 						auto result = message_coder<GradidoTransactionMessage>::decode(mData->span());
-						if (!result.has_value()) return;
+						if (!result.has_value()) throw GradidoNodeInvalidDataException("protopuf failed with deserialize");;
 						const auto& [gradidoTransaction, bufferEnd2] = *result;
 						mGradidoTransaction = std::move(GradidoTransactionRole(gradidoTransaction, communityIdIndex).getGradidoTransaction());
 						mType = Type::GRADIDO_TRANSACTION;
@@ -131,7 +131,7 @@ namespace gradido {
 				if (Type::TRANSACTION_BODY == mType || Type::UNKNOWN == mType) {
 					try {
 						auto result = message_coder<TransactionBodyMessage>::decode(mData->span());
-						if (!result.has_value()) return;
+						if (!result.has_value()) throw GradidoNodeInvalidDataException("protopuf failed with deserialize");
 						const auto& [body, bufferEnd2] = *result;
 						mTransactionBody = std::make_shared<data::TransactionBody>(TransactionBodyRole(body, communityIdIndex).getBody());
 						mType = Type::TRANSACTION_BODY;
@@ -147,7 +147,7 @@ namespace gradido {
 				
 				try {
 					auto result = message_coder<ConfirmedTransactionMessage>::decode(mData->span());
-					if (!result.has_value()) return;
+					if (!result.has_value()) throw GradidoNodeInvalidDataException("protopuf failed with deserialize");
 					const auto& [confirmedTransaction, bufferEnd2] = *result;
 					mConfirmedTransaction = ConfirmedTransactionRole(confirmedTransaction, communityIdIndex).getConfirmedTransaction();
 					mType = Type::CONFIRMED_TRANSACTION;

@@ -13,7 +13,6 @@ using namespace std::chrono;
 TEST(GradidoTransactionBuilderTest, SignTransaction) {	
 	auto body = make_unique<TransactionBody>(
 		std::chrono::system_clock::from_time_t(1609459200),
-		VERSION_STRING,
 		0
 	);
 	GradidoTransactionBuilder builder;

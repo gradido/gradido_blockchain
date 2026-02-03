@@ -18,7 +18,7 @@ using namespace serialization;
 
 TEST(ToJsonTest, TransactionBodyWithoutMemo)
 {
-	TransactionBody body(createdAt, GRADIDO_TRANSACTION_BODY_VERSION_STRING, 0);
+	TransactionBody body(createdAt, 0);
 
 	EXPECT_EQ(toJsonString(body), "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\"}");
 
@@ -31,7 +31,6 @@ TEST(ToJsonTest, CommunityRootBody)
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setCommunityRoot(
 			g_KeyPairs[0]->getPublicKey(),
 			g_KeyPairs[1]->getPublicKey(),
@@ -51,7 +50,6 @@ TEST(ToJsonTest, RegisterAddressBody) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
@@ -74,7 +72,6 @@ TEST(ToJsonTest, GradidoCreationBody) {
 	builder
 		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionCreation(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 0),
 			TimestampSeconds(1609459000)
@@ -96,7 +93,6 @@ TEST(ToJsonTest, GradidoTransferBody) {
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0),
 			g_KeyPairs[5]->getPublicKey()
@@ -116,7 +112,6 @@ TEST(ToJsonTest, GradidoDeferredTransferBody) {
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500), 0),
@@ -138,7 +133,6 @@ TEST(ToJsonTest, CommunityFriendsUpdateBody) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setCommunityFriendsUpdate(true)
 		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
@@ -187,7 +181,6 @@ TEST(ToJsonTest, CompleteConfirmedTransaction) {
 		7,
 		std::move(gradidoTransaction),
 		confirmedAt,
-		GRADIDO_TRANSACTION_BODY_VERSION_STRING,
 		LedgerAnchor(memory::Block(32)),
 		{ 
 			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), 0},

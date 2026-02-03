@@ -123,7 +123,7 @@ namespace gradido {
 		{
 			auto communityIdIdx = g_appContext->getCommunityIds().getIndexForData(communityIdIndex);
 			if (communityIdIdx.has_value()) {
-				return getAccountBalance(publicKey, communityIdIdx.value());
+				return getAccountBalance(publicKey, static_cast<uint32_t>(communityIdIdx.value()));
 			}
 			return AccountBalance(publicKey, GradidoUnit::zero(), mGradidoTransaction->getCommunityIdIndex());
 		}

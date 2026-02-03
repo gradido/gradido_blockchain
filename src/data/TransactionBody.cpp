@@ -7,12 +7,15 @@
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/memory/Block.h"
+
 #include "gradido_protobuf_zig.h"
+#include "magic_enum/magic_enum.hpp"
 
 #include <memory>
 #include <string>
 #include <vector>
 
+using namespace magic_enum;
 using memory::Block, memory::ConstBlockPtr;
 using std::shared_ptr, std::make_shared;
 using std::to_string;
@@ -95,6 +98,7 @@ namespace gradido {
 					fromGrdw(grdw_body->data.community_root->auf_pubkey)
 				);
 				break;
+			default: throw GradidoUnhandledEnum("missing implementation for TransactionBody::fromGrdw", "TransactionType", to_string(grdw_body->transaction_type).c_str());
 			}
 			return result;
 		}
@@ -112,12 +116,19 @@ namespace gradido {
 					grdw_memo->memo = grdu_reserve_copy(memo.getMemo().data(), memo.getMemo().size());
 				}
 			}
+			else {
+				grdw_body->memos_count = 0;
+				grdw_body->memos = nullptr;
+			}
 			if (mOtherCommunityIdIndex) {
 				auto otherCommunityId = g_appContext->getCommunityIds().getDataForIndex(mOtherCommunityIdIndex.value());
 				if (!otherCommunityId) {
 					throw DictionaryMissingEntryException("missing other community id", to_string(mOtherCommunityIdIndex.value()));
 				}
 				grdw_body->other_group = grdu_reserve_copy_string(otherCommunityId->data(), otherCommunityId->size());
+			}
+			else {
+				grdw_body->other_group = nullptr;
 			}
 			grdw_body->created_at = adapter::toGrdw(mCreatedAt);
 			grdw_body->type = adapter::toGrdw(mType);
@@ -176,6 +187,7 @@ namespace gradido {
 					getCommunityRoot()->getAufPubkey()->data()
 				);
 				break;
+			default: throw GradidoUnhandledEnum("missing implementation for TransactionBody::toGrdw", "TransactionType", to_string(static_cast<int>(mTransactionType)).c_str());
 			}
 		}
 

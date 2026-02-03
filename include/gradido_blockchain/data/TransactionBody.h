@@ -37,7 +37,7 @@ namespace gradido {
 				uint32_t communityIdIndex,
 				CrossGroupType type = CrossGroupType::LOCAL,
 				std::optional<uint32_t> otherCommunityIdIndex = std::nullopt
-			) : mCreatedAt(createdAt), mType(type), mCommunityIdIndex(communityIdIndex), mOtherCommunityIdIndex(otherCommunityIdIndex) {};
+			) : mCreatedAt(createdAt), mType(type), mTransactionType(TransactionType::NONE), mCommunityIdIndex(communityIdIndex), mOtherCommunityIdIndex(otherCommunityIdIndex) {};
 
 			~TransactionBody() {}
 

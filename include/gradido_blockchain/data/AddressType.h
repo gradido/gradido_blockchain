@@ -1,10 +1,12 @@
 #ifndef __GRADIDO_BLOCKCHAIN_DATA_ADDRESS_TYPE_H
 #define __GRADIDO_BLOCKCHAIN_DATA_ADDRESS_TYPE_H
 
+#include "gradido_blockchain/types.h"
+
 namespace gradido {
     namespace data {
 
-        enum class AddressType {
+        enum class AddressType: uint8_t {
             NONE = 0, // if no address was found
             COMMUNITY_HUMAN = 1, // creation account for human
             COMMUNITY_GMW = 2, // community public budget account

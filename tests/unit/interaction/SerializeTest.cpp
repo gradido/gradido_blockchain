@@ -90,11 +90,10 @@ TEST(SerializeTest, RegisterAddressBody) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,
-			nullptr,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
 		)
 		.setSenderCommunity(communityId)
@@ -253,7 +252,6 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		7,
 		std::move(gradidoTransaction),
 		confirmedAt,
-		GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
 		make_shared<memory::Block>(crypto_generichash_BYTES),
 		LedgerAnchor(defaultHieroTransactionId),
 		{

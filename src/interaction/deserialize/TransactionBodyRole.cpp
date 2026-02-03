@@ -61,6 +61,7 @@ namespace gradido {
 						throw MissingMemberException("missing member on deserialize transaction body transfer transaction", "transfer.sender");
 					}
 					mTransactionBody->mSpecific = std::move(GradidoTransferRole(bodyMessage["transfer"_f].value(), communityIdIndex).run());
+					mTransactionBody->mTransactionType = TransactionType::TRANSFER;
 				}
 				else if (bodyMessage["creation"_f].has_value()) {
 					auto creationMessage = bodyMessage["creation"_f].value();
@@ -75,6 +76,7 @@ namespace gradido {
 						TransferAmountRole(creationMessage["recipient"_f].value(), communityIdIndex).data(),
 						TimestampSecondsRole(creationMessage["target_date"_f].value()).data()
 					);
+					mTransactionBody->mTransactionType = TransactionType::CREATION;
 				}
 				else if (bodyMessage["community_friends_update"_f].has_value()) {
 					auto communityFriendsUpdateMessage = bodyMessage["community_friends_update"_f].value();
@@ -84,11 +86,13 @@ namespace gradido {
 					mTransactionBody->mSpecific = make_shared<data::CommunityFriendsUpdate>(
 						communityFriendsUpdateMessage["color_fusion"_f].value()
 					);
+					mTransactionBody->mTransactionType = TransactionType::COMMUNITY_FRIENDS_UPDATE;
 				}
 				else if (bodyMessage["register_address"_f].has_value()) {
 					mTransactionBody->mSpecific = std::move(
 						RegisterAddressRole(bodyMessage["register_address"_f].value()).run()
 					);
+					mTransactionBody->mTransactionType = TransactionType::REGISTER_ADDRESS;
 				}
 				else if (bodyMessage["deferred_transfer"_f].has_value()) {
 					auto deferredTransferMessage = bodyMessage["deferred_transfer"_f].value();
@@ -103,6 +107,7 @@ namespace gradido {
 						*GradidoTransferRole(deferredTransferMessage["transfer"_f].value(), communityIdIndex).run().get(),
 						DurationSecondsRole(deferredTransferMessage["timeout_duration"_f].value()).data()
 					);
+					mTransactionBody->mTransactionType = TransactionType::DEFERRED_TRANSFER;
 				}
 				else if (bodyMessage["redeem_deferred_transfer"_f].has_value()) {
 					auto redeemDeferredTransferMessage = bodyMessage["redeem_deferred_transfer"_f].value();
@@ -117,6 +122,7 @@ namespace gradido {
 						redeemDeferredTransferMessage["deferred_transfer_transaction_nr"_f].value(),
 						*GradidoTransferRole(redeemDeferredTransferMessage["transfer"_f].value(), communityIdIndex).run().get()
 					);
+					mTransactionBody->mTransactionType = TransactionType::REDEEM_DEFERRED_TRANSFER;
 				}
 				else if (bodyMessage["timeout_deferred_transfer"_f].has_value()) {
 					auto timeoutDeferredTransferMessage = bodyMessage["timeout_deferred_transfer"_f].value();
@@ -127,6 +133,7 @@ namespace gradido {
 					mTransactionBody->mSpecific = make_shared<data::GradidoTimeoutDeferredTransfer>(
 						timeoutDeferredTransferMessage["deferred_transfer_transaction_nr"_f].value()
 					);
+					mTransactionBody->mTransactionType = TransactionType::TIMEOUT_DEFERRED_TRANSFER;
 				}
 				else if (bodyMessage["community_root"_f].has_value()) {
 					auto communityRootMessage = bodyMessage["community_root"_f].value();
@@ -145,6 +152,7 @@ namespace gradido {
 						std::make_shared<memory::Block>(communityRootMessage["gmw_pubkey"_f].value()),
 						std::make_shared<memory::Block>(communityRootMessage["auf_pubkey"_f].value())
 					);
+					mTransactionBody->mTransactionType = TransactionType::COMMUNITY_ROOT;
 				}
 			}
 

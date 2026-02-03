@@ -1,9 +1,9 @@
 #include "gradido_blockchain/data/adapter/Types.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
-#include <magic_enum/magic_enum.hpp>
+#include <string>
 
-using namespace magic_enum;
+using std::to_string;
 
 namespace gradido::data::adapter {
   MemoKeyType fromGrdw(grdw_memo_key_type type) 
@@ -16,7 +16,7 @@ namespace gradido::data::adapter {
       case PLAIN:
         return MemoKeyType::PLAIN;
       default:
-        throw GradidoUnhandledEnum("error converting memo key from grdw (C-Interface)", "MemoKeyType", enum_name(type).data());
+        throw GradidoUnhandledEnum("error converting memo key from grdw (C-Interface)", "MemoKeyType", to_string(type).c_str());
     }
   }  
   grdw_memo_key_type toGrdw(MemoKeyType type) {
@@ -28,7 +28,7 @@ namespace gradido::data::adapter {
       case MemoKeyType::PLAIN:
         return PLAIN;
       default:
-        throw GradidoUnhandledEnum("error converting memo key to grdw (C-Interface)", "MemoKeyType", enum_name(type).data());
+        throw GradidoUnhandledEnum("error converting memo key to grdw (C-Interface)", "MemoKeyType", to_string(static_cast<uint8_t>(type)).c_str());
     }
   }
 
@@ -44,7 +44,7 @@ namespace gradido::data::adapter {
       case GRDW_TRANSACTION_BODY_CROSS_GROUP_TYPE_CROSS:
         return CrossGroupType::CROSS;
       default:
-        throw GradidoUnhandledEnum("error converting cross group type from grdw (C-Interface)", "CrossGroupType", enum_name(type).data());
+        throw GradidoUnhandledEnum("error converting cross group type from grdw (C-Interface)", "CrossGroupType", to_string(type).c_str());
     }
   }
   grdw_transaction_body_cross_group_type toGrdw(CrossGroupType type)
@@ -59,7 +59,7 @@ namespace gradido::data::adapter {
       case CrossGroupType::CROSS:
         return GRDW_TRANSACTION_BODY_CROSS_GROUP_TYPE_CROSS;
       default:
-        throw GradidoUnhandledEnum("error converting cross group type to grdw (C-Interface)", "CrossGroupType", enum_name(type).data());
+        throw GradidoUnhandledEnum("error converting cross group type to grdw (C-Interface)", "CrossGroupType", to_string(static_cast<uint8_t>(type)).c_str());
     }
   }
   
@@ -85,7 +85,7 @@ namespace gradido::data::adapter {
       case GRDW_TRANSACTION_TYPE_TIMEOUT_DEFERRED_TRANSFER:
         return TransactionType::TIMEOUT_DEFERRED_TRANSFER;
       default:
-        throw GradidoUnhandledEnum("error converting transaction type from grdw (C-Interface)", "TransactionType", enum_name(type).data());
+        throw GradidoUnhandledEnum("error converting transaction type from grdw (C-Interface)", "TransactionType", to_string(type).c_str());
     }
   }
   grdw_transaction_type toGrdw(TransactionType type)
@@ -110,7 +110,7 @@ namespace gradido::data::adapter {
       case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
         return GRDW_TRANSACTION_TYPE_TIMEOUT_DEFERRED_TRANSFER;
       default:
-        throw GradidoUnhandledEnum("error converting transaction type to grdw (C-Interface)", "TransactionType", enum_name(type).data());
+        throw GradidoUnhandledEnum("error converting transaction type to grdw (C-Interface)", "TransactionType", to_string(static_cast<uint8_t>(type)).c_str());
     }
   }
   
@@ -132,7 +132,7 @@ namespace gradido::data::adapter {
       case GRDW_ADDRESS_TYPE_CRYPTO_ACCOUNT:
         return AddressType::CRYPTO_ACCOUNT;
       default:
-        throw GradidoUnhandledEnum("error converting address type from grdw (C-Interface)", "AddressType", enum_name(type).data());
+        throw GradidoUnhandledEnum("error converting address type from grdw (C-Interface)", "AddressType", to_string(type).c_str());
     }
   }
   grdw_address_type toGrdw(AddressType type)
@@ -153,7 +153,7 @@ namespace gradido::data::adapter {
       case AddressType::CRYPTO_ACCOUNT:
         return GRDW_ADDRESS_TYPE_CRYPTO_ACCOUNT;
       default:
-        throw GradidoUnhandledEnum("error converting address type to grdw (C-Interface)", "AddressType", enum_name(type).data());
+        throw GradidoUnhandledEnum("error converting address type to grdw (C-Interface)", "AddressType", to_string(static_cast<uint8_t>(type)).c_str());
     }
   }
 }

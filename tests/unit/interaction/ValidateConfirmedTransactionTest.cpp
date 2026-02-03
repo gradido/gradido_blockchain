@@ -26,7 +26,6 @@ TEST(ValidateConfirmedTransactionTest, validCommunityRootGradidoTransaction) {
 		7,
 		make_unique<GradidoTransaction>(*deserializer.getGradidoTransaction()),
 		confirmedAt,
-		GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
 		LedgerAnchor(defaultHieroTransactionId),
 		{},
 		BalanceDerivationType::EXTERN
@@ -34,26 +33,6 @@ TEST(ValidateConfirmedTransactionTest, validCommunityRootGradidoTransaction) {
 
 	validate::Context c(confirmedTransaction);
 	EXPECT_NO_THROW(c.run());
-}
-
-TEST(ValidateConfirmedTransactionTest, invalidWrongVersion) {
-	auto communityRootRaw = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
-	interaction::deserialize::Context deserializer(communityRootRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
-	deserializer.run(0);
-	ASSERT_TRUE(deserializer.isGradidoTransaction());
-
-	ConfirmedTransaction confirmedTransaction(
-		7,
-		make_unique<GradidoTransaction>(*deserializer.getGradidoTransaction()),
-		confirmedAt,
-		"1",
-		LedgerAnchor(defaultHieroTransactionId),
-		{},
-		BalanceDerivationType::EXTERN
-	);
-
-	validate::Context c(confirmedTransaction);
-	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
 
 
@@ -67,7 +46,6 @@ TEST(ValidateConfirmedTransactionTest, invalidMessageID) {
 		7,
 		make_unique<GradidoTransaction>(*deserializer.getGradidoTransaction()),
 		confirmedAt,
-		GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
 		LedgerAnchor(),
 		{},
 		BalanceDerivationType::EXTERN

@@ -360,6 +360,9 @@ namespace gradido {
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		mBody = std::move(body);
+		if (mBody->getTransactionType() >= TransactionType::MAX_VALUE) {
+			throw GradidoTransactionBuilderException("missing transaction type in TransactionBody");
+		}
 		return *this;
 	}
 
