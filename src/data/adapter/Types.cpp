@@ -156,4 +156,84 @@ namespace gradido::data::adapter {
         throw GradidoUnhandledEnum("error converting address type to grdw (C-Interface)", "AddressType", to_string(static_cast<uint8_t>(type)).c_str());
     }
   }
+
+  LedgerAnchor::Type fromGrdw(grdw_ledger_anchor_type type)
+  {
+    switch (type) {
+      case GRDW_LEDGER_ANCHOR_TYPE_UNSPECIFIED:
+        return LedgerAnchor::Type::UNSPECIFIED;
+      case GRDW_LEDGER_ANCHOR_TYPE_IOTA_MESSAGE_ID:
+        return LedgerAnchor::Type::IOTA_MESSAGE_ID;
+      case GRDW_LEDGER_ANCHOR_TYPE_HIERO_TRANSACTION_ID:
+        return LedgerAnchor::Type::HIERO_TRANSACTION_ID;
+      case GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_TRANSACTION_ID:
+        return LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_ID;
+      case GRDW_LEDGER_ANCHOR_TYPE_NODE_TRIGGER_TRANSACTION_ID:
+        return LedgerAnchor::Type::NODE_TRIGGER_TRANSACTION_ID;
+      case GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_COMMUNITY_ID:
+        return LedgerAnchor::Type::LEGACY_GRADIDO_DB_COMMUNITY_ID;
+      case GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_USER_ID:
+        return LedgerAnchor::Type::LEGACY_GRADIDO_DB_USER_ID;
+      case GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_CONTRIBUTION_ID:
+        return LedgerAnchor::Type::LEGACY_GRADIDO_DB_CONTRIBUTION_ID;
+      case GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID:
+        return LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID;
+      default:
+        throw GradidoUnhandledEnum("error converting ledger anchor type from grdw (C-Interface)", "LedgerAnchor::Type", to_string(static_cast<uint8_t>(type)).c_str());
+    }
+  }
+
+  grdw_ledger_anchor_type toGrdw(LedgerAnchor::Type type)
+  {
+    switch (type) {
+      case LedgerAnchor::Type::UNSPECIFIED:
+        return GRDW_LEDGER_ANCHOR_TYPE_UNSPECIFIED;
+      case LedgerAnchor::Type::IOTA_MESSAGE_ID:
+        return GRDW_LEDGER_ANCHOR_TYPE_IOTA_MESSAGE_ID;
+      case LedgerAnchor::Type::HIERO_TRANSACTION_ID:
+        return GRDW_LEDGER_ANCHOR_TYPE_HIERO_TRANSACTION_ID;
+      case LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_ID:
+        return GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_TRANSACTION_ID;
+      case LedgerAnchor::Type::NODE_TRIGGER_TRANSACTION_ID:
+        return GRDW_LEDGER_ANCHOR_TYPE_NODE_TRIGGER_TRANSACTION_ID;
+      case LedgerAnchor::Type::LEGACY_GRADIDO_DB_COMMUNITY_ID:
+        return GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_COMMUNITY_ID;
+      case LedgerAnchor::Type::LEGACY_GRADIDO_DB_USER_ID:
+        return GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_USER_ID;
+      case LedgerAnchor::Type::LEGACY_GRADIDO_DB_CONTRIBUTION_ID:
+        return GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_CONTRIBUTION_ID;
+      case LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID:
+        return GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID;
+      default:
+        throw GradidoUnhandledEnum("error converting ledger anchor type to grdw (C-Interface)", "LedgerAnchor::Type", to_string(static_cast<uint8_t>(type)).c_str());
+    }
+  }
+
+  BalanceDerivationType fromGrdw(grdw_balance_derivation type)
+  {
+    switch(type) {
+      case GRDW_BALANCE_DERIVATION_UNSPECIFIED:
+        return BalanceDerivationType::UNSPECIFIED;
+      case GRDW_BALANCE_DERIVATION_NODE:
+        return BalanceDerivationType::NODE;
+      case GRDW_BALANCE_DERIVATION_EXTERN:
+        return BalanceDerivationType::EXTERN;
+      default:
+        throw GradidoUnhandledEnum("error converting balance derivation type from grdw (C-Interface)", "BalanceDerivationType", to_string(static_cast<uint8_t>(type)).c_str());
+    }
+
+  }
+  grdw_balance_derivation toGrdw(BalanceDerivationType type)
+  {
+    switch(type) {
+      case BalanceDerivationType::UNSPECIFIED:
+        return GRDW_BALANCE_DERIVATION_UNSPECIFIED;
+      case BalanceDerivationType::NODE:
+        return GRDW_BALANCE_DERIVATION_NODE;
+      case BalanceDerivationType::EXTERN:
+        return GRDW_BALANCE_DERIVATION_EXTERN;
+      default:
+        throw GradidoUnhandledEnum("error converting balance derivation type to grdw (C-Interface)", "BalanceDerivationType", to_string(static_cast<uint8_t>(type)).c_str());
+    }
+  }
 }

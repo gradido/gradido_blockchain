@@ -1,8 +1,14 @@
 #include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/data/adapter/accountBalance.h"
+#include "gradido_blockchain/data/adapter/ledgerAnchor.h"
+#include "gradido_blockchain/data/adapter/memoryBlock.h"
+#include "gradido_blockchain/data/adapter/timestamp.h"
+#include "gradido_blockchain/data/adapter/types.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/memory/Block.h"
+#include "gradido_protobuf_zig.h"
 
 #include "loguru/loguru.hpp"
 
@@ -13,7 +19,6 @@
 
 using DataTypeConverter::timePointToString;
 using memory::Block, memory::ConstBlockPtr;
-using gradido::g_appContext;
 using std::optional;
 using std::shared_ptr;
 using std::string;
@@ -59,6 +64,27 @@ namespace gradido {
 			mBalanceDerivationType(balanceDerivationType)
 		{
 			initalizePubkeyHashes();
+		}
+
+		shared_ptr<const ConfirmedTransaction> ConfirmedTransaction::fromGrdw(grdw_confirmed_transaction* grdw_tx, uint32_t communityIdIndex)
+		{
+			std::vector<AccountBalance> accountBalances;
+			if (grdw_tx->account_balances_size) {
+				accountBalances.reserve(grdw_tx->account_balances_size);
+				for (size_t i = 0; i < grdw_tx->account_balances_size; i++) {
+					accountBalances.emplace_back(adapter::fromGrdw(grdw_tx->account_balances[i], communityIdIndex));
+				}
+			}
+
+			return make_shared<const ConfirmedTransaction>(
+				grdw_tx->id,
+				nullptr,
+				adapter::fromGrdw(grdw_tx->confirmed_at),
+				adapter::fromGrdw(grdw_tx->running_hash),
+				adapter::fromGrdw(grdw_tx->ledger_anchor),
+				accountBalances,
+				adapter::fromGrdw(grdw_tx->balance_derivation)
+			);
 		}
 
 		ConstBlockPtr ConfirmedTransaction::calculateRunningHash(

@@ -3,7 +3,9 @@
 
 #include "gradido_protobuf_zig.h"
 #include "gradido_blockchain/data/AddressType.h"
+#include "gradido_blockchain/data/BalanceDerivationType.h"
 #include "gradido_blockchain/data/CrossGroupType.h"
+#include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/data/MemoKeyType.h"
 #include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/export.h"
@@ -20,6 +22,13 @@ namespace gradido::data::adapter {
   
   GRADIDOBLOCKCHAIN_EXPORT AddressType fromGrdw(grdw_address_type type);
   GRADIDOBLOCKCHAIN_EXPORT grdw_address_type toGrdw(AddressType type);
+
+  GRADIDOBLOCKCHAIN_EXPORT LedgerAnchor::Type fromGrdw(grdw_ledger_anchor_type type);
+  GRADIDOBLOCKCHAIN_EXPORT grdw_ledger_anchor_type toGrdw(LedgerAnchor::Type type);
+
+  GRADIDOBLOCKCHAIN_EXPORT BalanceDerivationType fromGrdw(grdw_balance_derivation type);
+  GRADIDOBLOCKCHAIN_EXPORT grdw_balance_derivation toGrdw(BalanceDerivationType type);
+
 }
 
 #endif // __GRADIDO_BLOCKCHAIN_DATA_ADAPTER_TYPES_H

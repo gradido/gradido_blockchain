@@ -115,6 +115,7 @@ namespace gradido {
 					const auto& memo = mMemos[i];
 					auto grdw_memo = &grdw_body->memos[i];
 					grdw_memo->type = adapter::toGrdw(memo.getKeyType());
+					// maybe use reference instead of copy, but then it is important to set ptr to zero before calling free on grdw body
 					grdw_memo->memo_size = memo.getMemo().size();
 					grdw_memo->memo = grdu_reserve_copy(memo.getMemo().data(), memo.getMemo().size());
 				}

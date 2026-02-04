@@ -38,6 +38,12 @@ namespace gradido {
 
 		}
 
+		LedgerAnchor::LedgerAnchor(const compact::HieroTransactionId& hieroTransactionId)
+			: mType(Type::HIERO_TRANSACTION_ID), mValue(hieroTransactionId)
+		{
+
+		}
+
 		LedgerAnchor::LedgerAnchor(uint64_t transactionId, Type type)
 			: mType(type)
 		{

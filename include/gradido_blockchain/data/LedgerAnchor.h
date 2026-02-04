@@ -30,6 +30,7 @@ namespace gradido {
 			LedgerAnchor(const LedgerAnchor& other);
 			explicit LedgerAnchor(const memory::Block& iotaMessageId);
 			explicit LedgerAnchor(const hiero::TransactionId& hieroTransactionId);
+			explicit LedgerAnchor(const compact::HieroTransactionId& hieroTransactionId);
 			explicit LedgerAnchor(uint64_t transactionId, Type type);
 			~LedgerAnchor();
 
@@ -45,6 +46,7 @@ namespace gradido {
 
 			inline const memory::Block& getIotaMessageId() const { return std::get<memory::Block>(mValue); }
 			inline const hiero::TransactionId getHieroTransactionId() const { return adapter::fromCompact(std::get<compact::HieroTransactionId>(mValue)); }
+			inline const compact::HieroTransactionId getHieroTransactionIdCompact() const { return std::get<compact::HieroTransactionId>(mValue); }
 			inline uint64_t getLegacyTransactionId() const { return std::get<3>(mValue); }
 			inline uint64_t getNodeTriggeredTransactionId() const { return std::get<4>(mValue); }
 

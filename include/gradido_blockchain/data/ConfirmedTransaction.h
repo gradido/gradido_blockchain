@@ -9,6 +9,8 @@
 
 #include <optional>
 
+struct grdw_confirmed_transaction;
+
 namespace gradido {
 	namespace data {
 
@@ -38,6 +40,7 @@ namespace gradido {
 			);
 
 			~ConfirmedTransaction() {}
+			std::shared_ptr<const ConfirmedTransaction> fromGrdw(grdw_confirmed_transaction* grdw_tx, uint32_t communityIdIndex);
 
 			memory::ConstBlockPtr calculateRunningHash(
 				std::shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction = nullptr
@@ -67,6 +70,7 @@ namespace gradido {
 			bool isTheSame(const ConfirmedTransaction& other) const;
 
 		protected:
+			// empty constructor
 			void initalizePubkeyHashes();
 
 			uint64_t                    				mId;

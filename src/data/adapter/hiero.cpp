@@ -1,4 +1,5 @@
 #include "gradido_blockchain/data/adapter/hiero.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 
 namespace gradido::data::adapter {
 
@@ -17,6 +18,21 @@ namespace gradido::data::adapter {
       .seconds = tx.getTransactionValidStart().getSeconds(),
       .nanos = tx.getTransactionValidStart().getNanos(),
       .accountNum = static_cast<int32_t>(tx.getAccountId().getAccountNum())
+    };
+  }
+
+  compact::HieroTransactionId fromGrdw(grdw_hiero_transaction_id& grdw_hiero_tx_id)
+  {
+    if (grdw_hiero_tx_id.accountID.realmNum
+      || grdw_hiero_tx_id.accountID.shardNum 
+      || static_cast<int32_t>(grdw_hiero_tx_id.accountID.accountNum) != grdw_hiero_tx_id.accountID.accountNum
+    ) {
+      throw GradidoNodeInvalidDataException("cannot convert hiero transaction id from grdw to compact");
+    }
+    return {
+      .seconds = grdw_hiero_tx_id.transactionValidStart.seconds,
+      .nanos = grdw_hiero_tx_id.transactionValidStart.nanos,
+      .accountNum = static_cast<int32_t>(grdw_hiero_tx_id.accountID.accountNum)
     };
   }
 }
