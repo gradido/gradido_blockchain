@@ -7,6 +7,7 @@
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
+#include "gradido_blockchain/blockchain/StateChange.h"
 
 #include "rapidjson/document.h"
 
@@ -46,7 +47,7 @@ namespace gradido {
 			//! \brief search transaction nrs for search criteria in filter, ignore filter function
 			//! \return transaction nrs
 			std::vector<uint64_t> findTransactions(const gradido::blockchain::Filter& filter, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
-			data::AddressType getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
+			StateChange<data::AddressType> getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
 			inline void updateAddressIndex(ConstTransactionEntryPtr transactionEntry, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const;
 
 			//! count all, ignore pagination

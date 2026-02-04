@@ -7,6 +7,7 @@
 
 #include <unordered_map>
 #include <memory>
+#include <vector>
 
 namespace memory {
 	class Block;
@@ -33,6 +34,7 @@ namespace gradido {
 			const std::vector<uint64_t>& getTransactionsNrs(uint32_t publicKeyIndex) const;
 			bool isExist(uint32_t publicKeyIndex) const;
 			data::AddressType getAddressType(uint32_t publicKeyIndex) const;
+			std::vector<uint64_t> getAddressTypeChangingTransactions(uint32_t publicKeyIndex) const;
 			//! \return 0 if not found, else return last transaction nr where the balance of the account was changed
 			uint64_t lastBalanceChanged(uint32_t publicKeyIndex) const;
 
@@ -50,7 +52,7 @@ namespace gradido {
 				uint64_t lastBalanceChangingTransactionNr;
 			};
 
-			// store all transaction nrs for public key which alter the type (RegisterAddress, CommunityRoot)
+			// TODO: store all transaction nrs for public key which alter the type (RegisterAddress, CommunityRoot)
 			std::unordered_map<uint32_t, AddressData> mIndexTransactionNrs;
 		};
 	}

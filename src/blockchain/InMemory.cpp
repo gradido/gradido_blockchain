@@ -229,7 +229,17 @@ namespace gradido {
 			if (!filter.involvedPublicKey) {
 				throw GradidoNodeInvalidDataException("missing public key, please use filter with involvedPublicKey set");
 			}
-			return mTransactionsIndex.getAddressType(filter.involvedPublicKey, mPublicKeyDirectory);
+			auto addressTypeStateChange = mTransactionsIndex.getAddressType(filter.involvedPublicKey, mPublicKeyDirectory);
+			if (addressTypeStateChange.getTxId()) {
+				auto tx = getTransactionForId(addressTypeStateChange.getTxId());
+				if (!tx) {
+					throw GradidoNodeInvalidDataException("tx for tx id in address index couldn't be found");
+				}
+				if (FilterResult::USE != (FilterResult::USE & filter.matches(tx, FilterCriteria::MAX))) {
+					return getAddressTypeSlow(filter);
+				}
+			}
+			return addressTypeStateChange.getValue();
 		}
 
 		

@@ -136,6 +136,16 @@ namespace gradido {
 			return it->second.addressType;
 		}
 
+		vector<uint64_t> AddressIndex::getAddressTypeChangingTransactions(uint32_t publicKeyIndex) const
+		{
+			auto it = mIndexTransactionNrs.find(publicKeyIndex);
+			if (it == mIndexTransactionNrs.end()) {
+				return {};
+			}
+			return it->second.transactionNrs;
+		}
+
+
 		uint64_t AddressIndex::lastBalanceChanged(uint32_t publicKeyIndex) const
 		{
 			auto it = mIndexTransactionNrs.find(publicKeyIndex);

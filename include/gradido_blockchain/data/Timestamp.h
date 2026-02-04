@@ -13,6 +13,8 @@ namespace gradido {
 			Timestamp(const Timepoint& date);
 			Timestamp(int64_t _seconds, int32_t _nanos) : mSeconds(_seconds), mNanos(_nanos) {}
 
+			static Timestamp now();
+
 			inline operator Timepoint() const { return getAsTimepoint(); }
 			Timepoint getAsTimepoint() const;
 			inline int64_t getSeconds() const { return mSeconds; }

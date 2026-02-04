@@ -8,6 +8,8 @@
 
 #include "loguru/loguru.hpp"
 
+#include <algorithm>
+
 using namespace rapidjson;
 
 using std::make_shared;
@@ -292,13 +294,25 @@ namespace gradido {
 			return result;
 		}
 
-		AddressType TransactionsIndex::getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const
+		StateChange<data::AddressType> TransactionsIndex::getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const
 		{
 			auto publicKeyIndexOptional = publicKeyDictionary.getIndexForData(publicKeyPtr);
 			if (!publicKeyIndexOptional.has_value()) {
 				return AddressType::NONE;
 			}
-			return mAddressIndex.getAddressType(publicKeyIndexOptional.value());
+			auto addressType = mAddressIndex.getAddressType(publicKeyIndexOptional.value());
+			if (AddressType::NONE == addressType) {
+				return AddressType::NONE;
+			}
+			auto txs = mAddressIndex.getAddressTypeChangingTransactions(publicKeyIndexOptional.value());
+			if (txs.empty()) {
+				return addressType;
+			}
+			if (txs.size() == 1) {
+				return { txs[0], addressType };
+			}
+			std::sort(txs.begin(), txs.end());
+			return { txs.back(), mAddressIndex.getAddressType(publicKeyIndexOptional.value()) };
 		}
 
 		size_t TransactionsIndex::countTransactions(const Filter& originalFilter, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary) const

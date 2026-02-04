@@ -1,5 +1,7 @@
 #include "gradido_blockchain/data/Timestamp.h"
 
+#include <chrono>
+using std::chrono::high_resolution_clock, std::chrono::system_clock;
 
 namespace gradido {
 	namespace data {
@@ -16,10 +18,15 @@ namespace gradido {
 			mNanos = (duration_cast<std::chrono::nanoseconds>(duration) - duration_cast<std::chrono::nanoseconds>(secondsDuration)).count();
 		}
 
+		Timestamp Timestamp::now()
+		{
+			return system_clock::now();
+		}
+
 		Timepoint Timestamp::getAsTimepoint() const 
 		{
 			int64_t microseconds = mSeconds * static_cast<int64_t>(1e6) + mNanos / static_cast<int64_t>(1e3);
-			return std::chrono::system_clock::time_point(std::chrono::microseconds(microseconds));
+			return system_clock::time_point(std::chrono::microseconds(microseconds));
 		}
 		std::string Timestamp::toString() const
 		{

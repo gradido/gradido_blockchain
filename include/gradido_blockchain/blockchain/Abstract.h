@@ -71,6 +71,7 @@ namespace gradido {
 			//!        check for user and account public keys
 			virtual data::AddressType getAddressType(const Filter& filter = Filter::LAST_TRANSACTION) const;
 			//! uncached version of getAddressType which will search via findOne in blockchain
+			//! TODO: better name
 			data::AddressType getAddressTypeSlow(const Filter& filter = Filter::LAST_TRANSACTION) const;
 			virtual ConstTransactionEntryPtr getTransactionForId(uint64_t transactionId) const = 0;
 
