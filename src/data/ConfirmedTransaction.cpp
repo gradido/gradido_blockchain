@@ -90,7 +90,9 @@ namespace gradido {
 
 		void ConfirmedTransaction::toGrdw(grdw_confirmed_transaction* grdw_tx, uint32_t communityIdIndex) const
 		{
+			assert(mGradidoTransaction);
 			grdw_tx->id = mId;
+			mGradidoTransaction->toGrdw(&grdw_tx->transaction, communityIdIndex);
 			grdw_tx->confirmed_at = adapter::toGrdw(mConfirmedAt);
 			grdw_tx->version_number = grdu_reserve_copy_string(GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING, grdu_strlen(GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING));
 			grdw_tx->running_hash = grdu_reserve_copy(mRunningHash->data(), mRunningHash->size());

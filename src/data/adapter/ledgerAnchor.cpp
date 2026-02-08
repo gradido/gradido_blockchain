@@ -86,6 +86,10 @@ namespace gradido::data {
               .type = GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID,
               .anchor_id = { .legacy_transaction_link_id = ledgerAnchor.getLegacyTransactionId() }
             };
+          case LedgerAnchor::Type::UNSPECIFIED:
+            return {
+              .type = GRDW_LEDGER_ANCHOR_TYPE_UNSPECIFIED
+            };
           default:
             throw GradidoUnhandledEnum("error converting ledger anchor to grdw (C-Interface)", "LedgerAnchor", to_string(static_cast<uint8_t>(ledgerAnchor.getType())).c_str());
         }

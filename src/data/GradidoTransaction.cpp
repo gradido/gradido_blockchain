@@ -44,8 +44,14 @@ namespace gradido {
 					grdw_tx->sig_map[i] = adapter::toGrdw(sigPairs[i]);
 				}
 			}
+			else {
+				grdw_tx->sig_map_count = 0;
+			}
 			if (mBodyBytes && mBodyBytes->size()) {
 				grdw_gradido_transaction_set_body_bytes(grdw_tx, mBodyBytes->data(), mBodyBytes->size());
+			}
+			else {
+				grdw_tx->body_bytes_size = 0;
 			}
 			grdw_tx->pairing_ledger_anchor = adapter::toGrdw(mPairingLedgerAnchor);
 		}
