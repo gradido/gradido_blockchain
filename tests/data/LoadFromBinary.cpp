@@ -158,6 +158,9 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreaded)
 	);
 }
 // */
+#include "gradido_protobuf_zig.h"
+#include <vector>
+using std::vector;
 
 TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 {
@@ -197,7 +200,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 			// trigger body deserialization
 			try {
 				// printf("added: %s\n", toJsonString(*tx, true).data());
-				// mTransactions.emplace_back(tx);
+				//mTransactions.emplace_back(tx);
 			}
 			catch (...) {
 				printf("cannot deserialize transaction body from: %s\n", toJsonString(*tx, true).data());
@@ -216,40 +219,103 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 	);
 	return;
 	timeUsed.reset();
+	vector<grdw_confirmed_transaction> grdw_confirmed_txs;
+	grdw_confirmed_txs.resize(count);
+	printf("reserve memory for %d grdw_confirmed_transaction: %s\n", count, timeUsed.string().c_str());
+
+	count = 0;
+	uint8_t staticResultBuffer[1024];
+
+	size_t maxAllocateConfirmed = 0;
+	size_t maxBufferConfirmed = 0;
+	size_t maxAllocateTransaction = 0;
+	size_t maxBufferTransaction = 0;
+	size_t maxAllocatedBody = 0;
+	size_t maxBufferBody = 0;
+
+	timeUsed.reset();
 	count = 0;
 	for (auto& tx : mTransactions) {
-		if (!tx || !tx->getGradidoTransaction()->getTransactionBody()) {
-			break;
-		}
-		auto createdAt = tx->getGradidoTransaction()->getTransactionBody()->getCreatedAt();
-		TransactionId transactionId(createdAt, defaultHieroAccount);
-		try {
-			// blockchain->createAndAddConfirmedTransaction(tx, LedgerAnchor(transactionId), createdAt);
-			// printf("%llu: %s\n\n", tx->getId(), serialization::toJsonString(*tx, true).data());
-		}
-		catch (GradidoBlockchainException& ex) {
-			printf("\nexception: %s\n", ex.getFullString().data());
-			printf("createdAt: %ld %d\n", createdAt.getSeconds(), createdAt.getNanos());
-			int zahl = 1;
-			throw;
-		}
-		catch (std::exception& ex) {
-			printf("\nex: %s\n", ex.what());
-			int zahl = 2;
-			throw;
-		}
-		catch (...) {
-			printf("\nunknow exceptions\n");
-			throw;
-		}
-		count++;
-		// if (count > 100) break;
-		// printf("\rtransactions: %d", count);
-		// if (timeUsed.seconds() > 30.0) break;
+		auto blockchainCommunityIdIndex = tx->getGradidoTransaction()->getCommunityIdIndex();
+		grdw_confirmed_transaction grdw_tx;
+		tx->toGrdw(&grdw_tx, blockchainCommunityIdIndex);
+		grdw_confirmed_transaction_encode(&grdw_tx, staticResultBuffer, 1024);
+		grdw_confirmed_transaction_free_deep(&grdw_tx);
+		++count;
 	}
-	printf("\n");
-	//printf("%s time for adding %d transactions to blockchain\n", timeUsed.string().data(), count);
-	printf("%s time for deserialize transaction bodys\n", timeUsed.string().data(), count);
+	printf("time for %d confirmed to grdw calls + encode + free: %s\n", count, timeUsed.string().c_str());
+
+	timeUsed.reset();
+	count = 0;
+	for (auto& tx : mTransactions) {
+		auto blockchainCommunityIdIndex = tx->getGradidoTransaction()->getCommunityIdIndex();
+		tx->toGrdw(&grdw_confirmed_txs[count++], blockchainCommunityIdIndex);
+	}
+	printf("time for %d confirmed to grdw calls: %s\n", count, timeUsed.string().c_str());
+	timeUsed.reset();
+	for (auto& grdw_tx : grdw_confirmed_txs) {
+		auto encodeResult = grdw_confirmed_transaction_encode(&grdw_tx, staticResultBuffer, 1024);
+		if (encodeResult.allocator_used > maxAllocateConfirmed) {
+			maxAllocateConfirmed = encodeResult.allocator_used;
+		}
+		if (encodeResult.written > maxBufferConfirmed) {
+			maxBufferConfirmed = encodeResult.written;
+		}
+	}
+	printf("time for %d grdw_confirmed_transaction_encode calls: %s\n", count, timeUsed.string().c_str());
+	printf("confirmed stats: max allocated: %llu, max buffer: %llu\n", maxAllocateConfirmed, maxBufferConfirmed);
+
+	timeUsed.reset();
+	for (auto& grdw_tx : grdw_confirmed_txs) {
+		auto encodeResult = grdw_gradido_transaction_encode(&grdw_tx.transaction, staticResultBuffer, 1024);
+		if (encodeResult.allocator_used > maxAllocateTransaction) {
+			maxAllocateTransaction = encodeResult.allocator_used;
+		}
+		if (encodeResult.written > maxBufferTransaction) {
+			maxBufferTransaction = encodeResult.written;
+		}
+	}
+	printf("time for %d grdw_gradido_transaction_encode calls: %s\n", count, timeUsed.string().c_str());
+	printf("transaction stats: max allocated: %llu, max buffer: %llu\n", maxAllocateTransaction, maxBufferTransaction);
+	timeUsed.reset();
+	for (auto& grdw_tx : grdw_confirmed_txs) {
+		grdw_confirmed_transaction_free_deep(&grdw_tx);
+	}
+	grdw_confirmed_txs.clear();
+	printf("time for %d grdw_confirmed_transaction_free_deep calls: %s\n", count, timeUsed.string().c_str());
+	
+	timeUsed.reset();
+	vector<grdw_transaction_body> grdw_bodys;
+	grdw_bodys.resize(count);
+	printf("reserve memory for %d grdw_transaction_body: %s\n", count, timeUsed.string().c_str());
+
+	timeUsed.reset();
+	count = 0;
+	for (auto& tx : mTransactions) {
+		tx->getGradidoTransaction()->getTransactionBody()->toGrdw(&grdw_bodys[count++]);
+	}
+	printf("time for %d body to grdw calls: %s\n", count, timeUsed.string().c_str());
+
+	timeUsed.reset();
+	for (auto& grdw_body : grdw_bodys) {
+		auto encodeResult = grdw_transaction_body_encode(&grdw_body, staticResultBuffer, 1024);
+		if (encodeResult.allocator_used > maxAllocatedBody) {
+			maxAllocatedBody = encodeResult.allocator_used;
+		}
+		if (encodeResult.written > maxBufferBody) {
+			maxBufferBody = encodeResult.written;
+		}
+	}
+	printf("time for %d grdw_transaction_body_encode calls: %s\n", count, timeUsed.string().c_str());
+	printf("body stats: max allocated: %llu, max buffer: %llu\n", maxAllocatedBody, maxBufferBody);
+
+	timeUsed.reset();
+	for (auto& grdw_body : grdw_bodys) {
+		grdw_transaction_body_free_deep(&grdw_body);
+	}
+	grdw_bodys.clear();
+	printf("time for %d grdw_transaction_body_free_deep calls: %s\n", count, timeUsed.string().c_str());
+	
 	int zahl = 1;
 }
 // */
