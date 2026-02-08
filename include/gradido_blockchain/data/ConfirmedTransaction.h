@@ -10,6 +10,7 @@
 #include <optional>
 
 struct grdw_confirmed_transaction;
+struct grdu_memory;
 
 namespace gradido {
 	namespace data {
@@ -41,7 +42,7 @@ namespace gradido {
 
 			~ConfirmedTransaction() {}
 			static std::shared_ptr<const ConfirmedTransaction> fromGrdw(const grdw_confirmed_transaction* grdw_tx, uint32_t communityIdIndex);
-			void toGrdw(grdw_confirmed_transaction* grdw_tx, uint32_t communityIdIndex) const;
+			void toGrdw(grdu_memory* alloc, grdw_confirmed_transaction* grdw_tx, uint32_t communityIdIndex) const;
 
 			memory::ConstBlockPtr calculateRunningHash(
 				std::shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction = nullptr

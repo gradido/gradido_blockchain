@@ -18,7 +18,7 @@ namespace memory {
 	Block::Block(size_t size, const unsigned char* data)
 		: Block(size)
 	{
-		if (!size) return;
+		if (!size || !data) return;
 		mShortHash = SignatureOctet(data, size);
 		memcpy(mData, data, size);
 	}

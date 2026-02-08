@@ -21,7 +21,7 @@ namespace gradido::data {
         return AccountBalance(pubkeyPtr, balance, communityIdIndex);
       }
     }
-    grdw_account_balance toGrdw(const AccountBalance& grdwAccountBalance, uint32_t communityIdIndex)
+    grdw_account_balance toGrdw(grdu_memory* alloc, const AccountBalance& grdwAccountBalance, uint32_t communityIdIndex)
     {
       grdw_account_balance result;
       result.balance = grdwAccountBalance.getBalance().getGradidoCent();
@@ -30,7 +30,7 @@ namespace gradido::data {
       if (communityIdIndex != grdwAccountBalance.getCoinCommunityIdIndex()) {
         auto communityId = g_appContext->getCommunityIds().getDataForIndexOrThrow(grdwAccountBalance.getCoinCommunityIdIndex());
         // subtract one from size, because grdu_reserve_copy_string add a \0 nevertheless
-        result.community_id = grdu_reserve_copy_string(communityId.data(), communityId.size() - 1);
+        result.community_id = grdu_reserve_copy_string(alloc, communityId.data(), communityId.size() - 1);
       }
       else {
         result.community_id = nullptr;

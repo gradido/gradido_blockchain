@@ -38,7 +38,7 @@ namespace gradido::data {
         }
         
       }
-      grdw_ledger_anchor toGrdw(const LedgerAnchor& ledgerAnchor)
+      grdw_ledger_anchor toGrdw(grdu_memory* alloc, const LedgerAnchor& ledgerAnchor)
       {        
         if (ledgerAnchor.isHieroTransactionId()) {
           const auto& hieroTxId = ledgerAnchor.getHieroTransactionIdCompact();
@@ -46,7 +46,7 @@ namespace gradido::data {
           grdw_hiero_account_id accountID = { .shardNum = 0, .realmNum = 0, .accountNum = hieroTxId.accountNum };
           return {
             .type = GRDW_LEDGER_ANCHOR_TYPE_HIERO_TRANSACTION_ID,
-            .anchor_id = { .hiero_transaction_id = grdw_hiero_transaction_id_new(&transactionValidStart, &accountID) }
+            .anchor_id = { .hiero_transaction_id = grdw_hiero_transaction_id_new(alloc, &transactionValidStart, &accountID) }
           };
         }        
         switch(ledgerAnchor.getType()) {
@@ -54,7 +54,7 @@ namespace gradido::data {
             assert(ledgerAnchor.getIotaMessageId().size() == 32);
             return {
               .type = GRDW_LEDGER_ANCHOR_TYPE_IOTA_MESSAGE_ID,
-              .anchor_id = { .iota_message_id = grdu_reserve_copy(ledgerAnchor.getIotaMessageId().data(), 32) }
+              .anchor_id = { .iota_message_id = grdu_reserve_copy(alloc, ledgerAnchor.getIotaMessageId().data(), 32) }
             };
           case LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_ID:
             return {

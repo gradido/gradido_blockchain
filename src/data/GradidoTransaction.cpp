@@ -35,25 +35,27 @@ namespace gradido {
 			return make_shared<const GradidoTransaction>(signatures, bodyBytes, communityIdIndex, adapter::fromGrdw(grdw_tx->pairing_ledger_anchor));
 		}
 
-		void GradidoTransaction::toGrdw(grdw_gradido_transaction* grdw_tx, uint32_t communityIdIndex) const
+		void GradidoTransaction::toGrdw(grdu_memory* alloc, grdw_gradido_transaction* grdw_tx, uint32_t communityIdIndex) const
 		{
 			const auto& sigPairs = mSignatureMap.getSignaturePairs();
 			if (sigPairs.size()) {
-				grdw_gradido_transaction_reserve_sig_map(grdw_tx, sigPairs.size());
-				for (size_t i = 0; i < sigPairs.size(); i++) {
-					grdw_tx->sig_map[i] = adapter::toGrdw(sigPairs[i]);
+				grdw_gradido_transaction_reserve_sig_map(alloc, grdw_tx, sigPairs.size());
+				if (grdw_tx->sig_map) {
+					for (size_t i = 0; i < sigPairs.size(); i++) {
+						grdw_tx->sig_map[i] = adapter::toGrdw(sigPairs[i]);
+					}
 				}
 			}
 			else {
 				grdw_tx->sig_map_count = 0;
 			}
 			if (mBodyBytes && mBodyBytes->size()) {
-				grdw_gradido_transaction_set_body_bytes(grdw_tx, mBodyBytes->data(), mBodyBytes->size());
+				grdw_gradido_transaction_set_body_bytes(alloc, grdw_tx, mBodyBytes->data(), mBodyBytes->size());
 			}
 			else {
 				grdw_tx->body_bytes_size = 0;
 			}
-			grdw_tx->pairing_ledger_anchor = adapter::toGrdw(mPairingLedgerAnchor);
+			grdw_tx->pairing_ledger_anchor = adapter::toGrdw(alloc, mPairingLedgerAnchor);
 		}
 
 		ConstTransactionBodyPtr GradidoTransaction::getTransactionBody() const

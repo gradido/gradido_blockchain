@@ -8,7 +8,7 @@
 namespace gradido::data {  
   namespace adapter {
     GRADIDOBLOCKCHAIN_EXPORT LedgerAnchor fromGrdw(const grdw_ledger_anchor& ledgerAnchor);
-    GRADIDOBLOCKCHAIN_EXPORT grdw_ledger_anchor toGrdw(const LedgerAnchor& ledgerAnchor);
+    GRADIDOBLOCKCHAIN_EXPORT grdw_ledger_anchor toGrdw(grdu_memory* alloc, const LedgerAnchor& ledgerAnchor);
   }
 }
 

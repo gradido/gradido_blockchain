@@ -174,8 +174,49 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 	auto provider = InMemoryProvider::getInstance();
 	auto blockchain = provider->findBlockchain("test");
 	AccountId defaultHieroAccount(0, 0, 2);
-	list<ConstConfirmedTransactionPtr> mTransactions;
+	vector<ConstConfirmedTransactionPtr> mTransactions;
+	uint8_t staticInputBuffer[1024];
+	grdu_memory alloc;
 	int count = 0;
+
+	char readFromFileStaticBuffer[1024];
+	size_t confirmeDeserializeMaxAllocatorUsed = 0;
+	size_t confirmedDeserializeMaxInputBuffer = 0;
+
+	timeUsed.reset();
+	while (f.good()) {
+		f.read((char*)&transactionSize, sizeof(uint16_t));
+		f.read(readFromFileStaticBuffer, transactionSize);
+		grdu_memory_init_static(&alloc, staticInputBuffer, 1024);
+		
+		grdw_confirmed_transaction tx{};
+		auto result = grdw_confirmed_transaction_decode(&alloc, &tx, (uint8_t*)readFromFileStaticBuffer, transactionSize);
+		if (alloc.last_index > confirmedDeserializeMaxInputBuffer) {
+			confirmedDeserializeMaxInputBuffer = alloc.last_index;
+		}
+		if (result.allocator_used > confirmeDeserializeMaxAllocatorUsed) {
+			confirmeDeserializeMaxAllocatorUsed = result.allocator_used;
+		}
+		++count;
+		try {
+			// ConfirmedTransaction::fromGrdw(&tx, communityIdIndex);
+		}
+		catch (...) {
+			break;
+		}
+		
+	}
+	printf("%s time for simply deserialize confirmed tx with static buffer\n", timeUsed.string().c_str());
+	printf(
+		"deserialize stats: %llu max zig intern allocator used, %llu max input buffer usage\n", 
+		confirmeDeserializeMaxAllocatorUsed, confirmedDeserializeMaxInputBuffer
+	);
+	mTransactions.reserve(count);
+
+	count = 0;
+	f.clear();
+	f.seekg(0);
+	timeUsed.reset();
 
 	while (f.good()) {
 		f.read((char*)&transactionSize, sizeof(uint16_t));
@@ -200,7 +241,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 			// trigger body deserialization
 			try {
 				// printf("added: %s\n", toJsonString(*tx, true).data());
-				//mTransactions.emplace_back(tx);
+				mTransactions.emplace_back(tx);
 			}
 			catch (...) {
 				printf("cannot deserialize transaction body from: %s\n", toJsonString(*tx, true).data());
@@ -214,46 +255,32 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 	//	if (count > 10100) break;
 	}
 	// printf("\n");
-	printf("%s time to load and deserialize %d transactions from binary file\n",
+	printf("%s time to load and deserialize %d transactions from binary file into fat Object and put into vector\n",
 		timeUsed.string().data(), count
 	);
-	return;
-	timeUsed.reset();
-	vector<grdw_confirmed_transaction> grdw_confirmed_txs;
-	grdw_confirmed_txs.resize(count);
-	printf("reserve memory for %d grdw_confirmed_transaction: %s\n", count, timeUsed.string().c_str());
+	// return;
+	timeUsed.reset();	
 
-	count = 0;
 	uint8_t staticResultBuffer[1024];
-
+	
+	
 	size_t maxAllocateConfirmed = 0;
 	size_t maxBufferConfirmed = 0;
 	size_t maxAllocateTransaction = 0;
 	size_t maxBufferTransaction = 0;
 	size_t maxAllocatedBody = 0;
 	size_t maxBufferBody = 0;
+	size_t maxInputBuffer = 0;
 
 	timeUsed.reset();
-	count = 0;
 	for (auto& tx : mTransactions) {
 		auto blockchainCommunityIdIndex = tx->getGradidoTransaction()->getCommunityIdIndex();
 		grdw_confirmed_transaction grdw_tx;
-		tx->toGrdw(&grdw_tx, blockchainCommunityIdIndex);
-		grdw_confirmed_transaction_encode(&grdw_tx, staticResultBuffer, 1024);
-		grdw_confirmed_transaction_free_deep(&grdw_tx);
-		++count;
-	}
-	printf("time for %d confirmed to grdw calls + encode + free: %s\n", count, timeUsed.string().c_str());
-
-	timeUsed.reset();
-	count = 0;
-	for (auto& tx : mTransactions) {
-		auto blockchainCommunityIdIndex = tx->getGradidoTransaction()->getCommunityIdIndex();
-		tx->toGrdw(&grdw_confirmed_txs[count++], blockchainCommunityIdIndex);
-	}
-	printf("time for %d confirmed to grdw calls: %s\n", count, timeUsed.string().c_str());
-	timeUsed.reset();
-	for (auto& grdw_tx : grdw_confirmed_txs) {
+		grdu_memory_init_static(&alloc, staticInputBuffer, 1024);
+		tx->toGrdw(&alloc, &grdw_tx, blockchainCommunityIdIndex);
+		if (alloc.last_index > maxInputBuffer) {
+			maxInputBuffer = alloc.last_index;
+		}
 		auto encodeResult = grdw_confirmed_transaction_encode(&grdw_tx, staticResultBuffer, 1024);
 		if (encodeResult.allocator_used > maxAllocateConfirmed) {
 			maxAllocateConfirmed = encodeResult.allocator_used;
@@ -262,12 +289,23 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 			maxBufferConfirmed = encodeResult.written;
 		}
 	}
-	printf("time for %d grdw_confirmed_transaction_encode calls: %s\n", count, timeUsed.string().c_str());
-	printf("confirmed stats: max allocated: %llu, max buffer: %llu\n", maxAllocateConfirmed, maxBufferConfirmed);
+	printf("time for confirmed transaction toGrdw and encode: %s\n", timeUsed.string().c_str());
+	printf(
+		"confirmed stats: max allocated (zig intern): %llu, max buffer (output): %llu, max input buffer (toGrdw): %llu\n",
+		maxAllocateConfirmed, maxBufferConfirmed, maxInputBuffer
+	);
 
 	timeUsed.reset();
-	for (auto& grdw_tx : grdw_confirmed_txs) {
-		auto encodeResult = grdw_gradido_transaction_encode(&grdw_tx.transaction, staticResultBuffer, 1024);
+	maxInputBuffer = 0;
+	for (auto& tx : mTransactions) {
+		grdw_gradido_transaction grdw_tx;
+		grdu_memory_init_static(&alloc, staticInputBuffer, 1024);
+		auto blockchainCommunityIdIndex = tx->getGradidoTransaction()->getCommunityIdIndex();
+		tx->getGradidoTransaction()->toGrdw(&alloc, &grdw_tx, blockchainCommunityIdIndex);
+		if (alloc.last_index > maxInputBuffer) {
+			maxInputBuffer = alloc.last_index;
+		}
+		auto encodeResult = grdw_gradido_transaction_encode(&grdw_tx, staticResultBuffer, 1024);
 		if (encodeResult.allocator_used > maxAllocateTransaction) {
 			maxAllocateTransaction = encodeResult.allocator_used;
 		}
@@ -275,29 +313,20 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 			maxBufferTransaction = encodeResult.written;
 		}
 	}
-	printf("time for %d grdw_gradido_transaction_encode calls: %s\n", count, timeUsed.string().c_str());
-	printf("transaction stats: max allocated: %llu, max buffer: %llu\n", maxAllocateTransaction, maxBufferTransaction);
+	printf("time for gradido transaction toGrdw and encode: %s\n", timeUsed.string().c_str());
+	printf(
+		"transaction stats: max allocated (zig intern): %llu, max buffer (output): %llu, max input buffer (toGrdw): %llu\n",
+		maxAllocateTransaction, maxBufferTransaction, maxInputBuffer
+	);
 	timeUsed.reset();
-	for (auto& grdw_tx : grdw_confirmed_txs) {
-		grdw_confirmed_transaction_free_deep(&grdw_tx);
-	}
-	grdw_confirmed_txs.clear();
-	printf("time for %d grdw_confirmed_transaction_free_deep calls: %s\n", count, timeUsed.string().c_str());
-	
-	timeUsed.reset();
-	vector<grdw_transaction_body> grdw_bodys;
-	grdw_bodys.resize(count);
-	printf("reserve memory for %d grdw_transaction_body: %s\n", count, timeUsed.string().c_str());
-
-	timeUsed.reset();
-	count = 0;
+	maxInputBuffer = 0;
 	for (auto& tx : mTransactions) {
-		tx->getGradidoTransaction()->getTransactionBody()->toGrdw(&grdw_bodys[count++]);
-	}
-	printf("time for %d body to grdw calls: %s\n", count, timeUsed.string().c_str());
-
-	timeUsed.reset();
-	for (auto& grdw_body : grdw_bodys) {
+		grdw_transaction_body grdw_body;
+		grdu_memory_init_static(&alloc, staticInputBuffer, 1024);
+		tx->getGradidoTransaction()->getTransactionBody()->toGrdw(&alloc, &grdw_body);
+		if (alloc.last_index > maxInputBuffer) {
+			maxInputBuffer = alloc.last_index;
+		}
 		auto encodeResult = grdw_transaction_body_encode(&grdw_body, staticResultBuffer, 1024);
 		if (encodeResult.allocator_used > maxAllocatedBody) {
 			maxAllocatedBody = encodeResult.allocator_used;
@@ -306,15 +335,11 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 			maxBufferBody = encodeResult.written;
 		}
 	}
-	printf("time for %d grdw_transaction_body_encode calls: %s\n", count, timeUsed.string().c_str());
-	printf("body stats: max allocated: %llu, max buffer: %llu\n", maxAllocatedBody, maxBufferBody);
-
-	timeUsed.reset();
-	for (auto& grdw_body : grdw_bodys) {
-		grdw_transaction_body_free_deep(&grdw_body);
-	}
-	grdw_bodys.clear();
-	printf("time for %d grdw_transaction_body_free_deep calls: %s\n", count, timeUsed.string().c_str());
+	printf("time for transaction body toGrdw and encode: %s\n", timeUsed.string().c_str());
+	printf(
+		"body stats:max allocated (zig intern): %llu, max buffer (output): %llu, max input buffer (toGrdw): %llu\n",
+		maxAllocatedBody, maxBufferBody, maxInputBuffer
+	);
 	
 	int zahl = 1;
 }

@@ -12,7 +12,7 @@ namespace gradido::data {
   class TransactionBody;
   namespace adapter {
     GRADIDOBLOCKCHAIN_EXPORT TransferAmount fromGrdw(const grdw_transfer_amount& grdwAmount, uint32_t communityIdIndex);
-    GRADIDOBLOCKCHAIN_EXPORT grdw_transfer_amount toGrdw(const TransferAmount& amount, uint32_t communityIdIndex);
+    GRADIDOBLOCKCHAIN_EXPORT grdw_transfer_amount toGrdw(grdu_memory* alloc, const TransferAmount& amount, uint32_t communityIdIndex);
   }
 }
 

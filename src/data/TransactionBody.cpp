@@ -106,18 +106,20 @@ namespace gradido {
 			return result;
 		}
 
-		void TransactionBody::toGrdw(grdw_transaction_body* grdw_body) const
+		void TransactionBody::toGrdw(grdu_memory* alloc, grdw_transaction_body* grdw_body) const
 		{
-			grdw_body->version_number = grdu_reserve_copy_string(GRADIDO_TRANSACTION_BODY_VERSION_STRING, grdu_strlen(GRADIDO_TRANSACTION_BODY_VERSION_STRING));
+			grdw_body->version_number = grdu_reserve_copy_string(alloc, GRADIDO_TRANSACTION_BODY_VERSION_STRING, grdu_strlen(GRADIDO_TRANSACTION_BODY_VERSION_STRING));
 			if (mMemos.size()) {
-				grdw_transaction_body_reserve_memos(grdw_body, mMemos.size());
-				for (int i = 0; i < mMemos.size(); ++i) {
-					const auto& memo = mMemos[i];
-					auto grdw_memo = &grdw_body->memos[i];
-					grdw_memo->type = adapter::toGrdw(memo.getKeyType());
-					// maybe use reference instead of copy, but then it is important to set ptr to zero before calling free on grdw body
-					grdw_memo->memo_size = memo.getMemo().size();
-					grdw_memo->memo = grdu_reserve_copy(memo.getMemo().data(), memo.getMemo().size());
+				grdw_transaction_body_reserve_memos(alloc, grdw_body, mMemos.size());
+				if (grdw_body->memos) {
+					for (int i = 0; i < mMemos.size(); ++i) {
+						const auto& memo = mMemos[i];
+						auto grdw_memo = &grdw_body->memos[i];
+						grdw_memo->type = adapter::toGrdw(memo.getKeyType());
+						// maybe use reference instead of copy, but then it is important to set ptr to zero before calling free on grdw body
+						grdw_memo->memo_size = memo.getMemo().size();
+						grdw_memo->memo = grdu_reserve_copy(alloc, memo.getMemo().data(), memo.getMemo().size());
+					}
 				}
 			}
 			else {
@@ -129,7 +131,7 @@ namespace gradido {
 				if (!otherCommunityId) {
 					throw DictionaryMissingEntryException("missing other community id", to_string(mOtherCommunityIdIndex.value()));
 				}
-				grdw_body->other_group = grdu_reserve_copy_string(otherCommunityId->data(), otherCommunityId->size());
+				grdw_body->other_group = grdu_reserve_copy_string(alloc, otherCommunityId->data(), otherCommunityId->size());
 			}
 			else {
 				grdw_body->other_group = nullptr;
@@ -148,6 +150,7 @@ namespace gradido {
 					throw GradidoNodeInvalidDataException("at least one of account public key, name hash, user public key isn't 32 Bytes");
 				}
 				grdw_body->data.register_address = grdw_register_address_new(
+					alloc,
 					userPubkey->data(),
 					adapter::toGrdw(getRegisterAddress()->getAddressType()),
 					nameHash->data(),
@@ -159,49 +162,55 @@ namespace gradido {
 			switch (mTransactionType) {
 			case TransactionType::TRANSFER: 
 				grdw_body->data.transfer = grdw_gradido_transfer_new(
-					adapter::toGrdw(getTransferAmount(), mCommunityIdIndex),
+					alloc,
+					adapter::toGrdw(alloc, getTransferAmount(), mCommunityIdIndex),
 					getTransfer()->getRecipient()->data()
 				);
 				break;
 			case TransactionType::CREATION: 
 				grdw_body->data.creation = grdw_gradido_creation_new(
-					adapter::toGrdw(getTransferAmount(), mCommunityIdIndex),
+					alloc,
+					adapter::toGrdw(alloc, getTransferAmount(), mCommunityIdIndex),
 					adapter::toGrdw(getCreation()->getTargetDate())
 				);
 				break;
 			case TransactionType::REGISTER_ADDRESS: break;
 			case TransactionType::DEFERRED_TRANSFER:
 				assert(getDeferredTransfer()->getRecipientPublicKey()->size() == 32);
-				grdwTransfer.sender = adapter::toGrdw(getTransferAmount(), mCommunityIdIndex);
+				grdwTransfer.sender = adapter::toGrdw(alloc, getTransferAmount(), mCommunityIdIndex);
 				memcpy(grdwTransfer.recipient, getDeferredTransfer()->getRecipientPublicKey()->data(), 32);
 				grdw_body->data.deferred_transfer = grdw_gradido_deferred_transfer_new(
+					alloc,
 					grdwTransfer,
 					getDeferredTransfer()->getTimeoutDuration().getSeconds()
 				);
 				break;
 			case TransactionType::REDEEM_DEFERRED_TRANSFER:
 				assert(getRedeemDeferredTransfer()->getRecipientPublicKey()->size() == 32);
-				grdwTransfer.sender = adapter::toGrdw(getTransferAmount(), mCommunityIdIndex);
+				grdwTransfer.sender = adapter::toGrdw(alloc, getTransferAmount(), mCommunityIdIndex);
 				memcpy(grdwTransfer.recipient, getRedeemDeferredTransfer()->getRecipientPublicKey()->data(), 32);
 				grdw_body->data.redeem_deferred_transfer = grdw_gradido_redeem_deferred_transfer_new(
+					alloc,
 					getRedeemDeferredTransfer()->getDeferredTransferTransactionNr(),
 					grdwTransfer
 				);
 				break;
 			case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
 				grdw_body->data.timeout_deferred_transfer = grdw_gradido_timeout_deferred_transfer_new(
+					alloc,
 					getTimeoutDeferredTransfer()->getDeferredTransferTransactionNr()
 				);
 				break;
 			case TransactionType::COMMUNITY_ROOT:
 				grdw_body->data.community_root = grdw_community_root_new(
+					alloc,
 					getCommunityRoot()->getPublicKey()->data(),
 					getCommunityRoot()->getGmwPubkey()->data(),
 					getCommunityRoot()->getAufPubkey()->data()
 				);
 				break;
 			case TransactionType::COMMUNITY_FRIENDS_UPDATE:
-				grdw_body->data.community_friends_update = grdw_community_friends_update_new(getCommunityFriendsUpdate()->getColorFusion());
+				grdw_body->data.community_friends_update = grdw_community_friends_update_new(alloc, getCommunityFriendsUpdate()->getColorFusion());
 				break;
 			default: throw GradidoUnhandledEnum("missing implementation for TransactionBody::toGrdw", "TransactionType", to_string(static_cast<int>(mTransactionType)).c_str());
 			}

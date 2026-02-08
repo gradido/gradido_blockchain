@@ -24,7 +24,7 @@ namespace gradido::data::adapter {
       grdwAmount.community_id ? g_appContext->getOrAddCommunityIdIndex(grdwAmount.community_id) : communityIdIndex
     );
   }
-  GRADIDOBLOCKCHAIN_EXPORT grdw_transfer_amount toGrdw(const TransferAmount& amount, uint32_t communityIdIndex)
+  GRADIDOBLOCKCHAIN_EXPORT grdw_transfer_amount toGrdw(grdu_memory* alloc, const TransferAmount& amount, uint32_t communityIdIndex)
   {
     assert(amount.getPublicKey()->size() == 32);
     grdw_transfer_amount grdwAmount;
@@ -38,7 +38,7 @@ namespace gradido::data::adapter {
       if (!communityId) {
         throw DictionaryMissingEntryException("missing community id", to_string(communityIdIndex));
       }
-      grdwAmount.community_id = grdu_reserve_copy_string(communityId->data(), communityId->size());
+      grdwAmount.community_id = grdu_reserve_copy_string(alloc, communityId->data(), communityId->size());
     }
     return grdwAmount;
   }
