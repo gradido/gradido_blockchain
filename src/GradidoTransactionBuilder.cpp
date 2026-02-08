@@ -13,6 +13,7 @@
 #include "gradido_blockchain/data/GradidoTimeoutDeferredTransfer.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/data/GradidoTransfer.h"
+#include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/data/RegisterAddress.h"
 #include "gradido_blockchain/data/SignaturePair.h"
 #include "gradido_blockchain/data/Timestamp.h"
@@ -55,6 +56,7 @@ namespace gradido {
 	using data::GradidoTimeoutDeferredTransfer;
 	using data::GradidoTransaction;
 	using data::GradidoTransfer;
+	using data::LedgerAnchor;
 	using data::RegisterAddress;
 	using data::SignaturePair;
 	using data::Timestamp;
@@ -84,6 +86,7 @@ namespace gradido {
 		mRecipientCommunityIdIndex = nullopt;
 		mBodyByteSignatureMaps.clear();
 		mSpecificTransactionChoosen = false;
+		mLedgerAnchor = LedgerAnchor();
 	}
 	unique_ptr<GradidoTransaction> GradidoTransactionBuilder::build()
 	{

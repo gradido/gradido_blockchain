@@ -75,15 +75,19 @@ namespace std {
 	struct hash<gradido::data::LedgerAnchor> {
 		std::size_t operator()(const gradido::data::LedgerAnchor& ledgerAnchor) const noexcept {
 			if (ledgerAnchor.isHieroTransactionId()) {
-				return hash<hiero::TransactionId>()(ledgerAnchor.getHieroTransactionId());
-			} else if (ledgerAnchor.isLegacyGradidoDbTransactionId()) {
-				return ledgerAnchor.getLegacyTransactionId();
-			} else if (ledgerAnchor.isNodeTriggeredTransactionId()) {
+				return hash<gradido::data::compact::HieroTransactionId>()(ledgerAnchor.getHieroTransactionIdCompact());
+			}
+			else if (ledgerAnchor.isNodeTriggeredTransactionId()) {
 				return ledgerAnchor.getNodeTriggeredTransactionId();
-			} else if (ledgerAnchor.isIotaMessageId()) {
+			}
+			else if (ledgerAnchor.isIotaMessageId()) {
 				return ledgerAnchor.getIotaMessageId().hash().octet;
-			} else {
+			}
+			else if (ledgerAnchor.empty()) {
 				return 0;
+			}
+			else {
+				return ledgerAnchor.getLegacyTransactionId();
 			}
 		}
 	};

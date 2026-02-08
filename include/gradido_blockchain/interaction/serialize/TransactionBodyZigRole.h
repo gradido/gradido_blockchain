@@ -3,7 +3,6 @@
 
 #include "gradido_blockchain/data/CrossGroupType.h"
 #include "AbstractRole.h"
-#include "Protopuf.h"
 
 namespace gradido {
 	namespace data {

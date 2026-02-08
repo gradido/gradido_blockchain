@@ -20,5 +20,14 @@ namespace gradido::data::compact {
   };
 } 
 
+namespace std {
+  template <>
+  struct hash<gradido::data::compact::HieroTransactionId> {
+    std::size_t operator()(const gradido::data::compact::HieroTransactionId& tid) const noexcept {
+      return tid.seconds;
+    }
+  };
+}
+
 
 #endif // __GRADIDO_BLOCKCHAIN_DATA_COMPACT_HIERO_TRANSACTION_ID_H

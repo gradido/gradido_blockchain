@@ -4,6 +4,7 @@
 #include "TransactionBody.h"
 #include "SignatureMap.h"
 #include "LedgerAnchor.h"
+#include "gradido_protobuf_zig.h"
 
 namespace gradido {
 	class GradidoTransactionBuilder;
@@ -25,6 +26,9 @@ namespace gradido {
 				: GradidoTransaction(other.mSignatureMap, other.mBodyBytes, other.mCommunityIdIndex, other.mPairingLedgerAnchor) {}
 
 			~GradidoTransaction() {}
+
+			static std::shared_ptr<const GradidoTransaction> fromGrdw(const grdw_gradido_transaction* grdw_tx, uint32_t communityIdIndex);
+			void toGrdw(grdw_gradido_transaction* grdw_tx, uint32_t communityIdIndex) const;
 
 			//! will deserialize just once and cache the result
 			ConstTransactionBodyPtr getTransactionBody() const;

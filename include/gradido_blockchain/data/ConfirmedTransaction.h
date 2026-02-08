@@ -40,7 +40,8 @@ namespace gradido {
 			);
 
 			~ConfirmedTransaction() {}
-			std::shared_ptr<const ConfirmedTransaction> fromGrdw(grdw_confirmed_transaction* grdw_tx, uint32_t communityIdIndex);
+			static std::shared_ptr<const ConfirmedTransaction> fromGrdw(const grdw_confirmed_transaction* grdw_tx, uint32_t communityIdIndex);
+			void toGrdw(grdw_confirmed_transaction* grdw_tx, uint32_t communityIdIndex) const;
 
 			memory::ConstBlockPtr calculateRunningHash(
 				std::shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction = nullptr

@@ -1,9 +1,9 @@
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
-#include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionRole.h"
+#include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionZigRole.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
-#include "gradido_blockchain/interaction/deserialize/GradidoTransactionRole.h"
+#include "gradido_blockchain/interaction/deserialize/GradidoTransactionZigRole.h"
 #include "gradido_blockchain/interaction/deserialize/HieroAccountIdRole.h"
 #include "gradido_blockchain/interaction/deserialize/HieroTopicIdRole.h"
 #include "gradido_blockchain/interaction/deserialize/HieroTransactionIdRole.h"
@@ -114,10 +114,9 @@ namespace gradido {
 				}
 				if (Type::GRADIDO_TRANSACTION == mType || Type::UNKNOWN == mType) {
 					try {
-						auto result = message_coder<GradidoTransactionMessage>::decode(mData->span());
-						if (!result.has_value()) throw GradidoNodeInvalidDataException("protopuf failed with deserialize");;
-						const auto& [gradidoTransaction, bufferEnd2] = *result;
-						mGradidoTransaction = std::move(GradidoTransactionRole(gradidoTransaction, communityIdIndex).getGradidoTransaction());
+						auto role = GradidoTransactionZigRole(mData);
+						role.run(communityIdIndex);
+						mGradidoTransaction = role.getTransaction();
 						mType = Type::GRADIDO_TRANSACTION;
 						return;
 					}
@@ -133,11 +132,6 @@ namespace gradido {
 						auto role = TransactionBodyZigRole(mData);
 						role.run(communityIdIndex);
 						mTransactionBody = role.getBody();
-						/*auto result = message_coder<TransactionBodyMessage>::decode(mData->span());
-						if (!result.has_value()) throw GradidoNodeInvalidDataException("protopuf failed with deserialize");
-						const auto& [body, bufferEnd2] = *result;
-						*/
-						// mTransactionBody = std::make_shared<data::TransactionBody>(TransactionBodyRole(body, communityIdIndex).getBody());
 						mType = Type::TRANSACTION_BODY;
 						return;
 					}
@@ -150,10 +144,9 @@ namespace gradido {
 				}
 				
 				try {
-					auto result = message_coder<ConfirmedTransactionMessage>::decode(mData->span());
-					if (!result.has_value()) throw GradidoNodeInvalidDataException("protopuf failed with deserialize");
-					const auto& [confirmedTransaction, bufferEnd2] = *result;
-					mConfirmedTransaction = ConfirmedTransactionRole(confirmedTransaction, communityIdIndex).getConfirmedTransaction();
+					auto role = ConfirmedTransactionZigRole(mData);
+					role.run(communityIdIndex);
+					mConfirmedTransaction = role.getTransaction();
 					mType = Type::CONFIRMED_TRANSACTION;
 					return;
 				}

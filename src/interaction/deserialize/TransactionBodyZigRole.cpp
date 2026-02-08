@@ -4,7 +4,10 @@
 #include "gradido_blockchain/memory/Block.h"
 
 #include "gradido_protobuf_zig.h"
+#include "loguru/loguru.hpp"
+#include "magic_enum/magic_enum.hpp"
 
+using namespace magic_enum;
 using memory::Block, memory::ConstBlockPtr;
 using std::make_shared;
 
@@ -24,20 +27,13 @@ namespace gradido {
     {
       assert(mBodyBytes);
       grdw_transaction_body body;
-      if (mBodyBytes->size() >= STATIC_BUFFER_SIZE - 16) {
-        throw GradidoNodeInvalidDataException("Input body Bytes larger then static buffer - 16");
+
+      auto result = grdw_transaction_body_decode(&body, mBodyBytes->data(), mBodyBytes->size());      
+      if (GRDW_ENCODING_ERROR_SUCCESS != result.state) {
+        LOG_F(ERROR, "decode error: %s", enum_name(result.state).data());
+        throw GradidoNodeInvalidDataException("error deserialize body bytes");
       }
-      static thread_local uint8_t staticBuffer[STATIC_BUFFER_SIZE];
-      memset(staticBuffer, 0, STATIC_BUFFER_SIZE);
-      memcpy(staticBuffer, mBodyBytes->data(), mBodyBytes->size());
-      int result = 0;
-      for (int i = 0; i < 16; ++i) {
-        result = grdw_transaction_body_decode(&body, staticBuffer, mBodyBytes->size()+i);
-        if (result > 0) break;
-      }
-      if (result <= 0) {
-        throw GradidoNodeInvalidDataException("error deserialize body bytes, after adding increasingly more zero until 16 where added");
-      }
+
       mTransactionBody = TransactionBody::fromGrdwTransactionBody(&body, communityIdIndex);
       grdw_transaction_body_free_deep(&body);
     }

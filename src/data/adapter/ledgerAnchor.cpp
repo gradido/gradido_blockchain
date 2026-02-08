@@ -1,6 +1,6 @@
 #include "gradido_blockchain/data/adapter/hiero.h"
-#include "gradido_blockchain/data/adapter/LedgerAnchor.h"
-#include "gradido_blockchain/data/adapter/Timestamp.h"
+#include "gradido_blockchain/data/adapter/ledgerAnchor.h"
+#include "gradido_blockchain/data/adapter/timestamp.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/memory/Block.h"

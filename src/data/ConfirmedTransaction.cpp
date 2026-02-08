@@ -1,4 +1,5 @@
 #include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/adapter/accountBalance.h"
 #include "gradido_blockchain/data/adapter/ledgerAnchor.h"
 #include "gradido_blockchain/data/adapter/memoryBlock.h"
@@ -66,25 +67,41 @@ namespace gradido {
 			initalizePubkeyHashes();
 		}
 
-		shared_ptr<const ConfirmedTransaction> ConfirmedTransaction::fromGrdw(grdw_confirmed_transaction* grdw_tx, uint32_t communityIdIndex)
+		shared_ptr<const ConfirmedTransaction> ConfirmedTransaction::fromGrdw(const grdw_confirmed_transaction* grdw_tx, uint32_t communityIdIndex)
 		{
 			std::vector<AccountBalance> accountBalances;
-			if (grdw_tx->account_balances_size) {
-				accountBalances.reserve(grdw_tx->account_balances_size);
-				for (size_t i = 0; i < grdw_tx->account_balances_size; i++) {
+			if (grdw_tx->account_balances_count) {
+				accountBalances.reserve(grdw_tx->account_balances_count);
+				for (size_t i = 0; i < grdw_tx->account_balances_count; i++) {
 					accountBalances.emplace_back(adapter::fromGrdw(grdw_tx->account_balances[i], communityIdIndex));
 				}
 			}
 
 			return make_shared<const ConfirmedTransaction>(
 				grdw_tx->id,
-				nullptr,
+				GradidoTransaction::fromGrdw(&grdw_tx->transaction, communityIdIndex),
 				adapter::fromGrdw(grdw_tx->confirmed_at),
 				adapter::fromGrdw(grdw_tx->running_hash),
 				adapter::fromGrdw(grdw_tx->ledger_anchor),
 				accountBalances,
 				adapter::fromGrdw(grdw_tx->balance_derivation)
 			);
+		}
+
+		void ConfirmedTransaction::toGrdw(grdw_confirmed_transaction* grdw_tx, uint32_t communityIdIndex) const
+		{
+			grdw_tx->id = mId;
+			grdw_tx->confirmed_at = adapter::toGrdw(mConfirmedAt);
+			grdw_tx->version_number = grdu_reserve_copy_string(GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING, grdu_strlen(GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING));
+			grdw_tx->running_hash = grdu_reserve_copy(mRunningHash->data(), mRunningHash->size());
+			grdw_tx->ledger_anchor = adapter::toGrdw(mLedgerAnchor);
+			if (mAccountBalances.size()) {
+				grdw_confirmed_transaction_reserve_account_balances(grdw_tx, mAccountBalances.size());
+				for (int i = 0; i < mAccountBalances.size(); i++) {
+					grdw_tx->account_balances[i] = adapter::toGrdw(mAccountBalances[i], communityIdIndex);
+				}
+			}
+			grdw_tx->balance_derivation = adapter::toGrdw(mBalanceDerivationType);
 		}
 
 		ConstBlockPtr ConfirmedTransaction::calculateRunningHash(

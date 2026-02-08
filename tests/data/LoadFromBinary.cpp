@@ -119,7 +119,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinaryMultithread)
 	);
 	int zahl = 1;
 }
-*/
+// */
 /*
 TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreaded)
 {
@@ -157,7 +157,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreaded)
 		timeUsed.string().data(), count
 	);
 }
-*/
+// */
 
 TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 {
@@ -197,7 +197,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 			// trigger body deserialization
 			try {
 				// printf("added: %s\n", toJsonString(*tx, true).data());
-				mTransactions.emplace_back(tx);
+				// mTransactions.emplace_back(tx);
 			}
 			catch (...) {
 				printf("cannot deserialize transaction body from: %s\n", toJsonString(*tx, true).data());
@@ -212,9 +212,9 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 	}
 	// printf("\n");
 	printf("%s time to load and deserialize %d transactions from binary file\n",
-		timeUsed.string().data(), mTransactions.size()
+		timeUsed.string().data(), count
 	);
-	// return;
+	return;
 	timeUsed.reset();
 	count = 0;
 	for (auto& tx : mTransactions) {
@@ -244,7 +244,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 		}
 		count++;
 		// if (count > 100) break;
-		printf("\rtransactions: %d", count);
+		// printf("\rtransactions: %d", count);
 		// if (timeUsed.seconds() > 30.0) break;
 	}
 	printf("\n");

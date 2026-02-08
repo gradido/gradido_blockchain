@@ -2,8 +2,8 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_CONTEXT_H
 
 #include "AbstractRole.h"
-#include "ConfirmedTransactionRole.h"
-#include "GradidoTransactionRole.h"
+#include "ConfirmedTransactionZigRole.h"
+#include "GradidoTransactionZigRole.h"
 #include "HieroAccountIdRole.h"
 #include "HieroTopicIdRole.h"
 #include "HieroTransactionIdRole.h"
@@ -23,9 +23,9 @@ namespace gradido {
 			public:
 				Context() = delete;
 				Context(const data::ConfirmedTransaction& confirmed)
-					: mRole(std::make_unique<ConfirmedTransactionRole>(confirmed)) {}
+					: mRole(std::make_unique<ConfirmedTransactionZigRole>(confirmed)) {}
 				Context(const data::GradidoTransaction& transaction)
-					: mRole(std::make_unique<GradidoTransactionRole>(transaction)) {}
+					: mRole(std::make_unique<GradidoTransactionZigRole>(transaction)) {}
 				Context(const hiero::AccountId& accountId)
 					: mRole(std::make_unique<HieroAccountIdRole>(accountId)) {}
 				Context(const hiero::TopicId& topicId)

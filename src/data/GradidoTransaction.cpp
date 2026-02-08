@@ -1,14 +1,54 @@
+#include "gradido_blockchain/data/adapter/ledgerAnchor.h"
+#include "gradido_blockchain/data/adapter/signaturePair.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
+#include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/serialization/toJsonString.h"
+#include "gradido_protobuf_zig.h"
 
 #include "loguru/loguru.hpp"
+
+#include <memory>
+
 using serialization::toJsonString;
+using std::shared_ptr, std::make_shared;
 
 namespace gradido {
 	namespace data {
 		using namespace interaction;
+		/*
+		* GradidoTransaction(
+				const SignatureMap& signatureMap,
+				memory::ConstBlockPtr bodyBytes,
+				uint32_t communityIdIndex,
+				const LedgerAnchor& pairingLedgerAnchor = LedgerAnchor()
+			) 
+		*/
+		shared_ptr<const GradidoTransaction> GradidoTransaction::fromGrdw(const grdw_gradido_transaction* grdw_tx, uint32_t communityIdIndex)
+		{
+			SignatureMap signatures(grdw_tx->sig_map_count);
+			for (size_t i = 0; i < grdw_tx->sig_map_count; ++i) {
+				signatures.push(adapter::fromGrdw(&grdw_tx->sig_map[i]));
+			}
+			auto bodyBytes = make_shared<const Block>(grdw_tx->body_bytes_size, grdw_tx->body_bytes);
+			return make_shared<const GradidoTransaction>(signatures, bodyBytes, communityIdIndex, adapter::fromGrdw(grdw_tx->pairing_ledger_anchor));
+		}
+
+		void GradidoTransaction::toGrdw(grdw_gradido_transaction* grdw_tx, uint32_t communityIdIndex) const
+		{
+			const auto& sigPairs = mSignatureMap.getSignaturePairs();
+			if (sigPairs.size()) {
+				grdw_gradido_transaction_reserve_sig_map(grdw_tx, sigPairs.size());
+				for (size_t i = 0; i < sigPairs.size(); i++) {
+					grdw_tx->sig_map[i] = adapter::toGrdw(sigPairs[i]);
+				}
+			}
+			if (mBodyBytes && mBodyBytes->size()) {
+				grdw_gradido_transaction_set_body_bytes(grdw_tx, mBodyBytes->data(), mBodyBytes->size());
+			}
+			grdw_tx->pairing_ledger_anchor = adapter::toGrdw(mPairingLedgerAnchor);
+		}
 
 		ConstTransactionBodyPtr GradidoTransaction::getTransactionBody() const
 		{
