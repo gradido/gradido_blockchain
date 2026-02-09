@@ -36,6 +36,7 @@ public:
 	virtual std::optional<DataType> getDataForIndex(size_t index) const = 0;
 
 	virtual DataType getDataForIndexOrThrow(size_t index) const = 0;
+	virtual bool hasIndex(size_t index) const = 0;
 };
 
 

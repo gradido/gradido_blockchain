@@ -238,7 +238,7 @@ FILE(GLOB INTERACTION_VALIDATE
 SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${BLOCKCHAIN}
 	${CRYPTO}
-	${DATA} ${DATA_IOTA} ${DATA_HIERO} ${DATA_ADAPTER} ${DATA_COMPACT}
+	${DATA} ${DATA_ADAPTER} ${DATA_COMPACT} ${DATA_IOTA} ${DATA_HIERO} 
 	${INTERACTION}
 	${LIB_SRC}
 	${MAIN}
@@ -266,7 +266,7 @@ if(MSVC)
 	source_group("blockchain" FILES ${BLOCKCHAIN})
 	source_group("crypto" FILES ${CRYPTO})
 	source_group("data\\adapter" FILES ${DATA_ADAPTER})
-	source_group("data\\compact" FILES ${DATA_COMPACT})
+	source_group("data\\compact" FILES ${DATA_COMPACT})	
 	source_group("data\\iota" FILES ${DATA_IOTA})
 	source_group("data\\hiero" FILES ${DATA_HIERO})		
 	source_group("data" FILES ${DATA})
@@ -346,19 +346,6 @@ add_custom_target(gradido_protobuf_zig_build
     WORKING_DIRECTORY
         ${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig
 		VERBATIM
-)
-add_custom_command(
-    OUTPUT
-        ${CMAKE_BINARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}gradido_protobuf_zig${CMAKE_STATIC_LIBRARY_SUFFIX}
-    COMMAND zig build
-        -Doptimize=ReleaseSmall
-        -fPIC
-        -target native
-        -name gradido_protobuf_zig
-    DEPENDS
-        ${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig/src/gradido_protobuf_zig.zig
-    WORKING_DIRECTORY
-        ${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig
 )
 add_library(gradido_protobuf_zig STATIC IMPORTED)
 

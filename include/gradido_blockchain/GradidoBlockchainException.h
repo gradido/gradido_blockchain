@@ -3,13 +3,17 @@
 
 #include "types.h"
 #include "gradido_blockchain/export.h"
-#include "memory/Block.h"
 #include "rapidjson/error/error.h"
 #include "rapidjson/document.h"
 
 #include <stdexcept>
 
 class GradidoUnit;
+
+namespace memory {
+	class Block;
+	using ConstBlockPtr = std::shared_ptr <const Block>;
+}
 
 class GRADIDOBLOCKCHAIN_EXPORT GradidoBlockchainException : public std::runtime_error
 {

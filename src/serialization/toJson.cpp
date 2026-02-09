@@ -1,5 +1,6 @@
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/GradidoUnit.h"
+#include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/serialization/toJson.h"
 #include "gradido_blockchain/memory/Block.h"
@@ -10,10 +11,10 @@
 #include "date/date.h"
 #include <chrono>
 #include <iomanip>
+#include <optional>
 #include <sstream>
 
 using namespace rapidjson;
-
 
 namespace serialization {
 

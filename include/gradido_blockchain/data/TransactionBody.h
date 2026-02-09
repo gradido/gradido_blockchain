@@ -11,7 +11,12 @@
 #include "GradidoTimeoutDeferredTransfer.h"
 #include "RegisterAddress.h"
 #include "Timestamp.h"
+#include "CrossGroupType.h"
 #include "TransactionType.h"
+
+#include "compact/CommunityRootTx.h"
+#include "compact/PublicKeyIndex.h"
+#include "compact/RegisterAddressTx.h"
 
 #include <optional>
 #include <variant>
@@ -57,6 +62,7 @@ namespace gradido {
 
 			bool isPairing(const TransactionBody& other) const;
 			bool isInvolved(const memory::Block& publicKey) const;
+			bool isInvolved(compact::PublicKeyIndex publicKeyIndex) const;
 			//! throw if not exist on this transaction type
 			const TransferAmount& getTransferAmount() const;
 			bool hasTransferAmount() const;
@@ -71,11 +77,12 @@ namespace gradido {
 			inline std::shared_ptr<const GradidoTransfer> getTransfer() const { if (!isTransfer()) return nullptr; return std::get<1>(mSpecific); }
 			inline std::shared_ptr<const GradidoCreation> getCreation() const { if (!isCreation()) return nullptr; return std::get<2>(mSpecific); }
 			inline std::shared_ptr<const CommunityFriendsUpdate> getCommunityFriendsUpdate() const { if (!isCommunityFriendsUpdate()) return nullptr; return std::get<3>(mSpecific); }
-			inline std::shared_ptr<const RegisterAddress> getRegisterAddress() const { if (!isRegisterAddress()) return nullptr; return std::get<4>(mSpecific); }
 			inline std::shared_ptr<const GradidoDeferredTransfer> getDeferredTransfer() const { if (!isDeferredTransfer()) return nullptr; return std::get<5>(mSpecific); }
-			inline std::shared_ptr<const CommunityRoot> getCommunityRoot() const { if (!isCommunityRoot()) return nullptr; return std::get<6>(mSpecific); }
 			inline std::shared_ptr<const GradidoRedeemDeferredTransfer> getRedeemDeferredTransfer() const { if (!isRedeemDeferredTransfer()) return nullptr; return std::get<7>(mSpecific); }
 			inline std::shared_ptr<const GradidoTimeoutDeferredTransfer> getTimeoutDeferredTransfer() const { if (!isTimeoutDeferredTransfer()) return nullptr; return std::get<8>(mSpecific); }
+
+			inline std::optional<compact::CommunityRootTx> getCommunityRoot() const;
+			inline std::optional<compact::RegisterAddressTx> getRegisterAddress() const;
 
 		protected:
 			std::vector<EncryptedMemo>				mMemos;
@@ -89,14 +96,29 @@ namespace gradido {
 				std::shared_ptr<GradidoTransfer>,        
 				std::shared_ptr<GradidoCreation>,        
 				std::shared_ptr<CommunityFriendsUpdate>,
-				std::shared_ptr<RegisterAddress>,        
+				compact::RegisterAddressTx,
 				std::shared_ptr<GradidoDeferredTransfer>,
-				std::shared_ptr<CommunityRoot>,          
+				compact::CommunityRootTx,
 				std::shared_ptr<GradidoRedeemDeferredTransfer>, 
 				std::shared_ptr<GradidoTimeoutDeferredTransfer>
 			>;
 			Specific mSpecific;
 		};
+
+
+		std::optional<compact::CommunityRootTx> TransactionBody::getCommunityRoot() const 
+		{ 
+			if (isCommunityRoot()) { return std::get<6>(mSpecific); }
+			return std::nullopt;
+		}
+
+		std::optional<compact::RegisterAddressTx> TransactionBody::getRegisterAddress() const
+		{
+			if (isRegisterAddress()) { return std::get<4>(mSpecific); }
+			return std::nullopt;
+		}
+		
+
 
 		typedef std::shared_ptr<const TransactionBody> ConstTransactionBodyPtr;
 	}

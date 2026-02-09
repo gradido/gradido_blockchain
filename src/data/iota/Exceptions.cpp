@@ -1,8 +1,11 @@
 #include "gradido_blockchain/data/iota/Exceptions.h"
+#include "gradido_blockchain/memory/Block.h"
+
+using memory::Block;
 
 namespace iota {
 
-	MessageIdFormatException::MessageIdFormatException(const char* what, const memory::Block& messageId) noexcept
+	MessageIdFormatException::MessageIdFormatException(const char* what, const Block& messageId) noexcept
 		: GradidoBlockchainException(what), mMessageIdHex(messageId.convertToHex())
 	{
 	}

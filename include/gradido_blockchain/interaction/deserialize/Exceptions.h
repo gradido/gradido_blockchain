@@ -30,6 +30,19 @@ namespace gradido {
 				std::string mMemberValue;
 				std::string mExpectedValue;
 			};
+			
+			class GRADIDOBLOCKCHAIN_EXPORT EmptyMemberException : public GradidoBlockchainException
+			{
+			public:
+				explicit EmptyMemberException(const char* what, const char* memberName) noexcept
+					: GradidoBlockchainException(what), mMemberName(memberName) {
+				}
+				std::string getFullString() const;
+
+			protected:
+				std::string mMemberName;
+
+			};
 		}
 	}
 }

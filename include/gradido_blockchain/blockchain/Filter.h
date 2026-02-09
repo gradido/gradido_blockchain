@@ -57,6 +57,7 @@ namespace gradido {
 			uint64_t maxTransactionNr;
 			//! return only transaction in which the public key is involved, either directly in the transaction or as signer
 			memory::ConstBlockPtr involvedPublicKey;
+
 			//! return only transaction in which public key account balance was changed
 			memory::ConstBlockPtr updatedBalancePublicKey;
 			//! search direction and result order, default: DESC

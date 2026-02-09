@@ -3,6 +3,7 @@
 
 #include "gradido_blockchain/GradidoUnit.h"
 #include "MemoKeyType.h"
+#include "gradido_blockchain/memory/Block.h"
 
 class AuthenticatedEncryption;
 
@@ -14,12 +15,12 @@ namespace gradido {
             EncryptedMemo() : mKeyType(MemoKeyType::PLAIN), mMemo(0) {}
             //! key type will be PLAIN, memo isn't encrypted at all
             EncryptedMemo(const std::string& memo)
-                : mKeyType(MemoKeyType::PLAIN), mMemo(std::make_shared<memory::Block>(memo)) {}
+                : mKeyType(MemoKeyType::PLAIN), mMemo(memo) {}
             //! key type will be PLAIN, memo isn't encrypted at all
             EncryptedMemo(const char* memo)
                 : EncryptedMemo(std::string(memo)) {}
             EncryptedMemo(MemoKeyType type, memory::Block&& memo)
-                : mKeyType(type), mMemo(std::make_shared<memory::Block>(std::move(memo))) {}
+                : mKeyType(type), mMemo(memo) {}
             //! key type will be COMMUNITY_SECRET, memo is encrypted with community server key and can be seen by all community server user
             EncryptedMemo(const std::string& memo, const AuthenticatedEncryption& communityKeyPair);
             EncryptedMemo(const char* memo, const AuthenticatedEncryption& communityKeyPair)
@@ -44,11 +45,10 @@ namespace gradido {
             inline bool isSharedSecret() const { return mKeyType == MemoKeyType::SHARED_SECRET; }
             inline bool empty() const { return !mMemo; }
 
-            inline const memory::Block& getMemo() const { return *mMemo; }
-            inline memory::ConstBlockPtr getMemoPtr() const { return mMemo; }
+            inline const memory::Block& getMemo() const { return mMemo; }
             // operators
             inline bool operator==(const EncryptedMemo& other) const {
-                return mKeyType == other.mKeyType && mMemo->isTheSame(other.mMemo);
+                return mKeyType == other.mKeyType && mMemo.isTheSame(other.mMemo);
             }            
             // move
             EncryptedMemo& operator=(EncryptedMemo&& other) noexcept {
@@ -74,7 +74,7 @@ namespace gradido {
             
         protected:
             MemoKeyType mKeyType;
-            memory::ConstBlockPtr mMemo;
+            memory::Block mMemo;
         };
 
     }

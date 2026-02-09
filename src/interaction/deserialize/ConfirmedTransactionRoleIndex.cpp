@@ -1,0 +1,54 @@
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/interaction/deserialize/AccountBalanceRole.h"
+#include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionIndexRole.h"
+#include "gradido_blockchain/interaction/deserialize/GradidoTransactionRole.h"
+#include "gradido_blockchain/interaction/deserialize/LedgerAnchorRole.h"
+#include "gradido_blockchain/interaction/deserialize/TimestampRole.h"
+#include "gradido_blockchain/interaction/deserialize/Exceptions.h"
+#include "gradido_blockchain/interaction/serialize/GradidoTransactionRole.h"
+
+using memory::Block, memory::ConstBlockPtr;
+using std::make_shared;
+
+namespace gradido {
+	namespace interaction {
+		namespace deserialize {
+
+			ConfirmedTransactionIndexRole::ConfirmedTransactionIndexRole(const ConfirmedTransactionMessage& message, uint32_t communityIdIndex)
+			{
+				const char* exceptionMessage = "missing member on deserialize confirmed transaction";
+				ConstBlockPtr messageId = nullptr;
+
+				if (!message["id"_f].has_value()) {
+					throw MissingMemberException(exceptionMessage, "id");
+				}
+				if (!message["transaction"_f].has_value()) {
+					throw MissingMemberException(exceptionMessage, "transaction");
+				}
+				if (!message["confirmed_at"_f].has_value()) {
+					throw MissingMemberException(exceptionMessage, "confirmed_at");
+				}
+				
+				std::vector<data::AccountBalance> accountBalances;
+				auto accountBalanceMessages = message["account_balances"_f];
+				if (accountBalanceMessages.size()) {
+					accountBalances.reserve(accountBalanceMessages.size());
+					for (int i = 0; i < accountBalanceMessages.size(); i++) {
+						accountBalances.push_back(AccountBalanceRole(accountBalanceMessages[i], communityIdIndex));
+					}
+				}
+				/*mConfirmedTransaction = std::make_shared<data::ConfirmedTransaction>(
+					message["id"_f].value(),
+					GradidoTransactionRole(message["transaction"_f].value(), communityIdIndex).getGradidoTransaction(),
+					TimestampRole(message["confirmed_at"_f].value()).data(),
+					message["version_number"_f].value(),
+					make_shared<Block>(message["running_hash"_f].value()),
+					LedgerAnchorRole(message["ledger_anchor"_f].value()),
+					accountBalances,
+					message["balance_derivation"_f].value()
+				);*/
+			}
+
+		}
+	}
+}

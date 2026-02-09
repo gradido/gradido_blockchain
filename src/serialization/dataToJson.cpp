@@ -34,7 +34,7 @@ using std::to_string;
 
 namespace serialization {
 
-	// basic 
+	// basic
 	DEFINE_TO_JSON(TransferAmount, {
 		obj.AddMember("pubkey", toJson(value.getPublicKey(), alloc), alloc);
 		obj.AddMember("amount", toJson(value.getAmount(), alloc), alloc);
@@ -170,13 +170,17 @@ namespace serialization {
 			obj.AddMember("communityFriendsUpdate", toJson(*value.getCommunityFriendsUpdate(), alloc), alloc);
 			break;
 		case TransactionType::REGISTER_ADDRESS:
-			obj.AddMember("registerAddress", toJson(*value.getRegisterAddress(), alloc), alloc);
+			if (value.getRegisterAddress()) {
+				obj.AddMember("registerAddress", toJson(value.getRegisterAddress().value(), alloc), alloc);
+			}
 			break;
 		case TransactionType::DEFERRED_TRANSFER:
 			obj.AddMember("deferredTransfer", toJson(*value.getDeferredTransfer(), alloc), alloc);
 			break;
 		case TransactionType::COMMUNITY_ROOT:
-			obj.AddMember("communityRoot", toJson(*value.getCommunityRoot(), alloc), alloc);
+			if (value.getCommunityRoot()) {
+				obj.AddMember("communityRoot", toJson(value.getCommunityRoot().value(), alloc), alloc);
+			}
 			break;
 		case TransactionType::REDEEM_DEFERRED_TRANSFER:
 			obj.AddMember("redeemDeferredTransfer", toJson(*value.getRedeemDeferredTransfer(), alloc), alloc);

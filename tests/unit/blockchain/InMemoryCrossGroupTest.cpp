@@ -28,9 +28,9 @@ void InMemoryCrossGroupTest::SetUp()
 		.setCreatedAt(mLastCreatedAt)
 		.setVersionNumber(VERSION_STRING)
 		.setCommunityRoot(
-			g_KeyPairs[0]->getPublicKey(),
-			g_KeyPairs[1]->getPublicKey(),
-			g_KeyPairs[2]->getPublicKey()
+			g_KeyPairs[0]->getPublicKey()->data(),
+			g_KeyPairs[1]->getPublicKey()->data(),
+			g_KeyPairs[2]->getPublicKey()->data()
 		)
 		.sign(g_KeyPairs[0])
 		;

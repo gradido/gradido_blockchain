@@ -55,12 +55,12 @@ TEST(SerializeTest, CommunityRootBody)
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setCommunityRoot(
-			g_KeyPairs[0]->getPublicKey(),
-			g_KeyPairs[1]->getPublicKey(),
-			g_KeyPairs[2]->getPublicKey()
-		)
 		.setSenderCommunity(communityId)
+		.setCommunityRoot(
+			g_KeyPairs[0]->getPublicKey()->data(),
+			g_KeyPairs[1]->getPublicKey()->data(),
+			g_KeyPairs[2]->getPublicKey()->data()
+		)
 		.sign(g_KeyPairs[0])
 	;
 	auto transaction = builder.build();
@@ -85,8 +85,8 @@ TEST(SerializeTest, RegisterAddressBody) {
 			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
 		)
-		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
+		.sign(g_KeyPairs[3])
 		.sign(g_KeyPairs[4])
 	;
 	auto transaction = builder.build();

@@ -1,6 +1,8 @@
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
+#include "gradido_blockchain/data/adapter/ArrayBuffer.h"
+#include "gradido_blockchain/data/adapter/PublicKey.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/CommunityFriendsUpdate.h"
 #include "gradido_blockchain/data/CommunityRoot.h"
@@ -20,6 +22,7 @@
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/data/TransferAmount.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/memory/Block.h"
@@ -63,6 +66,8 @@ namespace gradido {
 	using data::TransactionBody;
 	using data::TransactionType;
 	using data::TransferAmount;
+	using data::adapter::toByteArray, data::adapter::toPublicKeyIndex;
+	using data::compact::PublicKeyIndex;
 
 	GradidoTransactionBuilder::GradidoTransactionBuilder()
 		: mState(BuildingState::BUILDING_BODY),
@@ -189,18 +194,55 @@ namespace gradido {
 	)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
-		return setRegisterAddress(
-			make_unique<data::RegisterAddress>(
-				type,
-				1,
-				userPubkey,
-				nameHash,
-				accountPubkey
-			)
-		);
+		if (mSpecificTransactionChoosen) {
+			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
+		}
+		if (!mSenderCommunityIdIndex) {
+			throw GradidoTransactionBuilderException("sender community id index missing, please call setSenderCommunity before setRegisterAddress");
+		}
+		auto comIdIdx = mSenderCommunityIdIndex.value();
+		mBody->mTransactionType = TransactionType::REGISTER_ADDRESS;
+		mBody->mSpecific.registerAddress = {
+			.addressType = type,
+			.derivationIndex = 1,
+			.nameHashIndex = g_appContext->getOrAddUserNameHashIndex(toByteArray<32>(nameHash)),
+			.userPublicKeyIndex = toPublicKeyIndex(userPubkey, comIdIdx),
+			.accountPublicKeyIndex = toPublicKeyIndex(accountPubkey, comIdIdx)
+		};
+
+		mSpecificTransactionChoosen = true;
+		return *this;
 	};
 
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setRegisterAddress(unique_ptr<RegisterAddress> registerAddress)
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setRegisterAddress(
+		const PublicKey& userPubkey,
+		data::AddressType type,
+		const GenericHash& nameHash,
+		const PublicKey& accountPubkey
+	)
+	{
+		checkBuildState(BuildingState::BUILDING_BODY);
+		if (mSpecificTransactionChoosen) {
+			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
+		}
+		if (!mSenderCommunityIdIndex) {
+			throw GradidoTransactionBuilderException("sender community id index missing, please call setSenderCommunity before setRegisterAddress");
+		}
+		auto comIdIdx = mSenderCommunityIdIndex.value();
+		mBody->mTransactionType = TransactionType::REGISTER_ADDRESS;
+		mBody->mSpecific.registerAddress = {
+			.addressType = type,
+			.derivationIndex = 1,
+			.nameHashIndex = g_appContext->getOrAddUserNameHashIndex(nameHash),
+			.userPublicKeyIndex = toPublicKeyIndex(userPubkey, comIdIdx),
+			.accountPublicKeyIndex = toPublicKeyIndex(accountPubkey, comIdIdx)
+		};
+
+		mSpecificTransactionChoosen = true;
+		return *this;
+	}
+
+	/*GradidoTransactionBuilder& GradidoTransactionBuilder::setRegisterAddress(unique_ptr<RegisterAddress> registerAddress)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		if (mSpecificTransactionChoosen) {
@@ -212,6 +254,7 @@ namespace gradido {
 		mSpecificTransactionChoosen = true;
 		return *this;
 	}
+	*/
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setTransactionCreation(const TransferAmount& recipient, Timepoint targetDate)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
@@ -266,21 +309,65 @@ namespace gradido {
 
 
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setCommunityRoot(
-		ConstBlockPtr pubkey,
-		ConstBlockPtr gmwPubkey,
-		ConstBlockPtr aufPubkey
+		const PublicKey& pubkey,
+		const PublicKey& gmwPubkey,
+		const PublicKey& aufPubkey
 	) {
 		checkBuildState(BuildingState::BUILDING_BODY);
-		return setCommunityRoot(
+		if (mSpecificTransactionChoosen) {
+			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
+		}
+		if (!mSenderCommunityIdIndex) {
+			throw GradidoTransactionBuilderException("sender community id index missing, please call setSenderCommunity before setCommunityRoot");
+		}
+		auto comIdIdx = mSenderCommunityIdIndex.value();
+		
+		mBody->mTransactionType = TransactionType::COMMUNITY_ROOT;
+		
+		mBody->mSpecific.communityRoot = {
+			.publicKeyIndex = toPublicKeyIndex(pubkey, comIdIdx),
+			.gmwPublicKeyIndex = toPublicKeyIndex(gmwPubkey, comIdIdx),
+			.aufPublicKeyIndex = toPublicKeyIndex(aufPubkey, comIdIdx)
+		};
+		mSpecificTransactionChoosen = true;
+		return *this;
+
+		/*return setCommunityRoot(
 			make_unique<CommunityRoot>(
 				pubkey,
 				gmwPubkey,
 				aufPubkey
 			)
-		);
+		);*/
 	}
 
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setCommunityRoot(unique_ptr<CommunityRoot> communityRoot)
+	GradidoTransactionBuilder& GradidoTransactionBuilder::setCommunityRoot(
+		memory::ConstBlockPtr pubkey,
+		memory::ConstBlockPtr gmwPubkey,
+		memory::ConstBlockPtr aufPubkey
+	) {
+		checkBuildState(BuildingState::BUILDING_BODY);
+		if (mSpecificTransactionChoosen) {
+			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
+		}
+		if (!mSenderCommunityIdIndex) {
+			throw GradidoTransactionBuilderException("sender community id index missing, please call setSenderCommunity before setCommunityRoot");
+		}
+		auto comIdIdx = mSenderCommunityIdIndex.value();
+
+		mBody->mTransactionType = TransactionType::COMMUNITY_ROOT;
+
+		mBody->mSpecific.communityRoot = {
+			.publicKeyIndex = toPublicKeyIndex(pubkey, comIdIdx),
+			.gmwPublicKeyIndex = toPublicKeyIndex(gmwPubkey, comIdIdx),
+			.aufPublicKeyIndex = toPublicKeyIndex(aufPubkey, comIdIdx)
+		};
+		mSpecificTransactionChoosen = true;
+		return *this;
+	}
+
+
+	/*GradidoTransactionBuilder& GradidoTransactionBuilder::setCommunityRoot(unique_ptr<CommunityRoot> communityRoot)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		if (mSpecificTransactionChoosen) {
@@ -291,7 +378,7 @@ namespace gradido {
 
 		mSpecificTransactionChoosen = true;
 		return *this;
-	}
+	}*/
 
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setRedeemDeferredTransfer(uint64_t deferredTransferTransactionNr, GradidoTransfer transactionTransfer)
 	{

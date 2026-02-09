@@ -84,7 +84,9 @@ namespace gradido {
 			unique_lock _lock(mWorkMutex);
 			// cannot use make_shared here, because InMemory has private constructor
 			// TODO: maybe use enable_shared_from_this like blockchain::FileBased in GradidoNode
-			auto result = mBlockchainsPerGroup.insert({ communityIdIndexValue, shared_ptr<InMemory>(new InMemory(communityIdValue, communityIdIndexValue)) });
+			shared_ptr<InMemory> blockchain(new InMemory(communityIdValue, communityIdIndexValue));
+			g_appContext->addBlockchain(communityIdIndexValue, blockchain);
+			auto result = mBlockchainsPerGroup.insert({ communityIdIndexValue, blockchain });
 			return result.first->second;
 		}
 

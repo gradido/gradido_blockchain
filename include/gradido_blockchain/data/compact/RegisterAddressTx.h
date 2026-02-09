@@ -4,6 +4,7 @@
 #include "PublicKeyIndex.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/export.h"
+#include "gradido_protobuf_zig.h"
 
 namespace gradido::data::compact {
   struct GRADIDOBLOCKCHAIN_EXPORT RegisterAddressTx 
@@ -13,6 +14,8 @@ namespace gradido::data::compact {
     uint32_t nameHashIndex; // 4 Bytes
     PublicKeyIndex userPublicKeyIndex; // 8 Bytes
     PublicKeyIndex accountPublicKeyIndex; // 8 Bytes
+
+    static RegisterAddressTx fromGrdw(const grdw_register_address* grdw_register_address, uint32_t blockchainCommunityIdIndex);
 
     bool operator==(const RegisterAddressTx&) const = default;
     inline bool isInvolved(PublicKeyIndex publicKey) const {

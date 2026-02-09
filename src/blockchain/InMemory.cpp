@@ -117,6 +117,17 @@ namespace gradido {
 		void InMemory::addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent)
 		{
 			std::lock_guard _lock(mTransactionTriggerEventsMutex);
+			auto transactionEntry = getTransactionForId(transactionTriggerEvent->getLinkedTransactionId());
+			if (!transactionEntry) {
+				throw GradidoNullPointerException(
+					"empty transactionEntry from getTransactionForId for transactionTriggerEvent linked transaction id",
+					"data::TransactionEntry",
+					__FUNCTION__
+				);
+			}
+			if (!transactionEntry->isDeferredTransfer()) {
+				throw GradidoNodeInvalidDataException("transactionTriggerEvent linked transaction id is not a deferred transfer");
+			}
 			mTransactionTriggerEvents.insert({ transactionTriggerEvent->getTargetDate(), transactionTriggerEvent });
 		}
 
@@ -270,6 +281,11 @@ namespace gradido {
 		AbstractProvider* InMemory::getProvider() const
 		{
 			return InMemoryProvider::getInstance();
+		}
+
+		uint32_t InMemory::getOrAddPublicKey(const PublicKey& publicKey)
+		{
+			return mPublicKeyDirectory.getOrAddIndexForData(publicKey);
 		}
 
 		void InMemory::pushTransactionEntry(ConstTransactionEntryPtr transactionEntry)

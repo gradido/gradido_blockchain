@@ -1,10 +1,14 @@
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/adapter/memoryBlock.h"
+#include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/adapter/types.h"
 #include "gradido_blockchain/data/adapter/timestamp.h"
 #include "gradido_blockchain/data/adapter/transactionBody.h"
+#include "gradido_blockchain/data/compact/CommunityRootTx.h"
+#include "gradido_blockchain/data/compact/RegisterAddressTx.h"
 #include "gradido_blockchain/data/TransactionBody.h"
+#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/memory/Block.h"
 
@@ -24,6 +28,7 @@ using std::vector;
 namespace gradido {
 	namespace data {
 		using adapter::fromGrdw, adapter::toGrdw;
+		using adapter::toPublicKeyIndex, adapter::toConstBlockPtr;
 
 		ConstTransactionBodyPtr TransactionBody::fromGrdwTransactionBody(grdw_transaction_body* grdw_body, uint32_t communityIdIndex)
 		{
@@ -60,13 +65,7 @@ namespace gradido {
 				);
 				break;
 			case TransactionType::REGISTER_ADDRESS:
-				result->mSpecific = make_shared<RegisterAddress>(
-					fromGrdw(grdw_body->data.register_address->address_type),
-					grdw_body->data.register_address->derivation_index,
-					fromGrdw(grdw_body->data.register_address->user_pubkey),
-					fromGrdw(grdw_body->data.register_address->name_hash),
-					fromGrdw(grdw_body->data.register_address->account_pubkey)
-				);
+				result->mSpecific = compact::RegisterAddressTx::fromGrdw(grdw_body->data.register_address, communityIdIndex);
 				break;
 			case TransactionType::DEFERRED_TRANSFER: 
 				result->mSpecific = make_shared<GradidoDeferredTransfer>(
@@ -92,11 +91,7 @@ namespace gradido {
 				);
 				break;
 			case TransactionType::COMMUNITY_ROOT:
-				result->mSpecific = make_shared<CommunityRoot>(
-					fromGrdw(grdw_body->data.community_root->pubkey),
-					fromGrdw(grdw_body->data.community_root->gmw_pubkey),
-					fromGrdw(grdw_body->data.community_root->auf_pubkey)
-				);
+				result->mSpecific = compact::CommunityRootTx::fromGrdw(grdw_body->data.community_root, communityIdIndex);
 				break;
 			case TransactionType::COMMUNITY_FRIENDS_UPDATE:
 				result->mSpecific = make_shared<CommunityFriendsUpdate>(grdw_body->data.community_friends_update->color_fusion);
@@ -143,19 +138,19 @@ namespace gradido {
 			
 			if (TransactionType::REGISTER_ADDRESS == mTransactionType) {
 				auto registerAddress = getRegisterAddress();
-				auto accountPubkey = registerAddress->getAccountPublicKey();
-				auto userPubkey = registerAddress->getUserPublicKey();
-				auto nameHash = registerAddress->getNameHash();
-				if (!accountPubkey || accountPubkey->size() != 32 || !nameHash || nameHash->size() != 32 || !userPubkey || userPubkey->size() != 32) {
+				auto accountPubkey = registerAddress->accountPublicKeyIndex.getRawKey();
+				auto userPubkey = registerAddress->userPublicKeyIndex.getRawKey();
+				auto nameHash = g_appContext->getUseNameHashs().getDataForIndexOrThrow(registerAddress->nameHashIndex);
+				if (accountPubkey.isEmpty() || accountPubkey.size() != 32 || nameHash.isEmpty() || nameHash.size() != 32 || userPubkey.isEmpty() || userPubkey.size() != 32) {
 					throw GradidoNodeInvalidDataException("at least one of account public key, name hash, user public key isn't 32 Bytes");
 				}
 				grdw_body->data.register_address = grdw_register_address_new(
 					alloc,
-					userPubkey->data(),
-					adapter::toGrdw(getRegisterAddress()->getAddressType()),
-					nameHash->data(),
-					accountPubkey->data(),
-					getRegisterAddress()->getDerivationIndex()
+					userPubkey.data(),
+					adapter::toGrdw(registerAddress->addressType),
+					nameHash.data(),
+					accountPubkey.data(),
+					registerAddress->derivationIndex
 				);
 			}
 
@@ -204,9 +199,9 @@ namespace gradido {
 			case TransactionType::COMMUNITY_ROOT:
 				grdw_body->data.community_root = grdw_community_root_new(
 					alloc,
-					getCommunityRoot()->getPublicKey()->data(),
-					getCommunityRoot()->getGmwPubkey()->data(),
-					getCommunityRoot()->getAufPubkey()->data()
+					getCommunityRoot()->publicKeyIndex.getRawKey().data(),
+					getCommunityRoot()->gmwPublicKeyIndex.getRawKey().data(),
+					getCommunityRoot()->aufPublicKeyIndex.getRawKey().data()
 				);
 				break;
 			case TransactionType::COMMUNITY_FRIENDS_UPDATE:
@@ -248,14 +243,26 @@ namespace gradido {
 
 		bool TransactionBody::isInvolved(const Block& publicKey) const
 		{
-			if (isCommunityRoot()) return getCommunityRoot()->isInvolved(publicKey);
-			if (isRegisterAddress()) return getRegisterAddress()->isInvolved(publicKey);
+			if (isCommunityRoot()) return getCommunityRoot()->isInvolved(toPublicKeyIndex(publicKey, mCommunityIdIndex));
+			if (isRegisterAddress()) return getRegisterAddress()->isInvolved(toPublicKeyIndex(publicKey, mCommunityIdIndex));
 			if (isTransfer()) return getTransfer()->isInvolved(publicKey);
 			if (isCreation()) return getCreation()->isInvolved(publicKey);
 			if (isDeferredTransfer()) return getDeferredTransfer()->isInvolved(publicKey);
 			if (isRedeemDeferredTransfer()) return getRedeemDeferredTransfer()->isInvolved(publicKey);
 			return false;
 		}
+
+		bool TransactionBody::isInvolved(compact::PublicKeyIndex publicKeyIndex) const
+		{
+			if (isCommunityRoot()) return getCommunityRoot()->isInvolved(publicKeyIndex);
+			if (isRegisterAddress()) return getRegisterAddress()->isInvolved(publicKeyIndex);
+			if (isTransfer()) return getTransfer()->isInvolved(*toConstBlockPtr(publicKeyIndex));
+			if (isCreation()) return getCreation()->isInvolved(*toConstBlockPtr(publicKeyIndex));
+			if (isDeferredTransfer()) return getDeferredTransfer()->isInvolved(*toConstBlockPtr(publicKeyIndex));
+			if (isRedeemDeferredTransfer()) return getRedeemDeferredTransfer()->isInvolved(*toConstBlockPtr(publicKeyIndex));
+			return false;
+		}
+
 
 		const TransferAmount& TransactionBody::getTransferAmount() const
 		{
@@ -273,8 +280,21 @@ namespace gradido {
 		vector<ConstBlockPtr> TransactionBody::getInvolvedAddresses() const
 		{
 			if (isCommunityFriendsUpdate()) return {};
-			if (isCommunityRoot()) return getCommunityRoot()->getInvolvedAddresses();
-			if (isRegisterAddress()) return getRegisterAddress()->getInvolvedAddresses();
+			if (isCommunityRoot()) {
+				auto communityRoot = getCommunityRoot();
+				return {
+					toConstBlockPtr(communityRoot->publicKeyIndex),
+					toConstBlockPtr(communityRoot->gmwPublicKeyIndex),
+					toConstBlockPtr(communityRoot->aufPublicKeyIndex)
+				};
+			}
+			if (isRegisterAddress()) {
+				auto registerAddress = getRegisterAddress();
+				return {
+					toConstBlockPtr(registerAddress->accountPublicKeyIndex),
+					toConstBlockPtr(registerAddress->userPublicKeyIndex)
+				};
+			}
 			if (isTransfer()) return getTransfer()->getInvolvedAddresses();
 			if (isCreation()) return getCreation()->getInvolvedAddresses();
 			if (isDeferredTransfer()) return getDeferredTransfer()->getInvolvedAddresses();

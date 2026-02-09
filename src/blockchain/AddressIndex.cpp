@@ -1,6 +1,7 @@
-#include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/blockchain/AddressIndex.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
+#include "gradido_blockchain/data/adapter/PublicKey.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/memory/Block.h"
 
@@ -12,7 +13,7 @@ using std::make_pair, std::vector, std::move;
 using memory::ConstBlockPtr;
 
 namespace gradido {
-
+	using data::adapter::toPublicKey;
 	using data::AddressType;
 
 	namespace blockchain {
@@ -32,14 +33,14 @@ namespace gradido {
 			mIndexTransactionNrs.clear();
 		}
 
-		void AddressIndex::addTransaction(const TransactionEntry& transactionEntry, const IDictionary<memory::ConstBlockPtr>& publicKeyDictionary)
+		void AddressIndex::addTransaction(const TransactionEntry& transactionEntry, const IDictionary<PublicKey>& publicKeyDictionary)
 		{
 			const auto& body = transactionEntry.getConfirmedTransaction()->getGradidoTransaction()->getTransactionBody();
 			uint64_t txNr = transactionEntry.getTransactionNr();
 
 			auto getPublicKeyIndex = [&](const ConstBlockPtr pubKeyPtr) -> uint32_t {
 				assert(pubKeyPtr);
-				auto index = publicKeyDictionary.getIndexForData(pubKeyPtr);
+				auto index = publicKeyDictionary.getIndexForData(toPublicKey(pubKeyPtr));
 				if (!index.has_value()) {
 					throw DictionaryMissingEntryException("AddressIndex: missing index of public key in Dictionary", pubKeyPtr->convertToHex());
 				}
@@ -48,11 +49,11 @@ namespace gradido {
 
 			if (body->isCommunityRoot()) 
 			{
-				const auto& communityRoot = body->getCommunityRoot();
-				if (!addTransactionNrForIndex(getPublicKeyIndex(communityRoot->getAufPubkey()), txNr, AddressType::COMMUNITY_AUF)) {
+				auto communityRoot = body->getCommunityRoot().value();
+				if (!addTransactionNrForIndex(communityRoot.aufPublicKeyIndex.publicKeyIndex, txNr, AddressType::COMMUNITY_AUF)) {
 					LOG_F(WARNING, "couldn't add Community Auf Key to Address Indices");
 				}
-				if (!addTransactionNrForIndex(getPublicKeyIndex(communityRoot->getGmwPubkey()), txNr, AddressType::COMMUNITY_GMW)) {
+				if (!addTransactionNrForIndex(communityRoot.gmwPublicKeyIndex.publicKeyIndex, txNr, AddressType::COMMUNITY_GMW)) {
 					LOG_F(WARNING, "couldn't add Community GMW Key to Address Indices");
 				}
 			} 
@@ -60,11 +61,11 @@ namespace gradido {
 			{
 				const auto& registerAddress = body->getRegisterAddress();
 
-				if (!addTransactionNrForIndex(getPublicKeyIndex(registerAddress->getUserPublicKey()), txNr, registerAddress->getAddressType())) {
+				if (!addTransactionNrForIndex(registerAddress->userPublicKeyIndex.publicKeyIndex, txNr, registerAddress->addressType)) {
 					LOG_F(WARNING, "couldn't add register user Key to Address Indices");
 				}
 
-				if (!addTransactionNrForIndex(getPublicKeyIndex(registerAddress->getAccountPublicKey()), txNr, registerAddress->getAddressType())) {
+				if (!addTransactionNrForIndex(registerAddress->accountPublicKeyIndex.publicKeyIndex, txNr, registerAddress->addressType)) {
 					LOG_F(WARNING, "couldn't add register address Key to Address Indices");
 				}				
 			}

@@ -116,11 +116,11 @@ namespace gradido {
 						else {
 							throw GradidoNodeInvalidDataException("Invalid branch, CrossGroupType::CROSS not implemented yet");
 						}
-						c.recipientPreviousConfirmedTransaction = 
-							c.recipientBlockchain
-							->findOne(Filter::LAST_TRANSACTION)
-							->getConfirmedTransaction()
-							;
+						auto lastRecipientEntry = c.recipientBlockchain->findOne(Filter::LAST_TRANSACTION);
+						if (!lastRecipientEntry) {
+							throw GradidoNodeInvalidDataException("missing last transaction of other community id");
+						}
+						c.recipientPreviousConfirmedTransaction = lastRecipientEntry->getConfirmedTransaction();
 					}
 
 					specificRole.run(type, c);
@@ -152,7 +152,7 @@ namespace gradido {
 					throw GradidoNotImplementedException("interaction::validate missing role for communityFriendsUpdate");
 				}
 				else if (mBody.isRegisterAddress()) {
-					mSpecificTransactionRole = make_unique<RegisterAddressRole>(mBody.getRegisterAddress());
+					mSpecificTransactionRole = make_unique<RegisterAddressRole>(mBody.getRegisterAddress().value());
 				}
 				else if (mBody.isDeferredTransfer()) {
 					mSpecificTransactionRole = make_unique<GradidoDeferredTransferRole>(mBody.getDeferredTransfer());
@@ -166,7 +166,7 @@ namespace gradido {
 					mSpecificTransactionRole = make_unique<GradidoTimeoutDeferredTransferRole>(mBody.getTimeoutDeferredTransfer());
 				}
 				else if (mBody.isCommunityRoot()) {
-					mSpecificTransactionRole = make_unique<CommunityRootRole>(mBody.getCommunityRoot());
+					mSpecificTransactionRole = make_unique<CommunityRootRole>(mBody.getCommunityRoot().value());
 				}
 
 				if (!mSpecificTransactionRole) {

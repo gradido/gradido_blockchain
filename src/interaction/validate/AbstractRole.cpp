@@ -2,6 +2,8 @@
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/const.h"
+#include "gradido_blockchain/data/adapter/PublicKey.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/interaction/validate/AbstractRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
@@ -20,6 +22,8 @@ using std::string, std::string_view;
 using std::regex, std::regex_match;
 
 namespace gradido {
+	using data::adapter::toPublicKeyIndex;
+	using data::compact::PublicKeyIndex;
 	using data::SignatureMap;
 	using blockchain::CommunityNotFoundException;
 
@@ -84,13 +88,16 @@ namespace gradido {
 					throw TransactionValidationMissingSignException(signPairs.size(), mMinSignatureCount);
 				}
 				// enough
-				if (!mRequiredSignPublicKeys.size() && !mForbiddenSignPublicKeys.size()) {
+				if (!mRequiredSignPublicKeys.size() && !mForbiddenSignPublicKeys.size() && !mRequiredSignPublicKeyIndicesCount) {
 					return;
 				}
 				// not all required keys could be fulfilled
 				if (mRequiredSignPublicKeys.size() > signPairs.size()) {
 					throw TransactionValidationRequiredSignMissingException(mRequiredSignPublicKeys);
 				}					
+				if (mRequiredSignPublicKeyIndicesCount > signPairs.size()) {
+					throw TransactionValidationRequiredSignMissingException(getRequiredSignPublicKeyIndicesVector());
+				}
 				// check if specific signatures can be found
 				// for only one signature pair we can speed it up
 				if (signPairs.size() == 1) {
@@ -102,12 +109,20 @@ namespace gradido {
 					if (mRequiredSignPublicKeys.size() == 1 && !signPair.getPublicKey()->isTheSame(mRequiredSignPublicKeys[0])) {
 						throw TransactionValidationRequiredSignMissingException(mRequiredSignPublicKeys);
 					}
+					if (mRequiredSignPublicKeyIndicesCount == 1) {
+						// TODO: will be updated when update to compact form is finished
+						auto signKeyAsPublicKeyIndex = toPublicKeyIndex(signPair.getPublicKey(), mRequiredSignPublicKeyIndices[0].communityIdIndex);
+						if (mRequiredSignPublicKeyIndicesCount == 1 && signKeyAsPublicKeyIndex != mRequiredSignPublicKeyIndices[0]) {
+							throw TransactionValidationRequiredSignMissingException(getRequiredSignPublicKeyIndicesVector());
+						}
+					}
 					return;
 				}
 
 				// prepare, make a copy from the vector, because entries will be removed from it
 				// TODO: if we have in future vectors with many signature pairs, optimize for cache-hits or with hash map
 				vector<ConstBlockPtr> requiredKeys = mRequiredSignPublicKeys;
+				vector<PublicKeyIndex> requiredKeyIndices = getRequiredSignPublicKeyIndicesVector();
 
 				ConstBlockPtr lastPublicKey;
 				for (auto& signPair : signPairs)
@@ -122,11 +137,25 @@ namespace gradido {
 							break;
 						}
 					}
+					if (requiredKeyIndices.size()) {
+						auto signPublicKeyIndex = toPublicKeyIndex(signPair.getPublicKey(), requiredKeyIndices.begin()->communityIdIndex);
+						for (auto it = requiredKeyIndices.begin(); it != requiredKeyIndices.end(); it++) {
+							if (signPublicKeyIndex == *it) {
+								it = requiredKeyIndices.erase(it);
+								break;
+							}
+						}
+					}
 				}
 
-				if (!requiredKeys.size()) return;
+				if (!requiredKeys.size() && !requiredKeyIndices.size()) return;
 
-				throw TransactionValidationRequiredSignMissingException(requiredKeys);
+				if (requiredKeys.size()) {
+					throw TransactionValidationRequiredSignMissingException(requiredKeys);
+				}
+				else {
+					throw TransactionValidationRequiredSignMissingException(requiredKeyIndices);
+				}
 			}
 
 			void AbstractRole::isPublicKeyForbidden(ConstBlockPtr pubkey) const
@@ -138,6 +167,29 @@ namespace gradido {
 					}
 				}
 			}
+
+			void AbstractRole::isPublicKeyForbidden(data::compact::PublicKeyIndex publicKeyIndex) const
+			{
+				for (auto forbiddenSignPublicKey : mForbiddenSignPublicKeyIndices) {
+					if (publicKeyIndex == forbiddenSignPublicKey) {
+						throw TransactionValidationForbiddenSignException(publicKeyIndex);
+					}
+				}
+			}
+
+			vector<PublicKeyIndex> AbstractRole::getRequiredSignPublicKeyIndicesVector() const
+			{
+				if (!mRequiredSignPublicKeyIndicesCount) {
+					return {};
+				}
+				vector<PublicKeyIndex> result;
+				result.reserve(mRequiredSignPublicKeyIndicesCount);
+				for (size_t i = 0; i < mRequiredSignPublicKeyIndicesCount; i++) {
+					result.emplace_back(mRequiredSignPublicKeyIndices[i]);
+				}
+				return result;
+			}
+
 			shared_ptr<blockchain::Abstract> AbstractRole::findBlockchain(
 				blockchain::AbstractProvider* blockchainProvider,
 				uint32_t communityIdIndex,
