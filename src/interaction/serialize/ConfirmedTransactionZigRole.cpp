@@ -39,18 +39,18 @@ namespace gradido {
 							auto blockchainCommunityIdIndex = mConfirmedTransaction.getGradidoTransaction()->getCommunityIdIndex();
 							mConfirmedTransaction.toGrdw(alloc, &tx, blockchainCommunityIdIndex);
 
-							uint8_t staticResultBuffer[1024];
-							auto encodeResult = grdw_confirmed_transaction_encode(&tx, staticResultBuffer, 1024);
-							if (GRDW_ENCODING_ERROR_OUT_OF_MEMORY == encodeResult.state) 
+							uint8_t staticResultBuffer[2048];
+							auto encodeResult = grdw_confirmed_transaction_encode(&tx, staticResultBuffer, 2048);
+							if (GRDW_ENCODING_ERROR_OUT_OF_MEMORY == encodeResult.state || GRDW_ENCODING_ERROR_WRITE_FAILED == encodeResult.state)
 							{
-								Block resultBuffer(2048);
-								encodeResult = grdw_confirmed_transaction_encode(&tx, resultBuffer, 2048);
+								Block resultBuffer(4096);
+								encodeResult = grdw_confirmed_transaction_encode(&tx, resultBuffer, resultBuffer.size());
 								if (GRDW_ENCODING_ERROR_SUCCESS == encodeResult.state) {
-									LOG_F(WARNING, "static output buffer was to small, used 2048 Bytes buffer, acutally used: %d Bytes", encodeResult.written);
+									LOG_F(WARNING, "static output buffer was to small, used %lu Bytes buffer, actually used: %d Bytes", resultBuffer.size(), encodeResult.written);
 									return make_shared<const Block>(encodeResult.written, resultBuffer);
 								}
 							}
-							if (GRDW_ENCODING_ERROR_SUCCESS != encodeResult.state) 
+							if (GRDW_ENCODING_ERROR_SUCCESS != encodeResult.state)
 							{
 								LOG_F(ERROR, "encode error: %s", enum_name(encodeResult.state).data());
 								throw GradidoNodeInvalidDataException("error serialize confirmed transaction");

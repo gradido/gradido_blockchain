@@ -35,8 +35,8 @@ namespace memory {
 
         if (mMemory.out_of_memory_capacity) {
           LOG_F(
-            ERROR, 
-            "GrduStaticBuffer: out of memory capacity, after retry with: %llu, need at least %llu more bytes",
+            ERROR,
+            "GrduStaticBuffer: out of memory capacity, after retry with: %lu, need at least %lu more bytes",
             dynBuffer.size(),
             mMemory.out_of_memory_capacity
           );
@@ -47,7 +47,7 @@ namespace memory {
       grdu_memory_init_static(&mMemory, mBuffer, BufferSize);
       return result;
     }
-    
+
   protected:
     uint8_t mBuffer[BufferSize];
     grdu_memory mMemory;
