@@ -296,7 +296,7 @@ namespace gradido {
 			return result;
 		}
 
-		AddressType TransactionsIndex::getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<PublicKey>& publicKeyDictionary) const
+		StateChange<data::AddressType> TransactionsIndex::getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<PublicKey>& publicKeyDictionary) const
 		{
 			auto publicKeyIndexOptional = publicKeyDictionary.getIndexForData(toPublicKey(publicKeyPtr));
 			if (!publicKeyIndexOptional.has_value()) {

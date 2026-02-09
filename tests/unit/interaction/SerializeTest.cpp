@@ -79,6 +79,7 @@ TEST(SerializeTest, RegisterAddressBody) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
+		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
 			AddressType::COMMUNITY_HUMAN,

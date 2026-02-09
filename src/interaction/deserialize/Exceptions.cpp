@@ -18,6 +18,9 @@ namespace gradido::interaction::deserialize {
 		result += ", member name: " + mMemberName;
 		result += ", member value " + mMemberValue;
 		result += ", expected value: " + mExpectedValue;
+		return result;
+	}
+
 	string EmptyMemberException::getFullString() const 
 	{
 		string result(what());

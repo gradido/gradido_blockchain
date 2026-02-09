@@ -49,7 +49,7 @@ namespace gradido {
 			//! \brief search transaction nrs for search criteria in filter, ignore filter function
 			//! \return transaction nrs
 			std::vector<uint64_t> findTransactions(const gradido::blockchain::Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary) const;
-			data::AddressType getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<PublicKey>& publicKeyDictionary) const;
+			StateChange<data::AddressType> getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<PublicKey>& publicKeyDictionary) const;
 			inline void updateAddressIndex(ConstTransactionEntryPtr transactionEntry, const IDictionary<PublicKey>& publicKeyDictionary) const;
 
 			//! count all, ignore pagination
