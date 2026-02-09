@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_TRANSACTION_TRIGGER_EVENT_ROLE_H
 
 #include "AbstractRole.h"
-#include "protopuf.h"
+#include "Protopuf.h"
 
 namespace gradido {
 	namespace data {

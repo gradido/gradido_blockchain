@@ -1,4 +1,4 @@
-#include "gradido_blockchain/data/adapter/Types.h"
+#include "gradido_blockchain/data/adapter/types.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
 #include <string>

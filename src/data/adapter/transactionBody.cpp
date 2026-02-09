@@ -1,7 +1,7 @@
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/adapter/ReturnType.h"
-#include "gradido_blockchain/data/adapter/TransactionBody.h"
+#include "gradido_blockchain/data/adapter/transactionBody.h"
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/memory/Block.h"
