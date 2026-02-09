@@ -30,6 +30,7 @@ namespace gradido {
 				auto confirmedAt = mConfirmedTransaction.getConfirmedAt().getAsTimepoint();
 
 				if ((type & Type::SINGLE) == Type::SINGLE) {
+					// TODO: validate account balances count and specifics according to transaction type!
 					if (mConfirmedTransaction.getLedgerAnchor().empty()) {
 						TransactionValidationInvalidInputException exception(
 							"invalid",

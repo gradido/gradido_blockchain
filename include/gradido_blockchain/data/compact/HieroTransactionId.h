@@ -7,6 +7,7 @@ namespace gradido::data::compact {
   // only work as long as shard and realm are 0 and accountNum is less than 2^32
   struct HieroTransactionId 
   {
+    HieroTransactionId() : seconds(0), nanos(0), accountNum(0) {}
     // timestamp
     int64_t seconds;
     int32_t nanos;

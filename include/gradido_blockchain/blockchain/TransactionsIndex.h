@@ -8,6 +8,7 @@
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
 #include "gradido_blockchain/blockchain/StateChange.h"
+#include "gradido_protobuf_zig.h"
 
 #include "rapidjson/document.h"
 
@@ -43,6 +44,7 @@ namespace gradido {
 			rapidjson::Value serializeToJson(rapidjson::Document::AllocatorType& alloc) const;
 
 			bool addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry, IMutableDictionary<memory::ConstBlockPtr>& publicKeyDictionary);
+			bool addIndicesForTransaction()
 
 			//! \brief search transaction nrs for search criteria in filter, ignore filter function
 			//! \return transaction nrs

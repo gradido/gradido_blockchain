@@ -42,6 +42,7 @@ namespace gradido {
             inline bool isPlain() const { return mKeyType == MemoKeyType::PLAIN; }
             inline bool isCommunitySecret() const { return mKeyType == MemoKeyType::COMMUNITY_SECRET; }
             inline bool isSharedSecret() const { return mKeyType == MemoKeyType::SHARED_SECRET; }
+            inline bool empty() const { return !mMemo; }
 
             inline const memory::Block& getMemo() const { return *mMemo; }
             inline memory::ConstBlockPtr getMemoPtr() const { return mMemo; }

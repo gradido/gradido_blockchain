@@ -184,10 +184,11 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 	size_t confirmedDeserializeMaxInputBuffer = 0;
 
 	timeUsed.reset();
+	grdu_memory_init_static(&alloc, staticInputBuffer, 1024);
 	while (f.good()) {
 		f.read((char*)&transactionSize, sizeof(uint16_t));
 		f.read(readFromFileStaticBuffer, transactionSize);
-		grdu_memory_init_static(&alloc, staticInputBuffer, 1024);
+		alloc.last_index = 0;
 		
 		grdw_confirmed_transaction tx{};
 		auto result = grdw_confirmed_transaction_decode(&alloc, &tx, (uint8_t*)readFromFileStaticBuffer, transactionSize);
