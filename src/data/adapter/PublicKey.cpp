@@ -1,5 +1,5 @@
 #include "gradido_blockchain/AppContext.h"
-#include "gradido_blockchain/data/adapter/arrayBuffer.h"
+#include "gradido_blockchain/data/adapter/byteArray.h"
 #include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/memory/Block.h"

@@ -120,7 +120,7 @@ TEST(DeserializeTest, RegisterAddressBody) {
 	EXPECT_EQ(registerAddress->addressType, AddressType::COMMUNITY_HUMAN);
 	EXPECT_EQ(registerAddress->derivationIndex, 1);
 	EXPECT_TRUE(g_KeyPairs[3]->getPublicKey()->isTheSame(registerAddress->userPublicKeyIndex));
-	printf("name hash: %s\n", g_appContext->getUseNameHashs().getDataForIndex(registerAddress->nameHashIndex)->convertToHex().c_str());
+	printf("name hash: %s\n", g_appContext->getUserNameHashs().getDataForIndex(registerAddress->nameHashIndex)->convertToHex().c_str());
 	// EXPECT_FALSE(registerAddress->getNameHash());
 	EXPECT_TRUE(g_KeyPairs[4]->getPublicKey()->isTheSame(registerAddress->accountPublicKeyIndex));
 }
