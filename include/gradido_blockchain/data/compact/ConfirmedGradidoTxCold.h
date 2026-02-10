@@ -9,6 +9,7 @@
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/types.h"
+#include "gradido_protobuf_zig.h"
 
 #include <optional>
 #include <vector>
@@ -19,16 +20,18 @@ namespace gradido::data::compact {
   struct GRADIDOBLOCKCHAIN_EXPORT ConfirmedGradidoTxCold 
   {
     ConfirmedGradidoTxCold();
+    static ConfirmedGradidoTxCold* fromGrdw(
+      const grdw_confirmed_transaction* tx,
+      const grdw_transaction_body* body,
+      uint32_t blockchainCommunityIdIndex
+    );
 
     // packed tx and timestamp together to save 8 Byte padding
     uint64_t createdAtSeconds;
-    uint64_t paringTxNr;
     uint32_t createdAtNanos;
     uint32_t pairingTxCommunityIdIndex;
 
     inline Timestamp getCreatedAt() const { return Timestamp(createdAtSeconds, createdAtNanos); }
-    // for cross group transactions, else empty
-    inline TxId getPairingTxId() const { return TxId(paringTxNr, pairingTxCommunityIdIndex); }
 
     // memos
     // check if empty before use
@@ -44,7 +47,6 @@ namespace gradido::data::compact {
     LedgerAnchor ledgerAnchor;
     // by cross group transactions, pairing transaction on other blockchain
     LedgerAnchor pairingLedgerAnchor;
-    std::optional<uint32_t> otherCommunityId;
 
     // body bytes serialized 
     // because it is used by signature and protobuf serialization isn't deterministic, we need to save the original 

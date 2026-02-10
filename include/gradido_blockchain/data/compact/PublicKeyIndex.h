@@ -19,6 +19,12 @@ namespace gradido::data::compact {
 
     bool operator==(const PublicKeyIndex&) const = default;
     bool operator!=(const PublicKeyIndex&) const = default;
+    inline bool operator<(const PublicKeyIndex& other) const {
+      if (communityIdIndex != other.communityIdIndex) {
+        return communityIdIndex < other.communityIdIndex;
+      }
+      return publicKeyIndex < other.publicKeyIndex;
+    };
   };
 }
 

@@ -47,7 +47,7 @@ namespace gradido {
 
 			~TransactionBody() {}
 
-			static std::shared_ptr<const TransactionBody> fromGrdwTransactionBody(grdw_transaction_body* grdw_body, uint32_t communityIdIndex);
+			static std::shared_ptr<const TransactionBody> fromGrdw(grdw_transaction_body* grdw_body, uint32_t communityIdIndex);
 			void toGrdw(grdu_memory* alloc, grdw_transaction_body* grdw_body) const;
 
 			inline bool isTransfer() const { return TransactionType::TRANSFER == mTransactionType; }

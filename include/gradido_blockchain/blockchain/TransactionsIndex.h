@@ -7,6 +7,7 @@
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/data/AddressType.h"
+#include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
 #include "gradido_blockchain/blockchain/StateChange.h"
 #include "gradido_protobuf_zig.h"
@@ -45,6 +46,9 @@ namespace gradido {
 			rapidjson::Value serializeToJson(rapidjson::Document::AllocatorType& alloc) const;
 
 			bool addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry, IMutableDictionary<PublicKey>& publicKeyDictionary);
+			bool addIndicesForTransaction(const data::compact::ConfirmedGradidoTx& compactTx);
+			// compactHotTx without coldData, so involved public keys don't contain public keys from sig map
+			bool addIndicesForTransaction(const grdw_gradido_transaction* tx, const data::compact::ConfirmedGradidoTx& compactHotTx);
 
 			//! \brief search transaction nrs for search criteria in filter, ignore filter function
 			//! \return transaction nrs

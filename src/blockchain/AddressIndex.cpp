@@ -1,6 +1,7 @@
 #include "gradido_blockchain/blockchain/AddressIndex.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/data/adapter/PublicKey.h"
+#include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/memory/Block.h"
@@ -14,6 +15,7 @@ using memory::ConstBlockPtr;
 
 namespace gradido {
 	using data::adapter::toPublicKey;
+	using data::compact::ConfirmedGradidoTx;
 	using data::AddressType;
 
 	namespace blockchain {
@@ -79,6 +81,42 @@ namespace gradido {
 			const auto& accountBalances = transactionEntry.getConfirmedTransaction()->getAccountBalances();
 			for (const auto& accountBalance : accountBalances) {
 				updateLastBalanceChangingTransactionNr(getPublicKeyIndex(accountBalance.getPublicKey()), txNr);
+			}
+		}
+
+		void AddressIndex::addTransaction(const data::compact::ConfirmedGradidoTx& compactTx)
+		{
+			uint64_t txNr = compactTx.txNr;
+			if (compactTx.isCommunityRoot()) {
+				const auto& communityRoot = compactTx.specific.communityRoot;
+				if (!addTransactionNrForIndex(communityRoot.aufPublicKeyIndex.publicKeyIndex, txNr, AddressType::COMMUNITY_AUF)) {
+					LOG_F(WARNING, "couldn't add Community Auf Key to Address Indices");
+				}
+				if (!addTransactionNrForIndex(communityRoot.gmwPublicKeyIndex.publicKeyIndex, txNr, AddressType::COMMUNITY_GMW)) {
+					LOG_F(WARNING, "couldn't add Community GMW Key to Address Indices");
+				}
+			}
+			else if (compactTx.isRegisterAddress())
+			{
+				const auto& registerAddress = compactTx.specific.registerAddress;
+
+				if (!addTransactionNrForIndex(registerAddress.userPublicKeyIndex.publicKeyIndex, txNr, registerAddress.addressType)) {
+					LOG_F(WARNING, "couldn't add register user Key to Address Indices");
+				}
+
+				if (!addTransactionNrForIndex(registerAddress.accountPublicKeyIndex.publicKeyIndex, txNr, registerAddress.addressType)) {
+					LOG_F(WARNING, "couldn't add register address Key to Address Indices");
+				}
+			}
+			else if (compactTx.isDeferredTransfer()) {
+				const auto& deferredTransfer = compactTx.specific.deferredTransfer;
+				if (!addTransactionNrForIndex(deferredTransfer.recipientPublicKeyIndex, txNr, AddressType::DEFERRED_TRANSFER)) {
+					LOG_F(WARNING, "couldn't add deferred address Key to Address Indices");
+				}
+			}
+			const auto& accountBalances = compactTx.accountBalances;
+			for (int i = 0; i < compactTx.accountBalanceCount; i++) {
+				updateLastBalanceChangingTransactionNr(accountBalances[i].publicKeyIndex, txNr);
 			}
 		}
 

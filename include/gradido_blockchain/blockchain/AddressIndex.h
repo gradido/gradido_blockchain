@@ -4,6 +4,7 @@
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/data/AddressType.h"
+#include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
 
 #include <unordered_map>
@@ -32,6 +33,7 @@ namespace gradido {
 			//! public keys need to be already in publicKeyDictionary
 			//! \return added entries count
 			void addTransaction(const TransactionEntry& transactionEntry, const IDictionary<PublicKey>& publicKeyDictionary);
+			void addTransaction(const data::compact::ConfirmedGradidoTx& compactTx);
 			const std::vector<uint64_t>& getTransactionsNrs(uint32_t publicKeyIndex) const;
 			bool isExist(uint32_t publicKeyIndex) const;
 			data::AddressType getAddressType(uint32_t publicKeyIndex) const;

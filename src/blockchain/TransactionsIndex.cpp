@@ -1,12 +1,16 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/TransactionsIndex.h"
 #include "gradido_blockchain/blockchain/RangeUtils.h"
 #include "gradido_blockchain/data/adapter/PublicKey.h"
+#include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/serialization/toJson.h"
 
+#include "date/date.h"
 #include "loguru/loguru.hpp"
 
 #include <algorithm>
@@ -22,6 +26,7 @@ const size_t TRANSACTION_ENTRY_VECTOR_SIZE = 100;
 namespace gradido {
 	using data::adapter::toPublicKey;
 	using data::AddressType;
+	using data::compact::ConfirmedGradidoTx, data::compact::PublicKeyIndex;
 	using data::TransactionType;
 	using blockchain::Filter;
 
@@ -180,6 +185,79 @@ namespace gradido {
 				balanceChangingBitMask
 			);
 
+		}
+
+		bool TransactionsIndex::addIndicesForTransaction(const ConfirmedGradidoTx& compactTx)
+		{
+			auto transactionNr = compactTx.txNr;
+
+			if (transactionNr > mMaxTransactionNr) {
+				mMaxTransactionNr = transactionNr;
+			}
+			if (!mMinTransactionNr || transactionNr < mMinTransactionNr) {
+				mMinTransactionNr = transactionNr;
+			}
+			auto coinCommunityIndex = compactTx.getCoinCommunityId();
+			auto involvedPublicKeyIndices = compactTx.getInvolvedAddresses();
+			std::vector<uint32_t> publicKeyIndices;
+			publicKeyIndices.reserve(publicKeyIndices.size());
+			uint8_t balanceChangingBitMask = 0;
+			for (auto& pubKey : involvedPublicKeyIndices) {
+				publicKeyIndices.push_back(pubKey.publicKeyIndex);
+				if (publicKeyIndices.size() < 8 && compactTx.isBalanceUpdated(pubKey)) {
+					balanceChangingBitMask |= 1u << (publicKeyIndices.size() - 1);
+				}
+			}
+			auto receivedDate = date::year_month_day{ date::floor<date::days>(compactTx.getConfirmedAt().getAsTimepoint())};
+			mAddressIndex.addTransaction(compactTx);
+			return addIndicesForTransaction(
+				compactTx.transactionType,
+				coinCommunityIndex ? coinCommunityIndex.value() : compactTx.txCommunityIdIndex,
+				receivedDate.year(),
+				receivedDate.month(),
+				transactionNr,
+				publicKeyIndices.data(),
+				static_cast<uint16_t>(publicKeyIndices.size()),
+				balanceChangingBitMask
+			);
+		}
+
+		bool TransactionsIndex::addIndicesForTransaction(const grdw_gradido_transaction* tx, const data::compact::ConfirmedGradidoTx& compactHotTx)
+		{
+			auto transactionNr = compactHotTx.txNr;
+
+			if (transactionNr > mMaxTransactionNr) {
+				mMaxTransactionNr = transactionNr;
+			}
+			if (!mMinTransactionNr || transactionNr < mMinTransactionNr) {
+				mMinTransactionNr = transactionNr;
+			}
+			auto coinCommunityIndex = compactHotTx.getCoinCommunityId();
+			auto involvedPublicKeyIndices = compactHotTx.getInvolvedAddresses();
+			for (int i = 0; i < tx->sig_map_count; i++) {
+				involvedPublicKeyIndices.insert(PublicKeyIndex::fromPublicKey(compactHotTx.txCommunityIdIndex, tx->sig_map[i].public_key));
+			}
+			std::vector<uint32_t> publicKeyIndices;
+			publicKeyIndices.reserve(publicKeyIndices.size());
+			uint8_t balanceChangingBitMask = 0;
+			for (auto& pubKey : involvedPublicKeyIndices) {
+				publicKeyIndices.push_back(pubKey.publicKeyIndex);
+				if (publicKeyIndices.size() < 8 && compactHotTx.isBalanceUpdated(pubKey)) {
+					balanceChangingBitMask |= 1u << (publicKeyIndices.size() - 1);
+				}
+			}
+			auto receivedDate = date::year_month_day{ date::floor<date::days>(compactHotTx.getConfirmedAt().getAsTimepoint()) };
+			mAddressIndex.addTransaction(compactHotTx);
+			return addIndicesForTransaction(
+				compactHotTx.transactionType,
+				coinCommunityIndex ? coinCommunityIndex.value() : compactHotTx.txCommunityIdIndex,
+				receivedDate.year(),
+				receivedDate.month(),
+				transactionNr,
+				publicKeyIndices.data(),
+				static_cast<uint16_t>(publicKeyIndices.size()),
+				balanceChangingBitMask
+			);
 		}
 		
 		std::vector<uint64_t> TransactionsIndex::findTransactions(const Filter& originalFilter, const IDictionary<PublicKey>& publicKeyDictionary) const

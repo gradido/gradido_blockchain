@@ -61,7 +61,6 @@ using std::string;
 
 // GTEST_API_ 
 int main(int argc, char** argv) {
-	g_appContext = make_unique<AppContext>(make_unique<ThreadsafeRuntimeDictionary<string>>("communityIdDictionary"));
 	testing::InitGoogleTest(&argc, argv);
 	g_appContext = make_unique<AppContext>(
 		make_unique<ThreadsafeRuntimeDictionary<string>>("communityIdDictionary"),

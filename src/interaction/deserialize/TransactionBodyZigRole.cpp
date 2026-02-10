@@ -43,7 +43,7 @@ namespace gradido {
             LOG_F(ERROR, "decode error: %s", enum_name(result.state).data());
             throw GradidoNodeInvalidDataException("error deserialize body bytes");
           }
-          return TransactionBody::fromGrdwTransactionBody(&body, communityIdIndex);
+          return TransactionBody::fromGrdw(&body, communityIdIndex);
         }
       );
     }

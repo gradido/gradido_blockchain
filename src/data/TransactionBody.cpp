@@ -27,10 +27,9 @@ using std::vector;
 
 namespace gradido {
 	namespace data {
-		using adapter::fromGrdw, adapter::toGrdw;
 		using adapter::toPublicKeyIndex, adapter::toConstBlockPtr;
 
-		ConstTransactionBodyPtr TransactionBody::fromGrdwTransactionBody(grdw_transaction_body* grdw_body, uint32_t communityIdIndex)
+		ConstTransactionBodyPtr TransactionBody::fromGrdw(grdw_transaction_body* grdw_body, uint32_t communityIdIndex)
 		{
 			assert(grdw_body);
 			if (strcmp(grdw_body->version_number, GRADIDO_TRANSACTION_BODY_VERSION_STRING)) {
@@ -41,12 +40,12 @@ namespace gradido {
 				result->mMemos.reserve(grdw_body->memos_count);
 				for (uint8_t i = 0; i < grdw_body->memos_count; i++) {
 					auto& memo = grdw_body->memos[i];
-					result->mMemos.emplace_back(fromGrdw(memo.type), Block(memo.memo_size, memo.memo));
+					result->mMemos.emplace_back(adapter::fromGrdw(memo.type), Block(memo.memo_size, memo.memo));
 				}				
 			}
-			result->mCreatedAt = fromGrdw(grdw_body->created_at);
-			result->mType = fromGrdw(grdw_body->type);
-			result->mTransactionType = fromGrdw(grdw_body->transaction_type);
+			result->mCreatedAt = adapter::fromGrdw(grdw_body->created_at);
+			result->mType = adapter::fromGrdw(grdw_body->type);
+			result->mTransactionType = adapter::fromGrdw(grdw_body->transaction_type);
 			result->mCommunityIdIndex = communityIdIndex;
 			if (grdw_body->other_group) {
 				result->mOtherCommunityIdIndex = g_appContext->getOrAddCommunityIdIndex(grdw_body->other_group);
@@ -54,14 +53,14 @@ namespace gradido {
 			switch (result->mTransactionType) {
 			case TransactionType::TRANSFER: 
 				result->mSpecific = make_shared<GradidoTransfer>(
-					fromGrdw(grdw_body->data.transfer->sender, communityIdIndex),
-					fromGrdw(grdw_body->data.transfer->recipient)
+					adapter::fromGrdw(grdw_body->data.transfer->sender, communityIdIndex),
+					adapter::fromGrdw(grdw_body->data.transfer->recipient)
 				);
 				break;
 			case TransactionType::CREATION: 
 				result->mSpecific = make_shared<GradidoCreation>(
-					fromGrdw(grdw_body->data.creation->recipient, communityIdIndex),
-					fromGrdw(grdw_body->data.creation->target_date)
+					adapter::fromGrdw(grdw_body->data.creation->recipient, communityIdIndex),
+					adapter::fromGrdw(grdw_body->data.creation->target_date)
 				);
 				break;
 			case TransactionType::REGISTER_ADDRESS:
@@ -70,8 +69,8 @@ namespace gradido {
 			case TransactionType::DEFERRED_TRANSFER: 
 				result->mSpecific = make_shared<GradidoDeferredTransfer>(
 					GradidoTransfer(
-						fromGrdw(grdw_body->data.deferred_transfer->transfer.sender, communityIdIndex),
-						fromGrdw(grdw_body->data.deferred_transfer->transfer.recipient)
+						adapter::fromGrdw(grdw_body->data.deferred_transfer->transfer.sender, communityIdIndex),
+						adapter::fromGrdw(grdw_body->data.deferred_transfer->transfer.recipient)
 					),
 					grdw_body->data.deferred_transfer->timeout_duration
 				);
@@ -80,8 +79,8 @@ namespace gradido {
 				result->mSpecific = make_shared<GradidoRedeemDeferredTransfer>(
 					grdw_body->data.redeem_deferred_transfer->deferred_transfer_transaction_nr,
 					GradidoTransfer(
-						fromGrdw(grdw_body->data.redeem_deferred_transfer->transfer.sender, communityIdIndex),
-						fromGrdw(grdw_body->data.redeem_deferred_transfer->transfer.recipient)
+						adapter::fromGrdw(grdw_body->data.redeem_deferred_transfer->transfer.sender, communityIdIndex),
+						adapter::fromGrdw(grdw_body->data.redeem_deferred_transfer->transfer.recipient)
 					)
 				);
 				break;

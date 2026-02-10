@@ -1,6 +1,8 @@
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
+#include "gradido_blockchain/blockchain/TransactionsIndex.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
+#include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
@@ -32,7 +34,7 @@ using std::make_shared, std::shared_ptr;
 using hiero::TransactionId, hiero::AccountId;
 
 using gradido::g_appContext;
-using gradido::blockchain::InMemoryProvider;
+using gradido::blockchain::InMemoryProvider, gradido::blockchain::TransactionsIndex;
 using gradido::data::GradidoTransaction, gradido::data::ConstGradidoTransactionPtr;
 using gradido::data::ConfirmedTransaction, gradido::data::ConstConfirmedTransactionPtr;
 using gradido::data::LedgerAnchor;
@@ -160,32 +162,14 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreaded)
 }
 // */
 #include "gradido_protobuf_zig.h"
-#include <vector>
-using std::vector;
+#include "magic_enum/magic_enum.hpp"
 
 #include <cassert>
 #include "gradido_blockchain/interaction/deserialize/Protopuf.h"
-#include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
-#include "gradido_protobuf_zig.h"
-// using gradido::interaction::deserialize::ConfirmedTransactionMessage, gradido::interaction::deserialize::ConfirmedTransactionIndexMessage;
-// using gradido::interaction::deserialize::TransactionBodyMessage;
+
 using namespace gradido::interaction::deserialize;
-
-// gradido_transaction.proto
-using GradidoTransactionSmallMessage = message<
-	message_field<"sig_map", 1, SignatureMapMessage>,
-	// bytes_field<"body_bytes", 2>,// singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
-	message_field<"pairing_ledger_anchor", 3, LedgerAnchorMessage>//, singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>
->;
-
-using ConfirmedTransactionSmallMessage = message<
-	uint64_field<"id", 1>,
-	message_field<"transaction", 2, GradidoTransactionSmallMessage>,
-	message_field<"confirmed_at", 3, TimestampMessage>,
-	message_field<"ledger_anchor", 6, LedgerAnchorMessage>,// singular, std::vector<ByteVectorCachedAlloc, VectorCacheAllocator<ByteVectorCachedAlloc>>>,
-	message_field<"account_balances", 7, AccountBalanceMessage, repeated>,//, singular, std::vector<StringCachedAlloc>>
-	enum_field<"balance_derivation", 8, gradido::data::BalanceDerivationType>
->;
+using namespace magic_enum;
+/*
 
 TEST_F(LoadFromBinary, toFromProtobuf)
 {
@@ -196,11 +180,8 @@ TEST_F(LoadFromBinary, toFromProtobuf)
 	gradido::blockchain::InMemoryProvider::getInstance()->findBlockchain(communityIdIndex);
 
 	Profiler timeUsed;
-	std::string communityId = "gradido-akademie";
-	auto communityIdIndex = g_appContext->getOrAddCommunityIdIndex(communityId);
 	// std::deque<std::shared_ptr<memory::Block>> transactionBins;
 	std::deque<gradido::data::compact::ConfirmedGradidoTx> transactions;
-	printf("message size: %llu\n", sizeof(ConfirmedTransactionMessage));
 	//const size_t bufferSize = 800;
 	//std::array<uint8_t, bufferSize> buffer;
 	size_t count = 0;
@@ -211,7 +192,10 @@ TEST_F(LoadFromBinary, toFromProtobuf)
 	int coundEncodingErrors = 0;
 	int errorMemoSize[2] = { 0,0 };
 	uint8_t transactionBuffer[1024];
-	uint8_t encodingBuffer[1024];
+	uint8_t encodingBuffer[2048];
+	uint8_t inputBuffer[2048];
+	grdu_memory alloc;
+	grdu_memory_init_static(&alloc, inputBuffer, 2048);
 
 	while (f.good()) {
 		f.read((char*)&transactionSize, sizeof(uint16_t));
@@ -230,27 +214,31 @@ TEST_F(LoadFromBinary, toFromProtobuf)
 			
 			// 102 ms with 74k Transactions
 			grdw_confirmed_transaction tx;
-			auto confirmedDecodingMemSize = grdw_confirmed_transaction_decode(&tx, transactionBuffer, transactionSize);
-			if (confirmedDecodingMemSize < 0) {
+			alloc.last_index = 0;
+			auto decodeResult = grdw_confirmed_transaction_decode(&alloc, &tx, transactionBuffer, transactionSize);
+			if (GRDW_ENCODING_ERROR_SUCCESS != decodeResult.state) {
+				printf("confirmed transaction decode error: %s\n", enum_name(decodeResult.state).data());
 				throw GradidoNodeInvalidDataException("confirmed transaction decode failed!");
 			}
-			if (confirmedDecodingMemSize > biggestZigMemorySize) {
-				biggestZigMemorySize = confirmedDecodingMemSize;
+			if (decodeResult.allocator_used > biggestZigMemorySize) {
+				biggestZigMemorySize = decodeResult.allocator_used;
 			}
 			if (tx.transaction.body_bytes_size > biggestBodyBytesSize) {
 				biggestBodyBytesSize = tx.transaction.body_bytes_size;
 			}
 			grdw_transaction_body body;
-			auto bodyDecodingMemSize = grdw_transaction_body_decode(&body, tx.transaction.body_bytes, tx.transaction.body_bytes_size);
-			if (bodyDecodingMemSize < 0) {
+			alloc.last_index = 0;
+			decodeResult = grdw_transaction_body_decode(&alloc , &body, tx.transaction.body_bytes, tx.transaction.body_bytes_size);
+			if (GRDW_ENCODING_ERROR_SUCCESS != decodeResult.state) {
+				printf("transaction body decode error: %s\n", enum_name(decodeResult.state).data());
 				throw GradidoNodeInvalidDataException("transaction body decode failed!");
 			}
-			if (bodyDecodingMemSize > biggestZigMemorySize) {
-				biggestZigMemorySize = bodyDecodingMemSize;
+			if (decodeResult.allocator_used > biggestZigMemorySize) {
+				biggestZigMemorySize = decodeResult.allocator_used;
 			}
-			memset(encodingBuffer, 0, 1024);
-			auto encodeResult = grdw_transaction_body_encode(&body, encodingBuffer, 1024);
-			if (encodeResult < 0) {
+			
+			auto encodeResult = grdw_transaction_body_encode(&body, encodingBuffer, 2048);
+			if (GRDW_ENCODING_ERROR_SUCCESS != encodeResult.state) {
 				deserialize::Context des(make_shared<const Block>(tx.transaction.body_bytes_size, tx.transaction.body_bytes), deserialize::Type::TRANSACTION_BODY);
 				des.run(communityIdIndex);
 				if (des.isTransactionBody()) {
@@ -269,8 +257,7 @@ TEST_F(LoadFromBinary, toFromProtobuf)
 				coundEncodingErrors++;
 			}
 			else {
-				size_t bodyBytesSize = encodeResult;
-				while (!encodingBuffer[--bodyBytesSize]);
+				size_t bodyBytesSize = encodeResult.written;
 				if (bodyBytesSize > encodeZigMemorySize) {
 					encodeZigMemorySize = bodyBytesSize;
 				}
@@ -280,23 +267,21 @@ TEST_F(LoadFromBinary, toFromProtobuf)
 				// throw GradidoNodeInvalidDataException("transaction body serialize isn't byte perfect");
 			// }
 
-			/*deserialize::Context des(make_shared<const Block>(tx.transaction.body_bytes_size, tx.transaction.body_bytes), deserialize::Type::TRANSACTION_BODY);
+			deserialize::Context des(make_shared<const Block>(tx.transaction.body_bytes_size, tx.transaction.body_bytes), deserialize::Type::TRANSACTION_BODY);
 			des.run(communityIdIndex);
 			auto legacyBody = des.getTransactionBody();
-			*/
-			/* if (body.transaction_type == GRDW_TRANSACTION_TYPE_CREATION) {
+			
+			 if (body.transaction_type == GRDW_TRANSACTION_TYPE_CREATION) {
 				printf("legacy body:\n%s\n", Block(tx.transaction.body_bytes_size, tx.transaction.body_bytes).convertToHex().c_str());
 				printf("body:\n%s\n", Block(1024, encodingBuffer).convertToHex().c_str());
 				break;
-			}*/
-			
-			grdw_confirmed_transaction_free_deep(&tx);
-			grdw_transaction_body_free_deep(&body);
+			}
+					
 			
 			//
 			
 			//printf("version c: %s", tx.version_number);
-			/*
+			
 			auto result = message_coder<ConfirmedTransactionMessage>::decode(bufferSpan);
 			assert(result.has_value());
 			auto& [confirmedTransaction, bufferEnd2] = *result;
@@ -322,7 +307,7 @@ TEST_F(LoadFromBinary, toFromProtobuf)
 			// auto result2 = message_coder<ConfirmedTransactionMessage>::encode(confirmedTransaction, bufferSpan);
 			// printf("after encode:\n");
 			// assert(result2.has_value());
-			//*/
+			//
 			++count;
 			// break;
 			
@@ -343,7 +328,8 @@ TEST_F(LoadFromBinary, toFromProtobuf)
 	timeUsed.reset();
 }
 // */
-/*
+using gradido::data::compact::ConfirmedGradidoTx;
+
 TEST_F(LoadFromBinary, LoadDataFromBinaryDeserializeSerialize)
 {
 	Profiler timeUsed;
@@ -353,13 +339,20 @@ TEST_F(LoadFromBinary, LoadDataFromBinaryDeserializeSerialize)
 	
 	// list<ConstGradidoTransactionPtr> transactions;
 	timeUsed.reset();
-	std::string communityId = "gradido-akademie";
+	std::string communityIds[] = {
+		"gradido-akademie",
+		"herzlicht",
+		"wekingheim"
+	};
+	std::string communityId = communityIds[0];
 	auto provider = InMemoryProvider::getInstance();
 	auto blockchain = provider->findBlockchain(communityId);
+	provider->findBlockchain(communityIds[1]);
+	provider->findBlockchain(communityIds[2]);
 	auto communityIdIndex = g_appContext->getCommunityIds().getIndexForData(communityId).value();
 	AccountId defaultHieroAccount(0, 0, 2);
 	vector<ConstConfirmedTransactionPtr> mTransactions;
-	uint8_t staticInputBuffer[1024];
+	uint8_t staticInputBuffer[2048];
 	grdu_memory alloc;
 	int count = 0;
 
@@ -368,7 +361,9 @@ TEST_F(LoadFromBinary, LoadDataFromBinaryDeserializeSerialize)
 	size_t confirmedDeserializeMaxInputBuffer = 0;
 
 	timeUsed.reset();
-	grdu_memory_init_static(&alloc, staticInputBuffer, 1024);
+	grdu_memory_init_static(&alloc, staticInputBuffer, 2048);
+	std::deque<ConfirmedGradidoTx> mCompactTxs;
+	TransactionsIndex txIndex;
 	while (f.good()) {
 		f.read((char*)&transactionSize, sizeof(uint16_t));
 		f.read(readFromFileStaticBuffer, transactionSize);
@@ -376,22 +371,35 @@ TEST_F(LoadFromBinary, LoadDataFromBinaryDeserializeSerialize)
 		
 		grdw_confirmed_transaction tx{};
 		auto result = grdw_confirmed_transaction_decode(&alloc, &tx, (uint8_t*)readFromFileStaticBuffer, transactionSize);
+		if (GRDW_ENCODING_ERROR_SUCCESS != result.state) {
+			printf("%d error on encoding tx: %d\n", result.state, count);
+			break;
+		}
 		if (alloc.last_index > confirmedDeserializeMaxInputBuffer) {
 			confirmedDeserializeMaxInputBuffer = alloc.last_index;
 		}
 		if (result.allocator_used > confirmeDeserializeMaxAllocatorUsed) {
 			confirmeDeserializeMaxAllocatorUsed = result.allocator_used;
 		}
+		grdw_transaction_body body{};
+		auto bodyResult = grdw_transaction_body_decode(&alloc, &body, tx.transaction.body_bytes, tx.transaction.body_bytes_size);
+		if (GRDW_ENCODING_ERROR_SUCCESS != bodyResult.state) {
+			printf("%d error on encoding tx body: %d\n", bodyResult.state, count);
+			break;
+		}
 		++count;
 		try {
-			// ConfirmedTransaction::fromGrdw(&tx, communityIdIndex);
+			// mCompactTxs.emplace_back(std::move(ConfirmedGradidoTx::fromGrdw(&tx, &body, communityIdIndex)));
+			auto confirmedTx = ConfirmedGradidoTx::fromGrdw(&tx, &body, communityIdIndex, false);
+			txIndex.addIndicesForTransaction(&tx.transaction, confirmedTx);
 		}
-		catch (...) {
+		catch (GradidoBlockchainException& ex) {
+			printf("exception in fromGrdw: %s\n", ex.getFullString().c_str());
 			break;
 		}
 		
 	}
-	printf("%s time for simply deserialize confirmed tx with static buffer\n", timeUsed.string().c_str());
+	printf("%s time for deserialize confirmed tx and body, add to deque as compact confirmed tx and initalize transaction index\n", timeUsed.string().c_str());
 	printf(
 		"deserialize stats: %llu max zig intern allocator used, %llu max input buffer usage\n", 
 		confirmeDeserializeMaxAllocatorUsed, confirmedDeserializeMaxInputBuffer
@@ -422,13 +430,8 @@ TEST_F(LoadFromBinary, LoadDataFromBinaryDeserializeSerialize)
 			}
 			if (count > 10000) {
 				// printf("%u: %s\n\n", transactionSize, serialization::toJsonString(*tx, true).data());
-			tx->getGradidoTransaction()->getTransactionBody();
-#ifdef _DEBUG
-			if (count > 8000) {
-				break;
-				//printf("%u: %s\n\n", transactionSize, serialization::toJsonString(*tx, true).data());
+				tx->getGradidoTransaction()->getTransactionBody();
 			}
-#endif
 			// trigger body deserialization
 			try {
 				// printf("added: %s\n", toJsonString(*tx, true).data());
@@ -438,8 +441,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinaryDeserializeSerialize)
 				printf("cannot deserialize transaction body from: %s\n", toJsonString(*tx, true).data());
 				printf("size: %u\n", transactionSize);
 			}
-		}
-		catch (...) {
+		} catch (...) {
 			printf("error on transaction deserialize: %u\n", transactionSize);
 		}
 		count++;
@@ -480,6 +482,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinaryDeserializeSerialize)
 		if (encodeResult.written > maxBufferConfirmed) {
 			maxBufferConfirmed = encodeResult.written;
 		}
+	}
 
 	timeUsed.reset();
 	count = 0;
