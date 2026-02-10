@@ -44,6 +44,14 @@ namespace gradido::data::compact {
       bool loadColdData = true
     );
 
+    static ConfirmedGradidoTx fromGrdwConfirmedTransaction(
+      const grdw_confirmed_transaction* tx,
+      uint32_t blockchainCommunityIdIndex,
+      bool loadColdData = true
+    );
+
+    void fillFromGrdwTransactionBody(const grdw_transaction_body* body);
+
     // packed tx and timestamp together to save 8 Byte padding
     uint64_t txNr;
     uint64_t confirmedAtSeconds;

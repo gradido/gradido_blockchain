@@ -2,6 +2,7 @@
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionZigRole.h"
+#include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionZigCompactRole.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/deserialize/GradidoTransactionZigRole.h"
 #include "gradido_blockchain/interaction/deserialize/HieroAccountIdRole.h"
@@ -111,6 +112,19 @@ namespace gradido {
 				// TODO: shorten code with help of template
 				if(!mData) {
 					throw GradidoNullPointerException("mData is empty", "memory::ConstBlockPtr", "gradido::interaction_deserialize::Context::run");
+				}
+				if (Type::CONFIRMED_TRANSACTION_COMPACT == mType) {
+					try {
+						auto role = ConfirmedTransactionZigCompactRole(mData);
+						role.run(communityIdIndex);
+						mConfirmedTransactionCompact = role.getTransaction();
+						mType = Type::CONFIRMED_TRANSACTION_COMPACT;
+						return;
+					}
+					catch (std::exception& ex) {
+						LOG_F(WARNING, "couldn't deserialize as gradido transaction, maybe wrong type? exception: %s", ex.what());
+						mType = Type::UNKNOWN;
+					}
 				}
 				if (Type::GRADIDO_TRANSACTION == mType || Type::UNKNOWN == mType) {
 					try {

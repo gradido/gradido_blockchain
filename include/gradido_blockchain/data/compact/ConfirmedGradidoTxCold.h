@@ -22,9 +22,11 @@ namespace gradido::data::compact {
     ConfirmedGradidoTxCold();
     static ConfirmedGradidoTxCold* fromGrdw(
       const grdw_confirmed_transaction* tx,
-      const grdw_transaction_body* body,
-      uint32_t blockchainCommunityIdIndex
+      const grdw_transaction_body* body
     );
+
+    static ConfirmedGradidoTxCold* fromGrdwConfirmedTransaction(const grdw_confirmed_transaction* tx);
+    void fillFromGrdwTransactionBody(const grdw_transaction_body* body);
 
     // packed tx and timestamp together to save 8 Byte padding
     uint64_t createdAtSeconds;
