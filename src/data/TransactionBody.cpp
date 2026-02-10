@@ -139,7 +139,7 @@ namespace gradido {
 				auto registerAddress = getRegisterAddress();
 				auto accountPubkey = registerAddress->accountPublicKeyIndex.getRawKey();
 				auto userPubkey = registerAddress->userPublicKeyIndex.getRawKey();
-				auto nameHash = g_appContext->getUseNameHashs().getDataForIndexOrThrow(registerAddress->nameHashIndex);
+				auto nameHash = g_appContext->getUserNameHashs().getDataForIndexOrThrow(registerAddress->nameHashIndex);
 				if (accountPubkey.isEmpty() || accountPubkey.size() != 32 || nameHash.isEmpty() || nameHash.size() != 32 || userPubkey.isEmpty() || userPubkey.size() != 32) {
 					throw GradidoNodeInvalidDataException("at least one of account public key, name hash, user public key isn't 32 Bytes");
 				}

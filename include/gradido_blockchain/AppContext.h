@@ -25,7 +25,7 @@ namespace gradido {
     uint32_t getOrAddCommunityIdIndex(const std::string& communityId);
     uint32_t getOrAddUserNameHashIndex(const GenericHash& hash);
     inline const IDictionary<std::string>& getCommunityIds() const { return *mCommunityIds; }
-    inline const IDictionary<GenericHash>& getUseNameHashs() const { return *mUserNameHashs; }
+    inline const IDictionary<GenericHash>& getUserNameHashs() const { return *mUserNameHashs; }
     inline const CommunityContext& getCommunityContext(uint32_t communityIdIndex) const;
     // call getDataForIndex on mCommunityIds start by mCommunityContexts.size() until empty to synchronize mCommunityContexts with mCommunityIds
     // should be used on startup if IDictionary is a persistent Dictionary after loading entries from persistent storage

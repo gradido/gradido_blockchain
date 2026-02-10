@@ -32,7 +32,7 @@ namespace serialization {
 			obj.AddMember("userPubkey", toJson(userPublicKey->convertToHex(), alloc), alloc);
 		}
 		obj.AddMember("addressType", toJson(value.addressType, alloc), alloc);
-		auto nameHash = g_appContext->getUseNameHashs().getDataForIndex(value.nameHashIndex);
+		auto nameHash = g_appContext->getUserNameHashs().getDataForIndex(value.nameHashIndex);
 		if (nameHash) {
 			obj.AddMember("nameHash", toJson(nameHash->convertToHex(), alloc), alloc);
 		}
