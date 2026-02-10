@@ -40,6 +40,30 @@ namespace serialization {
 	}
 
 	template<>
+	Value toJson(const ByteArray<32>& byteArray, Document::AllocatorType& alloc)
+	{
+		if (byteArray.isEmpty()) {
+			return Value("");
+		}
+		constexpr uint32_t hexSize = 32 * 2 + 1;
+		char buffer[hexSize];
+		sodium_bin2hex(buffer, hexSize, byteArray.data(), 32);
+		return Value(buffer, hexSize - 1, alloc);
+	}
+
+	template<>
+	Value toJson(const ByteArray<64>& byteArray, Document::AllocatorType& alloc)
+	{
+		if (byteArray.isEmpty()) {
+			return Value("");
+		}
+		constexpr uint32_t hexSize = 64 * 2 + 1;
+		char buffer[hexSize];
+		sodium_bin2hex(buffer, hexSize, byteArray.data(), 64);
+		return Value(buffer, hexSize - 1, alloc);
+	}
+
+	template<>
 	Value toJson(const Timepoint& timepoint, Document::AllocatorType& alloc) 
 	{
 		std::string utcTimepointString = DataTypeConverter::timePointToString(timepoint) + "Z";
