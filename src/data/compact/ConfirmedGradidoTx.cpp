@@ -115,7 +115,7 @@ namespace gradido::data::compact {
     }
   }
 
-  ConfirmedGradidoTx::ConfirmedGradidoTx(ConfirmedGradidoTx&& other) 
+  ConfirmedGradidoTx::ConfirmedGradidoTx(ConfirmedGradidoTx&& other)
     : txNr(other.txNr),
     confirmedAtSeconds(other.confirmedAtSeconds),
     confirmedAtNanos(other.confirmedAtNanos),
@@ -126,7 +126,7 @@ namespace gradido::data::compact {
     accountBalanceCount(other.accountBalanceCount),
     coldData(other.coldData)
   {
-    // move account balances (trivial, aber sauber)
+    // move account balances
     for (uint8_t i = 0; i < accountBalanceCount; ++i) {
       accountBalances[i] = std::move(other.accountBalances[i]);
     }
@@ -163,6 +163,116 @@ namespace gradido::data::compact {
     // neuter the source
     other.coldData = nullptr;
     other.accountBalanceCount = 0;
+    other.transactionType = TransactionType::NONE;
+  }
+  // move
+  ConfirmedGradidoTx& ConfirmedGradidoTx::operator=(ConfirmedGradidoTx&& other)
+  {
+    txNr = other.txNr; 
+    confirmedAtSeconds = other.confirmedAtSeconds;
+    confirmedAtNanos = other.confirmedAtNanos;
+    txCommunityIdIndex = other.txCommunityIdIndex;
+    crossGroupType = other.crossGroupType;
+    transactionType = other.transactionType;
+    balanceDerivationType = other.balanceDerivationType;
+    accountBalanceCount = other.accountBalanceCount;
+    coldData = other.coldData;
+
+    // move account balances
+    for (uint8_t i = 0; i < accountBalanceCount; ++i) {
+      accountBalances[i] = std::move(other.accountBalances[i]);
+    }
+
+    // steal union content
+    switch (transactionType) {
+    case TransactionType::CREATION:
+      specific.creation = other.specific.creation;
+      break;
+    case TransactionType::TRANSFER:
+      specific.transfer = other.specific.transfer;
+      break;
+    case TransactionType::DEFERRED_TRANSFER:
+      specific.deferredTransfer = other.specific.deferredTransfer;
+      break;
+    case TransactionType::REDEEM_DEFERRED_TRANSFER:
+      specific.redeemDeferredTransfer = other.specific.redeemDeferredTransfer;
+      other.specific.redeemDeferredTransfer = nullptr;
+      break;
+    case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
+      specific.timeoutDeferredTransfer = other.specific.timeoutDeferredTransfer;
+      break;
+    case TransactionType::REGISTER_ADDRESS:
+      specific.registerAddress = other.specific.registerAddress;
+      break;
+    case TransactionType::COMMUNITY_ROOT:
+      specific.communityRoot = other.specific.communityRoot;
+      break;
+    default:
+      throw GradidoUnhandledEnum("on move ConfirmedGradidoTx", "TransactionType", enum_name(transactionType).data());
+      break;
+    }
+
+    // neuter the source
+    other.coldData = nullptr;
+    other.accountBalanceCount = 0;
+    other.transactionType = TransactionType::NONE;
+    return *this;
+  }
+
+  // copy
+  ConfirmedGradidoTx& ConfirmedGradidoTx::operator=(const ConfirmedGradidoTx& other)
+  {
+    txNr = other.txNr; 
+    confirmedAtSeconds = other.confirmedAtSeconds;
+    confirmedAtNanos = other.confirmedAtNanos;
+    txCommunityIdIndex = other.txCommunityIdIndex;
+    crossGroupType = other.crossGroupType;
+    transactionType = other.transactionType;
+    balanceDerivationType = other.balanceDerivationType;
+    accountBalanceCount = other.accountBalanceCount;
+    
+    // copy account balances
+    for (uint8_t i = 0; i < accountBalanceCount; ++i) {
+      accountBalances[i] = other.accountBalances[i];
+    }
+
+    // copy union based on discriminator
+    switch (transactionType) {
+    case TransactionType::CREATION:
+      specific.creation = other.specific.creation;
+      break;
+    case TransactionType::TRANSFER:
+      specific.transfer = other.specific.transfer;
+      break;
+    case TransactionType::DEFERRED_TRANSFER:
+      specific.deferredTransfer = other.specific.deferredTransfer;
+      break;
+    case TransactionType::REDEEM_DEFERRED_TRANSFER:
+      specific.redeemDeferredTransfer = new RedeemDeferredTransferTx{
+        .deferredTransferTransactionNr = other.specific.redeemDeferredTransfer->deferredTransferTransactionNr,
+        .transfer = other.specific.redeemDeferredTransfer->transfer
+      };
+      break;
+    case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
+      specific.timeoutDeferredTransfer = other.specific.timeoutDeferredTransfer;
+      break;
+    case TransactionType::REGISTER_ADDRESS:
+      specific.registerAddress = other.specific.registerAddress;
+      break;
+    case TransactionType::COMMUNITY_ROOT:
+      specific.communityRoot = other.specific.communityRoot;
+      break;
+    default:
+      throw GradidoUnhandledEnum("on copy ConfirmedGradidoTx", "TransactionType", enum_name(transactionType).data());
+      break;
+    }
+
+    // deep copy cold data
+    if (other.coldData) {
+      coldData = new ConfirmedGradidoTxCold(*other.coldData);
+    }
+
+    return *this;
   }
 
   ConfirmedGradidoTx ConfirmedGradidoTx::fromGrdw(

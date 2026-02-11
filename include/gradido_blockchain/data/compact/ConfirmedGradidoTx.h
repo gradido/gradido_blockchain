@@ -37,6 +37,11 @@ namespace gradido::data::compact {
     // move
     ConfirmedGradidoTx(ConfirmedGradidoTx&& other);
 
+    // also move
+    ConfirmedGradidoTx& operator=(ConfirmedGradidoTx&& other);
+    // also copy
+    ConfirmedGradidoTx& operator=(const ConfirmedGradidoTx& other);
+
     static ConfirmedGradidoTx fromGrdw(
       const grdw_confirmed_transaction* tx, 
       const grdw_transaction_body* body, 

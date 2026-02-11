@@ -334,6 +334,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinaryDeserializeSerialize)
 {
 	Profiler timeUsed;
 	uint16_t transactionSize = 0;
+	uint16_t maxTransactionSize = 0;
 	
 	std::ifstream f("data.bin", ifstream::in | ifstream::binary);
 	
@@ -352,7 +353,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinaryDeserializeSerialize)
 	auto communityIdIndex = g_appContext->getCommunityIds().getIndexForData(communityId).value();
 	AccountId defaultHieroAccount(0, 0, 2);
 	vector<ConstConfirmedTransactionPtr> mTransactions;
-	uint8_t staticInputBuffer[2048];
+	uint8_t staticInputBuffer[1024];
 	grdu_memory alloc;
 	int count = 0;
 
@@ -361,37 +362,45 @@ TEST_F(LoadFromBinary, LoadDataFromBinaryDeserializeSerialize)
 	size_t confirmedDeserializeMaxInputBuffer = 0;
 
 	timeUsed.reset();
-	grdu_memory_init_static(&alloc, staticInputBuffer, 2048);
+	grdu_memory_init_static(&alloc, staticInputBuffer, 1024);
 	std::deque<ConfirmedGradidoTx> mCompactTxs;
 	TransactionsIndex txIndex;
+	
+	grdw_confirmed_transaction tx{};
+	grdw_transaction_body body{};
+
 	while (f.good()) {
 		f.read((char*)&transactionSize, sizeof(uint16_t));
+		if (transactionSize < 48787 && transactionSize > maxTransactionSize) {
+			maxTransactionSize = transactionSize;
+		}
 		f.read(readFromFileStaticBuffer, transactionSize);
 		alloc.last_index = 0;
 		
-		grdw_confirmed_transaction tx{};
-		auto result = grdw_confirmed_transaction_decode(&alloc, &tx, (uint8_t*)readFromFileStaticBuffer, transactionSize);
-		if (GRDW_ENCODING_ERROR_SUCCESS != result.state) {
-			printf("%d error on encoding tx: %d\n", result.state, count);
-			break;
-		}
-		if (alloc.last_index > confirmedDeserializeMaxInputBuffer) {
-			confirmedDeserializeMaxInputBuffer = alloc.last_index;
-		}
-		if (result.allocator_used > confirmeDeserializeMaxAllocatorUsed) {
-			confirmeDeserializeMaxAllocatorUsed = result.allocator_used;
-		}
-		grdw_transaction_body body{};
-		auto bodyResult = grdw_transaction_body_decode(&alloc, &body, tx.transaction.body_bytes, tx.transaction.body_bytes_size);
-		if (GRDW_ENCODING_ERROR_SUCCESS != bodyResult.state) {
-			printf("%d error on encoding tx body: %d\n", bodyResult.state, count);
-			break;
-		}
-		++count;
-		try {
-			// mCompactTxs.emplace_back(std::move(ConfirmedGradidoTx::fromGrdw(&tx, &body, communityIdIndex)));
-			auto confirmedTx = ConfirmedGradidoTx::fromGrdw(&tx, &body, communityIdIndex, false);
+		try {			
+			auto result = grdw_confirmed_transaction_decode(&alloc, &tx, (uint8_t*)readFromFileStaticBuffer, transactionSize);
+			if (GRDW_ENCODING_ERROR_SUCCESS != result.state) {
+				printf("%d error on encoding tx: %d\n", result.state, count);
+				break;
+			}
+			if (alloc.last_index > confirmedDeserializeMaxInputBuffer) {
+				confirmedDeserializeMaxInputBuffer = alloc.last_index;
+			}
+			if (result.allocator_used > confirmeDeserializeMaxAllocatorUsed) {
+				confirmeDeserializeMaxAllocatorUsed = result.allocator_used;
+			}
+			auto confirmedTx = ConfirmedGradidoTx::fromGrdwConfirmedTransaction(&tx, communityIdIndex, false);
+			alloc.last_index = 0;
+			
+			auto bodyResult = grdw_transaction_body_decode(&alloc, &body, tx.transaction.body_bytes, tx.transaction.body_bytes_size);
+			if (GRDW_ENCODING_ERROR_SUCCESS != bodyResult.state) {
+				printf("%d error on encoding tx body: %d\n", bodyResult.state, count);
+				break;
+			}
+			confirmedTx.fillFromGrdwTransactionBody(&body);
 			txIndex.addIndicesForTransaction(&tx.transaction, confirmedTx);
+			++count;		
+			// mCompactTxs.emplace_back(std::move(confirmedTx));
 		}
 		catch (GradidoBlockchainException& ex) {
 			printf("exception in fromGrdw: %s\n", ex.getFullString().c_str());
@@ -404,6 +413,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinaryDeserializeSerialize)
 		"deserialize stats: %llu max zig intern allocator used, %llu max input buffer usage\n", 
 		confirmeDeserializeMaxAllocatorUsed, confirmedDeserializeMaxInputBuffer
 	);
+	printf("max transaction size: %u\n", maxTransactionSize);
 	mTransactions.reserve(count);
 
 	count = 0;
