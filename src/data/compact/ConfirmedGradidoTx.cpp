@@ -52,6 +52,7 @@ namespace gradido::data::compact {
     case TransactionType::COMMUNITY_ROOT:
       specific.communityRoot.~CommunityRootTx();
       break;
+    case TransactionType::NONE: break;
     default:
       LOG_F(ERROR, "unhandled transaction type on ~ConfirmedGradidoTx() %s", enum_name(transactionType).data());
       break;
