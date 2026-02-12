@@ -94,7 +94,6 @@ namespace gradido {
 
 				if ((type & Type::PAIRED) == Type::PAIRED && body->getOtherCommunityIdIndex().has_value()) 
 				{
-					shared_ptr<const TransactionEntry> pairTransactionEntry;
 					switch (body->getType()) {
 					case CrossGroupType::LOCAL: break; // no cross group
 					case CrossGroupType::OUTBOUND: break; // happen first, no pairing transaction yet
@@ -108,15 +107,14 @@ namespace gradido {
 							);
 						}
 						else {
-							if (!c.pairingTx) {
-								throw TransactionValidationException("pairing transaction not found");
+							if (!c.pairingTx || !c.pairingTx->getConfirmedTransaction()) {
+								throw TransactionValidationException("pairing transaction not found or invalid");
 							}
-							const auto& pairingTransaction = pairTransactionEntry->getConfirmedTransaction()->getGradidoTransaction();
-							if(!mGradidoTransaction.isPairing(*pairingTransaction)) {
+							if(!mGradidoTransaction.isPairing(*c.pairingTx->getConfirmedTransaction()->getGradidoTransaction())) {
 								throw PairingTransactionNotMatchException(
 									"pairing transaction not matching",
 									mGradidoTransaction.getSerializedTransaction(),
-									pairingTransaction->getSerializedTransaction()
+									c.pairingTx->getSerializedTransaction()
 								);
 							}
 						}
