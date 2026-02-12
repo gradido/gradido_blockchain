@@ -125,8 +125,8 @@ namespace gradido {
 			public:
 				explicit PairingTransactionNotMatchException(
 					const char* what,
-					memory::ConstBlockPtr serializedTransaction,
-					memory::ConstBlockPtr serializedPairingTransaction
+					std::shared_ptr<const data::GradidoTransaction> transaction,
+					std::shared_ptr<const data::GradidoTransaction> pairingTransaction
 				) noexcept;
 
 				std::string getFullString() const noexcept;

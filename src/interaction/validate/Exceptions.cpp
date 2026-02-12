@@ -286,26 +286,12 @@ namespace gradido {
 			// ******************************** Invalid Pairing transaction **********************************************
 			PairingTransactionNotMatchException::PairingTransactionNotMatchException(
 				const char* what,
-				ConstBlockPtr serializedTransaction,
-				ConstBlockPtr serializedPairingTransaction
+				std::shared_ptr<const data::GradidoTransaction> transaction,
+				std::shared_ptr<const data::GradidoTransaction> pairingTransaction
 			) noexcept
-				:TransactionValidationException(what)
+				:TransactionValidationException(what), mTransaction(transaction), mPairingTransaction(pairingTransaction)
 			{
-				try {
-					interaction::deserialize::Context deserializeTransaction(serializedTransaction, interaction::deserialize::Type::GRADIDO_TRANSACTION);
-					deserializeTransaction.run();
-					if (deserializeTransaction.isGradidoTransaction()) {
-						mTransaction = deserializeTransaction.getGradidoTransaction();
-					}
-					interaction::deserialize::Context deserializePairingTransaction(serializedPairingTransaction, interaction::deserialize::Type::GRADIDO_TRANSACTION);
-					deserializePairingTransaction.run();
-					if (deserializePairingTransaction.isGradidoTransaction()) {
-						mPairingTransaction = deserializePairingTransaction.getGradidoTransaction();
-					}
-				}
-				catch (...) {
-					LOG_F(WARNING, "exception by creating transaction from serialized string");
-				}
+				
 			}
 
 			std::string PairingTransactionNotMatchException::getFullString() const noexcept

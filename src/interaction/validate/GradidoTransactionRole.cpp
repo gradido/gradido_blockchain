@@ -17,11 +17,11 @@
 #include <memory>
 
 using namespace magic_enum;
-using std::shared_ptr;
+using std::shared_ptr, std::make_shared;
 
 namespace gradido {
 	using blockchain::Filter, blockchain::TransactionEntry;
-	using data::ConfirmedTransaction, data::CrossGroupType;
+	using data::ConfirmedTransaction, data::CrossGroupType, data::GradidoTransaction;
 
 	namespace interaction {
 		namespace validate {
@@ -113,8 +113,8 @@ namespace gradido {
 							if(!mGradidoTransaction.isPairing(*c.pairingTx->getConfirmedTransaction()->getGradidoTransaction())) {
 								throw PairingTransactionNotMatchException(
 									"pairing transaction not matching",
-									mGradidoTransaction.getSerializedTransaction(),
-									c.pairingTx->getSerializedTransaction()
+									make_shared<const GradidoTransaction>(mGradidoTransaction),
+									c.pairingTx->getConfirmedTransaction()->getGradidoTransaction()
 								);
 							}
 						}
