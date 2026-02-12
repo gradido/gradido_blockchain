@@ -10,7 +10,7 @@ namespace gradido::interaction::validate {
   class GRADIDOBLOCKCHAIN_EXPORT Error 
   { 
   public:
-    Error() = default;
+    Error();
     virtual ~Error() = default;
     
     Error(
