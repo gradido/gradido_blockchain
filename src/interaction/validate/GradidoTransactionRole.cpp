@@ -1,6 +1,7 @@
 ﻿#include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
+#include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/CrossGroupType.h"
@@ -10,6 +11,7 @@
 #include "gradido_blockchain/interaction/validate/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 
+#include "loguru/loguru.hpp"
 #include "magic_enum/magic_enum.hpp"
 
 #include <memory>
@@ -18,7 +20,7 @@ using namespace magic_enum;
 using std::shared_ptr;
 
 namespace gradido {
-	using blockchain::TransactionEntry;
+	using blockchain::Filter, blockchain::TransactionEntry;
 	using data::ConfirmedTransaction, data::CrossGroupType;
 
 	namespace interaction {
@@ -52,10 +54,43 @@ namespace gradido {
 				// check signatures
 				bodyRole.checkRequiredSignatures(mGradidoTransaction.getSignatureMap(), c.senderBlockchain);
 
-				if ((type & Type::PAIRED) == Type::PAIRED && body->getOtherCommunityIdIndex().has_value()) {
-					assert(c.senderBlockchain);
-					auto otherBlockchain = findBlockchain(c.senderBlockchain->getProvider(), body->getOtherCommunityIdIndex().value(), __FUNCTION__);
-					
+				// cross group transaction preparations
+				shared_ptr<blockchain::Abstract> otherBlockchain;
+				if (body->getOtherCommunityIdIndex().has_value() && c.senderBlockchain) {
+					otherBlockchain = findBlockchain(c.senderBlockchain->getProvider(), body->getOtherCommunityIdIndex().value(), __FUNCTION__);
+					if (otherBlockchain && !mGradidoTransaction.getPairingLedgerAnchor().empty()) {
+						c.pairingTx = otherBlockchain->findByLedgerAnchor(mGradidoTransaction.getPairingLedgerAnchor());
+					}
+					if (body->getType() == CrossGroupType::OUTBOUND) {
+						c.recipientBlockchain = otherBlockchain;
+					}
+					else if (body->getType() == CrossGroupType::INBOUND) 
+					{
+						c.recipientBlockchain = c.senderBlockchain;
+						c.senderBlockchain = otherBlockchain;
+						c.recipientPreviousConfirmedTransaction = c.senderPreviousConfirmedTransaction;
+						if (c.pairingTx) {
+							auto senderLastBeforePairingTransactionEntry = c.senderBlockchain->getTransactionForId(c.pairingTx->getTransactionNr() - 1);
+							if (senderLastBeforePairingTransactionEntry) {
+								c.senderPreviousConfirmedTransaction = senderLastBeforePairingTransactionEntry->getConfirmedTransaction();
+							}
+						}
+					}
+					else {
+						LOG_F(WARNING, "CrossGroupType::%s not implemented in GradidoTransactionRole", enum_name(body->getType()).data());
+					}
+				}
+				
+				// auto otherPreviousConfirmedTransaction = otherBlockchain->findOne()
+
+				auto lastRecipientEntry = c.recipientBlockchain->findOne(Filter::LAST_TRANSACTION);
+				if (!lastRecipientEntry) {
+					throw GradidoNodeInvalidDataException("missing last transaction of other community id");
+				}
+				c.recipientPreviousConfirmedTransaction = lastRecipientEntry->getConfirmedTransaction();
+
+				if ((type & Type::PAIRED) == Type::PAIRED && body->getOtherCommunityIdIndex().has_value()) 
+				{
 					shared_ptr<const TransactionEntry> pairTransactionEntry;
 					switch (body->getType()) {
 					case CrossGroupType::LOCAL: break; // no cross group
@@ -70,8 +105,7 @@ namespace gradido {
 							);
 						}
 						else {
-							pairTransactionEntry = otherBlockchain->findByLedgerAnchor(mGradidoTransaction.getPairingLedgerAnchor());
-							if (!pairTransactionEntry) {
+							if (!c.pairingTx) {
 								throw TransactionValidationException("pairing transaction not found");
 							}
 							const auto& pairingTransaction = pairTransactionEntry->getConfirmedTransaction()->getGradidoTransaction();

@@ -15,6 +15,9 @@ namespace gradido {
     class AbstractProvider;
   }
   namespace data {
+    namespace compact {
+      class ConfirmedGradidoTx;
+    }
     class SignatureMap;
   }
 	namespace interaction {
@@ -23,16 +26,16 @@ namespace gradido {
       class AbstractRole 
       {
       public:
-        AbstractRole() 
+        AbstractRole(std::shared_ptr<const data::compact::ConfirmedGradidoTx> confirmedGradidoTx = nullptr) 
           : mMinSignatureCount(0), mRequiredSignPublicKeyIndicesCount(0), mForbiddenSignPublicKeyIndicesCount(0), 
-          mRequiredSignPublicKeyIndices{}, mForbiddenSignPublicKeyIndices{} 
+            mRequiredSignPublicKeyIndices{}, mForbiddenSignPublicKeyIndices{}, mConfirmedGradidoTx(confirmedGradidoTx) 
         {
         }
         virtual ~AbstractRole() {}
         // test if transaction is valid, throw an exception on error
         virtual void run(Type type, ContextData& c) = 0;
 
-        inline void setConfirmedAt(data::TimestampSeconds confirmedAt) { mConfirmedAt = confirmedAt; }
+        inline void setConfirmedAt(data::Timestamp confirmedAt) { mConfirmedAt = confirmedAt; }
         inline void setCreatedAt(data::Timestamp createdAt) { mCreatedAt = createdAt; }
 
         //! \param blockchain can be nullptr, so if overloading this function, don't forget to check
@@ -59,7 +62,7 @@ namespace gradido {
           const char* callerFunction
         );
 
-        data::TimestampSeconds mConfirmedAt;
+        data::Timestamp mConfirmedAt;
         data::Timestamp mCreatedAt;
 				uint32_t mMinSignatureCount;
         uint8_t  mRequiredSignPublicKeyIndicesCount;
@@ -68,6 +71,7 @@ namespace gradido {
         std::array<data::compact::PublicKeyIndex, 2> mRequiredSignPublicKeyIndices;
 				std::vector<memory::ConstBlockPtr> mForbiddenSignPublicKeys;
         std::array<data::compact::PublicKeyIndex, 1> mForbiddenSignPublicKeyIndices;
+        std::shared_ptr<const data::compact::ConfirmedGradidoTx> mConfirmedGradidoTx;
       };
     }
   }

@@ -5,19 +5,23 @@
 
 namespace gradido::blockchain {
   template<typename T>
-  class StateChange {
+  class StateChange
+  {
   public:
-    StateChange(uint64_t txId, T state) 
-      : mTxId(txId), mState(state) {}
-    StateChange(T state)
-      : mTxId(0), mState(state) {}
+    StateChange(uint64_t txId, T state, bool existInIndex = true)
+      : mTxId(txId), mState(state), mExistInIndex(existInIndex) {}
+    StateChange(T state, bool existInIndex = true)
+      : mTxId(0), mState(state), mExistInIndex(existInIndex) {}
 
     T getValue() const { return mState; }
     uint64_t getTxId() const { return mTxId; }
     void setTxId(uint64_t txId) { mTxId = txId; }
-  private:
+    inline  bool ífExistInIndex() const { return mExistInIndex; }
+  protected:
     uint64_t mTxId;
     T mState;
+    // tell if state was found in index
+    bool mExistInIndex;
   };
 }
 

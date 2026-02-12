@@ -41,15 +41,18 @@ namespace gradido {
 			{
 				// when we don't know the confirmation date yet, we estimate
 				// normally it should be maximal 2 minutes after createdAt if the system clock is correct
-				if (!mConfirmedAt.getSeconds()) {
-					mConfirmedAt = mBody.getCreatedAt().getSeconds() + 120;
+				if (mConfirmedAt.empty()) {
+					mConfirmedAt = { mBody.getCreatedAt().getSeconds() + 120, mBody.getCreatedAt().getNanos() };
 				}
 				try {
-					if ((type & Type::SINGLE) == Type::SINGLE) {
+					if ((type & Type::SINGLE) == Type::SINGLE) 
+					{
 						// memo is only mandatory for transfer and creation transactions
-						if (mBody.isDeferredTransfer() || mBody.isTransfer() || mBody.isCreation()) {
+						if (mBody.isDeferredTransfer() || mBody.isTransfer() || mBody.isCreation()) 
+						{
 							auto &memos = mBody.getMemos();
-							if (memos.empty()) {
+							if (memos.empty()) 
+							{
 								throw TransactionValidationInvalidInputException(
 									"no memo",
 									"memo",
@@ -58,13 +61,16 @@ namespace gradido {
 									0
 								);
 							}
-							for (auto& memo : mBody.getMemos()) {
-								if (MemoKeyType::PLAIN == memo.getKeyType()) {
+							for (auto& memo : mBody.getMemos()) 
+							{
+								if (MemoKeyType::PLAIN == memo.getKeyType())
+								{
 									if (!isLikelyPlainText(memo.getMemo())) {
 										LOG_F(ERROR, "plain memo don't seem to be plain!");
 									}
 									auto memoSize = memo.getMemo().size();
-									if (memoSize < 5 || memoSize > 450) {
+									if (memoSize < 5 || memoSize > 450) 
+									{
 										throw TransactionValidationInvalidInputException(
 											"not in expected range [5;450]",
 											"memo",
@@ -74,7 +80,8 @@ namespace gradido {
 										);
 									}
 								}
-								else {
+								else 
+								{
 									if (isLikelyPlainText(memo.getMemo())) {
 										LOG_F(ERROR, "Attention!! encrypted memo seem to be plain!");
 									}
@@ -91,7 +98,8 @@ namespace gradido {
 								}
 							}
 						}
-						if (mBody.getType() != CrossGroupType::LOCAL && !mBody.getOtherCommunityIdIndex().has_value()) {
+						if (mBody.getType() != CrossGroupType::LOCAL && !mBody.getOtherCommunityIdIndex().has_value()) 
+						{
 							throw TransactionValidationInvalidInputException(
 								"missing other community id index for cross group transaction",
 								"other_community_id_index",
@@ -103,26 +111,6 @@ namespace gradido {
 					}
 
 					auto& specificRole = getSpecificTransactionRole();
-					if (mBody.getOtherCommunityIdIndex().has_value() && c.senderBlockchain) {
-						auto otherBlockchain = findBlockchain(c.senderBlockchain->getProvider(), mBody.getOtherCommunityIdIndex().value(), __FUNCTION__);
-
-						if (mBody.getType() == CrossGroupType::OUTBOUND) {
-							c.recipientBlockchain = otherBlockchain;
-						}
-						else if (mBody.getType() == CrossGroupType::INBOUND) {
-							c.recipientBlockchain = c.senderBlockchain;
-							c.senderBlockchain = otherBlockchain;
-						}
-						else {
-							throw GradidoNodeInvalidDataException("Invalid branch, CrossGroupType::CROSS not implemented yet");
-						}
-						auto lastRecipientEntry = c.recipientBlockchain->findOne(Filter::LAST_TRANSACTION);
-						if (!lastRecipientEntry) {
-							throw GradidoNodeInvalidDataException("missing last transaction of other community id");
-						}
-						c.recipientPreviousConfirmedTransaction = lastRecipientEntry->getConfirmedTransaction();
-					}
-
 					specificRole.run(type, c);
 				}
 				catch (TransactionValidationException& ex) {

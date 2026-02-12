@@ -9,6 +9,7 @@ namespace gradido {
     }
     namespace blockchain {
       class Abstract;
+      class TransactionEntry;
     }
 	namespace interaction {
 		namespace validate {
@@ -24,6 +25,7 @@ namespace gradido {
         std::shared_ptr<blockchain::Abstract> recipientBlockchain;
         std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction;
         std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction;
+        std::shared_ptr<const blockchain::TransactionEntry> pairingTx;
       };
     }
   }
