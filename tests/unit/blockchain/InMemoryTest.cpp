@@ -673,5 +673,63 @@ TEST_F(InMemoryTest, ManyTransactions)
 
 TEST_F(InMemoryTest, CrossCommunityTransaction)
 {
+	createRegisterAddress(3);
+	createRegisterAddress(5);
+	auto createdAt = generateNewCreatedAt();
+	auto targetDate = getPreviousNMonth2(createdAt, 1);
+	createGradidoCreation(6, 4, 1000.0, createdAt, targetDate);
 
+	auto community2 = "test2";
+	const hiero::AccountId hieroAccount2(0, 0, 17);
+	auto otherBlockchain = InMemoryProvider::getInstance()->findBlockchain(g_appContext->getOrAddCommunityIdIndex(community2));
+	GradidoTransactionBuilder builder;
+	builder
+		.setCreatedAt(mLastCreatedAt)
+		.setSenderCommunity(community2)
+		.setCommunityRoot(
+			g_KeyPairs[8]->getPublicKey()->data(),
+			g_KeyPairs[9]->getPublicKey()->data(),
+			g_KeyPairs[10]->getPublicKey()->data()
+		)
+		.sign(g_KeyPairs[8])
+		;
+
+	otherBlockchain->createAndAddConfirmedTransaction(builder.build(), LedgerAnchor({ mLastCreatedAt, hieroAccount2 }), mLastCreatedAt);
+	builder
+		.setCreatedAt(mLastCreatedAt)
+		.setSenderCommunity(community2)
+		.setRegisterAddress(
+			g_KeyPairs[11]->getPublicKey()->data(),
+			AddressType::COMMUNITY_HUMAN,
+			g_KeyPairs[11]->getPublicKey()->calculateHash().data(),
+			g_KeyPairs[12]->getPublicKey()->data()
+		)
+		.sign(g_KeyPairs[8])
+		.sign(g_KeyPairs[11])
+		.sign(g_KeyPairs[12])
+		;
+
+	otherBlockchain->createAndAddConfirmedTransaction(builder.build(), LedgerAnchor({ mLastCreatedAt, hieroAccount2 }), mLastCreatedAt);
+
+	createdAt = generateNewCreatedAt();
+	// cross group transaction
+	builder
+		.addMemo({ "Testing cross-community gratitude flow, because even abundance needs integration tests." })
+		.setCreatedAt(mLastCreatedAt)
+		.setSenderCommunity(communityIdIndex)
+		.setRecipientCommunity(community2)
+		.setTransactionTransfer(
+			TransferAmount(
+				g_KeyPairs[6]->getPublicKey(),
+				GradidoUnit::fromGradidoCent(1000000),
+				mCommunityId
+			),
+			g_KeyPairs[12]->getPublicKey()
+		)
+		.sign(g_KeyPairs[6])
+		;
+	auto senderLedgerAnchor = LedgerAnchor({ createdAt, hieroAccount });
+	EXPECT_NO_THROW(mBlockchain->createAndAddConfirmedTransaction(builder.buildOutbound(), senderLedgerAnchor, createdAt));
+	builder.setParentLedgerAnchor(senderLedgerAnchor);
+	EXPECT_NO_THROW(otherBlockchain->createAndAddConfirmedTransaction(builder.buildInbound(), LedgerAnchor({ createdAt, hieroAccount2 }), createdAt));
 }

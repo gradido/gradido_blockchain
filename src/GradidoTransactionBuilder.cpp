@@ -544,11 +544,13 @@ namespace gradido {
 				if (!mRecipientCommunityIdIndex.has_value()) {
 					throw GradidoTransactionBuilderException("missing recipient community id index for creation transaction");
 				}
+				mBody->mCommunityIdIndex = mRecipientCommunityIdIndex.value();
 			}
 			else {
 				if (!mSenderCommunityIdIndex.has_value()) {
 					throw GradidoTransactionBuilderException("missing sender community id index for local transaction");
 				}
+				mBody->mCommunityIdIndex = mSenderCommunityIdIndex.value();
 			}
 			mBodyByteSignatureMaps[0].bodyBytes = serializer.run();
 		}

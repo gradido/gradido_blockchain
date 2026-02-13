@@ -34,11 +34,11 @@ namespace gradido::data::adapter {
       grdwAmount.community_id = nullptr;
     }
     else {
-      auto const& communityId = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex);
-      if (!communityId) {
+      auto const& coinCommunityId = g_appContext->getCommunityIds().getDataForIndex(amount.getCoinCommunityIdIndex());
+      if (!coinCommunityId) {
         throw DictionaryMissingEntryException("missing community id", to_string(communityIdIndex));
       }
-      grdwAmount.community_id = grdu_reserve_copy_string(alloc, communityId->data(), communityId->size());
+      grdwAmount.community_id = grdu_reserve_copy_string(alloc, coinCommunityId->data(), coinCommunityId->size());
     }
     return grdwAmount;
   }

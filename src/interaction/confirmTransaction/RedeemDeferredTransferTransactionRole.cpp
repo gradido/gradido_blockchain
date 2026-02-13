@@ -1,15 +1,30 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/data/AccountBalance.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/CrossGroupType.h"
+#include "gradido_blockchain/data/TransactionTriggerEvent.h"
+#include "gradido_blockchain/data/TransactionTriggerEventType.h"
 #include "gradido_blockchain/interaction/confirmTransaction/RedeemDeferredTransferTransactionRole.h"
 
+#include <magic_enum/magic_enum.hpp>
+
+#include <memory>
+#include <vector>
+
+using namespace magic_enum;
+using std::shared_ptr, std::vector;
+
 namespace gradido {
-    using namespace data;
+  using data::AccountBalance;
+  using data::ConfirmedTransaction, data::CrossGroupType;
+  using data::TransactionTriggerEvent, data::TransactionTriggerEventType;
 
     namespace interaction {
         namespace confirmTransaction {
 
             void RedeemDeferredTransferTransactionRole::runPastAddToBlockchain(
-                std::shared_ptr<const data::ConfirmedTransaction> confirmedTransaction,
-                std::shared_ptr<blockchain::Abstract> blockchain
+                shared_ptr<const ConfirmedTransaction> confirmedTransaction,
+                shared_ptr<blockchain::Abstract> blockchain
             ) const {
                 // check if this redeem whole deferred transfer amount
                 auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
@@ -32,7 +47,7 @@ namespace gradido {
                 ));
             };
 
-            std::vector<data::AccountBalance> RedeemDeferredTransferTransactionRole::calculateAccountBalances(uint64_t maxTransactionNr) const
+            vector<AccountBalance> RedeemDeferredTransferTransactionRole::calculateAccountBalances(uint64_t maxTransactionNr) const
             {
                 auto& transfer = mBody->getRedeemDeferredTransfer()->getTransfer();
                 auto& transferAmount = transfer.getSender();
@@ -52,15 +67,35 @@ namespace gradido {
                         calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, decayedDeferredAmount, coinCommunityIdIndex)
                     };
                 }
-                return {
+                switch (mBody->getType()) {
+                case CrossGroupType::LOCAL:
+                  return {
                     // sender
                     AccountBalance(transferAmount.getPublicKey(), GradidoUnit::zero(), coinCommunityIdIndex),
                     // recipient
                     calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, transferAmount.getAmount(), coinCommunityIdIndex),
                     // change back to original sender of deferred transfer
                     calculateAccountBalance(deferredTransferAmount.getPublicKey(), maxTransactionNr, change, coinCommunityIdIndex)
-                };
-
+                  };
+                case CrossGroupType::OUTBOUND:
+                  return {
+                    // sender
+                    AccountBalance(transferAmount.getPublicKey(), GradidoUnit::zero(), coinCommunityIdIndex),
+                    // change back to original sender of deferred transfer
+                    calculateAccountBalance(deferredTransferAmount.getPublicKey(), maxTransactionNr, change, coinCommunityIdIndex)
+                  };
+                case CrossGroupType::INBOUND:
+                  return {
+                    // recipient
+                    calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, transferAmount.getAmount(), coinCommunityIdIndex),
+                  };
+                default:
+                  throw GradidoUnhandledEnum(
+                    "interaction::confirmTransaction redeem deferred transfer account balance",
+                    "CrossGroupType",
+                    enum_name(mBody->getType()).data()
+                  );
+                }
             }
         }
     }

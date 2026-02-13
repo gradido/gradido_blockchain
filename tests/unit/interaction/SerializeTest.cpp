@@ -10,6 +10,8 @@
 #include "gradido_blockchain/data/hiero/AccountId.h"
 #include "gradido_blockchain/data/hiero/TopicId.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
+#include "gradido_blockchain/interaction/deserialize/Context.h"
+#include "gradido_blockchain/interaction/deserialize/Type.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
@@ -258,6 +260,85 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
 	printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(), completeConfirmedTransaction);
+}
+
+TEST(SerializeTest, CrossGroupTransactions) {
+	auto community2 = "test2";
+	GradidoTransactionBuilder builder;
+	builder
+		.setSenderCommunity(communityId)
+		.setRecipientCommunity(community2)
+		.setTransactionTransfer(
+			TransferAmount(
+				g_KeyPairs[4]->getPublicKey(), // sender
+				GradidoUnit::fromGradidoCent(1002516),
+				0
+			), g_KeyPairs[5]->getPublicKey() // recipient
+		)
+		.setCreatedAt(createdAt)
+		.addMemo(completeTransactionMemoString)
+		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
+		.sign(g_KeyPairs[0]);
+	
+	LedgerAnchor senderLedgerAnchor(defaultHieroTransactionId);
+
+	ConfirmedTransaction confirmedTransactionOutbound(
+		7,
+		std::move(builder.buildOutbound()),
+		confirmedAt,
+		make_shared<memory::Block>(crypto_generichash_BYTES),
+		LedgerAnchor(defaultHieroTransactionId),
+		{
+			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), 0},
+			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483), 0}
+		},
+		BalanceDerivationType::EXTERN
+	);
+	serialize::Context cOutbound(confirmedTransactionOutbound);
+	auto serializedOutbound = cOutbound.run();
+	// printf("serialized outbound: %s\n", serializedOutbound->convertToBase64().c_str());
+	ASSERT_STREQ(
+		serializedOutbound->convertToBase64().c_str(),
+		"CAcS6QEKZgpkCiCBZwMplGmI7fRR9MQkaR2Dz1qQQ5BCiC1btyJD71Ue9BJABODQ9sS70th9yHn8X3K+SNv2gsiIdX/V09baCvQCb+z5+Tjbhx/eNy9tgFgVJzRoWuIfUwKQvMIpDFok/+fNDBJ9ChkIAhIVRGFua2UgZnVlciBkZWluIFNlaW4hEgYIgMy5/wUaAzMuNSACKgV0ZXN0MjJKCiYKINsO1hJaFPAwq+0b/IMeCiGM+fq/zufs1YHAwOeI8BfHEJSYPRIgJE0o18xb6P6PsNjh0bkN52AzhggteTzoh09jV+blMq0aABoGCMLyuf8FIgMzLjcqIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMhUIAhoRCgkIqemnUhD+4wESBBj8sgc6Jgog2w7WEloU8DCr7Rv8gx4KIYz5+r/O5+zVgcDA54jwF8cQwIQ9OicKICRNKNfMW+j+j7DY4dG5DedgM4YILXk86IdPY1fm5TKtEOuUpQRAAg=="
+	);
+	deserialize::Context cDeserializeOutbound(serializedOutbound, deserialize::Type::CONFIRMED_TRANSACTION);
+	cDeserializeOutbound.run(g_appContext->getOrAddCommunityIdIndex(communityId));
+	ASSERT_TRUE(cDeserializeOutbound.isConfirmedTransaction());	
+	auto confirmedOutbound = cDeserializeOutbound.getConfirmedTransaction();
+
+	builder.setParentLedgerAnchor(senderLedgerAnchor);
+
+	ConfirmedTransaction confirmedTransactionInbound(
+		7,
+		std::move(builder.buildInbound()),
+		confirmedAt,
+		make_shared<memory::Block>(crypto_generichash_BYTES),
+		LedgerAnchor({ confirmedAt, {0, 0, 2} }),
+		{
+			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), 0},
+			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483), 0}
+		},
+		BalanceDerivationType::EXTERN
+	);
+	serialize::Context cInbound(confirmedTransactionInbound);
+	auto serializedInbound = cInbound.run();
+	// printf("serialized inbound: %s\n", serializedInbound->convertToBase64().c_str());
+	ASSERT_STREQ(
+		serializedInbound->convertToBase64().c_str(),
+		"CAcSmAIKZgpkCiCBZwMplGmI7fRR9MQkaR2Dz1qQQ5BCiC1btyJD71Ue9BJABODQ9sS70th9yHn8X3K+SNv2gsiIdX/V09baCvQCb+xrpCtIYAa2zlVoEbj2EVoyhcUuQqFW5MZJioXSy3fQAhKWAQoZCAISFURhbmtlIGZ1ZXIgZGVpbiBTZWluIRIGCIDMuf8FGgMzLjUgASoOdGVzdC1jb21tdW5pdHkyWgo2CiDbDtYSWhTwMKvtG/yDHgohjPn6v87n7NWBwMDniPAXxxCUmD0aDnRlc3QtY29tbXVuaXR5EiAkTSjXzFvo/o+w2OHRuQ3nYDOGCC15POiHT2NX5uUyrRoVCAIaEQoJCKnpp1IQ/uMBEgQY/LIHGgYIwvK5/wUiAzMuNyogAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyEAgCGgwKBgjC8rn/BRICGAI6NQog2w7WEloU8DCr7Rv8gx4KIYz5+r/O5+zVgcDA54jwF8cQwIQ9Gg10ZXN0LWNvbW11bml0OjYKICRNKNfMW+j+j7DY4dG5DedgM4YILXk86IdPY1fm5TKtEOuUpQQaDXRlc3QtY29tbXVuaXRAAg=="
+	);
+	deserialize::Context cDeserializeInbound(serializedInbound, deserialize::Type::CONFIRMED_TRANSACTION);
+	cDeserializeInbound.run(g_appContext->getOrAddCommunityIdIndex(community2));
+	ASSERT_TRUE(cDeserializeInbound.isConfirmedTransaction());
+	auto confirmedInbound = cDeserializeInbound.getConfirmedTransaction();
+
+	ASSERT_TRUE(confirmedInbound->getGradidoTransaction()->isPairing(*confirmedOutbound->getGradidoTransaction()));
+
+	
+	// printf("running hash: %s\n", confirmedTransaction.getRunningHash()->convertToHex().data());
+	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
+	//printf("hex: %s\n", serialized->convertToHex().data());
+	// ASSERT_EQ(serialized->convertToBase64(), completeConfirmedTransaction);
 }
 
 TEST(SerializeTest, TransactionTriggerEvent) {

@@ -19,7 +19,9 @@ namespace gradido {
 				memory::ConstBlockPtr bodyBytes,
 				uint32_t communityIdIndex,
 				const LedgerAnchor& pairingLedgerAnchor = LedgerAnchor()
-			) : mSignatureMap(signatureMap), mBodyBytes(bodyBytes), mCommunityIdIndex(communityIdIndex), mPairingLedgerAnchor(pairingLedgerAnchor) {}
+			) : mSignatureMap(signatureMap), mBodyBytes(bodyBytes), mCommunityIdIndex(communityIdIndex), mPairingLedgerAnchor(pairingLedgerAnchor) {
+				int zahl = 1;
+			}
 
 			// copy constructor
 			GradidoTransaction(const GradidoTransaction& other)

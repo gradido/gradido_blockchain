@@ -21,6 +21,7 @@ namespace gradido::interaction::serialize {
 		return staticInputBuffer.use([&](grdu_memory* alloc) -> ConstBlockPtr
 			{
 				grdw_transaction_body body;
+
 				mBody.toGrdw(alloc, &body);
 
 				uint8_t staticResultBuffer[2048];
