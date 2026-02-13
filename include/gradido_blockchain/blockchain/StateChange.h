@@ -16,7 +16,7 @@ namespace gradido::blockchain {
     T getValue() const { return mState; }
     uint64_t getTxId() const { return mTxId; }
     void setTxId(uint64_t txId) { mTxId = txId; }
-    inline  bool ífExistInIndex() const { return mExistInIndex; }
+    inline  bool ifExistInIndex() const { return mExistInIndex; }
   protected:
     uint64_t mTxId;
     T mState;

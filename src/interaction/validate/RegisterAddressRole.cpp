@@ -4,7 +4,7 @@
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/blockchain/SearchDirection.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
-#include "gradido_blockchain/data/adapter/PublicKey.h"
+#include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/RegisterAddress.h"
 #include "gradido_blockchain/data/SignatureMap.h"

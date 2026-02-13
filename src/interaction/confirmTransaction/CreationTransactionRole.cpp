@@ -1,5 +1,5 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
-#include "gradido_blockchain/data/adapter/PublicKey.h"
+#include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/AccountBalance.h"
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/interaction/confirmTransaction/CreationTransactionRole.h"
@@ -24,7 +24,7 @@ namespace gradido {
                 auto firstTransactionEntry = mBlockchain->findOne(Filter::FIRST_TRANSACTION);
                 assert(firstTransactionEntry->getTransactionBody()->isCommunityRoot());
                 auto communityRoot = firstTransactionEntry->getTransactionBody()->getCommunityRoot().value();
-                
+
                 return {
                     // user which get creation
                     calculateAccountBalance(transferAmount.getPublicKey(), maxTransactionNr, transferAmount.getAmount(), coinCommunityIdIndex),

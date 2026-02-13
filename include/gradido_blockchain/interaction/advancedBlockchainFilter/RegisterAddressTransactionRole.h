@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_ADVANCED_BLOCKCHAIN_FILTER_REGISTER_ADDRESS_ROLE_H
 
 #include "AbstractTransactionRole.h"
-#include "gradido_blockchain/data/adapter/PublicKey.h"
+#include "gradido_blockchain/data/adapter/publicKey.h"
 
 namespace gradido {
 

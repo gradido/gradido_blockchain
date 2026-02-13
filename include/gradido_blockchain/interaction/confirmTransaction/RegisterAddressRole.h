@@ -3,7 +3,7 @@
 
 #include "TransactionBodyRole.h"
 #include "gradido_blockchain/data/AccountBalance.h"
-#include "gradido_blockchain/data/adapter/PublicKey.h"
+#include "gradido_blockchain/data/adapter/publicKey.h"
 
 namespace gradido {
     namespace interaction {

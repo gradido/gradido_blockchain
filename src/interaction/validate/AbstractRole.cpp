@@ -2,7 +2,7 @@
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/const.h"
-#include "gradido_blockchain/data/adapter/PublicKey.h"
+#include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/interaction/validate/AbstractRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
