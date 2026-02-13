@@ -34,27 +34,40 @@ namespace gradido {
 				shared_ptr<blockchain::Abstract> otherBlockchain;
 				if (body->getOtherCommunityIdIndex().has_value() && c.senderBlockchain) {
 					otherBlockchain = findBlockchain(c.senderBlockchain->getProvider(), body->getOtherCommunityIdIndex().value(), __FUNCTION__);
+					shared_ptr<const ConfirmedTransaction> otherPreviousTx;
 					if (otherBlockchain && !mGradidoTransaction.getPairingLedgerAnchor().empty()) {
 						c.pairingTx = otherBlockchain->findByLedgerAnchor(mGradidoTransaction.getPairingLedgerAnchor());
 					}
+					if (c.pairingTx) {
+						auto otherPreviousTxEntry = otherBlockchain->getTransactionForId(c.pairingTx->getTransactionNr());
+						if (otherPreviousTxEntry) {
+							otherPreviousTx = otherPreviousTxEntry->getConfirmedTransaction();
+						}
+					}
 					if (body->getType() == CrossGroupType::OUTBOUND) {
 						c.recipientBlockchain = otherBlockchain;
+						if (otherPreviousTx) {
+							c.recipientPreviousConfirmedTransaction = otherPreviousTx;
+						}
+
 					}
 					else if (body->getType() == CrossGroupType::INBOUND)
 					{
 						c.recipientBlockchain = c.senderBlockchain;
 						c.senderBlockchain = otherBlockchain;
 						c.recipientPreviousConfirmedTransaction = c.senderPreviousConfirmedTransaction;
-						if (c.pairingTx) {
-							auto senderLastBeforePairingTransactionEntry = c.senderBlockchain->getTransactionForId(c.pairingTx->getTransactionNr() - 1);
-							if (senderLastBeforePairingTransactionEntry) {
-								c.senderPreviousConfirmedTransaction = senderLastBeforePairingTransactionEntry->getConfirmedTransaction();
-							}
+						if (otherPreviousTx) {
+							c.senderPreviousConfirmedTransaction = otherPreviousTx;
 						}
 					}
 					else {
 						LOG_F(WARNING, "CrossGroupType::%s not implemented in GradidoTransactionRole", enum_name(body->getType()).data());
 					}
+					auto lastRecipientEntry = c.recipientBlockchain->findOne(Filter::LAST_TRANSACTION);
+					if (!lastRecipientEntry) {
+						throw GradidoNodeInvalidDataException("missing last transaction of other community id");
+					}
+					c.recipientPreviousConfirmedTransaction = lastRecipientEntry->getConfirmedTransaction();
 				}
 
 				TransactionBodyRole bodyRole(*body);
@@ -81,16 +94,6 @@ namespace gradido {
 				}
 				// check signatures
 				bodyRole.checkRequiredSignatures(mGradidoTransaction.getSignatureMap(), c.senderBlockchain);
-
-				
-				
-				// auto otherPreviousConfirmedTransaction = otherBlockchain->findOne()
-
-				auto lastRecipientEntry = c.recipientBlockchain->findOne(Filter::LAST_TRANSACTION);
-				if (!lastRecipientEntry) {
-					throw GradidoNodeInvalidDataException("missing last transaction of other community id");
-				}
-				c.recipientPreviousConfirmedTransaction = lastRecipientEntry->getConfirmedTransaction();
 
 				if ((type & Type::PAIRED) == Type::PAIRED && body->getOtherCommunityIdIndex().has_value()) 
 				{
