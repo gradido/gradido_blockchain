@@ -200,6 +200,7 @@ FILE(GLOB SERIALIZATION "include/gradido_blockchain/serialization/*.h" "src/seri
 FILE(GLOB TINF "dependencies/tinf/src/*.c" "dependencies/tinf/src/*.h")
 FIlE(GLOB THREADING "include/gradido_blockchain/threading/*.h" "src/threading/*.cpp")
 FILE(GLOB BLOCKCHAIN "include/gradido_blockchain/blockchain/*.h" "src/blockchain/*.cpp")
+FILE(GLOB BLOCKCHAIN_BATCH "include/gradido_blockchain/blockchain/batch/*.h" "src/blockchain/batch/*.cpp")
 
 
 FILE(GLOB INTERACTION_ADVANCED_BLOCKCHAIN_FILTER
@@ -236,7 +237,7 @@ FILE(GLOB INTERACTION_VALIDATE
 )
 
 SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
-	${BLOCKCHAIN}
+	${BLOCKCHAIN} ${BLOCKCHAIN_BATCH}
 	${CRYPTO}
 	${DATA} ${DATA_ADAPTER} ${DATA_COMPACT} ${DATA_IOTA} ${DATA_HIERO} 
 	${INTERACTION}
@@ -263,7 +264,8 @@ endif()
 
 if(MSVC)
 	# src
-	source_group("blockchain" FILES ${BLOCKCHAIN})
+	source_group("blockchain\\batch" FILES ${BLOCKCHAIN_BATCH})
+	source_group("blockchain" FILES ${BLOCKCHAIN})	
 	source_group("crypto" FILES ${CRYPTO})
 	source_group("data\\adapter" FILES ${DATA_ADAPTER})
 	source_group("data\\compact" FILES ${DATA_COMPACT})	

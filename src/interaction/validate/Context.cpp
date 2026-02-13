@@ -12,17 +12,17 @@ namespace gradido {
 		namespace validate {
 
 			Context::Context(const data::TransactionBody& body)
-				: mRole(std::make_unique<TransactionBodyRole>(body)) 
+				: mRole(std::make_unique<TransactionBodyRole>(body)), mDisableVerify(false)
 			{
 			}
 
 			Context::Context(const data::GradidoTransaction& body)
-				: mRole(std::make_unique<GradidoTransactionRole>(body)) 
+				: mRole(std::make_unique<GradidoTransactionRole>(body)), mDisableVerify(false)
 			{
 			}
 
 			Context::Context(const data::ConfirmedTransaction& body)
-				: mRole(std::make_unique<ConfirmedTransactionRole>(body)) 
+				: mRole(std::make_unique<ConfirmedTransactionRole>(body)), mDisableVerify(false)
 			{
 			}
 
@@ -42,6 +42,9 @@ namespace gradido {
 				ContextData c(blockchain, mSenderPreviousConfirmedTransaction);
 				if (mRecipientPreviousConfirmedTransaction) {
 					c.recipientPreviousConfirmedTransaction = mRecipientPreviousConfirmedTransaction;
+				}
+				if (mDisableVerify) {
+					mRole->disableVerify();
 				}
 				mRole->run(type, c);
 			}

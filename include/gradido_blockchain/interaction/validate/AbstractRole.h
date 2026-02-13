@@ -28,7 +28,7 @@ namespace gradido {
       public:
         AbstractRole(std::shared_ptr<const data::compact::ConfirmedGradidoTx> confirmedGradidoTx = nullptr) 
           : mMinSignatureCount(0), mRequiredSignPublicKeyIndicesCount(0), mForbiddenSignPublicKeyIndicesCount(0), 
-            mRequiredSignPublicKeyIndices{}, mForbiddenSignPublicKeyIndices{}, mConfirmedGradidoTx(confirmedGradidoTx) 
+            mRequiredSignPublicKeyIndices{}, mForbiddenSignPublicKeyIndices{}, mDisableVerify(false), mConfirmedGradidoTx(confirmedGradidoTx)
         {
         }
         virtual ~AbstractRole() {}
@@ -43,6 +43,8 @@ namespace gradido {
           const data::SignatureMap& signatureMap,
           std::shared_ptr<blockchain::Abstract> blockchain = nullptr
         ) const;
+
+        inline void disableVerify() { mDisableVerify = true; }
 			        
       protected:
         bool isValidCommunityAlias(std::string_view communityAlias) const;
@@ -67,6 +69,7 @@ namespace gradido {
 				uint32_t mMinSignatureCount;
         uint8_t  mRequiredSignPublicKeyIndicesCount;
         uint8_t  mForbiddenSignPublicKeyIndicesCount;
+        bool     mDisableVerify;
 				std::vector<memory::ConstBlockPtr> mRequiredSignPublicKeys;
         std::array<data::compact::PublicKeyIndex, 2> mRequiredSignPublicKeyIndices;
 				std::vector<memory::ConstBlockPtr> mForbiddenSignPublicKeys;

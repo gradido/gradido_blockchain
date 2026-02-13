@@ -37,6 +37,8 @@ namespace gradido {
           Context(const Context&) = delete;
           Context& operator=(const Context&) = delete;
 
+          inline void disableVerify() { mDisableVerify = true; }
+
           void run(Type type = Type::SINGLE, std::shared_ptr<blockchain::Abstract> blockchain = nullptr);
 
           //! set sender previous confirmed transaction manually, normally last transaction on blockchain will be used
@@ -52,6 +54,7 @@ namespace gradido {
           std::unique_ptr<AbstractRole> mRole;
           std::shared_ptr<const data::ConfirmedTransaction> mSenderPreviousConfirmedTransaction;
           std::shared_ptr<const data::ConfirmedTransaction> mRecipientPreviousConfirmedTransaction;
+          bool mDisableVerify;
       };
     }
   }
