@@ -30,7 +30,9 @@
 #include <cstdio>
 #include "gtest/gtest.h"
 #include "gradido_blockchain/AppContext.h"
+#include "interaction/const.h"
 #include "KeyPairs.h"
+#include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/crypto/CryptoConfig.h"
 #include "gradido_blockchain/lib/Dictionary.h"
 #include "gradido_blockchain/memory/Block.h"
@@ -57,6 +59,7 @@ extern "C" {
 #else
 
 using gradido::AppContext, gradido::g_appContext;
+using gradido::blockchain::InMemoryProvider;
 using std::string;
 using std::make_unique;
 using memory::ConstBlockPtr, memory::ConstBlockPtrHash; memory::ConstBlockPtrEqual;
@@ -68,6 +71,7 @@ int main(int argc, char** argv)
 		make_unique<ThreadsafeRuntimeDictionary<std::string>>("communityIdDictionary"),
 		make_unique<ThreadsafeRuntimeDictionary<GenericHash, GenericHashHash, GenericHashEqual>>("userNameHashDictionary")
 	);
+	InMemoryProvider::getInstance()->findBlockchain(g_appContext->getOrAddCommunityIdIndex(communityId));
 	testing::InitGoogleTest(&argc, argv);
 	generateKeyPairs();
 	CryptoConfig::g_ServerCryptoKey = std::make_shared<memory::Block>(memory::Block::fromHex("153afcd54ef316e45cd3e5ed4567cd21", 32));

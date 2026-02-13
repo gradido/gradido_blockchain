@@ -11,6 +11,7 @@ using namespace gradido;
 using namespace data;
 using namespace interaction;
 
+
 TEST(DeserializeTest, HieroAccountId)
 {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64("CAAQABjvpQE="));

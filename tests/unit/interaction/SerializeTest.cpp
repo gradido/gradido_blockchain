@@ -2,6 +2,7 @@
 #include "../KeyPairs.h"
 #include "../serializedTransactions.h"
 #include "const.h"
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/BalanceDerivationType.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
@@ -17,7 +18,8 @@ using namespace gradido;
 using namespace data;
 using namespace interaction;
 
-TEST(SerializeTest, HieroAccountId) 
+
+TEST(SerializeTest, HieroAccountId)
 {
 	hiero::AccountId accountId(0, 0, 21231);
 	serialize::Context c(accountId);
@@ -50,7 +52,7 @@ TEST(SerializeTest, HieroTransactionId)
 	ASSERT_EQ(serialized->convertToHex(), "0a0908a9e9a75210fee30112080800100018fcb20718012079");
 }
 
-TEST(SerializeTest, CommunityRootBody) 
+TEST(SerializeTest, CommunityRootBody)
 {
 	GradidoTransactionBuilder builder;
 	builder

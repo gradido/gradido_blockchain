@@ -670,3 +670,8 @@ TEST_F(InMemoryTest, ManyTransactions)
 	ASSERT_EQ(gmwBalance, decayedAmountSum);
 	ASSERT_EQ(aufBalance, decayedAmountSum);
 }
+
+TEST_F(InMemoryTest, CrossCommunityTransaction)
+{
+
+}
