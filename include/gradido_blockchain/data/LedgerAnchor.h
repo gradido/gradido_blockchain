@@ -1,6 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_DATA_LEDGER_ANCHOR_H
 #define __GRADIDO_BLOCKCHAIN_DATA_LEDGER_ANCHOR_H
 
+#include "gradido_blockchain/crypto/SignatureOctet.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/types.h"
 #include "gradido_blockchain/memory/Block.h"
@@ -81,7 +82,7 @@ namespace std {
 				return ledgerAnchor.getNodeTriggeredTransactionId();
 			}
 			else if (ledgerAnchor.isIotaMessageId()) {
-				return ledgerAnchor.getIotaMessageId().hash().octet;
+				return SignatureOctet(ledgerAnchor.getIotaMessageId()).octet;
 			}
 			else if (ledgerAnchor.empty()) {
 				return 0;

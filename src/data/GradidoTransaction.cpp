@@ -23,14 +23,7 @@ namespace gradido {
 		using adapter::toPublicKeyIndex;
 		using compact::PublicKeyIndex;
 		using namespace interaction;
-		/*
-		* GradidoTransaction(
-				const SignatureMap& signatureMap,
-				memory::ConstBlockPtr bodyBytes,
-				uint32_t communityIdIndex,
-				const LedgerAnchor& pairingLedgerAnchor = LedgerAnchor()
-			) 
-		*/
+
 		shared_ptr<const GradidoTransaction> GradidoTransaction::fromGrdw(const grdw_gradido_transaction* grdw_tx, uint32_t communityIdIndex)
 		{
 			SignatureMap signatures(grdw_tx->sig_map_count);
@@ -162,11 +155,6 @@ namespace gradido {
 		}
 		bool GradidoTransaction::isTheSame(const GradidoTransaction& other) const
 		{
-			const auto& h1 = mBodyBytes->hash();
-			const auto& h2 = other.mBodyBytes->hash();
-			if (!h1.empty() && !h2.empty() && h1 != h2) {
-				return false;
-			}
 			return mSignatureMap.isTheSame(other.mSignatureMap) && mBodyBytes->isTheSame(other.mBodyBytes);
 		}
 	}

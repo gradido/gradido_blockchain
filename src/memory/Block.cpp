@@ -21,7 +21,6 @@ namespace memory {
 		: Block(size)
 	{
 		if (!size || !data) return;
-		mShortHash = SignatureOctet(data, size);
 		memcpy(mData, data, size);
 	}
 
@@ -62,11 +61,10 @@ namespace memory {
 	}
 	// move
 	Block::Block(Block&& other) noexcept
-		: mSize(other.size()), mData(other.data()), mShortHash(other.mShortHash)
+		: mSize(other.size()), mData(other.data())
 	{
 		other.mSize = 0;
 		other.mData = nullptr;
-		other.mShortHash.octet = 0;
 	}
 	// also move 
 	Block& Block::operator=(Block&& other) noexcept
@@ -74,10 +72,8 @@ namespace memory {
 		clear();
 		mSize = other.mSize;
 		mData = other.mData;
-		mShortHash = other.mShortHash;
 		other.mSize = 0;
 		other.mData = nullptr;
-		other.mShortHash.octet = 0;
 		return *this;
 	}
 	// also copy
@@ -93,7 +89,6 @@ namespace memory {
 		mData = Manager::getInstance()->getBlock(other.mSize);
 		if (!mData) throw std::bad_alloc();
 		memcpy(mData, other.mData, mSize);
-		mShortHash = other.mShortHash;
 		return *this;
 	}
 
@@ -108,7 +103,6 @@ namespace memory {
 			Manager::getInstance()->releaseBlock(mSize, mData);
 			mData = nullptr;
 			mSize = 0;
-			mShortHash.octet = 0;
 		}
 	}
 
@@ -152,7 +146,6 @@ namespace memory {
 	{
 		memory::Block hash(crypto_generichash_BYTES);
 		crypto_generichash(hash, crypto_generichash_BYTES, mData, mSize, nullptr, 0);
-		hash.mShortHash = SignatureOctet(mData, mSize);
 		return hash;
 	}
 
@@ -169,7 +162,6 @@ namespace memory {
 		if (0 != sodium_hex2bin(result.data(), binSize, hexString, stringSize, nullptr, &resultBinSize, nullptr)) {
 			throw GradidoInvalidHexException("invalid hex for Block::fromHex", hexString);
 		}
-		result.mShortHash = SignatureOctet(result.data(), result.size());
 		return result;
 	}
 
@@ -188,7 +180,6 @@ namespace memory {
 			Block bin_real(resultBinSize, bin);
 			return bin_real;
 		}
-		bin.mShortHash = SignatureOctet(bin.data(), bin.size());
 		return bin;
 	}
 	bool Block::isTheSame(PublicKeyIndex publicKeyIndex) const
@@ -210,9 +201,6 @@ namespace memory {
 
 	bool Block::isTheSame(const Block& b) const
 	{
-		if (!mShortHash.empty() && !b.mShortHash.empty() && mShortHash != b.mShortHash) {
-			return false;
-		}
 		if (b.size() != size()) {
 			return false;
 		}
@@ -235,9 +223,7 @@ namespace memory {
 	size_t ConstBlockPtrHash::operator()(const ConstBlockPtr& s) const noexcept
 	{
 		if (!s) { return 0; }
-		int64_t octet = s->hash().octet;
-		if (!octet) { octet = SignatureOctet(*s).octet; }
-		return std::hash<int64_t>()(octet);
+		return std::hash<int64_t>()(SignatureOctet(*s).octet);
 	}
 }
 
