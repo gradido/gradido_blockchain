@@ -20,6 +20,8 @@ namespace gradido {
 			inline void clear() { mSignaturePairs.clear(); }
 			inline const std::vector<SignaturePair>& getSignaturePairs() const { return mSignaturePairs; }
 			bool isTheSame(const SignatureMap& other) const;
+			// on pairing compare only public keys
+			bool isPairing(const SignatureMap& other) const;
 
 		protected:
 			std::vector<SignaturePair> mSignaturePairs;

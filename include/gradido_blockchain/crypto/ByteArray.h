@@ -9,6 +9,7 @@
 #include "sodium.h"
 
 #include <cstddef>
+#include <cstring>
 #include <span>
 #include <vector>
 
@@ -41,6 +42,7 @@ public:
   inline size_t size() const { return N; }
   inline bool operator==(const ByteArray& other) const { return std::memcmp(mData, other.mData, N) == 0; }
   inline bool operator!=(const ByteArray& other) const { return !(*this == other); }
+  inline bool operator<(const ByteArray& other) const { return std::memcmp(mData, other.mData, N) < 0; }
   inline bool isTheSame(const ByteArray& other) const { return std::memcmp(mData, other.mData, N) == 0; }
   inline bool isTheSame(uint8_t* data) const { return std::memcmp(mData, data, N) == 0; }
   inline bool isEmpty() const;
