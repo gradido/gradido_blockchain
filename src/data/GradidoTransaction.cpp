@@ -1,5 +1,7 @@
 #include "gradido_blockchain/data/adapter/ledgerAnchor.h"
+#include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/adapter/signaturePair.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
@@ -10,12 +12,16 @@
 #include "loguru/loguru.hpp"
 
 #include <memory>
+#include <vector>
 
 using serialization::toJsonString;
 using std::shared_ptr, std::make_shared;
+using std::vector;
 
 namespace gradido {
 	namespace data {
+		using adapter::toPublicKeyIndex;
+		using compact::PublicKeyIndex;
 		using namespace interaction;
 		/*
 		* GradidoTransaction(
@@ -90,6 +96,16 @@ namespace gradido {
 			return getTransactionBody()->isInvolved(publicKey);
 		}
 
+		bool GradidoTransaction::isInvolved(const compact::PublicKeyIndex publicKeyIndex) const
+		{
+			for (auto& signPair : mSignatureMap.getSignaturePairs()) {
+				if (toPublicKeyIndex(signPair.getPublicKey(), mCommunityIdIndex) == publicKeyIndex) {
+					return true;
+				}
+			}
+			return getTransactionBody()->isInvolved(publicKeyIndex);
+		}
+
 		std::vector<memory::ConstBlockPtr> GradidoTransaction::getInvolvedAddresses() const
 		{
 			auto involvedAddresses = getTransactionBody()->getInvolvedAddresses();
@@ -106,6 +122,25 @@ namespace gradido {
 				}
 			}
 			return involvedAddresses;
+		}
+
+		vector<PublicKeyIndex> GradidoTransaction::getInvolvedAddressIndices() const
+		{
+			auto involvedAddressIndices = getTransactionBody()->getInvolvedAddressIndices();
+			for (auto& signPair : mSignatureMap.getSignaturePairs()) {
+				bool found = false;
+				auto sigPairPublicKeyIndex = toPublicKeyIndex(signPair.getPublicKey(), mCommunityIdIndex);
+				for (auto& involvedAddress : involvedAddressIndices) {
+					if (involvedAddress == sigPairPublicKeyIndex) {
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					involvedAddressIndices.emplace_back(sigPairPublicKeyIndex);
+				}
+			}
+			return involvedAddressIndices;
 		}
 
 		memory::ConstBlockPtr GradidoTransaction::getSerializedTransaction() const

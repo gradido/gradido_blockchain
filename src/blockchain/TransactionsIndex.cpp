@@ -161,14 +161,14 @@ namespace gradido {
 				: transactionEntry->getBlockchainCommunityIdIndex();
 			
 			const auto& confirmedTransaction = transactionEntry->getConfirmedTransaction();
-			auto involvedPublicKeys = confirmedTransaction->getInvolvedAddresses();
+			auto involvedPublicKeyIndices = confirmedTransaction->getInvolvedAddressIndices();
 			std::vector<uint32_t> publicKeyIndices;
-			publicKeyIndices.reserve(involvedPublicKeys.size());
+			publicKeyIndices.reserve(involvedPublicKeyIndices.size());
 			uint8_t balanceChangingBitMask = 0;
-			for (auto& pubKey : involvedPublicKeys) {
-				auto publicKeyIndex = publicKeyDictionary.getOrAddIndexForData(toPublicKey(pubKey));
+			for (auto& pubKey : involvedPublicKeyIndices) {
+				auto publicKeyIndex = pubKey.publicKeyIndex;
 				publicKeyIndices.push_back(publicKeyIndex);
-				if (publicKeyIndices.size() < 8 && confirmedTransaction->isBalanceUpdated(*pubKey)) {
+				if (publicKeyIndices.size() < 8 && confirmedTransaction->isBalanceUpdated(pubKey)) {
 					balanceChangingBitMask |= 1u << (publicKeyIndices.size() - 1);
 				}
 			}

@@ -6,7 +6,9 @@
 #include "gradido_blockchain/data/adapter/timestamp.h"
 #include "gradido_blockchain/data/adapter/transactionBody.h"
 #include "gradido_blockchain/data/compact/CommunityRootTx.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/compact/RegisterAddressTx.h"
+#include "gradido_blockchain/data/CrossGroupType.h"
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
@@ -28,6 +30,7 @@ using std::vector;
 namespace gradido {
 	namespace data {
 		using adapter::toPublicKeyIndex, adapter::toConstBlockPtr;
+		using compact::PublicKeyIndex;
 
 		ConstTransactionBodyPtr TransactionBody::fromGrdw(grdw_transaction_body* grdw_body, uint32_t communityIdIndex)
 		{
@@ -299,6 +302,72 @@ namespace gradido {
 			if (isDeferredTransfer()) return getDeferredTransfer()->getInvolvedAddresses();
 			if (isRedeemDeferredTransfer()) return getRedeemDeferredTransfer()->getInvolvedAddresses();
 			return {};
+		}
+
+		
+		vector<PublicKeyIndex> TransactionBody::getInvolvedAddressIndices() const
+		{
+			if (isCommunityFriendsUpdate()) return {};
+			if (isCommunityRoot()) {
+				auto communityRoot = getCommunityRoot();
+				return {
+					communityRoot->publicKeyIndex,
+					communityRoot->gmwPublicKeyIndex,
+					communityRoot->aufPublicKeyIndex
+				};
+			}
+			if (isRegisterAddress()) {
+				auto registerAddress = getRegisterAddress();
+				return {
+					registerAddress->accountPublicKeyIndex,
+					registerAddress->userPublicKeyIndex
+				};
+			}
+			vector<PublicKeyIndex> result;
+			if (isTransfer()) {
+				result.reserve(2);
+				fillFromGradidoTransfer(result, *getTransfer());
+			}
+			if (isCreation()) {
+				// additional space for gmw, auf and moderator signature public key
+				result.reserve(4);
+				result.emplace_back(toPublicKeyIndex(getCreation()->getRecipient().getPublicKey(), mCommunityIdIndex));
+			}
+			if (isDeferredTransfer()) {
+				result.reserve(2);
+				fillFromGradidoTransfer(result, getDeferredTransfer()->getTransfer());
+			}
+			if (isRedeemDeferredTransfer()) {
+				result.reserve(3);
+				fillFromGradidoTransfer(result, getRedeemDeferredTransfer()->getTransfer());
+			}
+			if (isTimeoutDeferredTransfer()) {
+				// contained in account balances
+				result.reserve(2);
+			}
+			return result;
+		}
+
+		void TransactionBody::fillFromGradidoTransfer(std::vector<compact::PublicKeyIndex>& publicKeys, const GradidoTransfer& transfer) const
+		{
+			if (CrossGroupType::LOCAL != mType && !mOtherCommunityIdIndex) {
+				throw GradidoNodeInvalidDataException("empty mOtherCommunityIdIndex in TransactionBody in CrossCommunityTransaction");
+			}
+			switch (mType) {
+			case CrossGroupType::LOCAL: 
+				publicKeys.emplace_back(toPublicKeyIndex(transfer.getSender().getPublicKey(), mCommunityIdIndex));
+				publicKeys.emplace_back(toPublicKeyIndex(transfer.getRecipient(), mCommunityIdIndex));
+				break;
+			case CrossGroupType::OUTBOUND:
+				publicKeys.emplace_back(toPublicKeyIndex(transfer.getSender().getPublicKey(), mCommunityIdIndex));
+				publicKeys.emplace_back(toPublicKeyIndex(transfer.getRecipient(), *mOtherCommunityIdIndex));
+				break;
+			case CrossGroupType::INBOUND:
+				publicKeys.emplace_back(toPublicKeyIndex(transfer.getSender().getPublicKey(), *mOtherCommunityIdIndex));
+				publicKeys.emplace_back(toPublicKeyIndex(transfer.getRecipient(), mCommunityIdIndex));
+				break;
+			default: throw GradidoUnhandledEnum("TransactionBody fillFromGradidoTransfer", "CrossGroupType", enum_name(mType).data());
+			}
 		}
 	}
 }

@@ -4,7 +4,8 @@
 #include "PublicKeyIndex.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/export.h"
-#include "gradido_protobuf_zig.h"
+
+struct grdw_register_address;
 
 namespace gradido::data::compact {
   struct GRADIDOBLOCKCHAIN_EXPORT RegisterAddressTx 

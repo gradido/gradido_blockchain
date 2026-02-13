@@ -36,8 +36,12 @@ namespace gradido {
 			ConstTransactionBodyPtr getTransactionBody() const;
 			//! will deserialize transactionBody if not cached
 			bool isPairing(const GradidoTransaction& other) const;
+			[[deprecated("Replaced by isInvolved with compact::PublicKeyIndex")]]
 			bool isInvolved(const memory::Block& publicKey) const;
+			bool isInvolved(const compact::PublicKeyIndex publicKeyIndex) const;
+			[[deprecated("Replaced by getInvolvedAddressIndices")]]
 			std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
+			std::vector<compact::PublicKeyIndex> getInvolvedAddressIndices() const;
 			//! will serialize just once and cache the result
 			memory::ConstBlockPtr getSerializedTransaction() const;
 			//! return hash for clearly identify the transaction

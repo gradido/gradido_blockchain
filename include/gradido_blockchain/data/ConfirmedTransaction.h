@@ -15,6 +15,10 @@ struct grdu_memory;
 namespace gradido {
 	namespace data {
 
+		namespace compact {
+			struct PublicKeyIndex;
+		}
+
 		class GRADIDOBLOCKCHAIN_EXPORT ConfirmedTransaction
 		{
 		public:
@@ -66,9 +70,14 @@ namespace gradido {
 			BalanceDerivationType getBalanceDerivationType() const { return mBalanceDerivationType; }
 			bool isBalanceNodeComputed() const { return BalanceDerivationType::NODE == mBalanceDerivationType; }
 			bool isBalanceExternComputed() const { return BalanceDerivationType::EXTERN == mBalanceDerivationType; }
+			[[deprecated("Replaced by isInvolved with compact::PublicKeyIndex")]]
 			bool isInvolved(const memory::Block& publicKey) const;
+			bool isInvolved(const compact::PublicKeyIndex publicKeyIndex) const;
 			bool isBalanceUpdated(const memory::Block& publicKey) const;
+			bool isBalanceUpdated(const compact::PublicKeyIndex publicKeyIndex) const;
+			[[deprecated("Replaced by getInvolvedAddressIndices")]]
 			std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
+			std::vector<compact::PublicKeyIndex> getInvolvedAddressIndices() const;
 			bool isTheSame(const ConfirmedTransaction& other) const;
 
 		protected:
@@ -85,7 +94,7 @@ namespace gradido {
 
 		private:
 			// for faster public key comparisation
-			std::vector<SignatureOctet>mPubkeyHashes;
+			std::vector<compact::PublicKeyIndex> mPubkeyIndices;
 		};
 
 		GradidoUnit ConfirmedTransaction::getDecayedAccountBalance(
@@ -95,9 +104,6 @@ namespace gradido {
 		) const {
 			return getAccountBalance(publicKey, coinCommunityIdIndex).getBalance().calculateDecay(mConfirmedAt, endDate);
 		}
-
-
-
 		typedef std::shared_ptr<ConfirmedTransaction> ConfirmedTransactionPtr;
 		typedef std::shared_ptr<const ConfirmedTransaction> ConstConfirmedTransactionPtr;
 	}

@@ -2,13 +2,9 @@
 #define __GRADIDO_BLOCKCHAIN_DATA_ACCOUNT_BALANCE_H
 
 #include "gradido_blockchain/GradidoUnit.h"
+#include "gradido_blockchain/memory/Block.h"
 #include <optional>
 #include <string>
-
-namespace memory {
-    class Block;
-    using ConstBlockPtr = std::shared_ptr<const Block>;
-}
 
 namespace gradido {
     namespace data {

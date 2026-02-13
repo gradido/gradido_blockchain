@@ -3,7 +3,8 @@
 
 #include "gradido_blockchain/export.h"
 #include "PublicKeyIndex.h"
-#include "gradido_protobuf_zig.h"
+
+struct grdw_community_root;
 
 namespace gradido::data::compact {
   struct GRADIDOBLOCKCHAIN_EXPORT CommunityRootTx 

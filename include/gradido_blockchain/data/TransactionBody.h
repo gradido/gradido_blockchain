@@ -11,11 +11,9 @@
 #include "GradidoTimeoutDeferredTransfer.h"
 #include "RegisterAddress.h"
 #include "Timestamp.h"
-#include "CrossGroupType.h"
 #include "TransactionType.h"
 
 #include "compact/CommunityRootTx.h"
-#include "compact/PublicKeyIndex.h"
 #include "compact/RegisterAddressTx.h"
 
 #include <optional>
@@ -26,12 +24,15 @@ struct grdu_memory;
 
 namespace gradido {
 	class GradidoTransactionBuilder;
-	namespace interaction {
-		namespace deserialize {
-			class TransactionBodyRole;
-		}
+	namespace interaction::deserialize {
+		class TransactionBodyRole;
 	}
 	namespace data {
+		class GradidoTransfer;
+		namespace compact {
+			struct PublicKeyIndex;
+		}
+
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionBody
 		{
 			friend GradidoTransactionBuilder;
@@ -61,13 +62,17 @@ namespace gradido {
 			inline TransactionType getTransactionType() const { return mTransactionType; }
 
 			bool isPairing(const TransactionBody& other) const;
+			[[deprecated("Replaced by isInvolved with compact::PublicKeyIndex")]]
 			bool isInvolved(const memory::Block& publicKey) const;
 			bool isInvolved(compact::PublicKeyIndex publicKeyIndex) const;
 			//! throw if not exist on this transaction type
 			const TransferAmount& getTransferAmount() const;
 			bool hasTransferAmount() const;
 
+			[[deprecated("Replaced by getInvolvedAddressIndices")]]
 			std::vector<memory::ConstBlockPtr> getInvolvedAddresses() const;
+			std::vector<compact::PublicKeyIndex> getInvolvedAddressIndices() const;
+
 			inline const std::vector<EncryptedMemo>& getMemos() const { return mMemos; }
 			inline Timestamp getCreatedAt() const { return mCreatedAt; }
 			inline CrossGroupType getType() const { return mType; }
@@ -85,6 +90,9 @@ namespace gradido {
 			inline std::optional<compact::RegisterAddressTx> getRegisterAddress() const;
 
 		protected:
+
+			void fillFromGradidoTransfer(std::vector<compact::PublicKeyIndex>& publicKeys, const GradidoTransfer& transfer) const;
+
 			std::vector<EncryptedMemo>				mMemos;
 			Timestamp													mCreatedAt;
 			CrossGroupType										mType;

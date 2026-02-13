@@ -3,6 +3,8 @@
 
 #include "TransferAmount.h"
 
+#include <vector>
+
 namespace gradido {
 	namespace data {
 		class GRADIDOBLOCKCHAIN_EXPORT GradidoTransfer

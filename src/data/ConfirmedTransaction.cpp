@@ -3,8 +3,10 @@
 #include "gradido_blockchain/data/adapter/accountBalance.h"
 #include "gradido_blockchain/data/adapter/ledgerAnchor.h"
 #include "gradido_blockchain/data/adapter/memoryBlock.h"
+#include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/adapter/timestamp.h"
 #include "gradido_blockchain/data/adapter/types.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
@@ -27,7 +29,9 @@ using std::vector;
 
 namespace gradido {
 	namespace data {
+		using adapter::toPublicKeyIndex;
 		using namespace interaction;
+		using compact::PublicKeyIndex;
 
 		ConfirmedTransaction::ConfirmedTransaction(
 			uint64_t id,
@@ -180,28 +184,43 @@ namespace gradido {
 
 		bool ConfirmedTransaction::isInvolved(const Block& publicKey) const
 		{
-			if (!publicKey.hash().empty()) {
-				bool allFalse = true;
-				for (auto& hash : mPubkeyHashes) {
-					if (hash == publicKey.hash()) {
-						allFalse = false;
-						break;
+			return isInvolved(toPublicKeyIndex(publicKey, getGradidoTransaction()->getCommunityIdIndex()));
+		}
+
+		bool ConfirmedTransaction::isInvolved(const compact::PublicKeyIndex publicKeyIndex) const
+		{
+			if (mPubkeyIndices.size()) {
+				for (auto& pubIdx : mPubkeyIndices) {
+					if (publicKeyIndex == pubIdx) {
+						return true;
 					}
 				}
-				if (allFalse) {
-					return false;
+			}
+			else {
+				if (isBalanceUpdated(publicKeyIndex)) {
+					return true;
 				}
+				return getGradidoTransaction()->isInvolved(publicKeyIndex);
 			}
-			if (isBalanceUpdated(publicKey)) {
-				return true;
-			}
-			return getGradidoTransaction()->isInvolved(publicKey);
+			return false;
 		}
 
 		bool ConfirmedTransaction::isBalanceUpdated(const Block& publicKey) const
 		{
 			for (auto& accountBalance : mAccountBalances) {
 				if (accountBalance.getPublicKey()->isTheSame(publicKey)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		bool ConfirmedTransaction::isBalanceUpdated(const compact::PublicKeyIndex publicKeyIndex) const
+		{
+			auto communityIdIndex = getGradidoTransaction()->getCommunityIdIndex();
+			for (auto& accountBalance : mAccountBalances) {
+				auto accountBalancePublicKeyIndex = toPublicKeyIndex(accountBalance.getPublicKey(), communityIdIndex);
+				if (accountBalancePublicKeyIndex == publicKeyIndex) {
 					return true;
 				}
 			}
@@ -221,6 +240,26 @@ namespace gradido {
 				}
 				if (!found) {
 					involvedAddresses.push_back(accountBalance.getPublicKey());
+				}
+			}
+			return involvedAddresses;
+		}
+
+		vector<PublicKeyIndex> ConfirmedTransaction::getInvolvedAddressIndices() const
+		{
+			auto involvedAddresses = getGradidoTransaction()->getInvolvedAddressIndices();
+			auto communityIdIndex = getGradidoTransaction()->getCommunityIdIndex();
+			for (auto& accountBalance : mAccountBalances) {
+				auto publicKeyIndex = toPublicKeyIndex(accountBalance.getPublicKey(), communityIdIndex);
+				bool found = false;
+				for (auto& involvedAddress : involvedAddresses) {
+					if (publicKeyIndex == involvedAddress) {
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					involvedAddresses.emplace_back(publicKeyIndex);
 				}
 			}
 			return involvedAddresses;
@@ -271,10 +310,10 @@ namespace gradido {
 
 		void ConfirmedTransaction::initalizePubkeyHashes()
 		{
-			auto involvedAddresses = getInvolvedAddresses();
-			mPubkeyHashes.reserve(involvedAddresses.size());
+			auto involvedAddresses = getInvolvedAddressIndices();
+			mPubkeyIndices.reserve(involvedAddresses.size());
 			for (auto& address : involvedAddresses) {
-				mPubkeyHashes.emplace_back(address->hash());
+				mPubkeyIndices.emplace_back(address);
 			}
 		}
 	}
