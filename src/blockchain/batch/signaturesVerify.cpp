@@ -1,4 +1,5 @@
 
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/batch/signaturesVerify.h"
 #include "gradido_blockchain/blockchain/batch/ThreadingPolicy.h"
@@ -6,6 +7,7 @@
 #include "gradido_blockchain/blockchain/Pagination.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/crypto/ByteArray.h"
+#include "gradido_blockchain/lib/DictionaryExceptions.h"
 
 #include "sodium.h"
 
@@ -28,17 +30,17 @@ namespace gradido::blockchain::batch {
   void worker(
     condition_variable& cvMasterWorker,
     condition_variable& cvWorkerMaster,
-    mutex& mtx, 
-    queue<ConstTransactionEntryPtr>& transactionQueue, 
-    vector<uint64_t>& invalidTxNrs, 
+    mutex& mtx,
+    queue<ConstTransactionEntryPtr>& transactionQueue,
+    vector<uint64_t>& invalidTxNrs,
     atomic<bool>& done
-  ) 
+  )
   {
     vector<ConstTransactionEntryPtr> batch;
     batch.reserve(500);
     while(true) {
       unique_lock<mutex> lock(mtx);
-      if (transactionQueue.empty()) 
+      if (transactionQueue.empty())
       {
         lock.unlock();
         cvWorkerMaster.notify_one();
@@ -48,7 +50,7 @@ namespace gradido::blockchain::batch {
           }
         );
       }
-      
+
       if (done && transactionQueue.empty()) {
         break;
       }
@@ -57,16 +59,16 @@ namespace gradido::blockchain::batch {
         transactionQueue.pop();
       } while (!transactionQueue.empty() && batch.size() < 500);
       lock.unlock();
-      for(const auto& tx : batch) 
+      for(const auto& tx : batch)
       {
         const auto& gradidoTx = tx->getConfirmedTransaction()->getGradidoTransaction();
         const auto& signaturePairs = gradidoTx->getSignatureMap().getSignaturePairs();
         const auto& bodyBytes = gradidoTx->getBodyBytes();
         for (const auto& signaturePair : signaturePairs) {
           if (0 != crypto_sign_verify_detached(
-            signaturePair.getSignature()->data(), 
-            bodyBytes->data(), 
-            bodyBytes->size(), 
+            signaturePair.getSignature()->data(),
+            bodyBytes->data(),
+            bodyBytes->size(),
             signaturePair.getPublicKey()->data()
           )) {
             lock.lock();
@@ -80,9 +82,14 @@ namespace gradido::blockchain::batch {
     }
   }
 
-  vector<uint64_t> verifySignatures(const Filter& filter, std::shared_ptr<Abstract> abstract, ThreadingPolicy policy) 
+  vector<uint64_t> verifySignatures(const Filter& filter, const std::string& communityId, ThreadingPolicy policy)
   {
     auto threadCount = resolveThreadCount(policy);
+    auto communityIdIndex = g_appContext->getCommunityIds().getIndexForData(communityId);
+    if (!communityIdIndex) {
+      throw DictionaryMissingEntryException("communityId not found", communityId);
+    }
+    auto blockchain = g_appContext->getCommunityContext(*communityIdIndex).getBlockchain();
     vector<uint64_t> invalidTxNrs;
     queue<ConstTransactionEntryPtr> transactionQueue;
     const size_t queueSize = 500 * (threadCount + 1);
@@ -101,11 +108,11 @@ namespace gradido::blockchain::batch {
 
     for(size_t i = 0; i < threadCount; i++) {
       threads.emplace_back(
-        worker, 
+        worker,
         ref(cvMasterWorker),
         ref(cvWorkerMaster),
         ref(mtx),
-        ref(transactionQueue), 
+        ref(transactionQueue),
         ref(invalidTxNrs),
         ref(done)
       );
@@ -116,7 +123,7 @@ namespace gradido::blockchain::batch {
         lock.unlock();
         Filter filterCopy = filter;
         filterCopy.pagination = pagination;
-        auto transactions = abstract->findAll(filterCopy);
+        auto transactions = blockchain->findAll(filterCopy);
         if (transactions.empty()) {
           done = true;
           lock.lock();
@@ -130,7 +137,7 @@ namespace gradido::blockchain::batch {
         cvMasterWorker.notify_one();
         pagination.page++;
         lock.lock();
-      }      
+      }
       lock.unlock();
       cvMasterWorker.notify_all();
       if (!done) {

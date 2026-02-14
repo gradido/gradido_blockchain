@@ -246,26 +246,27 @@ namespace gradido {
 			TransactionEntries result;
 			// if pagination is used, filterCopy contain count of still to find transactions
 			Filter filterCopy(filter);
-			std::vector<uint64_t> transactionNrs;
+			/*std::vector<uint64_t> transactionNrs;
 			FilterCriteria criteria = FilterCriteria::FILTER_FUNCTION;
 			if (filter.updatedBalancePublicKey && !filter.updatedBalancePublicKey->isEmpty()) {
 				auto idx = mPublicKeyDirectory.getIndexForData(toPublicKey(filter.updatedBalancePublicKey));
 				if (idx) {
 					if (mTransactionsIndex.countBalanceChangingTxs(*idx) < 50) {
 						transactionNrs = mTransactionsIndex.getBalanceChangingTxs(*idx);
-						criteria = FilterCriteria::MAX;
+						criteria = static_cast<FilterCriteria>(0xff);
 					}
 				}
 			}
-			if (criteria != FilterCriteria::MAX) {
+			if (criteria != static_cast<FilterCriteria>(0xff)) {
 				transactionNrs = mTransactionsIndex.findTransactions(filterCopy, mPublicKeyDirectory);
-			}
+			}*/
+			auto transactionNrs = mTransactionsIndex.findTransactions(filterCopy, mPublicKeyDirectory);
 			for (auto transactionNr : transactionNrs) {
 				if (!filter.pagination.hasCapacityLeft(result.size())) {
 					break;
 				}
 				auto transaction = getTransactionForId(transactionNr);
-				auto filterResult = filter.matches(transaction, criteria);
+				auto filterResult = filter.matches(transaction, FilterCriteria::FILTER_FUNCTION);
 				if ((filterResult & FilterResult::USE) == FilterResult::USE) {
 					result.push_back(transaction);
 				}
