@@ -14,9 +14,10 @@
 
 #include "rapidjson/document.h"
 
-#include <vector>
+#include <deque>
 #include <map>
 #include <memory>
+#include <vector>
 
 namespace memory {
 	class Block;
@@ -53,11 +54,15 @@ namespace gradido {
 			//! \brief search transaction nrs for search criteria in filter, ignore filter function
 			//! \return transaction nrs
 			std::vector<uint64_t> findTransactions(const gradido::blockchain::Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary) const;
+			std::vector<uint64_t> getBalanceChangingTxs(uint32_t publicKeyIndex) const;
+			
 			StateChange<data::AddressType> getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<PublicKey>& publicKeyDictionary) const;
+
 			inline void updateAddressIndex(ConstTransactionEntryPtr transactionEntry, const IDictionary<PublicKey>& publicKeyDictionary) const;
 
 			//! count all, ignore pagination
 			size_t countTransactions(const gradido::blockchain::Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary) const;
+			size_t countBalanceChangingTxs(uint32_t publicKeyIndex) const;
 
 			//! \brief find transaction nrs from specific month and year
 			//! \return {0, 0} if nothing found
@@ -105,12 +110,14 @@ namespace gradido {
 					const uint32_t balanceChangingIndex
 				) const;
 			};
+
 			// is used like a cache, even from const
 			mutable AddressIndex mAddressIndex;
 			std::map<uint32_t, data::AddressType> mPublicKeyAddressTypes;
 			// TODO: check if replace std::list<std::vector> with std::deque make sense (performance side)
 			// TODO: check if flatten maps to std::vector<FlatTransactionsIndexEntry> mEntries[month * years] make sense
 			std::map<date::year, std::map<date::month, std::list<std::vector<TransactionsIndexEntry>>>> mYearMonthAddressIndexEntries;
+			std::unordered_map<uint32_t, std::deque<uint64_t>> mBalanceChangingTxPerAccountPublicKey;
 		};
 
 		void TransactionsIndex::updateAddressIndex(

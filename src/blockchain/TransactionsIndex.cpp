@@ -14,10 +14,12 @@
 #include "loguru/loguru.hpp"
 
 #include <algorithm>
+#include <vector>
 
 using namespace rapidjson;
 
 using std::make_shared;
+using std::vector;
 using memory::Block;
 
 // control vector size, primarily for cache hit optimization
@@ -141,6 +143,23 @@ namespace gradido {
 				throw GradidoNodeInvalidDataException("try to add new transaction to block index with same or lesser transaction nr!");
 			}
 			monthIt->second.back().push_back(entry);
+
+			// add to public key -> balance changing tx 
+			if (addressIndiceCount >= 8) {
+				LOG_F(WARNING, "more than 8 address indices");
+			}
+			for (int i = 0; i < addressIndiceCount; i++) {
+				if (i >= 8) break;
+				if (isBalanceChanging & (uint8_t(1) << i)) {
+					auto addressIndex = addressIndices[i];
+					auto it = mBalanceChangingTxPerAccountPublicKey.find(addressIndex);
+					if (it == mBalanceChangingTxPerAccountPublicKey.end()) {
+						mBalanceChangingTxPerAccountPublicKey.insert({ addressIndex, {transactionNr} });
+					} else {
+						it->second.emplace_back(transactionNr);
+					}
+				}
+			}
 
 			return true;
 		}
@@ -310,8 +329,7 @@ namespace gradido {
 					// if public key not exist, no transaction can match
 					return {};
 				}
-			}
-			
+			}			
 
 			std::vector<uint64_t> result;
 			if (filter.pagination.size) {
@@ -372,6 +390,20 @@ namespace gradido {
 				}
 			);
 			return result;
+		}
+
+		vector<uint64_t> TransactionsIndex::getBalanceChangingTxs(uint32_t publicKeyIndex) const
+		{
+			auto it = mBalanceChangingTxPerAccountPublicKey.find(publicKeyIndex);
+			if (it != mBalanceChangingTxPerAccountPublicKey.end()) {
+				vector<uint64_t> result;
+				result.reserve(it->second.size());
+				for (const auto& txNr : it->second) {
+					result.emplace_back(txNr);
+				}
+				return result;
+			}
+			return {};
 		}
 
 		StateChange<data::AddressType> TransactionsIndex::getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<PublicKey>& publicKeyDictionary) const
@@ -473,6 +505,15 @@ namespace gradido {
 			return result;
 		}
 
+		size_t TransactionsIndex::countBalanceChangingTxs(uint32_t publicKeyIndex) const
+		{
+			auto it = mBalanceChangingTxPerAccountPublicKey.find(publicKeyIndex);
+			if (it != mBalanceChangingTxPerAccountPublicKey.end()) {
+				return it->second.size();
+			}
+			return 0;
+		}
+
 		std::pair<uint64_t, uint64_t> TransactionsIndex::findTransactionsForMonthYear(date::year year, date::month month) const
 		{
 			auto yearIt = mYearMonthAddressIndexEntries.find(year);
@@ -546,9 +587,9 @@ namespace gradido {
 				return FilterResult::DISMISS;
 			}
 
-			if (balanceChangingIndex && addressIndiceCount <= 8) {
+			if (balanceChangingIndex && addressIndiceCount <= 8) {				
 				for (int iPublicKeyIndex = 0; iPublicKeyIndex < addressIndiceCount; iPublicKeyIndex++) {
-					if ((isBalanceChanging & (1u << iPublicKeyIndex)) && balanceChangingIndex == addressIndices[iPublicKeyIndex]) {
+					 if ((isBalanceChanging & (uint8_t(1) << iPublicKeyIndex)) && balanceChangingIndex == addressIndices[iPublicKeyIndex]) {
 						return FilterResult::USE;
 					}
 				}

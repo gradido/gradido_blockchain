@@ -111,26 +111,17 @@ namespace gradido {
 						transactionWithSameAddress.reset();
 					}
 					else {
-						transactionWithSameAddress = c.senderBlockchain->findOne(
-							filterBuilder
-							.setInvolvedPublicKey(toConstBlockPtr(userPubkeyIndex))
-							.setMaxTransactionNr(c.senderPreviousConfirmedTransaction->getId())
-							.setTransactionType(TransactionType::REGISTER_ADDRESS)
-							.setSearchDirection(SearchDirection::DESC)
-							.setPagination({ 1 })
-							.build()
-						);
-						if (transactionWithSameAddress) {
-							if (
-								(transactionWithSameAddress->getTransactionBody()->isInvolved(accountPubkeyIndex)) ||
-								(transactionWithSameAddress->getTransactionBody()->isInvolved(userPubkeyIndex))
-								) {
-								throw AddressAlreadyExistException(
-									"cannot register address because it already exist",
-									userPubkeyIndex.toString(),
-									addressType
-								);
-							}
+						Filter f;
+						f.involvedPublicKey = toConstBlockPtr(userPubkeyIndex);
+						f.maxTransactionNr = c.senderPreviousConfirmedTransaction->getId();
+						f.transactionType = TransactionType::REGISTER_ADDRESS;
+						auto addressType = c.senderBlockchain->getAddressType(f);
+						if (AddressType::NONE != addressType) {
+							throw AddressAlreadyExistException(
+								"cannot register address because it already exist",
+								userPubkeyIndex.toString(),
+								addressType
+							);
 						}
 					}
 				}

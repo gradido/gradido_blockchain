@@ -95,6 +95,9 @@ namespace gradido::blockchain::batch {
     if (!pagination.size) {
       pagination.size = 100;
     }
+    if (!pagination.page) {
+      pagination.page = 1;
+    }
 
     for(size_t i = 0; i < threadCount; i++) {
       threads.emplace_back(
@@ -132,7 +135,7 @@ namespace gradido::blockchain::batch {
       cvMasterWorker.notify_all();
       if (!done) {
         lock.lock();
-        cvMasterWorker.wait(lock, [&] {
+        cvWorkerMaster.wait(lock, [&] {
           return transactionQueue.size() < queueSize;
           }
         );

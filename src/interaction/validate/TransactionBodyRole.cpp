@@ -169,7 +169,7 @@ namespace gradido {
 			{
 				// Regular expression pattern that matches printable UTF-8 characters,
 				// including characters with diacritics and non-ASCII letters.
-				regex utf8Regex("[\\x20-\\x7E\\xC2-\\xDF\\xE0-\\xEF\\xF0-\\xFF\\xA0-\\xFF]+");
+				static regex utf8Regex("[\\x20-\\x7E\\xC2-\\xDF\\xE0-\\xEF\\xF0-\\xFF\\xA0-\\xFF]+");
 
 				// Convert the memory block into a string
 				string text(reinterpret_cast<const char*>(data.data()), data.size());

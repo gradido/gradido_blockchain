@@ -9,7 +9,9 @@
 #include "date/date.h"
 
 #include <memory>
+#include <optional>
 
+using std::nullopt;
 using std::shared_ptr;
 
 namespace gradido {
@@ -78,7 +80,8 @@ namespace gradido {
 					auto balance = calculateAccountBalance.fromEnd(
 						deferredTransfer->getRecipientPublicKey(), 
 						beforeCreateAt,
-						deferredTransfer->getTransfer().getSender().getCoinCommunityIdIndex()
+						std::nullopt,
+						c.senderPreviousConfirmedTransaction->getId()
 					);
 					if(GradidoUnit::zero() == balance) {
 						throw TransactionValidationInvalidInputException(

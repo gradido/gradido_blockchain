@@ -38,6 +38,7 @@ namespace gradido {
           Context& operator=(const Context&) = delete;
 
           inline void disableVerify() { mDisableVerify = true; }
+          inline void disableRunningHashTest() { mDisableRunningHashTest = true; }
 
           void run(Type type = Type::SINGLE, std::shared_ptr<blockchain::Abstract> blockchain = nullptr);
 
@@ -55,6 +56,7 @@ namespace gradido {
           std::shared_ptr<const data::ConfirmedTransaction> mSenderPreviousConfirmedTransaction;
           std::shared_ptr<const data::ConfirmedTransaction> mRecipientPreviousConfirmedTransaction;
           bool mDisableVerify;
+          bool mDisableRunningHashTest;
       };
     }
   }

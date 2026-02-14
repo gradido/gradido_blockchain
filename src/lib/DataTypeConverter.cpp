@@ -267,6 +267,18 @@ namespace DataTypeConverter
 
 	std::string timePointToString(const Timepoint& timepoint, const char* fmt /*= "%Y-%m-%d %H:%M:%S"*/)
 	{
+		char buffer[64];
+
+		auto tp_sec = date::floor<std::chrono::seconds>(timepoint);
+		auto subseconds = std::chrono::duration_cast<std::chrono::microseconds>(timepoint - tp_sec).count();
+
+		auto t = std::chrono::system_clock::to_time_t(tp_sec);
+		auto len = std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", std::gmtime(&t));
+
+		len += std::snprintf(buffer + len, sizeof(buffer) - len, ".%04ld", subseconds / 100);
+
+		return std::string(buffer, len);
+		/*
 		// First, format the time without the fractional seconds
 		auto timepointSeconds = date::floor<seconds>(timepoint);
 
@@ -277,6 +289,7 @@ namespace DataTypeConverter
 
 		// Append the fractional part
 		return date::format(fmt, timepointSeconds) + fractional_ss.str().substr(1);  // Skip the leading zero
+		*/
 	}
 
 	Timepoint dateTimeStringToTimePoint(const std::string& dateTimeString, const char* fmt /*= "%F %T"*/)

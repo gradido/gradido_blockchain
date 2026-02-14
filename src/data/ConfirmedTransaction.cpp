@@ -116,13 +116,8 @@ namespace gradido {
 			shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction/* = nullptr*/
 		) const {
 			string transactionIdString = std::to_string(mId);
-			auto confirmedAtString = timePointToString(mConfirmedAt, "%Y-%m-%d %H:%M:%S");
+			auto confirmedAtString = mConfirmedAt.toString();// timePointToString(mConfirmedAt, "%Y-%m-%d %H:%M:%S");
 			auto ledgerAnchorString = mLedgerAnchor.toString();
-			string signatureMapString;
-			if (mGradidoTransaction->getSignatureMap().getSignaturePairs().size()) {
-				serialize::Context serializeContext(mGradidoTransaction->getSignatureMap());
-				signatureMapString = serializeContext.run()->copyAsString();
-			}
 			auto hash = make_shared<Block>(crypto_generichash_BYTES);
 
 			// Sodium use for the generic hash function BLAKE2b today (11.11.2019), maybe change in the future
@@ -138,7 +133,13 @@ namespace gradido {
 
 			crypto_generichash_update(&state, (const unsigned char*)ledgerAnchorString.data(), ledgerAnchorString.size());
 
-			crypto_generichash_update(&state, (const unsigned char*)signatureMapString.data(), signatureMapString.size());
+			if (mGradidoTransaction->getSignatureMap().getSignaturePairs().size()) {
+				const auto& sigPairs = mGradidoTransaction->getSignatureMap().getSignaturePairs();
+				for (const auto& sigPair : sigPairs) {
+					crypto_generichash_update(&state, sigPair.getPublicKey()->data(), 32);
+					crypto_generichash_update(&state, sigPair.getSignature()->data(), 64);
+				}
+			}
 			for (auto& accountBalance : mAccountBalances) {
 				auto gdd = accountBalance.getBalance().getGradidoCent();
 				crypto_generichash_update(&state, (const unsigned char*)&gdd, sizeof(gdd));

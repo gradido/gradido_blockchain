@@ -32,7 +32,8 @@ namespace gradido {
     void syncCommunityContextsWithCommunityIds();
     // add blockchain to existing community context entry
     void addBlockchain(uint32_t communityIdIndex, std::shared_ptr<blockchain::Abstract> blockchain);
-    // create new community context entry (if community not exist) and set blockchain
+    //! create new community context entry (if community not exist) and set blockchain
+    //! \return community id index
     uint32_t addCommunity(const std::string& communityId, std::shared_ptr<blockchain::Abstract> blockchain);
 
     /**

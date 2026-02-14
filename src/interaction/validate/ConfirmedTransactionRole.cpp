@@ -84,35 +84,37 @@ namespace gradido {
 							exception.setTransactionBody(*body);
 							throw exception;
 						}
-						auto runningHash = mConfirmedTransaction.calculateRunningHash(previousConfirmedTransaction);
-						if (!mConfirmedTransaction.getRunningHash() || runningHash->size() != mConfirmedTransaction.getRunningHash()->size()) {
-							string fieldTypeWithSize = "binary[" + to_string(crypto_generichash_BYTES) + "]";
-							string actual = "0";
-							if(mConfirmedTransaction.getRunningHash()) {
-								actual = std::to_string(mConfirmedTransaction.getRunningHash()->size());
+						if (!mDisableRunningHashTest) {
+							auto runningHash = mConfirmedTransaction.calculateRunningHash(previousConfirmedTransaction);
+							if (!mConfirmedTransaction.getRunningHash() || runningHash->size() != mConfirmedTransaction.getRunningHash()->size()) {
+								string fieldTypeWithSize = "binary[" + to_string(crypto_generichash_BYTES) + "]";
+								string actual = "0";
+								if (mConfirmedTransaction.getRunningHash()) {
+									actual = std::to_string(mConfirmedTransaction.getRunningHash()->size());
+								}
+								throw TransactionValidationInvalidInputException(
+									"stored running hash size isn't equal to calculated running hash size",
+									"running_hash",
+									fieldTypeWithSize.data(),
+									to_string(runningHash->size()).data(),
+									actual.data()
+								);
 							}
-							throw TransactionValidationInvalidInputException(
-								"stored running hash size isn't equal to calculated running hash size",
-								"running_hash",
-								fieldTypeWithSize.data(),
-								to_string(runningHash->size()).data(),
-								actual.data()
-							);
-						}
-						if(!runningHash->isTheSame(mConfirmedTransaction.getRunningHash())) {
-							string fieldTypeWithSize = "binary[" + to_string(crypto_generichash_BYTES) + "]";
-							string actual = "";
-							if(mConfirmedTransaction.getRunningHash()) {
-								actual = mConfirmedTransaction.getRunningHash()->convertToHex();
+							if (!runningHash->isTheSame(mConfirmedTransaction.getRunningHash())) {
+								string fieldTypeWithSize = "binary[" + to_string(crypto_generichash_BYTES) + "]";
+								string actual = "";
+								if (mConfirmedTransaction.getRunningHash()) {
+									actual = mConfirmedTransaction.getRunningHash()->convertToHex();
+								}
+
+								throw TransactionValidationInvalidInputException(
+									"stored tx hash isn't equal to calculated txHash",
+									"running_hash",
+									fieldTypeWithSize.data(),
+									runningHash->convertToHex().data(),
+									actual.data()
+								);
 							}
-							
-							throw TransactionValidationInvalidInputException(
-								"stored tx hash isn't equal to calculated txHash",
-								"running_hash",
-								fieldTypeWithSize.data(),
-								runningHash->convertToHex().data(),
-								actual.data()
-							);
 						}
 						const auto& ledgerAnchor = mConfirmedTransaction.getLedgerAnchor();
 						const auto& previousLedgerAnchor = previousConfirmedTransaction->getLedgerAnchor();

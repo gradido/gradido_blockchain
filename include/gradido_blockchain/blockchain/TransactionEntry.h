@@ -56,7 +56,7 @@ namespace gradido {
 			bool operator > (const TransactionEntry& b) const { return mTransactionNr > b.mTransactionNr; }
 
 			inline uint64_t getTransactionNr() const { return mTransactionNr; }
-			inline memory::ConstBlockPtr getSerializedTransaction() const { return mSerializedTransaction; }
+			memory::ConstBlockPtr getSerializedTransaction() const;
 			data::ConstConfirmedTransactionPtr getConfirmedTransaction() const;
 			inline date::month getMonth() const { return mMonth; }
 			inline date::year getYear() const { return mYear; }
@@ -78,7 +78,7 @@ namespace gradido {
 
 		protected:
 			uint64_t mTransactionNr;
-			memory::ConstBlockPtr mSerializedTransaction;
+			mutable memory::ConstBlockPtr mSerializedTransaction;
 			date::month mMonth;
 			date::year mYear;
 			data::TransactionType mTransactionType;

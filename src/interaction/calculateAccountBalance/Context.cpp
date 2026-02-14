@@ -71,6 +71,10 @@ namespace gradido {
 				uint64_t maxTransactionNr/* = 0 */
 			) const 
 			{
+				auto lastBalanceChaningTx = mBlockchain->findOne(Filter::lastBalanceFor(publicKey));
+				if (lastBalanceChaningTx && (maxTransactionNr && lastBalanceChaningTx->getTransactionNr() <= maxTransactionNr)) {
+					return lastBalanceChaningTx->getConfirmedTransaction()->getDecayedAccountBalance(publicKey, coinCommunityIdIndex, endDate);
+				}
 				FilterBuilder builder;
 				GradidoUnit balance(GradidoUnit::zero());
 				Timepoint lastDate;
@@ -80,7 +84,9 @@ namespace gradido {
 				mBlockchain->findAll(builder
 					.setUpdatedBalancePublicKey(publicKey)
 					.setMaxTransactionNr(maxTransactionNr)
+					.setTimepointInterval(TimepointInterval(Timepoint(), endDate))
 					.setSearchDirection(SearchDirection::DESC)
+					.setPagination({ 1, 0 })
 					.setCoinCommunityIdIndex(coinCommunityIdIndex)
 					.setFilterFunction([&](const TransactionEntry& entry) -> FilterResult {
 						auto confirmedTransaction = entry.getConfirmedTransaction();

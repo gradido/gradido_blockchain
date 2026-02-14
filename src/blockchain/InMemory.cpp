@@ -2,6 +2,7 @@
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/blockchain/RangeUtils.h"
 #include "gradido_blockchain/data/AccountBalance.h"
+#include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
@@ -26,6 +27,7 @@ using memory::ConstBlockPtr, memory::Block;
 
 namespace gradido {
 
+	using data::adapter::toPublicKey;
 	using data::AddressType, data::ConstGradidoTransactionPtr, data::Timestamp, data::LedgerAnchor, data::AccountBalance;
 	using namespace interaction;
 
@@ -90,6 +92,40 @@ namespace gradido {
 		) {
 			auto blockchain = getProvider()->findBlockchain(mCommunityIdIndex);
 			confirmTransaction::Context context(blockchain);
+			auto role = context.createRole(
+				gradidoTransaction,
+				ledgerAnchor,
+				gradidoTransaction->getTransactionBody()->getCreatedAt()
+			);
+			if (!role) {
+				throw GradidoNotImplementedException("missing role for gradido transaction");
+			}
+			role->setAccountBalances(accountBalances);
+			auto confirmedTransaction = context.run(role);
+			if (!confirmedTransaction) {
+				throw GradidoNullPointerException(
+					"empty confirmed transaction from confirmTransaction interaction",
+					"data::ConfirmedTransaction",
+					__FUNCTION__
+				);
+			}
+			auto transactionEntry = std::make_shared<TransactionEntry>(confirmedTransaction, mCommunityIdIndex);
+			pushTransactionEntry(transactionEntry);
+			mTransactionFingerprintTransactionEntry.insert({ *confirmedTransaction->getGradidoTransaction()->getFingerprint(), transactionEntry });
+			role->runPastAddToBlockchain(confirmedTransaction, blockchain);
+			return true;
+		}
+
+		bool InMemory::createAndAddConfirmedTransactionExternFast(
+			data::ConstGradidoTransactionPtr gradidoTransaction,
+			const data::LedgerAnchor& ledgerAnchor,
+			std::vector<data::AccountBalance> accountBalances
+		)
+		{
+			auto blockchain = getProvider()->findBlockchain(mCommunityIdIndex);
+			confirmTransaction::Context context(blockchain);
+			context.disableVerify();
+			// context.disableRunningHashTest();
 			auto role = context.createRole(
 				gradidoTransaction,
 				ledgerAnchor,
@@ -210,13 +246,26 @@ namespace gradido {
 			TransactionEntries result;
 			// if pagination is used, filterCopy contain count of still to find transactions
 			Filter filterCopy(filter);
-			auto transactionNrs = mTransactionsIndex.findTransactions(filterCopy, mPublicKeyDirectory);
+			std::vector<uint64_t> transactionNrs;
+			FilterCriteria criteria = FilterCriteria::FILTER_FUNCTION;
+			if (filter.updatedBalancePublicKey && !filter.updatedBalancePublicKey->isEmpty()) {
+				auto idx = mPublicKeyDirectory.getIndexForData(toPublicKey(filter.updatedBalancePublicKey));
+				if (idx) {
+					if (mTransactionsIndex.countBalanceChangingTxs(*idx) < 50) {
+						transactionNrs = mTransactionsIndex.getBalanceChangingTxs(*idx);
+						criteria = FilterCriteria::MAX;
+					}
+				}
+			}
+			if (criteria != FilterCriteria::MAX) {
+				transactionNrs = mTransactionsIndex.findTransactions(filterCopy, mPublicKeyDirectory);
+			}
 			for (auto transactionNr : transactionNrs) {
 				if (!filter.pagination.hasCapacityLeft(result.size())) {
 					break;
 				}
 				auto transaction = getTransactionForId(transactionNr);
-				auto filterResult = filter.matches(transaction, FilterCriteria::FILTER_FUNCTION);
+				auto filterResult = filter.matches(transaction, criteria);
 				if ((filterResult & FilterResult::USE) == FilterResult::USE) {
 					result.push_back(transaction);
 				}

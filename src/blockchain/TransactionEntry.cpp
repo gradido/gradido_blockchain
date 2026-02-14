@@ -8,6 +8,9 @@
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/memory/Block.h"
 
+#include <mutex>
+
+using std::lock_guard;
 using std::optional, std::nullopt;
 using memory::ConstBlockPtr;
 
@@ -16,21 +19,21 @@ namespace gradido {
 	namespace blockchain {
 
 		TransactionEntry::TransactionEntry(ConstBlockPtr serializedTransaction, uint32_t blockchainCommunityIdIndex)
-			: mTransactionNr(0), mSerializedTransaction(serializedTransaction), mBlockchainCommunityIdIndex(blockchainCommunityIdIndex)
+			: TransactionEntry(serializedTransaction, getConfirmedTransaction(), blockchainCommunityIdIndex)
 		{
-			auto confirmedTransaction = getConfirmedTransaction();
-
-			mTransactionNr = confirmedTransaction->getId();
-			auto receivedDate = date::year_month_day{ date::floor<date::days>(confirmedTransaction->getConfirmedAt().getAsTimepoint())};
-			mMonth = receivedDate.month();
-			mYear = receivedDate.year();
-			mTransactionType = confirmedTransaction->getGradidoTransaction()->getTransactionBody()->getTransactionType();
-			mCoinCommunityIdIndex = getCoinCommunityIdIndex(*confirmedTransaction->getGradidoTransaction()->getTransactionBody());
 		}
 
 		TransactionEntry::TransactionEntry(ConstConfirmedTransactionPtr confirmedTransaction, uint32_t blockchainCommunityIdIndex)
-			: TransactionEntry(interaction::serialize::Context(*confirmedTransaction).run(), confirmedTransaction, blockchainCommunityIdIndex)
+			: mTransactionNr(confirmedTransaction->getId()), 
+			mConfirmedTransaction(confirmedTransaction), 
+			mBlockchainCommunityIdIndex(blockchainCommunityIdIndex)
 		{
+			auto receivedDate = timepointAsYearMonthDay(confirmedTransaction->getConfirmedAt().getAsTimepoint());
+			mMonth = receivedDate.month();
+			mYear = receivedDate.year();
+			auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
+			mTransactionType = body->getTransactionType();
+			mCoinCommunityIdIndex = getCoinCommunityIdIndex(*body);
 		}		
 
 		TransactionEntry::TransactionEntry(
@@ -69,14 +72,29 @@ namespace gradido {
 
 		}
 
+		memory::ConstBlockPtr TransactionEntry::getSerializedTransaction() const
+		{
+			lock_guard _lock(mFastMutex);
+			if (!mSerializedTransaction && !mConfirmedTransaction) return nullptr;
+			if (!mSerializedTransaction && mConfirmedTransaction) {
+				interaction::serialize::Context c(*mConfirmedTransaction);
+				mSerializedTransaction = c.run();
+				if (!mSerializedTransaction) {
+					throw GradidoNodeInvalidDataException("TransactionEntry::getSerializedTransaction called, serialize failed!");
+				}
+			}
+			return mSerializedTransaction;
+		}
+
 		ConstConfirmedTransactionPtr TransactionEntry::getConfirmedTransaction() const
 		{
-			std::lock_guard _lock(mFastMutex);
-			if (!mConfirmedTransaction) {
+			lock_guard _lock(mFastMutex);
+			if (!mSerializedTransaction && !mConfirmedTransaction) return nullptr;
+			if (!mConfirmedTransaction && mSerializedTransaction) {
 				interaction::deserialize::Context c(mSerializedTransaction, interaction::deserialize::Type::CONFIRMED_TRANSACTION);
 				c.run(mBlockchainCommunityIdIndex);
 				if (!c.isConfirmedTransaction()) {
-					throw InvalidGradidoTransaction("v3_3::TransactionEntry::getConfirmedTransaction called, don't get expected ConfirmedTransaction", mSerializedTransaction);
+					throw InvalidGradidoTransaction("TransactionEntry::getConfirmedTransaction called, don't get expected ConfirmedTransaction", mSerializedTransaction);
 				}
 				mConfirmedTransaction = c.getConfirmedTransaction();
 			}

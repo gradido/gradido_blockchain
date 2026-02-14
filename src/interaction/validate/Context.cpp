@@ -12,17 +12,17 @@ namespace gradido {
 		namespace validate {
 
 			Context::Context(const data::TransactionBody& body)
-				: mRole(std::make_unique<TransactionBodyRole>(body)), mDisableVerify(false)
+				: mRole(std::make_unique<TransactionBodyRole>(body)), mDisableVerify(false), mDisableRunningHashTest(false)
 			{
 			}
 
 			Context::Context(const data::GradidoTransaction& body)
-				: mRole(std::make_unique<GradidoTransactionRole>(body)), mDisableVerify(false)
+				: mRole(std::make_unique<GradidoTransactionRole>(body)), mDisableVerify(false), mDisableRunningHashTest(false)
 			{
 			}
 
 			Context::Context(const data::ConfirmedTransaction& body)
-				: mRole(std::make_unique<ConfirmedTransactionRole>(body)), mDisableVerify(false)
+				: mRole(std::make_unique<ConfirmedTransactionRole>(body)), mDisableVerify(false), mDisableRunningHashTest(false)
 			{
 			}
 
@@ -45,6 +45,9 @@ namespace gradido {
 				}
 				if (mDisableVerify) {
 					mRole->disableVerify();
+				}
+				if (mDisableRunningHashTest) {
+					mRole->disableRunningHashTest();
 				}
 				mRole->run(type, c);
 			}

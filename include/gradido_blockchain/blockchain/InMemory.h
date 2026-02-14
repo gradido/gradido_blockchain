@@ -59,6 +59,12 @@ namespace gradido {
 				const data::LedgerAnchor& ledgerAnchor,
 				std::vector<data::AccountBalance> accountBalances
 			) override;
+			// skip verify, best to run verify as bulk operation
+			bool createAndAddConfirmedTransactionExternFast(
+				data::ConstGradidoTransactionPtr gradidoTransaction,
+				const data::LedgerAnchor& ledgerAnchor,
+				std::vector<data::AccountBalance> accountBalances
+			);
 			virtual void addTransactionTriggerEvent(std::shared_ptr<const data::TransactionTriggerEvent> transactionTriggerEvent) override;
 			virtual void removeTransactionTriggerEvent(const data::TransactionTriggerEvent& transactionTriggerEvent) override;
 

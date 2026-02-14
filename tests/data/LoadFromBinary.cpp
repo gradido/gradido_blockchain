@@ -1,12 +1,17 @@
 #include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/blockchain/batch/signaturesVerify.h"
+#include "gradido_blockchain/blockchain/batch/ThreadingPolicy.h"
+#include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/blockchain/TransactionsIndex.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
-#include "gradido_blockchain/data/LedgerAnchor.h"
+#include "gradido_blockchain/data/CrossGroupType.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/data/hiero/AccountId.h"
+#include "gradido_blockchain/data/LedgerAnchor.h"
+#include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/lib/Profiler.h"
 #include "gradido_blockchain/lib/MultithreadQueue.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
@@ -15,29 +20,34 @@
 #include "gradido_blockchain/serialization/toJsonString.h"
 #include "LoadFromBinary.h"
 
+#include <atomic>
+#include <deque>
+#include <filesystem>
 #include <fstream>
 #include <list>
-#include <atomic>
-#include <thread>
 #include <mutex>
+#include <thread>
 #include <vector>
-#include <deque>
 
+using std::atomic;
+using std::filesystem::file_size;
 using std::ifstream;
 using std::list;
-using std::atomic;
+using std::make_shared, std::shared_ptr;
+using std::mutex, std::lock_guard;
 using std::thread;
 using std::vector;
-using std::mutex, std::lock_guard;
-using std::make_shared, std::shared_ptr;
 
 using hiero::TransactionId, hiero::AccountId;
 
 using gradido::g_appContext;
-using gradido::blockchain::InMemoryProvider, gradido::blockchain::TransactionsIndex;
+using gradido::blockchain::batch::verifySignatures, gradido::blockchain::batch::ThreadingPolicy;
+using gradido::blockchain::Filter, gradido::blockchain::InMemoryProvider, gradido::blockchain::TransactionsIndex;
 using gradido::data::GradidoTransaction, gradido::data::ConstGradidoTransactionPtr;
 using gradido::data::ConfirmedTransaction, gradido::data::ConstConfirmedTransactionPtr;
+using gradido::data::CrossGroupType;
 using gradido::data::LedgerAnchor;
+using gradido::data::Timestamp;
 using serialization::toJsonString;
 using namespace gradido::interaction;
 
@@ -329,7 +339,128 @@ TEST_F(LoadFromBinary, toFromProtobuf)
 }
 // */
 using gradido::data::compact::ConfirmedGradidoTx;
+using std::shared_ptr;
+using namespace gradido;
 
+struct DataSet {
+	const char* communityId;
+	const char* fileName;
+	queue<shared_ptr<const ConfirmedTransaction>> transactions;
+	shared_ptr<blockchain::InMemory> blockchain;
+};
+
+TEST_F(LoadFromBinary, LoadAndConfirm)
+{
+	Profiler timeUsed;
+	Profiler timeUsedAll;
+	Profiler timeSinceLastPrint;
+	DataSet communities[] = {
+		{ .communityId = "gradido-akademie", .fileName = "gradido_akademie.dat" },
+		{ .communityId = "herzlicht", .fileName = "herzlicht.dat" },
+		{ .communityId = "wekingheim", .fileName = "wekingheim.dat" }
+	};
+	const int communityCount = 3;
+	char readFromFileStaticBuffer[1024];
+	uint8_t staticInputBuffer[1024];
+	grdu_memory alloc;
+	grdu_memory_init_static(&alloc, staticInputBuffer, 1024);
+	grdw_confirmed_transaction tx{};
+
+
+	auto provider = InMemoryProvider::getInstance();
+	for (int i = 0; i < communityCount; ++i) {
+		// init all blockchains and dictionaries
+		provider->findBlockchain(communities[i].communityId);
+	}
+	// load from file, deserialize, create object
+	for (uint32_t i = 0; i < communityCount; ++i) {
+		timeUsed.reset();
+		auto& com = communities[i];
+		com.blockchain = reinterpret_pointer_cast<blockchain::InMemory>(provider->findBlockchain(com.communityId));
+		ASSERT_EQ(com.blockchain->getCommunityIdIndex(), i);
+		ifstream f(com.fileName, ifstream::in | ifstream::binary);
+		auto fileSize = file_size(com.fileName);
+		uint16_t txSize = 0;
+		uint32_t readed = 0;
+		uint32_t count = 0;
+		while (f.good()) 
+		{
+			f.read((char*)&txSize, sizeof(uint16_t));
+			readed += sizeof(uint16_t);
+			f.read(readFromFileStaticBuffer, txSize);
+			readed += txSize;
+
+			alloc.last_index = 0;
+			auto decodeResult = grdw_confirmed_transaction_decode(&alloc, &tx, (uint8_t*)readFromFileStaticBuffer, txSize);
+			ASSERT_EQ(decodeResult.state, GRDW_ENCODING_ERROR_SUCCESS);
+			if (GRDW_LEDGER_ANCHOR_TYPE_NODE_TRIGGER_TRANSACTION_ID != tx.ledger_anchor.type) {
+				auto confirmedTx = ConfirmedTransaction::fromGrdw(&tx, i);
+				// trigger deserialize of transaction body
+				confirmedTx->getGradidoTransaction()->getTransactionBody();
+				com.transactions.push(confirmedTx);
+			}
+
+			if (readed + 32 >= fileSize) {
+				break;
+			}
+			++count;
+		}
+		printf("%s for loading %u confirmed transactions for %s\n", timeUsed.string().c_str(), count, com.communityId);
+	}
+	timeUsed.reset();
+	timeSinceLastPrint.reset();
+	uint32_t count = 0;
+	while (communities[0].transactions.size() || communities[1].transactions.size() || communities[2].transactions.size()) {
+		Timestamp oldest = { 0,0 };
+		int32_t next = -1;
+		for (int i = 0; i < communityCount; ++i) {
+			if (communities[i].transactions.empty()) {
+				continue;
+			}
+			auto confirmedAt = communities[i].transactions.front()->getConfirmedAt();
+			if (confirmedAt < oldest || oldest.empty()) {
+				oldest = confirmedAt;
+				next = i;
+			}
+			else if (confirmedAt == oldest && i != next) {
+				auto bodyThis = communities[i].transactions.front()->getGradidoTransaction()->getTransactionBody();
+				auto bodyNext = communities[next].transactions.front()->getGradidoTransaction()->getTransactionBody();
+				if (bodyThis->getType() == CrossGroupType::OUTBOUND && bodyNext->getType() == CrossGroupType::INBOUND) {
+					next = i;
+				}
+			}
+		}
+		if (-1 == next) {
+			break;
+		}
+		const auto& confirmedTx = communities[next].transactions.front();
+		auto tx = communities[next].transactions.front()->getGradidoTransaction();
+		ASSERT_NO_THROW(
+			communities[next].blockchain->createAndAddConfirmedTransactionExternFast(
+				tx, confirmedTx->getLedgerAnchor(), confirmedTx->getAccountBalances()
+			)
+		);
+		communities[next].transactions.pop();
+		++count;
+		if (timeSinceLastPrint.millis() > 100) {
+			timeSinceLastPrint.reset();
+			printf("\r%u", count);
+		}
+		// if (count > 5000) break;
+	}
+	printf("\r%u\n", count);
+	printf("%s for deserailize body and confirm %u transactions\n", timeUsed.string().c_str(), count);
+	timeUsed.reset();
+	// bulk verify
+	for (int i = 0; i < communityCount; ++i) {
+		verifySignatures(Filter::ALL_TRANSACTIONS, communities[i].blockchain, ThreadingPolicy::AllExceptOne);
+	}
+	printf("%s for bulk verify all\n", timeUsed.string().c_str());
+
+	int zahl = 0;
+	printf("%s time for all\n", timeUsedAll.string().c_str());
+}
+/*
 TEST_F(LoadFromBinary, LoadDataFromBinaryDeserializeSerialize)
 {
 	Profiler timeUsed;
