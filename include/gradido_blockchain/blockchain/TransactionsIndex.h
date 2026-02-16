@@ -58,7 +58,7 @@ namespace gradido {
 			
 			StateChange<data::AddressType> getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<PublicKey>& publicKeyDictionary) const;
 
-			inline void updateAddressIndex(ConstTransactionEntryPtr transactionEntry, const IDictionary<PublicKey>& publicKeyDictionary) const;
+			inline void updateAddressIndex(const gradido::blockchain::TransactionEntry& transactionEntry, const IDictionary<PublicKey>& publicKeyDictionary) const;
 
 			//! count all, ignore pagination
 			size_t countTransactions(const gradido::blockchain::Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary) const;
@@ -121,10 +121,10 @@ namespace gradido {
 		};
 
 		void TransactionsIndex::updateAddressIndex(
-			ConstTransactionEntryPtr transactionEntry,
+			const gradido::blockchain::TransactionEntry& transactionEntry,
 			const IDictionary<PublicKey>& publicKeyDictionary
 		) const {
-			mAddressIndex.addTransaction(*transactionEntry, publicKeyDictionary);
+			mAddressIndex.addTransaction(transactionEntry, publicKeyDictionary);
 		}
 
 		bool TransactionsIndex::hasTransactionNr(uint64_t transactionNr) const
