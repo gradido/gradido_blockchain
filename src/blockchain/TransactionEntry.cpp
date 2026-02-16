@@ -22,6 +22,7 @@ namespace gradido {
 			: mSerializedTransaction(serializedTransaction), mBlockchainCommunityIdIndex(blockchainCommunityIdIndex)
 		{
 			mConfirmedTransaction = getConfirmedTransaction();
+			mTransactionNr = mConfirmedTransaction->getId();
 			auto receivedDate = timepointAsYearMonthDay(mConfirmedTransaction->getConfirmedAt().getAsTimepoint());
 			mMonth = receivedDate.month();
 			mYear = receivedDate.year();
