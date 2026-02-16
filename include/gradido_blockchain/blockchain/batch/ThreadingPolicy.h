@@ -4,6 +4,7 @@
 #include "gradido_blockchain/export.h"
 
 #include <cstdint>
+#include <cstddef>
 
 namespace gradido::blockchain::batch {
   enum class ThreadingPolicy : uint8_t {
@@ -15,7 +16,7 @@ namespace gradido::blockchain::batch {
     AllExceptOne
   };
 
-  GRADIDOBLOCKCHAIN_EXPORT size_t resolveThreadCount(ThreadingPolicy policy);
+  GRADIDOBLOCKCHAIN_EXPORT std::size_t resolveThreadCount(ThreadingPolicy policy);
 }
 
 #endif // GRADIDO_BLOCKCHAIN_BLOCKCHAIN_BATCH_THREADING_POLICY_H

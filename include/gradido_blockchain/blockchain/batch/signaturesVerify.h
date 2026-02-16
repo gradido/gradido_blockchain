@@ -11,7 +11,7 @@ namespace gradido::blockchain {
   class Abstract;
   
   namespace batch {
-    GRADIDOBLOCKCHAIN_EXPORT std::vector<uint64_t> verifySignatures(const Filter& filter, std::shared_ptr<Abstract> abstract, ThreadingPolicy policy = ThreadingPolicy::All);
+    GRADIDOBLOCKCHAIN_EXPORT std::vector<uint64_t> verifySignatures(const Filter& filter, const std::string& communityId, ThreadingPolicy policy = ThreadingPolicy::All);
   }
 }
 
