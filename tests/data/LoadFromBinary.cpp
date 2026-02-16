@@ -453,7 +453,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 	timeUsed.reset();
 	// bulk verify
 	for (int i = 0; i < communityCount; ++i) {
-		verifySignatures(Filter::ALL_TRANSACTIONS, communities[i].blockchain, ThreadingPolicy::AllExceptOne);
+		verifySignatures(Filter::ALL_TRANSACTIONS, communities[i].communityId, ThreadingPolicy::AllExceptOne);
 	}
 	printf("%s for bulk verify all\n", timeUsed.string().c_str());
 

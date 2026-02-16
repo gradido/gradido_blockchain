@@ -147,6 +147,9 @@ namespace gradido {
 				transferRole.setConfirmedAt(mConfirmedAt);
 				transferRole.setCreatedAt(mCreatedAt);
 				transferRole.setCrossGroupType(mCrossGroupType);
+				if (mDisableVerify) {
+					transferRole.disableVerify();
+				}
 				// transfer check without account check, account block differ to much
 				auto modifiedType = type;
 				if ((modifiedType & Type::ACCOUNT) == Type::ACCOUNT) {

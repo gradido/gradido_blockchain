@@ -71,6 +71,9 @@ namespace gradido {
 				}
 
 				TransactionBodyRole bodyRole(*body);
+				if (mDisableVerify) {
+					bodyRole.disableVerify();
+				}
 				bodyRole.setConfirmedAt(mConfirmedAt);
 				// recursive validation					
 				bodyRole.run(type, c);

@@ -162,6 +162,9 @@ namespace gradido {
 				}
 				mSpecificTransactionRole->setCreatedAt(mBody.getCreatedAt());
 				mSpecificTransactionRole->setConfirmedAt(mConfirmedAt);
+				if (mDisableVerify) {
+					mSpecificTransactionRole->disableVerify();
+				}
 				return *mSpecificTransactionRole;
 			}
 

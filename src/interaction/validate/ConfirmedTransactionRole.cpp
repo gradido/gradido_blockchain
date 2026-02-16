@@ -137,7 +137,11 @@ namespace gradido {
 				) {
 					modifiedType = modifiedType - Type::PREVIOUS_BALANCE;
 				}
-				GradidoTransactionRole(*mConfirmedTransaction.getGradidoTransaction()).run(modifiedType, c);
+				GradidoTransactionRole grdTx(*mConfirmedTransaction.getGradidoTransaction());
+				if (mDisableVerify) {
+					grdTx.disableVerify();
+				}
+				grdTx.run(modifiedType, c);
 			}
 		}
 	}
