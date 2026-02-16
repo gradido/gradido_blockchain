@@ -19,8 +19,15 @@ namespace gradido {
 	namespace blockchain {
 
 		TransactionEntry::TransactionEntry(ConstBlockPtr serializedTransaction, uint32_t blockchainCommunityIdIndex)
-			: TransactionEntry(serializedTransaction, getConfirmedTransaction(), blockchainCommunityIdIndex)
+			: mSerializedTransaction(serializedTransaction), mBlockchainCommunityIdIndex(blockchainCommunityIdIndex)
 		{
+			mConfirmedTransaction = getConfirmedTransaction();
+			auto receivedDate = timepointAsYearMonthDay(mConfirmedTransaction->getConfirmedAt().getAsTimepoint());
+			mMonth = receivedDate.month();
+			mYear = receivedDate.year();
+			auto body = mConfirmedTransaction->getGradidoTransaction()->getTransactionBody();
+			mTransactionType = body->getTransactionType();
+			mCoinCommunityIdIndex = getCoinCommunityIdIndex(*body);
 		}
 
 		TransactionEntry::TransactionEntry(ConstConfirmedTransactionPtr confirmedTransaction, uint32_t blockchainCommunityIdIndex)
