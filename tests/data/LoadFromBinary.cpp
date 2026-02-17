@@ -394,10 +394,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			auto decodeResult = grdw_confirmed_transaction_decode(&alloc, &tx, (uint8_t*)readFromFileStaticBuffer, txSize);
 			ASSERT_EQ(decodeResult.state, GRDW_ENCODING_ERROR_SUCCESS);
 			if (GRDW_LEDGER_ANCHOR_TYPE_NODE_TRIGGER_TRANSACTION_ID != tx.ledger_anchor.type) {
-				auto confirmedTx = ConfirmedTransaction::fromGrdw(&tx, i);
-				// trigger deserialize of transaction body
-				confirmedTx->getGradidoTransaction()->getTransactionBody();
-				com.transactions.push(confirmedTx);
+				com.transactions.push(ConfirmedTransaction::fromGrdw(&tx, i));
 			}
 
 			if (readed + 32 >= fileSize) {

@@ -25,7 +25,9 @@ namespace gradido {
 
 			// copy constructor
 			GradidoTransaction(const GradidoTransaction& other)
-				: GradidoTransaction(other.mSignatureMap, other.mBodyBytes, other.mCommunityIdIndex, other.mPairingLedgerAnchor) {}
+				: GradidoTransaction(other.mSignatureMap, other.mBodyBytes, other.mCommunityIdIndex, other.mPairingLedgerAnchor) {
+				mTransactionBody = other.getTransactionBody();
+			}
 
 			~GradidoTransaction() {}
 

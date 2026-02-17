@@ -14,6 +14,7 @@
 #include "loguru/loguru.hpp"
 
 #include <algorithm>
+#include <stdexcept>
 #include <vector>
 
 using namespace rapidjson;
@@ -35,9 +36,9 @@ namespace gradido {
 	namespace blockchain {
 
 		TransactionsIndex::TransactionsIndex()
-			: mMaxTransactionNr(0), mMinTransactionNr(0)
+			: mMaxTransactionNr(0), mMinTransactionNr(0), mMinYearMonth(date::year(0), date::month(0)), mMaxYearMonth(date::year(0), date::month(0))
 		{
-
+			mYearMonthAddressIndexEntries.resize(100);
 		}
 
 		TransactionsIndex::~TransactionsIndex()
@@ -59,36 +60,59 @@ namespace gradido {
 				return Value(kNullType);
 			}
 			Value rootJson(kObjectType);
-			for (auto itYear = mYearMonthAddressIndexEntries.begin(); itYear != mYearMonthAddressIndexEntries.end(); itYear++)
+			Value yearEntry(kObjectType);
+			for (auto monthYearIndex = 0; monthYearIndex < mYearMonthAddressIndexEntries.size(); monthYearIndex++)
 			{
-				Value yearEntry(kObjectType);
-				for (auto itMonth = itYear->second.begin(); itMonth != itYear->second.end(); itMonth++)
-				{
-					Value monthEntry(kArrayType);
-					for (const auto& transactionsIndexEntryVectors : itMonth->second)
-					{
-						for (const auto& transactionsIndexEntry : transactionsIndexEntryVectors)
-						{
-							Value entry(kObjectType);
-							entry.AddMember("transactionNr", transactionsIndexEntry.transactionNr, alloc);
-							entry.AddMember("transactionType", serialization::toJson(transactionsIndexEntry.transactionType, alloc), alloc);
-							entry.AddMember("coinCommunityIdIndex", transactionsIndexEntry.coinCommunityIdIndex, alloc);
-
-							if (transactionsIndexEntry.addressIndiceCount) {
-								Value addressIndices(kArrayType);
-								for (int i = 0; i < transactionsIndexEntry.addressIndiceCount; i++) {
-									addressIndices.PushBack(transactionsIndexEntry.addressIndices[i], alloc);
-								}
-								entry.AddMember("addressIndices", addressIndices, alloc);
-							}
-							monthEntry.PushBack(entry, alloc);
-						}
+				auto monthYear = indexToYearMonth(monthYearIndex);
+				if (monthYear.month() <= date::month(1)) {
+					if (yearEntry.MemberCount()) {
+						rootJson.AddMember(serialization::toJson(monthYear.year(), alloc), yearEntry, alloc);
 					}
-					yearEntry.AddMember(serialization::toJson(itMonth->first, alloc), monthEntry, alloc);
+					yearEntry = Value(kObjectType);
 				}
-				rootJson.AddMember(serialization::toJson(itYear->first, alloc), yearEntry, alloc);
+				Value monthEntry(kArrayType);
+				for (const auto& itEntry : mYearMonthAddressIndexEntries[monthYearIndex])
+				{
+					Value entry(kObjectType);
+					entry.AddMember("transactionNr", itEntry.transactionNr, alloc);
+					entry.AddMember("transactionType", serialization::toJson(itEntry.transactionType, alloc), alloc);
+					entry.AddMember("coinCommunityIdIndex", itEntry.coinCommunityIdIndex, alloc);
+
+					if (itEntry.addressIndiceCount) {
+						Value addressIndices(kArrayType);
+						for (int i = 0; i < itEntry.addressIndiceCount; i++) {
+							addressIndices.PushBack(itEntry.addressIndices[i], alloc);
+						}
+						entry.AddMember("addressIndices", addressIndices, alloc);
+					}
+					monthEntry.PushBack(entry, alloc);
+				}
+				if (monthEntry.Size()) {
+					yearEntry.AddMember(serialization::toJson(monthYear.month(), alloc), monthEntry, alloc);
+				}
 			}
 			return rootJson;
+		}
+
+		size_t TransactionsIndex::yearMonthToIndexUpdateBounds(date::year year, date::month month)
+		{
+			if (mMinYearMonth.month() == date::month(0) && mMinYearMonth.year() == date::year(0)) {
+				mMinYearMonth = date::year_month{ year, month };
+			}
+			auto newMaxYearMonth = date::year_month{ year, month };
+			if (newMaxYearMonth > mMaxYearMonth) {
+				mMaxYearMonth = newMaxYearMonth;
+			}
+
+			auto index = yearMonthToIndex(year, month);
+			assert(mYearMonthAddressIndexEntries.size());
+			if (index >= mYearMonthAddressIndexEntries.size()) {
+				mYearMonthAddressIndexEntries.resize(mYearMonthAddressIndexEntries.size() * 2);
+				if (index >= mYearMonthAddressIndexEntries.size()) {
+					throw GradidoNodeInvalidDataException("unexpected jump in transaction index grow");
+				}
+			}
+			return index;
 		}
 
 
@@ -110,39 +134,23 @@ namespace gradido {
 				mMinTransactionNr = transactionNr;
 			}
 
-			// year
-			auto yearIt = mYearMonthAddressIndexEntries.find(year);
-			if (yearIt == mYearMonthAddressIndexEntries.end()) {
-				auto result = mYearMonthAddressIndexEntries.insert({ year, {} });
-				yearIt = result.first;
-			}
-			// month
-			auto monthIt = yearIt->second.find(month);
-			if (monthIt == yearIt->second.end()) {
-				auto result = yearIt->second.insert({ month, std::list<std::vector<TransactionsIndexEntry>>()});
-				monthIt = result.first;
-			}
-			if (monthIt->second.empty() || monthIt->second.back().size() >= TRANSACTION_ENTRY_VECTOR_SIZE) {
-				std::vector<TransactionsIndexEntry> v;
-				v.reserve(TRANSACTION_ENTRY_VECTOR_SIZE);
-				monthIt->second.push_back(v);
-			}
-			TransactionsIndexEntry entry;
+			auto yearMonthIndex = yearMonthToIndexUpdateBounds(year, month);
+						
+			TransactionsIndexEntry entry{};
 			entry.transactionNr = transactionNr;
 			entry.coinCommunityIdIndex = coinCommunityIdIndex;
 			entry.transactionType = transactionType;
 			entry.addressIndiceCount = addressIndiceCount;
 			entry.isBalanceChanging = isBalanceChanging;
-			if (addressIndiceCount > 256) {
-				throw GradidoNodeInvalidDataException("addressIndiceCount is bigger than 256, that cannot be");
+			if (addressIndiceCount > 4) {
+				throw GradidoNotImplementedException("addressIndiceCount is bigger than 4, currently not supported");
 			}
-			entry.addressIndices = new uint32_t[addressIndiceCount];
 			memcpy(entry.addressIndices, addressIndices, sizeof(uint32_t) * addressIndiceCount);
-
-			if (monthIt->second.size() && monthIt->second.back().size() && monthIt->second.back().back().transactionNr >= entry.transactionNr) {
+			
+			if (mYearMonthAddressIndexEntries[yearMonthIndex].size() && mYearMonthAddressIndexEntries[yearMonthIndex].back().transactionNr >= entry.transactionNr) {
 				throw GradidoNodeInvalidDataException("try to add new transaction to block index with same or lesser transaction nr!");
 			}
-			monthIt->second.back().push_back(entry);
+			mYearMonthAddressIndexEntries[yearMonthIndex].emplace_back(entry);
 
 			// add to public key -> balance changing tx 
 			if (addressIndiceCount >= 8) {
@@ -344,45 +352,30 @@ namespace gradido {
 					if (!filter.pagination.hasCapacityLeft(result.size())) {
 						return false;
 					}
+					auto yearMonthIndex = yearMonthToIndex(timepoint.year(), timepoint.month());
+
 					// if for a year/month combination no entries exist, return true, so continue the loop
-					auto yearIt = mYearMonthAddressIndexEntries.find(timepoint.year());
-					if (yearIt == mYearMonthAddressIndexEntries.end()) {
-						return true;
-					}
-					auto monthIt = yearIt->second.find(timepoint.month());
-					if (monthIt == yearIt->second.end()) {
+					if (mYearMonthAddressIndexEntries[yearMonthIndex].empty()) {
 						return true;
 					}
 
 					iterateRangeInOrder(
-						monthIt->second.begin(), monthIt->second.end(), filter.searchDirection,
-						[&](const std::vector<TransactionsIndexEntry>& transactionIndexEntriesVector) -> bool
-						{
+						mYearMonthAddressIndexEntries[yearMonthIndex].begin(), mYearMonthAddressIndexEntries[yearMonthIndex].end(), filter.searchDirection,
+						[&](const TransactionsIndexEntry& entry) -> bool
+						{							
 							if (!filter.pagination.hasCapacityLeft(result.size())) {
 								return false;
 							}
-							iterateRangeInOrder(
-								transactionIndexEntriesVector.begin(),
-								transactionIndexEntriesVector.end(),
-								filter.searchDirection,
-								[&](const TransactionsIndexEntry& entry)
-								{
-									if (!filter.pagination.hasCapacityLeft(result.size())) {
-										return false;
-									}
-									auto filterResult = entry.isMatchingFilter(filter, publicKeyIndex, updatedBalancePublicKeyIndex);
-									if ((filterResult & FilterResult::USE) == FilterResult::USE) {
-										if (paginationCursor >= filter.pagination.skipEntriesCount()) {
-											result.push_back(entry.transactionNr);
-										}
-										paginationCursor++;
-									}
-									if ((filterResult & FilterResult::STOP) == FilterResult::STOP) {
-										return false;
-									}
-									return true;
+							auto filterResult = entry.isMatchingFilter(filter, publicKeyIndex, updatedBalancePublicKeyIndex);
+							if ((filterResult & FilterResult::USE) == FilterResult::USE) {
+								if (paginationCursor >= filter.pagination.skipEntriesCount()) {
+									result.push_back(entry.transactionNr);
 								}
-							);
+								paginationCursor++;
+							}
+							if ((filterResult & FilterResult::STOP) == FilterResult::STOP) {
+								return false;
+							}
 							return true;
 						}
 					);
@@ -473,31 +466,23 @@ namespace gradido {
 			iterateRangeInOrder(interval.begin(), interval.end(), filter.searchDirection,
 				[&](const date::year_month& intervalIt) -> bool
 				{
-					auto yearIt = mYearMonthAddressIndexEntries.find(intervalIt.year());
-					if (yearIt == mYearMonthAddressIndexEntries.end()) {
+					auto yearMonthIndex = yearMonthToIndex(intervalIt.year(), intervalIt.month());
+
+					// if for a year/month combination no entries exist, return true, so continue the loop
+					if (mYearMonthAddressIndexEntries[yearMonthIndex].empty()) {
 						return true;
 					}
-					auto monthIt = yearIt->second.find(intervalIt.month());
-					if (monthIt == yearIt->second.end()) {
-						return true;
-					}
+
 					iterateRangeInOrder(
-						monthIt->second.begin(), monthIt->second.end(), filter.searchDirection,
-						[&](const std::vector<TransactionsIndexEntry>& transactionIndexEntriesVector) -> bool
-						{
-							// iterate over entries in the month
-							iterateRangeInOrder(transactionIndexEntriesVector.begin(), transactionIndexEntriesVector.end(), SearchDirection::ASC,
-								[&](const TransactionsIndexEntry& entry) -> bool
-								{
-									auto filterResult = entry.isMatchingFilter(filter, publicKeyIndex, updatedBalancePublicKeyIndex);
-									if ((filterResult & FilterResult::USE) == FilterResult::USE) {
-										++result;
-									}
-									return true; // keep going
+						mYearMonthAddressIndexEntries[yearMonthIndex].begin(), mYearMonthAddressIndexEntries[yearMonthIndex].end(), filter.searchDirection,
+						[&](const TransactionsIndexEntry& entry) -> bool
+							{
+								auto filterResult = entry.isMatchingFilter(filter, publicKeyIndex, updatedBalancePublicKeyIndex);
+								if ((filterResult & FilterResult::USE) == FilterResult::USE) {
+									++result;
 								}
-							);
-							return true;
-						}
+								return true; // keep going
+							}
 					);
 					return true;
 				}
@@ -516,18 +501,21 @@ namespace gradido {
 
 		std::pair<uint64_t, uint64_t> TransactionsIndex::findTransactionsForMonthYear(date::year year, date::month month) const
 		{
-			auto yearIt = mYearMonthAddressIndexEntries.find(year);
-			if (yearIt == mYearMonthAddressIndexEntries.end()) {
-				return { 0, 0 };
+			try {
+				auto yearMonthIndex = yearMonthToIndex(year, month);
+				const auto& yearMonthDeque = mYearMonthAddressIndexEntries[yearMonthIndex];
+				if (yearMonthDeque.empty()) {
+					return { 0,0 };
+				}
+				return { yearMonthDeque.front().transactionNr, yearMonthDeque.back().transactionNr };
 			}
-			auto monthIt = yearIt->second.find(month);
-			if (monthIt == yearIt->second.end()) {
-				return { 0, 0 };
+			catch (std::exception& ex) {
+				LOG_F(1, "%s", ex.what());
+				return { 0,0 };
 			}
-			return { monthIt->second.front().front().transactionNr, monthIt->second.back().back().transactionNr};
 		}
 
-		date::year_month TransactionsIndex::getOldestYearMonth() const
+		/*date::year_month TransactionsIndex::getOldestYearMonth() const
 		{
 			if (!mYearMonthAddressIndexEntries.size()) {
 				return { date::year(0), date::month(0) };
@@ -546,10 +534,39 @@ namespace gradido {
 			auto lastMonthEntry = std::prev(lastEntry->second.end());
 			return { lastEntry->first, lastMonthEntry->first };
 		}
+		*/
+		size_t TransactionsIndex::yearMonthToIndex(date::year year, date::month month) const
+		{
+			if (mMinYearMonth.month() == date::month(0) && mMinYearMonth.year() == date::year(0)) {
+				return 0;
+			}
+			if (year < mMinYearMonth.year() || (year == mMinYearMonth.year() && month < mMinYearMonth.month())) {
+				// TODO: make custom exception for out of bounds
+				throw std::out_of_range("TransactionsIndex::yearMonthToIndex called with out of bounds parameters (to low)");
+			}
+			if (year > mMaxYearMonth.year() || (year == mMaxYearMonth.year() && month > mMaxYearMonth.month())) {
+				throw std::out_of_range("TransactionsIndex::yearMonthToIndex called with out of bounds parameters (too high)");
+			}
+			int years = int(year) - int(mMinYearMonth.year());
+			int months = int(unsigned(month)) - int(unsigned(mMinYearMonth.month()));
+			return static_cast<size_t>(years * 12 + months);
+		}
+
+		date::year_month TransactionsIndex::indexToYearMonth(size_t index) const
+		{
+			int years = static_cast<int>(floor(index / 12));
+			date::year y = mMinYearMonth.year() + date::years(years);
+			int month = int(index % 12) + (unsigned)mMinYearMonth.month();
+			if (month > 12) {
+				y++;
+				month -= 12;
+			}
+			return date::year_month{ y, date::month(month) };
+		}
 
 		void TransactionsIndex::clearIndexEntries()
 		{
-			for (const auto& yearBlock : mYearMonthAddressIndexEntries) {
+			/*for (const auto& yearBlock : mYearMonthAddressIndexEntries) {
 				for (const auto& monthBlock : yearBlock.second) {
 					for (const auto& transactionsIndexEntryVectors : monthBlock.second) {
 						for (const auto& transactionsIndexEntry : transactionsIndexEntryVectors) {
@@ -557,7 +574,7 @@ namespace gradido {
 						}
 					}
 				}
-			}
+			}*/
 			mYearMonthAddressIndexEntries.clear();
 		}
 
@@ -587,7 +604,7 @@ namespace gradido {
 				return FilterResult::DISMISS;
 			}
 
-			if (balanceChangingIndex && addressIndiceCount <= 8) {				
+			if (balanceChangingIndex) {				
 				for (int iPublicKeyIndex = 0; iPublicKeyIndex < addressIndiceCount; iPublicKeyIndex++) {
 					 if ((isBalanceChanging & (uint8_t(1) << iPublicKeyIndex)) && balanceChangingIndex == addressIndices[iPublicKeyIndex]) {
 						return FilterResult::USE;
@@ -596,7 +613,7 @@ namespace gradido {
 				return FilterResult::DISMISS;
 			}
 			
-			if (publicKeyIndex || (balanceChangingIndex && addressIndiceCount > 8)) {
+			if (publicKeyIndex) {
 				for (int iPublicKeyIndex = 0; iPublicKeyIndex < addressIndiceCount; iPublicKeyIndex++) {
 					if (publicKeyIndex == addressIndices[iPublicKeyIndex]) {
 						return FilterResult::USE;

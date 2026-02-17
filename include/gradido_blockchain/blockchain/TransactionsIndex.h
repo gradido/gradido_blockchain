@@ -74,13 +74,16 @@ namespace gradido {
 			inline uint64_t getMinTransactionNr() const { return mMinTransactionNr; }
 			inline uint64_t getTransactionsCount() const;
 
-			date::year_month getOldestYearMonth() const;
-			date::year_month getNewestYearMonth() const;
+			inline date::year_month getOldestYearMonth() const { return mMinYearMonth; }
+			inline date::year_month getNewestYearMonth() const { return mMaxYearMonth; }
+			size_t yearMonthToIndex(date::year year, date::month month) const;
+			date::year_month indexToYearMonth(size_t index) const;
 			inline TimepointInterval filteredTimepointInterval(const gradido::blockchain::Filter& filter) const;
 
 			static inline bool canMatchWithoutDeserialize(const Filter& filter);
 
 		protected:
+			size_t yearMonthToIndexUpdateBounds(date::year year, date::month month);
 			bool addIndicesForTransaction(
 				gradido::data::TransactionType transactionType,
 				uint32_t coinCommunityIdIndex,
@@ -94,11 +97,13 @@ namespace gradido {
 			void clearIndexEntries(); 			
 			uint64_t				 mMaxTransactionNr;
 			uint64_t				 mMinTransactionNr;
+			date::year_month mMinYearMonth;
+			date::year_month mMaxYearMonth;
 
 			struct TransactionsIndexEntry
 			{
 				uint64_t						transactionNr;
-				uint32_t*						addressIndices;
+				uint32_t						addressIndices[4];
 				uint32_t 						coinCommunityIdIndex;
 				gradido::data::TransactionType	transactionType;
 				uint8_t							addressIndiceCount;
@@ -113,10 +118,12 @@ namespace gradido {
 
 			// is used like a cache, even from const
 			mutable AddressIndex mAddressIndex;
-			std::map<uint32_t, data::AddressType> mPublicKeyAddressTypes;
+			// std::map<uint32_t, data::AddressType> mPublicKeyAddressTypes;
 			// TODO: check if replace std::list<std::vector> with std::deque make sense (performance side)
 			// TODO: check if flatten maps to std::vector<FlatTransactionsIndexEntry> mEntries[month * years] make sense
-			std::map<date::year, std::map<date::month, std::list<std::vector<TransactionsIndexEntry>>>> mYearMonthAddressIndexEntries;
+			// std::map<date::year, std::map<date::month, std::list<std::vector<TransactionsIndexEntry>>>> mYearMonthAddressIndexEntries;
+			// fist index start from min year month as 0
+			std::vector<std::deque<TransactionsIndexEntry>> mYearMonthAddressIndexEntries;
 			std::unordered_map<uint32_t, std::deque<uint64_t>> mBalanceChangingTxPerAccountPublicKey;
 		};
 

@@ -1,27 +1,28 @@
 #ifndef __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_ABSTRACT_H
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_ABSTRACT_H
 
-
-
 #include "gradido_blockchain/types.h"
-#include "gradido_blockchain/GradidoUnit.h"
 #include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
-#include "gradido_blockchain/lib/ExpireCache.h"
+#include "gradido_blockchain/lib/TimepointInterval.h"
 #include "gradido_blockchain/data/Timestamp.h"
 
-#include "TransactionEntry.h"
 #include "Filter.h"
-#include "SearchDirection.h"
 #include "../data/AddressType.h"
 #include "../data/TransactionTriggerEvent.h"
 
 
 #include <list>
+#include <memory>
+#include <vector>
 
 namespace gradido {	
 	namespace data {
+		class AccountBalance;
+		class GradidoTransaction;
 		class LedgerAnchor;
+
+		using ConstGradidoTransactionPtr = std::shared_ptr<const GradidoTransaction>;
 	}
 	namespace interaction {
 		namespace createConfirmedTransaction {
@@ -30,6 +31,9 @@ namespace gradido {
 	}
 	namespace blockchain {
 		class AbstractProvider;
+		class TransactionEntry;
+		using ConstTransactionEntryPtr = std::shared_ptr<const TransactionEntry>;
+		using TransactionEntries = std::vector<ConstTransactionEntryPtr>;
 
 		class GRADIDOBLOCKCHAIN_EXPORT Abstract
 		{
