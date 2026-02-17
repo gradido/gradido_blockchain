@@ -291,32 +291,27 @@ namespace gradido {
 		
 		std::vector<uint64_t> TransactionsIndex::findTransactions(const Filter& originalFilter, const IDictionary<PublicKey>& publicKeyDictionary) const
 		{
-			uint32_t updatedBalancePublicKeyIndex = 0;
 			uint64_t lastBalanceChangedTransactionNr = 0;
-			Filter filter = originalFilter;
+			CompactFilter filter(originalFilter, publicKeyDictionary);
 
-			if (filter.updatedBalancePublicKey && !filter.updatedBalancePublicKey->isEmpty()) {
-				auto updatedBalancePublicKeyIndexOptional = publicKeyDictionary.getIndexForData(toPublicKey(filter.updatedBalancePublicKey));
-				if (updatedBalancePublicKeyIndexOptional.has_value()) {
-					updatedBalancePublicKeyIndex = updatedBalancePublicKeyIndexOptional.value();
-					lastBalanceChangedTransactionNr = mAddressIndex.lastBalanceChanged(updatedBalancePublicKeyIndex);
-					if (lastBalanceChangedTransactionNr && (!filter.maxTransactionNr || filter.maxTransactionNr > lastBalanceChangedTransactionNr)) {
-						filter.maxTransactionNr = lastBalanceChangedTransactionNr;
-					}
-				}
-				else {
-					return {};
+			if (PublicKeySearchType::MissingIndex == filter.publicKeySearchType) {
+				return {};
+			}
+			else if (PublicKeySearchType::BalanceChangingPublicKey == filter.publicKeySearchType) {
+				lastBalanceChangedTransactionNr = mAddressIndex.lastBalanceChanged(filter.publicKeyIndex);
+				if (lastBalanceChangedTransactionNr && (!filter.maxTransactionNr || filter.maxTransactionNr > lastBalanceChangedTransactionNr)) {
+					filter.maxTransactionNr = lastBalanceChangedTransactionNr;
 				}
 			}
 			
 			// if user ask for last balance changing transaction
 			if (
 				lastBalanceChangedTransactionNr
-				&& filter.pagination.size == 1 && filter.pagination.page < 2
-				&& filter.searchDirection == SearchDirection::DESC
-				&& filter.timepointInterval.isEmpty()
-				&& !filter.filterFunction
-				&& !filter.coinCommunityIdIndex.has_value()
+				&& originalFilter.pagination.size == 1 && originalFilter.pagination.page < 2
+				&& originalFilter.searchDirection == SearchDirection::DESC
+				&& originalFilter.timepointInterval.isEmpty()
+				&& !originalFilter.filterFunction
+				&& !originalFilter.coinCommunityIdIndex.has_value()
 				) {
 				if (lastBalanceChangedTransactionNr >= filter.minTransactionNr && lastBalanceChangedTransactionNr <= filter.maxTransactionNr) {
 					return { lastBalanceChangedTransactionNr };
@@ -329,24 +324,12 @@ namespace gradido {
 				return {};
 			}
 
-			uint32_t publicKeyIndex = 0;
-			if (filter.involvedPublicKey && !filter.involvedPublicKey->isEmpty()) {
-				auto involvedPublicKeyIndexOptional = publicKeyDictionary.getIndexForData(toPublicKey(filter.involvedPublicKey));
-				if (involvedPublicKeyIndexOptional.has_value()) {
-					publicKeyIndex = involvedPublicKeyIndexOptional.value();
-				}
-				else {
-					// if public key not exist, no transaction can match
-					return {};
-				}
-			}			
-
 			std::vector<uint64_t> result;
-			if (filter.pagination.size) {
-				result.reserve(filter.pagination.size);
+			if (originalFilter.pagination.size) {
+				result.reserve(originalFilter.pagination.size);
 			}
 
-			auto interval = filteredTimepointInterval(filter);
+			auto interval = filteredTimepointInterval(originalFilter);
 			int paginationCursor = 0;
 			if (SearchDirection::ASC == filter.searchDirection) 
 			{
@@ -359,12 +342,12 @@ namespace gradido {
 					}
 					for (const auto& entry : mYearMonthAddressIndexEntries[yearMonthIndex]) 
 					{
-						if (!filter.pagination.hasCapacityLeft(result.size())) {
+						if (!originalFilter.pagination.hasCapacityLeft(result.size())) {
 							return result;
 						}
-						auto filterResult = entry.isMatchingFilter(filter, publicKeyIndex, updatedBalancePublicKeyIndex);
+						auto filterResult = entry.isMatchingFilter(filter);
 						if ((filterResult & FilterResult::USE) == FilterResult::USE) {
-							if (paginationCursor >= filter.pagination.skipEntriesCount()) {
+							if (paginationCursor >= originalFilter.pagination.skipEntriesCount()) {
 								result.push_back(entry.transactionNr);
 							}
 							paginationCursor++;
@@ -388,12 +371,13 @@ namespace gradido {
 					}
 					for (auto entryIt = bucket.rbegin(); entryIt != bucket.rend(); ++entryIt)
 					{
-						if (!filter.pagination.hasCapacityLeft(result.size())) {
+						if (!originalFilter.pagination.hasCapacityLeft(result.size())) {
 							return result;
 						}
-						auto filterResult = entryIt->isMatchingFilter(filter, publicKeyIndex, updatedBalancePublicKeyIndex);
+						
+						auto filterResult = entryIt->isMatchingFilter(filter);
 						if ((filterResult & FilterResult::USE) == FilterResult::USE) {
-							if (paginationCursor >= filter.pagination.skipEntriesCount()) {
+							if (paginationCursor >= originalFilter.pagination.skipEntriesCount()) {
 								result.push_back(entryIt->transactionNr);
 							}
 							paginationCursor++;
@@ -405,7 +389,7 @@ namespace gradido {
 				}
 			}
 			else {
-				throw GradidoUnhandledEnum("findTransactions not implemented for", "SearchDirection", enum_name(filter.searchDirection).data());
+				throw GradidoUnhandledEnum("findTransactions not implemented for", "SearchDirection", enum_name(originalFilter.searchDirection).data());
 			}
 			return result;
 		}
@@ -448,45 +432,25 @@ namespace gradido {
 		size_t TransactionsIndex::countTransactions(const Filter& originalFilter, const IDictionary<PublicKey>& publicKeyDictionary) const
 		{
 			// prefilter, early exit
-			uint32_t updatedBalancePublicKeyIndex = 0;
 			uint64_t lastBalanceChangedTransactionNr = 0;
-			Filter filter = originalFilter;
+			CompactFilter filter(originalFilter, publicKeyDictionary);
 
-			if (filter.updatedBalancePublicKey && !filter.updatedBalancePublicKey->isEmpty()) {
-				auto updatedBalancePublicKeyIndexOptional = publicKeyDictionary.getIndexForData(toPublicKey(filter.updatedBalancePublicKey));
-				if (updatedBalancePublicKeyIndexOptional.has_value()) {
-					updatedBalancePublicKeyIndex = updatedBalancePublicKeyIndexOptional.value();
-					lastBalanceChangedTransactionNr = mAddressIndex.lastBalanceChanged(updatedBalancePublicKeyIndex);
-					if (lastBalanceChangedTransactionNr && (!filter.maxTransactionNr || filter.maxTransactionNr > lastBalanceChangedTransactionNr)) {
-						filter.maxTransactionNr = lastBalanceChangedTransactionNr;
-					}
-				}
-				else {
-					return 0;
+			if (PublicKeySearchType::MissingIndex == filter.publicKeySearchType) {
+				return 0;
+			}
+			else if (PublicKeySearchType::BalanceChangingPublicKey == filter.publicKeySearchType) {
+				lastBalanceChangedTransactionNr = mAddressIndex.lastBalanceChanged(filter.publicKeyIndex);
+				if (lastBalanceChangedTransactionNr && (!filter.maxTransactionNr || filter.maxTransactionNr > lastBalanceChangedTransactionNr)) {
+					filter.maxTransactionNr = lastBalanceChangedTransactionNr;
 				}
 			}
-
+			
 			if ((filter.minTransactionNr && filter.minTransactionNr > mMaxTransactionNr) ||
 				(filter.maxTransactionNr && filter.maxTransactionNr < mMinTransactionNr)) {
 				return 0;
 			}
 
-			uint32_t publicKeyIndex = 0;
-			if (filter.involvedPublicKey && !filter.involvedPublicKey->isEmpty()) {
-				auto involvedPublicKeyIndexOptional = publicKeyDictionary.getIndexForData(toPublicKey(filter.involvedPublicKey));
-				if (involvedPublicKeyIndexOptional.has_value()) {
-					publicKeyIndex = involvedPublicKeyIndexOptional.value();
-				}
-				else {
-					// if public key not exist, no transaction can match
-					return 0;
-				}
-			}
-			if (filter.updatedBalancePublicKey && !filter.updatedBalancePublicKey->isEmpty() && !updatedBalancePublicKeyIndex) {
-				return 0;
-			}
-
-			auto interval = filteredTimepointInterval(filter);
+			auto interval = filteredTimepointInterval(originalFilter);
 			size_t result = 0;
 
 			for (auto intervalIt = interval.begin(); intervalIt != interval.end(); ++intervalIt) {
@@ -496,7 +460,7 @@ namespace gradido {
 					continue;
 				}
 				for (const auto& entry : mYearMonthAddressIndexEntries[yearMonthIndex]) {
-					auto filterResult = entry.isMatchingFilter(filter, publicKeyIndex, updatedBalancePublicKeyIndex);
+					auto filterResult = entry.isMatchingFilter(filter);
 					if ((filterResult & FilterResult::USE) == FilterResult::USE) {
 						++result;
 					}
@@ -564,17 +528,13 @@ namespace gradido {
 			mYearMonthAddressIndexEntries.clear();
 		}
 
-		FilterResult TransactionsIndex::TransactionsIndexEntry::isMatchingFilter(
-			const gradido::blockchain::Filter& filter, 
-			const uint32_t publicKeyIndex,
-			const uint32_t balanceChangingIndex
-		) const
+		FilterResult TransactionsIndex::TransactionsIndexEntry::isMatchingFilter(const CompactFilter& filter) const
 		{
 			if (filter.transactionType != TransactionType::NONE
 				&& filter.transactionType != transactionType) {
 				return FilterResult::DISMISS;
-			}			
-			if (filter.coinCommunityIdIndex.has_value() && coinCommunityIdIndex != filter.coinCommunityIdIndex.value()) {
+			}		
+			if (filter.hasCoinCommunityIndex && coinCommunityIdIndex != filter.coinCommunityIdIndex) {
 				return FilterResult::DISMISS;
 			}
 			if (filter.minTransactionNr && filter.minTransactionNr > transactionNr) {
@@ -590,18 +550,17 @@ namespace gradido {
 				return FilterResult::DISMISS;
 			}
 
-			if (balanceChangingIndex) {				
+			if (PublicKeySearchType::BalanceChangingPublicKey == filter.publicKeySearchType) {				
 				for (int iPublicKeyIndex = 0; iPublicKeyIndex < addressIndiceCount; iPublicKeyIndex++) {
-					 if ((isBalanceChanging & (uint8_t(1) << iPublicKeyIndex)) && balanceChangingIndex == addressIndices[iPublicKeyIndex]) {
+					 if ((isBalanceChanging & (uint8_t(1) << iPublicKeyIndex)) && filter.publicKeyIndex == addressIndices[iPublicKeyIndex]) {
 						return FilterResult::USE;
 					}
 				}
 				return FilterResult::DISMISS;
 			}
-			
-			if (publicKeyIndex) {
+			else if (PublicKeySearchType::InvolvedPublicKey == filter.publicKeySearchType) {
 				for (int iPublicKeyIndex = 0; iPublicKeyIndex < addressIndiceCount; iPublicKeyIndex++) {
-					if (publicKeyIndex == addressIndices[iPublicKeyIndex]) {
+					if (filter.publicKeyIndex == addressIndices[iPublicKeyIndex]) {
 						return FilterResult::USE;
 					}
 				}
@@ -609,6 +568,7 @@ namespace gradido {
 			}
 			
 			return FilterResult::USE;
+			// */
 		}
 	}
 }

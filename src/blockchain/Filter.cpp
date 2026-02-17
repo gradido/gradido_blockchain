@@ -173,7 +173,12 @@ namespace gradido {
 		{
 			if (minTransactionNr != other.minTransactionNr ||
 				maxTransactionNr != other.maxTransactionNr ||
-				!involvedPublicKey->isTheSame(other.involvedPublicKey) ||
+				(!involvedPublicKey && other.involvedPublicKey) ||
+				(involvedPublicKey && !other.involvedPublicKey) ||
+				(involvedPublicKey && !involvedPublicKey->isTheSame(other.involvedPublicKey)) ||
+				(!updatedBalancePublicKey && other.updatedBalancePublicKey) ||
+				(updatedBalancePublicKey && !other.updatedBalancePublicKey) ||
+				(updatedBalancePublicKey && !updatedBalancePublicKey->isTheSame(other.updatedBalancePublicKey)) ||
 				searchDirection != other.searchDirection ||
 				pagination != other.pagination ||
 				coinCommunityIdIndex != other.coinCommunityIdIndex ||

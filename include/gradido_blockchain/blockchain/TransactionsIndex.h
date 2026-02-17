@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_TRANSACTION_INDEX_H
 
 #include "AddressIndex.h"
+#include "CompactFilter.h"
 #include "Filter.h"
 #include "TransactionEntry.h"
 #include "gradido_blockchain/export.h"
@@ -109,11 +110,7 @@ namespace gradido {
 				uint8_t							addressIndiceCount;
 				// Bitmask for addressIndices, if bit is set, transaction has changed account balance of addressIndex
 				uint8_t							isBalanceChanging;
-				gradido::blockchain::FilterResult isMatchingFilter(
-					const gradido::blockchain::Filter& filter, 
-					const uint32_t publicKeyIndex,
-					const uint32_t balanceChangingIndex
-				) const;
+				FilterResult isMatchingFilter(const CompactFilter& filter) const;
 			};
 
 			// is used like a cache, even from const
@@ -123,7 +120,7 @@ namespace gradido {
 			// TODO: check if flatten maps to std::vector<FlatTransactionsIndexEntry> mEntries[month * years] make sense
 			// std::map<date::year, std::map<date::month, std::list<std::vector<TransactionsIndexEntry>>>> mYearMonthAddressIndexEntries;
 			// fist index start from min year month as 0
-			std::vector<std::deque<TransactionsIndexEntry>> mYearMonthAddressIndexEntries;
+			std::vector<std::vector<TransactionsIndexEntry>> mYearMonthAddressIndexEntries;
 			std::unordered_map<uint32_t, std::deque<uint64_t>> mBalanceChangingTxPerAccountPublicKey;
 		};
 

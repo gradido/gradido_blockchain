@@ -439,13 +439,13 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 		);
 		communities[next].transactions.pop();
 		++count;
-		if (timeSinceLastPrint.millis() > 100) {
+	/*	if (timeSinceLastPrint.millis() > 100) {
 			timeSinceLastPrint.reset();
 			printf("\r%u", count);
-		}
+		}*/
 		// if (count > 5000) break;
 	}
-	printf("\r%u\n", count);
+	// printf("\r%u\n", count);
 	printf("%s for deserailize body and confirm %u transactions\n", timeUsed.string().c_str(), count);
 	timeUsed.reset();
 	// bulk verify
