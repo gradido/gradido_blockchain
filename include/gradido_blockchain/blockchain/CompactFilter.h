@@ -7,6 +7,7 @@
 #include "gradido_blockchain/lib/DictionaryInterface.h"
 #include "gradido_blockchain/lib/TimepointInterval.h"
 #include "gradido_blockchain/types.h"
+#include "CompactPagination.h"
 #include "Pagination.h"
 #include "SearchDirection.h"
 #include "Filter.h"
@@ -41,6 +42,7 @@ namespace gradido {
 			SearchDirection searchDirection;
 			PublicKeySearchType publicKeySearchType;			
 			bool hasCoinCommunityIndex;
+			CompactPagination pagination;
 		};
 	}
 }

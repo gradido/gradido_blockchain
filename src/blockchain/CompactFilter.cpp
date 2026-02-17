@@ -7,7 +7,7 @@ namespace gradido {
     CompactFilter::CompactFilter(const Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary)
       : minTransactionNr(filter.minTransactionNr), maxTransactionNr(filter.maxTransactionNr),
       transactionType(filter.transactionType), searchDirection(filter.searchDirection), publicKeySearchType(PublicKeySearchType::None),
-      hasCoinCommunityIndex(false)
+      hasCoinCommunityIndex(false), pagination(filter.pagination)
     {
       if (filter.updatedBalancePublicKey && !filter.updatedBalancePublicKey->isEmpty()) {
         auto publicKeyIndexOptional = publicKeyDictionary.getIndexForData(toPublicKey(filter.updatedBalancePublicKey));

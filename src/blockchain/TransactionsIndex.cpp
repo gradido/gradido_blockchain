@@ -1,5 +1,6 @@
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
+#include "gradido_blockchain/blockchain/CompactFilter.h"
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/TransactionsIndex.h"
 #include "gradido_blockchain/blockchain/RangeUtils.h"
@@ -305,7 +306,7 @@ namespace gradido {
 			}
 			
 			// if user ask for last balance changing transaction
-			if (
+			/*if (
 				lastBalanceChangedTransactionNr
 				&& originalFilter.pagination.size == 1 && originalFilter.pagination.page < 2
 				&& originalFilter.searchDirection == SearchDirection::DESC
@@ -317,7 +318,7 @@ namespace gradido {
 					return { lastBalanceChangedTransactionNr };
 				}
 
-			}
+			}*/
 			// prefilter			
 			if ((filter.minTransactionNr && filter.minTransactionNr > mMaxTransactionNr) ||
 				(filter.maxTransactionNr && filter.maxTransactionNr < mMinTransactionNr)) {
@@ -525,7 +526,9 @@ namespace gradido {
 
 		void TransactionsIndex::clearIndexEntries()
 		{
-			mYearMonthAddressIndexEntries.clear();
+			for (auto& entries : mYearMonthAddressIndexEntries) {
+				entries.clear();
+			}
 		}
 
 		FilterResult TransactionsIndex::TransactionsIndexEntry::isMatchingFilter(const CompactFilter& filter) const
@@ -549,7 +552,6 @@ namespace gradido {
 				}
 				return FilterResult::DISMISS;
 			}
-
 			if (PublicKeySearchType::BalanceChangingPublicKey == filter.publicKeySearchType) {				
 				for (int iPublicKeyIndex = 0; iPublicKeyIndex < addressIndiceCount; iPublicKeyIndex++) {
 					 if ((isBalanceChanging & (uint8_t(1) << iPublicKeyIndex)) && filter.publicKeyIndex == addressIndices[iPublicKeyIndex]) {
@@ -568,7 +570,6 @@ namespace gradido {
 			}
 			
 			return FilterResult::USE;
-			// */
 		}
 	}
 }

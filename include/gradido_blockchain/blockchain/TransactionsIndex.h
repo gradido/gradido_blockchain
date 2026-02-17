@@ -2,7 +2,6 @@
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_TRANSACTION_INDEX_H
 
 #include "AddressIndex.h"
-#include "CompactFilter.h"
 #include "Filter.h"
 #include "TransactionEntry.h"
 #include "gradido_blockchain/export.h"
@@ -28,6 +27,7 @@ namespace gradido {
 	namespace blockchain {
 
 		class AbstractProvider;
+		class CompactFilter;
 
 	/*!
 		* @author einhornimmond
@@ -54,15 +54,15 @@ namespace gradido {
 
 			//! \brief search transaction nrs for search criteria in filter, ignore filter function
 			//! \return transaction nrs
-			std::vector<uint64_t> findTransactions(const gradido::blockchain::Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary) const;
+			std::vector<uint64_t> findTransactions(const Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary) const;
 			std::vector<uint64_t> getBalanceChangingTxs(uint32_t publicKeyIndex) const;
 			
 			StateChange<data::AddressType> getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<PublicKey>& publicKeyDictionary) const;
 
-			inline void updateAddressIndex(const gradido::blockchain::TransactionEntry& transactionEntry, const IDictionary<PublicKey>& publicKeyDictionary) const;
+			inline void updateAddressIndex(const TransactionEntry& transactionEntry, const IDictionary<PublicKey>& publicKeyDictionary) const;
 
 			//! count all, ignore pagination
-			size_t countTransactions(const gradido::blockchain::Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary) const;
+			size_t countTransactions(const Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary) const;
 			size_t countBalanceChangingTxs(uint32_t publicKeyIndex) const;
 
 			//! \brief find transaction nrs from specific month and year
