@@ -26,6 +26,7 @@ namespace gradido {
 		};
 		struct GRADIDOBLOCKCHAIN_EXPORT CompactFilter
 		{
+			CompactFilter();
 			CompactFilter(const Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary);
 			//! transaction number to start from, 0 default
 			uint64_t minTransactionNr;

@@ -42,10 +42,12 @@ namespace gradido {
 			: mMaxTransactionNr(0), mMinTransactionNr(0), mMinYearMonth(date::year(0), date::month(0)), mMaxYearMonth(date::year(0), date::month(0))
 		{
 			mYearMonthAddressIndexEntries.resize(100);
+			mFilterCount = 0;
 		}
 
 		TransactionsIndex::~TransactionsIndex()
 		{
+			LOG_F(INFO, "%llu times filter called", mFilterCount);
 			reset();
 		}
 
@@ -325,11 +327,14 @@ namespace gradido {
 				return {};
 			}
 
+			if (!originalFilter.timepointInterval.isEmpty() && !originalFilter.timepointInterval.isOverlap({ mMinYearMonth, mMaxYearMonth })) {
+				return {};
+			}
+
 			std::vector<uint64_t> result;
 			if (originalFilter.pagination.size) {
 				result.reserve(originalFilter.pagination.size);
 			}
-
 			auto interval = filteredTimepointInterval(originalFilter);
 			int paginationCursor = 0;
 			if (SearchDirection::ASC == filter.searchDirection) 
@@ -346,6 +351,7 @@ namespace gradido {
 						if (!originalFilter.pagination.hasCapacityLeft(result.size())) {
 							return result;
 						}
+						mFilterCount++;
 						auto filterResult = entry.isMatchingFilter(filter);
 						if ((filterResult & FilterResult::USE) == FilterResult::USE) {
 							if (paginationCursor >= originalFilter.pagination.skipEntriesCount()) {
@@ -375,7 +381,7 @@ namespace gradido {
 						if (!originalFilter.pagination.hasCapacityLeft(result.size())) {
 							return result;
 						}
-						
+						mFilterCount++;
 						auto filterResult = entryIt->isMatchingFilter(filter);
 						if ((filterResult & FilterResult::USE) == FilterResult::USE) {
 							if (paginationCursor >= originalFilter.pagination.skipEntriesCount()) {

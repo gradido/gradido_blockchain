@@ -23,13 +23,13 @@ namespace gradido {
 
 		}
 
-		bool Abstract::isTransactionExist(ConstGradidoTransactionPtr gradidoTransaction) const
+		bool Abstract::isTransactionExist(ConstGradidoTransactionPtr gradidoTransaction, data::Timestamp confirmedAt) const
 		{
 			const auto& body = gradidoTransaction->getTransactionBody();
 			FilterBuilder builder;
 			return findOne(builder
 				.setTransactionType(body->getTransactionType())
-				.setTimepointInterval(TimepointInterval(body->getCreatedAt()))
+				.setTimepointInterval(TimepointInterval(confirmedAt))
 				.setFilterFunction([gradidoTransaction](const TransactionEntry& entry) -> FilterResult {
 					const auto& otherGradidoTransaction = entry.getConfirmedTransaction()->getGradidoTransaction();
 					if (gradidoTransaction->isTheSame(*otherGradidoTransaction)) {

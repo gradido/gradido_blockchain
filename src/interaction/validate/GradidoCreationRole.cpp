@@ -2,6 +2,7 @@
 #include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/data/AddressType.h"
+#include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/interaction/calculateCreationSum/Context.h"
 #include "gradido_blockchain/interaction/validate/GradidoCreationRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
@@ -20,6 +21,7 @@ using DataTypeConverter::timePointToString;
 
 namespace gradido {
 	using blockchain::Filter;
+	using data::adapter::toPublicKeyIndex;
 	using data::AddressType, data::SignatureMap, data::GradidoCreation, data::ConfirmedTransaction;
 
 	namespace interaction {

@@ -60,7 +60,7 @@ namespace gradido {
 			virtual void removeTransactionTriggerEvent(const data::TransactionTriggerEvent& transactionTriggerEvent) = 0;
 
 			//! this implementation use findOne so it isn't neccessarly the fastest way of doing this
-			virtual bool isTransactionExist(data::ConstGradidoTransactionPtr gradidoTransaction) const;
+			virtual bool isTransactionExist(data::ConstGradidoTransactionPtr gradidoTransaction, data::Timestamp confirmedAt) const;
 
 			//! return events in asc order of targetDate
 			virtual std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> findTransactionTriggerEventsInRange(TimepointInterval range) = 0;

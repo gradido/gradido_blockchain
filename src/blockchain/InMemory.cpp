@@ -189,9 +189,12 @@ namespace gradido {
 		}
 
 
-		bool InMemory::isTransactionExist(data::ConstGradidoTransactionPtr gradidoTransaction) const
+		/*bool InMemory::isTransactionExist(data::ConstGradidoTransactionPtr gradidoTransaction) const
 		{
 			std::lock_guard _lock(mWorkMutex);
+			Filter f;
+			auto createdAt = gradidoTransaction->getTransactionBody()->getCreatedAt();
+			f.timepointInterval = gradidoTransaction->getTransactionBody()->getCreatedAt();
 			auto signature = gradidoTransaction->getFingerprint();
 			auto range = mTransactionFingerprintTransactionEntry.equal_range(*signature);
 			for (auto& it = range.first; it != range.second; ++it) {
@@ -202,7 +205,7 @@ namespace gradido {
 			}
 			return false;
 		}
-
+		*/
 		//! return events in asc order of targetDate
 		std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> InMemory::findTransactionTriggerEventsInRange(TimepointInterval range)
 		{

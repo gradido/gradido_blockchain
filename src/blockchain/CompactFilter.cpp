@@ -4,8 +4,18 @@
 namespace gradido {
   using data::adapter::toPublicKey;
   namespace blockchain {
+    CompactFilter::CompactFilter()
+      : minTransactionNr(0), maxTransactionNr(0),
+      publicKeyIndex(0), coinCommunityIdIndex(0),
+      transactionType(data::TransactionType::NONE), searchDirection(SearchDirection::DESC), publicKeySearchType(PublicKeySearchType::None),
+      hasCoinCommunityIndex(false)
+    {
+      
+    }
+
     CompactFilter::CompactFilter(const Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary)
       : minTransactionNr(filter.minTransactionNr), maxTransactionNr(filter.maxTransactionNr),
+      publicKeyIndex(0), coinCommunityIdIndex(0),
       transactionType(filter.transactionType), searchDirection(filter.searchDirection), publicKeySearchType(PublicKeySearchType::None),
       hasCoinCommunityIndex(false), pagination(filter.pagination)
     {

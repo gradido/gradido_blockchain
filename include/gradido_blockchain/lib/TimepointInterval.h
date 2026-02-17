@@ -29,7 +29,9 @@ public:
 	inline Timepoint getStartDate() const { return mStartDate; }
 	inline Timepoint getEndDate() const { return mEndDate; }
 	inline void setStartDate(Timepoint startDate) { mStartDate = startDate; }
+	inline void setStartDate(const date::year_month& startDate) { mStartDate = DataTypeConverter::monthYearToTimepoint(startDate);}
 	inline void setEndDate(Timepoint endDate) { mEndDate = endDate; }
+	inline void setEndDate(const date::year_month& endDate) { mEndDate = DataTypeConverter::monthYearToTimepoint(endDate); }
 
 	bool isEmpty() const { return mStartDate.time_since_epoch().count() == 0 && mEndDate.time_since_epoch().count() == 0; }
 	bool isInsideInterval(date::month month, date::year year) const
@@ -42,6 +44,10 @@ public:
 
 		if (year < startDate.year() || year > endDate.year()) { return false; }
 		return true;
+	}
+	bool isOverlap(const TimepointInterval& other) const {
+		if (isEmpty() || other.isEmpty()) return false;
+		return !(mEndDate < other.mStartDate || mStartDate > other.mEndDate);
 	}
 
 	bool isInsideInterval(Timepoint date) const {

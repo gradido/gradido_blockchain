@@ -8,6 +8,7 @@
 #include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
 #include "gradido_blockchain/blockchain/StateChange.h"
 #include "gradido_protobuf_zig.h"
@@ -18,6 +19,8 @@
 #include <map>
 #include <memory>
 #include <vector>
+
+using DataTypeConverter::monthYearToTimepoint;
 
 namespace memory {
 	class Block;
@@ -115,6 +118,7 @@ namespace gradido {
 
 			// is used like a cache, even from const
 			mutable AddressIndex mAddressIndex;
+			mutable size_t mFilterCount;
 			// std::map<uint32_t, data::AddressType> mPublicKeyAddressTypes;
 			// TODO: check if replace std::list<std::vector> with std::deque make sense (performance side)
 			// TODO: check if flatten maps to std::vector<FlatTransactionsIndexEntry> mEntries[month * years] make sense
@@ -145,13 +149,22 @@ namespace gradido {
 
 		TimepointInterval TransactionsIndex::filteredTimepointInterval(const gradido::blockchain::Filter& filter) const
 		{
-			TimepointInterval interval(getOldestYearMonth(), getNewestYearMonth());
+			auto minYearMonthTimepoint = monthYearToTimepoint(getOldestYearMonth());
+			auto maxYearMonthTimepoint = monthYearToTimepoint(getNewestYearMonth());
+			TimepointInterval interval(minYearMonthTimepoint, maxYearMonthTimepoint);
+			
 			if (!filter.timepointInterval.isEmpty()) {
 				if (interval.getStartDate() < filter.timepointInterval.getStartDate()) {
 					interval.setStartDate(filter.timepointInterval.getStartDate());
 				}
+				if (interval.getStartDate() > maxYearMonthTimepoint) {
+					interval.setStartDate(maxYearMonthTimepoint);
+				}
 				if (interval.getEndDate() > filter.timepointInterval.getEndDate()) {
 					interval.setEndDate(std::max(interval.getStartDate(), filter.timepointInterval.getEndDate()));
+				}
+				if (interval.getEndDate() < interval.getEndDate()) {
+					interval.setEndDate(interval.getEndDate());
 				}
 			}
 			return interval;
