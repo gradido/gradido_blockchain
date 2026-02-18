@@ -29,8 +29,8 @@ namespace gradido::data {
       memcpy(result.pubkey, grdwAccountBalance.getPublicKey()->data(), 32);
       if (communityIdIndex != grdwAccountBalance.getCoinCommunityIdIndex()) {
         auto communityId = g_appContext->getCommunityIds().getDataForIndexOrThrow(grdwAccountBalance.getCoinCommunityIdIndex());
-        // subtract one from size, because grdu_reserve_copy_string add a \0 nevertheless
-        result.community_id = grdu_reserve_copy_string(alloc, communityId.data(), communityId.size() - 1);
+        
+        result.community_id = grdu_reserve_copy_string(alloc, communityId.data(), communityId.size());
       }
       else {
         result.community_id = nullptr;

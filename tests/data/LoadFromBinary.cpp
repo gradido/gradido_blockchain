@@ -393,17 +393,19 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 
 			alloc.last_index = 0;
 			auto decodeResult = grdw_confirmed_transaction_decode(&alloc, &tx, (uint8_t*)readFromFileStaticBuffer, txSize);
+			
 			ASSERT_EQ(decodeResult.state, GRDW_ENCODING_ERROR_SUCCESS);
 			if (GRDW_LEDGER_ANCHOR_TYPE_NODE_TRIGGER_TRANSACTION_ID != tx.ledger_anchor.type) {
 				com.transactions.push(ConfirmedTransaction::fromGrdw(&tx, i));
-				/*
-				auto compact = make_shared<ConfirmedGradidoTx>(ConfirmedGradidoTx::fromGrdwConfirmedTransaction(&tx, i));				
+				
+				/*auto compact = make_shared<ConfirmedGradidoTx>(ConfirmedGradidoTx::fromGrdwConfirmedTransaction(&tx, i));
 				alloc.last_index = 0;
 				decodeResult = grdw_transaction_body_decode(&alloc, &body, tx.transaction.body_bytes, tx.transaction.body_bytes_size);
 				ASSERT_EQ(decodeResult.state, GRDW_ENCODING_ERROR_SUCCESS);
 				compact->fillFromGrdwTransactionBody(&body);
-				com.compactTransactions.push(compact);
-				*/
+				
+				// com.compactTransactions.push(compact);
+				// */
 			}
 
 			if (readed + 32 >= fileSize) {
@@ -441,6 +443,9 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 		}
 		const auto& confirmedTx = communities[next].transactions.front();
 		auto tx = communities[next].transactions.front()->getGradidoTransaction();
+		if (tx->getTransactionBody()->getType() == CrossGroupType::INBOUND) {
+			int zahl = 0;
+		}
 		ASSERT_NO_THROW(
 			communities[next].blockchain->createAndAddConfirmedTransactionExternFast(
 				tx, confirmedTx->getLedgerAnchor(), confirmedTx->getAccountBalances()
@@ -462,6 +467,16 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 		verifySignatures(Filter::ALL_TRANSACTIONS, communities[i].communityId, ThreadingPolicy::AllExceptOne);
 	}
 	printf("%s for bulk verify all\n", timeUsed.string().c_str());
+
+	// test request cross group balance
+	Filter f = Filter::ALL_TRANSACTIONS;
+	// f.coinCommunityIdIndex = 0;
+	auto txs = communities[1].blockchain->findAll(f);
+	printf("found txs: %d\n", txs.size());
+	for (const auto& tx : txs) {
+		auto coin = g_appContext->getCommunityIds().getDataForIndexOrThrow(tx->getConfirmedTransaction()->getAccountBalances()[0].getCoinCommunityIdIndex());
+		printf("coin color: %s\n", coin.c_str());
+	}
 
 	int zahl = 0;
 	printf("%s time for all\n", timeUsedAll.string().c_str());
