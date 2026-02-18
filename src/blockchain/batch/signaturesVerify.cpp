@@ -7,6 +7,7 @@
 #include "gradido_blockchain/blockchain/Pagination.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/crypto/ByteArray.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 
 #include "sodium.h"

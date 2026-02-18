@@ -5,6 +5,7 @@
 #include "gradido_blockchain/memory/Block.h"
 #include "SearchDirection.h"
 #include "Pagination.h"
+#include "PublicKeySearchType.h"
 #include "FilterResult.h"
 #include "FilterCriteria.h"
 #include "TransactionEntry.h"
@@ -57,7 +58,7 @@ namespace gradido {
 			uint64_t maxTransactionNr;
 			//! return only transaction in which the public key is involved, either directly in the transaction or as signer
 			memory::ConstBlockPtr involvedPublicKey;
-
+			
 			//! return only transaction in which public key account balance was changed
 			memory::ConstBlockPtr updatedBalancePublicKey;
 			//! search direction and result order, default: DESC

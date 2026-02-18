@@ -8,22 +8,19 @@
 #include "gradido_blockchain/lib/TimepointInterval.h"
 #include "gradido_blockchain/types.h"
 #include "CompactPagination.h"
+#include "CommunityIdType.h"
 #include "Pagination.h"
 #include "SearchDirection.h"
 #include "Filter.h"
+#include "PublicKeySearchType.h"
 #include "FilterResult.h"
 
 namespace gradido {
 	namespace data::compact {
-		// struct 
+		struct ConfirmedGradidoTx;
 	}
 	namespace blockchain {
-		enum PublicKeySearchType : uint8_t {
-			None,
-			InvolvedPublicKey,
-			BalanceChangingPublicKey,
-			MissingIndex
-		};
+		
 		struct GRADIDOBLOCKCHAIN_EXPORT CompactFilter
 		{
 			CompactFilter();
@@ -35,15 +32,23 @@ namespace gradido {
 			//! return only transaction in which the public key is involved, either directly in the transaction or as signer
 			uint32_t publicKeyIndex;
 			
-			//! for colored coins, default = "" no filtering
+			//! for colored coins, index starts with 0 so to check if it is actuall set, check hasCoinCommunityIndex
 			uint32_t coinCommunityIdIndex;
 
 			//! transaction type
 			data::TransactionType transactionType;
+			//! search direction and result order, default: DESC
 			SearchDirection searchDirection;
+			//! type of data publicKeyIndex contains
 			PublicKeySearchType publicKeySearchType;			
-			bool hasCoinCommunityIndex;
-			CompactPagination pagination;
+			//! if true, coinCommunityIdIndex has a value
+			CommunityIdType communityIdType;
+			//! search result scope 
+			CompactPagination pagination; 
+			//! interval between two dates with 1 month resolution
+			TimepointInterval timepointInterval;
+
+			FilterResult matches(const data::compact::ConfirmedGradidoTx& confirmedTx, FilterCriteria type) const;
 		};
 	}
 }

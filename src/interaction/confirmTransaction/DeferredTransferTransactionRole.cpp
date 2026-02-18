@@ -1,5 +1,6 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/data/TransactionTriggerEvent.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/confirmTransaction/DeferredTransferTransactionRole.h"
 
 namespace gradido {

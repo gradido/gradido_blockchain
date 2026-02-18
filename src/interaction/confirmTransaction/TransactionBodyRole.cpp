@@ -1,3 +1,5 @@
+#include "gradido_blockchain/data/GradidoTransaction.h"
+#include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"

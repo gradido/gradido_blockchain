@@ -116,6 +116,11 @@ namespace serialization {
 		return rapidjson::Value(s.data(), s.size(), alloc);
 	}
 
+	template<>
+	inline rapidjson::Value toJson(const uint32_t& v, rapidjson::Document::AllocatorType& _alloc) {
+		return rapidjson::Value(v);
+	}
+
 	template<typename T>
 	requires std::is_enum_v<T>
 	rapidjson::Value toJson(const T& value, rapidjson::Document::AllocatorType& alloc) {

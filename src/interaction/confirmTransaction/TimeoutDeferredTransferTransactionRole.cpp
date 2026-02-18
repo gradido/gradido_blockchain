@@ -1,4 +1,5 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/interaction/confirmTransaction/TimeoutDeferredTransferTransactionRole.h"
 

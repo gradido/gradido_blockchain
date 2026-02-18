@@ -2,6 +2,7 @@
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/memory/Block.h"

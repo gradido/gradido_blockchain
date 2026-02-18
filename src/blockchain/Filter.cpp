@@ -1,6 +1,18 @@
 #include "gradido_blockchain/blockchain/Filter.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/TransactionType.h"
+#include "gradido_blockchain/memory/Block.h"
+
+#include <optional>
+#include <functional>
+#include <memory>
+
+using memory::ConstBlockPtr;
+using std::optional, std::function;
+using std::shared_ptr;
 
 namespace gradido {
+	using data::TransactionType;
 	namespace blockchain {
 
 		Filter::Filter()
@@ -16,7 +28,7 @@ namespace gradido {
 			: minTransactionNr(0),
 			maxTransactionNr(0),
 			searchDirection(SearchDirection::DESC),
-			transactionType(data::TransactionType::NONE),
+			transactionType(TransactionType::NONE),
 			filterFunction(_filterFunction)			
 		{
 		}
@@ -27,10 +39,10 @@ namespace gradido {
 			memory::ConstBlockPtr _involvedPublicKey /*= nullptr*/,
 			SearchDirection _searchDirection /*= SearchDirection::DESC*/,
 			Pagination _pagination /*= Pagination(0)*/,
-			std::optional<uint32_t> _coinCommunityIdIndex /*= std::nullopt() */,
+			optional<uint32_t> _coinCommunityIdIndex /*= std::nullopt() */,
 			TimepointInterval _timepointInterval/* = MonthYearInterval()*/,
-			data::TransactionType _transactionType /* = data::TransactionType::NONE*/,
-			std::function<FilterResult(const TransactionEntry&)> _filterFunction/* = nullptr*/
+			TransactionType _transactionType /* = data::TransactionType::NONE*/,
+			function<FilterResult(const TransactionEntry&)> _filterFunction/* = nullptr*/
 		) :
 			minTransactionNr(_minTransactionNr),
 			maxTransactionNr(_maxTransactionNr),
@@ -47,9 +59,9 @@ namespace gradido {
 		// constructor for calculate creation sum in validate GradidoCreationRole
 		Filter::Filter(
 			uint64_t _maxTransactionNr,
-			memory::ConstBlockPtr _involvedPublicKey,
+			ConstBlockPtr _involvedPublicKey,
 			TimepointInterval _timepointInterval,
-			std::function<FilterResult(const TransactionEntry&)> _filterFunction
+			function<FilterResult(const TransactionEntry&)> _filterFunction
 		) :
 			minTransactionNr(0),
 			maxTransactionNr(_maxTransactionNr),
@@ -64,10 +76,10 @@ namespace gradido {
 		// constructor for calculate account balance
 		Filter::Filter(
 			uint64_t _maxTransactionNr,
-			memory::ConstBlockPtr _involvedPublicKey,
+			ConstBlockPtr _involvedPublicKey,
 			SearchDirection _searchDirection,
-			std::optional<uint32_t> _coinCommunityIdIndex,
-			std::function<FilterResult(const TransactionEntry&)> _filterFunction
+			optional<uint32_t> _coinCommunityIdIndex,
+			function<FilterResult(const TransactionEntry&)> _filterFunction
 		) :
 			minTransactionNr(0),
 			maxTransactionNr(_maxTransactionNr),
@@ -99,7 +111,7 @@ namespace gradido {
 			return f;
 		}
 
-		FilterResult Filter::matches(std::shared_ptr<const TransactionEntry> entry, FilterCriteria type) const
+		FilterResult Filter::matches(shared_ptr<const TransactionEntry> entry, FilterCriteria type) const
 		{
 			// without needing deserialize transaction
 			if ((type & FilterCriteria::TRANSACTION_NR) == FilterCriteria::TRANSACTION_NR) 

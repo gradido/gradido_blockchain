@@ -1,3 +1,5 @@
+#include "gradido_blockchain/blockchain/CompactFilter.h"
+#include "gradido_blockchain/blockchain/CompactPagination.h"
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/Pagination.h"
 #include "gradido_blockchain/export.h"
@@ -8,6 +10,10 @@ using namespace gradido::blockchain;
 
 namespace serialization {
 	DEFINE_TO_JSON(Pagination, {
+		obj.AddMember("size", value.size, alloc);
+		obj.AddMember("page", value.page, alloc);
+	})
+	DEFINE_TO_JSON(CompactPagination, {
 		obj.AddMember("size", value.size, alloc);
 		obj.AddMember("page", value.page, alloc);
 	})
@@ -30,6 +36,20 @@ namespace serialization {
 		obj.AddMember("timepointInterval", toJson(value.timepointInterval, alloc), alloc);
 		obj.AddMember("transactionType", toJson(value.transactionType, alloc), alloc);
 		obj.AddMember("filterFunction", value.filterFunction != nullptr, alloc);
+	})
+
+	DEFINE_TO_JSON(CompactFilter, {
+		obj.AddMember("minTransactionNr", value.minTransactionNr, alloc);
+		obj.AddMember("maxTransactionNr", value.maxTransactionNr, alloc);
+		obj.AddMember("involvedPubkey", toJson(value.publicKeyIndex, alloc), alloc);
+		obj.AddMember("searchDirection", toJson(value.searchDirection, alloc), alloc);
+		obj.AddMember("pagination", toJson(value.pagination, alloc), alloc);
+		if ((value.communityIdType & CommunityIdType::COIN_COMMUNITY_ID) == CommunityIdType::COIN_COMMUNITY_ID) {
+			obj.AddMember("coinCommunityIdIndex", value.coinCommunityIdIndex, alloc);
+		}
+		obj.AddMember("communityIdType", toJson(value.communityIdType, alloc), alloc);
+		obj.AddMember("timepointInterval", toJson(value.timepointInterval, alloc), alloc);
+		obj.AddMember("transactionType", toJson(value.transactionType, alloc), alloc);
 	})
 }
 

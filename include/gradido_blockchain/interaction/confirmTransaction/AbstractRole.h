@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_CONFIRM_TRANSACTION_ABSTRACT_ROLE_H
 
 #include "gradido_blockchain/blockchain/TransactionRelationType.h"
+#include "gradido_blockchain/data/AccountBalance.h"
 #include "gradido_blockchain/data/BalanceDerivationType.h"
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
@@ -16,7 +17,6 @@ namespace gradido {
         class TransactionEntry;
     }
     namespace data {
-        class AccountBalance;
         class ConfirmedTransaction;
         class GradidoTransaction;  
     }

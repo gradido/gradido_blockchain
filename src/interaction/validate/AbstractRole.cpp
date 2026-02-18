@@ -4,6 +4,7 @@
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
+#include "gradido_blockchain/data/SignatureMap.h"
 #include "gradido_blockchain/interaction/validate/AbstractRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"

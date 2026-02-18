@@ -1,18 +1,24 @@
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/blockchain/CompactFilter.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/data/AddressType.h"
+#include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/data/TransactionType.h"
 
 #include <memory>
+#include <optional>
 
 using std::shared_ptr;
+using std::optional;
 
 namespace gradido {
 	using data::AddressType, data::LedgerAnchor, data::TransactionType;
+	using data::compact::ConfirmedGradidoTx, data::compact::ConstConfirmedTxPtr;
 	using data::ConstGradidoTransactionPtr;
 
 	namespace blockchain {
@@ -26,18 +32,22 @@ namespace gradido {
 		bool Abstract::isTransactionExist(ConstGradidoTransactionPtr gradidoTransaction, data::Timestamp confirmedAt) const
 		{
 			const auto& body = gradidoTransaction->getTransactionBody();
-			FilterBuilder builder;
-			return findOne(builder
-				.setTransactionType(body->getTransactionType())
-				.setTimepointInterval(TimepointInterval(confirmedAt))
-				.setFilterFunction([gradidoTransaction](const TransactionEntry& entry) -> FilterResult {
+			Filter f;
+			f.searchDirection = SearchDirection::DESC;
+			f.timepointInterval = TimepointInterval(confirmedAt);
+			f.transactionType = body->getTransactionType();
+			f.filterFunction = 
+				[&gradidoTransaction](const TransactionEntry& entry) -> FilterResult
+				{
 					const auto& otherGradidoTransaction = entry.getConfirmedTransaction()->getGradidoTransaction();
 					if (gradidoTransaction->isTheSame(*otherGradidoTransaction)) {
 						return FilterResult::USE | FilterResult::STOP;
 					}
 					return FilterResult::DISMISS;
-				}).build()
-			) != nullptr;
+				}
+			;
+			
+			return findOne(f) != nullptr;
 		}
 
 		size_t Abstract::countAll(const Filter& filter/* = Filter::ALL_TRANSACTIONS*/) const
@@ -62,6 +72,22 @@ namespace gradido {
 			return results.front();
 		}
 
+		optional<std::reference_wrapper<const ConfirmedGradidoTx>> Abstract::findOne(const CompactFilter& filter) const
+		{
+			auto results = findAll(filter);
+			if (!results.size()) {
+				return std::nullopt;
+			}
+			if (results.size() > 1) {
+				throw TransactionResultCountException(
+					"to many transactions found with blockchain::Abstract::findOne",
+					1,
+					results.size(),
+					filter
+				);
+			}
+			return results.front();
+		}
 			
 		AddressType Abstract::getAddressType(const Filter& filter/* = Filter::LAST_TRANSACTION */) const
 		{

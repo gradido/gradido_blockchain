@@ -87,6 +87,15 @@ namespace serialization {
 	{
 		return toJson(std::to_string(static_cast<unsigned int>(month)), alloc);
 	}
+
+	template<>
+	Value toJson(const date::year_month& ym, Document::AllocatorType& alloc)
+	{
+		Value value(kObjectType);
+		value.AddMember("month", toJson(ym.month(), alloc), alloc);
+		value.AddMember("year", toJson(ym.year(), alloc), alloc);
+		return value;
+	}
 	
 	template<>
 	Value toJson(const GradidoUnit& gdd, Document::AllocatorType& alloc)
@@ -104,6 +113,7 @@ namespace serialization {
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const Duration& duration, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const date::year& year, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const date::month& month, Document::AllocatorType& alloc);
+	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const date::year_month& ym, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const GradidoUnit& gdd, Document::AllocatorType& alloc);
 #endif
 }

@@ -1,12 +1,14 @@
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/CompactFilter.h"
+#include "gradido_blockchain/blockchain/CommunityIdType.h"
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/TransactionsIndex.h"
 #include "gradido_blockchain/blockchain/RangeUtils.h"
 #include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/serialization/toJson.h"
@@ -22,7 +24,6 @@
 using namespace rapidjson;
 using namespace magic_enum;
 
-using std::make_shared;
 using std::vector;
 using memory::Block;
 
@@ -194,7 +195,7 @@ namespace gradido {
 			
 			const auto& confirmedTransaction = transactionEntry->getConfirmedTransaction();
 			auto involvedPublicKeyIndices = confirmedTransaction->getInvolvedAddressIndices();
-			std::vector<uint32_t> publicKeyIndices;
+			vector<uint32_t> publicKeyIndices;
 			publicKeyIndices.reserve(involvedPublicKeyIndices.size());
 			uint8_t balanceChangingBitMask = 0;
 			for (auto& pubKey : involvedPublicKeyIndices) {
@@ -231,7 +232,7 @@ namespace gradido {
 			}
 			auto coinCommunityIndex = compactTx.getCoinCommunityId();
 			auto involvedPublicKeyIndices = compactTx.getInvolvedAddresses();
-			std::vector<uint32_t> publicKeyIndices;
+			vector<uint32_t> publicKeyIndices;
 			publicKeyIndices.reserve(publicKeyIndices.size());
 			uint8_t balanceChangingBitMask = 0;
 			for (auto& pubKey : involvedPublicKeyIndices) {
@@ -269,7 +270,7 @@ namespace gradido {
 			for (int i = 0; i < tx->sig_map_count; i++) {
 				involvedPublicKeyIndices.insert(PublicKeyIndex::fromPublicKey(compactHotTx.txCommunityIdIndex, tx->sig_map[i].public_key));
 			}
-			std::vector<uint32_t> publicKeyIndices;
+			vector<uint32_t> publicKeyIndices;
 			publicKeyIndices.reserve(publicKeyIndices.size());
 			uint8_t balanceChangingBitMask = 0;
 			for (auto& pubKey : involvedPublicKeyIndices) {
@@ -292,10 +293,15 @@ namespace gradido {
 			);
 		}
 		
-		std::vector<uint64_t> TransactionsIndex::findTransactions(const Filter& originalFilter, const IDictionary<PublicKey>& publicKeyDictionary) const
+		vector<uint64_t> TransactionsIndex::findTransactions(const Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary) const
+		{
+			return findTransactions(CompactFilter(filter, publicKeyDictionary));
+		}
+
+		vector<uint64_t> TransactionsIndex::findTransactions(const CompactFilter& originalFilter) const
 		{
 			uint64_t lastBalanceChangedTransactionNr = 0;
-			CompactFilter filter(originalFilter, publicKeyDictionary);
+			CompactFilter filter(originalFilter);
 
 			if (PublicKeySearchType::MissingIndex == filter.publicKeySearchType) {
 				return {};
@@ -306,21 +312,20 @@ namespace gradido {
 					filter.maxTransactionNr = lastBalanceChangedTransactionNr;
 				}
 			}
-			
+
 			// if user ask for last balance changing transaction
-			/*if (
+			if (
 				lastBalanceChangedTransactionNr
 				&& originalFilter.pagination.size == 1 && originalFilter.pagination.page < 2
 				&& originalFilter.searchDirection == SearchDirection::DESC
 				&& originalFilter.timepointInterval.isEmpty()
-				&& !originalFilter.filterFunction
-				&& !originalFilter.coinCommunityIdIndex.has_value()
+				&& originalFilter.communityIdType == CommunityIdType::NONE
 				) {
 				if (lastBalanceChangedTransactionNr >= filter.minTransactionNr && lastBalanceChangedTransactionNr <= filter.maxTransactionNr) {
 					return { lastBalanceChangedTransactionNr };
 				}
 
-			}*/
+			}
 			// prefilter			
 			if ((filter.minTransactionNr && filter.minTransactionNr > mMaxTransactionNr) ||
 				(filter.maxTransactionNr && filter.maxTransactionNr < mMinTransactionNr)) {
@@ -337,16 +342,16 @@ namespace gradido {
 			}
 			auto interval = filteredTimepointInterval(originalFilter);
 			int paginationCursor = 0;
-			if (SearchDirection::ASC == filter.searchDirection) 
+			if (SearchDirection::ASC == filter.searchDirection)
 			{
-				for (auto intervalIt = interval.begin(); intervalIt != interval.end(); ++intervalIt) 
+				for (auto intervalIt = interval.begin(); intervalIt != interval.end(); ++intervalIt)
 				{
 					auto yearMonthIndex = yearMonthToIndex(intervalIt->year(), intervalIt->month());
 
 					if (mYearMonthAddressIndexEntries[yearMonthIndex].empty()) {
 						continue;
 					}
-					for (const auto& entry : mYearMonthAddressIndexEntries[yearMonthIndex]) 
+					for (const auto& entry : mYearMonthAddressIndexEntries[yearMonthIndex])
 					{
 						if (!originalFilter.pagination.hasCapacityLeft(result.size())) {
 							return result;
@@ -368,7 +373,7 @@ namespace gradido {
 			else if (SearchDirection::DESC == filter.searchDirection) {
 				auto rBegin = std::make_reverse_iterator(interval.end());
 				auto rEnd = std::make_reverse_iterator(interval.begin());
-				for (auto it = rBegin; it != rEnd; ++it) 
+				for (auto it = rBegin; it != rEnd; ++it)
 				{
 					auto yearMonthIndex = yearMonthToIndex((*it).year(), (*it).month());
 
@@ -457,7 +462,7 @@ namespace gradido {
 				return 0;
 			}
 
-			auto interval = filteredTimepointInterval(originalFilter);
+			auto interval = filteredTimepointInterval(filter);
 			size_t result = 0;
 
 			for (auto intervalIt = interval.begin(); intervalIt != interval.end(); ++intervalIt) {
@@ -543,7 +548,7 @@ namespace gradido {
 				&& filter.transactionType != transactionType) {
 				return FilterResult::DISMISS;
 			}		
-			if (filter.hasCoinCommunityIndex && coinCommunityIdIndex != filter.coinCommunityIdIndex) {
+			if ((filter.communityIdType & CommunityIdType::COIN_COMMUNITY_ID) == CommunityIdType::COIN_COMMUNITY_ID && coinCommunityIdIndex != filter.coinCommunityIdIndex) {
 				return FilterResult::DISMISS;
 			}
 			if (filter.minTransactionNr && filter.minTransactionNr > transactionNr) {

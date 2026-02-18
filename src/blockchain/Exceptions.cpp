@@ -1,4 +1,5 @@
 #include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/blockchain/CompactFilter.h"
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/serialization/toJsonString.h"
@@ -45,6 +46,16 @@ namespace gradido {
 			: GradidoBlockchainException(what), 
 			mExpectedResultCount(expectedResultCount), 
 			mActuallyResultCount(actuallyResultCount), 
+			mFilterJson(serialization::toJsonString(filter, true))
+		{
+		}
+
+		TransactionResultCountException::TransactionResultCountException(
+			const char* what, int expectedResultCount, int actuallyResultCount, const CompactFilter& filter
+		) noexcept
+			: GradidoBlockchainException(what),
+			mExpectedResultCount(expectedResultCount),
+			mActuallyResultCount(actuallyResultCount),
 			mFilterJson(serialization::toJsonString(filter, true))
 		{
 		}

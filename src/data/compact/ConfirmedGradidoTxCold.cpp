@@ -66,9 +66,6 @@ namespace gradido::data {
       // pairing tx
       if (!pairingLedgerAnchor.empty()) {
         pairingTxCommunityIdIndex = g_appContext->getOrAddCommunityIdIndex(body->other_group);
-        if (!pairingTxCommunityIdIndex) {
-          throw GradidoNodeInvalidDataException("invalid other community id for pairing ledger anchor");
-        }
       }
       if (body->memos_count > 2) {
         throw GradidoNotImplementedException("memo count is more than expected");

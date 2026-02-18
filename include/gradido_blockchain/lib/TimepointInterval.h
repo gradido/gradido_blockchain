@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_LIB_TIMEPOINT_INTERVAL_H
 
 #include "gradido_blockchain/types.h"
+#include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "date/date.h"
@@ -10,7 +11,6 @@ class TimepointInterval
 {
 public:
 	TimepointInterval() {}
-
 	TimepointInterval(Timepoint startDate, Timepoint endDate)
 		: mStartDate(startDate), mEndDate(endDate) {
 		if (startDate > endDate) {
@@ -26,11 +26,18 @@ public:
 		: mStartDate(date), mEndDate(date) {
 	}
 
+	TimepointInterval(const date::year_month date)
+		: TimepointInterval(DataTypeConverter::monthYearToTimepoint(date))
+	{
+	}
+
+	inline date::year_month getStartDateYM() const;
+	inline date::year_month getEndDateYM() const;
 	inline Timepoint getStartDate() const { return mStartDate; }
 	inline Timepoint getEndDate() const { return mEndDate; }
 	inline void setStartDate(Timepoint startDate) { mStartDate = startDate; }
-	inline void setStartDate(const date::year_month& startDate) { mStartDate = DataTypeConverter::monthYearToTimepoint(startDate);}
 	inline void setEndDate(Timepoint endDate) { mEndDate = endDate; }
+	inline void setStartDate(const date::year_month& startDate) { mStartDate = DataTypeConverter::monthYearToTimepoint(startDate); }
 	inline void setEndDate(const date::year_month& endDate) { mEndDate = DataTypeConverter::monthYearToTimepoint(endDate); }
 
 	bool isEmpty() const { return mStartDate.time_since_epoch().count() == 0 && mEndDate.time_since_epoch().count() == 0; }
@@ -45,14 +52,12 @@ public:
 		if (year < startDate.year() || year > endDate.year()) { return false; }
 		return true;
 	}
-	bool isOverlap(const TimepointInterval& other) const {
-		if (isEmpty() || other.isEmpty()) return false;
-		return !(mEndDate < other.mStartDate || mStartDate > other.mEndDate);
-	}
 
 	bool isInsideInterval(Timepoint date) const {
 		return mStartDate <= date && date <= mEndDate;
 	}
+	inline bool isOverlap(const TimepointInterval& other) const;
+
 
 	inline bool operator==(const TimepointInterval& other) const {
 		return mStartDate == other.mStartDate && mEndDate == other.mEndDate;
@@ -111,5 +116,22 @@ protected:
 	Timepoint mStartDate;
 	Timepoint mEndDate;
 };
+
+date::year_month TimepointInterval::getStartDateYM() const
+{
+	auto ymd = timepointAsYearMonthDay(mStartDate);
+	return { ymd.year(), ymd.month() };
+}
+date::year_month TimepointInterval::getEndDateYM() const
+{
+	auto ymd = timepointAsYearMonthDay(mEndDate);
+	return { ymd.year(), ymd.month() };
+}
+
+bool TimepointInterval::isOverlap(const TimepointInterval& other) const {
+	if (isEmpty() || other.isEmpty()) return false;
+	return !(mEndDate < other.mStartDate || other.mEndDate < mStartDate);
+}
+
 
 #endif //__GRADIDO_BLOCKCHAIN_LIB_TIMEPOINT_INTERVAL_H

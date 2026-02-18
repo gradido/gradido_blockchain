@@ -2,6 +2,8 @@
 
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/TransactionBody.h"
+#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
@@ -16,6 +18,9 @@ using memory::ConstBlockPtr;
 
 namespace gradido {
 	using data::ConstConfirmedTransactionPtr;
+	using data::ConstTransactionBodyPtr;
+	using data::TransactionType;
+
 	namespace blockchain {
 
 		TransactionEntry::TransactionEntry(ConstBlockPtr serializedTransaction, uint32_t blockchainCommunityIdIndex)
@@ -66,7 +71,7 @@ namespace gradido {
 			uint64_t transactionNr,
 			date::month month,
 			date::year year,
-			data::TransactionType transactionType,
+			TransactionType transactionType,
 			optional<uint32_t> coinCommunityIdIndex,
 			uint32_t blockchainCommunityIdIndex
 		) : 
@@ -80,7 +85,7 @@ namespace gradido {
 
 		}
 
-		memory::ConstBlockPtr TransactionEntry::getSerializedTransaction() const
+		ConstBlockPtr TransactionEntry::getSerializedTransaction() const
 		{
 			lock_guard _lock(mFastMutex);
 			if (!mSerializedTransaction && !mConfirmedTransaction) return nullptr;
@@ -114,6 +119,11 @@ namespace gradido {
 				body.getTransferAmount().getCoinCommunityIdIndex();
 			}
 			return nullopt;
+		}
+
+		ConstTransactionBodyPtr TransactionEntry::getTransactionBody() const 
+		{ 
+			return getConfirmedTransaction()->getGradidoTransaction()->getTransactionBody(); 
 		}
 	}
 }

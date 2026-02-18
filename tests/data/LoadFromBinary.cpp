@@ -346,6 +346,7 @@ struct DataSet {
 	const char* communityId;
 	const char* fileName;
 	queue<shared_ptr<const ConfirmedTransaction>> transactions;
+	queue<shared_ptr<const ConfirmedGradidoTx>> compactTransactions;
 	shared_ptr<blockchain::InMemory> blockchain;
 };
 
@@ -365,7 +366,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 	grdu_memory alloc;
 	grdu_memory_init_static(&alloc, staticInputBuffer, 1024);
 	grdw_confirmed_transaction tx{};
-
+	grdw_transaction_body body{};
 
 	auto provider = InMemoryProvider::getInstance();
 	for (int i = 0; i < communityCount; ++i) {
@@ -395,6 +396,14 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			ASSERT_EQ(decodeResult.state, GRDW_ENCODING_ERROR_SUCCESS);
 			if (GRDW_LEDGER_ANCHOR_TYPE_NODE_TRIGGER_TRANSACTION_ID != tx.ledger_anchor.type) {
 				com.transactions.push(ConfirmedTransaction::fromGrdw(&tx, i));
+				/*
+				auto compact = make_shared<ConfirmedGradidoTx>(ConfirmedGradidoTx::fromGrdwConfirmedTransaction(&tx, i));				
+				alloc.last_index = 0;
+				decodeResult = grdw_transaction_body_decode(&alloc, &body, tx.transaction.body_bytes, tx.transaction.body_bytes_size);
+				ASSERT_EQ(decodeResult.state, GRDW_ENCODING_ERROR_SUCCESS);
+				compact->fillFromGrdwTransactionBody(&body);
+				com.compactTransactions.push(compact);
+				*/
 			}
 
 			if (readed + 32 >= fileSize) {

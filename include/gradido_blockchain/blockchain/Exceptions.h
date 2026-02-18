@@ -48,6 +48,7 @@ namespace gradido {
 		{
 		public:
 			explicit TransactionResultCountException(const char* what, int expectedResultCount, int actuallyResultCount, const Filter& filter) noexcept;
+			explicit TransactionResultCountException(const char* what, int expectedResultCount, int actuallyResultCount, const CompactFilter& filter) noexcept;
 
 			std::string getFullString() const;
 		protected:

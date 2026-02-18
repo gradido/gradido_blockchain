@@ -4,6 +4,7 @@
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/CrossGroupType.h"
 #include "gradido_blockchain/data/MemoKeyType.h"
+#include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/interaction/validate/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/validate/CommunityRootRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"

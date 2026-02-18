@@ -1,7 +1,9 @@
 #ifndef __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_ABSTRACT_H
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_ABSTRACT_H
 
+#include "gradido_blockchain/export.h"
 #include "gradido_blockchain/types.h"
+#include "gradido_blockchain/blockchain/CompactFilter.h"
 #include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
 #include "gradido_blockchain/lib/TimepointInterval.h"
@@ -10,10 +12,11 @@
 #include "Filter.h"
 #include "../data/AddressType.h"
 #include "../data/TransactionTriggerEvent.h"
-
+// #include "../data/compact/ConfirmedGradidoTx.h"
 
 #include <list>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace gradido {	
@@ -23,6 +26,11 @@ namespace gradido {
 		class LedgerAnchor;
 
 		using ConstGradidoTransactionPtr = std::shared_ptr<const GradidoTransaction>;
+		namespace compact {
+			class ConfirmedGradidoTx;
+			using ConstConfirmedTxPtr = std::shared_ptr<const data::compact::ConfirmedGradidoTx>;
+			using ConfirmedTxs = std::vector<std::reference_wrapper<const data::compact::ConfirmedGradidoTx>>;
+		}
 	}
 	namespace interaction {
 		namespace createConfirmedTransaction {
@@ -31,6 +39,7 @@ namespace gradido {
 	}
 	namespace blockchain {
 		class AbstractProvider;
+		// class CompactFilter;
 		class TransactionEntry;
 		using ConstTransactionEntryPtr = std::shared_ptr<const TransactionEntry>;
 		using TransactionEntries = std::vector<ConstTransactionEntryPtr>;
@@ -63,15 +72,17 @@ namespace gradido {
 			virtual bool isTransactionExist(data::ConstGradidoTransactionPtr gradidoTransaction, data::Timestamp confirmedAt) const;
 
 			//! return events in asc order of targetDate
-			virtual std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> findTransactionTriggerEventsInRange(TimepointInterval range) = 0;
-			virtual std::shared_ptr<const data::TransactionTriggerEvent> findNextTransactionTriggerEventInRange(TimepointInterval range) = 0;
+			virtual std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> findTransactionTriggerEventsInRange(data::Timestamp startDate, data::Timestamp endDate) = 0;
+			virtual std::shared_ptr<const data::TransactionTriggerEvent> findNextTransactionTriggerEventInRange(data::Timestamp startDate, data::Timestamp endDate) = 0;
 
 			// main search function, do all the work, reference from other functions
 			virtual TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const = 0;
+			virtual data::compact::ConfirmedTxs findAll(const CompactFilter& filter) const = 0;
 			// find all optimized for counting transaction nrs, better not use the filter.function for that, because this would slow down
 			virtual size_t countAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
 			// only if you expect only one result
 			virtual ConstTransactionEntryPtr findOne(const Filter& filter = Filter::LAST_TRANSACTION) const;
+			virtual std::optional<std::reference_wrapper<const data::compact::ConfirmedGradidoTx>> findOne(const CompactFilter& filter) const;
 
 			//! analyze only registerAddress Transactions, will use getAddressTypeSlow in basic version
 			//! \param use filter to check existing of a address in a subrange of transactions
@@ -81,6 +92,7 @@ namespace gradido {
 			//! TODO: better name
 			data::AddressType getAddressTypeSlow(const Filter& filter = Filter::LAST_TRANSACTION) const;
 			virtual ConstTransactionEntryPtr getTransactionForId(uint64_t transactionId) const = 0;
+			virtual std::optional<std::reference_wrapper<const data::compact::ConfirmedGradidoTx>> getConfirmedTxForId(uint64_t transactionId) const = 0;
 
 			//! \param filter use to speed up search if infos exist to narrow down search transactions range
 			virtual ConstTransactionEntryPtr findByLedgerAnchor(

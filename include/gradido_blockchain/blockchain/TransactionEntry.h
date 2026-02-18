@@ -1,17 +1,24 @@
 #ifndef __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_TRANSACTION_ENTRY_H
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_TRANSACTION_ENTRY_H
 
+#include "gradido_blockchain/export.h"
 #include "gradido_blockchain/types.h"
-#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/TransactionType.h"
 
 #include "date/date.h"
 
-#include <vector>
 #include <list>
+#include <memory>
 #include <optional>
+#include <vector>
 
 namespace gradido {
+	namespace data {
+		class ConfirmedTransaction;
+		class TransactionBody;
+		using ConstConfirmedTransactionPtr = std::shared_ptr<const ConfirmedTransaction>;
+		using ConstTransactionBodyPtr = std::shared_ptr<const TransactionBody>;
+	}
 	namespace blockchain {
 
 		class AbstractProvider;
@@ -64,7 +71,7 @@ namespace gradido {
 			inline std::optional<uint32_t> getCoinCommunityIdIndex() const { return mCoinCommunityIdIndex; }
 			inline uint32_t getBlockchainCommunityIdIndex() const { return mBlockchainCommunityIdIndex; }
 			static std::optional<uint32_t> getCoinCommunityIdIndex(const data::TransactionBody& body);
-			inline data::ConstTransactionBodyPtr getTransactionBody() const { return getConfirmedTransaction()->getGradidoTransaction()->getTransactionBody(); }
+			data::ConstTransactionBodyPtr getTransactionBody() const;
 
 			// default transactions
 			inline bool isTransfer() const { return mTransactionType == data::TransactionType::TRANSFER; }

@@ -157,6 +157,7 @@ namespace gradido::data::compact {
       specific.communityRoot = other.specific.communityRoot;
       break;
     default:
+    case TransactionType::NONE: break;
       throw GradidoUnhandledEnum("on move ConfirmedGradidoTx", "TransactionType", enum_name(transactionType).data());
       break;
     }
@@ -484,6 +485,67 @@ namespace gradido::data::compact {
   {
     for (int i = 0; i < accountBalanceCount; i++) {
       if (accountBalances[i].publicKeyIndex == pubkeyIndex.publicKeyIndex && pubkeyIndex.communityIdIndex == txCommunityIdIndex) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool ConfirmedGradidoTx::isInvolved(PublicKeyIndex pubkeyIndex) const
+  {
+    if (isBalanceUpdated(pubkeyIndex)) {
+      return true;
+    }
+    
+    switch (transactionType) {
+    case TransactionType::TRANSFER:
+      if (specific.transfer.isInvolved(pubkeyIndex)) return true;
+      break;
+    case TransactionType::CREATION:
+      if (specific.creation.recipientPublicKeyIndex == pubkeyIndex) return true;
+      break;
+    case TransactionType::REGISTER_ADDRESS:
+      if (specific.registerAddress.accountPublicKeyIndex == pubkeyIndex ||
+        specific.registerAddress.userPublicKeyIndex == pubkeyIndex) {
+        return true;
+      }
+      break;
+    case TransactionType::DEFERRED_TRANSFER:
+      if (pubkeyIndex.communityIdIndex == txCommunityIdIndex && (
+        pubkeyIndex.publicKeyIndex == specific.deferredTransfer.senderPublicKeyIndex ||
+        pubkeyIndex.publicKeyIndex == specific.deferredTransfer.recipientPublicKeyIndex
+        )) {
+        return true;
+      }
+      break;
+    case TransactionType::REDEEM_DEFERRED_TRANSFER:
+      if (specific.redeemDeferredTransfer->transfer.isInvolved(pubkeyIndex)) return true;
+      break;
+    case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
+      break;
+    case TransactionType::COMMUNITY_ROOT:
+      if (specific.communityRoot.publicKeyIndex == pubkeyIndex ||
+        specific.communityRoot.gmwPublicKeyIndex == pubkeyIndex ||
+        specific.communityRoot.aufPublicKeyIndex == pubkeyIndex) {
+        return true;
+      }
+      break;
+    default:
+      throw GradidoUnhandledEnum("on ConfirmedGradidoTx::getInvolvedAddresses", "TransactionType", enum_name(transactionType).data());
+    }
+    if (coldData && pubkeyIndex.communityIdIndex == txCommunityIdIndex) {
+      auto rawKey = pubkeyIndex.getRawKey();
+      for (const auto& sigPair : coldData->signatureMap) {
+        if (rawKey.isTheSame(sigPair.first)) return true;
+      }
+    }
+    return false;
+  }
+
+  bool ConfirmedGradidoTx::hasCoinsFromCommunity(uint32_t coinColorCommunityId) const
+  {
+    for (int i = 0; i < accountBalanceCount; i++) {
+      if (accountBalances[i].coinCommunityIdIndex == coinColorCommunityId) {
         return true;
       }
     }

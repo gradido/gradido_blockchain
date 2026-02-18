@@ -2,6 +2,7 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
+#include "gradido_blockchain/data/TransactionBody.h"
 
 #include "date/date.h"
 

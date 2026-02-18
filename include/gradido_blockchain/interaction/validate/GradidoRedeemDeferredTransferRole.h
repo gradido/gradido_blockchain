@@ -6,6 +6,7 @@
 namespace gradido {
 	namespace data {
 		class GradidoRedeemDeferredTransfer;
+		enum class CrossGroupType : uint8_t;
 	}
 	namespace interaction {
 		namespace validate {

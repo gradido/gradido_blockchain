@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_CALCULATE_ACCOUNT_BALANCE_GRADIDO_REDEEM_DEFERRED_TRANSFER_ROLE_H
 
 #include "AbstractRole.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 
 namespace gradido {
 	namespace interaction {

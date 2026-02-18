@@ -1,5 +1,8 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/Filter.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/GradidoTimeoutDeferredTransfer.h"
+#include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/interaction/validate/GradidoTimeoutDeferredTransferRole.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"

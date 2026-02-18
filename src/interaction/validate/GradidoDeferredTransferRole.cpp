@@ -2,6 +2,8 @@
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/AddressType.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/GradidoDeferredTransfer.h"
 #include "gradido_blockchain/interaction/validate/GradidoDeferredTransferRole.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"

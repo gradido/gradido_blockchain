@@ -1,6 +1,8 @@
 #include "gradido_blockchain/interaction/confirmTransaction/Context.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/TransactionRelationType.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/data/TransactionBody.h"
@@ -116,7 +118,7 @@ namespace gradido {
 				return confirmedTransaction;
       }
 
-			bool Context::processTransactionTrigger(Timepoint endDate)
+			bool Context::processTransactionTrigger(Timestamp endDate)
 			{
 				auto lastTransaction = mBlockchain->findOne(Filter::LAST_TRANSACTION);
 				if (!lastTransaction) {
@@ -124,10 +126,8 @@ namespace gradido {
 					return false;
 				}
 				auto transactionTriggerEvent = mBlockchain->findNextTransactionTriggerEventInRange(
-					TimepointInterval(
 						lastTransaction->getConfirmedTransaction()->getConfirmedAt(),
 						endDate
-					)
 				);
 				if (!transactionTriggerEvent) {
 					// no trigger, we can exit here
@@ -149,7 +149,7 @@ namespace gradido {
 				}
 				catch (std::exception& e) {
 					mBlockchain->addTransactionTriggerEvent(transactionTriggerEvent);
-					LOG_F(ERROR, "Error processing transaction trigger event for transaction: %u", transactionTriggerEvent->getLinkedTransactionId());
+					LOG_F(ERROR, "Error processing transaction trigger event for transaction: %llu", transactionTriggerEvent->getLinkedTransactionId());
 					throw;
 				}
 				return false;

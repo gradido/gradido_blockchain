@@ -94,6 +94,8 @@ namespace gradido::data::compact {
     // if cold isn't loaded, doesn't contain pubkeys from signature map
     std::set<PublicKeyIndex> getInvolvedAddresses() const;
     bool isBalanceUpdated(PublicKeyIndex pubkeyIndex) const;
+    // if cold isn't loaded, doesn't check pubkeys from signature map
+    bool isInvolved(PublicKeyIndex pubkeyIndex) const;
 
     inline bool isTransfer() const { return TransactionType::TRANSFER == transactionType; }
     inline bool isCreation() const { return TransactionType::CREATION == transactionType; }
@@ -104,7 +106,12 @@ namespace gradido::data::compact {
     inline bool isRedeemDeferredTransfer() const { return TransactionType::REDEEM_DEFERRED_TRANSFER == transactionType; }
     inline bool isTimeoutDeferredTransfer() const { return TransactionType::TIMEOUT_DEFERRED_TRANSFER == transactionType; }
     inline bool isCrossCommunityTx() const { return CrossGroupType::LOCAL != crossGroupType; }
+
+    bool hasCoinsFromCommunity(uint32_t coinColorCommunityId) const;
   };
+
+  using ConstConfirmedTxPtr = std::shared_ptr<const data::compact::ConfirmedGradidoTx>;
+  using ConfirmedTxs = std::vector<std::reference_wrapper<const data::compact::ConfirmedGradidoTx>>;
 }
 
 #endif // __GRADIDO_BLOCKCHAIN_DATA_COMPACT_CONFIRMED_GRADIDO_TX_H__

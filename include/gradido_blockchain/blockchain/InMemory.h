@@ -25,6 +25,12 @@ namespace memory {
 namespace gradido {
 	namespace data {
 		class AccountBalance;
+
+		namespace compact {
+			class ConfirmedGradidoTx;
+			using ConstConfirmedTxPtr = std::shared_ptr<const data::compact::ConfirmedGradidoTx>;
+			using ConfirmedTxs = std::vector<std::reference_wrapper<const data::compact::ConfirmedGradidoTx>>;
+		}
 	}
 	namespace blockchain {
 		class InMemoryProvider;
@@ -71,18 +77,20 @@ namespace gradido {
 			// virtual bool isTransactionExist(data::ConstGradidoTransactionPtr gradidoTransaction) const override;
 
 			//! return events in asc order of targetDate
-			virtual std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> findTransactionTriggerEventsInRange(TimepointInterval range) override;
-			virtual std::shared_ptr<const data::TransactionTriggerEvent> findNextTransactionTriggerEventInRange(TimepointInterval range) override;
+			virtual std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> findTransactionTriggerEventsInRange(data::Timestamp startDate, data::Timestamp endDate) override;
+			virtual std::shared_ptr<const data::TransactionTriggerEvent> findNextTransactionTriggerEventInRange(data::Timestamp startDate, data::Timestamp endDate) override;
 
 			// get all transactions sorted by id
 			const TransactionEntries& getSortedTransactions();
 
 			// from Abstract blockchain
 			TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const override;
+			data::compact::ConfirmedTxs findAll(const CompactFilter& filter) const override;
 			ConstTransactionEntryPtr findOne(const Filter& filter = Filter::LAST_TRANSACTION) const override;
 			data::AddressType getAddressType(const Filter& filter = Filter::ALL_TRANSACTIONS) const override;
 
 			ConstTransactionEntryPtr getTransactionForId(uint64_t transactionId) const override;
+			std::optional<std::reference_wrapper<const data::compact::ConfirmedGradidoTx>> getConfirmedTxForId(uint64_t transactionId) const override;
 
 			// this implementation use a map for direct search and don't use filter at all
 			ConstTransactionEntryPtr findByLedgerAnchor(
@@ -111,11 +119,12 @@ namespace gradido {
 			std::unordered_map<data::LedgerAnchor, uint64_t> mLedgerAnchorTransactionNrs;
 			//! find transactionEntry by transaction nr
 			std::map<uint64_t, ConstTransactionEntryPtr> mTransactionsByNr;
+			std::map<uint64_t, data::compact::ConfirmedGradidoTx> mConfirmedTxByNr;
 			// for fast doublette check
 			std::unordered_multimap<SignatureOctet, ConstTransactionEntryPtr> mTransactionFingerprintTransactionEntry;
 			// transactionTriggerEvents
 			mutable std::mutex mTransactionTriggerEventsMutex;
-			std::multimap<Timepoint, std::shared_ptr<const data::TransactionTriggerEvent>> mTransactionTriggerEvents;
+			std::multimap<data::Timestamp, std::shared_ptr<const data::TransactionTriggerEvent>> mTransactionTriggerEvents;
 			// because sorted transactions are not needed often, update list only if needed and mSortedDirty = true
 			bool mSortedDirty;
 			TransactionEntries mSortedTransactions;

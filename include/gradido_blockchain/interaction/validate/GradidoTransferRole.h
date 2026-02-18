@@ -5,6 +5,9 @@
 #include "gradido_blockchain/data/CrossGroupType.h"
 
 namespace gradido {
+	namespace data {
+		class GradidoTransfer;
+	}
 	namespace interaction {
 		namespace validate {
 			class GradidoTransferRole : public AbstractRole

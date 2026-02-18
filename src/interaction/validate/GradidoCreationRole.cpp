@@ -3,6 +3,8 @@
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/adapter/publicKey.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/GradidoCreation.h"
 #include "gradido_blockchain/interaction/calculateCreationSum/Context.h"
 #include "gradido_blockchain/interaction/validate/GradidoCreationRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"

@@ -4,20 +4,19 @@
 #include "AddressIndex.h"
 #include "Filter.h"
 #include "TransactionEntry.h"
-#include "gradido_blockchain/export.h"
+#include "gradido_blockchain/blockchain/CompactFilter.h"
+#include "gradido_blockchain/blockchain/StateChange.h"
 #include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
+#include "gradido_blockchain/export.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
-#include "gradido_blockchain/blockchain/StateChange.h"
-#include "gradido_protobuf_zig.h"
 
 #include "rapidjson/document.h"
 
 #include <deque>
 #include <map>
-#include <memory>
 #include <vector>
 
 using DataTypeConverter::monthYearToTimepoint;
@@ -28,9 +27,7 @@ namespace memory {
 
 namespace gradido {
 	namespace blockchain {
-
 		class AbstractProvider;
-		class CompactFilter;
 
 	/*!
 		* @author einhornimmond
@@ -57,7 +54,12 @@ namespace gradido {
 
 			//! \brief search transaction nrs for search criteria in filter, ignore filter function
 			//! \return transaction nrs
+			[[deprecated("Use findTransactions with CompactFilter instead.")]]
 			std::vector<uint64_t> findTransactions(const Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary) const;
+
+			//! \brief search transaction nrs for search criteria in filter
+			//! //! \return transaction nrs
+			std::vector<uint64_t> findTransactions(const CompactFilter& filter) const;
 			std::vector<uint64_t> getBalanceChangingTxs(uint32_t publicKeyIndex) const;
 			
 			StateChange<data::AddressType> getAddressType(const memory::ConstBlockPtr& publicKeyPtr, const IDictionary<PublicKey>& publicKeyDictionary) const;
@@ -82,7 +84,7 @@ namespace gradido {
 			inline date::year_month getNewestYearMonth() const { return mMaxYearMonth; }
 			size_t yearMonthToIndex(date::year year, date::month month) const;
 			date::year_month indexToYearMonth(size_t index) const;
-			inline TimepointInterval filteredTimepointInterval(const gradido::blockchain::Filter& filter) const;
+			inline TimepointInterval filteredTimepointInterval(const CompactFilter& filter) const;
 
 			static inline bool canMatchWithoutDeserialize(const Filter& filter);
 
@@ -147,27 +149,16 @@ namespace gradido {
 			return mMaxTransactionNr - mMinTransactionNr + 1; 
 		}
 
-		TimepointInterval TransactionsIndex::filteredTimepointInterval(const gradido::blockchain::Filter& filter) const
+		TimepointInterval TransactionsIndex::filteredTimepointInterval(const CompactFilter& filter) const
 		{
-			auto minYearMonthTimepoint = monthYearToTimepoint(getOldestYearMonth());
-			auto maxYearMonthTimepoint = monthYearToTimepoint(getNewestYearMonth());
-			TimepointInterval interval(minYearMonthTimepoint, maxYearMonthTimepoint);
-			
-			if (!filter.timepointInterval.isEmpty()) {
-				if (interval.getStartDate() < filter.timepointInterval.getStartDate()) {
-					interval.setStartDate(filter.timepointInterval.getStartDate());
-				}
-				if (interval.getStartDate() > maxYearMonthTimepoint) {
-					interval.setStartDate(maxYearMonthTimepoint);
-				}
-				if (interval.getEndDate() > filter.timepointInterval.getEndDate()) {
-					interval.setEndDate(std::max(interval.getStartDate(), filter.timepointInterval.getEndDate()));
-				}
-				if (interval.getEndDate() < interval.getEndDate()) {
-					interval.setEndDate(interval.getEndDate());
-				}
+			TimepointInterval interval(getOldestYearMonth(), getNewestYearMonth());
+			if (filter.timepointInterval.isEmpty() || !filter.timepointInterval.isOverlap(interval)) {
+				return interval;
 			}
-			return interval;
+			return {
+				std::max(interval.getStartDate(), filter.timepointInterval.getStartDate()),
+				std::min(interval.getEndDate(), filter.timepointInterval.getEndDate())
+			};
 		}
 
 		bool TransactionsIndex::canMatchWithoutDeserialize(const Filter& filter)

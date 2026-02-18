@@ -1,8 +1,11 @@
+#include "gradido_blockchain/blockchain/CompactFilter.h"
 #include "gradido_blockchain/blockchain/InMemory.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/blockchain/RangeUtils.h"
 #include "gradido_blockchain/data/AccountBalance.h"
 #include "gradido_blockchain/data/adapter/publicKey.h"
+#include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
@@ -18,16 +21,19 @@
 #include "magic_enum/magic_enum.hpp"
 
 #include <algorithm>
+#include <memory>
 #include <string_view>
 
 using namespace magic_enum;
 using std::string_view;
 using std::lock_guard;
+using std::make_shared;
 using memory::ConstBlockPtr, memory::Block;
 
 namespace gradido {
 
 	using data::adapter::toPublicKey;
+	using data::compact::ConfirmedGradidoTx, data::compact::ConfirmedTxs, data::compact::ConstConfirmedTxPtr;
 	using data::AddressType, data::ConstGradidoTransactionPtr, data::Timestamp, data::LedgerAnchor, data::AccountBalance;
 	using namespace interaction;
 
@@ -181,10 +187,10 @@ namespace gradido {
 				}
 			}
 			if (!countRemoved) {
-				LOG_F(WARNING, "couldn't find transactionTriggerEvent for removal for transaction: %lu", transactionTriggerEvent.getLinkedTransactionId());
+				LOG_F(WARNING, "couldn't find transactionTriggerEvent for removal for transaction: %llu", transactionTriggerEvent.getLinkedTransactionId());
 			}
 			else if (countRemoved > 1) {
-				LOG_F(WARNING, "find more than one transactionTriggerEvent for removal for transaction: %lu", transactionTriggerEvent.getLinkedTransactionId());
+				LOG_F(WARNING, "find more than one transactionTriggerEvent for removal for transaction: %llu", transactionTriggerEvent.getLinkedTransactionId());
 			}
 		}
 
@@ -207,11 +213,11 @@ namespace gradido {
 		}
 		*/
 		//! return events in asc order of targetDate
-		std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> InMemory::findTransactionTriggerEventsInRange(TimepointInterval range)
+		std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> InMemory::findTransactionTriggerEventsInRange(Timestamp startDate, Timestamp endDate)
 		{
 			std::lock_guard _lock(mTransactionTriggerEventsMutex);
-			auto startIt = mTransactionTriggerEvents.lower_bound(range.getStartDate());
-			auto endIt = mTransactionTriggerEvents.upper_bound(range.getEndDate());
+			auto startIt = mTransactionTriggerEvents.lower_bound(startDate);
+			auto endIt = mTransactionTriggerEvents.upper_bound(endDate);
 			std::vector<std::shared_ptr<const data::TransactionTriggerEvent>> result;
 			result.reserve(std::distance(startIt, endIt));
 			for (; startIt != endIt; startIt++) {
@@ -220,11 +226,11 @@ namespace gradido {
 			return result;
 		}
 
-		std::shared_ptr<const data::TransactionTriggerEvent> InMemory::findNextTransactionTriggerEventInRange(TimepointInterval range)
+		std::shared_ptr<const data::TransactionTriggerEvent> InMemory::findNextTransactionTriggerEventInRange(Timestamp startDate, Timestamp endDate)
 		{
 			std::lock_guard _lock(mTransactionTriggerEventsMutex);
-			auto startIt = mTransactionTriggerEvents.lower_bound(range.getStartDate());
-			if (startIt != mTransactionTriggerEvents.end() && startIt->first <= range.getEndDate()) {
+			auto startIt = mTransactionTriggerEvents.lower_bound(startDate);
+			if (startIt != mTransactionTriggerEvents.end() && startIt->first <= endDate) {
 				return startIt->second;
 			}
 			return nullptr;
@@ -249,20 +255,6 @@ namespace gradido {
 			TransactionEntries result;
 			// if pagination is used, filterCopy contain count of still to find transactions
 			Filter filterCopy(filter);
-			/*std::vector<uint64_t> transactionNrs;
-			FilterCriteria criteria = FilterCriteria::FILTER_FUNCTION;
-			if (filter.updatedBalancePublicKey && !filter.updatedBalancePublicKey->isEmpty()) {
-				auto idx = mPublicKeyDirectory.getIndexForData(toPublicKey(filter.updatedBalancePublicKey));
-				if (idx) {
-					if (mTransactionsIndex.countBalanceChangingTxs(*idx) < 50) {
-						transactionNrs = mTransactionsIndex.getBalanceChangingTxs(*idx);
-						criteria = static_cast<FilterCriteria>(0xff);
-					}
-				}
-			}
-			if (criteria != static_cast<FilterCriteria>(0xff)) {
-				transactionNrs = mTransactionsIndex.findTransactions(filterCopy, mPublicKeyDirectory);
-			}*/
 			auto transactionNrs = mTransactionsIndex.findTransactions(filterCopy, mPublicKeyDirectory);
 			for (auto transactionNr : transactionNrs) {
 				if (!filter.pagination.hasCapacityLeft(result.size())) {
@@ -278,6 +270,30 @@ namespace gradido {
 				}
 			}
 			return result;
+		}
+
+		ConfirmedTxs InMemory::findAll(const CompactFilter& filter) const
+		{
+			std::lock_guard _lock(mWorkMutex);
+			ConfirmedTxs results;
+			auto transactionNrs = mTransactionsIndex.findTransactions(filter);
+			for (auto transactionNr : transactionNrs) {
+				if (!filter.pagination.hasCapacityLeft(results.size())) {
+					break;
+				}
+				auto transaction = getConfirmedTxForId(transactionNr);
+				if (!transaction) {
+					throw GradidoBlockchainTransactionNotFoundException("confirmed tx not found").setTransactionId(transactionNr);
+				}
+				auto filterResult = filter.matches(transaction.value(), FilterCriteria::FILTER_FUNCTION);
+				if ((filterResult & FilterResult::USE) == FilterResult::USE) {
+					results.push_back(transaction.value());
+				}
+				if ((filterResult & FilterResult::STOP) == FilterResult::STOP) {
+					break;
+				}
+			}
+			return results;
 		}
 
 		ConstTransactionEntryPtr InMemory::findOne(const Filter& filter/* = Filter::LAST_TRANSACTION*/) const
@@ -317,6 +333,16 @@ namespace gradido {
 			return nullptr;
 		}
 
+		optional<std::reference_wrapper<const ConfirmedGradidoTx>> InMemory::getConfirmedTxForId(uint64_t transactionId) const
+		{
+			lock_guard _lock(mWorkMutex);
+			auto it = mConfirmedTxByNr.find(transactionId);
+			if (it != mConfirmedTxByNr.end()) {
+				return it->second;
+			}
+			return std::nullopt;
+		}
+
 		ConstTransactionEntryPtr InMemory::findByLedgerAnchor(
 			const data::LedgerAnchor& ledgerAnchor,
 			const Filter& filter/* = Filter::ALL_TRANSACTIONS*/
@@ -351,6 +377,18 @@ namespace gradido {
 			mTransactionsByNr.insert({ confirmedTransaction->getId(), transactionEntry });
 			auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
 			mLastTransaction = transactionEntry;
+			// create compact version
+			uint8_t buffer[1024];
+			grdu_memory alloc;
+			grdu_memory_init_static(&alloc, buffer, 1024);
+			grdw_confirmed_transaction tx{};
+			transactionEntry->getConfirmedTransaction()->toGrdw(&alloc, &tx, mCommunityIdIndex);
+			auto confirmedTx = std::move(ConfirmedGradidoTx::fromGrdwConfirmedTransaction(&tx, mCommunityIdIndex));
+			alloc.last_index = 0;
+			grdw_transaction_body txBody{};
+			transactionEntry->getTransactionBody()->toGrdw(&alloc, &txBody);
+			confirmedTx.fillFromGrdwTransactionBody(&txBody);
+			mConfirmedTxByNr.insert({ confirmedTx.txNr, std::move(confirmedTx) });
 		}
 
 		void InMemory::removeTransactionEntry(ConstTransactionEntryPtr transactionEntry)
