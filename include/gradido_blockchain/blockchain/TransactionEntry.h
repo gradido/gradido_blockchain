@@ -12,6 +12,12 @@
 #include <optional>
 #include <vector>
 
+namespace memory
+{
+	class Block;
+	using ConstBlockPtr = std::shared_ptr<const Block>;
+}
+
 namespace gradido {
 	namespace data {
 		class ConfirmedTransaction;
