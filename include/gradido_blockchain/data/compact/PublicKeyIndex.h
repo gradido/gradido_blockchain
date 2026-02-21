@@ -14,6 +14,8 @@ namespace gradido::data::compact {
     // return a string, communityid . public key hex if found, or ids when not found
     std::string toString() const noexcept;
 
+    inline bool empty() const { return !communityIdIndex && !publicKeyIndex; }
+
     uint32_t communityIdIndex;
     uint32_t publicKeyIndex;  
 

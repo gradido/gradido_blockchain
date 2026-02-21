@@ -110,7 +110,7 @@ TEST(SerializeTest, GradidoCreationBody) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), communityIdIndex),
 			TimestampSeconds(1609459000)
 		)
 		.setRecipientCommunity(communityId)
@@ -132,7 +132,7 @@ TEST(SerializeTest, GradidoTransferBody) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.setSenderCommunity(communityId)
@@ -155,7 +155,7 @@ TEST(SerializeTest, GradidoDeferredTransferBody) {
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500), 0),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500), communityIdIndex),
 				g_KeyPairs[5]->getPublicKey()
 			),
 			timeoutDuration
@@ -232,7 +232,7 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 			TransferAmount(
 				g_KeyPairs[4]->getPublicKey(), // sender
 				GradidoUnit::fromGradidoCent(1002516),
-				0
+				communityIdIndex
 			), g_KeyPairs[5]->getPublicKey() // recipient
 		)
 		.setCreatedAt(createdAt)
@@ -249,8 +249,8 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		make_shared<memory::Block>(crypto_generichash_BYTES),
 		LedgerAnchor(defaultHieroTransactionId),
 		{
-			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), 0},
-			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483), 0}
+			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), communityIdIndex},
+			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483), communityIdIndex}
 		},
 		BalanceDerivationType::EXTERN
 	);
@@ -272,7 +272,7 @@ TEST(SerializeTest, CrossGroupTransactions) {
 			TransferAmount(
 				g_KeyPairs[4]->getPublicKey(), // sender
 				GradidoUnit::fromGradidoCent(1002516),
-				0
+				communityIdIndex
 			), g_KeyPairs[5]->getPublicKey() // recipient
 		)
 		.setCreatedAt(createdAt)
@@ -289,8 +289,8 @@ TEST(SerializeTest, CrossGroupTransactions) {
 		make_shared<memory::Block>(crypto_generichash_BYTES),
 		LedgerAnchor(defaultHieroTransactionId),
 		{
-			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), 0},
-			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483), 0}
+			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), communityIdIndex},
+			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483), communityIdIndex}
 		},
 		BalanceDerivationType::EXTERN
 	);
@@ -315,8 +315,8 @@ TEST(SerializeTest, CrossGroupTransactions) {
 		make_shared<memory::Block>(crypto_generichash_BYTES),
 		LedgerAnchor({ confirmedAt, {0, 0, 2} }),
 		{
-			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), 0},
-			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483), 0}
+			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), communityIdIndex},
+			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483), communityIdIndex}
 		},
 		BalanceDerivationType::EXTERN
 	);

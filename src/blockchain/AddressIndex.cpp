@@ -21,7 +21,8 @@ namespace gradido {
 
 	namespace blockchain {
 
-		AddressIndex::AddressIndex()
+		AddressIndex::AddressIndex(uint32_t communityIdIndex)
+			: mCommunityIdIndex(communityIdIndex)
 		{
 
 		}
@@ -44,19 +45,19 @@ namespace gradido {
 			auto getPublicKeyIndex = [&](const ConstBlockPtr pubKeyPtr) -> uint32_t {
 				assert(pubKeyPtr);
 				auto index = publicKeyDictionary.getIndexForData(toPublicKey(pubKeyPtr));
-				if (!index.has_value()) {
+				if (!index) {
 					throw DictionaryMissingEntryException("AddressIndex: missing index of public key in Dictionary", pubKeyPtr->convertToHex());
 				}
-				return index.value();
+				return index;
 			};
 
 			if (body->isCommunityRoot()) 
 			{
 				auto communityRoot = body->getCommunityRoot().value();
-				if (!addTransactionNrForIndex(communityRoot.aufPublicKeyIndex.publicKeyIndex, txNr, AddressType::COMMUNITY_AUF)) {
+				if (!addTransactionNrForIndex(communityRoot.aufPublicKeyIndex, txNr, AddressType::COMMUNITY_AUF)) {
 					LOG_F(WARNING, "couldn't add Community Auf Key to Address Indices");
 				}
-				if (!addTransactionNrForIndex(communityRoot.gmwPublicKeyIndex.publicKeyIndex, txNr, AddressType::COMMUNITY_GMW)) {
+				if (!addTransactionNrForIndex(communityRoot.gmwPublicKeyIndex, txNr, AddressType::COMMUNITY_GMW)) {
 					LOG_F(WARNING, "couldn't add Community GMW Key to Address Indices");
 				}
 			} 
@@ -64,11 +65,11 @@ namespace gradido {
 			{
 				const auto& registerAddress = body->getRegisterAddress();
 
-				if (!addTransactionNrForIndex(registerAddress->userPublicKeyIndex.publicKeyIndex, txNr, registerAddress->addressType)) {
+				if (!addTransactionNrForIndex(registerAddress->userPublicKeyIndex, txNr, registerAddress->addressType)) {
 					LOG_F(WARNING, "couldn't add register user Key to Address Indices");
 				}
 
-				if (!addTransactionNrForIndex(registerAddress->accountPublicKeyIndex.publicKeyIndex, txNr, registerAddress->addressType)) {
+				if (!addTransactionNrForIndex(registerAddress->accountPublicKeyIndex, txNr, registerAddress->addressType)) {
 					LOG_F(WARNING, "couldn't add register address Key to Address Indices");
 				}				
 			}
@@ -90,10 +91,10 @@ namespace gradido {
 			uint64_t txNr = compactTx.txNr;
 			if (compactTx.isCommunityRoot()) {
 				const auto& communityRoot = compactTx.specific.communityRoot;
-				if (!addTransactionNrForIndex(communityRoot.aufPublicKeyIndex.publicKeyIndex, txNr, AddressType::COMMUNITY_AUF)) {
+				if (!addTransactionNrForIndex(communityRoot.aufPublicKeyIndex, txNr, AddressType::COMMUNITY_AUF)) {
 					LOG_F(WARNING, "couldn't add Community Auf Key to Address Indices");
 				}
-				if (!addTransactionNrForIndex(communityRoot.gmwPublicKeyIndex.publicKeyIndex, txNr, AddressType::COMMUNITY_GMW)) {
+				if (!addTransactionNrForIndex(communityRoot.gmwPublicKeyIndex, txNr, AddressType::COMMUNITY_GMW)) {
 					LOG_F(WARNING, "couldn't add Community GMW Key to Address Indices");
 				}
 			}
@@ -101,11 +102,11 @@ namespace gradido {
 			{
 				const auto& registerAddress = compactTx.specific.registerAddress;
 
-				if (!addTransactionNrForIndex(registerAddress.userPublicKeyIndex.publicKeyIndex, txNr, registerAddress.addressType)) {
+				if (!addTransactionNrForIndex(registerAddress.userPublicKeyIndex, txNr, registerAddress.addressType)) {
 					LOG_F(WARNING, "couldn't add register user Key to Address Indices");
 				}
 
-				if (!addTransactionNrForIndex(registerAddress.accountPublicKeyIndex.publicKeyIndex, txNr, registerAddress.addressType)) {
+				if (!addTransactionNrForIndex(registerAddress.accountPublicKeyIndex, txNr, registerAddress.addressType)) {
 					LOG_F(WARNING, "couldn't add register address Key to Address Indices");
 				}
 			}
@@ -158,27 +159,36 @@ namespace gradido {
 			return false;
 		}
 
-		const vector<uint64_t>& AddressIndex::getTransactionsNrs(uint32_t publicKeyIndex) const
+		const vector<uint64_t>& AddressIndex::getTransactionsNrs(data::compact::PublicKeyIndex publicKeyIndex) const
 		{
-			auto it = mIndexTransactionNrs.find(publicKeyIndex);
+			if (publicKeyIndex.communityIdIndex != mCommunityIdIndex) {
+				throw GradidoNodeInvalidDataException("dont't call AddressIndex::getTransactionsNrs with foreign publicKey");
+			}
+			auto it = mIndexTransactionNrs.find(publicKeyIndex.publicKeyIndex);
 			if (it == mIndexTransactionNrs.end()) {
 				throw GradidoNodeInvalidDataException("publicKeyIndex not found, please call isPublicKeyIndexExist before");
 			}
 			return it->second.transactionNrs;
 		}
 
-		AddressType AddressIndex::getAddressType(uint32_t publicKeyIndex) const
+		AddressType AddressIndex::getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const
 		{
-			auto it = mIndexTransactionNrs.find(publicKeyIndex);
+			if (publicKeyIndex.communityIdIndex != mCommunityIdIndex) {
+				throw GradidoNodeInvalidDataException("dont't call AddressIndex::getAddressType with foreign publicKey");
+			}
+			auto it = mIndexTransactionNrs.find(publicKeyIndex.publicKeyIndex);
 			if (it == mIndexTransactionNrs.end()) {
 				return AddressType::NONE;
 			}
 			return it->second.addressType;
 		}
 
-		vector<uint64_t> AddressIndex::getAddressTypeChangingTransactions(uint32_t publicKeyIndex) const
+		vector<uint64_t> AddressIndex::getAddressTypeChangingTransactions(data::compact::PublicKeyIndex publicKeyIndex) const
 		{
-			auto it = mIndexTransactionNrs.find(publicKeyIndex);
+			if (publicKeyIndex.communityIdIndex != mCommunityIdIndex) {
+				throw GradidoNodeInvalidDataException("dont't call AddressIndex::getAddressTypeChangingTransactions with foreign publicKey");
+			}
+			auto it = mIndexTransactionNrs.find(publicKeyIndex.publicKeyIndex);
 			if (it == mIndexTransactionNrs.end()) {
 				return {};
 			}
@@ -186,18 +196,24 @@ namespace gradido {
 		}
 
 
-		uint64_t AddressIndex::lastBalanceChanged(uint32_t publicKeyIndex) const
+		uint64_t AddressIndex::lastBalanceChanged(data::compact::PublicKeyIndex publicKeyIndex) const
 		{
-			auto it = mIndexTransactionNrs.find(publicKeyIndex);
+			if (publicKeyIndex.communityIdIndex != mCommunityIdIndex) {
+				throw GradidoNodeInvalidDataException("dont't call AddressIndex::lastBalanceChanged with foreign publicKey");
+			}
+			auto it = mIndexTransactionNrs.find(publicKeyIndex.publicKeyIndex);
 			if (it == mIndexTransactionNrs.end()) {
 				return 0;
 			}
 			return it->second.lastBalanceChangingTransactionNr;
 		}
 
-		bool AddressIndex::isExist(uint32_t publicKeyIndex) const
+		bool AddressIndex::isExist(data::compact::PublicKeyIndex publicKeyIndex) const
 		{
-			auto it = mIndexTransactionNrs.find(publicKeyIndex);
+			if (publicKeyIndex.communityIdIndex != mCommunityIdIndex) {
+				throw GradidoNodeInvalidDataException("dont't call AddressIndex::isExist with foreign publicKey");
+			}
+			auto it = mIndexTransactionNrs.find(publicKeyIndex.publicKeyIndex);
 			return it != mIndexTransactionNrs.end();
 		}
 	}

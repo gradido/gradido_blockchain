@@ -91,10 +91,14 @@ namespace gradido {
 
   const CommunityContext& AppContext::getCommunityContext(uint32_t communityIdIndex) const
   {
-    if (communityIdIndex >= mCommunityContexts.size()) {
+    if (!communityIdIndex) {
+      throw GradidoNullPointerException("empty, expect > 0", "communityIdIndex", __FUNCTION__);
+    }
+    auto arrayIndex = communityIdIndex - 1;
+    if (arrayIndex >= mCommunityContexts.size()) {
       throw DictionaryMissingEntryException("missing community context", std::to_string(communityIdIndex));
     }
-    return mCommunityContexts[communityIdIndex];
+    return mCommunityContexts[arrayIndex];
   }
 
   GRADIDOBLOCKCHAIN_EXPORT extern std::unique_ptr<AppContext> g_appContext;

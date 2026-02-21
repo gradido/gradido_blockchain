@@ -1,7 +1,15 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/blockchain/CompactFilter.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
+#include "gradido_blockchain/blockchain/Pagination.h"
+#include "gradido_blockchain/blockchain/PublicKeySearchType.h"
 #include "gradido_blockchain/blockchain/TransactionRelationType.h"
 #include "gradido_blockchain/data/AccountBalance.h"
+#include "gradido_blockchain/data/adapter/publicKey.h"
+#include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
+#include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/AbstractRole.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
@@ -11,13 +19,19 @@
 #include "gradido_blockchain/interaction/calculateAccountBalance/GradidoTimeoutDeferredTransferRole.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/GradidoTransferRole.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/RegisterAddressRole.h"
+#include "gradido_blockchain/lib/DictionaryExceptions.h"
+#include "gradido_blockchain/lib/TimepointInterval.h"
 
 #include "magic_enum/magic_enum.hpp"
 
 using namespace magic_enum;
 
 namespace gradido {
-	using namespace blockchain;
+	using data::adapter::toPublicKey;
+	using data::compact::PublicKeyIndex;
+	using data::Timestamp;
+	using blockchain::CompactFilter, blockchain::Filter, blockchain::FilterBuilder, blockchain::FilterResult;
+	using blockchain::Pagination, blockchain::PublicKeySearchType, blockchain::SearchDirection, blockchain::TransactionEntry;
 	using namespace data;
 
 	namespace interaction {
@@ -66,42 +80,35 @@ namespace gradido {
 			// calculate balance address from last transaction found for the pubkey with transaction <= maxTransactionNr
 			GradidoUnit Context::fromEnd(
 				memory::ConstBlockPtr publicKey,
-				Timepoint endDate,
+				Timestamp endDate,
 				std::optional<uint32_t> coinCommunityIdIndex/* = nullopt*/,
 				uint64_t maxTransactionNr/* = 0 */
 			) const 
 			{
-				auto lastBalanceChaningTx = mBlockchain->findOne(Filter::lastBalanceFor(publicKey));
-				if (lastBalanceChaningTx && (maxTransactionNr && lastBalanceChaningTx->getTransactionNr() <= maxTransactionNr)) {
-					return lastBalanceChaningTx->getConfirmedTransaction()->getDecayedAccountBalance(publicKey, coinCommunityIdIndex, endDate);
+				if (!publicKey || publicKey->isEmpty()) {
+					throw GradidoNullPointerException("empty publicKey", "ConstBlockPtr", __FUNCTION__);
 				}
-				FilterBuilder builder;
-				GradidoUnit balance(GradidoUnit::zero());
-				Timepoint lastDate;
-				auto coinCommunityIdIndexValue = coinCommunityIdIndex.has_value()
-					? coinCommunityIdIndex.value()
-					: mBlockchain->getCommunityIdIndex();
-				mBlockchain->findAll(builder
-					.setUpdatedBalancePublicKey(publicKey)
-					.setMaxTransactionNr(maxTransactionNr)
-					.setTimepointInterval(TimepointInterval(Timepoint(), endDate))
-					.setSearchDirection(SearchDirection::DESC)
-					.setPagination({ 1, 0 })
-					.setCoinCommunityIdIndex(coinCommunityIdIndex)
-					.setFilterFunction([&](const TransactionEntry& entry) -> FilterResult {
-						auto confirmedTransaction = entry.getConfirmedTransaction();
-						if (confirmedTransaction->getConfirmedAt().getAsTimepoint() > endDate) {
-							return FilterResult::DISMISS;
-						}
-						
-						balance = confirmedTransaction->getAccountBalance(publicKey, coinCommunityIdIndexValue).getBalance();
-						lastDate = confirmedTransaction->getConfirmedAt();
-						return FilterResult::STOP;
-						
-					})
-					.build()
-				);
-				return balance.calculateDecay(lastDate, endDate);
+
+				auto publicKeyIndex = mBlockchain->getPublicKeyDictionary().getIndexForData(toPublicKey(*publicKey));
+				if (!publicKeyIndex || publicKeyIndex != (uint32_t)publicKeyIndex) {
+					throw DictionaryMissingEntryException("missing public key index", publicKey->convertToHex());
+				}
+				PublicKeyIndex fullPublicKeyIndex = { .communityIdIndex = mBlockchain->getCommunityIdIndex(), .publicKeyIndex = (uint32_t)publicKeyIndex };
+				auto filter = CompactFilter::lastBalanceFor(fullPublicKeyIndex);
+				filter.maxTransactionNr = maxTransactionNr;
+				if (coinCommunityIdIndex) {
+					filter.coinCommunityIdIndex = *coinCommunityIdIndex;
+				}
+				// this one take a shortcut with help of address index, if timepoint interval is empty
+				auto lastMatchingTx = mBlockchain->findOneFast(filter);
+				if (!lastMatchingTx || lastMatchingTx->get().getConfirmedAt() > endDate) {
+					filter.timepointInterval = TimepointInterval(Timepoint(), endDate);
+					lastMatchingTx = mBlockchain->findOneFast(filter);
+				}
+				if (lastMatchingTx) {
+					return lastMatchingTx->get().getAccountBalance(filter.publicKeyIndex, filter.coinCommunityIdIndex).getDecayedAmount(endDate);
+				}
+				return GradidoUnit::zero();				
 			}
 
 			std::shared_ptr<AbstractRole> Context::getRole(std::shared_ptr<const data::TransactionBody> body, Timepoint confirmedAt) const

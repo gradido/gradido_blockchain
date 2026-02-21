@@ -21,10 +21,7 @@ namespace gradido {
 				auto communityRoot = firstTransactionEntry->getTransactionBody()->getCommunityRoot().value();
 				assert(accountPublicKey->size() == 32);
 
-				compact::PublicKeyIndex accountPublicKeyIndex = {
-					.communityIdIndex = communityRoot.publicKeyIndex.communityIdIndex,
-					.publicKeyIndex = g_appContext->getOrAddPublicKeyIndex(communityRoot.publicKeyIndex.communityIdIndex, { accountPublicKey->data() })
-				};
+				auto accountPublicKeyIndex = g_appContext->getOrAddPublicKeyIndex(mBody->getCommunityIdIndex(), { accountPublicKey->data() });
 				if (communityRoot.aufPublicKeyIndex == accountPublicKeyIndex || communityRoot.gmwPublicKeyIndex == accountPublicKeyIndex) {
 					return getTransferAmount().getAmount();
 				}

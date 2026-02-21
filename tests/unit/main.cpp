@@ -67,11 +67,20 @@ using memory::ConstBlockPtr, memory::ConstBlockPtrHash; memory::ConstBlockPtrEqu
 // GTEST_API_ 
 int main(int argc, char** argv) 
 {
-	g_appContext = make_unique<AppContext>(
-		make_unique<ThreadsafeRuntimeDictionary<std::string>>("communityIdDictionary"),
-		make_unique<ThreadsafeRuntimeDictionary<GenericHash, GenericHashHash, GenericHashEqual>>("userNameHashDictionary")
-	);
-	InMemoryProvider::getInstance()->findBlockchain(g_appContext->getOrAddCommunityIdIndex(communityId));
+	try {
+		g_appContext = make_unique<AppContext>(
+			make_unique<ThreadsafeRuntimeDictionary<std::string>>("communityIdDictionary"),
+			make_unique<ThreadsafeRuntimeDictionary<GenericHash, GenericHashHash, GenericHashEqual>>("userNameHashDictionary")
+		);
+		InMemoryProvider::getInstance()->findBlockchain(g_appContext->getOrAddCommunityIdIndex(communityId));
+	}
+	catch (GradidoBlockchainException& ex) {
+		printf("error: %s\n", ex.getFullString().c_str());
+		return -1;
+	} 
+	catch (std::exception& ex) {
+		printf("error: %s\n", ex.what());
+	}
 	testing::InitGoogleTest(&argc, argv);
 	generateKeyPairs();
 	CryptoConfig::g_ServerCryptoKey = std::make_shared<memory::Block>(memory::Block::fromHex("153afcd54ef316e45cd3e5ed4567cd21", 32));

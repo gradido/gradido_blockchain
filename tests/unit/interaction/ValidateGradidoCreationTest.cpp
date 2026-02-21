@@ -19,7 +19,7 @@ TEST(ValidateGradidoCreationTest, valid) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), communityIdIndex),
 			TimestampSeconds(1609459000)
 		)
 		.setRecipientCommunity(communityId)
@@ -39,7 +39,7 @@ TEST(ValidateGradidoCreationTest, invalidMemoEmpty) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), communityIdIndex),
 			TimestampSeconds(1609459000)
 		)
 		.setRecipientCommunity(communityId)
@@ -61,7 +61,7 @@ TEST(ValidateGradidoCreationTest, invalidMemoToShort) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), communityIdIndex),
 			TimestampSeconds(1609459000)
 		)
 		.setRecipientCommunity(communityId)
@@ -83,7 +83,7 @@ TEST(ValidateGradidoCreationTest, invalidMemoToBig) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), communityIdIndex),
 			TimestampSeconds(1609459000)
 		)
 		.setRecipientCommunity(communityId)
@@ -106,7 +106,7 @@ TEST(ValidateGradidoCreationTest, invalidAmountNegative) {
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionCreation(
 			// negative amount
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000).negated(), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000).negated(), communityIdIndex),
 			TimestampSeconds(1609459000)
 		)
 		.setRecipientCommunity(communityId)
@@ -127,7 +127,7 @@ TEST(ValidateGradidoCreationTest, invalidAmountZero) {
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionCreation(
 			// zero amount
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::zero(), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::zero(), communityIdIndex),
 			TimestampSeconds(1609459000)
 		)
 		.setRecipientCommunity(communityId)
@@ -148,7 +148,7 @@ TEST(ValidateGradidoCreationTest, invalidAmountToBig) {
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionCreation(
 			// to big amount, only 1000 per month allowed
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(20000000), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(20000000), communityIdIndex),
 			TimestampSeconds(1609459000)
 		)
 		.setRecipientCommunity(communityId)

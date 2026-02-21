@@ -41,7 +41,7 @@ namespace gradido {
 		InMemory::InMemory(string_view uniqueCommunityAlias, uint32_t communityIdIndex)
 			: Abstract(communityIdIndex),
 			mPublicKeyDirectory(std::string(uniqueCommunityAlias) + std::string("_publicKeyDictionary")),
-			mTransactionsIndex(), mSortedDirty(false), mExitCalled(false)
+			mTransactionsIndex(communityIdIndex), mSortedDirty(false), mExitCalled(false)
 		{
 
 		}
@@ -255,13 +255,13 @@ namespace gradido {
 			TransactionEntries result;
 			// if pagination is used, filterCopy contain count of still to find transactions
 			Filter filterCopy(filter);
-			auto transactionNrs = mTransactionsIndex.findTransactions(filterCopy, mPublicKeyDirectory);
+			auto transactionNrs = mTransactionsIndex.findTransactions(filterCopy, mPublicKeyDirectory, mCommunityIdIndex);
 			for (auto transactionNr : transactionNrs) {
 				if (!filter.pagination.hasCapacityLeft(result.size())) {
 					break;
 				}
 				auto transaction = getTransactionForId(transactionNr);
-				auto filterResult = filter.matches(transaction, FilterCriteria::FILTER_FUNCTION);
+				auto filterResult = filter.matches(transaction, FilterCriteria::FILTER_FUNCTION | FilterCriteria::TIMEPOINT_INTERVAL);
 				if ((filterResult & FilterResult::USE) == FilterResult::USE) {
 					result.push_back(transaction);
 				}
@@ -276,23 +276,36 @@ namespace gradido {
 		{
 			std::lock_guard _lock(mWorkMutex);
 			ConfirmedTxs results;
-			auto transactionNrs = mTransactionsIndex.findTransactions(filter);
-			for (auto transactionNr : transactionNrs) {
-				if (!filter.pagination.hasCapacityLeft(results.size())) {
-					break;
-				}
-				auto transaction = getConfirmedTxForId(transactionNr);
+			auto startIt = mTransactionsIndex.begin(filter);
+			auto endIt = mTransactionsIndex.end(filter);
+			// auto transactionNrs = mTransactionsIndex.findTransactions(filter);
+			int cursor = 0;
+			auto it = startIt;
+			for (; it != endIt; ++it) {	
+				/*if (transactionNrs.size() <= cursor) {
+					throw GradidoNodeInvalidDataException("differ");
+				}*/
+			//for (auto transactionNr : transactionNrs) {
+				
+				auto transaction = getConfirmedTxForId(*it);
+				//auto transaction = getConfirmedTxForId(transactionNr);
 				if (!transaction) {
-					throw GradidoBlockchainTransactionNotFoundException("confirmed tx not found").setTransactionId(transactionNr);
+					throw GradidoBlockchainTransactionNotFoundException("confirmed tx not found").setTransactionId(*it);
+					//throw GradidoBlockchainTransactionNotFoundException("confirmed tx not found").setTransactionId(transactionNr);
 				}
-				auto filterResult = filter.matches(transaction.value(), FilterCriteria::FILTER_FUNCTION);
+				auto filterResult = filter.matches(transaction.value(), FilterCriteria::FILTER_FUNCTION | FilterCriteria::TIMEPOINT_INTERVAL);
 				if ((filterResult & FilterResult::USE) == FilterResult::USE) {
 					results.push_back(transaction.value());
+					if (!filter.pagination.hasCapacityLeft(results.size())) {
+						break;
+					}
 				}
 				if ((filterResult & FilterResult::STOP) == FilterResult::STOP) {
 					break;
 				}
+				++cursor;
 			}
+			// printf("%d ", cursor);
 			return results;
 		}
 
@@ -306,10 +319,18 @@ namespace gradido {
 
 		data::AddressType InMemory::getAddressType(const Filter& filter/* = Filter::ALL_TRANSACTIONS*/) const
 		{
-			if (!filter.involvedPublicKey) {
+			if (!filter.involvedPublicKey || filter.involvedPublicKey->isEmpty()) {
 				throw GradidoNodeInvalidDataException("missing public key, please use filter with involvedPublicKey set");
 			}
-			auto addressTypeStateChange = mTransactionsIndex.getAddressType(filter.involvedPublicKey, mPublicKeyDirectory);
+			auto publicKeyIndexOptional = mPublicKeyDirectory.getIndexForData(toPublicKey(filter.involvedPublicKey));
+			if (!publicKeyIndexOptional) {
+				return AddressType::NONE;
+			}
+			uint32_t publicKeyUint32 = (uint32_t)publicKeyIndexOptional;
+			if (publicKeyUint32 != publicKeyIndexOptional) {
+				throw GradidoNodeInvalidDataException("public key index overflow");
+			}
+			auto addressTypeStateChange = mTransactionsIndex.getAddressType({ .communityIdIndex = mCommunityIdIndex, .publicKeyIndex = publicKeyUint32 });
 			if (addressTypeStateChange.getTxId()) {
 				auto tx = getTransactionForId(addressTypeStateChange.getTxId());
 				if (!tx) {
@@ -378,17 +399,22 @@ namespace gradido {
 			auto body = confirmedTransaction->getGradidoTransaction()->getTransactionBody();
 			mLastTransaction = transactionEntry;
 			// create compact version
-			uint8_t buffer[1024];
-			grdu_memory alloc;
-			grdu_memory_init_static(&alloc, buffer, 1024);
-			grdw_confirmed_transaction tx{};
-			transactionEntry->getConfirmedTransaction()->toGrdw(&alloc, &tx, mCommunityIdIndex);
-			auto confirmedTx = std::move(ConfirmedGradidoTx::fromGrdwConfirmedTransaction(&tx, mCommunityIdIndex));
-			alloc.last_index = 0;
-			grdw_transaction_body txBody{};
-			transactionEntry->getTransactionBody()->toGrdw(&alloc, &txBody);
-			confirmedTx.fillFromGrdwTransactionBody(&txBody);
-			mConfirmedTxByNr.insert({ confirmedTx.txNr, std::move(confirmedTx) });
+			try {
+				uint8_t buffer[1024];
+				grdu_memory alloc;
+				grdu_memory_init_static(&alloc, buffer, 1024);
+				grdw_confirmed_transaction tx{};
+				transactionEntry->getConfirmedTransaction()->toGrdw(&alloc, &tx, mCommunityIdIndex);
+				auto confirmedTx = std::move(ConfirmedGradidoTx::fromGrdw(&tx, mCommunityIdIndex, *g_appContext));
+				alloc.last_index = 0;
+				grdw_transaction_body txBody{};
+				transactionEntry->getTransactionBody()->toGrdw(&alloc, &txBody);
+				confirmedTx.fillFromGrdwTransactionBody(&txBody, *g_appContext);
+				mConfirmedTxByNr.insert({ confirmedTx.txNr, std::move(confirmedTx) });
+			}
+			catch (GradidoBlockchainException& ex) {
+				LOG_F(WARNING, "%s on create compact", ex.getFullString().c_str());
+			}
 		}
 
 		void InMemory::removeTransactionEntry(ConstTransactionEntryPtr transactionEntry)

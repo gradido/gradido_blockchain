@@ -9,6 +9,7 @@
 #include "sodium.h"
 
 #include "date/date.h"
+
 #include <chrono>
 #include <iomanip>
 #include <optional>
@@ -109,6 +110,8 @@ namespace serialization {
 	// the symbols are visible to consuming code.
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const memory::Block& block, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const memory::ConstBlockPtr& ptr, Document::AllocatorType& alloc);
+	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const ByteArray<32>& byteArray, Document::AllocatorType& alloc);
+	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const ByteArray<64>& byteArray, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const Timepoint& timepoint, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const Duration& duration, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const date::year& year, Document::AllocatorType& alloc);

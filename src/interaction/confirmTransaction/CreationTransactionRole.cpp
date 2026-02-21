@@ -23,15 +23,17 @@ namespace gradido {
                 // get community root transaction for gmw and auf addresses
                 auto firstTransactionEntry = mBlockchain->findOne(Filter::FIRST_TRANSACTION);
                 assert(firstTransactionEntry->getTransactionBody()->isCommunityRoot());
-                auto communityRoot = firstTransactionEntry->getTransactionBody()->getCommunityRoot().value();
+                const auto& communityRoot = firstTransactionEntry->getTransactionBody()->getCommunityRoot().value();
+                auto gmwPublicKey = toConstBlockPtr({ firstTransactionEntry->getBlockchainCommunityIdIndex(), communityRoot.gmwPublicKeyIndex });
+                auto aufPublicKey = toConstBlockPtr({ firstTransactionEntry->getBlockchainCommunityIdIndex(), communityRoot.aufPublicKeyIndex });
 
                 return {
                     // user which get creation
                     calculateAccountBalance(transferAmount.getPublicKey(), maxTransactionNr, transferAmount.getAmount(), coinCommunityIdIndex),
                     // gmw
-                    calculateAccountBalance(toConstBlockPtr(communityRoot.gmwPublicKeyIndex), maxTransactionNr, transferAmount.getAmount(), coinCommunityIdIndex),
+                    calculateAccountBalance(gmwPublicKey, maxTransactionNr, transferAmount.getAmount(), coinCommunityIdIndex),
                     // auf
-                    calculateAccountBalance(toConstBlockPtr(communityRoot.aufPublicKeyIndex), maxTransactionNr, transferAmount.getAmount(), coinCommunityIdIndex),
+                    calculateAccountBalance(aufPublicKey, maxTransactionNr, transferAmount.getAmount(), coinCommunityIdIndex),
                 };
             }
         }

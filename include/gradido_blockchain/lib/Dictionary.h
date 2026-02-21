@@ -26,44 +26,42 @@ public:
 		mIndexDataLookup.clear();
 	}
 
-	virtual std::optional<size_t> getIndexForData(const DataType& data) const override
+	virtual size_t getIndexForData(const DataType& data) const override
 	{
 		auto it = mDataIndexLookup.find(data);
 		if (it == mDataIndexLookup.end()) {
-			return std::nullopt;
+			return 0;
 		}
 		return it->second;
 	}
 
 	virtual std::optional<DataType> getDataForIndex(size_t index) const override
 	{
-		if (index >= mIndexDataLookup.size()) {
+		if (!index || index-1 >= mIndexDataLookup.size()) {
 			return std::nullopt;
 		}
-		return mIndexDataLookup[index];
+		return mIndexDataLookup[index-1];
 	}
 
 	virtual DataType getDataForIndexOrThrow(size_t index) const override
 	{
-		if (index >= mIndexDataLookup.size()) {
+		if (!index || index-1 >= mIndexDataLookup.size()) {
 			throw DictionaryMissingEntryException(mName.data(), std::to_string(index));
 		}
-		return mIndexDataLookup[index];
+		return mIndexDataLookup[index-1];
 	}
 
 	virtual bool hasIndex(size_t index) const override
 	{
-		if (index >= mIndexDataLookup.size()) { return false; }
+		if (!index || index-1 >= mIndexDataLookup.size()) { 
+			return false; 
+		}
 		return true;
 	}
 
 	virtual size_t getOrAddIndexForData(const DataType& data) override
 	{
-		// TODO: write unit test to test boundaries
-		if (mIndexDataLookup.size() >= static_cast<size_t>(std::numeric_limits<size_t>::max())) {
-			throw DictionaryOverflowException("try to add more index data set's as size_t as index can handle", mName);
-		}
-		size_t index = static_cast<size_t>(mIndexDataLookup.size());
+		size_t index = mIndexDataLookup.size() + 1;
 		auto insertIt = mDataIndexLookup.insert({ data, index });
 		if (!insertIt.second) {
 			return insertIt.first->second;
@@ -95,7 +93,7 @@ public:
 		RuntimeDictionary<DataType, Hash, Equal>::reset();
 	}
 
-	virtual std::optional<size_t> getIndexForData(const DataType& data) const override
+	virtual size_t getIndexForData(const DataType& data) const override
 	{
 		std::shared_lock _lock(mSharedMutex);
 		return RuntimeDictionary<DataType, Hash, Equal>::getIndexForData(data);

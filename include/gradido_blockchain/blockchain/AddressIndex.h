@@ -4,7 +4,7 @@
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/data/AddressType.h"
-#include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
 
 #include <unordered_map>
@@ -17,6 +17,9 @@ namespace memory {
 }
 
 namespace gradido {
+	namespace data::compact {
+		struct ConfirmedGradidoTx;
+	}
 	namespace blockchain {
 
 		class TransactionEntry;
@@ -25,7 +28,7 @@ namespace gradido {
 		class GRADIDOBLOCKCHAIN_EXPORT AddressIndex
 		{
 		public:
-			AddressIndex();
+			AddressIndex(uint32_t communityIdIndex);
 			~AddressIndex();
 
 			void reset();
@@ -34,12 +37,12 @@ namespace gradido {
 			//! \return added entries count
 			void addTransaction(const TransactionEntry& transactionEntry, const IDictionary<PublicKey>& publicKeyDictionary);
 			void addTransaction(const data::compact::ConfirmedGradidoTx& compactTx);
-			const std::vector<uint64_t>& getTransactionsNrs(uint32_t publicKeyIndex) const;
-			bool isExist(uint32_t publicKeyIndex) const;
-			data::AddressType getAddressType(uint32_t publicKeyIndex) const;
-			std::vector<uint64_t> getAddressTypeChangingTransactions(uint32_t publicKeyIndex) const;
+			const std::vector<uint64_t>& getTransactionsNrs(data::compact::PublicKeyIndex publicKeyIndex) const;
+			bool isExist(data::compact::PublicKeyIndex publicKeyIndex) const;
+			data::AddressType getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const;
+			std::vector<uint64_t> getAddressTypeChangingTransactions(data::compact::PublicKeyIndex publicKeyIndex) const;
 			//! \return 0 if not found, else return last transaction nr where the balance of the account was changed
-			uint64_t lastBalanceChanged(uint32_t publicKeyIndex) const;
+			uint64_t lastBalanceChanged(data::compact::PublicKeyIndex publicKeyIndex) const;
 
 		protected:
 			bool addTransactionNrForIndex(uint32_t publicKeyIndex, uint64_t transactionNr, data::AddressType addressType);
@@ -57,6 +60,7 @@ namespace gradido {
 
 			// TODO: store all transaction nrs for public key which alter the type (RegisterAddress, CommunityRoot)
 			std::unordered_map<uint32_t, AddressData> mIndexTransactionNrs;
+			uint32_t mCommunityIdIndex;
 		};
 	}
 }

@@ -1,4 +1,6 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
+#include "gradido_blockchain/data/compact/ConfirmedGradidoTxCold.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionZigCompactRole.h"
 #include "gradido_blockchain/memory/Block.h"
@@ -42,7 +44,7 @@ namespace gradido {
               LOG_F(ERROR, "decode error: %s", enum_name(result.state).data());
               throw GradidoNodeInvalidDataException("error deserialize confirmed transaction");
             }
-            mTx = make_shared<ConfirmedGradidoTx>(std::move(ConfirmedGradidoTx::fromGrdwConfirmedTransaction(&tx, communityIdIndex)));
+            mTx = make_shared<ConfirmedGradidoTx>(std::move(ConfirmedGradidoTx::fromGrdw(&tx, communityIdIndex, *g_appContext)));
           }
           alloc->last_index = 0;
           {
@@ -53,7 +55,7 @@ namespace gradido {
               LOG_F(ERROR, "body decode error: %s", enum_name(result.state).data());
               throw GradidoNodeInvalidDataException("error deserialize transaction body");
             }
-            mTx->fillFromGrdwTransactionBody(&body);
+            mTx->fillFromGrdwTransactionBody(&body, *g_appContext);
           }
           return 0;
         }

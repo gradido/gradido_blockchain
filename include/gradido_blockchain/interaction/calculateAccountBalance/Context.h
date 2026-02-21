@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_CALCULATE_ACCOUNT_BALANCE_CONTEXT_H
 
 #include "gradido_blockchain/blockchain/TransactionRelationType.h"
+#include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/memory/Block.h"
 
 #include <map>
@@ -38,7 +39,7 @@ namespace gradido {
 				// calculate balance address from last transaction found for the pubkey with transaction <= maxTransactionNr
 				GradidoUnit fromEnd(
 					memory::ConstBlockPtr publicKey, 
-					Timepoint endDate, 
+					data::Timestamp endDate, 
 					std::optional<uint32_t> coinCommunityIdIndex = std::nullopt,
 					uint64_t maxTransactionNr = 0
 				) const;

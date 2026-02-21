@@ -17,6 +17,10 @@ namespace gradido {
     }
 	namespace interaction {
 		namespace validate {
+
+
+      // rewrite as function with compact confirmed tx
+
       class TransactionBodyRole;
       class GradidoTransactionRole;
       class ConfirmedTransactionRole;

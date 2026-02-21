@@ -159,37 +159,68 @@ namespace serialization {
 			}
 			obj.AddMember("otherCommunity", toJson(otherCommunityIdString.value(), alloc), alloc);
 		}
-		switch (value.getTransactionType()) {
-		case TransactionType::TRANSFER:
-			obj.AddMember("transfer", toJson(*value.getTransfer(), alloc), alloc);
-			break;
-		case TransactionType::CREATION:
-			obj.AddMember("creation", toJson(*value.getCreation(), alloc), alloc);
-			break;
-		case TransactionType::COMMUNITY_FRIENDS_UPDATE:
-			obj.AddMember("communityFriendsUpdate", toJson(*value.getCommunityFriendsUpdate(), alloc), alloc);
-			break;
-		case TransactionType::REGISTER_ADDRESS:
-			if (value.getRegisterAddress()) {
-				obj.AddMember("registerAddress", toJson(value.getRegisterAddress().value(), alloc), alloc);
+		if (value.isRegisterAddress()) {
+			auto registerAddress = value.getRegisterAddress().value();
+			Value regAddVal(kObjectType);
+			regAddVal.AddMember("userPubkey",
+				toJson(g_appContext->getPublicKey({ .communityIdIndex = value.getCommunityIdIndex(), .publicKeyIndex = registerAddress.userPublicKeyIndex }), alloc),
+				alloc
+			);
+			regAddVal.AddMember("addressType", toJson(registerAddress.addressType, alloc), alloc);
+			auto nameHash = g_appContext->getUserNameHashs().getDataForIndex(registerAddress.nameHashIndex);
+			if (nameHash) {
+				regAddVal.AddMember("nameHash", toJson(nameHash->convertToHex(), alloc), alloc);
 			}
-			break;
-		case TransactionType::DEFERRED_TRANSFER:
-			obj.AddMember("deferredTransfer", toJson(*value.getDeferredTransfer(), alloc), alloc);
-			break;
-		case TransactionType::COMMUNITY_ROOT:
-			if (value.getCommunityRoot()) {
-				obj.AddMember("communityRoot", toJson(value.getCommunityRoot().value(), alloc), alloc);
+			regAddVal.AddMember("accountPubkey",
+				toJson(g_appContext->getPublicKey({ .communityIdIndex = value.getCommunityIdIndex(), .publicKeyIndex = registerAddress.accountPublicKeyIndex }), alloc),
+				alloc
+			);
+			regAddVal.AddMember("derivationIndex", registerAddress.derivationIndex, alloc);
+			obj.AddMember("registerAddress", regAddVal, alloc);
+		}
+		else if (value.isCommunityRoot()) {
+			auto communityRoot = value.getCommunityRoot().value();
+			Value comRootVal(kObjectType);
+			comRootVal.AddMember(
+				"pubkey",
+				toJson(g_appContext->getPublicKey({ .communityIdIndex = value.getCommunityIdIndex(), .publicKeyIndex = communityRoot.publicKeyIndex }), alloc),
+				alloc
+			);
+			comRootVal.AddMember(
+				"gmwPubkey",
+				toJson(g_appContext->getPublicKey({ .communityIdIndex = value.getCommunityIdIndex(), .publicKeyIndex = communityRoot.gmwPublicKeyIndex }), alloc),
+				alloc
+			);
+			comRootVal.AddMember(
+				"aufPubkey",
+				toJson(g_appContext->getPublicKey({ .communityIdIndex = value.getCommunityIdIndex(), .publicKeyIndex = communityRoot.aufPublicKeyIndex }), alloc),
+				alloc
+			);
+			obj.AddMember("communityRoot", comRootVal, alloc);
+		}
+		else {
+			switch (value.getTransactionType()) {
+			case TransactionType::TRANSFER:
+				obj.AddMember("transfer", toJson(*value.getTransfer(), alloc), alloc);
+				break;
+			case TransactionType::CREATION:
+				obj.AddMember("creation", toJson(*value.getCreation(), alloc), alloc);
+				break;
+			case TransactionType::COMMUNITY_FRIENDS_UPDATE:
+				obj.AddMember("communityFriendsUpdate", toJson(*value.getCommunityFriendsUpdate(), alloc), alloc);
+				break;
+			case TransactionType::DEFERRED_TRANSFER:
+				obj.AddMember("deferredTransfer", toJson(*value.getDeferredTransfer(), alloc), alloc);
+				break;
+			case TransactionType::REDEEM_DEFERRED_TRANSFER:
+				obj.AddMember("redeemDeferredTransfer", toJson(*value.getRedeemDeferredTransfer(), alloc), alloc);
+				break;
+			case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
+				obj.AddMember("timeoutDeferredTransfer", toJson(*value.getTimeoutDeferredTransfer(), alloc), alloc);
+				break;
+			case TransactionType::NONE: break;
+			default: throw GradidoUnhandledEnum("missing toJson call", "TransactionType on transactionBody", magic_enum::enum_name(value.getTransactionType()).data());
 			}
-			break;
-		case TransactionType::REDEEM_DEFERRED_TRANSFER:
-			obj.AddMember("redeemDeferredTransfer", toJson(*value.getRedeemDeferredTransfer(), alloc), alloc);
-			break;
-		case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
-			obj.AddMember("timeoutDeferredTransfer", toJson(*value.getTimeoutDeferredTransfer(), alloc), alloc);
-			break;
-		case TransactionType::NONE: break;
-		default: throw GradidoUnhandledEnum("missing toJson call", "TransactionType on transactionBody", magic_enum::enum_name(value.getTransactionType()).data());
 		}
 	})
 

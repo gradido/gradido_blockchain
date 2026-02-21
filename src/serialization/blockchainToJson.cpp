@@ -41,13 +41,10 @@ namespace serialization {
 	DEFINE_TO_JSON(CompactFilter, {
 		obj.AddMember("minTransactionNr", value.minTransactionNr, alloc);
 		obj.AddMember("maxTransactionNr", value.maxTransactionNr, alloc);
-		obj.AddMember("involvedPubkey", toJson(value.publicKeyIndex, alloc), alloc);
+		obj.AddMember("involvedPubkey", toJson(value.publicKeyIndex.getRawKey(), alloc), alloc);
 		obj.AddMember("searchDirection", toJson(value.searchDirection, alloc), alloc);
 		obj.AddMember("pagination", toJson(value.pagination, alloc), alloc);
-		if ((value.communityIdType & CommunityIdType::COIN_COMMUNITY_ID) == CommunityIdType::COIN_COMMUNITY_ID) {
-			obj.AddMember("coinCommunityIdIndex", value.coinCommunityIdIndex, alloc);
-		}
-		obj.AddMember("communityIdType", toJson(value.communityIdType, alloc), alloc);
+		obj.AddMember("coinCommunityIdIndex", value.coinCommunityIdIndex, alloc);
 		obj.AddMember("timepointInterval", toJson(value.timepointInterval, alloc), alloc);
 		obj.AddMember("transactionType", toJson(value.transactionType, alloc), alloc);
 	})

@@ -5,6 +5,8 @@
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/AddressType.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
+#include "gradido_blockchain/data/compact/RegisterAddressTx.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/RegisterAddress.h"
 #include "gradido_blockchain/data/SignatureMap.h"
@@ -23,22 +25,29 @@
 using memory::Block, memory::ConstBlockPtr;
 using std::optional, std::nullopt;
 using std::shared_ptr, std::make_shared;
-using std::string;
+using std::string, std::to_string;
 
 using namespace magic_enum;
 
 namespace gradido {
 	using blockchain::Filter, blockchain::FilterBuilder, blockchain::SearchDirection, blockchain::TransactionEntry;
 	using data::adapter::toConstBlockPtr;
+	using data::compact::PublicKeyIndex;
 	using data::AddressType, data::RegisterAddress, data::SignatureMap, data::TransactionType;
 	namespace interaction {
 		namespace validate {
 
-			RegisterAddressRole::RegisterAddressRole(const data::compact::RegisterAddressTx& registerAddress)
-				: mRegisterAddress(registerAddress) 
+			RegisterAddressRole::RegisterAddressRole(const data::compact::RegisterAddressTx& registerAddress, uint32_t communityIdIndex)
+				: mRegisterAddress(registerAddress), mCommunityIdIndex(communityIdIndex)
 			{
-				mRequiredSignPublicKeyIndices[0] = registerAddress.accountPublicKeyIndex;
-				mRequiredSignPublicKeyIndices[1] = registerAddress.userPublicKeyIndex;
+				mRequiredSignPublicKeyIndices[0] = { 
+					.communityIdIndex = mCommunityIdIndex, 
+					.publicKeyIndex = registerAddress.accountPublicKeyIndex 
+				};
+				mRequiredSignPublicKeyIndices[1] = {
+					.communityIdIndex = mCommunityIdIndex,
+					.publicKeyIndex = registerAddress.userPublicKeyIndex
+				};
 				mMinSignatureCount = 3;
 				mRequiredSignPublicKeyIndicesCount = 2;
 			}
@@ -69,10 +78,11 @@ namespace gradido {
 							communityIdIndex
 						);
 					}
-					if (!g_appContext->hasPublicKey(accountPubkeyIndex)) {
+					const auto& dict = g_appContext->getCommunityContext(mCommunityIdIndex).getBlockchain()->getPublicKeyDictionary();
+					if (!dict.hasIndex(accountPubkeyIndex)) {
 						throw TransactionValidationInvalidInputException("missing key for index", "account public key");
 					}
-					if (!g_appContext->hasPublicKey(userPubkeyIndex)) {
+					if (!dict.hasIndex(userPubkeyIndex)) {
 						throw TransactionValidationInvalidInputException("missing key for index", "user public key");
 					}
 					if (accountPubkeyIndex == userPubkeyIndex) {
@@ -96,7 +106,7 @@ namespace gradido {
 					if (AddressType::SUBACCOUNT == addressType) {
 						transactionWithSameAddress = c.senderBlockchain->findOne(
 							filterBuilder
-							.setInvolvedPublicKey(toConstBlockPtr(userPubkeyIndex))
+							.setInvolvedPublicKey(toConstBlockPtr({ .communityIdIndex = mCommunityIdIndex, .publicKeyIndex = userPubkeyIndex }))
 							.setMaxTransactionNr(c.senderPreviousConfirmedTransaction->getId())
 							.setSearchDirection(SearchDirection::DESC)
 							.build()
@@ -104,7 +114,7 @@ namespace gradido {
 						if (!transactionWithSameAddress) {
 							throw AddressAlreadyExistException(
 								"cannot register sub address because user is missing",
-								userPubkeyIndex.toString(),
+								to_string(userPubkeyIndex),
 								addressType
 							);
 						}
@@ -112,14 +122,14 @@ namespace gradido {
 					}
 					else {
 						Filter f;
-						f.involvedPublicKey = toConstBlockPtr(userPubkeyIndex);
+						f.involvedPublicKey = toConstBlockPtr({ .communityIdIndex = mCommunityIdIndex, .publicKeyIndex = userPubkeyIndex });
 						f.maxTransactionNr = c.senderPreviousConfirmedTransaction->getId();
 						f.transactionType = TransactionType::REGISTER_ADDRESS;
 						auto addressType = c.senderBlockchain->getAddressType(f);
 						if (AddressType::NONE != addressType) {
 							throw AddressAlreadyExistException(
 								"cannot register address because it already exist",
-								userPubkeyIndex.toString(),
+								to_string(userPubkeyIndex),
 								addressType
 							);
 						}
@@ -150,17 +160,17 @@ namespace gradido {
 				// check for account type
 				for (auto& signPair : signPairs) {
 					auto signPublicKey = signPair.getPublicKey();
-					if(signPublicKey->isTheSame(mRegisterAddress.accountPublicKeyIndex) ||
-						signPublicKey->isTheSame(mRegisterAddress.userPublicKeyIndex)) {
+					if (signPublicKey->isTheSame(PublicKeyIndex{ .communityIdIndex = mCommunityIdIndex, .publicKeyIndex = mRegisterAddress.accountPublicKeyIndex }) ||
+						signPublicKey->isTheSame(PublicKeyIndex{ .communityIdIndex = mCommunityIdIndex, .publicKeyIndex = mRegisterAddress.userPublicKeyIndex })) {
 						continue;
 					}
-					if (signPublicKey->isTheSame(communityRoot->publicKeyIndex)) {
+					if (signPublicKey->isTheSame(PublicKeyIndex{ .communityIdIndex = mCommunityIdIndex, .publicKeyIndex = communityRoot->publicKeyIndex })) {
 						foundCommunityRootSigner = true;
 						break;
 					}
 				}
 				if (!foundCommunityRootSigner) {
-					throw TransactionValidationRequiredSignMissingException({ communityRoot->publicKeyIndex });
+					throw TransactionValidationRequiredSignMissingException({ { communityRoot->publicKeyIndex } });
 				}
 			}
 		}

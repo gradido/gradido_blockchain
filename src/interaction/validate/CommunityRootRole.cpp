@@ -18,22 +18,23 @@ namespace gradido {
 	namespace interaction {
 		namespace validate {
 
-			CommunityRootRole::CommunityRootRole(CommunityRootTx&& communityRoot)
-				: mCommunityRoot(std::move(communityRoot)) 
+			CommunityRootRole::CommunityRootRole(CommunityRootTx&& communityRoot, uint32_t communityIdIndex)
+				: mCommunityRoot(std::move(communityRoot)), mCommunityIdIndex(communityIdIndex)
 			{
 				// prepare for signature check
 				mMinSignatureCount = 1;
-				mRequiredSignPublicKeyIndices[0] = communityRoot.publicKeyIndex;
+				mRequiredSignPublicKeyIndices[0] = { .communityIdIndex = mCommunityIdIndex, .publicKeyIndex = communityRoot.publicKeyIndex };
 				mRequiredSignPublicKeyIndicesCount = 1;
 			}
 
 			void CommunityRootRole::run(Type type, ContextData& c) 
 			{
 				if ((type & Type::SINGLE) == Type::SINGLE) {
+					const auto& dict = g_appContext->getCommunityContext(mCommunityIdIndex).getBlockchain()->getPublicKeyDictionary();
 					if (
-						!g_appContext->hasPublicKey(mCommunityRoot.publicKeyIndex) ||
-						!g_appContext->hasPublicKey(mCommunityRoot.gmwPublicKeyIndex) ||
-						!g_appContext->hasPublicKey(mCommunityRoot.aufPublicKeyIndex)
+						!dict.hasIndex(mCommunityRoot.publicKeyIndex) ||
+						!dict.hasIndex(mCommunityRoot.gmwPublicKeyIndex) ||
+						!dict.hasIndex(mCommunityRoot.aufPublicKeyIndex)
 						) {
 						throw TransactionValidationException("at least one public key index is invalid");
 					}

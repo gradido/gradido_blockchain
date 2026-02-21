@@ -25,8 +25,9 @@ namespace gradido {
         virtual vector<AccountBalance> calculateAccountBalances(uint64_t maxTransactionNr) const {
           auto communityIdIndex = mBlockchain->getCommunityIdIndex();
           auto communityRoot = mBody->getCommunityRoot().value();
-          auto gmwPublicKey = make_shared<const Block>(g_appContext->getPublicKey(communityRoot.gmwPublicKeyIndex).value());
-          auto aufPublicKey = make_shared<const Block>(g_appContext->getPublicKey(communityRoot.aufPublicKeyIndex).value());
+          const auto& dict = g_appContext->getCommunityContext(mBody->getCommunityIdIndex()).getBlockchain()->getPublicKeyDictionary();
+          auto gmwPublicKey = make_shared<const Block>(dict.getDataForIndex(communityRoot.gmwPublicKeyIndex).value());
+          auto aufPublicKey = make_shared<const Block>(dict.getDataForIndex(communityRoot.aufPublicKeyIndex).value());
           return {
               AccountBalance(gmwPublicKey, GradidoUnit::zero(), communityIdIndex),
               AccountBalance(aufPublicKey, GradidoUnit::zero(), communityIdIndex)

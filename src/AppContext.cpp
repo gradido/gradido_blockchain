@@ -37,15 +37,16 @@ namespace gradido {
       error += communityId;
       throw GradidoNodeInvalidDataException(error.c_str());      
     }
-    size_t index = mCommunityIds->getOrAddIndexForData(communityId);
-    if (static_cast<uint32_t>(index) != index) {
+    auto index = mCommunityIds->getOrAddIndexForData(communityId);
+    size_t arrayIndex = index - 1;
+    if (static_cast<uint32_t>(arrayIndex) != arrayIndex) {
       LOG_F(FATAL, "more communities as expected, uint32_t don't is enough");
       throw GradidoNotImplementedException("communities with more then uint32_t index can handle isn't implemented");
     }
-    if (mCommunityContexts.size() == index) {
-      mCommunityContexts.emplace_back(communityId, static_cast<uint32_t>(index));
+    if (mCommunityContexts.size() == arrayIndex) {
+      mCommunityContexts.emplace_back(communityId, static_cast<uint32_t>(arrayIndex));
     }
-    else if (mCommunityContexts.size() < index) {
+    else if (mCommunityContexts.size() < arrayIndex) {
       throw DictionaryHoleException("community contexts deque has a hole", "communityIds", mCommunityContexts.size(), index);
     }
     
@@ -77,7 +78,8 @@ namespace gradido {
 
   void AppContext::addBlockchain(uint32_t communityIdIndex, shared_ptr<blockchain::Abstract> blockchain)
   {
-    if (mCommunityContexts.size() <= communityIdIndex) {
+    auto arrayIndex = communityIdIndex - 1;
+    if (mCommunityContexts.size() <= arrayIndex) {
       string entryName = to_string(communityIdIndex);
       auto communityId = mCommunityIds->getDataForIndex(communityIdIndex);      
       if (communityId) {
@@ -85,22 +87,23 @@ namespace gradido {
       }
       throw DictionaryMissingEntryException("missing CommunityContext", entryName);
     }
-    mCommunityContexts[communityIdIndex].setBlockchain(blockchain);
+    mCommunityContexts[arrayIndex].setBlockchain(blockchain);
   }
 
   uint32_t AppContext::addCommunity(const string& communityId, shared_ptr<blockchain::Abstract> blockchain)
   {
     auto index = getOrAddCommunityIdIndex(communityId);
-    mCommunityContexts[index].setBlockchain(blockchain);
+    mCommunityContexts[index-1].setBlockchain(blockchain);
     return index;
   }
 
   optional<PublicKey> AppContext::getPublicKey(PublicKeyIndex index) const noexcept
   {
-    if (!mCommunityIds || mCommunityContexts.size() <= index.communityIdIndex) {
+    auto arrayIndex = index.communityIdIndex - 1;
+    if (!mCommunityIds || mCommunityContexts.size() <= arrayIndex) {
       return nullopt;
     }
-    const auto& blockchain = mCommunityContexts[index.communityIdIndex].getBlockchain();
+    const auto& blockchain = mCommunityContexts[arrayIndex].getBlockchain();
     if (!blockchain) {
       return nullopt;
     }
@@ -109,10 +112,11 @@ namespace gradido {
 
   bool AppContext::hasPublicKey(data::compact::PublicKeyIndex index) const noexcept
   {
-    if (!mCommunityIds || mCommunityContexts.size() <= index.communityIdIndex) {
+    auto arrayIndex = index.communityIdIndex - 1;
+    if (!mCommunityIds || mCommunityContexts.size() <= arrayIndex) {
       return false;
     }
-    const auto& blockchain = mCommunityContexts[index.communityIdIndex].getBlockchain();
+    const auto& blockchain = mCommunityContexts[arrayIndex].getBlockchain();
     if (!blockchain) {
       return false;
     }
@@ -121,10 +125,11 @@ namespace gradido {
 
   uint32_t AppContext::getOrAddPublicKeyIndex(uint32_t communityIdIndex, const PublicKey& publicKey)
   {
-    if (!mCommunityIds || mCommunityContexts.size() <= communityIdIndex) {
+    auto arrayIndex = communityIdIndex - 1;
+    if (!mCommunityIds || mCommunityContexts.size() <= arrayIndex) {
       throw DictionaryMissingEntryException("missing community entry", to_string(communityIdIndex));
     }
-    return mCommunityContexts[communityIdIndex].getOrAddPublicKey(publicKey);
+    return mCommunityContexts[arrayIndex].getOrAddPublicKey(publicKey);
   }
 
   bool AppContext::isValidCommunityAlias(const string& communityId) const

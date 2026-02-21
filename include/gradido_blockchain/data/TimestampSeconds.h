@@ -16,6 +16,7 @@ namespace gradido {
 
 			operator Timepoint() const { return getAsTimepoint(); }
 			Timepoint getAsTimepoint() const;
+			date::year_month getAsYearMonth() const;
 			inline int64_t getSeconds() const { return mSeconds; }
 
 			bool operator==(const TimestampSeconds& other) const { return mSeconds == other.mSeconds; }

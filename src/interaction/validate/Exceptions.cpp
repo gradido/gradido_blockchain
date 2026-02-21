@@ -421,6 +421,22 @@ namespace gradido {
 				}
 			}
 
+			WrongAddressTypeException::WrongAddressTypeException(const char* what, data::AddressType type, uint32_t pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept
+				: TransactionValidationException(what), mType(type)
+			{
+				mPublicKeyHex = to_string(pubkeyIndex);
+				if (communityIdIndex) {
+					auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex.value());
+					if (communityIdOptional.has_value()) {
+						mCommunityId = communityIdOptional.value();
+						mPublicKeyHex = g_appContext->getPublicKey({ .communityIdIndex = *communityIdIndex, .publicKeyIndex = pubkeyIndex })->convertToHex();
+					}
+					else {
+						mCommunityId = to_string(communityIdIndex.value());
+					}
+				}
+			}
+
 			std::string WrongAddressTypeException::getFullString() const noexcept
 			{
 				std::string result;

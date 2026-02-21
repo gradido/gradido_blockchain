@@ -13,7 +13,9 @@ namespace gradido {
             public:
                 using TransactionBodyRole::TransactionBodyRole;
                 virtual std::vector<data::AccountBalance> calculateAccountBalances(uint64_t maxTransactionNr) const {
-                    auto accountPublicKey = data::adapter::toConstBlockPtr(mBody->getRegisterAddress()->accountPublicKeyIndex);
+                    auto accountPublicKey = data::adapter::toConstBlockPtr(
+                      { .communityIdIndex = mBody->getCommunityIdIndex(), .publicKeyIndex = mBody->getRegisterAddress()->accountPublicKeyIndex }
+                    );
                     if (!accountPublicKey || accountPublicKey->isEmpty()) return {};
                     return { data::AccountBalance(accountPublicKey, GradidoUnit::zero(), mBlockchain->getCommunityIdIndex())};
                 }

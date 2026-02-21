@@ -206,8 +206,8 @@ namespace gradido {
 		registerAddress.addressType = type;
 		registerAddress.derivationIndex = 1;
 		registerAddress.nameHashIndex = g_appContext->getOrAddUserNameHashIndex(toByteArray<32>(nameHash));
-		registerAddress.userPublicKeyIndex = toPublicKeyIndex(userPubkey, comIdIdx);
-		registerAddress.accountPublicKeyIndex = toPublicKeyIndex(accountPubkey, comIdIdx);
+		registerAddress.userPublicKeyIndex = toPublicKeyIndex(userPubkey, comIdIdx).publicKeyIndex;
+		registerAddress.accountPublicKeyIndex = toPublicKeyIndex(accountPubkey, comIdIdx).publicKeyIndex;
 
 		mBody->mSpecific = registerAddress;
 
@@ -235,8 +235,8 @@ namespace gradido {
 		registerAddress.addressType = type;
 		registerAddress.derivationIndex = 1;
 		registerAddress.nameHashIndex = g_appContext->getOrAddUserNameHashIndex(nameHash);
-		registerAddress.userPublicKeyIndex = toPublicKeyIndex(userPubkey, comIdIdx);
-		registerAddress.accountPublicKeyIndex = toPublicKeyIndex(accountPubkey, comIdIdx);
+		registerAddress.userPublicKeyIndex = toPublicKeyIndex(userPubkey, comIdIdx).publicKeyIndex;
+		registerAddress.accountPublicKeyIndex = toPublicKeyIndex(accountPubkey, comIdIdx).publicKeyIndex;
 
 		mBody->mSpecific = registerAddress;
 
@@ -314,9 +314,9 @@ namespace gradido {
 		mBody->mTransactionType = TransactionType::COMMUNITY_ROOT;
 
 		CommunityRootTx communityRoot;
-		communityRoot.publicKeyIndex = toPublicKeyIndex(pubkey, comIdIdx);
-		communityRoot.gmwPublicKeyIndex = toPublicKeyIndex(gmwPubkey, comIdIdx);
-		communityRoot.aufPublicKeyIndex = toPublicKeyIndex(aufPubkey, comIdIdx);
+		communityRoot.publicKeyIndex = toPublicKeyIndex(pubkey, comIdIdx).publicKeyIndex;
+		communityRoot.gmwPublicKeyIndex = toPublicKeyIndex(gmwPubkey, comIdIdx).publicKeyIndex;
+		communityRoot.aufPublicKeyIndex = toPublicKeyIndex(aufPubkey, comIdIdx).publicKeyIndex;
 		mBody->mSpecific = communityRoot;
 
 		mSpecificTransactionChoosen = true;
@@ -339,10 +339,10 @@ namespace gradido {
 
 		mBody->mTransactionType = TransactionType::COMMUNITY_ROOT;
 
-		CommunityRootTx communityRoot;
-		communityRoot.publicKeyIndex = toPublicKeyIndex(pubkey, comIdIdx);
-		communityRoot.gmwPublicKeyIndex = toPublicKeyIndex(gmwPubkey, comIdIdx);
-		communityRoot.aufPublicKeyIndex = toPublicKeyIndex(aufPubkey, comIdIdx);
+		CommunityRootTx communityRoot{};
+		communityRoot.publicKeyIndex = toPublicKeyIndex(pubkey, comIdIdx).publicKeyIndex;
+		communityRoot.gmwPublicKeyIndex = toPublicKeyIndex(gmwPubkey, comIdIdx).publicKeyIndex;
+		communityRoot.aufPublicKeyIndex = toPublicKeyIndex(aufPubkey, comIdIdx).publicKeyIndex;
 		mBody->mSpecific = communityRoot;
 
 		mSpecificTransactionChoosen = true;
@@ -429,7 +429,7 @@ namespace gradido {
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		interaction::deserialize::Context deserializer(bodyBytes, gradido::interaction::deserialize::Type::TRANSACTION_BODY);
-		deserializer.run(0);
+		deserializer.run(1);
 		if (!deserializer.isTransactionBody()) {
 			throw GradidoTransactionBuilderException("cannot deserialize TransactionBody");
 		}

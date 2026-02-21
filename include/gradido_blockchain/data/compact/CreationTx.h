@@ -6,16 +6,14 @@
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/GradidoUnit.h"
 
+#include "date/date.h"
+
 namespace gradido::data::compact {
   struct GRADIDOBLOCKCHAIN_EXPORT CreationTx 
   {
     int64_t amountGddCent; // 8 Bytes
-    PublicKeyIndex recipientPublicKeyIndex; // 8 Bytes
-    int64_t targetDateSeconds; // 8 Bytes
-
-    inline bool isInvolved(PublicKeyIndex other) const {
-      return other.publicKeyIndex == recipientPublicKeyIndex.publicKeyIndex;
-    }
+    uint32_t recipientPublicKeyIndex; // 8 Bytes
+    date::year_month targetDateSeconds; // 4 Bytes
   };
 }
 

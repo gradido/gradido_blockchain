@@ -140,8 +140,8 @@ namespace gradido {
 			
 			if (TransactionType::REGISTER_ADDRESS == mTransactionType) {
 				auto registerAddress = getRegisterAddress();
-				auto accountPubkey = registerAddress->accountPublicKeyIndex.getRawKey();
-				auto userPubkey = registerAddress->userPublicKeyIndex.getRawKey();
+				auto accountPubkey = PublicKeyIndex{ .communityIdIndex = mCommunityIdIndex, .publicKeyIndex = registerAddress->accountPublicKeyIndex }.getRawKey();
+				auto userPubkey = PublicKeyIndex{ .communityIdIndex = mCommunityIdIndex, .publicKeyIndex = registerAddress->userPublicKeyIndex }.getRawKey();
 				auto nameHash = g_appContext->getUserNameHashs().getDataForIndexOrThrow(registerAddress->nameHashIndex);
 				if (accountPubkey.isEmpty() || accountPubkey.size() != 32 || nameHash.isEmpty() || nameHash.size() != 32 || userPubkey.isEmpty() || userPubkey.size() != 32) {
 					throw GradidoNodeInvalidDataException("at least one of account public key, name hash, user public key isn't 32 Bytes");
@@ -201,9 +201,9 @@ namespace gradido {
 			case TransactionType::COMMUNITY_ROOT:
 				grdw_body->data.community_root = grdw_community_root_new(
 					alloc,
-					getCommunityRoot()->publicKeyIndex.getRawKey().data(),
-					getCommunityRoot()->gmwPublicKeyIndex.getRawKey().data(),
-					getCommunityRoot()->aufPublicKeyIndex.getRawKey().data()
+					PublicKeyIndex{ .communityIdIndex = mCommunityIdIndex, .publicKeyIndex = getCommunityRoot()->publicKeyIndex }.getRawKey().data(),
+					PublicKeyIndex{ .communityIdIndex = mCommunityIdIndex, .publicKeyIndex = getCommunityRoot()->gmwPublicKeyIndex }.getRawKey().data(),
+					PublicKeyIndex{ .communityIdIndex = mCommunityIdIndex, .publicKeyIndex = getCommunityRoot()->aufPublicKeyIndex }.getRawKey().data()
 				);
 				break;
 			case TransactionType::COMMUNITY_FRIENDS_UPDATE:
@@ -245,8 +245,18 @@ namespace gradido {
 
 		bool TransactionBody::isInvolved(const Block& publicKey) const
 		{
-			if (isCommunityRoot()) return getCommunityRoot()->isInvolved(toPublicKeyIndex(publicKey, mCommunityIdIndex));
-			if (isRegisterAddress()) return getRegisterAddress()->isInvolved(toPublicKeyIndex(publicKey, mCommunityIdIndex));
+			auto publicKeyIndex = toPublicKeyIndex(publicKey, mCommunityIdIndex).publicKeyIndex;
+			if (isCommunityRoot()) {
+				return
+					getCommunityRoot()->publicKeyIndex == publicKeyIndex ||
+					getCommunityRoot()->gmwPublicKeyIndex == publicKeyIndex ||
+					getCommunityRoot()->aufPublicKeyIndex == publicKeyIndex;
+			}
+			if (isRegisterAddress()) {
+				return
+					getRegisterAddress()->accountPublicKeyIndex == publicKeyIndex ||
+					getRegisterAddress()->userPublicKeyIndex == publicKeyIndex;
+			}
 			if (isTransfer()) return getTransfer()->isInvolved(publicKey);
 			if (isCreation()) return getCreation()->isInvolved(publicKey);
 			if (isDeferredTransfer()) return getDeferredTransfer()->isInvolved(publicKey);
@@ -256,8 +266,17 @@ namespace gradido {
 
 		bool TransactionBody::isInvolved(compact::PublicKeyIndex publicKeyIndex) const
 		{
-			if (isCommunityRoot()) return getCommunityRoot()->isInvolved(publicKeyIndex);
-			if (isRegisterAddress()) return getRegisterAddress()->isInvolved(publicKeyIndex);
+			if (isCommunityRoot()) {
+				return 
+					getCommunityRoot()->publicKeyIndex == publicKeyIndex.publicKeyIndex ||
+					getCommunityRoot()->gmwPublicKeyIndex == publicKeyIndex.publicKeyIndex ||
+					getCommunityRoot()->aufPublicKeyIndex == publicKeyIndex.publicKeyIndex;
+			}
+			if (isRegisterAddress()) {
+				return
+					getRegisterAddress()->accountPublicKeyIndex == publicKeyIndex.publicKeyIndex ||
+					getRegisterAddress()->userPublicKeyIndex == publicKeyIndex.publicKeyIndex;
+			}
 			if (isTransfer()) return getTransfer()->isInvolved(*toConstBlockPtr(publicKeyIndex));
 			if (isCreation()) return getCreation()->isInvolved(*toConstBlockPtr(publicKeyIndex));
 			if (isDeferredTransfer()) return getDeferredTransfer()->isInvolved(*toConstBlockPtr(publicKeyIndex));
@@ -285,16 +304,16 @@ namespace gradido {
 			if (isCommunityRoot()) {
 				auto communityRoot = getCommunityRoot();
 				return {
-					toConstBlockPtr(communityRoot->publicKeyIndex),
-					toConstBlockPtr(communityRoot->gmwPublicKeyIndex),
-					toConstBlockPtr(communityRoot->aufPublicKeyIndex)
+					toConstBlockPtr({.communityIdIndex = mCommunityIdIndex, .publicKeyIndex = communityRoot->publicKeyIndex}),
+					toConstBlockPtr({.communityIdIndex = mCommunityIdIndex, .publicKeyIndex = communityRoot->gmwPublicKeyIndex}),
+					toConstBlockPtr({.communityIdIndex = mCommunityIdIndex, .publicKeyIndex = communityRoot->aufPublicKeyIndex})
 				};
 			}
 			if (isRegisterAddress()) {
 				auto registerAddress = getRegisterAddress();
 				return {
-					toConstBlockPtr(registerAddress->accountPublicKeyIndex),
-					toConstBlockPtr(registerAddress->userPublicKeyIndex)
+					toConstBlockPtr({.communityIdIndex = mCommunityIdIndex, .publicKeyIndex = registerAddress->accountPublicKeyIndex}),
+					toConstBlockPtr({.communityIdIndex = mCommunityIdIndex, .publicKeyIndex = registerAddress->userPublicKeyIndex})
 				};
 			}
 			if (isTransfer()) return getTransfer()->getInvolvedAddresses();
@@ -311,16 +330,16 @@ namespace gradido {
 			if (isCommunityRoot()) {
 				auto communityRoot = getCommunityRoot();
 				return {
-					communityRoot->publicKeyIndex,
-					communityRoot->gmwPublicKeyIndex,
-					communityRoot->aufPublicKeyIndex
+					{.communityIdIndex = mCommunityIdIndex, .publicKeyIndex = communityRoot->publicKeyIndex},
+					{.communityIdIndex = mCommunityIdIndex, .publicKeyIndex = communityRoot->gmwPublicKeyIndex},
+					{.communityIdIndex = mCommunityIdIndex, .publicKeyIndex = communityRoot->aufPublicKeyIndex}
 				};
 			}
 			if (isRegisterAddress()) {
 				auto registerAddress = getRegisterAddress();
 				return {
-					registerAddress->accountPublicKeyIndex,
-					registerAddress->userPublicKeyIndex
+					{.communityIdIndex = mCommunityIdIndex, .publicKeyIndex = registerAddress->accountPublicKeyIndex},
+					{.communityIdIndex = mCommunityIdIndex, .publicKeyIndex = registerAddress->userPublicKeyIndex}
 				};
 			}
 			vector<PublicKeyIndex> result;

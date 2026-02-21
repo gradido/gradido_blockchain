@@ -10,11 +10,12 @@ namespace gradido {
 			class CommunityRootRole : public AbstractRole
 			{
 			public:
-				CommunityRootRole(data::compact::CommunityRootTx&& communityRoot);
+				CommunityRootRole(data::compact::CommunityRootTx&& communityRoot, uint32_t communityIdIndex);
 
 				void run(Type type, ContextData& c);
 			protected:
 				data::compact::CommunityRootTx mCommunityRoot;
+				uint32_t mCommunityIdIndex;
 			};
 		}
 	}

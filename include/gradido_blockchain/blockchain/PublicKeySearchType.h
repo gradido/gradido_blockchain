@@ -9,6 +9,7 @@ namespace gradido::blockchain {
     None,
     InvolvedPublicKey,
     BalanceChangingPublicKey,
+    MissingCommunityId,
     MissingIndex
   };
 }

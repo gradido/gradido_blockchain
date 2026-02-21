@@ -9,38 +9,50 @@ namespace gradido {
 
   namespace blockchain {
     CompactFilter::CompactFilter()
-      : minTransactionNr(0), maxTransactionNr(0),
-      publicKeyIndex(0), coinCommunityIdIndex(0),
-      transactionType(data::TransactionType::NONE), searchDirection(SearchDirection::DESC), publicKeySearchType(PublicKeySearchType::None),
-      communityIdType(CommunityIdType::NONE)
+      : searchDirection(SearchDirection::DESC), transactionType(data::TransactionType::NONE), publicKeySearchType(PublicKeySearchType::None),
+      coinCommunityIdIndex(0), maxTransactionNr(0), minTransactionNr(0),
+      publicKeyIndex({})
     {
       
     }
 
-    CompactFilter::CompactFilter(const Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary)
-      : minTransactionNr(filter.minTransactionNr), maxTransactionNr(filter.maxTransactionNr),
-      publicKeyIndex(0), coinCommunityIdIndex(0),
-      transactionType(filter.transactionType), searchDirection(filter.searchDirection), publicKeySearchType(PublicKeySearchType::None),
-      communityIdType(CommunityIdType::NONE), pagination(filter.pagination), timepointInterval(filter.timepointInterval)
+    CompactFilter::CompactFilter(const Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary, uint32_t communityIdIndex/* = 0*/)
+      : searchDirection(filter.searchDirection), transactionType(filter.transactionType), publicKeySearchType(PublicKeySearchType::None),
+      coinCommunityIdIndex(0), maxTransactionNr(filter.maxTransactionNr),
+      minTransactionNr(filter.minTransactionNr),
+      publicKeyIndex({}), pagination(filter.pagination), timepointInterval(filter.timepointInterval)
     {
+      uint32_t index = 0;
+      bool hasPublicKey = false;
       if (filter.updatedBalancePublicKey && !filter.updatedBalancePublicKey->isEmpty()) {
-        auto publicKeyIndexOptional = publicKeyDictionary.getIndexForData(toPublicKey(filter.updatedBalancePublicKey));
-        if (publicKeyIndexOptional && static_cast<uint32_t>(*publicKeyIndexOptional) == *publicKeyIndexOptional) {
-          publicKeyIndex = *publicKeyIndexOptional;
-          publicKeySearchType = PublicKeySearchType::BalanceChangingPublicKey;
-        }
-        else {
-          publicKeySearchType = PublicKeySearchType::MissingIndex;
-        }
-      }
-      if (filter.involvedPublicKey && !filter.involvedPublicKey->isEmpty()) {
+        index = publicKeyDictionary.getIndexForData(toPublicKey(filter.updatedBalancePublicKey));
+        publicKeySearchType = PublicKeySearchType::BalanceChangingPublicKey;
+        hasPublicKey = true;
+      }  
+      else if (filter.involvedPublicKey && !filter.involvedPublicKey->isEmpty()) 
+      {
         if (PublicKeySearchType::None != publicKeySearchType) {
           throw GradidoNodeInvalidDataException("couldn't handle involvedPublicKey and updatedBalancePublicKey in filter");
         }
-        auto publicKeyIndexOptional = publicKeyDictionary.getIndexForData(toPublicKey(filter.involvedPublicKey));
-        if (publicKeyIndexOptional && static_cast<uint32_t>(*publicKeyIndexOptional) == *publicKeyIndexOptional) {
-          publicKeyIndex = *publicKeyIndexOptional;
-          publicKeySearchType = PublicKeySearchType::InvolvedPublicKey;
+        index = publicKeyDictionary.getIndexForData(toPublicKey(filter.involvedPublicKey));
+        publicKeySearchType = PublicKeySearchType::InvolvedPublicKey;
+        hasPublicKey = true;
+      }
+      else {
+        publicKeySearchType = PublicKeySearchType::None;
+      }
+      if (hasPublicKey)
+      {
+        if (index && static_cast<uint32_t>(index) == index) {
+          if (communityIdIndex) {
+            publicKeyIndex = {
+              .communityIdIndex = communityIdIndex,
+              .publicKeyIndex = index
+            };
+          }
+          else {
+            publicKeySearchType = PublicKeySearchType::MissingCommunityId;
+          }
         }
         else {
           publicKeySearchType = PublicKeySearchType::MissingIndex;
@@ -48,8 +60,17 @@ namespace gradido {
       }
       if (filter.coinCommunityIdIndex) {
         coinCommunityIdIndex = *filter.coinCommunityIdIndex;
-        communityIdType = CommunityIdType::COIN_COMMUNITY_ID;
       }
+    }
+
+    CompactFilter CompactFilter::lastBalanceFor(PublicKeyIndex publicKeyIndex)
+    {
+      CompactFilter f;
+      f.publicKeyIndex = publicKeyIndex;
+      f.publicKeySearchType = PublicKeySearchType::BalanceChangingPublicKey;
+      f.pagination.size = 1;
+      f.searchDirection = SearchDirection::DESC;
+      return f;
     }
 
     FilterResult CompactFilter::matches(const data::compact::ConfirmedGradidoTx& confirmedTx, FilterCriteria type) const
@@ -63,8 +84,7 @@ namespace gradido {
 					return FilterResult::DISMISS;
 				}
 			}
-			if ((type & FilterCriteria::COIN_COMMUNITY) == FilterCriteria::COIN_COMMUNITY && 
-          (communityIdType & CommunityIdType::COIN_COMMUNITY_ID) == CommunityIdType::COIN_COMMUNITY_ID)
+			if ((type & FilterCriteria::COIN_COMMUNITY) == FilterCriteria::COIN_COMMUNITY && coinCommunityIdIndex)
 			{
 				if (!confirmedTx.hasCoinsFromCommunity(coinCommunityIdIndex)) {
 					return FilterResult::DISMISS;
@@ -87,21 +107,13 @@ namespace gradido {
 			
 			if ((type & FilterCriteria::INVOLVED_PUBLIC_KEY) == FilterCriteria::INVOLVED_PUBLIC_KEY)
 			{
-        PublicKeyIndex pubIdx{ .communityIdIndex = confirmedTx.txCommunityIdIndex, .publicKeyIndex = publicKeyIndex };
-        if ((communityIdType & CommunityIdType::PUBLIC_KEY_COMMUNITY_ID) == CommunityIdType::PUBLIC_KEY_COMMUNITY_ID) {
-          pubIdx.communityIdIndex = coinCommunityIdIndex;
-        }
-        if (PublicKeySearchType::InvolvedPublicKey == publicKeySearchType && !confirmedTx.isInvolved(pubIdx)) {
+        if (PublicKeySearchType::InvolvedPublicKey == publicKeySearchType && !confirmedTx.isInvolved(publicKeyIndex)) {
           return FilterResult::DISMISS;
         }
 			}
 			if ((type & FilterCriteria::UPDATED_BALANCED_PUBLIC_KEY) == FilterCriteria::UPDATED_BALANCED_PUBLIC_KEY)
 			{
-        PublicKeyIndex pubIdx{ .communityIdIndex = confirmedTx.txCommunityIdIndex, .publicKeyIndex = publicKeyIndex };
-        if ((communityIdType & CommunityIdType::PUBLIC_KEY_COMMUNITY_ID) == CommunityIdType::PUBLIC_KEY_COMMUNITY_ID) {
-          pubIdx.communityIdIndex = coinCommunityIdIndex;
-        }
-        if (PublicKeySearchType::BalanceChangingPublicKey == publicKeySearchType && !confirmedTx.isBalanceUpdated(pubIdx)) {
+        if (PublicKeySearchType::BalanceChangingPublicKey == publicKeySearchType && !confirmedTx.isBalanceUpdated(publicKeyIndex)) {
 					return FilterResult::DISMISS;
 				}
 			}

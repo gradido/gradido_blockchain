@@ -3,6 +3,7 @@
 #include "../serializedTransactions.h"
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
@@ -183,7 +184,7 @@ bool InMemoryTest::createGradidoCreation(
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(recipientPublicKey, amount, 0),
+			TransferAmount(recipientPublicKey, amount, 1),
 			targetDate
 		)
 		.setRecipientCommunity(mCommunityId)
@@ -208,7 +209,7 @@ bool InMemoryTest::createGradidoTransfer(
 		.setCreatedAt(createdAt)
 		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount, 0),
+			TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount, 1),
 			g_KeyPairs[recipientKeyPairIndex]->getPublicKey()
 		)
 		.setSenderCommunity(mCommunityId)
@@ -235,7 +236,7 @@ bool InMemoryTest::createGradidoDeferredTransfer(
 		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount, 0),
+				TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount, communityIdIndex),
 				g_KeyPairs[recipientKeyPairIndex]->getPublicKey()
 			), DurationSeconds(timeoutDuration)
 		)
@@ -265,7 +266,7 @@ bool InMemoryTest::createGradidoRedeemDeferredTransfer(
 		.setRedeemDeferredTransfer(
 			deferredTransferNr,
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount, 0),
+				TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount, communityIdIndex),
 				g_KeyPairs[recipientKeyPairIndex]->getPublicKey()
 			)
 		)
@@ -290,7 +291,7 @@ GradidoUnit InMemoryTest::getBalance(int keyPairIndex, Timepoint date)
 		throw std::runtime_error("invalid key pair index");
 	}
 	interaction::calculateAccountBalance::Context c(mBlockchain);
-	return c.fromEnd(g_KeyPairs[keyPairIndex]->getPublicKey(), date, 0);
+	return c.fromEnd(g_KeyPairs[keyPairIndex]->getPublicKey(), date);
 }
 
 TEST_F(InMemoryTest, FindCommunityRootTransactionByType)
@@ -507,7 +508,8 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	// check account
 	auto blockedDeferredTransferBalance = GradidoUnit(500.10).calculateCompoundInterest(createdAt, createdAt + timeoutDuration);
 	auto deferredTransferBalance = getBalance(recipientKeyPairIndex, mLastConfirmedAt);
-	auto userBalanceAtDeferredTransferTime = getBalance(6, createdAt).calculateDecay(createdAt, mLastConfirmedAt);
+	auto userBalanceAtDeferredTransferTime = getBalance(6, createdAt);
+	userBalanceAtDeferredTransferTime = userBalanceAtDeferredTransferTime.calculateDecay(createdAt, mLastConfirmedAt);
 	auto userBalance = getBalance(6, mLastConfirmedAt);
 	auto lastUserBalanceDate = mLastConfirmedAt;
 	EXPECT_EQ(userBalance, GradidoUnit(438.7963));
@@ -664,8 +666,8 @@ TEST_F(InMemoryTest, ManyTransactions)
 	
 	// printf gmw and auf account
 	calculateAccountBalance::Context balanceCalculator(mBlockchain);
-	auto gmwBalance = balanceCalculator.fromEnd(g_KeyPairs[1]->getPublicKey(), mLastConfirmedAt, 0);
-	auto aufBalance = balanceCalculator.fromEnd(g_KeyPairs[2]->getPublicKey(), mLastConfirmedAt, 0);
+	auto gmwBalance = balanceCalculator.fromEnd(g_KeyPairs[1]->getPublicKey(), mLastConfirmedAt);
+	auto aufBalance = balanceCalculator.fromEnd(g_KeyPairs[2]->getPublicKey(), mLastConfirmedAt);
 	
 	ASSERT_EQ(gmwBalance, decayedAmountSum);
 	ASSERT_EQ(aufBalance, decayedAmountSum);

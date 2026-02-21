@@ -13,15 +13,12 @@ namespace gradido::data::compact {
     AddressType addressType; // 1 Byte
     uint16_t derivationIndex; // 2 Byte (for the time beeing, update if more than 65535 are needed) 
     uint32_t nameHashIndex; // 4 Bytes
-    PublicKeyIndex userPublicKeyIndex; // 8 Bytes
-    PublicKeyIndex accountPublicKeyIndex; // 8 Bytes
+    uint32_t userPublicKeyIndex; // 8 Bytes
+    uint32_t accountPublicKeyIndex; // 8 Bytes
 
     static RegisterAddressTx fromGrdw(const grdw_register_address* grdw_register_address, uint32_t blockchainCommunityIdIndex);
 
     bool operator==(const RegisterAddressTx&) const = default;
-    inline bool isInvolved(PublicKeyIndex publicKey) const {
-      return userPublicKeyIndex == publicKey || accountPublicKeyIndex == publicKey;
-    }
   };
 }
 

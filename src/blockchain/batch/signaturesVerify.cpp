@@ -90,7 +90,7 @@ namespace gradido::blockchain::batch {
     if (!communityIdIndex) {
       throw DictionaryMissingEntryException("communityId not found", communityId);
     }
-    auto blockchain = g_appContext->getCommunityContext(*communityIdIndex).getBlockchain();
+    auto& blockchain = g_appContext->getCommunityContext(communityIdIndex).getBlockchain();
     vector<uint64_t> invalidTxNrs;
     queue<ConstTransactionEntryPtr> transactionQueue;
     const size_t queueSize = 500 * (threadCount + 1);

@@ -96,6 +96,15 @@ namespace serialization {
 		return obj;
 	}
 
+	// for optional
+	template<typename T>
+	inline rapidjson::Value toJson(const std::optional<T> o, rapidjson::Document::AllocatorType& alloc) {
+		if (o.has_value()) {
+			return toJson(*o, alloc);
+		}
+		return rapidjson::Value("empty", alloc);
+	}
+
 	// Fallback for types with their own JsonConverter
 	/*template<typename T>
 	requires has_to_json_v<T>

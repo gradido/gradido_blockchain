@@ -14,7 +14,7 @@
 #include <optional>
 
 using std::shared_ptr;
-using std::optional;
+using std::optional, std::reference_wrapper;
 
 namespace gradido {
 	using data::AddressType, data::LedgerAnchor, data::TransactionType;
@@ -72,11 +72,13 @@ namespace gradido {
 			return results.front();
 		}
 
-		optional<std::reference_wrapper<const ConfirmedGradidoTx>> Abstract::findOne(const CompactFilter& filter) const
+		optional<reference_wrapper<const ConfirmedGradidoTx>> Abstract::findOneFast(const CompactFilter& filter) const
+		// const data::compact::ConfirmedGradidoTx* Abstract::findOneFast(const CompactFilter& filter) const
 		{
 			auto results = findAll(filter);
 			if (!results.size()) {
-				return std::nullopt;
+				 return std::nullopt;
+				// return nullptr;
 			}
 			if (results.size() > 1) {
 				throw TransactionResultCountException(
@@ -106,10 +108,10 @@ namespace gradido {
 			if (filter.involvedPublicKey) {
 				assert(filter.involvedPublicKey->size() == 32);
 				auto involvedPublicKeyIndex = g_appContext->getOrAddPublicKeyIndex(mCommunityIdIndex, { filter.involvedPublicKey->data() });
-				if (communityRoot.aufPublicKeyIndex.publicKeyIndex == involvedPublicKeyIndex) {
+				if (communityRoot.aufPublicKeyIndex == involvedPublicKeyIndex) {
 					return AddressType::COMMUNITY_AUF;
 				}
-				else if (communityRoot.gmwPublicKeyIndex.publicKeyIndex == involvedPublicKeyIndex) {
+				else if (communityRoot.gmwPublicKeyIndex == involvedPublicKeyIndex) {
 					return AddressType::COMMUNITY_GMW;
 				}
 			}

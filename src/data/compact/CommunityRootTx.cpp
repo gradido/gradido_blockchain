@@ -6,9 +6,9 @@ namespace gradido::data::compact {
   CommunityRootTx CommunityRootTx::fromGrdw(const grdw_community_root* grdw_community_root, uint32_t blockchainCommunityIdIndex)
   {
     CommunityRootTx communityRootTx;
-    communityRootTx.publicKeyIndex = PublicKeyIndex::fromPublicKey(blockchainCommunityIdIndex, grdw_community_root->pubkey);
-    communityRootTx.gmwPublicKeyIndex = PublicKeyIndex::fromPublicKey(blockchainCommunityIdIndex, grdw_community_root->gmw_pubkey);
-    communityRootTx.aufPublicKeyIndex = PublicKeyIndex::fromPublicKey(blockchainCommunityIdIndex, grdw_community_root->auf_pubkey);
+    communityRootTx.publicKeyIndex = PublicKeyIndex::fromPublicKey(blockchainCommunityIdIndex, grdw_community_root->pubkey).publicKeyIndex;
+    communityRootTx.gmwPublicKeyIndex = PublicKeyIndex::fromPublicKey(blockchainCommunityIdIndex, grdw_community_root->gmw_pubkey).publicKeyIndex;
+    communityRootTx.aufPublicKeyIndex = PublicKeyIndex::fromPublicKey(blockchainCommunityIdIndex, grdw_community_root->auf_pubkey).publicKeyIndex;
     return communityRootTx;
   }
 }

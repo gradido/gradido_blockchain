@@ -173,6 +173,7 @@ namespace gradido {
 			public:
 				explicit WrongAddressTypeException(const char* what, data::AddressType type, memory::ConstBlockPtr pubkey, std::optional<uint32_t> communityIdIndex) noexcept;
 				explicit WrongAddressTypeException(const char* what, data::AddressType type, data::compact::PublicKeyIndex pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept;
+				explicit WrongAddressTypeException(const char* what, data::AddressType type, uint32_t pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept;
 
 				std::string getFullString() const noexcept;
 				rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;

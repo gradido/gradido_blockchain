@@ -26,11 +26,11 @@ namespace gradido {
 	namespace data {
 		class AccountBalance;
 
-		namespace compact {
-			class ConfirmedGradidoTx;
-			using ConstConfirmedTxPtr = std::shared_ptr<const data::compact::ConfirmedGradidoTx>;
-			using ConfirmedTxs = std::vector<std::reference_wrapper<const data::compact::ConfirmedGradidoTx>>;
-		}
+		/*namespace compact {
+			struct ConfirmedGradidoTx;
+			using ConstConfirmedTxPtr = std::shared_ptr<const ConfirmedGradidoTx>;
+			using ConfirmedTxs = std::vector<std::reference_wrapper<const ConfirmedGradidoTx>>;
+		}*/
 	}
 	namespace blockchain {
 		class InMemoryProvider;

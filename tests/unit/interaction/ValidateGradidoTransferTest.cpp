@@ -19,7 +19,7 @@ TEST(ValidateGradidoTransferTest, Valid) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.setSenderCommunity(communityId)
@@ -39,7 +39,7 @@ TEST(ValidateGradidoTransferTest, Outbound) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.setSenderCommunity("dummy-group")
@@ -59,7 +59,7 @@ TEST(ValidateGradidoTransferTest, invalidMemoEmpty) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.setSenderCommunity(communityId)
@@ -81,7 +81,7 @@ TEST(ValidateGradidoTransferTest, invalidMemoToShort) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.setSenderCommunity(communityId)
@@ -103,7 +103,7 @@ TEST(ValidateGradidoTransferTest, invalidMemoToBig) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.setSenderCommunity(communityId)
@@ -127,7 +127,7 @@ TEST(ValidateGradidoTransferTest, InvalidAmountZero) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::zero(), 0), // zero amount
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::zero(), communityIdIndex), // zero amount
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.setSenderCommunity(communityId)
@@ -147,7 +147,7 @@ TEST(ValidateGradidoTransferTest, InvalidAmountNegative) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000).negated(), 0), // negative amount
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000).negated(), communityIdIndex), // negative amount
 			g_KeyPairs[5]->getPublicKey()
 		)
 		.setSenderCommunity(communityId)
@@ -168,7 +168,7 @@ TEST(ValidateGradidoTransferTest, SenderAndRecipientIdentical) {
 		.setCreatedAt(createdAt)
 		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 			g_KeyPairs[4]->getPublicKey()
 		)
 		.setSenderCommunity(communityId)
@@ -184,7 +184,7 @@ TEST(ValidateGradidoTransferTest, SenderAndRecipientIdentical) {
 
 TEST(ValidateGradidoTransferTest, NullptrRecipientPublicKey) {
 	EXPECT_THROW(
-		GradidoTransfer(TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0), nullptr),
+		GradidoTransfer(TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex), nullptr),
 		GradidoNullPointerException
 	);
 }
@@ -192,7 +192,7 @@ TEST(ValidateGradidoTransferTest, NullptrRecipientPublicKey) {
 
 TEST(ValidateGradidoTransferTest, EmptyRecipientPublicKey) {
 	EXPECT_THROW(
-		GradidoTransfer(TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0), std::make_shared<memory::Block>(32)),
+		GradidoTransfer(TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex), std::make_shared<memory::Block>(32)),
 		GradidoNodeInvalidDataException
 	);
 }
@@ -200,7 +200,7 @@ TEST(ValidateGradidoTransferTest, EmptyRecipientPublicKey) {
 TEST(ValidateGradidoTransferTest, InvalidRecipientPublicKey) {
 	EXPECT_THROW(
 		GradidoTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), 0),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 			std::make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a", 18))
 		), Ed25519InvalidKeyException
 	);

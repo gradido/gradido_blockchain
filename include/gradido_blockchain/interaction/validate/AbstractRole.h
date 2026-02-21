@@ -16,7 +16,7 @@ namespace gradido {
   }
   namespace data {
     namespace compact {
-      class ConfirmedGradidoTx;
+      struct ConfirmedGradidoTx;
     }
     class SignatureMap;
   }

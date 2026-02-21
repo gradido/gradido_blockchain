@@ -9,37 +9,20 @@ using gradido::data::compact::CommunityRootTx, gradido::data::compact::RegisterA
 using serialization::toJson;
 
 namespace serialization { 
-	DEFINE_TO_JSON(CommunityRootTx, {
-		auto publicKey = g_appContext->getPublicKey(value.publicKeyIndex);
-		if (publicKey) {
-			obj.AddMember("pubkey", toJson(publicKey->convertToHex(), alloc), alloc);
-		}
-
-		auto gmwPubkkey = g_appContext->getPublicKey(value.gmwPublicKeyIndex);
-		if (gmwPubkkey) {
-			obj.AddMember("gmwPubkey", toJson(gmwPubkkey->convertToHex(), alloc), alloc);
-		}
-
-		auto aufPubkey = g_appContext->getPublicKey(value.aufPublicKeyIndex);
-		if (aufPubkey) {
-			obj.AddMember("aufPubkey", toJson(aufPubkey->convertToHex(), alloc), alloc);
-		}
+	DEFINE_TO_JSON(CommunityRootTx, {	
+		obj.AddMember("pubkey", value.publicKeyIndex, alloc);
+		obj.AddMember("gmwPubkey", value.gmwPublicKeyIndex, alloc);
+		obj.AddMember("aufPubkey", value.aufPublicKeyIndex, alloc);
 	})
 
 	DEFINE_TO_JSON(RegisterAddressTx, {
-		auto userPublicKey = g_appContext->getPublicKey(value.userPublicKeyIndex);
-		if (userPublicKey) {
-			obj.AddMember("userPubkey", toJson(userPublicKey->convertToHex(), alloc), alloc);
-		}
+		obj.AddMember("userPubkey", value.userPublicKeyIndex, alloc);
 		obj.AddMember("addressType", toJson(value.addressType, alloc), alloc);
 		auto nameHash = g_appContext->getUserNameHashs().getDataForIndex(value.nameHashIndex);
 		if (nameHash) {
 			obj.AddMember("nameHash", toJson(nameHash->convertToHex(), alloc), alloc);
 		}
-		auto accountPublicKey = g_appContext->getPublicKey(value.accountPublicKeyIndex);
-		if (accountPublicKey) {
-			obj.AddMember("accountPubkey", toJson(accountPublicKey->convertToHex(), alloc), alloc);
-		}
+		obj.AddMember("accountPubkey", value.accountPublicKeyIndex, alloc);
 		obj.AddMember("derivationIndex", value.derivationIndex, alloc);
 	})
 

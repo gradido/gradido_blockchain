@@ -19,7 +19,7 @@ using namespace std;
 TEST(ValidateConfirmedTransactionTest, validCommunityRootGradidoTransaction) {
 	auto communityRootRaw = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
 	interaction::deserialize::Context deserializer(communityRootRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
-	deserializer.run(0);
+	deserializer.run(communityIdIndex);
 	ASSERT_TRUE(deserializer.isGradidoTransaction());
 
 	ConfirmedTransaction confirmedTransaction(
@@ -39,7 +39,7 @@ TEST(ValidateConfirmedTransactionTest, validCommunityRootGradidoTransaction) {
 TEST(ValidateConfirmedTransactionTest, invalidMessageID) {
 	auto communityRootRaw = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
 	interaction::deserialize::Context deserializer(communityRootRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
-	deserializer.run(0);
+	deserializer.run(communityIdIndex);
 	ASSERT_TRUE(deserializer.isGradidoTransaction());
 
 	ConfirmedTransaction confirmedTransaction(

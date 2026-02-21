@@ -378,7 +378,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 		timeUsed.reset();
 		auto& com = communities[i];
 		com.blockchain = reinterpret_pointer_cast<blockchain::InMemory>(provider->findBlockchain(com.communityId));
-		ASSERT_EQ(com.blockchain->getCommunityIdIndex(), i);
+		ASSERT_EQ(com.blockchain->getCommunityIdIndex(), i+1);
 		ifstream f(com.fileName, ifstream::in | ifstream::binary);
 		auto fileSize = file_size(com.fileName);
 		uint16_t txSize = 0;
@@ -396,9 +396,9 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			
 			ASSERT_EQ(decodeResult.state, GRDW_ENCODING_ERROR_SUCCESS);
 			if (GRDW_LEDGER_ANCHOR_TYPE_NODE_TRIGGER_TRANSACTION_ID != tx.ledger_anchor.type) {
-				com.transactions.push(ConfirmedTransaction::fromGrdw(&tx, i));
+				com.transactions.push(ConfirmedTransaction::fromGrdw(&tx, i+1));
 				
-				/*auto compact = make_shared<ConfirmedGradidoTx>(ConfirmedGradidoTx::fromGrdwConfirmedTransaction(&tx, i));
+				/*auto compact = make_shared<ConfirmedGradidoTx>(ConfirmedGradidoTx::fromGrdwConfirmedTransaction(&tx, i+1));
 				alloc.last_index = 0;
 				decodeResult = grdw_transaction_body_decode(&alloc, &body, tx.transaction.body_bytes, tx.transaction.body_bytes_size);
 				ASSERT_EQ(decodeResult.state, GRDW_ENCODING_ERROR_SUCCESS);

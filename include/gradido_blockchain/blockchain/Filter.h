@@ -1,6 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_FILTER_H
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_FILTER_H
 
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "SearchDirection.h"

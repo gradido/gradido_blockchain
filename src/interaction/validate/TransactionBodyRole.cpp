@@ -141,7 +141,7 @@ namespace gradido {
 					throw GradidoNotImplementedException("interaction::validate missing role for communityFriendsUpdate");
 				}
 				else if (mBody.isRegisterAddress()) {
-					mSpecificTransactionRole = make_unique<RegisterAddressRole>(mBody.getRegisterAddress().value());
+					mSpecificTransactionRole = make_unique<RegisterAddressRole>(mBody.getRegisterAddress().value(), mBody.getCommunityIdIndex());
 				}
 				else if (mBody.isDeferredTransfer()) {
 					mSpecificTransactionRole = make_unique<GradidoDeferredTransferRole>(mBody.getDeferredTransfer());
@@ -155,7 +155,7 @@ namespace gradido {
 					mSpecificTransactionRole = make_unique<GradidoTimeoutDeferredTransferRole>(mBody.getTimeoutDeferredTransfer());
 				}
 				else if (mBody.isCommunityRoot()) {
-					mSpecificTransactionRole = make_unique<CommunityRootRole>(mBody.getCommunityRoot().value());
+					mSpecificTransactionRole = make_unique<CommunityRootRole>(mBody.getCommunityRoot().value(), mBody.getCommunityIdIndex());
 				}
 
 				if (!mSpecificTransactionRole) {

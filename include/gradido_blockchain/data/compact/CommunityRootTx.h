@@ -9,21 +9,11 @@ struct grdw_community_root;
 namespace gradido::data::compact {
   struct GRADIDOBLOCKCHAIN_EXPORT CommunityRootTx 
   {
-    PublicKeyIndex publicKeyIndex; // 8 Bytes
-    PublicKeyIndex gmwPublicKeyIndex; // 8 Bytes
-    PublicKeyIndex aufPublicKeyIndex; // 8 Bytes
+    uint32_t publicKeyIndex; // 4 Bytes
+    uint32_t gmwPublicKeyIndex; // 4 Bytes
+    uint32_t aufPublicKeyIndex; // 4 Bytes
 
     static CommunityRootTx fromGrdw(const grdw_community_root* grdw_community_root, uint32_t blockchainCommunityIdIndex);
-
-    inline bool isInvolved(PublicKeyIndex other) const {
-      if (other.communityIdIndex != publicKeyIndex.communityIdIndex) {
-        return false;
-      }
-      return
-        other.publicKeyIndex == publicKeyIndex.publicKeyIndex ||
-        other.publicKeyIndex == gmwPublicKeyIndex.publicKeyIndex ||
-        other.publicKeyIndex == aufPublicKeyIndex.publicKeyIndex;
-    }
   };
 }
 

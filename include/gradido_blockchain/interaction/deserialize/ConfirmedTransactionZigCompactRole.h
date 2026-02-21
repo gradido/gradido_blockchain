@@ -10,7 +10,7 @@ namespace memory {
 
 namespace gradido {
   namespace data::compact {
-    class ConfirmedGradidoTx;
+    struct ConfirmedGradidoTx;
   }
   namespace interaction::deserialize {
     class ConfirmedTransactionZigCompactRole {

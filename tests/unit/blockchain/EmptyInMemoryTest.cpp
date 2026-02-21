@@ -18,6 +18,7 @@ using gradido::AppContext, gradido::g_appContext;
 
 const auto confirmedAt = std::chrono::system_clock::from_time_t(1609464130);
 const hiero::AccountId hieroAccount(0, 0, 121);
+uint32_t communityIdIndex = 1;
 
 void EmptyInMemoryTest::SetUp()
 {
@@ -37,7 +38,7 @@ TEST_F(EmptyInMemoryTest, AddCommunityRootAsFirst) {
 	// keyPair 0 is public of this community root Transaction
 	auto communityRootRaw = make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
 	interaction::deserialize::Context deserializer(communityRootRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
-	deserializer.run(0);
+	deserializer.run(communityIdIndex);
 	ASSERT_TRUE(deserializer.isGradidoTransaction());	
 	EXPECT_TRUE(mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), LedgerAnchor({ confirmedAt, hieroAccount }), confirmedAt));
 }
@@ -46,7 +47,7 @@ TEST_F(EmptyInMemoryTest, InvalidRegisterAddressAsFirst) {
 	auto registerAddressRaw = make_shared<memory::Block>(memory::Block::fromBase64(registeAddressTransactionBase64));
 	interaction::deserialize::Context deserializer(registerAddressRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
 	interaction::serialize::Context deserializeTransactionId({ confirmedAt, hieroAccount });
-	deserializer.run(0);
+	deserializer.run(communityIdIndex);
 	ASSERT_TRUE(deserializer.isGradidoTransaction());
 	EXPECT_THROW(
 		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), LedgerAnchor({ confirmedAt, hieroAccount }), confirmedAt),
@@ -56,7 +57,7 @@ TEST_F(EmptyInMemoryTest, InvalidRegisterAddressAsFirst) {
 TEST_F(EmptyInMemoryTest, InvalidGradidoCreationAsFirst) {
 	auto creationRaw = make_shared<memory::Block>(memory::Block::fromBase64(creationTransactionBase64));
 	interaction::deserialize::Context deserializer(creationRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
-	deserializer.run(0);
+	deserializer.run(communityIdIndex);
 	ASSERT_TRUE(deserializer.isGradidoTransaction());
 	EXPECT_THROW(
 		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), LedgerAnchor({ confirmedAt, hieroAccount }), confirmedAt),
@@ -66,7 +67,7 @@ TEST_F(EmptyInMemoryTest, InvalidGradidoCreationAsFirst) {
 TEST_F(EmptyInMemoryTest, InvalidGradidoTransferAsFirst) {
 	auto transferRaw = make_shared<memory::Block>(memory::Block::fromBase64(transferTransactionBase64));
 	interaction::deserialize::Context deserializer(transferRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
-	deserializer.run(0);
+	deserializer.run(communityIdIndex);
 	ASSERT_TRUE(deserializer.isGradidoTransaction());
 	EXPECT_THROW(
 		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), LedgerAnchor({ confirmedAt, hieroAccount }), confirmedAt),
@@ -77,7 +78,7 @@ TEST_F(EmptyInMemoryTest, InvalidGradidoTransferAsFirst) {
 TEST_F(EmptyInMemoryTest, InvalidGradidoDeferredTransferAsFirst) {
 	auto deferredTransferRaw = make_shared<memory::Block>(memory::Block::fromBase64(deferredTransferTransactionBase64));
 	interaction::deserialize::Context deserializer(deferredTransferRaw, interaction::deserialize::Type::GRADIDO_TRANSACTION);
-	deserializer.run(0);
+	deserializer.run(communityIdIndex);
 	ASSERT_TRUE(deserializer.isGradidoTransaction());
 	EXPECT_THROW(
 		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), LedgerAnchor({ confirmedAt, hieroAccount }), confirmedAt),

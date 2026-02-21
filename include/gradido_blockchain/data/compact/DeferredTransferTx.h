@@ -9,7 +9,7 @@
 namespace gradido::data::compact {
   struct GRADIDOBLOCKCHAIN_EXPORT DeferredTransferTx 
   {
-    int64_t amountGddCent; // 8 Bytes
+    uint32_t amountGddCent; // 8 Bytes
     // work only on local, take communityIdIndex from txId
     uint32_t senderPublicKeyIndex; // 4 Bytes
     uint32_t recipientPublicKeyIndex; // 4 Bytes
