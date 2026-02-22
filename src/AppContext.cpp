@@ -44,7 +44,7 @@ namespace gradido {
       throw GradidoNotImplementedException("communities with more then uint32_t index can handle isn't implemented");
     }
     if (mCommunityContexts.size() == arrayIndex) {
-      mCommunityContexts.emplace_back(communityId, static_cast<uint32_t>(arrayIndex));
+      mCommunityContexts.emplace_back(communityId, static_cast<uint32_t>(index));
     }
     else if (mCommunityContexts.size() < arrayIndex) {
       throw DictionaryHoleException("community contexts deque has a hole", "communityIds", mCommunityContexts.size(), index);
