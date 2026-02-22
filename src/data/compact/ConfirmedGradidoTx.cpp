@@ -372,8 +372,12 @@ namespace gradido::data::compact {
       throw GradidoUnhandledEnum("on ConfirmedGradidoTx::getInvolvedAddresses", "TransactionType", enum_name(transactionType).data());
     }
     sort(result.begin(), result.end());
+    auto beginIt = result.begin();
     auto endIt = unique(result.begin(), result.end());
-    return vector<PublicKeyIndex>(result.begin(), endIt);
+    while (beginIt->empty() && beginIt != endIt) {
+      ++beginIt;
+    }
+    return vector<PublicKeyIndex>(beginIt, endIt);
   }
 
   bool ConfirmedGradidoTx::isBalanceUpdated(PublicKeyIndex pubkeyIndex) const

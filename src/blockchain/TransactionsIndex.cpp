@@ -281,11 +281,15 @@ namespace gradido {
 			}
 			sort(involvedPublicKeyIndices.begin(), involvedPublicKeyIndices.end());
 			auto endIt = unique(involvedPublicKeyIndices.begin(), involvedPublicKeyIndices.end());
+			auto beginIt = involvedPublicKeyIndices.begin();
+			while (beginIt->empty() && beginIt != endIt) {
+				++beginIt;
+			}
 
 			vector<uint32_t> publicKeyIndices;
 			publicKeyIndices.reserve(publicKeyIndices.size());
 			uint8_t balanceChangingBitMask = 0;
-			for (auto it = involvedPublicKeyIndices.begin(); it != endIt; it++) {
+			for (auto it = beginIt; it != endIt; it++) {
 				publicKeyIndices.push_back(it->publicKeyIndex);
 				if (publicKeyIndices.size() < 8 && compactHotTx.isBalanceUpdated(*it)) {
 					balanceChangingBitMask |= 1u << (publicKeyIndices.size() - 1);
