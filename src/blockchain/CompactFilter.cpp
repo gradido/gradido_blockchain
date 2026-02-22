@@ -13,7 +13,7 @@ namespace gradido {
       coinCommunityIdIndex(0), maxTransactionNr(0), minTransactionNr(0),
       publicKeyIndex({})
     {
-      
+
     }
 
     CompactFilter::CompactFilter(const Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary, uint32_t communityIdIndex/* = 0*/)
@@ -28,7 +28,7 @@ namespace gradido {
         index = publicKeyDictionary.getIndexForData(toPublicKey(filter.updatedBalancePublicKey));
         publicKeySearchType = PublicKeySearchType::BalanceChangingPublicKey;
         hasPublicKey = true;
-      }  
+      }
       else if (filter.involvedPublicKey && !filter.involvedPublicKey->isEmpty()) 
       {
         if (PublicKeySearchType::None != publicKeySearchType) {

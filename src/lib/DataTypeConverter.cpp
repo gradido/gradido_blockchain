@@ -275,7 +275,7 @@ namespace DataTypeConverter
 		auto t = std::chrono::system_clock::to_time_t(tp_sec);
 		auto len = std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", std::gmtime(&t));
 
-		len += std::snprintf(buffer + len, sizeof(buffer) - len, ".%04ld", subseconds / 100);
+		len += std::snprintf(buffer + len, sizeof(buffer) - len, ".%04lld", subseconds / 100);
 
 		return std::string(buffer, len);
 		/*

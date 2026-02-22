@@ -170,7 +170,7 @@ namespace gradido {
 					}
 				}
 				if (!foundCommunityRootSigner) {
-					throw TransactionValidationRequiredSignMissingException({ { communityRoot->publicKeyIndex } });
+					throw TransactionValidationRequiredSignMissingException({ data::compact::PublicKeyIndex{ communityRoot->publicKeyIndex } });
 				}
 			}
 		}
