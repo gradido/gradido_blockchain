@@ -100,7 +100,7 @@ namespace gradido {
 					filter.coinCommunityIdIndex = *coinCommunityIdIndex;
 				}
 				filter.timepointInterval = TimepointInterval(Timepoint(), endDate);
-				auto lastMatchingTx = mBlockchain->findOneFast(filter);
+				auto lastMatchingTx = mBlockchain->findOne(filter);
 				if (lastMatchingTx) {
 					return lastMatchingTx->get().getAccountBalance(filter.publicKeyIndex, filter.coinCommunityIdIndex).getDecayedAmount(endDate);
 				}

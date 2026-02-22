@@ -82,7 +82,7 @@ namespace gradido {
 			virtual size_t countAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
 			// only if you expect only one result
 			virtual ConstTransactionEntryPtr findOne(const Filter& filter = Filter::LAST_TRANSACTION) const;
-			virtual std::optional<std::reference_wrapper<const data::compact::ConfirmedGradidoTx>> findOneFast(const CompactFilter& filter) const;
+			virtual std::optional<std::reference_wrapper<const data::compact::ConfirmedGradidoTx>> findOne(const CompactFilter& filter) const;
 
 			//! analyze only registerAddress Transactions, will use getAddressTypeSlow in basic version
 			//! \param use filter to check existing of a address in a subrange of transactions

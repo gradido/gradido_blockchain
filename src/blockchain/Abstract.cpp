@@ -72,8 +72,8 @@ namespace gradido {
 			return results.front();
 		}
 
-		optional<reference_wrapper<const ConfirmedGradidoTx>> Abstract::findOneFast(const CompactFilter& filter) const
-		// const data::compact::ConfirmedGradidoTx* Abstract::findOneFast(const CompactFilter& filter) const
+		optional<reference_wrapper<const ConfirmedGradidoTx>> Abstract::findOne(const CompactFilter& filter) const
+		// const data::compact::ConfirmedGradidoTx* Abstract::findOne(const CompactFilter& filter) const
 		{
 			auto results = findAll(filter);
 			if (!results.size()) {
