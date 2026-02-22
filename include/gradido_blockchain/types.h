@@ -11,5 +11,10 @@ inline date::year_month_day timepointAsYearMonthDay(Timepoint date)
 {
 	return { date::floor<date::days>(date) };
 }
+inline date::year_month timepointAsYearMonth(Timepoint date)
+{
+	auto ymd = date::year_month_day{ date::floor<date::days>(date) };
+	return { ymd.year(), ymd.month() };
+}
 
 #endif

@@ -5,6 +5,7 @@
 #include "Filter.h"
 #include "TransactionEntry.h"
 #include "gradido_blockchain/blockchain/CompactFilter.h"
+#include "gradido_blockchain/blockchain/SearchDirection.h"
 #include "gradido_blockchain/blockchain/StateChange.h"
 #include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/data/AddressType.h"
@@ -64,6 +65,7 @@ namespace gradido {
 			//! //! \return transaction nrs
 			std::vector<uint64_t> findTransactions(const CompactFilter& filter) const;
 			std::vector<uint64_t> getBalanceChangingTxs(uint32_t publicKeyIndex) const;
+			std::vector<uint64_t> findTransactionsBalanceChangingForPublicKey(const CompactFilter& filter) const;
 			
 			StateChange<data::AddressType> getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const;
 
@@ -108,14 +110,21 @@ namespace gradido {
 				using reference = const value_type&;  // or also value_type&
 
 				SearchIterator(const TransactionsIndex& parent, uint64_t txNr):
-					mParent(&parent), mTxNr(txNr), mEntryIndex(0), mMonthYearIndex(parent.mYearMonthAddressIndexEntries.size()), mStopped(true) { }
+					mParent(&parent), mTxNr(txNr), mEntryIndex(0), mMonthYearIndex(parent.mYearMonthAddressIndexEntries.size()), mStopped(true) {
+					mMaxMonthYearIndex = mParent->mYearMonthAddressIndexEntries.size();
+				}
 				//! \param parent TransactionIndex need to be alive while SearchIterator live
 				//! \param maxMonthYearIndex first index outside of scope
-				SearchIterator(const TransactionsIndex& parent, const CompactFilter& filter, size_t entryIndex, size_t monthYearIndex)
+				SearchIterator(const TransactionsIndex& parent, const CompactFilter& filter, uint32_t entryIndex, uint8_t monthYearIndex)
 					: mParent(&parent), mFilter(filter), 
 					mTxNr(0), mEntryIndex(entryIndex), mMonthYearIndex(monthYearIndex), mStopped(false)
 				{	
-					mMaxMonthYearIndex = mParent->mYearMonthAddressIndexEntries.size();
+					// mMaxMonthYearIndex = mParent->mYearMonthAddressIndexEntries.size();
+					mMaxMonthYearIndex = parent.yearMonthToIndex(filter.timepointInterval.getEndDateYM());
+					mMinMonthYearIndex = parent.yearMonthToIndex(filter.timepointInterval.getStartDateYM());
+					if (monthYearIndex < mMinMonthYearIndex || monthYearIndex > mMaxMonthYearIndex) {
+						mStopped = true;
+					}
 					mTxNr = getCurrentOrNext(isReversed());					
 				}
 				// explicit SearchIterator(const value_type& v) : mTxNr(v) {};
@@ -124,10 +133,22 @@ namespace gradido {
 				pointer operator->() { return &mTxNr; }
 
 				// Prefix increment
-				SearchIterator& operator++() { mTxNr = advance(isReversed()); return *this; }
+				SearchIterator& operator++() { 
+					auto result = advance(isReversed());
+					if (result) {
+						mTxNr = result;
+					}
+					return *this; 
+				}
 
 				// Prefix decrement
-				SearchIterator& operator--() { mTxNr = advance(!isReversed()); return *this; }
+				SearchIterator& operator--() { 
+					auto result = advance(!isReversed());
+					if (result) {
+						mTxNr = result;
+					}
+					return *this; 
+				}
 
 				// Postfix increment
 				SearchIterator operator++(int) { SearchIterator tmp = *this; ++(*this); return tmp; }
@@ -136,8 +157,7 @@ namespace gradido {
 				SearchIterator operator--(int) { SearchIterator tmp = *this; --(*this); return tmp; }
 
 				friend bool operator== (const SearchIterator& a, const SearchIterator& b) { 
-					return (a.mTxNr == b.mTxNr && a.mMonthYearIndex == b.mMonthYearIndex && a.mEntryIndex == b.mEntryIndex) ||
-						a.isStopped() == b.isStopped();
+					return a.isStopped() == b.isStopped();
 				};
 				friend bool operator!= (const SearchIterator& a, const SearchIterator& b) { return !(a == b); };
 
@@ -146,7 +166,10 @@ namespace gradido {
 
 			protected:
 				//! return transactions nr if valid or 0 if stopped or invalid array indices
-				uint64_t filterCurrentEntry();
+				template<typename t>
+				uint64_t filterCurrentEntry(size_t currentBucketSize, t* bucket);
+				template<typename Iterator>
+				uint64_t findNextInRange(Iterator begin, Iterator end);
 				uint64_t getCurrentOrNext(bool reversed);
 				uint64_t advance(bool reversed);				
 
@@ -155,8 +178,9 @@ namespace gradido {
 				CompactFilter mFilter;
 				value_type mTxNr;
 				uint32_t mEntryIndex;
-				uint16_t mMonthYearIndex;
-				uint16_t mMaxMonthYearIndex;
+				uint8_t mMonthYearIndex;
+				uint8_t mMaxMonthYearIndex;
+				uint8_t mMinMonthYearIndex;
 				bool mStopped;
 			};
 			
@@ -198,21 +222,33 @@ namespace gradido {
 				uint32_t 						coinCommunityIdIndex;				
 				uint64_t						transactionNr;
 				uint32_t						addressIndices[4];
-				
+
 				FilterResult isMatchingFilter(const CompactFilter& filter) const;
 				FilterResult isMatchingFilter2(const CompactFilter& filter) const;
+			};
+
+			struct BalanceTransactionIndexEntry
+			{
+				gradido::data::TransactionType	transactionType;
+				date::month					confirmedMonth;
+				date::year					confirmedYear;
+				uint32_t						coinCommunityIdIndex;
+				uint64_t						transactionNr;
+
+				FilterResult isMatchingFilter(const CompactFilter& filter, date::year_month startYM, date::year_month endYM) const;
 			};
 
 			// is used like a cache, even from const
 			mutable AddressIndex mAddressIndex;
 			mutable size_t mFilterCount;
+			mutable size_t mFilterCount2;
 			// std::map<uint32_t, data::AddressType> mPublicKeyAddressTypes;
 			// TODO: check if replace std::list<std::vector> with std::deque make sense (performance side)
 			// TODO: check if flatten maps to std::vector<FlatTransactionsIndexEntry> mEntries[month * years] make sense
 			// std::map<date::year, std::map<date::month, std::list<std::vector<TransactionsIndexEntry>>>> mYearMonthAddressIndexEntries;
 			// first index start from min year month as 0
 			std::vector<std::vector<TransactionsIndexEntry>> mYearMonthAddressIndexEntries;
-			std::unordered_map<uint32_t, std::deque<uint64_t>> mBalanceChangingTxPerAccountPublicKey;
+			std::unordered_map<uint32_t, std::vector<BalanceTransactionIndexEntry>> mBalanceChangingTxPerAccountPublicKey;
 		};
 
 		void TransactionsIndex::updateAddressIndex(
@@ -252,6 +288,51 @@ namespace gradido {
 				return false;
 			}
 			return true;
+		}
+		template<typename t>
+		uint64_t TransactionsIndex::SearchIterator::filterCurrentEntry(size_t currentBucketSize, t* bucket)
+		{
+			if (mStopped || !mParent) { return 0; }
+			if (
+				mMonthYearIndex > mMaxMonthYearIndex ||
+				//mEntryIndex >= mParent->mYearMonthAddressIndexEntries[mMonthYearIndex].size()
+				mEntryIndex >= currentBucketSize
+				) {
+				//throw GradidoNodeInvalidDataException("invalid out of bounds iterator indices");
+				mStopped = true;
+				return 0;
+			}
+			//auto entry = mParent->mYearMonthAddressIndexEntries[mMonthYearIndex][mEntryIndex];
+			auto entry = (*bucket)[mEntryIndex];
+			auto filterResult = entry.isMatchingFilter2(mFilter);
+			// mParent->mFilterCount++;
+			if ((filterResult & FilterResult::STOP) == FilterResult::STOP) {
+				mStopped = true;
+			}
+			if ((filterResult & FilterResult::USE) == FilterResult::USE) {
+				return entry.transactionNr;
+			}
+			return 0;
+		}
+		template<typename Iterator>
+		uint64_t TransactionsIndex::SearchIterator::findNextInRange(Iterator begin, Iterator end)
+		{
+			if (begin == end) {
+				return 0;
+			}
+			for (auto it = begin; it != end; ++it) {
+				auto filterResult = it->isMatchingFilter2(mFilter);
+				if ((filterResult & FilterResult::STOP) == FilterResult::STOP) {
+					mStopped = true;
+				}
+				if ((filterResult & FilterResult::USE) == FilterResult::USE) {
+					return it->transactionNr;
+				}
+				if (mStopped) {
+					return 0;
+				}
+			}
+			return 0;
 		}
 	}
 }

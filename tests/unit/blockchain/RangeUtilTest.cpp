@@ -5,7 +5,7 @@ using namespace gradido::blockchain;
 
 TEST(IterateRangeTest, EmptyRangeReturnsEmpty) {
     std::vector<int> data;
-    Filter filter;
+    CompactFilter filter;
     // const Iterator& it, EntityType& entity
     std::vector<int> result = iterateRangeInOrderCollectFiltered<std::vector<int>::iterator, std::vector<int>>(
         data.begin(), data.end(), filter,
@@ -19,7 +19,7 @@ TEST(IterateRangeTest, EmptyRangeReturnsEmpty) {
 
 TEST(IterateRangeTest, AllElementsMatch) {
     std::vector<int> data = { 1,2,3,4,5 };
-    Filter filter;
+    CompactFilter filter;
     filter.searchDirection = SearchDirection::ASC;
     auto result = iterateRangeInOrderCollectFiltered<std::vector<int>::iterator, std::vector<int>>(data.begin(), data.end(), filter, 
         [](auto& it, int& out)
@@ -33,7 +33,7 @@ TEST(IterateRangeTest, AllElementsMatch) {
 
 TEST(IterateRangeTest, StopSignalWorks) {
     std::vector<int> data = { 1,2,3,4,5 };
-    Filter filter;
+    CompactFilter filter;
     filter.searchDirection = SearchDirection::ASC;
     int stopAfter = 3;
     auto result = iterateRangeInOrderCollectFiltered<std::vector<int>::iterator, std::vector<int>>(data.begin(), data.end(), filter, 
@@ -48,7 +48,7 @@ TEST(IterateRangeTest, StopSignalWorks) {
 
 TEST(IterateRangeTest, PaginationSkipAndLimit) {
     std::vector<int> data = { 1,2,3,4,5,6 };
-    Filter filter;
+    CompactFilter filter;
     filter.searchDirection = SearchDirection::ASC;
     filter.pagination = Pagination(2, 3); // page size 2, skip until 3. page
     auto result = iterateRangeInOrderCollectFiltered<std::vector<int>::iterator, std::vector<int>>(data.begin(), data.end(), filter, 
@@ -64,7 +64,7 @@ TEST(IterateRangeTest, PaginationSkipAndLimit) {
 
 TEST(IterateRangeTest, ReverseDirection) {
     std::vector<int> data = { 1,2,3 };
-    Filter filter;
+    CompactFilter filter;
     filter.searchDirection = SearchDirection::DESC;
     auto result = iterateRangeInOrderCollectFiltered<std::vector<int>::iterator, std::vector<int>>(data.begin(), data.end(), filter,
         [](auto& it, int& out)

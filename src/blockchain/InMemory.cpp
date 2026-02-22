@@ -182,8 +182,9 @@ namespace gradido {
 				if (transactionTriggerEvent.isTheSame(it->second)) {
 					it = mTransactionTriggerEvents.erase(it);
 					countRemoved++;
-				} else {
-					it++;
+				}
+ else {
+	 it++;
 				}
 			}
 			if (!countRemoved) {
@@ -272,10 +273,37 @@ namespace gradido {
 			return result;
 		}
 
-		ConfirmedTxs InMemory::findAll(const CompactFilter& filter) const
+		ConfirmedTxs InMemory::findAll(const CompactFilter& originalFilter) const
 		{
 			std::lock_guard _lock(mWorkMutex);
+			CompactFilter filter(originalFilter);
 			ConfirmedTxs results;
+			if (PublicKeySearchType::BalanceChangingPublicKey == filter.publicKeySearchType && filter.publicKeyIndex.communityIdIndex == mCommunityIdIndex) {
+				do {
+					auto balanceChangingTxsInRange = mTransactionsIndex.findTransactionsBalanceChangingForPublicKey(filter);
+					if (balanceChangingTxsInRange.empty()) {
+						return results;
+					}
+					for (const auto& tx : balanceChangingTxsInRange) {
+						auto transaction = getConfirmedTxForId(tx);
+						auto filterResult = filter.matches(transaction.value(), FilterCriteria::TIMEPOINT_INTERVAL);
+						if ((filterResult & FilterResult::USE) == FilterResult::USE) {
+							results.push_back(transaction.value());
+							if (!filter.pagination.hasCapacityLeft(results.size())) {
+								return results;
+							}
+						}
+						if ((filterResult & FilterResult::STOP) == FilterResult::STOP) {
+							return results;
+						}
+					}
+					if (filter.pagination.empty()) {
+						break;
+					}
+					filter.pagination.page++;
+				} while (filter.pagination.hasCapacityLeft(results.size()));
+				return results;
+			}
 			auto startIt = mTransactionsIndex.begin(filter);
 			auto endIt = mTransactionsIndex.end(filter);
 			// auto transactionNrs = mTransactionsIndex.findTransactions(filter);

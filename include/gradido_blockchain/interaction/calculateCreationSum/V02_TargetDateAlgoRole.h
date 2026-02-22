@@ -16,7 +16,7 @@ namespace gradido {
 				//! calculate creation sum
 				virtual GradidoUnit run(const blockchain::Abstract& blockchain) const;
 
-				static unsigned getTargetDateReceivedDistanceMonth(Timepoint createdAt);
+				static date::months getTargetDateReceivedDistanceMonth(Timepoint createdAt);
 			protected:
 
 			};

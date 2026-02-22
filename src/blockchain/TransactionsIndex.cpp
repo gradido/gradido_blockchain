@@ -44,11 +44,13 @@ namespace gradido {
 		{
 			mYearMonthAddressIndexEntries.resize(100);
 			mFilterCount = 0;
+			mFilterCount2 = 0;
 		}
 
 		TransactionsIndex::~TransactionsIndex()
 		{
-			LOG_F(INFO, "%llu times filter called", mFilterCount);
+			// LOG_F(INFO, "%llu times filter called", mFilterCount);
+			// LOG_F(INFO, "%llu times filter2 called", mFilterCount2);
 			reset();
 		}
 
@@ -166,11 +168,18 @@ namespace gradido {
 				if (i >= 8) break;
 				if (isBalanceChanging & (uint8_t(1) << i)) {
 					auto addressIndex = addressIndices[i];
+					BalanceTransactionIndexEntry balanceChangingIndexEntry = {
+						.transactionType = transactionType,
+						.confirmedMonth = month,
+						.confirmedYear = year,
+						.coinCommunityIdIndex = coinCommunityIdIndex,
+						.transactionNr = transactionNr
+					};
 					auto it = mBalanceChangingTxPerAccountPublicKey.find(addressIndex);
 					if (it == mBalanceChangingTxPerAccountPublicKey.end()) {
-						mBalanceChangingTxPerAccountPublicKey.insert({ addressIndex, {transactionNr} });
+						mBalanceChangingTxPerAccountPublicKey.insert({ addressIndex, {balanceChangingIndexEntry} });
 					} else {
-						it->second.emplace_back(transactionNr);
+						it->second.emplace_back(balanceChangingIndexEntry);
 					}
 				}
 			}
@@ -416,11 +425,82 @@ namespace gradido {
 				vector<uint64_t> result;
 				result.reserve(it->second.size());
 				for (const auto& txNr : it->second) {
-					result.emplace_back(txNr);
+					result.emplace_back(txNr.transactionNr);
 				}
 				return result;
 			}
 			return {};
+		}
+		vector<uint64_t> TransactionsIndex::findTransactionsBalanceChangingForPublicKey(const CompactFilter& originalFilter) const
+		{
+			if (PublicKeySearchType::BalanceChangingPublicKey != originalFilter.publicKeySearchType || originalFilter.publicKeyIndex.empty()) {
+				throw GradidoNodeInvalidDataException(
+					"please call findTransactionsBalanceChangingForPublicKey with PublicKeySearchType = BalanceChangingPublicKey and valid publicKeyIndex"
+				);
+			}
+			auto it = mBalanceChangingTxPerAccountPublicKey.find(originalFilter.publicKeyIndex.publicKeyIndex);
+			if (it == mBalanceChangingTxPerAccountPublicKey.end()) {
+				return {};
+			}
+			CompactFilter filter(originalFilter);
+			//auto searchItBegin = begin(filter);
+			//auto searchItEnd = end(filter);
+			/// searchItEnd--;
+			vector<uint64_t> results;
+			if (filter.pagination.size) {
+				results.reserve(filter.pagination.size);
+			}
+			filter.timepointInterval = filteredTimepointInterval(filter);
+			auto startYm = filter.timepointInterval.getStartDateYM();
+			auto endYm = filter.timepointInterval.getEndDateYM();
+			return iterateRangeInOrderCollectFiltered
+			<std::vector<BalanceTransactionIndexEntry>::const_iterator, std::vector<uint64_t >>
+			(it->second.begin(), it->second.end(), filter,
+				[&](const BalanceTransactionIndexEntry& entry, uint64_t& id) -> FilterResult
+				{
+					id = entry.transactionNr;
+					return entry.isMatchingFilter(filter, startYm, endYm);
+				}
+			);
+			/*int paginationCursor = 0;
+			if (SearchDirection::DESC == filter.searchDirection) {
+				for (auto txIt = it->second.rbegin(); txIt != it->second.rend(); txIt++) {
+					auto filterResult = txIt->isMatchingFilter(filter, startYm, endYm);
+					mFilterCount2++;
+					if ((FilterResult::USE & filterResult) == FilterResult::USE) {
+						if (paginationCursor >= filter.pagination.skipEntriesCount()) {
+							results.emplace_back(txIt->transactionNr);
+							if (!filter.pagination.hasCapacityLeft(results.size())) {
+								break;
+							}
+						}
+						paginationCursor++;
+					}
+					if ((FilterResult::STOP & filterResult) == FilterResult::STOP) {
+						break;
+					}
+				}
+			}
+			else if (SearchDirection::ASC == filter.searchDirection) {
+				for (auto txIt = it->second.begin(); txIt != it->second.end(); txIt++) {
+					auto filterResult = txIt->isMatchingFilter(filter, startYm, endYm);
+					mFilterCount2++;
+					if ((FilterResult::USE & filterResult) == FilterResult::USE) {
+						results.emplace_back(txIt->transactionNr);
+						if (!filter.pagination.hasCapacityLeft(results.size())) {
+							break;
+						}
+					}
+					if ((FilterResult::STOP & filterResult) == FilterResult::STOP) {
+						break;
+					}
+				}
+			}
+			else {
+				throw GradidoNodeInvalidDataException("unknown SearchDir");
+			}
+			return results;
+			*/
 		}
 
 		StateChange<data::AddressType> TransactionsIndex::getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const
@@ -624,18 +704,62 @@ namespace gradido {
 			return FilterResult::USE;
 		}
 
-		uint64_t TransactionsIndex::SearchIterator::filterCurrentEntry()
+		FilterResult TransactionsIndex::BalanceTransactionIndexEntry::isMatchingFilter(const CompactFilter& filter, date::year_month startYM, date::year_month endYM) const
+		{
+			if (filter.transactionType != TransactionType::NONE
+				&& filter.transactionType != transactionType) {
+				return FilterResult::DISMISS;
+			}
+			if (startYM.year() != date::year(0) && startYM.month() != date::month(0) &&
+				  endYM.year() != date::year(0) && endYM.month() != date::month(0))
+			{
+				if (confirmedYear < startYM.year() || (confirmedYear == startYM.year() && confirmedMonth < startYM.month())) {
+					if (SearchDirection::DESC == filter.searchDirection) {
+						return FilterResult::STOP;
+					}
+					return FilterResult::DISMISS; 
+				}
+				if (confirmedYear > endYM.year() || (confirmedYear == endYM.year() && confirmedMonth > endYM.month())) {
+					if (SearchDirection::ASC == filter.searchDirection) {
+						return FilterResult::STOP;
+					}
+					return FilterResult::DISMISS; 
+				}
+			}
+			if (filter.coinCommunityIdIndex && coinCommunityIdIndex != filter.coinCommunityIdIndex) {
+				return FilterResult::DISMISS;
+			}
+			if (filter.maxTransactionNr && filter.maxTransactionNr < transactionNr) {
+				if (filter.searchDirection == SearchDirection::ASC) {
+					return FilterResult::STOP;
+				}
+				return FilterResult::DISMISS;
+			}
+			if (filter.minTransactionNr && filter.minTransactionNr > transactionNr) {
+				if (filter.searchDirection == SearchDirection::DESC) {
+					return FilterResult::STOP;
+				}
+				return FilterResult::DISMISS;
+			}
+
+			return FilterResult::USE;
+		}
+
+
+		/*
+		uint64_t TransactionsIndex::SearchIterator::filterCurrentEntry(size_t currentBucketSize)
 		{
 			if (mStopped || !mParent) { return 0; }
 			if (
-				mMonthYearIndex >= mMaxMonthYearIndex ||
-				mEntryIndex >= mParent->mYearMonthAddressIndexEntries[mMonthYearIndex].size()
+				mMonthYearIndex > mMaxMonthYearIndex ||
+				//mEntryIndex >= mParent->mYearMonthAddressIndexEntries[mMonthYearIndex].size()
+				mEntryIndex >= currentBucketSize
 				) {
 				//throw GradidoNodeInvalidDataException("invalid out of bounds iterator indices");
 				mStopped = true;
 				return 0;
 			}
-			const auto& entry = mParent->mYearMonthAddressIndexEntries[mMonthYearIndex][mEntryIndex];
+			auto entry = mParent->mYearMonthAddressIndexEntries[mMonthYearIndex][mEntryIndex];
 			auto filterResult = entry.isMatchingFilter2(mFilter);
 			// mParent->mFilterCount++;
 			if ((filterResult & FilterResult::STOP) == FilterResult::STOP) {
@@ -646,15 +770,19 @@ namespace gradido {
 			}
 			return 0;
 		}
+		*/
 
 		uint64_t TransactionsIndex::SearchIterator::getCurrentOrNext(bool reversed)
 		{
-			// of out of array bounds we have a past end iterator
-			if (mMonthYearIndex >= mMaxMonthYearIndex ||
-				mEntryIndex >= mParent->mYearMonthAddressIndexEntries[mMonthYearIndex].size()) {
-				return mParent->mMaxTransactionNr + 1;
+			auto bucket = &mParent->mYearMonthAddressIndexEntries[mMonthYearIndex];
+			auto bucketSize = bucket->size();
+			// of out of array bounds so we stop here
+			if (mMonthYearIndex > mMaxMonthYearIndex ||
+				mEntryIndex >= bucketSize) {
+				mStopped = true;
+				return 0;
 			}
-			auto result = filterCurrentEntry();			
+			auto result = filterCurrentEntry(bucketSize, bucket);
 			if (!result) {
 				result = advance(reversed);
 			}
@@ -667,22 +795,32 @@ namespace gradido {
 			if (mStopped || !mParent) {
 				return 0;
 			}
-			if (mMonthYearIndex >= mMaxMonthYearIndex) {
+			if (mMonthYearIndex > mMaxMonthYearIndex) {
 				throw GradidoNodeInvalidDataException("TransactionsIndex::SearchIterator::advance dont't work like expected, month year index is outside of allowed range");
 			}
 			auto bucket = &mParent->mYearMonthAddressIndexEntries[mMonthYearIndex];
+			auto bucketSize = bucket->size();
 			// ASC		
 			if (!reversed) {
 				do {		
-					while (bucket->size() <= mEntryIndex) {
-						if (mMonthYearIndex == mMaxMonthYearIndex - 1) {
+					while (bucketSize - 1 <= mEntryIndex) {
+						if (mMonthYearIndex == mMaxMonthYearIndex) {
 							mStopped = true;
 							return 0;
 						}
-						bucket = &mParent->mYearMonthAddressIndexEntries[++mMonthYearIndex];
+						// skip holes
+						while (!mParent->mYearMonthAddressIndexEntries[++mMonthYearIndex].size()) {
+							if (mMonthYearIndex == mMaxMonthYearIndex) {
+								mStopped = true;
+								return 0;
+							}
+						};
+						bucket = &mParent->mYearMonthAddressIndexEntries[mMonthYearIndex];
+						bucketSize = bucket->size();
 						mEntryIndex = 0;
-						if (bucket->size()) {
-							auto result = filterCurrentEntry();
+						
+						if (bucketSize) {
+							auto result = filterCurrentEntry(bucketSize, bucket);
 							if (result) {
 								return result;
 							}
@@ -693,7 +831,7 @@ namespace gradido {
 					}
 					
 					mEntryIndex++;
-					auto result = filterCurrentEntry();
+					auto result = filterCurrentEntry(bucketSize, bucket);
 					if (result) {
 						return result; 
 					}
@@ -703,18 +841,41 @@ namespace gradido {
 				// DESC
 				do {
 					while (!mEntryIndex) {
-						if (!mMonthYearIndex) {
+						if (mMonthYearIndex == mMinMonthYearIndex) {
 							mStopped = true;
 							return 0;
 						}
-						bucket = &mParent->mYearMonthAddressIndexEntries[--mMonthYearIndex];
-						mEntryIndex = bucket->size();
+						// skip 
+						if (!mMonthYearIndex) {
+							throw GradidoNodeInvalidDataException("ts");
+						}
+						while (!mParent->mYearMonthAddressIndexEntries[--mMonthYearIndex].size()) {
+							if (mMonthYearIndex == mMinMonthYearIndex) {
+								mStopped = true;
+								return 0;
+							}
+						};
+						bucket = &mParent->mYearMonthAddressIndexEntries[mMonthYearIndex];
+						bucketSize = bucket->size();
+						mEntryIndex = bucketSize;
 					}
-					mEntryIndex--;
-					auto result = filterCurrentEntry();
+					auto rstartIt = bucket->rbegin();
+					for (int i = 0; i < bucket->size() - mEntryIndex; i++) {
+						rstartIt++;
+					}
+					auto result = findNextInRange(rstartIt, bucket->rend());
 					if (result) {
+						mEntryIndex = result - bucket->front().transactionNr;
 						return result;
 					}
+					else {
+						mEntryIndex = 0;
+					}
+					/*mEntryIndex--;
+					auto result = filterCurrentEntry(bucketSize, bucket);
+					if (result) {
+						return result;
+					}*/
 				} while (!mStopped);
 			}
 
@@ -748,13 +909,13 @@ namespace gradido {
 				}
 			}
 			
-			auto interval = filteredTimepointInterval(filter);
+			filter.timepointInterval = filteredTimepointInterval(filter);
 			size_t monthYearIndex = 0;
 			size_t entryIndex = 0;
 			// begin with last entry
 			if (SearchDirection::DESC == originalFilter.searchDirection && !isEnd ||
 				SearchDirection::ASC == originalFilter.searchDirection && isEnd) {
-				monthYearIndex = yearMonthToIndex(interval.getEndDateYM());
+				monthYearIndex = yearMonthToIndex(filter.timepointInterval.getEndDateYM());
 				assert(monthYearIndex < mYearMonthAddressIndexEntries.size());
 				// skip some entries when knowing max transaction nr
 				if (filter.maxTransactionNr) {
@@ -774,7 +935,7 @@ namespace gradido {
 			}
 			// begin with first entry
 			else {
-				monthYearIndex = yearMonthToIndex(interval.getStartDateYM());
+				monthYearIndex = yearMonthToIndex(filter.timepointInterval.getStartDateYM());
 				assert(monthYearIndex < mYearMonthAddressIndexEntries.size());
 				entryIndex = 0;
 				if (filter.minTransactionNr) {
@@ -787,7 +948,7 @@ namespace gradido {
 					entryIndex = filter.minTransactionNr - firstTx;
 				}
 			}
-			auto it = SearchIterator(*this, filter,entryIndex, monthYearIndex);
+			auto it = SearchIterator(*this, filter, entryIndex, monthYearIndex);
 			if (isEnd) {
 				// set at past end
 				++it;

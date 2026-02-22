@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_CALCULATE_CREATION_SUM_ABSTRACT_ALGO_ROLE_H
 
 #include "gradido_blockchain/GradidoUnit.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 
 namespace gradido {
 	namespace blockchain {
@@ -13,7 +14,7 @@ namespace gradido {
 			{
 			public:
 				//! \param date createdAt for checking sum before making transaction, and confirmedAt for validate confirmed transaction
-				AbstractAlgoRole(Timepoint date, Timepoint targetDate, memory::ConstBlockPtr publicKey, uint64_t transactionNrMax = 0)
+				AbstractAlgoRole(Timepoint date, Timepoint targetDate, data::compact::PublicKeyIndex publicKey, uint64_t transactionNrMax = 0)
 					: mDate(date), mTargetDate(targetDate), mPublicKey(publicKey), mTransactionNrMax(transactionNrMax) {}
 
 				virtual ~AbstractAlgoRole() {}
@@ -26,7 +27,7 @@ namespace gradido {
 			protected:
 				Timepoint mDate;
 				Timepoint mTargetDate;
-				memory::ConstBlockPtr mPublicKey;
+				data::compact::PublicKeyIndex mPublicKey;
 				uint64_t  mTransactionNrMax;
 			};				
 		}

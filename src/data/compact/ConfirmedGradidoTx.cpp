@@ -73,6 +73,7 @@ namespace gradido::data::compact {
     coldData(std::move(other.coldData))
   {
     memcpy(accountBalances, other.accountBalances, sizeof(AccountBalance) * other.accountBalanceCount);
+    memcpy(&specific, &other.specific, sizeof(specific));
 
     // neuter the source
     other.accountBalanceCount = 0;
@@ -93,6 +94,7 @@ namespace gradido::data::compact {
     coldData = std::move(other.coldData);
 
     memcpy(accountBalances, other.accountBalances, sizeof(AccountBalance) * other.accountBalanceCount);
+    memcpy(&specific, &other.specific, sizeof(specific));
 
     // neuter the source
     other.accountBalanceCount = 0;
@@ -251,7 +253,7 @@ namespace gradido::data::compact {
         specific.creation = {
           .amountGddCent = body->data.creation->recipient.amount,
           .recipientPublicKeyIndex = appContext.getOrAddPublicKeyIndex(recipientCommunityIdIndex, body->data.creation->recipient.pubkey),
-          .targetDateSeconds = adapter::fromGrdw(body->data.creation->target_date).getAsYearMonth()
+          .targetMonthYear = adapter::fromGrdw(body->data.creation->target_date).getAsYearMonth()
         };
         break;
       case TransactionType::REGISTER_ADDRESS:

@@ -30,16 +30,23 @@ TEST(TransactionIndex, LoopWithOneEntry)
   f.searchDirection = SearchDirection::ASC;
   auto startIt = txIdx.begin(f);
   auto endIt = txIdx.end(f);
+  int count = 0;
   for (auto it = startIt; it != endIt; ++it) {
     EXPECT_EQ(*it, 1);
+    ++count;
   }
+  EXPECT_EQ(count, 1);
 
   f.searchDirection = SearchDirection::DESC;
   startIt = txIdx.begin(f);
   endIt = txIdx.end(f);
+  count = 0;
   for (auto it = startIt; it != endIt; ++it) {
     EXPECT_EQ(*it, 1);
+    ++count;
   }
+  EXPECT_EQ(count, 1);
+
 }
 
 TEST(TransactionIndex, LoopWithFiveEntries)
@@ -59,6 +66,7 @@ TEST(TransactionIndex, LoopWithFiveEntries)
   for (auto it = startIt; it != endIt; ++it) {
     EXPECT_EQ(*it, ++count);
   }
+  EXPECT_EQ(count, 5);
 
   f.searchDirection = SearchDirection::DESC;
   startIt = txIdx.begin(f);
@@ -67,6 +75,7 @@ TEST(TransactionIndex, LoopWithFiveEntries)
   for (auto it = startIt; it != endIt; ++it) {
     EXPECT_EQ(*it, --count);
   }
+  EXPECT_EQ(count, 1);
 }
 
 TEST(TransactionIndex, LoopWithFiveEntriesFilterRegisterAddress)
@@ -115,6 +124,7 @@ TEST(TransactionIndex, LoopWithFiveEntriesFilterCreation)
   for (auto it = startIt; it != endIt; ++it) {
     EXPECT_EQ(*it, ++count);
   }
+  EXPECT_EQ(count, 5);
 
   f.searchDirection = SearchDirection::DESC;
   startIt = txIdx.begin(f);
@@ -124,6 +134,7 @@ TEST(TransactionIndex, LoopWithFiveEntriesFilterCreation)
     EXPECT_EQ(*it, --count);
     EXPECT_GT(*it, 3);
   }
+  EXPECT_EQ(count, 4);
 }
 
 TEST(TransactionIndex, LoopWithFiveEntriesFilterIntervalHole)
@@ -152,5 +163,4 @@ TEST(TransactionIndex, LoopWithFiveEntriesFilterIntervalHole)
   for (auto it = startIt; it != endIt; ++it) {
     EXPECT_TRUE(false);
   }
-  int zahl = 0;
 }

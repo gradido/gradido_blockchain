@@ -83,15 +83,15 @@ TEST(DeserializeTest, CommunityRootBody)
 	EXPECT_FALSE(body->isRegisterAddress());
 	EXPECT_FALSE(body->isTransfer());
 
-	/*
-	auto communityRoot = body->getCommunityRoot().value();
-	auto communityRootPublicKey = g_appContext->getPublicKey(communityRoot.publicKeyIndex).value();
-	auto communityRootGmwPubkey = g_appContext->getPublicKey(communityRoot.gmwPublicKeyIndex).value();
-	auto communityRootAufPubkey = g_appContext->getPublicKey(communityRoot.aufPublicKeyIndex).value();
+	const auto& dict = g_appContext->getCommunityContext(communityIdIndex).getBlockchain()->getPublicKeyDictionary();
+	const auto& communityRoot = body->getCommunityRoot();
+	const auto& communityRootPublicKey = dict.getDataForIndexOrThrow(communityRoot->publicKeyIndex);
+	const auto& communityRootGmwPubkey = dict.getDataForIndexOrThrow(communityRoot->gmwPublicKeyIndex);
+	const auto& communityRootAufPubkey = dict.getDataForIndexOrThrow(communityRoot->aufPublicKeyIndex);
 	EXPECT_TRUE(communityRootPublicKey.isTheSame(g_KeyPairs[0]->getPublicKey()->data()));
 	EXPECT_TRUE(communityRootGmwPubkey.isTheSame(g_KeyPairs[1]->getPublicKey()->data()));
 	EXPECT_TRUE(communityRootAufPubkey.isTheSame(g_KeyPairs[2]->getPublicKey()->data()));
-	*/
+	
 }
 
 
@@ -121,10 +121,14 @@ TEST(DeserializeTest, RegisterAddressBody) {
 	auto registerAddress = body->getRegisterAddress();
 	EXPECT_EQ(registerAddress->addressType, AddressType::COMMUNITY_HUMAN);
 	EXPECT_EQ(registerAddress->derivationIndex, 1);
-	EXPECT_TRUE(g_KeyPairs[3]->getPublicKey()->isTheSame(registerAddress->userPublicKeyIndex));
-	printf("name hash: %s\n", g_appContext->getUserNameHashs().getDataForIndex(registerAddress->nameHashIndex)->convertToHex().c_str());
+	
+	const auto& dict = g_appContext->getCommunityContext(communityIdIndex).getBlockchain()->getPublicKeyDictionary();
+	const auto& userPublicKeyIndex = dict.getDataForIndexOrThrow(registerAddress->userPublicKeyIndex);
+	const auto& accountPublicKeyIndex = dict.getDataForIndexOrThrow(registerAddress->accountPublicKeyIndex);
+	EXPECT_TRUE(g_KeyPairs[3]->getPublicKey()->isTheSame(userPublicKeyIndex));
+	// printf("name hash: %s\n", g_appContext->getUserNameHashs().getDataForIndex(registerAddress->nameHashIndex)->convertToHex().c_str());
 	// EXPECT_FALSE(registerAddress->getNameHash());
-	EXPECT_TRUE(g_KeyPairs[4]->getPublicKey()->isTheSame(registerAddress->accountPublicKeyIndex));
+	EXPECT_TRUE(g_KeyPairs[4]->getPublicKey()->isTheSame(accountPublicKeyIndex));
 }
 
 

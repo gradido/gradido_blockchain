@@ -40,6 +40,9 @@ namespace gradido {
 			inline bool operator !=(const Pagination& other) const {
 				return !(*this == other);
 			}
+			inline bool empty() const {
+				return !size && !page;
+			}
 		};
 	}
 }

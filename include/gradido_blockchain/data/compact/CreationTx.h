@@ -13,7 +13,7 @@ namespace gradido::data::compact {
   {
     int64_t amountGddCent; // 8 Bytes
     uint32_t recipientPublicKeyIndex; // 8 Bytes
-    date::year_month targetDateSeconds; // 4 Bytes
+    date::year_month targetMonthYear; // 4 Bytes
   };
 }
 

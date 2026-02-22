@@ -20,6 +20,7 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
 
+#include <date/date.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -150,6 +151,7 @@ namespace gradido {
       inline PublicKeyIndex getGmw() const;
 
       rich::AccountBalance getAccountBalance(PublicKeyIndex publicKeyIndex, uint32_t coinCommunityIdIndex) const;
+      inline GradidoUnit getAmount() const;
     };
 
     //! get user public key on register address transaction else empty PublicKeyIndex
@@ -196,6 +198,21 @@ namespace gradido {
        .communityIdIndex = txCommunityIdIndex,
        .publicKeyIndex = specific.communityRoot.gmwPublicKeyIndex
       };
+    }
+
+    GradidoUnit ConfirmedGradidoTx::getAmount() const
+    {
+      if (isTransfer() || isRedeemDeferredTransfer() || isTimeoutDeferredTransfer()) {
+        return GradidoUnit::fromGradidoCent(specific.transfer.amountGddCent);
+      }
+      else if (isDeferredTransfer()) {
+        return GradidoUnit::fromGradidoCent(specific.deferredTransfer.amountGddCent);
+      }
+      else if (isCreation()) {
+        return GradidoUnit::fromGradidoCent(specific.creation.amountGddCent);
+      }
+      return GradidoUnit::zero();
+
     }
 
     using ConstConfirmedTxPtr = std::shared_ptr<const data::compact::ConfirmedGradidoTx>;

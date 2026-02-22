@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_RANGE_UTILS_H
 
 #include "TransactionEntry.h"
+#include "CompactFilter.h"
 #include "Filter.h"
 #include "SearchDirection.h"
 #include "FilterResult.h"
@@ -115,12 +116,15 @@ namespace gradido {
 		ResultContainer iterateRangeInOrderCollectFiltered(
 			const Iterator& startIt,
 			const Iterator& endIt,
-			const Filter& filter,
+			const CompactFilter& filter,
 			FilterFunc filterFunction
 		) {
-			ResultContainer results;
+			ResultContainer results{};
 			if (startIt == endIt) {
 				return results;
+			}
+			if (filter.pagination.size) {
+				results.reserve(filter.pagination.size);
 			}
 			int paginationCursor = 0;
 			iterateRangeInOrder(startIt, endIt, filter.searchDirection,

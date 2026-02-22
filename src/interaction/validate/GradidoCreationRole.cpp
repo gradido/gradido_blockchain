@@ -1,3 +1,4 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/blockchain/Filter.h"
@@ -18,7 +19,6 @@
 
 using std::shared_ptr;
 using std::string, std::to_string;
-
 using DataTypeConverter::timePointToString;
 
 namespace gradido {
@@ -78,11 +78,11 @@ namespace gradido {
 						);
 					}
 					assert(mConfirmedAt.getSeconds());
-
+					auto publicKeyIndex = toPublicKeyIndex( mGradidoCreation->getRecipient().getPublicKey(), c.recipientBlockchain->getCommunityIdIndex());
 					calculateCreationSum::Context calculateCreationSum(
 						mConfirmedAt,
 						mGradidoCreation->getTargetDate(),
-						mGradidoCreation->getRecipient().getPublicKey(),
+						publicKeyIndex,
 						c.senderPreviousConfirmedTransaction->getId()
 					);
 

@@ -99,12 +99,8 @@ namespace gradido {
 				if (coinCommunityIdIndex) {
 					filter.coinCommunityIdIndex = *coinCommunityIdIndex;
 				}
-				// this one take a shortcut with help of address index, if timepoint interval is empty
+				filter.timepointInterval = TimepointInterval(Timepoint(), endDate);
 				auto lastMatchingTx = mBlockchain->findOneFast(filter);
-				if (!lastMatchingTx || lastMatchingTx->get().getConfirmedAt() > endDate) {
-					filter.timepointInterval = TimepointInterval(Timepoint(), endDate);
-					lastMatchingTx = mBlockchain->findOneFast(filter);
-				}
 				if (lastMatchingTx) {
 					return lastMatchingTx->get().getAccountBalance(filter.publicKeyIndex, filter.coinCommunityIdIndex).getDecayedAmount(endDate);
 				}
