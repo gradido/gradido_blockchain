@@ -68,7 +68,7 @@ namespace gradido {
 
   void AppContext::syncCommunityContextsWithCommunityIds()
   {
-    size_t index = mCommunityContexts.size();
+    size_t index = mCommunityContexts.size() + 1;
 
     while (auto data = mCommunityIds->getDataForIndex(index)) {
       mCommunityContexts.emplace_back(data.value(), static_cast<uint32_t>(index));
