@@ -188,6 +188,7 @@ FILE(GLOB CRYPTO "include/gradido_blockchain/crypto/*.h" "src/crypto/*.cpp")
 FILE(GLOB DATA "include/gradido_blockchain/data/*.h" "src/data/*.cpp")
 FILE(GLOB DATA_ADAPTER "include/gradido_blockchain/data/adapter/*.h" "src/data/adapter/*.cpp")
 FILE(GLOB DATA_COMPACT "include/gradido_blockchain/data/compact/*.h" "src/data/compact/*.cpp")
+FILE(GLOB DATA_RICH "include/gradido_blockchain/data/rich/*.h" "src/data/rich/*.cpp")
 FILE(GLOB DATA_IOTA "include/gradido_blockchain/data/iota/*.h" "src/data/iota/*.cpp")
 FILE(GLOB DATA_HIERO "include/gradido_blockchain/data/hiero/*.h" "src/data/hiero/*.cpp")
 FILE(GLOB HTTP "include/gradido_blockchain/http/*.h" "src/http/*.cpp")
@@ -239,7 +240,7 @@ FILE(GLOB INTERACTION_VALIDATE
 SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${BLOCKCHAIN} ${BLOCKCHAIN_BATCH}
 	${CRYPTO}
-	${DATA} ${DATA_ADAPTER} ${DATA_COMPACT} ${DATA_IOTA} ${DATA_HIERO} 
+	${DATA} ${DATA_ADAPTER} ${DATA_COMPACT} ${DATA_HIERO} ${DATA_IOTA} ${DATA_RICH}
 	${INTERACTION}
 	${LIB_SRC}
 	${MAIN}
@@ -248,7 +249,7 @@ SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${SERIALIZATION}
 	${TINF}
 	${THREADING}
-	${INTERACTION_ADVANCED_BLOCKCHAIN_FILTER}
+	#${INTERACTION_ADVANCED_BLOCKCHAIN_FILTER}
 	${INTERACTION_CALCULATE_ACCOUNT_BALANCE}
 	${INTERACTION_CALCULATE_CREATION_SUM}
 	${INTERACTION_CONFIRM_TRANSACTION}
@@ -269,8 +270,9 @@ if(MSVC)
 	source_group("crypto" FILES ${CRYPTO})
 	source_group("data\\adapter" FILES ${DATA_ADAPTER})
 	source_group("data\\compact" FILES ${DATA_COMPACT})	
-	source_group("data\\iota" FILES ${DATA_IOTA})
 	source_group("data\\hiero" FILES ${DATA_HIERO})		
+	source_group("data\\iota" FILES ${DATA_IOTA})
+	source_group("data\\rich" FILES ${DATA_RICH})
 	source_group("data" FILES ${DATA})
 	if(ENABLE_HTTP)
 		source_group("http" FILES ${HTTP})
