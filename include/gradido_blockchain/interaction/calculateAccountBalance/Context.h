@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_CALCULATE_ACCOUNT_BALANCE_CONTEXT_H
 
 #include "gradido_blockchain/blockchain/TransactionRelationType.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/memory/Block.h"
 
@@ -40,6 +41,13 @@ namespace gradido {
 				GradidoUnit fromEnd(
 					memory::ConstBlockPtr publicKey, 
 					data::Timestamp endDate, 
+					std::optional<uint32_t> coinCommunityIdIndex = std::nullopt,
+					uint64_t maxTransactionNr = 0
+				) const;
+
+				GradidoUnit fromEnd(
+					data::compact::PublicKeyIndex balanceChangingPublicKey,
+					data::Timestamp endDate,
 					std::optional<uint32_t> coinCommunityIdIndex = std::nullopt,
 					uint64_t maxTransactionNr = 0
 				) const;

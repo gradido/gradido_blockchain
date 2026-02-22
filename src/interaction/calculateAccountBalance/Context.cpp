@@ -94,7 +94,17 @@ namespace gradido {
 					throw DictionaryMissingEntryException("missing public key index", publicKey->convertToHex());
 				}
 				PublicKeyIndex fullPublicKeyIndex = { .communityIdIndex = mBlockchain->getCommunityIdIndex(), .publicKeyIndex = (uint32_t)publicKeyIndex };
-				auto filter = CompactFilter::lastBalanceFor(fullPublicKeyIndex);
+				return fromEnd(fullPublicKeyIndex, endDate, coinCommunityIdIndex, maxTransactionNr);
+			}
+
+			GradidoUnit Context::fromEnd(
+				data::compact::PublicKeyIndex balanceChangingPublicKey,
+				data::Timestamp endDate,
+				std::optional<uint32_t> coinCommunityIdIndex /*= std::nullopt*/,
+				uint64_t maxTransactionNr /*= 0*/
+			) const
+			{
+				auto filter = CompactFilter::lastBalanceFor(balanceChangingPublicKey);
 				filter.maxTransactionNr = maxTransactionNr;
 				if (coinCommunityIdIndex) {
 					filter.coinCommunityIdIndex = *coinCommunityIdIndex;
@@ -104,7 +114,7 @@ namespace gradido {
 				if (lastMatchingTx) {
 					return lastMatchingTx->get().getAccountBalance(filter.publicKeyIndex, filter.coinCommunityIdIndex).getDecayedAmount(endDate);
 				}
-				return GradidoUnit::zero();				
+				return GradidoUnit::zero();
 			}
 
 			std::shared_ptr<AbstractRole> Context::getRole(std::shared_ptr<const data::TransactionBody> body, Timepoint confirmedAt) const
