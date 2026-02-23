@@ -277,63 +277,69 @@ namespace gradido {
 		{
 			std::lock_guard _lock(mWorkMutex);
 			CompactFilter filter(originalFilter);
+			filter.pagination.page = 1;
 			ConfirmedTxs results;
+			int paginationCursor = 0;
+			// for search for transactions changing balance of publicKey only (register address and community root setting balance to zero will also be returned)
 			if (PublicKeySearchType::BalanceChangingPublicKey == filter.publicKeySearchType && filter.publicKeyIndex.communityIdIndex == mCommunityIdIndex) {
+				auto skipEntries = originalFilter.pagination.skipEntriesCount();
 				do {
 					auto balanceChangingTxsInRange = mTransactionsIndex.findTransactionsBalanceChangingForPublicKey(filter);
 					if (balanceChangingTxsInRange.empty()) {
-						return results;
+						break;
 					}
 					for (const auto& tx : balanceChangingTxsInRange) {
 						auto transaction = getConfirmedTxForId(tx);
+						if (!transaction) { 
+							throw GradidoBlockchainTransactionNotFoundException("confirmed tx not found").setTransactionId(tx);
+						}
 						auto filterResult = filter.matches(*transaction, FilterCriteria::TIMEPOINT_INTERVAL);
 						if ((filterResult & FilterResult::USE) == FilterResult::USE) {
-							results.push_back(transaction);
-							if (!filter.pagination.hasCapacityLeft(results.size())) {
-								return results;
+							if (paginationCursor >= skipEntries) {
+								results.push_back(transaction);
+								if (!originalFilter.pagination.hasCapacityLeft(results.size())) {
+									return results;
+								}
 							}
+							paginationCursor++;
 						}
 						if ((filterResult & FilterResult::STOP) == FilterResult::STOP) {
 							return results;
 						}
 					}
-					if (filter.pagination.empty()) {
+					if (filter.pagination.empty() || filter.pagination.size > balanceChangingTxsInRange.size()) {
 						break;
 					}
 					filter.pagination.page++;
-				} while (filter.pagination.hasCapacityLeft(results.size()));
+				} while (originalFilter.pagination.hasCapacityLeft(results.size()));
 				return results;
 			}
+			// search iterator based, intern sorted by confirmedAt date year and month, optimized for search for transactions from a specific time intervall
 			auto startIt = mTransactionsIndex.begin(filter);
 			auto endIt = mTransactionsIndex.end(filter);
-			// auto transactionNrs = mTransactionsIndex.findTransactions(filter);
 			int cursor = 0;
 			auto it = startIt;
-			for (; it != endIt; ++it) {	
-				/*if (transactionNrs.size() <= cursor) {
-					throw GradidoNodeInvalidDataException("differ");
-				}*/
-			//for (auto transactionNr : transactionNrs) {
-				
+			for (; it != endIt; ++it) 
+			{	
 				auto transaction = getConfirmedTxForId(*it);
-				//auto transaction = getConfirmedTxForId(transactionNr);
 				if (!transaction) {
 					throw GradidoBlockchainTransactionNotFoundException("confirmed tx not found").setTransactionId(*it);
-					//throw GradidoBlockchainTransactionNotFoundException("confirmed tx not found").setTransactionId(transactionNr);
 				}
-				auto filterResult = filter.matches(*transaction, FilterCriteria::FILTER_FUNCTION | FilterCriteria::TIMEPOINT_INTERVAL);
+				auto filterResult = filter.matches(*transaction, FilterCriteria::TIMEPOINT_INTERVAL);
 				if ((filterResult & FilterResult::USE) == FilterResult::USE) {
-					results.push_back(transaction);
-					if (!filter.pagination.hasCapacityLeft(results.size())) {
-						break;
+					if (paginationCursor >= filter.pagination.skipEntriesCount()) {
+						results.push_back(transaction);
+						if (!filter.pagination.hasCapacityLeft(results.size())) {
+							break;
+						}
 					}
+					paginationCursor++;
 				}
 				if ((filterResult & FilterResult::STOP) == FilterResult::STOP) {
 					break;
 				}
 				++cursor;
 			}
-			// printf("%d ", cursor);
 			return results;
 		}
 

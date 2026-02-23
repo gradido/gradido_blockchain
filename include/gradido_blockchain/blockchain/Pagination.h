@@ -41,7 +41,7 @@ namespace gradido {
 				return !(*this == other);
 			}
 			inline bool empty() const {
-				return !size && !page;
+				return !size;
 			}
 		};
 	}
