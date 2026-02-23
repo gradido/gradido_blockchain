@@ -286,9 +286,9 @@ namespace gradido {
 					}
 					for (const auto& tx : balanceChangingTxsInRange) {
 						auto transaction = getConfirmedTxForId(tx);
-						auto filterResult = filter.matches(transaction.value(), FilterCriteria::TIMEPOINT_INTERVAL);
+						auto filterResult = filter.matches(*transaction, FilterCriteria::TIMEPOINT_INTERVAL);
 						if ((filterResult & FilterResult::USE) == FilterResult::USE) {
-							results.push_back(transaction.value());
+							results.push_back(transaction);
 							if (!filter.pagination.hasCapacityLeft(results.size())) {
 								return results;
 							}
@@ -321,9 +321,9 @@ namespace gradido {
 					throw GradidoBlockchainTransactionNotFoundException("confirmed tx not found").setTransactionId(*it);
 					//throw GradidoBlockchainTransactionNotFoundException("confirmed tx not found").setTransactionId(transactionNr);
 				}
-				auto filterResult = filter.matches(transaction.value(), FilterCriteria::FILTER_FUNCTION | FilterCriteria::TIMEPOINT_INTERVAL);
+				auto filterResult = filter.matches(*transaction, FilterCriteria::FILTER_FUNCTION | FilterCriteria::TIMEPOINT_INTERVAL);
 				if ((filterResult & FilterResult::USE) == FilterResult::USE) {
-					results.push_back(transaction.value());
+					results.push_back(transaction);
 					if (!filter.pagination.hasCapacityLeft(results.size())) {
 						break;
 					}
@@ -382,14 +382,14 @@ namespace gradido {
 			return nullptr;
 		}
 
-		optional<std::reference_wrapper<const ConfirmedGradidoTx>> InMemory::getConfirmedTxForId(uint64_t transactionId) const
+		data::compact::ConstConfirmedTxPtr InMemory::getConfirmedTxForId(uint64_t transactionId) const
 		{
 			lock_guard _lock(mWorkMutex);
 			auto it = mConfirmedTxByNr.find(transactionId);
 			if (it != mConfirmedTxByNr.end()) {
 				return it->second;
 			}
-			return std::nullopt;
+			return nullptr;
 		}
 
 		ConstTransactionEntryPtr InMemory::findByLedgerAnchor(
@@ -433,12 +433,12 @@ namespace gradido {
 				grdu_memory_init_static(&alloc, buffer, 1024);
 				grdw_confirmed_transaction tx{};
 				transactionEntry->getConfirmedTransaction()->toGrdw(&alloc, &tx, mCommunityIdIndex);
-				auto confirmedTx = std::move(ConfirmedGradidoTx::fromGrdw(&tx, mCommunityIdIndex, *g_appContext));
+				auto confirmedTx =  make_shared<ConfirmedGradidoTx>(ConfirmedGradidoTx::fromGrdw(&tx, mCommunityIdIndex, *g_appContext));
 				alloc.last_index = 0;
 				grdw_transaction_body txBody{};
 				transactionEntry->getTransactionBody()->toGrdw(&alloc, &txBody);
-				confirmedTx.fillFromGrdwTransactionBody(&txBody, *g_appContext);
-				mConfirmedTxByNr.insert({ confirmedTx.txNr, std::move(confirmedTx) });
+				confirmedTx->fillFromGrdwTransactionBody(&txBody, *g_appContext);
+				mConfirmedTxByNr.insert({ confirmedTx->txNr, std::move(confirmedTx) });
 			}
 			catch (GradidoBlockchainException& ex) {
 				LOG_F(WARNING, "%s on create compact", ex.getFullString().c_str());

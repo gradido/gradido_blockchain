@@ -112,7 +112,7 @@ namespace gradido {
 				filter.timepointInterval = TimepointInterval(Timepoint(), endDate);
 				auto lastMatchingTx = mBlockchain->findOne(filter);
 				if (lastMatchingTx) {
-					return lastMatchingTx->get().getAccountBalance(filter.publicKeyIndex, filter.coinCommunityIdIndex).getDecayedAmount(endDate);
+					return lastMatchingTx->getAccountBalance(filter.publicKeyIndex, filter.coinCommunityIdIndex).getDecayedAmount(endDate);
 				}
 				return GradidoUnit::zero();
 			}

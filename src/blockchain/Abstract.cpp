@@ -11,10 +11,8 @@
 #include "gradido_blockchain/data/TransactionType.h"
 
 #include <memory>
-#include <optional>
 
 using std::shared_ptr;
-using std::optional, std::reference_wrapper;
 
 namespace gradido {
 	using data::AddressType, data::LedgerAnchor, data::TransactionType;
@@ -72,12 +70,11 @@ namespace gradido {
 			return results.front();
 		}
 
-		optional<reference_wrapper<const ConfirmedGradidoTx>> Abstract::findOne(const CompactFilter& filter) const
-		// const data::compact::ConfirmedGradidoTx* Abstract::findOne(const CompactFilter& filter) const
+		ConstConfirmedTxPtr Abstract::findOne(const CompactFilter& filter) const
 		{
 			auto results = findAll(filter);
 			if (!results.size()) {
-				 return std::nullopt;
+				 return nullptr;
 				// return nullptr;
 			}
 			if (results.size() > 1) {

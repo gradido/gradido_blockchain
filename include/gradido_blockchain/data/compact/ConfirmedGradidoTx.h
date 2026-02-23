@@ -215,8 +215,8 @@ namespace gradido {
 
     }
 
-    using ConstConfirmedTxPtr = std::shared_ptr<const data::compact::ConfirmedGradidoTx>;
-    using ConfirmedTxs = std::vector<std::reference_wrapper<const data::compact::ConfirmedGradidoTx>>;
+    using ConstConfirmedTxPtr = std::shared_ptr<const ConfirmedGradidoTx>;
+    using ConfirmedTxs = std::vector<ConstConfirmedTxPtr>;
     
     //  Exceptions
 

@@ -235,10 +235,10 @@ namespace gradido::data::compact {
       if (!deferredTransfer) {
         throw GradidoNodeInvalidDataException("missing deferred transfer for timeout");
       }
-      specific.transfer.senderPublicKeyIndex = deferredTransfer->get().specific.deferredTransfer.recipientPublicKeyIndex;
-      specific.transfer.recipientPublicKeyIndex = deferredTransfer->get().specific.deferredTransfer.senderPublicKeyIndex;
-      auto amount = GradidoUnit::fromGradidoCent(deferredTransfer->get().specific.deferredTransfer.amountGddCent);
-      specific.transfer.amountGddCent = amount.calculateDecay(deferredTransfer->get().getConfirmedAt(), getConfirmedAt());
+      specific.transfer.senderPublicKeyIndex = deferredTransfer->specific.deferredTransfer.recipientPublicKeyIndex;
+      specific.transfer.recipientPublicKeyIndex = deferredTransfer->specific.deferredTransfer.senderPublicKeyIndex;
+      auto amount = GradidoUnit::fromGradidoCent(deferredTransfer->specific.deferredTransfer.amountGddCent);
+      specific.transfer.amountGddCent = amount.calculateDecay(deferredTransfer->getConfirmedAt(), getConfirmedAt());
     } 
     else 
     {

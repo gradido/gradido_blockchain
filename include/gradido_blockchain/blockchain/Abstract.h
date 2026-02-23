@@ -29,7 +29,7 @@ namespace gradido {
 		namespace compact {
 			struct ConfirmedGradidoTx;
 			using ConstConfirmedTxPtr = std::shared_ptr<const ConfirmedGradidoTx>;
-			using ConfirmedTxs = std::vector<std::reference_wrapper<const ConfirmedGradidoTx>>;
+			using ConfirmedTxs = std::vector<ConstConfirmedTxPtr>;
 		}
 	}
 	namespace interaction {
@@ -82,7 +82,7 @@ namespace gradido {
 			virtual size_t countAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
 			// only if you expect only one result
 			virtual ConstTransactionEntryPtr findOne(const Filter& filter = Filter::LAST_TRANSACTION) const;
-			virtual std::optional<std::reference_wrapper<const data::compact::ConfirmedGradidoTx>> findOne(const CompactFilter& filter) const;
+			virtual data::compact::ConstConfirmedTxPtr findOne(const CompactFilter& filter) const;
 
 			//! analyze only registerAddress Transactions, will use getAddressTypeSlow in basic version
 			//! \param use filter to check existing of a address in a subrange of transactions
@@ -92,7 +92,7 @@ namespace gradido {
 			//! TODO: better name
 			data::AddressType getAddressTypeSlow(const Filter& filter = Filter::LAST_TRANSACTION) const;
 			virtual ConstTransactionEntryPtr getTransactionForId(uint64_t transactionId) const = 0;
-			virtual std::optional<std::reference_wrapper<const data::compact::ConfirmedGradidoTx>> getConfirmedTxForId(uint64_t transactionId) const = 0;
+			virtual data::compact::ConstConfirmedTxPtr getConfirmedTxForId(uint64_t transactionId) const = 0;
 
 			//! \param filter use to speed up search if infos exist to narrow down search transactions range
 			virtual ConstTransactionEntryPtr findByLedgerAnchor(

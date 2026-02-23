@@ -38,15 +38,15 @@ namespace gradido {
 				auto txs = blockchain.findAll(filter);
 				for (const auto& txRef : txs) {
 					const auto& tx = txRef.get();
-					if (!tx.isCreation()) {
+					if (!tx->isCreation()) {
 						throw GradidoNullPointerException("transaction isn't creation or invalid", "GradidoCreation", __FUNCTION__);
 					}
-					auto confirmedYmd = timepointAsYearMonthDay(tx.getConfirmedAt().getAsTimepoint());
+					auto confirmedYmd = timepointAsYearMonthDay(tx->getConfirmedAt().getAsTimepoint());
 					if (						
 						(confirmedYmd.year() == dateYM.year() && dateYM.month() - confirmedYmd.month() <= date::months(2)) ||
 						(dateYM.year() - confirmedYmd.year() == date::years(1) && confirmedYmd.month() - date::months(10) == dateYM.month())
 						) {
-						sum += tx.getAmount();
+						sum += tx->getAmount();
 					}
 				}
 				return sum;

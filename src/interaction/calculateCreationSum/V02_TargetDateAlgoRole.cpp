@@ -42,12 +42,12 @@ namespace gradido {
 				auto txs = blockchain.findAll(filter);
 				for (const auto& txRef : txs) {
 					const auto& tx = txRef.get();
-					if (!tx.isCreation()) {
+					if (!tx->isCreation()) {
 						throw GradidoNullPointerException("transaction isn't creation or invalid", "GradidoCreation", __FUNCTION__);
 					}
-					auto targetDate = tx.specific.creation.targetMonthYear;
+					auto targetDate = tx->specific.creation.targetMonthYear;
 					if (targetDate.month() == ym.month() && targetDate.year() == ym.year()) {
-						sum += tx.getAmount();
+						sum += tx->getAmount();
 					}
 				}
 				return sum;
