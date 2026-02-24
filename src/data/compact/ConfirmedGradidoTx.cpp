@@ -228,17 +228,38 @@ namespace gradido::data::compact {
         );
       }
     }
-    if (TransactionType::TIMEOUT_DEFERRED_TRANSFER == transactionType) 
+    if (TransactionType::TIMEOUT_DEFERRED_TRANSFER == transactionType)
     {
-      auto& blockchain = appContext.getCommunityContext(txCommunityIdIndex).getBlockchain();
-      auto deferredTransfer = blockchain->getConfirmedTxForId(body->data.timeout_deferred_transfer->deferred_transfer_transaction_nr);
-      if (!deferredTransfer) {
-        throw GradidoNodeInvalidDataException("missing deferred transfer for timeout");
+      int senderIdx = -1;
+      for (int i = 0; i < accountBalanceCount; i++) {
+        if (!accountBalances[i].balanceGddCent) {
+          if (senderIdx == -1) {
+            senderIdx = i;
+          }
+          else {
+            senderIdx = -2;
+          }
+        }
       }
-      specific.transfer.senderPublicKeyIndex = deferredTransfer->specific.deferredTransfer.recipientPublicKeyIndex;
-      specific.transfer.recipientPublicKeyIndex = deferredTransfer->specific.deferredTransfer.senderPublicKeyIndex;
-      auto amount = GradidoUnit::fromGradidoCent(deferredTransfer->specific.deferredTransfer.amountGddCent);
-      specific.transfer.amountGddCent = amount.calculateDecay(deferredTransfer->getConfirmedAt(), getConfirmedAt());
+      // we can determine the values from the account balances 
+      if (accountBalanceCount == 2 && senderIdx > 0) {
+        // with accountBalanceCount = 2 we have the indices 0 and 1, one of it is senderIdx, the other is !senderIdx
+        specific.transfer.senderPublicKeyIndex = accountBalances[senderIdx].publicKeyIndex;
+        specific.transfer.recipientPublicKeyIndex = accountBalances[!senderIdx].publicKeyIndex;
+        // we cannot detect amount from this
+        specific.transfer.amountGddCent = 0;
+      }
+      else {
+        auto& blockchain = appContext.getCommunityContext(txCommunityIdIndex).getBlockchain();
+        auto deferredTransfer = blockchain->getConfirmedTxForId(body->data.timeout_deferred_transfer->deferred_transfer_transaction_nr);
+        if (!deferredTransfer) {
+          throw GradidoNodeInvalidDataException("missing deferred transfer for timeout");
+        }
+        specific.transfer.senderPublicKeyIndex = deferredTransfer->specific.deferredTransfer.recipientPublicKeyIndex;
+        specific.transfer.recipientPublicKeyIndex = deferredTransfer->specific.deferredTransfer.senderPublicKeyIndex;
+        auto amount = GradidoUnit::fromGradidoCent(deferredTransfer->specific.deferredTransfer.amountGddCent);
+        specific.transfer.amountGddCent = amount.calculateDecay(deferredTransfer->getConfirmedAt(), getConfirmedAt());
+      }
     } 
     else 
     {

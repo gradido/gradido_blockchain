@@ -202,7 +202,7 @@ namespace gradido {
 
     GradidoUnit ConfirmedGradidoTx::getAmount() const
     {
-      if (isTransfer() || isRedeemDeferredTransfer() || isTimeoutDeferredTransfer()) {
+      if (isTransfer() || isRedeemDeferredTransfer()) {
         return GradidoUnit::fromGradidoCent(specific.transfer.amountGddCent);
       }
       else if (isDeferredTransfer()) {
