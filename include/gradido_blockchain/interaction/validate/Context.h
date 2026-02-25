@@ -3,14 +3,19 @@
 
 #include "gradido_blockchain/export.h"
 #include "AbstractRole.h"
+#include "Error.h"
 #include "Type.h"
 #include <memory>
 
 namespace gradido {
+    class AppContext;
     namespace data {
       class TransactionBody;
       class GradidoTransaction;
       class ConfirmedTransaction;
+      namespace compact {
+        class ConfirmedGradidoTx;
+      }
     }
     namespace blockchain {
       class Abstract;
@@ -20,6 +25,11 @@ namespace gradido {
 
 
       // rewrite as function with compact confirmed tx
+      GRADIDOBLOCKCHAIN_EXPORT Error validate(
+        const data::compact::ConfirmedGradidoTx& tx, 
+        const AppContext& appContext,
+        Type type = Type::SINGLE
+      );
 
       class TransactionBodyRole;
       class GradidoTransactionRole;

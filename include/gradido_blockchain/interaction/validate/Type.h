@@ -14,7 +14,7 @@ namespace gradido {
                 so it is possible to validate with different levels at once.
                 The main difference between the levels are the needed data for that and the complexity
             */
-            enum class Type {
+            enum class Type: uint8_t {
                 //! check only the transaction
                 SINGLE = 1,
                 //! check with previous transaction

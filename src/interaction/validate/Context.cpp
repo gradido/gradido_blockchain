@@ -51,6 +51,19 @@ namespace gradido {
 				}
 				mRole->run(type, c);
 			}
+
+			Error validate(
+				const data::compact::ConfirmedGradidoTx& tx,
+				const AppContext& appContext,
+				Type type/* = Type::SINGLE*/
+			)
+			{
+
+				return {
+					.type = ErrorType::SUCCESS
+				};
+			}
+
 		}
 	}
 }
