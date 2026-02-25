@@ -17,6 +17,9 @@ namespace gradido::data::adapter {
 
   inline PublicKey toPublicKey(memory::ConstBlockPtr block)
   {
+    if (!block) {
+      throw GradidoNodeInvalidDataException("toPublicKey called with nullptr");
+    }
     return toPublicKey(*block);
   }
   

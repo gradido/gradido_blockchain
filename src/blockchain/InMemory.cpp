@@ -16,6 +16,7 @@
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_protobuf_zig.h"
 
 #include "loguru/loguru.hpp"
 #include "magic_enum/magic_enum.hpp"
