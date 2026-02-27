@@ -362,12 +362,12 @@ namespace gradido {
 						continue;
 					}
 					if (filter.minTransactionNr) {
-						if (entriesOfMonthYear.end()->transactionNr < filter.minTransactionNr) {
+						if (entriesOfMonthYear.back().transactionNr < filter.minTransactionNr) {
 							continue;
 						}
 					}
 					if (filter.maxTransactionNr) {
-						if (entriesOfMonthYear.begin()->transactionNr > filter.maxTransactionNr) {
+						if (entriesOfMonthYear.front().transactionNr > filter.maxTransactionNr) {
 							break;
 						}
 					}
@@ -401,12 +401,12 @@ namespace gradido {
 						continue;
 					}
 					if (filter.maxTransactionNr) {
-						if (entriesOfMonthYear.begin()->transactionNr > filter.maxTransactionNr) {
+						if (entriesOfMonthYear.front().transactionNr > filter.maxTransactionNr) {
 							continue;
 						}
 					}
 					if (filter.minTransactionNr) {
-						if (entriesOfMonthYear.begin()->transactionNr < filter.minTransactionNr) {
+						if (entriesOfMonthYear.front().transactionNr < filter.minTransactionNr) {
 							break;
 						}
 					}					
@@ -542,8 +542,8 @@ namespace gradido {
 					}
 				}
 				else {
-					auto minTx = entriesOfMonthYear.begin()->transactionNr;
-					auto maxTx = entriesOfMonthYear.end()->transactionNr;
+					auto minTx = entriesOfMonthYear.front().transactionNr;
+					auto maxTx = entriesOfMonthYear.back().transactionNr;
 					if (filter.minTransactionNr && filter.minTransactionNr > minTx) {
 						minTx = filter.minTransactionNr;
 					}
