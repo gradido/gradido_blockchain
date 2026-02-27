@@ -10,7 +10,7 @@
 class TimepointInterval
 {
 public:
-	TimepointInterval() {}
+	TimepointInterval() = default;
 	TimepointInterval(Timepoint startDate, Timepoint endDate)
 		: mStartDate(startDate), mEndDate(endDate) {
 		if (startDate > endDate) {

@@ -28,7 +28,7 @@ namespace memory {
 
 // mYearMonthAddressIndexEntries start with MAGIC_NUMBER_TRANSACTION_INDEX_ENTRIES_RESIZE_STEP_SIZE places,
 // if a new index is bigger than that, resize with current size + MAGIC_NUMBER_TRANSACTION_INDEX_ENTRIES_RESIZE_STEP_SIZE
-// deque would be faster with increasing capacity, but slower with access and resize should only be happen all four years (with 100 as MAGIC_NUMBER_TRANSACTION_INDEX_ENTRIES_RESIZE_STEP_SIZE)
+// deque would be faster with increasing capacity, but slower with access and resize should only be happen all ~8 years (with 100 as MAGIC_NUMBER_TRANSACTION_INDEX_ENTRIES_RESIZE_STEP_SIZE)
 // and ideally not happen at all, because the gradido node use TransactionIndex per Block, not per entire blockchain
 constexpr size_t MAGIC_NUMBER_TRANSACTION_INDEX_ENTRIES_RESIZE_STEP_SIZE = 100;
 
@@ -50,6 +50,7 @@ namespace gradido {
 		class GRADIDOBLOCKCHAIN_EXPORT TransactionsIndex
 		{
 		public:
+			TransactionsIndex() = delete;
 			TransactionsIndex(uint32_t communityIdIndex);
 			~TransactionsIndex();
 
@@ -95,7 +96,7 @@ namespace gradido {
 			inline date::year_month getNewestYearMonth() const { return mMaxYearMonth; }
 			size_t yearMonthToIndex(date::year_month ym) const;
 			date::year_month indexToYearMonth(size_t index) const;
-			inline TimepointInterval filteredTimepointInterval(const CompactFilter& filter) const;
+			TimepointInterval filteredTimepointInterval(const CompactFilter& filter) const;
 
 			static inline bool canMatchWithoutDeserialize(const Filter& filter);
 
@@ -202,6 +203,7 @@ namespace gradido {
 			SearchIterator createSearchIterator(const CompactFilter& filter, bool isEnd = false) const;
 
 			size_t yearMonthToIndexUpdateBounds(date::year year, date::month month);
+			void transactionNrUpdateBounds(uint64_t transactionNr);
 			bool addIndicesForTransaction(
 				gradido::data::TransactionType transactionType,
 				uint32_t coinCommunityIdIndex,
@@ -230,7 +232,6 @@ namespace gradido {
 				uint32_t						addressIndices[4];
 
 				FilterResult isMatchingFilter(const CompactFilter& filter) const;
-				FilterResult isMatchingFilter2(const CompactFilter& filter) const;
 			};
 
 			struct BalanceTransactionIndexEntry
@@ -271,21 +272,9 @@ namespace gradido {
 		}
 
 		uint64_t TransactionsIndex::getTransactionsCount() const
-		{ 
-			if (!mMaxTransactionNr && !mMinTransactionNr) return 0;
-			return mMaxTransactionNr - mMinTransactionNr + 1; 
-		}
-
-		TimepointInterval TransactionsIndex::filteredTimepointInterval(const CompactFilter& filter) const
 		{
-			TimepointInterval interval(getOldestYearMonth(), getNewestYearMonth());
-			if (filter.timepointInterval.isEmpty() || !filter.timepointInterval.isOverlap(interval)) {
-				return interval;
-			}
-			return {
-				std::max(interval.getStartDate(), filter.timepointInterval.getStartDate()),
-				std::min(interval.getEndDate(), filter.timepointInterval.getEndDate())
-			};
+			if (!mMaxTransactionNr && !mMinTransactionNr) return 0;
+			return mMaxTransactionNr - mMinTransactionNr + 1;
 		}
 
 		bool TransactionsIndex::canMatchWithoutDeserialize(const Filter& filter)
@@ -310,7 +299,7 @@ namespace gradido {
 			}
 			//auto entry = mParent->mYearMonthAddressIndexEntries[mMonthYearIndex][mEntryIndex];
 			auto entry = (*bucket)[mEntryIndex];
-			auto filterResult = entry.isMatchingFilter2(mFilter);
+			auto filterResult = entry.isMatchingFilter(mFilter);
 			// mParent->mFilterCount++;
 			if ((filterResult & FilterResult::STOP) == FilterResult::STOP) {
 				mStopped = true;
@@ -327,7 +316,7 @@ namespace gradido {
 				return 0;
 			}
 			for (auto it = begin; it != end; ++it) {
-				auto filterResult = it->isMatchingFilter2(mFilter);
+				auto filterResult = it->isMatchingFilter(mFilter);
 				if ((filterResult & FilterResult::STOP) == FilterResult::STOP) {
 					mStopped = true;
 				}
