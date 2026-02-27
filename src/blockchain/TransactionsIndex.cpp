@@ -26,9 +26,6 @@ using namespace magic_enum;
 using std::sort, std::unique, std::vector;
 using memory::Block;
 
-// control vector size, primarily for cache hit optimization
-const size_t TRANSACTION_ENTRY_VECTOR_SIZE = 100;
-
 namespace gradido {
 	using data::adapter::toPublicKey;
 	using data::AddressType;
@@ -42,7 +39,7 @@ namespace gradido {
 			: mMaxTransactionNr(0), mMinTransactionNr(0), mMinYearMonth(date::year(0), date::month(0)), mMaxYearMonth(date::year(0), date::month(0)),
 			mAddressIndex(communityIdIndex)
 		{
-			mYearMonthAddressIndexEntries.resize(100);
+			mYearMonthAddressIndexEntries.resize(MAGIC_NUMBER_TRANSACTION_INDEX_ENTRIES_RESIZE_STEP_SIZE);
 			mFilterCount = 0;
 			mFilterCount2 = 0;
 		}
@@ -115,7 +112,7 @@ namespace gradido {
 			auto index = yearMonthToIndex(date::year_month{year, month});
 			assert(mYearMonthAddressIndexEntries.size());
 			if (index >= mYearMonthAddressIndexEntries.size()) {
-				mYearMonthAddressIndexEntries.resize(mYearMonthAddressIndexEntries.size() * 2);
+				mYearMonthAddressIndexEntries.resize(mYearMonthAddressIndexEntries.size() + MAGIC_NUMBER_TRANSACTION_INDEX_ENTRIES_RESIZE_STEP_SIZE);
 				if (index >= mYearMonthAddressIndexEntries.size()) {
 					throw GradidoNodeInvalidDataException("unexpected jump in transaction index grow");
 				}

@@ -26,6 +26,12 @@ namespace memory {
 	class Block;
 }
 
+// mYearMonthAddressIndexEntries start with MAGIC_NUMBER_TRANSACTION_INDEX_ENTRIES_RESIZE_STEP_SIZE places,
+// if a new index is bigger than that, resize with current size + MAGIC_NUMBER_TRANSACTION_INDEX_ENTRIES_RESIZE_STEP_SIZE
+// deque would be faster with increasing capacity, but slower with access and resize should only be happen all four years (with 100 as MAGIC_NUMBER_TRANSACTION_INDEX_ENTRIES_RESIZE_STEP_SIZE)
+// and ideally not happen at all, because the gradido node use TransactionIndex per Block, not per entire blockchain
+constexpr size_t MAGIC_NUMBER_TRANSACTION_INDEX_ENTRIES_RESIZE_STEP_SIZE = 100;
+
 namespace gradido {
 	namespace data::compact {
 		struct ConfirmedGradidoTx;
