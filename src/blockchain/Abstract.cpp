@@ -53,6 +53,11 @@ namespace gradido {
 			return findAll(filter).size();
 		}
 
+		size_t Abstract::countAll(const CompactFilter& filter) const
+		{
+			return findAll(filter).size();
+		}
+
 		shared_ptr<const TransactionEntry> Abstract::findOne(const Filter& filter/* = Filter::LAST_TRANSACTION*/) const
 		{
 			auto results = findAll(filter);

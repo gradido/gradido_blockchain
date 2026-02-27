@@ -344,6 +344,11 @@ namespace gradido {
 			return results;
 		}
 
+		size_t InMemory::countAll(const CompactFilter& filter) const
+		{
+			return mTransactionsIndex.countTransactions(filter);
+		}
+
 		ConstTransactionEntryPtr InMemory::findOne(const Filter& filter/* = Filter::LAST_TRANSACTION*/) const
 		{
 			if (filter.isTheSame(Filter::LAST_TRANSACTION)) {

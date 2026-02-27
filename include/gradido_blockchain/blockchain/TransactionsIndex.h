@@ -79,8 +79,8 @@ namespace gradido {
 			inline void updateAddressIndex(const TransactionEntry& transactionEntry, const IDictionary<PublicKey>& publicKeyDictionary) const;
 
 			//! count all, ignore pagination
-			size_t countTransactions(const Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary) const;
-			size_t countBalanceChangingTxs(uint32_t publicKeyIndex) const;
+			size_t countTransactions(const CompactFilter& filter) const;
+			size_t countBalanceChangingTxs(const CompactFilter& filter) const;
 
 			//! \brief find transaction nrs from specific month and year
 			//! \return {0, 0} if nothing found
@@ -247,8 +247,6 @@ namespace gradido {
 
 			// is used like a cache, even from const
 			mutable AddressIndex mAddressIndex;
-			mutable size_t mFilterCount;
-			mutable size_t mFilterCount2;
 			// std::map<uint32_t, data::AddressType> mPublicKeyAddressTypes;
 			// TODO: check if replace std::list<std::vector> with std::deque make sense (performance side)
 			// TODO: check if flatten maps to std::vector<FlatTransactionsIndexEntry> mEntries[month * years] make sense

@@ -80,6 +80,7 @@ namespace gradido {
 			// from Abstract blockchain
 			TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const override;
 			data::compact::ConfirmedTxs findAll(const CompactFilter& filter) const override;
+			size_t countAll(const CompactFilter& filter) const override;
 			ConstTransactionEntryPtr findOne(const Filter& filter = Filter::LAST_TRANSACTION) const override;
 			data::AddressType getAddressType(const Filter& filter = Filter::ALL_TRANSACTIONS) const override;
 
