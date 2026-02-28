@@ -1,7 +1,9 @@
 #include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/data/AccountBalance.h"
 #include "gradido_blockchain/data/adapter/accountBalance.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/memory/Block.h"
+#include "gradido_protobuf_zig.h"
 
 #include <memory>
 

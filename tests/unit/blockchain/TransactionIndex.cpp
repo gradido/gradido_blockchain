@@ -164,3 +164,40 @@ TEST(TransactionIndex, LoopWithFiveEntriesFilterIntervalHole)
     EXPECT_TRUE(false);
   }
 }
+
+TEST(TransactionIndex, TriggerResize)
+{
+  TransactionsIndexPublic txIdx(1);
+  txIdx.addIndicesForTransaction(TransactionType::COMMUNITY_ROOT, communityIdIndex, date::year(1989), date::month(1), 1, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(TransactionType::REGISTER_ADDRESS, communityIdIndex, date::year(2000), date::month(1), 2, nullptr, 0, 0);
+
+  EXPECT_THROW(
+    txIdx.addIndicesForTransaction(TransactionType::REGISTER_ADDRESS, communityIdIndex, date::year(2100), date::month(1), 2, nullptr, 0, 0),
+    GradidoNodeInvalidDataException
+  );
+
+  CompactFilter f;
+  f.searchDirection = SearchDirection::ASC;
+  auto startIt = txIdx.begin(f);
+  auto endIt = txIdx.end(f);
+  int count = 0;
+  int index = 1;
+  for (auto it = startIt; it != endIt; ++it) {
+    EXPECT_EQ(*it, index);
+    ++count;
+    ++index;
+  }
+  EXPECT_EQ(count, 2);
+
+  f.searchDirection = SearchDirection::DESC;
+  startIt = txIdx.begin(f);
+  endIt = txIdx.end(f);
+  count = 0;
+  index = 2;
+  for (auto it = startIt; it != endIt; ++it) {
+    EXPECT_EQ(*it, index);
+    ++count;
+    --index;
+  }
+  EXPECT_EQ(count, 2);
+}

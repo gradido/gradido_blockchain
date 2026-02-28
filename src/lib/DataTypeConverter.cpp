@@ -326,10 +326,15 @@ namespace DataTypeConverter
 
 		return fmt.str();
 	}
+	
 	Timepoint monthYearToTimepoint(const date::year_month& ym)
 	{
-		date::year_month_day ymd(ym.year(), ym.month(), date::day(1));
-		return date::sys_days{ ymd };
+		// timepoint (std::chrono::time_point) interpret year 0 as year: -1970 we don't want that, so we use Timepoint default constructor, if year and month = 0
+		if (ym.month() != date::month(0) && ym.year() != date::year(0)) {
+			date::year_month_day ymd(ym.year(), ym.month(), date::day(1));
+			return date::sys_days{ ymd };
+		}
+		return {};
 	}
 	
 	int replaceBase64WithHex(rapidjson::Value& json, rapidjson::Document::AllocatorType& alloc)
