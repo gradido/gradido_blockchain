@@ -7,8 +7,10 @@
 namespace gradido::interaction::validate {
   struct GRADIDOBLOCKCHAIN_EXPORT Error
   {
-    ErrorType type = ErrorType::NONE;
+    ErrorType type = ErrorType::None;
     std::string message;
+    std::string actual;
+    std::string expected;
   };
 }
 

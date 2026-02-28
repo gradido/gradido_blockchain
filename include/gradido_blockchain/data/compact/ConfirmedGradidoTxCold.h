@@ -19,6 +19,8 @@ struct grdw_transaction_body;
 namespace gradido {
   class AppContext;
   namespace data::compact {
+    struct ConfirmedGradidoTx;
+
     typedef std::pair<PublicKey, Signature> PublicKeySignaturePair;
 
     struct GRADIDOBLOCKCHAIN_EXPORT ConfirmedGradidoTxCold

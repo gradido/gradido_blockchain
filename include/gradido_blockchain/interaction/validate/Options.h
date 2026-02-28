@@ -8,6 +8,7 @@ namespace gradido::interaction::validate {
       Type type = Type::SINGLE;
       bool enableVerify = true; 
       bool enableRunningHashTest = true;
+      bool errorOnMissingColdData = false;
   };
 }
 

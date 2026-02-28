@@ -5,8 +5,13 @@
 
 namespace gradido::interaction::validate {
   enum class ErrorType: uint8_t {
-    NONE,
-    SUCCESS,    
+    None,
+    Success,
+    Invalid_Field,
+    Invalid_Dictionary_Index,
+    Invalid_Transaction_Type,
+    Missing_Cold_Data,
+    Crypto_Sign_Invalid
   };
 }
 

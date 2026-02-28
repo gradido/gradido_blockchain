@@ -152,6 +152,8 @@ namespace gradido {
 
       rich::AccountBalance getAccountBalance(PublicKeyIndex publicKeyIndex, uint32_t coinCommunityIdIndex) const;
       inline GradidoUnit getAmount() const;
+
+      GenericHash calculateRunningHash(const ConfirmedGradidoTx* previousConfirmedTx = nullptr) const;
     };
 
     //! get user public key on register address transaction else empty PublicKeyIndex

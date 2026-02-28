@@ -12,10 +12,12 @@
 
 #include "loguru/loguru.hpp"
 #include "magic_enum/magic_enum.hpp"
+#include "sodium.h"
 
 #include <algorithm>
 #include <array>
 #include <memory>
+#include <string>
 #include <vector>
 
 using namespace magic_enum;
@@ -529,6 +531,42 @@ namespace gradido::data::compact {
       }
     }
     return rich::AccountBalance();
+  }
+
+  GenericHash ConfirmedGradidoTx::calculateRunningHash(const ConfirmedGradidoTx* previousConfirmedTx) const
+  {
+    if (!coldData) {
+        throw MissingColdDataException("need cold data for calculate running hash", *this);
+    }
+    string transactionIdString = to_string(txNr);
+    auto confirmedAtString = getConfirmedAt().toString();// timePointToString(mConfirmedAt, "%Y-%m-%d %H:%M:%S");
+    auto ledgerAnchorString = coldData->ledgerAnchor.toString();
+    GenericHash hash;
+
+    // Sodium use for the generic hash function BLAKE2b today (11.11.2019), maybe change in the future
+    crypto_generichash_state state;
+    crypto_generichash_init(&state, nullptr, 0, crypto_generichash_BYTES);
+    if (previousConfirmedTx && previousConfirmedTx->hasColdData() && !previousConfirmedTx->coldData->runningHash.isEmpty()) {
+        auto prevHashHex = previousConfirmedTx->coldData->runningHash.convertToHex();
+        crypto_generichash_update(&state, (const unsigned char*)prevHashHex.data(), prevHashHex.size());
+    }
+    crypto_generichash_update(&state, (const unsigned char*)transactionIdString.data(), transactionIdString.size());
+    crypto_generichash_update(&state, (const unsigned char*)confirmedAtString.data(), confirmedAtString.size());
+    crypto_generichash_update(&state, (const unsigned char*)ledgerAnchorString.data(), ledgerAnchorString.size());
+
+    
+    for (const auto& sigPair : coldData->signatureMap) {
+        crypto_generichash_update(&state, sigPair.first.data(), sigPair.first.size());
+        crypto_generichash_update(&state, sigPair.second.data(), sigPair.second.size());
+    }
+    
+    for (int i = 0; i < accountBalanceCount; ++i) {
+        int64_t gdd = accountBalances[i].balanceGddCent;
+        crypto_generichash_update(&state, (const unsigned char*)&gdd, sizeof(gdd));
+    }
+    crypto_generichash_update(&state, (const unsigned char*)&balanceDerivationType, sizeof(BalanceDerivationType));
+    crypto_generichash_final(&state, (const unsigned char*)hash.data(), hash.size());
+    return hash;
   }
 
   MissingColdDataException::MissingColdDataException(const char* what, const ConfirmedGradidoTx& parent) noexcept

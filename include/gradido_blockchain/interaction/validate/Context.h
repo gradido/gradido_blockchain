@@ -4,6 +4,7 @@
 #include "gradido_blockchain/export.h"
 #include "AbstractRole.h"
 #include "Error.h"
+#include "Options.h"
 #include "Type.h"
 #include <memory>
 
@@ -28,7 +29,7 @@ namespace gradido {
       GRADIDOBLOCKCHAIN_EXPORT Error validate(
         const data::compact::ConfirmedGradidoTx& tx, 
         const AppContext& appContext,
-        Type type = Type::SINGLE
+        Options options
       );
 
       class TransactionBodyRole;
