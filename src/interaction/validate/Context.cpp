@@ -1,5 +1,7 @@
+#include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTxCold.h"
+#include "gradido_blockchain/data/BalanceDerivationType.h"
 #include "gradido_blockchain/data/CrossGroupType.h"
 #include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/interaction/validate/ContextData.h"
@@ -9,13 +11,16 @@
 #include "gradido_blockchain/interaction/validate/Context.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransactionRole.h"
 #include "gradido_blockchain/interaction/validate/TransactionBodyRole.h"
+#include "gradido_blockchain/lib/DataTypeConverter.h"
 
 #include <string>
 
-using std::to_string;
+using std::string, std::to_string;
+using DataTypeConverter::timespanToString, DataTypeConverter::timePointToString;
 
 namespace gradido {
 	using data::compact::ConfirmedGradidoTx;
+	using data::BalanceDerivationType;
 	using data::CrossGroupType;
 	using data::TransactionType;
 
@@ -62,8 +67,13 @@ namespace gradido {
 			mRole->run(type, c);
 		}
 
+		static Error validatePreviousAll(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options)
+		{
+
+		}
+
 		// all checks which don't need other transactions
-		static Error validateSingle(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options) 
+		static Error validateSingleAll(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options) 
 		{
 			const auto coldData = tx.coldData.get();
 			const auto& communityIdDict = appContext.getCommunityIds();
@@ -98,25 +108,26 @@ namespace gradido {
 				if (tx.coinCommunityIdIndex && !communityIdDict.hasIndex(tx.coinCommunityIdIndex)) {
 					return { .type = ErrorType::Invalid_Dictionary_Index, .message = "coinCommunityIdIndex not in dictionary" };
 				}
-				if (tx.hasColdData()) {
-					for (auto& sigPair : coldData->signatureMap) {
-						if (sigPair.first.isEmpty()) {
-							return { .type = ErrorType::Invalid_Field, .message = "empty public key in signature map" };
-						}
-						if (sigPair.second.isEmpty()) {
-							return { .type = ErrorType::Invalid_Field, .message = "empty signature in signature map" };
-						}
-						if (options.enableVerify) {
-							// TODO: move into PublicKey or ed25519KeyPair
-							if (crypto_sign_verify_detached(
-								(const unsigned char*)sigPair.second.data(),
-								(const unsigned char*)coldData->bodyBytes.data(), 
-								coldData->bodyBytes.size(), 
-								sigPair.first.data()
-							) != 0) {
-								return { .type = ErrorType::Crypto_Sign_Invalid, .message = "on of the signatures cannot be verfied" };
-							}
-						}
+				if (coldData) {
+					if (std::chrono::abs(coldData->getCreatedAt().getAsTimepoint() - tx.getConfirmedAt().getAsTimepoint())
+							> MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION) {
+						string message = 
+							"timespan between created at and confirmed at are more than "
+							+ timespanToString(MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION)
+						;
+						string actual =
+							"createdAt: "
+							+ timePointToString(coldData->getCreatedAt())
+							+ ", confirmedAt: "
+							+ timePointToString(tx.getConfirmedAt())
+						;
+						string expected = 
+							timePointToString(tx.getConfirmedAt())
+							+ " <= (" + timePointToString(coldData->getCreatedAt())
+							+ " +- " + timespanToString(MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION)
+							+ ")"
+						;
+						return { .type = ErrorType::Invalid_Field, .message = message, .actual = actual, .expected = expected };
 					}
 					if (coldData->ledgerAnchor.empty()) {
 						return  {
@@ -126,17 +137,21 @@ namespace gradido {
 					}
 				}
 			}
+			// from here an for confirmed and not confirmed transactions
+			
 			// check if it is a cross community transaction, that needed informations are there
-			if (CrossGroupType::LOCAL != tx.crossGroupType) {
+			if (CrossGroupType::LOCAL != tx.crossGroupType) 
+			{
 				if (TransactionType::COMMUNITY_FRIENDS_UPDATE != tx.transactionType &&
 					TransactionType::REDEEM_DEFERRED_TRANSFER != tx.transactionType &&
-					TransactionType::TRANSFER != tx.transactionType) {
+					TransactionType::TRANSFER != tx.transactionType) 
+				{
 					return { 
 						.type = ErrorType::Invalid_Transaction_Type, 
 						.message = "cross group transactions (currently) only possible with Transfer, Redeem Deferred Transfer and Community Friends Update" 
 					};
 				}
-				if (tx.hasColdData() && coldData) {
+				if (coldData) {
 					if (!coldData->pairingTxCommunityIdIndex) {
 						return {
 							.type = ErrorType::Invalid_Field,
@@ -157,7 +172,10 @@ namespace gradido {
 					}
 				}
 			}
-			if (tx.hasColdData()) {
+			if (BalanceDerivationType::UNSPECIFIED == tx.balanceDerivationType) {
+				return { .type = ErrorType::Invalid_Field, .message = "balanceDerivationType is unspecified" };
+			}
+			if (coldData) {
 				for (auto& sigPair : coldData->signatureMap) {
 					if (sigPair.first.isEmpty()) {
 						return { .type = ErrorType::Invalid_Field, .message = "empty public key in signature map" };
@@ -173,11 +191,15 @@ namespace gradido {
 							coldData->bodyBytes.size(),
 							sigPair.first.data()
 						) != 0) {
-							return { .type = ErrorType::Crypto_Sign_Invalid, .message = "on of the signatures cannot be verfied" };
+							return { .type = ErrorType::Crypto_Sign_Invalid, .message = "on of the signatures cannot be verified" };
 						}
 					}
 				}
+				if (coldData->bodyBytes.isEmpty()) {
+					return { .type = ErrorType::Invalid_Field, .message = "empty body bytes" };
+				}
 			}
+			return { .type = ErrorType::Success };
 		}
 
 		Error validate(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options) 
@@ -185,7 +207,7 @@ namespace gradido {
 			tx.isConfirmedTx();
 			Error result;
 			if ((Type::SINGLE & options.type) == Type::SINGLE) {
-				result = validateSingle(tx, appContext, options);
+				result = validateSingleAll(tx, appContext, options);
 				if (ErrorType::Success != result.type) {
 					return result;
 				}
