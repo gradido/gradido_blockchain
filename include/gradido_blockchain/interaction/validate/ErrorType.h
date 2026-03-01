@@ -10,6 +10,7 @@ namespace gradido::interaction::validate {
     Invalid_Field,
     Invalid_Dictionary_Index,
     Invalid_Transaction_Type,
+    Field_Value_Conflict,
     Missing_Cold_Data,
     Crypto_Sign_Invalid
   };

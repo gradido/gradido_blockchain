@@ -13,10 +13,13 @@
 #include "gradido_blockchain/interaction/validate/TransactionBodyRole.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
+#include "magic_enum/magic_enum.hpp"
+
 #include <string>
 
-using std::string, std::to_string;
 using DataTypeConverter::timespanToString, DataTypeConverter::timePointToString;
+using magic_enum::enum_name;
+using std::string, std::to_string;
 
 namespace gradido {
 	using data::compact::ConfirmedGradidoTx;
@@ -72,8 +75,185 @@ namespace gradido {
 
 		}
 
+		static Error validateSingleCommunityRoot(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options)
+		{
+			if (!tx.isCommunityRoot()) {
+				throw GradidoNodeInvalidDataException("called validateSingleCommunityRoot with not community root typed tx");
+			}
+			const auto& communityRoot = tx.specific.communityRoot;
+			const auto& publicKeyIdDict = appContext.getCommunityContext(tx.txCommunityIdIndex).getBlockchain()->getPublicKeyDictionary();
+
+			if (!publicKeyIdDict.hasIndex(communityRoot.publicKeyIndex)
+				|| !publicKeyIdDict.hasIndex(communityRoot.gmwPublicKeyIndex)
+			  || !publicKeyIdDict.hasIndex(communityRoot.aufPublicKeyIndex)) {
+				return { .type = ErrorType::Invalid_Dictionary_Index, .message = "at least one of publicKeyIndex, gmwPublicKeyIndex or aufPublicKeyIndex couldn't be found in PublicKey Dictionary" };
+			}
+			if (communityRoot.publicKeyIndex == communityRoot.aufPublicKeyIndex ||
+				communityRoot.publicKeyIndex == communityRoot.gmwPublicKeyIndex ||
+				communityRoot.gmwPublicKeyIndex == communityRoot.aufPublicKeyIndex) {
+				return { .type = ErrorType::Field_Value_Conflict, .message = "at least two of publicKeyIndex, gmwPublicKeyIndex or aufPublicKeyIndex are identical " };
+			}
+
+			if (tx.hasColdData()) {
+				const auto& coldData = tx.coldData.get();
+				if (coldData->signatureMap.size() != 1) {
+					return {
+						.type = ErrorType::Invalid_Field,
+						.message = "unexpected signature count",
+						.actual = to_string(coldData->signatureMap.size()),
+						.expected = "1"
+					};
+				}
+				auto publicKey = publicKeyIdDict.getDataForIndexOrThrow(communityRoot.publicKeyIndex);
+				if (!coldData->signatureMap[0].first.isTheSame(publicKey)) {
+					return {
+						.type = ErrorType::Invalid_Field,
+						.message = "wrong signer",
+						.actual = coldData->signatureMap[0].first.convertToHex(),
+						.expected = publicKey.convertToHex()
+					};
+				}
+			}
+
+			if (tx.isConfirmedTx()) {
+				if (tx.txNr != 1) {
+					return { .type = ErrorType::Invalid_Field, .message = "CommunityRoot must be first tx with tx nr = 1" };
+				}
+				if (tx.accountBalanceCount != 2) {
+					return { .type = ErrorType::Invalid_Field, .message = "unexpected account balances, expect gmw and auf on community root transaction" };
+				}
+				for (int i = 0; i < tx.accountBalanceCount; i++) {
+					const auto& accountBalance = tx.accountBalances[i];
+					if (accountBalance.balanceGddCent) {
+						return { 
+							.type = ErrorType::Invalid_Field, 
+							.message = "CommunityRoot starts with empty account balances", 
+							.actual = to_string(accountBalance.balanceGddCent),
+							.expected = "0"
+						};
+					}
+					if (accountBalance.coinCommunityIdIndex != tx.txCommunityIdIndex) {
+						return {
+							.type = ErrorType::Invalid_Field,
+							.message = "CommunityRoot account balances aren't allowed to have diff coin community id",
+							.actual = to_string(accountBalance.coinCommunityIdIndex),
+							.expected = to_string(tx.txCommunityIdIndex)
+						};
+					}
+					if (accountBalance.publicKeyIndex != communityRoot.gmwPublicKeyIndex && accountBalance.publicKeyIndex != communityRoot.aufPublicKeyIndex) {
+						string expected = to_string(communityRoot.gmwPublicKeyIndex);
+						expected += ", or ";
+						expected += to_string(communityRoot.aufPublicKeyIndex);
+						return {
+							.type = ErrorType::Invalid_Field,
+							.message = "CommunityRoot account balances need to belong either to gmw or to auf public key",
+							.actual = to_string(accountBalance.publicKeyIndex),
+							.expected = expected
+						};
+					}
+				}
+			}
+			return { .type = ErrorType::Success };
+		}
+
+		static Error validateSingleCreation(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options)
+		{
+			if (tx.isCreation()) {
+				throw GradidoNodeInvalidDataException("called validateSingleCreation with not creation typed tx");
+			}
+			const auto& creation = tx.specific.creation;
+			const auto& publicKeyIdDict = appContext.getCommunityContext(tx.txCommunityIdIndex).getBlockchain()->getPublicKeyDictionary();
+			if (!publicKeyIdDict.hasIndex(creation.recipientPublicKeyIndex)) {
+				return { .type = ErrorType::Invalid_Dictionary_Index, .message = "couldn't find recipient public key in Dictionary" };
+			}
+			if (creation.amountGddCent < 2'000) {
+				return {
+					.type = ErrorType::Invalid_Field,
+					.message = "creation amount to low, min 0.2 GDD (2000 GDD Cent)",
+					.actual = to_string(creation.amountGddCent),
+					.expected = ">= 2000"
+				};
+			}
+			if (creation.amountGddCent > 10'000'000) {
+				return {
+					.type = ErrorType::Invalid_Field,
+					.message = "creation amount to high, max 1000 per month (10'000'000 GDD Cent)",
+					.actual = to_string(creation.amountGddCent),
+					.expected = "<= 10'000'000"
+				};
+			}
+			if (tx.hasColdData()) {
+				const auto& coldData = tx.coldData.get();
+				if (coldData->signatureMap.size() != 1) {
+					return {
+						.type = ErrorType::Invalid_Field,
+						.message = "unexpected signature count",
+						.actual = to_string(coldData->signatureMap.size()),
+						.expected = "1"
+					};
+				}
+				auto signerPublicKeyIndex = publicKeyIdDict.getIndexForData(coldData->signatureMap[0].first);
+				if (signerPublicKeyIndex == creation.recipientPublicKeyIndex) {
+					return {
+						.type = ErrorType::Invalid_Field,
+						.message = "creation must be signed from other public key as the recipient"
+					};
+				}
+			}
+
+			if (tx.isConfirmedTx()) {
+				if (tx.txNr < 3) {
+					return {
+						.type = ErrorType::Invalid_Field,
+						.message = "Creation must be tx nr 3 at least to have community root, recipient and someone to sign registered first",
+						.actual = to_string(tx.txNr),
+						.expected = "< 3"
+					};
+				}
+				if (tx.accountBalanceCount != 3) {
+					return { .type = ErrorType::Invalid_Field, .message = "unexpected account balances, expect recipient, gmw and auf on creation" };
+				}
+				bool creationAccountBalanceFound = false;
+				for (int i = 0; i < tx.accountBalanceCount; i++)
+				{
+					const auto& accountBalance = tx.accountBalances[i];
+					if (accountBalance.balanceGddCent < creation.amountGddCent) {
+						return {
+							.type = ErrorType::Invalid_Field,
+							.message = "Creation account balance couldn't be smaller than creation amount",
+							.actual = to_string(accountBalance.balanceGddCent),
+							.expected = ">= " + to_string(creation.amountGddCent)
+						};
+					}
+					if (accountBalance.coinCommunityIdIndex != tx.txCommunityIdIndex) {
+						return {
+							.type = ErrorType::Invalid_Field,
+							.message = "Creation account balances aren't allowed to have diff coin community id",
+							.actual = to_string(accountBalance.coinCommunityIdIndex),
+							.expected = to_string(tx.txCommunityIdIndex)
+						};
+					}
+					if (accountBalance.publicKeyIndex == creation.recipientPublicKeyIndex) {
+						if (creationAccountBalanceFound) {
+							return { .type = ErrorType::Field_Value_Conflict, .message = "more than one account balance for creation recipient" };
+						}
+						creationAccountBalanceFound = true;
+					}
+				}
+				if (!creationAccountBalanceFound) {
+					return { .type = ErrorType::Field_Value_Conflict, .message = "missing account balance for creation recipient" };
+				}
+			}
+			return { .type = ErrorType::Success };
+		}
+
+		static Error validateSingleTransfer(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options)
+		{
+
+		}
+
 		// all checks which don't need other transactions
-		static Error validateSingleAll(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options) 
+		static Error validateSingleCommon(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options) 
 		{
 			const auto coldData = tx.coldData.get();
 			const auto& communityIdDict = appContext.getCommunityIds();
@@ -207,7 +387,24 @@ namespace gradido {
 			tx.isConfirmedTx();
 			Error result;
 			if ((Type::SINGLE & options.type) == Type::SINGLE) {
-				result = validateSingleAll(tx, appContext, options);
+				result = validateSingleCommon(tx, appContext, options);
+				if (ErrorType::Success != result.type) {
+					return result;
+				}
+				switch (tx.transactionType) {
+				case TransactionType::CREATION:
+					result = validateSingleCreation(tx, appContext, options);
+					break;
+				case TransactionType::COMMUNITY_ROOT:
+					result = validateSingleCommunityRoot(tx, appContext, options);
+					break;
+				default: 
+					throw GradidoUnhandledEnum(
+						"single validation for transaction type missing",
+						"TransactionType",
+						enum_name(tx.transactionType).data()
+					);
+				}
 				if (ErrorType::Success != result.type) {
 					return result;
 				}

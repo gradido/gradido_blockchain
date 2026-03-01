@@ -565,7 +565,7 @@ namespace gradido::data::compact {
         crypto_generichash_update(&state, (const unsigned char*)&gdd, sizeof(gdd));
     }
     crypto_generichash_update(&state, (const unsigned char*)&balanceDerivationType, sizeof(BalanceDerivationType));
-    crypto_generichash_final(&state, (const unsigned char*)hash.data(), hash.size());
+    crypto_generichash_final(&state, (unsigned char*)hash.data(), hash.size());
     return hash;
   }
 
