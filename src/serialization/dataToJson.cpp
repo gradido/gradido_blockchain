@@ -232,7 +232,7 @@ namespace serialization {
 			obj.AddMember("value", toJson(value.getIotaMessageId(), alloc), alloc);
 			break;
 		case LedgerAnchor::Type::HIERO_TRANSACTION_ID:
-			obj.AddMember("value", toJson(value.getHieroTransactionId(), alloc), alloc);
+			obj.AddMember("value", toJson(value.toString(), alloc), alloc);
 			break;
 		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_ID:
 		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_COMMUNITY_ID:

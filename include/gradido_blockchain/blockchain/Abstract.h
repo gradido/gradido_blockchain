@@ -80,6 +80,7 @@ namespace gradido {
 			virtual data::compact::ConfirmedTxs findAll(const CompactFilter& filter) const = 0;
 			// find all optimized for counting transaction nrs, better not use the filter.function for that, because this would slow down
 			virtual size_t countAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
+			virtual size_t countAll(const CompactFilter& filter) const;
 			// only if you expect only one result
 			virtual ConstTransactionEntryPtr findOne(const Filter& filter = Filter::LAST_TRANSACTION) const;
 			virtual data::compact::ConstConfirmedTxPtr findOne(const CompactFilter& filter) const;

@@ -10,7 +10,7 @@
 class TimepointInterval
 {
 public:
-	TimepointInterval() {}
+	TimepointInterval() = default;
 	TimepointInterval(Timepoint startDate, Timepoint endDate)
 		: mStartDate(startDate), mEndDate(endDate) {
 		if (startDate > endDate) {
@@ -31,8 +31,8 @@ public:
 	{
 	}
 
-	inline date::year_month getStartDateYM() const;
-	inline date::year_month getEndDateYM() const;
+	inline date::year_month getStartDateYM() const { return timepointAsYearMonth(mStartDate); }
+	inline date::year_month getEndDateYM() const { return timepointAsYearMonth(mEndDate); }
 	inline Timepoint getStartDate() const { return mStartDate; }
 	inline Timepoint getEndDate() const { return mEndDate; }
 	inline void setStartDate(Timepoint startDate) { mStartDate = startDate; }
@@ -116,17 +116,6 @@ protected:
 	Timepoint mStartDate;
 	Timepoint mEndDate;
 };
-
-date::year_month TimepointInterval::getStartDateYM() const
-{
-	auto ymd = timepointAsYearMonthDay(mStartDate);
-	return { ymd.year(), ymd.month() };
-}
-date::year_month TimepointInterval::getEndDateYM() const
-{
-	auto ymd = timepointAsYearMonthDay(mEndDate);
-	return { ymd.year(), ymd.month() };
-}
 
 bool TimepointInterval::isOverlap(const TimepointInterval& other) const {
 	if (isEmpty() || other.isEmpty()) return false;

@@ -4,6 +4,7 @@
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/memory/Block.h"
+#include "gradido_protobuf_zig.h"
 
 #include <string>
 
