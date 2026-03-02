@@ -344,13 +344,25 @@ set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP})
 
 ######################################################################
 # in zig rewritten parts
-add_custom_target(gradido_protobuf_zig_build
+if (CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "aarch64")
+	add_custom_target(gradido_protobuf_zig_build
     COMMAND ${CMAKE_COMMAND} -E env zig build
+				-Dtarget=aarch64-linux-gnu
         -Doptimize=ReleaseSmall
     WORKING_DIRECTORY
         ${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig
 		VERBATIM
-)
+	)
+else ()
+	add_custom_target(gradido_protobuf_zig_build
+		COMMAND ${CMAKE_COMMAND} -E env zig build
+				-Doptimize=ReleaseSmall
+		WORKING_DIRECTORY
+				${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig
+		VERBATIM
+	)
+endif()
+
 add_library(gradido_protobuf_zig STATIC IMPORTED)
 
 set_target_properties(gradido_protobuf_zig PROPERTIES
