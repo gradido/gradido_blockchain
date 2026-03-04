@@ -19,6 +19,7 @@ SIGFPE	erroneous arithmetic operation such as divide by zero
 std::atomic<bool> Application::gRunning = true;
 std::mutex Application::mConditionMutex;
 std::condition_variable Application::mExitCondition;
+std::stop_source mMasterStopSource;
 
 void signalHandler(int signum) {
 	if(!Application::gRunning) {
