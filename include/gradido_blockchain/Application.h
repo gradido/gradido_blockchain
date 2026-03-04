@@ -19,7 +19,7 @@ public:
 	//! call init and start main loop if init return true
 	virtual void run();
 
-	static void terminate() { mMasterStopSource.request_stop(); gRunning = false; mExitCondition.notify_one(); }
+	static void terminate(bool crash = false);
 	static std::atomic<bool> gRunning;
 	std::stop_token getStopToken() const { return mMasterStopSource.get_token(); }
 protected:
