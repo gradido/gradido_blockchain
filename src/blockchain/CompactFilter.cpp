@@ -63,6 +63,28 @@ namespace gradido {
       }
     }
 
+    CompactFilter CompactFilter::lastTransaction()
+    {
+      CompactFilter f;
+      f.searchDirection = SearchDirection::DESC;
+      f.pagination.size = 1;
+      return f;
+    };
+    CompactFilter CompactFilter::firstTransaction()
+    {
+      CompactFilter f;
+      f.searchDirection = SearchDirection::ASC;
+      f.pagination.size = 1;
+      return f;
+    }
+
+    CompactFilter CompactFilter::allTransactions()
+    {
+      CompactFilter f;
+      f.pagination = Pagination(0, 0);
+      return f;
+    }
+
     CompactFilter CompactFilter::lastBalanceFor(PublicKeyIndex publicKeyIndex)
     {
       CompactFilter f;

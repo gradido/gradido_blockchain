@@ -349,7 +349,7 @@ struct DataSet {
 	queue<shared_ptr<const ConfirmedGradidoTx>> compactTransactions;
 	shared_ptr<blockchain::InMemory> blockchain;
 };
-
+/*
 TEST_F(LoadFromBinary, LoadAndConfirm)
 {
 	Profiler timeUsed;
@@ -398,14 +398,14 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			if (GRDW_LEDGER_ANCHOR_TYPE_NODE_TRIGGER_TRANSACTION_ID != tx.ledger_anchor.type) {
 				com.transactions.push(ConfirmedTransaction::fromGrdw(&tx, i+1));
 				
-				/*auto compact = make_shared<ConfirmedGradidoTx>(ConfirmedGradidoTx::fromGrdwConfirmedTransaction(&tx, i+1));
+				auto compact = make_shared<ConfirmedGradidoTx>(ConfirmedGradidoTx::fromGrdw(&tx, i + 1, *g_appContext));
 				alloc.last_index = 0;
 				decodeResult = grdw_transaction_body_decode(&alloc, &body, tx.transaction.body_bytes, tx.transaction.body_bytes_size);
 				ASSERT_EQ(decodeResult.state, GRDW_ENCODING_ERROR_SUCCESS);
-				compact->fillFromGrdwTransactionBody(&body);
+				compact->fillFromGrdwTransactionBody(&body, *g_appContext);
 				
-				// com.compactTransactions.push(compact);
-				// */
+				com.compactTransactions.push(compact);
+				//
 			}
 
 			if (readed + 32 >= fileSize) {
@@ -453,10 +453,6 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 		);
 		communities[next].transactions.pop();
 		++count;
-	/*	if (timeSinceLastPrint.millis() > 100) {
-			timeSinceLastPrint.reset();
-			printf("\r%u", count);
-		}*/
 		// if (count > 5000) break;
 	}
 	// printf("\r%u\n", count);
@@ -480,6 +476,124 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 
 	int zahl = 0;
 	printf("%s time for all\n", timeUsedAll.string().c_str());
+}
+//*/
+
+#include "gradido_blockchain/interaction/validate/Context.h"
+#include "gradido_blockchain/interaction/validate/Error.h"
+#include "gradido_blockchain/interaction/validate/ErrorType.h"
+#include "gradido_blockchain/interaction/validate/Type.h"
+
+using namespace gradido::interaction;
+
+TEST_F(LoadFromBinary, CompareValidationSpeed)
+{
+	Profiler timeUsed;
+	Profiler timeUsedAll;
+	Profiler timeSinceLastPrint;
+	char readFromFileStaticBuffer[1024];
+	uint8_t staticInputBuffer[2048];
+	grdu_memory alloc;
+	grdu_memory_init_static(&alloc, staticInputBuffer, 2048);
+	grdw_confirmed_transaction tx{};
+	grdw_transaction_body body{};
+
+	auto provider = InMemoryProvider::getInstance();
+	auto blockchain = reinterpret_pointer_cast<blockchain::InMemory>(provider->findBlockchain("gradido-akademie"));
+	auto communityIdIndex = blockchain->getCommunityIdIndex();
+	ASSERT_EQ(blockchain->getCommunityIdIndex(), 1);
+	auto fileName = "gradido_akademie.dat";
+	ifstream f(fileName, ifstream::in | ifstream::binary);
+	auto fileSize = file_size(fileName);
+	uint16_t txSize = 0;
+	uint32_t readed = 0;
+	uint32_t count = 0;
+	
+	while (f.good())
+	{
+		f.read((char*)&txSize, sizeof(uint16_t));
+		readed += sizeof(uint16_t);
+		f.read(readFromFileStaticBuffer, txSize);
+		readed += txSize;
+
+		alloc.last_index = 0;
+		auto decodeResult = grdw_confirmed_transaction_decode(&alloc, &tx, (uint8_t*)readFromFileStaticBuffer, txSize);
+		ASSERT_EQ(decodeResult.state, GRDW_ENCODING_ERROR_SUCCESS);
+
+		// alloc.last_index = 0;
+		decodeResult = grdw_transaction_body_decode(&alloc, &body, tx.transaction.body_bytes, tx.transaction.body_bytes_size);
+		ASSERT_EQ(decodeResult.state, GRDW_ENCODING_ERROR_SUCCESS);
+		
+		if (GRDW_LEDGER_ANCHOR_TYPE_NODE_TRIGGER_TRANSACTION_ID != tx.ledger_anchor.type && GRDW_TRANSACTION_BODY_CROSS_GROUP_TYPE_LOCAL == body.type)
+		{
+			auto confirmedTx = ConfirmedTransaction::fromGrdw(&tx, communityIdIndex);
+			//if (confirmedTx->getGradidoTransaction()->getTransactionBody()->getType() == CrossGroupType::LOCAL) {
+			if (confirmedTx->getId() == 1) {
+				blockchain->createAndAddConfirmedTransaction(
+					confirmedTx->getGradidoTransaction(),
+					confirmedTx->getLedgerAnchor(),
+					confirmedTx->getConfirmedAt()
+				);
+			}
+			validate::Context validator(*confirmedTx);
+			validator.disableVerify();
+			validator.run(validate::Type::SINGLE);
+		}
+
+		if (readed + 32 >= fileSize) {
+			break;
+		}
+		++count;
+	}
+	printf("%s for loading and validate single with legacy ConfirmedTransaction class\n", timeUsed.string().c_str());
+	readed = 0;
+	f.clear();
+	f.seekg(0);
+	timeUsed.reset();
+	
+	int zahl = 1;
+	zahl += rand();
+	timeUsed.reset();
+	while (f.good())
+	{
+		f.read((char*)&txSize, sizeof(uint16_t));
+		readed += sizeof(uint16_t);
+		f.read(readFromFileStaticBuffer, txSize);
+		readed += txSize;
+
+		alloc.last_index = 0;
+		auto decodeResult = grdw_confirmed_transaction_decode(&alloc, &tx, (uint8_t*)readFromFileStaticBuffer, txSize);
+		ASSERT_EQ(decodeResult.state, GRDW_ENCODING_ERROR_SUCCESS);
+
+		if (GRDW_LEDGER_ANCHOR_TYPE_NODE_TRIGGER_TRANSACTION_ID != tx.ledger_anchor.type)
+		{
+			/*if (tx.id == 1) {
+				auto confirmedTx = ConfirmedTransaction::fromGrdw(&tx, communityIdIndex);
+				blockchain->createAndAddConfirmedTransaction(
+					confirmedTx->getGradidoTransaction(),
+					confirmedTx->getLedgerAnchor(),
+					confirmedTx->getConfirmedAt()
+				);
+			}*/
+			
+			// alloc.last_index = 0;
+			decodeResult = grdw_transaction_body_decode(&alloc, &body, tx.transaction.body_bytes, tx.transaction.body_bytes_size);
+			ASSERT_EQ(decodeResult.state, GRDW_ENCODING_ERROR_SUCCESS);
+			if (GRDW_TRANSACTION_BODY_CROSS_GROUP_TYPE_LOCAL != body.type) {
+				continue;
+			}
+			auto compact = make_shared<ConfirmedGradidoTx>(ConfirmedGradidoTx::fromGrdw(&tx, &body, communityIdIndex, *g_appContext));			
+			validate::validate(*compact, *g_appContext, { .enableVerify = false });
+		}
+
+		if (readed + 32 >= fileSize) {
+			break;
+		}
+		++count;
+	}
+	printf("%s for loading and validate single with compact::ConfirmedGradidoTx class\n", timeUsed.string().c_str());
+	
+	zahl = 0;
 }
 /*
 TEST_F(LoadFromBinary, LoadDataFromBinaryDeserializeSerialize)

@@ -10,9 +10,12 @@ namespace gradido::interaction::validate {
     Invalid_Field,
     Invalid_Dictionary_Index,
     Invalid_Transaction_Type,
-    Field_Value_Conflict,
+    Field_Value_Conflict, // multiple values together result in unexpected state, per field it is correct, but not in this combination
     Missing_Cold_Data,
-    Crypto_Sign_Invalid
+    Missing_Blockchain,
+    Missing_Sign,
+    Crypto_Sign_Invalid,
+    Not_Implemented_Yet
   };
 }
 

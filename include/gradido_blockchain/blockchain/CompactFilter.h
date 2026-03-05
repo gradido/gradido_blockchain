@@ -50,6 +50,9 @@ namespace gradido {
 			//! interval between two dates with 1 month resolution
 			TimepointInterval timepointInterval;
 
+			static CompactFilter lastTransaction();
+			static CompactFilter firstTransaction();
+			static CompactFilter allTransactions();
 			static CompactFilter lastBalanceFor(data::compact::PublicKeyIndex publicKeyIndex);
 
 			FilterResult matches(const data::compact::ConfirmedGradidoTx& confirmedTx, FilterCriteria type) const;

@@ -150,7 +150,8 @@ namespace gradido {
       //! get gmw account public key on community root transaction else std::nullopt
       inline PublicKeyIndex getGmw() const;
 
-      rich::AccountBalance getAccountBalance(PublicKeyIndex publicKeyIndex, uint32_t coinCommunityIdIndex) const;
+      //! \param coinCommunityIdIndex ignored if set to 0
+      rich::AccountBalance getAccountBalance(PublicKeyIndex publicKeyIndex, uint32_t coinCommunityIdIndex = 0) const;
       inline GradidoUnit getAmount() const;
 
       GenericHash calculateRunningHash(const ConfirmedGradidoTx* previousConfirmedTx = nullptr) const;

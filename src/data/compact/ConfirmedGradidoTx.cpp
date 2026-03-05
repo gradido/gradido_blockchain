@@ -518,7 +518,7 @@ namespace gradido::data::compact {
     return PublicKeyIndex();
   }
 
-  rich::AccountBalance ConfirmedGradidoTx::getAccountBalance(PublicKeyIndex publicKeyIndex, uint32_t coinCommunityIdIndex) const
+  rich::AccountBalance ConfirmedGradidoTx::getAccountBalance(PublicKeyIndex publicKeyIndex, uint32_t coinCommunityIdIndex /* = 0 */) const
   {
     if (publicKeyIndex.communityIdIndex != txCommunityIdIndex) {
       return rich::AccountBalance();
