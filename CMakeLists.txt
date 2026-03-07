@@ -344,24 +344,24 @@ set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP})
 
 ######################################################################
 # in zig rewritten parts
-if (CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL "aarch64")
-	add_custom_target(gradido_protobuf_zig_build
-    COMMAND ${CMAKE_COMMAND} -E env zig build
-				-Dtarget=aarch64-linux-gnu
-        -Doptimize=ReleaseSmall
-    WORKING_DIRECTORY
-        ${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig
-		VERBATIM
-	)
-else ()
-	add_custom_target(gradido_protobuf_zig_build
-		COMMAND ${CMAKE_COMMAND} -E env zig build
-				-Doptimize=ReleaseSmall
-		WORKING_DIRECTORY
-				${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig
-		VERBATIM
-	)
+if(CMAKE_CROSSCOMPILING AND DEFINED TARGET)
+    # Cross-Compilation: TARGET aus Toolchain-File nutzen
+    set(ZIG_BUILD_TARGET "-Dtarget=${TARGET}")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    # Nativ auf aarch64
+    set(ZIG_BUILD_TARGET "-Dtarget=aarch64-linux-gnu")
+else()
+    set(ZIG_BUILD_TARGET "")
 endif()
+
+add_custom_target(gradido_protobuf_zig_build
+	COMMAND ${CMAKE_COMMAND} -E env zig build
+			${ZIG_BUILD_TARGET}
+			-Doptimize=ReleaseSmall
+	WORKING_DIRECTORY
+			${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig
+	VERBATIM
+)
 
 add_library(gradido_protobuf_zig STATIC IMPORTED)
 
