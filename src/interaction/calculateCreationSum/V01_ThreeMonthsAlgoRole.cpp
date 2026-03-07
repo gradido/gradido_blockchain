@@ -17,40 +17,44 @@ namespace gradido {
 	using blockchain::Abstract;
 	using data::TransactionType;
 
-	namespace interaction {
-		namespace calculateCreationSum {
-			GradidoUnit V01_ThreeMonthsAlgoRole::run(const Abstract& blockchain) const
-			{
-				auto sum(GradidoUnit::zero()); // default initialized with zero
+	namespace interaction::calculateCreationSum {
+		GradidoUnit v01_ThreeMonthsAlgo(
+			date::year_month dateYM,
+			data::compact::PublicKeyIndex publicKey,
+			const blockchain::Abstract& blockchain,
+			uint64_t transactionNrMax/* = 0 */
+		) {
+			auto sum(GradidoUnit::zero()); // default initialized with zero
 
-				// received = max
-				// received - 2 month = min
-				auto dateYM = timepointAsYearMonth(mDate);
-				auto beforeReceivedYM = dateYM - date::months(2);
-				
-				CompactFilter filter;
-				filter.maxTransactionNr = mTransactionNrMax;
-				filter.publicKeyIndex = mPublicKey;
-				filter.publicKeySearchType = PublicKeySearchType::BalanceChangingPublicKey;
-				filter.timepointInterval = { beforeReceivedYM, dateYM };
-				filter.transactionType = TransactionType::CREATION;
+			// received = max
+			// received - 2 month = min
+			auto beforeReceivedYM = dateYM - date::months(2);
 
-				auto txs = blockchain.findAll(filter);
-				for (const auto& txRef : txs) {
-					const auto& tx = txRef.get();
-					if (!tx->isCreation()) {
-						throw GradidoNullPointerException("transaction isn't creation or invalid", "GradidoCreation", __FUNCTION__);
-					}
-					auto confirmedYmd = timepointAsYearMonthDay(tx->getConfirmedAt().getAsTimepoint());
-					if (						
-						(confirmedYmd.year() == dateYM.year() && dateYM.month() - confirmedYmd.month() <= date::months(2)) ||
-						(dateYM.year() - confirmedYmd.year() == date::years(1) && confirmedYmd.month() - date::months(10) == dateYM.month())
-						) {
-						sum += tx->getAmount();
-					}
+			CompactFilter filter;
+			filter.maxTransactionNr = transactionNrMax;
+			filter.publicKeyIndex = publicKey;
+			filter.publicKeySearchType = PublicKeySearchType::BalanceChangingPublicKey;
+			filter.timepointInterval = { beforeReceivedYM, dateYM };
+			filter.transactionType = TransactionType::CREATION;
+
+			auto txs = blockchain.findAll(filter);
+			for (const auto& txRef : txs) {
+				const auto& tx = txRef.get();
+				if (!tx->isCreation()) {
+					throw GradidoNullPointerException("transaction isn't creation or invalid", "GradidoCreation", __FUNCTION__);
 				}
-				return sum;
+				auto confirmedYmd = timepointAsYearMonthDay(tx->getConfirmedAt().getAsTimepoint());
+				if (
+					(confirmedYmd.year() == dateYM.year() && dateYM.month() - confirmedYmd.month() <= date::months(2)) ||
+					(dateYM.year() - confirmedYmd.year() == date::years(1) && confirmedYmd.month() - date::months(10) == dateYM.month())
+					) {
+					sum += tx->getAmount();
+				}
 			}
+			return sum;
+		}
+		GradidoUnit V01_ThreeMonthsAlgoRole::run(const blockchain::Abstract& blockchain) const {
+			return v01_ThreeMonthsAlgo(timepointAsYearMonth(mDate), mPublicKey, blockchain, mTransactionNrMax);
 		}
 	}
 }

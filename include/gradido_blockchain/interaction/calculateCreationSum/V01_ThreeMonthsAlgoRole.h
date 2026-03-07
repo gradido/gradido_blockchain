@@ -3,9 +3,23 @@
 
 #include "AbstractAlgoRole.h"
 
+namespace date {
+	class year_month;
+}
+
 namespace gradido {
+	namespace blockchain {
+		class Abstract;
+	}
 	namespace interaction {
 		namespace calculateCreationSum {
+			GRADIDOBLOCKCHAIN_EXPORT GradidoUnit v01_ThreeMonthsAlgo(
+				date::year_month date,
+				data::compact::PublicKeyIndex publicKey,
+				const blockchain::Abstract& blockchain,
+				uint64_t transactionNrMax = 0
+			);
+
 			class V01_ThreeMonthsAlgoRole : public AbstractAlgoRole
 			{
 			public:

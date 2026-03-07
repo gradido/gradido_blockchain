@@ -14,6 +14,7 @@ namespace gradido::interaction::validate {
     Missing_Cold_Data,
     Missing_Blockchain,
     Missing_Sign,
+    Contribution_Sum_Exceeded,
     Crypto_Sign_Invalid,
     Not_Implemented_Yet
   };

@@ -8,6 +8,15 @@
 namespace gradido {
 	namespace interaction {		
 		namespace calculateCreationSum {
+			GRADIDOBLOCKCHAIN_EXPORT GradidoUnit calculateCreationSum(
+				Timepoint date, 
+				Timepoint targetDate,
+				data::compact::PublicKeyIndex publicKey,
+				const blockchain::Abstract& blockchain,
+				uint64_t transactionNrMax = 0
+			);
+
+			GRADIDOBLOCKCHAIN_EXPORT GradidoUnit getLimit(Timepoint date);
 
 			class GRADIDOBLOCKCHAIN_EXPORT Context
 			{

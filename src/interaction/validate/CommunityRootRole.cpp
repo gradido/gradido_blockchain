@@ -63,7 +63,7 @@ namespace gradido {
 			}
 		}
 
-		static Error validateSingleSignatures(
+		static Error validateSignatures(
 			const CommunityRootTx& communityRoot, 
 			const ConfirmedGradidoTxCold* coldData, 
 			const IDictionary<PublicKey>& publicKeyDictionary
@@ -88,12 +88,9 @@ namespace gradido {
 			return { .type = ErrorType::Success };
 		}
 
-		static Error validateConfirmedSingle(const ConfirmedGradidoTx& tx)
+		static Error validateAccountBalancesSingle(const ConfirmedGradidoTx& tx)
 		{
 			const auto& communityRoot = tx.specific.communityRoot;
-			if (tx.txNr != 1) {
-				return { .type = ErrorType::Invalid_Field, .message = "CommunityRoot must be first tx with tx nr = 1" };
-			}
 			if (tx.accountBalanceCount != 2) {
 				return { .type = ErrorType::Invalid_Field, .message = "unexpected account balances, expect gmw and auf on community root transaction" };
 			}
@@ -147,10 +144,13 @@ namespace gradido {
 			}
 			Error result = { .type = ErrorType::Success };
 			if (tx.hasColdData()) {
-				result = validateSingleSignatures(communityRoot, tx.coldData.get(), publicKeyIdDict);
+				result = validateSignatures(communityRoot, tx.coldData.get(), publicKeyIdDict);
 			}
 			if (ErrorType::Success == result.type && tx.isConfirmedTx()) {
-				result = validateConfirmedSingle(tx);
+				if (tx.txNr != 1) {
+					return { .type = ErrorType::Invalid_Field, .message = "CommunityRoot must be first tx with tx nr = 1" };
+				}
+				result = validateAccountBalancesSingle(tx);
 			}
 			return result;
 		}

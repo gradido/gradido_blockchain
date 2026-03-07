@@ -9,18 +9,18 @@
 #include <memory>
 
 namespace gradido {
-    class AppContext;
-    namespace data {
-      class TransactionBody;
-      class GradidoTransaction;
-      class ConfirmedTransaction;
-      namespace compact {
-        class ConfirmedGradidoTx;
-      }
+  class AppContext;
+  namespace data {
+    class TransactionBody;
+    class GradidoTransaction;
+    class ConfirmedTransaction;
+    namespace compact {
+      class ConfirmedGradidoTx;
     }
-    namespace blockchain {
-      class Abstract;
-    }
+  }
+  namespace blockchain {
+    class Abstract;
+  }
 	namespace interaction::validate {
 
     // rewrite as function with compact confirmed tx

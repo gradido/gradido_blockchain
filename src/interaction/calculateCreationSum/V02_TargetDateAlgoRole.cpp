@@ -18,54 +18,59 @@ namespace gradido {
 	using blockchain::Abstract;
 	using data::TransactionType;
 
-	namespace interaction {
-		namespace calculateCreationSum {
+	namespace interaction::calculateCreationSum {
 
-			GradidoUnit V02_TargetDateAlgoRole::run(const blockchain::Abstract& blockchain) const
-			{
-				auto sum(GradidoUnit::zero());
+		static date::months getTargetDateReceivedDistanceMonth(Timepoint createdAt)
+		{
+			date::months targetDateReceivedDistanceMonth(2);
+			// extra rule from the beginning and testing phase to keep transactions from beginning valid
+			// allow 3 month distance between created and target date between this dates
+			// 1585544394 = Mon Mar 30 2020 04:59:54 GMT+0000
+			// 1641681224 = Sat Jan 08 2022 22:33:44 GMT+0000
+			auto secondsSinceEpoch = time_point_cast<std::chrono::seconds>(createdAt).time_since_epoch().count();
+			if (secondsSinceEpoch > 1585544394 && secondsSinceEpoch < 1641681224) {
+				targetDateReceivedDistanceMonth = date::months(3);
+			}
+			return targetDateReceivedDistanceMonth;
+		}
 
-				// received = max
-				// received - 2 month = min
+
+		GradidoUnit v02_TargetDateAlgo(
+			Timepoint date,
+			Timepoint targetDate,
+			data::compact::PublicKeyIndex publicKey,
+			const blockchain::Abstract& blockchain,
+			uint64_t transactionNrMax /* = 0 */
+		)
+		{
+			auto sum(GradidoUnit::zero());
+
+			// received = max
+			// received - 2 month = min
 //				auto dateYM = timepointAsYearMonth(mDate);
 //				auto beforeReceivedYM = dateYM - getTargetDateReceivedDistanceMonth(mDate);
-				auto beforeReveived = mDate - getTargetDateReceivedDistanceMonth(mDate);
-				auto ym = timepointAsYearMonth(mTargetDate);
-				
-				CompactFilter filter;
-				filter.maxTransactionNr = mTransactionNrMax;
-				filter.publicKeyIndex = mPublicKey;
-				filter.publicKeySearchType = PublicKeySearchType::BalanceChangingPublicKey;
-				filter.timepointInterval = { beforeReveived, mDate };
-				filter.transactionType = TransactionType::CREATION;
+			auto beforeReveived = date - getTargetDateReceivedDistanceMonth(date);
+			auto ym = timepointAsYearMonth(targetDate);
 
-				auto txs = blockchain.findAll(filter);
-				for (const auto& txRef : txs) {
-					const auto& tx = txRef.get();
-					if (!tx->isCreation()) {
-						throw GradidoNullPointerException("transaction isn't creation or invalid", "GradidoCreation", __FUNCTION__);
-					}
-					auto targetDate = tx->specific.creation.targetMonthYear;
-					if (targetDate.month() == ym.month() && targetDate.year() == ym.year()) {
-						sum += tx->getAmount();
-					}
-				}
-				return sum;
-			}
+			CompactFilter filter;
+			filter.maxTransactionNr = transactionNrMax;
+			filter.publicKeyIndex = publicKey;
+			filter.publicKeySearchType = PublicKeySearchType::BalanceChangingPublicKey;
+			filter.timepointInterval = { beforeReveived, date };
+			filter.transactionType = TransactionType::CREATION;
 
-			date::months V02_TargetDateAlgoRole::getTargetDateReceivedDistanceMonth(Timepoint createdAt)
-			{
-				date::months targetDateReceivedDistanceMonth(2);
-				// extra rule from the beginning and testing phase to keep transactions from beginning valid
-				// allow 3 month distance between created and target date between this dates
-				// 1585544394 = Mon Mar 30 2020 04:59:54 GMT+0000
-				// 1641681224 = Sat Jan 08 2022 22:33:44 GMT+0000
-				auto secondsSinceEpoch = time_point_cast<std::chrono::seconds>(createdAt).time_since_epoch().count();
-				if (secondsSinceEpoch > 1585544394 && secondsSinceEpoch < 1641681224) {
-					targetDateReceivedDistanceMonth = date::months(3);
+			auto txs = blockchain.findAll(filter);
+			for (const auto& txRef : txs) {
+				const auto& tx = txRef.get();
+				if (!tx->isCreation()) {
+					throw GradidoNullPointerException("transaction isn't creation or invalid", "GradidoCreation", __FUNCTION__);
 				}
-				return targetDateReceivedDistanceMonth;
+				auto targetDate = tx->specific.creation.targetMonthYear;
+				if (targetDate.month() == ym.month() && targetDate.year() == ym.year()) {
+					sum += tx->getAmount();
+				}
 			}
+			return sum;
 		}
 	}
 }

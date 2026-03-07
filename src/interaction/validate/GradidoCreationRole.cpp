@@ -1,11 +1,13 @@
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/blockchain/CompactFilter.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTxCold.h"
+#include "gradido_blockchain/data/compact/CreationTx.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/GradidoCreation.h"
 #include "gradido_blockchain/interaction/calculateCreationSum/Context.h"
@@ -27,10 +29,10 @@ using std::string, std::to_string;
 using DataTypeConverter::timePointToString;
 
 namespace gradido {
-	using blockchain::Filter;
+	using blockchain::CompactFilter, blockchain::Filter;
 	using data::adapter::toPublicKeyIndex;
 	using data::AddressType, data::SignatureMap, data::GradidoCreation, data::ConfirmedTransaction;
-	using data::compact::ConfirmedGradidoTx;
+	using data::compact::ConfirmedGradidoTx, data::compact::ConstConfirmedTxPtr, data::compact::ConfirmedGradidoTxCold, data::compact::CreationTx;
 
 	namespace interaction::validate {
 
@@ -240,7 +242,112 @@ namespace gradido {
 			return static_cast<unsigned>(targetDateReceivedDistanceMonth);
 		}
 
-		static Error validateSingleCreation(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options)
+		static Error validateMonthRange(const ConfirmedGradidoTx& tx, const blockchain::Abstract& blockchain)
+		{
+			const auto& creation = tx.specific.creation;
+			ConstConfirmedTxPtr previousTx;
+			if (tx.isConfirmedTx()) {
+				previousTx = blockchain.getConfirmedTxForId(tx.txNr - 1);
+			}
+			else {
+				previousTx = blockchain.findOne(CompactFilter::lastTransaction());
+			}
+			if (!previousTx) {
+				throw GradidoNullPointerException(
+					"missing previous confirmed transaction for interaction::validate Creation",
+					"data::ConstConfirmedTransactionPtr",
+					__FUNCTION__
+				);
+			}
+			auto confirmedAt = tx.getConfirmedAt();
+			auto amount = tx.getAmount();
+			auto limit = calculateCreationSum::getLimit(confirmedAt);
+
+			GradidoUnit previousContributionsSum = calculateCreationSum::calculateCreationSum(
+				confirmedAt,
+				monthYearToTimepoint(creation.targetMonthYear),
+				tx.getRecipient(),
+				blockchain,
+				previousTx->txNr
+			);
+			auto sumAfterContribution = previousContributionsSum + amount;
+			
+			if (sumAfterContribution > limit) {
+				string message = "creation more than ";
+				message += limit.toString() + " not allowed";
+				return {
+					.type = ErrorType::Contribution_Sum_Exceeded,
+					.message = message,
+					.actual = amount.toString(),
+					.expected = "<= " + (limit - previousContributionsSum).toString()
+				};
+			}
+			return { .type = ErrorType::Success };
+		}
+
+		static Error validateSignatures(
+			const CreationTx& creation,
+			const ConfirmedGradidoTxCold* coldData,
+			const IDictionary<PublicKey>& publicKeyDictionary
+		) {
+			if (coldData->signatureMap.size() != 1) {
+				return {
+					.type = ErrorType::Invalid_Field,
+					.message = "unexpected signature count",
+					.actual = to_string(coldData->signatureMap.size()),
+					.expected = "1"
+				};
+			}
+			auto signerPublicKeyIndex = publicKeyDictionary.getIndexForData(coldData->signatureMap[0].first);
+			if (signerPublicKeyIndex == creation.recipientPublicKeyIndex) {
+				return {
+					.type = ErrorType::Invalid_Field,
+					.message = "creation must be signed from other public key as the recipient"
+				};
+			}
+			return { .type = ErrorType::Success };
+		}
+
+		static Error validateAccountBalancesSingle(const ConfirmedGradidoTx& tx)
+		{
+			const auto& creation = tx.specific.creation;
+			if (tx.accountBalanceCount != 3) {
+				return { .type = ErrorType::Invalid_Field, .message = "unexpected account balances, expect recipient, gmw and auf on creation" };
+			}
+			bool creationAccountBalanceFound = false;
+			for (int i = 0; i < tx.accountBalanceCount; i++)
+			{
+				const auto& accountBalance = tx.accountBalances[i];
+				if (accountBalance.balanceGddCent < creation.amountGddCent) {
+					return {
+						.type = ErrorType::Invalid_Field,
+						.message = "Creation account balance couldn't be smaller than creation amount",
+						.actual = to_string(accountBalance.balanceGddCent),
+						.expected = ">= " + to_string(creation.amountGddCent)
+					};
+				}
+				if (accountBalance.coinCommunityIdIndex != tx.txCommunityIdIndex) {
+					return {
+						.type = ErrorType::Invalid_Field,
+						.message = "Creation account balances aren't allowed to have diff coin community id",
+						.actual = to_string(accountBalance.coinCommunityIdIndex),
+						.expected = to_string(tx.txCommunityIdIndex)
+					};
+				}
+				if (accountBalance.publicKeyIndex == creation.recipientPublicKeyIndex) {
+					if (creationAccountBalanceFound) {
+						return { .type = ErrorType::Field_Value_Conflict, .message = "more than one account balance for creation recipient" };
+					}
+					creationAccountBalanceFound = true;
+				}
+			}
+			if (!creationAccountBalanceFound) {
+				return { .type = ErrorType::Field_Value_Conflict, .message = "missing account balance for creation recipient" };
+			}
+			return { .type = ErrorType::Success };
+		}
+
+		static Error validateSingle(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options)
 		{			
 			const auto& creation = tx.specific.creation;
 			const auto& publicKeyIdDict = appContext.getCommunityContext(tx.txCommunityIdIndex).getBlockchain()->getPublicKeyDictionary();
@@ -263,23 +370,13 @@ namespace gradido {
 					.expected = "<= 10'000'000"
 				};
 			}
+			Error result;
 			if (tx.hasColdData()) {
 				const auto& coldData = tx.coldData.get();
-				if (coldData->signatureMap.size() != 1) {
-					return {
-						.type = ErrorType::Invalid_Field,
-						.message = "unexpected signature count",
-						.actual = to_string(coldData->signatureMap.size()),
-						.expected = "1"
-					};
-				}
-				auto signerPublicKeyIndex = publicKeyIdDict.getIndexForData(coldData->signatureMap[0].first);
-				if (signerPublicKeyIndex == creation.recipientPublicKeyIndex) {
-					return {
-						.type = ErrorType::Invalid_Field,
-						.message = "creation must be signed from other public key as the recipient"
-					};
-				}
+				result = validateSignatures(creation, tx.coldData.get(), publicKeyIdDict);
+			}
+			if (ErrorType::Success != result.type) {
+				return result;
 			}
 
 			if (tx.isConfirmedTx()) {
@@ -291,41 +388,9 @@ namespace gradido {
 						.expected = "< 3"
 					};
 				}
-				if (tx.accountBalanceCount != 3) {
-					return { .type = ErrorType::Invalid_Field, .message = "unexpected account balances, expect recipient, gmw and auf on creation" };
-				}
-				bool creationAccountBalanceFound = false;
-				for (int i = 0; i < tx.accountBalanceCount; i++)
-				{
-					const auto& accountBalance = tx.accountBalances[i];
-					if (accountBalance.balanceGddCent < creation.amountGddCent) {
-						return {
-							.type = ErrorType::Invalid_Field,
-							.message = "Creation account balance couldn't be smaller than creation amount",
-							.actual = to_string(accountBalance.balanceGddCent),
-							.expected = ">= " + to_string(creation.amountGddCent)
-						};
-					}
-					if (accountBalance.coinCommunityIdIndex != tx.txCommunityIdIndex) {
-						return {
-							.type = ErrorType::Invalid_Field,
-							.message = "Creation account balances aren't allowed to have diff coin community id",
-							.actual = to_string(accountBalance.coinCommunityIdIndex),
-							.expected = to_string(tx.txCommunityIdIndex)
-						};
-					}
-					if (accountBalance.publicKeyIndex == creation.recipientPublicKeyIndex) {
-						if (creationAccountBalanceFound) {
-							return { .type = ErrorType::Field_Value_Conflict, .message = "more than one account balance for creation recipient" };
-						}
-						creationAccountBalanceFound = true;
-					}
-				}
-				if (!creationAccountBalanceFound) {
-					return { .type = ErrorType::Field_Value_Conflict, .message = "missing account balance for creation recipient" };
-				}
+				result = validateAccountBalancesSingle(tx);
 			}
-			return { .type = ErrorType::Success };
+			return result;
 		}
 
 		Error validateGradidoCreation(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options)
@@ -339,16 +404,18 @@ namespace gradido {
 					.message = "missing blockchain for community " + to_string(tx.txCommunityIdIndex)
 				};
 			}
+			const auto& blockchain = appContext.getCommunityContext(tx.txCommunityIdIndex).getBlockchain();
 			Error result;
 			if ((Type::SINGLE & options.type) == Type::SINGLE) {
-				result = validateSingleCreation(tx, appContext, options);
+				result = validateSingle(tx, appContext, options);
 				if (ErrorType::Success != result.type) {
 					return result;
 				}
 			}
-			return {
-				.type = ErrorType::Success
-			};
+			if ((Type::MONTH_RANGE & options.type) == Type::MONTH_RANGE) {
+				result = validateMonthRange(tx, *blockchain);
+			}
+			return result;
 		}
 	}
 }
