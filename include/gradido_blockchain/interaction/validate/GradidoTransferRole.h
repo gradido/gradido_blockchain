@@ -2,37 +2,49 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_GRADIDO_TRANSFER_ROLE_H
 
 #include "AbstractRole.h"
+#include "Error.h"
 #include "gradido_blockchain/data/CrossGroupType.h"
+#include "Options.h"
 
 namespace gradido {
+	class AppContext;
 	namespace data {
 		class GradidoTransfer;
-	}
-	namespace interaction {
-		namespace validate {
-			class GradidoTransferRole : public AbstractRole
-			{
-			public:
-				GradidoTransferRole(std::shared_ptr<const data::GradidoTransfer> gradidoTransfer);
-
-				void run(Type type, ContextData& c);
-				inline void setCrossGroupType(data::CrossGroupType crossGroupType) { mCrossGroupType = crossGroupType; }
-
-			protected:
-				void validatePrevious(
-					const data::ConfirmedTransaction& previousConfirmedTransaction,
-					std::shared_ptr<blockchain::Abstract> blockchain
-				);
-				//! both blockchain pointer could be the same
-				//! \param senderBlockchain blockchain of sender account
-				//! \param recipientBlockchain blockchain of recipient account
-				void validateAccount(ContextData& c);
-
-				std::shared_ptr<const data::GradidoTransfer> mGradidoTransfer;
-				data::CrossGroupType mCrossGroupType;
-			};
+		namespace compact {
+			struct ConfirmedGradidoTx;
 		}
 	}
+	namespace interaction::validate {
+
+		GRADIDOBLOCKCHAIN_EXPORT Error validateGradidoTransfer(
+			const data::compact::ConfirmedGradidoTx& tx,
+			const AppContext& appContext,
+			Options options
+		);
+
+		class GradidoTransferRole : public AbstractRole
+		{
+		public:
+			GradidoTransferRole(std::shared_ptr<const data::GradidoTransfer> gradidoTransfer);
+
+			void run(Type type, ContextData& c);
+			inline void setCrossGroupType(data::CrossGroupType crossGroupType) { mCrossGroupType = crossGroupType; }
+
+		protected:
+			void validatePrevious(
+				const data::ConfirmedTransaction& previousConfirmedTransaction,
+				std::shared_ptr<blockchain::Abstract> blockchain
+			);
+			//! both blockchain pointer could be the same
+			//! \param senderBlockchain blockchain of sender account
+			//! \param recipientBlockchain blockchain of recipient account
+			void validateAccount(ContextData& c);
+
+			std::shared_ptr<const data::GradidoTransfer> mGradidoTransfer;
+			data::CrossGroupType mCrossGroupType;
+		};
+	}
+
 }
 
 #endif //__GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_GRADIDO_TRANSFER_ROLE_H

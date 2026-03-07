@@ -10,9 +10,13 @@
 #include "gradido_blockchain/interaction/validate/ContextData.h"
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
+#include "gradido_blockchain/interaction/validate/CommunityRootRole.h"
 #include "gradido_blockchain/interaction/validate/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
+#include "gradido_blockchain/interaction/validate/GradidoCreationRole.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransactionRole.h"
+#include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
+#include "gradido_blockchain/interaction/validate/RegisterAddressRole.h"
 #include "gradido_blockchain/interaction/validate/TransactionBodyRole.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
@@ -77,515 +81,7 @@ namespace gradido {
 			}
 			mRole->run(type, c);
 		}
-
-		static Error validatePreviousAll(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options)
-		{
-
-		}
-
-		static Error validateSingleCommunityRoot(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options)
-		{
-			if (!tx.isCommunityRoot()) {
-				throw GradidoNodeInvalidDataException("called validateSingleCommunityRoot with not community root typed tx");
-			}
-			const auto& communityRoot = tx.specific.communityRoot;
-			const auto& publicKeyIdDict = appContext.getCommunityContext(tx.txCommunityIdIndex).getBlockchain()->getPublicKeyDictionary();
-
-			if (!publicKeyIdDict.hasIndex(communityRoot.publicKeyIndex)
-				|| !publicKeyIdDict.hasIndex(communityRoot.gmwPublicKeyIndex)
-			  || !publicKeyIdDict.hasIndex(communityRoot.aufPublicKeyIndex)) {
-				return { .type = ErrorType::Invalid_Dictionary_Index, .message = "at least one of publicKeyIndex, gmwPublicKeyIndex or aufPublicKeyIndex couldn't be found in PublicKey Dictionary" };
-			}
-			if (communityRoot.publicKeyIndex == communityRoot.aufPublicKeyIndex ||
-				communityRoot.publicKeyIndex == communityRoot.gmwPublicKeyIndex ||
-				communityRoot.gmwPublicKeyIndex == communityRoot.aufPublicKeyIndex) {
-				return { .type = ErrorType::Field_Value_Conflict, .message = "at least two of publicKeyIndex, gmwPublicKeyIndex or aufPublicKeyIndex are identical " };
-			}
-
-			if (tx.hasColdData()) {
-				const auto& coldData = tx.coldData.get();
-				if (coldData->signatureMap.size() != 1) {
-					return {
-						.type = ErrorType::Invalid_Field,
-						.message = "unexpected signature count",
-						.actual = to_string(coldData->signatureMap.size()),
-						.expected = "1"
-					};
-				}
-				auto publicKey = publicKeyIdDict.getDataForIndexOrThrow(communityRoot.publicKeyIndex);
-				if (!coldData->signatureMap[0].first.isTheSame(publicKey)) {
-					return {
-						.type = ErrorType::Invalid_Field,
-						.message = "wrong signer",
-						.actual = coldData->signatureMap[0].first.convertToHex(),
-						.expected = publicKey.convertToHex()
-					};
-				}
-			}
-
-			if (tx.isConfirmedTx()) {
-				if (tx.txNr != 1) {
-					return { .type = ErrorType::Invalid_Field, .message = "CommunityRoot must be first tx with tx nr = 1" };
-				}
-				if (tx.accountBalanceCount != 2) {
-					return { .type = ErrorType::Invalid_Field, .message = "unexpected account balances, expect gmw and auf on community root transaction" };
-				}
-				for (int i = 0; i < tx.accountBalanceCount; i++) {
-					const auto& accountBalance = tx.accountBalances[i];
-					if (accountBalance.balanceGddCent) {
-						return { 
-							.type = ErrorType::Invalid_Field, 
-							.message = "CommunityRoot starts with empty account balances", 
-							.actual = to_string(accountBalance.balanceGddCent),
-							.expected = "0"
-						};
-					}
-					if (accountBalance.coinCommunityIdIndex != tx.txCommunityIdIndex) {
-						return {
-							.type = ErrorType::Invalid_Field,
-							.message = "CommunityRoot account balances aren't allowed to have diff coin community id",
-							.actual = to_string(accountBalance.coinCommunityIdIndex),
-							.expected = to_string(tx.txCommunityIdIndex)
-						};
-					}
-					if (accountBalance.publicKeyIndex != communityRoot.gmwPublicKeyIndex && accountBalance.publicKeyIndex != communityRoot.aufPublicKeyIndex) {
-						string expected = to_string(communityRoot.gmwPublicKeyIndex);
-						expected += ", or ";
-						expected += to_string(communityRoot.aufPublicKeyIndex);
-						return {
-							.type = ErrorType::Invalid_Field,
-							.message = "CommunityRoot account balances need to belong either to gmw or to auf public key",
-							.actual = to_string(accountBalance.publicKeyIndex),
-							.expected = expected
-						};
-					}
-				}
-			}
-			return { .type = ErrorType::Success };
-		}
-
-		static Error validateSingleCreation(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options)
-		{
-			if (!tx.isCreation()) {
-				throw GradidoNodeInvalidDataException("called validateSingleCreation with not creation typed tx");
-			}
-			const auto& creation = tx.specific.creation;
-			const auto& publicKeyIdDict = appContext.getCommunityContext(tx.txCommunityIdIndex).getBlockchain()->getPublicKeyDictionary();
-			if (!appContext.hasPublicKey(tx.getRecipient())) {
-				return { .type = ErrorType::Invalid_Dictionary_Index, .message = "couldn't find recipient public key in Dictionary" };
-			}
-			if (creation.amountGddCent < 2'000) {
-				return {
-					.type = ErrorType::Invalid_Field,
-					.message = "creation amount to low, min 0.2 GDD (2000 GDD Cent)",
-					.actual = to_string(creation.amountGddCent),
-					.expected = ">= 2000"
-				};
-			}
-			if (creation.amountGddCent > 10'000'000) {
-				return {
-					.type = ErrorType::Invalid_Field,
-					.message = "creation amount to high, max 1000 per month (10'000'000 GDD Cent)",
-					.actual = to_string(creation.amountGddCent),
-					.expected = "<= 10'000'000"
-				};
-			}
-			if (tx.hasColdData()) {
-				const auto& coldData = tx.coldData.get();
-				if (coldData->signatureMap.size() != 1) {
-					return {
-						.type = ErrorType::Invalid_Field,
-						.message = "unexpected signature count",
-						.actual = to_string(coldData->signatureMap.size()),
-						.expected = "1"
-					};
-				}
-				auto signerPublicKeyIndex = publicKeyIdDict.getIndexForData(coldData->signatureMap[0].first);
-				if (signerPublicKeyIndex == creation.recipientPublicKeyIndex) {
-					return {
-						.type = ErrorType::Invalid_Field,
-						.message = "creation must be signed from other public key as the recipient"
-					};
-				}
-			}
-
-			if (tx.isConfirmedTx()) {
-				if (tx.txNr < 3) {
-					return {
-						.type = ErrorType::Invalid_Field,
-						.message = "Creation must be tx nr 3 at least to have community root, recipient and someone to sign registered first",
-						.actual = to_string(tx.txNr),
-						.expected = "< 3"
-					};
-				}
-				if (tx.accountBalanceCount != 3) {
-					return { .type = ErrorType::Invalid_Field, .message = "unexpected account balances, expect recipient, gmw and auf on creation" };
-				}
-				bool creationAccountBalanceFound = false;
-				for (int i = 0; i < tx.accountBalanceCount; i++)
-				{
-					const auto& accountBalance = tx.accountBalances[i];
-					if (accountBalance.balanceGddCent < creation.amountGddCent) {
-						return {
-							.type = ErrorType::Invalid_Field,
-							.message = "Creation account balance couldn't be smaller than creation amount",
-							.actual = to_string(accountBalance.balanceGddCent),
-							.expected = ">= " + to_string(creation.amountGddCent)
-						};
-					}
-					if (accountBalance.coinCommunityIdIndex != tx.txCommunityIdIndex) {
-						return {
-							.type = ErrorType::Invalid_Field,
-							.message = "Creation account balances aren't allowed to have diff coin community id",
-							.actual = to_string(accountBalance.coinCommunityIdIndex),
-							.expected = to_string(tx.txCommunityIdIndex)
-						};
-					}
-					if (accountBalance.publicKeyIndex == creation.recipientPublicKeyIndex) {
-						if (creationAccountBalanceFound) {
-							return { .type = ErrorType::Field_Value_Conflict, .message = "more than one account balance for creation recipient" };
-						}
-						creationAccountBalanceFound = true;
-					}
-				}
-				if (!creationAccountBalanceFound) {
-					return { .type = ErrorType::Field_Value_Conflict, .message = "missing account balance for creation recipient" };
-				}
-			}
-			return { .type = ErrorType::Success };
-		}
-
-		static Error validateSingleTransferCommon(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options)
-		{
-			if (!tx.isTransfer() && !tx.isDeferredTransfer() && !tx.isRedeemDeferredTransfer() && !tx.isTimeoutDeferredTransfer() ) {
-				throw GradidoNodeInvalidDataException("called validateSingleTransferCommon with wrong typed tx");
-			}
-			
-			const auto& publicKeyIdDict = appContext.getCommunityContext(tx.txCommunityIdIndex).getBlockchain()->getPublicKeyDictionary();
-			if (!appContext.hasPublicKey(tx.getSender())) {
-				return { .type = ErrorType::Invalid_Dictionary_Index, .message = "couldn't find sender public key in Dictionary" };
-			}
-			if (!appContext.hasPublicKey(tx.getRecipient())) {
-				return { .type = ErrorType::Invalid_Dictionary_Index, .message = "couldn't find recipient public key in Dictionary" };
-			}
-			auto amount = tx.getAmount();
-			if (amount < GradidoUnit::fromGradidoCent(100)) {
-				return {
-					.type = ErrorType::Invalid_Field,
-					.message = "transfer amount to low, min 0.01 GDD (100 GDD Cent)",
-					.actual = amount.toString(),
-					.expected = ">= 100"
-				};
-			}
-			if (tx.hasColdData()) {
-				const auto& coldData = tx.coldData.get();
-				if (!tx.isTimeoutDeferredTransfer()) {
-					if (coldData->signatureMap.size() != 1) {
-						return {
-							.type = ErrorType::Invalid_Field,
-							.message = "unexpected signature count",
-							.actual = to_string(coldData->signatureMap.size()),
-							.expected = "1"
-						};
-					}
-					auto sender = tx.getSender();
-					const auto& senderBlockchain = appContext.getCommunityContext(sender.communityIdIndex).getBlockchain();
-					auto signerPublicKeyIndex = senderBlockchain->getPublicKeyDictionary().getIndexForData(coldData->signatureMap[0].first);
-					if (signerPublicKeyIndex != sender.publicKeyIndex) {
-						return {
-							.type = ErrorType::Invalid_Field,
-							.message = "transfer must be signed from sender public key"
-						};
-					}
-				}
-				else {
-					if (coldData->signatureMap.size()) {
-						return {
-							.type = ErrorType::Field_Value_Conflict,
-							.message = "timeout deferred transfer hasn't any signature"
-						};
-					}
-				}
-			}
-
-			if (tx.isConfirmedTx()) {	
-				uint32_t coinCommunityIdIndex = tx.accountBalances[0].coinCommunityIdIndex;
-				for (int i = 1; i < tx.accountBalanceCount; ++i) {
-					if (tx.accountBalances[i].coinCommunityIdIndex != coinCommunityIdIndex) {
-						return {
-							.type = ErrorType::Field_Value_Conflict,
-							.message = "coin community id on multiple account balances are different, coin exchange doesn't supported"
-						};
-					}
-				}
-			}
-			return { .type = ErrorType::Success };
-		}
-
-		static Error validateSingleTransfer(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options)
-		{
-			auto result = validateSingleTransferCommon(tx, appContext, options);
-			if (ErrorType::Success != result.type) {
-				return result;
-			}
-			if (!tx.isTransfer()) {
-				throw GradidoNodeInvalidDataException("called validateSingleTransfer with not transfer typed tx");
-			}
-			if (tx.isConfirmedTx()) {
-				if (tx.txNr < 2) {
-					return {
-						.type = ErrorType::Invalid_Field,
-						.message = "Transfer must be tx nr 2 at least to have community root and user registered first",
-						.actual = to_string(tx.txNr),
-						.expected = ">= 2"
-					};
-				}
-				// Local community tx
-				if (!tx.isCrossCommunityTx()) {
-					if (tx.accountBalanceCount != 2) {
-						return {
-						.type = ErrorType::Invalid_Field,
-						.message = "unexpected account balances, expect balance of sender and recipient on local transfer tx",
-						.actual = to_string(tx.accountBalanceCount),
-						.expected = "2"
-						};
-					}
-				}
-				// Cross community tx
-				else {
-					if (tx.accountBalanceCount != 1) {
-						return {
-							.type = ErrorType::Invalid_Field,
-							.message = "unexpected account balances, expect balance of sender or recipient on cross community transfer tx",
-							.actual = to_string(tx.accountBalanceCount),
-							.expected = "1"
-						};
-					}
-				}
-			}
-			return { .type = ErrorType::Success };
-		}
-
-		static Error validateSingleTransferRedeemDeferred(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options)
-		{
-			auto result = validateSingleTransferCommon(tx, appContext, options);
-			if (ErrorType::Success != result.type) {
-				return result;
-			}
-			if (!tx.isRedeemDeferredTransfer()) {
-				throw GradidoNodeInvalidDataException("called validateSingleTransfer with not redeem deferred transfer typed tx");
-			}
-			if (tx.isConfirmedTx()) {
-				if (tx.txNr < 2) {
-					return {
-						.type = ErrorType::Invalid_Field,
-						.message = "Redeem Deferred Transfer must be tx nr 2 at least to have community root and user registered first",
-						.actual = to_string(tx.txNr),
-						.expected = ">= 2"
-					};
-				}
-				// Local community tx
-				if (!tx.isCrossCommunityTx()) {
-					if (tx.accountBalanceCount < 2 || tx.accountBalanceCount > 3) {
-						return {
-						.type = ErrorType::Invalid_Field,
-						.message = "unexpected account balances, expect balance of sender and recipient and maybe change on local redeem deferred transfer tx",
-						.actual = to_string(tx.accountBalanceCount),
-						.expected = "2|3"
-						};
-					}
-				}
-				// Cross community tx
-				else if (CrossGroupType::INBOUND == tx.crossGroupType) {
-					if (tx.accountBalanceCount != 1) {
-						return {
-							.type = ErrorType::Field_Value_Conflict,
-							.message = "unexpected account balances, expect balance of recipient on inbound cross community redeem deferred transfer tx",
-							.actual = to_string(tx.accountBalanceCount),
-							.expected = "1"
-						};
-					}
-				}
-				else if (CrossGroupType::OUTBOUND == tx.crossGroupType) {
-					if (tx.accountBalanceCount < 1 || tx.accountBalanceCount > 2) {
-						return {
-							.type = ErrorType::Field_Value_Conflict,
-							.message = "unexpected account balances, expect balance of recipient and maybe change on outbound cross community redeem deferred transfer tx",
-							.actual = to_string(tx.accountBalanceCount),
-							.expected = "1|2"
-						};
-					}
-				}
-				else {
-					return {
-						.type = ErrorType::Field_Value_Conflict,
-						.message = "Redeem Deferred Transfer cannot be Cross Community Type Cross"
-					};
-				}
-			}
-			return { .type = ErrorType::Success };
-		}
-
-		static Error validateSingleTransferDeferredTimeout(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options)
-		{
-			auto result = validateSingleTransferCommon(tx, appContext, options);
-			if (ErrorType::Success != result.type) {
-				return result;
-			}
-			if (!tx.isTimeoutDeferredTransfer()) {
-				throw GradidoNodeInvalidDataException("called validateSingleTransferDeferredTimeout with not timeout deferred transfer typed tx");
-			}
-			if (tx.isConfirmedTx()) {
-				if (tx.txNr < 5) {
-					return {
-						.type = ErrorType::Invalid_Field,
-						.message = "Timeout Redeem Deferred Transfer must be tx nr 5 at least to have community root, user registered, receive transfer and deferred transfer first",
-						.actual = to_string(tx.txNr),
-						.expected = ">= 5"
-					};
-				}
-				// Local community tx
-				if (!tx.isCrossCommunityTx()) {
-					if (tx.accountBalanceCount != 2) {
-						return {
-						.type = ErrorType::Invalid_Field,
-						.message = "unexpected account balances, expect balance of sender (deferred address) and recipient (original sender) on local timeout deferred transfer tx",
-						.actual = to_string(tx.accountBalanceCount),
-						.expected = "2"
-						};
-					}
-				}
-				// Cross community tx
-				else {
-					return {
-						.type = ErrorType::Field_Value_Conflict,
-						.message = "Timeout Redeem Deferred Transfer cannot be a Cross Community Transaction"
-					};
-				}
-			}
-			return { .type = ErrorType::Success };
-		}
-
-		// founding transaction link
-		static Error validateSingleTransferDeferred(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options)
-		{
-			auto result = validateSingleTransferCommon(tx, appContext, options);
-			if (ErrorType::Success != result.type) {
-				return result;
-			}
-			if (!tx.isDeferredTransfer()) {
-				throw GradidoNodeInvalidDataException("called validateSingleTransferDeferred with not deferred transfer typed tx");
-			}
-			if (tx.isConfirmedTx()) {
-				if (tx.txNr < 4) {
-					return {
-						.type = ErrorType::Invalid_Field,
-						.message = "Deferred Transfer must be tx nr 4 at least to have community root, user registered and receive transfer first",
-						.actual = to_string(tx.txNr),
-						.expected = ">= 4"
-					};
-				}
-				// Local community tx
-				if (!tx.isCrossCommunityTx()) {
-					if (tx.accountBalanceCount != 2) {
-						return {
-						.type = ErrorType::Invalid_Field,
-						.message = "unexpected account balances, expect balance of sender and recipient (deferred tx address) on local deferred transfer tx",
-						.actual = to_string(tx.accountBalanceCount),
-						.expected = "2"
-						};
-					}
-				}
-				// Cross community tx
-				else {
-					return {
-						.type = ErrorType::Field_Value_Conflict,
-						.message = "Deferred Transfer cannot be a Cross Community Transaction"
-					};
-				}
-			}
-			return { .type = ErrorType::Success };
-		}
-
-		static Error validateSingleRegisterAddress(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options)
-		{
-			if (!tx.isRegisterAddress()) {
-				throw GradidoNodeInvalidDataException("called validateSingleRegisterAddress with not register address typed tx");
-			}
-			const auto& registerAddress = tx.specific.registerAddress;
-			const auto& publicKeyIdDict = appContext.getCommunityContext(tx.txCommunityIdIndex).getBlockchain()->getPublicKeyDictionary();
-			if (publicKeyIdDict.hasIndex(registerAddress.accountPublicKeyIndex)) {
-				return { .type = ErrorType::Invalid_Dictionary_Index, .message = "couldn't find account public key in Dictionary" };
-			}
-			if (publicKeyIdDict.hasIndex(registerAddress.userPublicKeyIndex)) {
-				return { .type = ErrorType::Invalid_Dictionary_Index, .message = "couldn't find user public key in Dictionary" };
-			}
-			if (!appContext.getUserNameHashs().hasIndex(registerAddress.nameHashIndex)) {
-				return { .type = ErrorType::Invalid_Dictionary_Index, .message = "couldn't user name hash in Dictionary" };
-			}
-			if (AddressType::COMMUNITY_HUMAN != registerAddress.addressType) {
-				return { 
-					.type = ErrorType::Not_Implemented_Yet,
-					.message = "Address Type currently not supported for register address tx",
-					.actual = string(enum_name(registerAddress.addressType)),
-					.expected = "COMMUNITY_HUMAN"
-				};
-			}
-			if (tx.isCrossCommunityTx()) {
-				return { .type = ErrorType::Field_Value_Conflict, .message = "Currently no Cross Community Register Adress transactions supported!" };
-			}
-			if (registerAddress.derivationIndex != 1) {
-				return { .type = ErrorType::Not_Implemented_Yet, .message = "multiple accounts per User currently not implemented yet" };
-			}
-			if (tx.isConfirmedTx()) {
-				if (tx.accountBalanceCount != 1) {
-					return { 
-						.type = ErrorType::Field_Value_Conflict, 
-						.message = "expect only account balance of account on register address",
-						.actual = to_string(tx.accountBalanceCount),
-						.expected = "1"
-					};
-				}
-				if (tx.accountBalances[0].balanceGddCent != 0) {
-					return {
-						.type = ErrorType::Not_Implemented_Yet,
-						.message = "expect account balance of register address to start with 0 as long moving isn't implented yet",
-						.actual = to_string(tx.accountBalances[0].balanceGddCent),
-						.expected = "0"
-					};
-				}
-			}
-			if (tx.hasColdData()) {
-				const auto& coldData = tx.coldData;
-				const auto& blockchain = appContext.getCommunityContext(tx.txCommunityIdIndex).getBlockchain();
-				
-				auto firstTransaction = blockchain->findOne(CompactFilter::firstTransaction());
-				assert(firstTransaction->isCommunityRoot());
-
-				vector<uint32_t> expectedSigner = {
-					firstTransaction->getCommunityRootPublicKey().publicKeyIndex,
-					registerAddress.userPublicKeyIndex,
-					registerAddress.accountPublicKeyIndex
-				};
-				for (const auto& sigPair : coldData->signatureMap) {
-					auto publicKeyIndex = publicKeyIdDict.getIndexForData(sigPair.first);
-					for (auto it = expectedSigner.begin(); it != expectedSigner.end(); ++it) {
-						if (publicKeyIndex == *it) {
-							it = expectedSigner.erase(it);
-							break;
-						}
-					}
-				}
-				if (expectedSigner.size()) {
-					return {
-						.type = ErrorType::Missing_Sign,
-						.message = "register address expected to be signed by user public key, account public key and community root public key"
-					};
-				}
-			}
-			return { .type = ErrorType::Success };
-		}
-
+		
 		// all checks which don't need other transactions
 		static Error validateSingleCommon(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options) 
 		{
@@ -718,54 +214,46 @@ namespace gradido {
 
 		Error validate(const ConfirmedGradidoTx& tx, const AppContext& appContext, Options options) 
 		{
-			if (!appContext.getCommunityContext(tx.txCommunityIdIndex).getBlockchain().get()) {
+			const auto& communityContext = appContext.getCommunityContext(tx.txCommunityIdIndex);
+			if (!communityContext.getBlockchain().get()) {
 				return {
 					.type = ErrorType::Missing_Blockchain,
 					.message = "missing blockchain for community " + to_string(tx.txCommunityIdIndex)
 				};
 			}
+			const auto& blockchain = communityContext.getBlockchain();
 			Error result;
 			if ((Type::SINGLE & options.type) == Type::SINGLE) {
 				result = validateSingleCommon(tx, appContext, options);
 				if (ErrorType::Success != result.type) {
 					return result;
 				}
-				switch (tx.transactionType) {
-				case TransactionType::TRANSFER:
-					result = validateSingleTransfer(tx, appContext, options);
-					break;
-				case TransactionType::CREATION:
-					result = validateSingleCreation(tx, appContext, options);
-					break;
-				case TransactionType::DEFERRED_TRANSFER:
-					result = validateSingleTransferDeferred(tx, appContext, options);
-					break;
-				case TransactionType::REDEEM_DEFERRED_TRANSFER:
-					result = validateSingleTransferRedeemDeferred(tx, appContext, options);
-					break;
-				case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
-					result = validateSingleTransferDeferredTimeout(tx, appContext, options);
-					break;
-				case TransactionType::REGISTER_ADDRESS:
-					result = validateSingleRegisterAddress(tx, appContext, options);
-					break;
-				case TransactionType::COMMUNITY_ROOT:
-					result = validateSingleCommunityRoot(tx, appContext, options);
-					break;
-				default: 
-					throw GradidoUnhandledEnum(
-						"single validation for transaction type missing",
-						"TransactionType",
-						enum_name(tx.transactionType).data()
-					);
-				}
-				if (ErrorType::Success != result.type) {
-					return result;
-				}
 			}
-			return {
-				.type = ErrorType::Success
-			};
+			switch (tx.transactionType) {
+			case TransactionType::TRANSFER:
+			case TransactionType::DEFERRED_TRANSFER:
+			case TransactionType::REDEEM_DEFERRED_TRANSFER:
+			case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
+				result = validateGradidoTransfer(tx, appContext, options);
+				break;
+			case TransactionType::CREATION:
+				result = validateGradidoCreation(tx, appContext, options);
+				break;
+			case TransactionType::REGISTER_ADDRESS:
+				result = validateRegisterAddress(tx, appContext, options);
+				break;
+			case TransactionType::COMMUNITY_ROOT:
+				result = validateCommunityRoot(tx, blockchain, options);
+				break;
+			default: 
+				throw GradidoUnhandledEnum(
+					"single validation for transaction type missing",
+					"TransactionType",
+					enum_name(tx.transactionType).data()
+				);
+			}
+			
+			return result;
 		}
 	}
 }

@@ -2,33 +2,39 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_GRADIDO_CREATION_ROLE_H
 
 #include "AbstractRole.h"
+#include "Error.h"
+#include "Options.h"
 
 namespace gradido {
+	class AppContext;
 	namespace data {
 		class GradidoCreation;
+		namespace compact {
+			struct ConfirmedGradidoTx;
+		}
 	}
 
-	namespace interaction {
-		namespace validate {
+	namespace interaction::validate {
 
-			class GradidoCreationRole : public AbstractRole
-			{
-			public:
-				GradidoCreationRole(std::shared_ptr<const data::GradidoCreation> gradidoCreation);
+		GRADIDOBLOCKCHAIN_EXPORT Error validateGradidoCreation(const data::compact::ConfirmedGradidoTx& tx, const AppContext& appContext, Options options);
 
-				void validateTargetDate(Timepoint receivedTimePoint);
-				void run(Type type, ContextData& c);
+		class GradidoCreationRole : public AbstractRole
+		{
+		public:
+			GradidoCreationRole(std::shared_ptr<const data::GradidoCreation> gradidoCreation);
 
-				void checkRequiredSignatures(
-					const data::SignatureMap& signatureMap,
-					std::shared_ptr<blockchain::Abstract> blockchain = nullptr
-				) const;
-			protected:
-				unsigned getTargetDateReceivedDistanceMonth(Timepoint received);
+			void validateTargetDate(Timepoint receivedTimePoint);
+			void run(Type type, ContextData& c);
 
-				std::shared_ptr<const data::GradidoCreation> mGradidoCreation;
-			};
-		}
+			void checkRequiredSignatures(
+				const data::SignatureMap& signatureMap,
+				std::shared_ptr<blockchain::Abstract> blockchain = nullptr
+			) const;
+		protected:
+			unsigned getTargetDateReceivedDistanceMonth(Timepoint received);
+
+			std::shared_ptr<const data::GradidoCreation> mGradidoCreation;
+		};
 	}
 }
 

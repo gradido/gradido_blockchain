@@ -2,9 +2,20 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_REGISTER_ADDRESS_ROLE_H
 
 #include "AbstractRole.h"
+#include "Error.h"
+#include "Options.h"
 
 namespace gradido {
+	class AppContext;
+
+	namespace data::compact {
+		struct ConfirmedGradidoTx;
+	}
+
 	namespace interaction::validate {
+		
+		GRADIDOBLOCKCHAIN_EXPORT Error validateRegisterAddress(const data::compact::ConfirmedGradidoTx& tx, const AppContext& appContext, Options options);
+
 		struct RegisterAddressTx;
 		class RegisterAddressRole : public AbstractRole
 		{
