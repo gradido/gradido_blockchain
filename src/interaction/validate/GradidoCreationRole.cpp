@@ -3,6 +3,8 @@
 #include "gradido_blockchain/blockchain/CompactFilter.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/blockchain/Filter.h"
+#include "gradido_blockchain/blockchain/PublicKeySearchType.h"
+#include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
@@ -18,21 +20,25 @@
 #include "gradido_blockchain/interaction/validate/Options.h"
 #include "gradido_blockchain/interaction/validate/TransferAmountRole.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain/lib/DictionaryExceptions.h"
 
 #include "date/date.h"
+#include "magic_enum/magic_enum.hpp"
 
 #include <memory>
 #include <string>
 
+using namespace magic_enum;
 using std::shared_ptr;
 using std::string, std::to_string;
 using DataTypeConverter::timePointToString;
 
 namespace gradido {
-	using blockchain::CompactFilter, blockchain::Filter;
+	using blockchain::CompactFilter, blockchain::Filter, blockchain::PublicKeySearchType;
 	using data::adapter::toPublicKeyIndex;
 	using data::AddressType, data::SignatureMap, data::GradidoCreation, data::ConfirmedTransaction;
 	using data::compact::ConfirmedGradidoTx, data::compact::ConstConfirmedTxPtr, data::compact::ConfirmedGradidoTxCold, data::compact::CreationTx;
+	using date::year_month;
 
 	namespace interaction::validate {
 
@@ -150,10 +156,24 @@ namespace gradido {
 			}
 		}
 
+		unsigned getTargetDateReceivedDistanceMonth(Timepoint createdAt)
+		{
+			date::month targetDateReceivedDistanceMonth(2);
+			// extra rule from the beginning and testing phase to keep transactions from beginning valid
+			// allow 3 month distance between created and target date between this dates
+			// 1585544394 = Mon Mar 30 2020 04:59:54 GMT+0000
+			// 1641681224 = Sat Jan 08 2022 22:33:44 GMT+0000
+			auto secondsSinceEpoch = time_point_cast<std::chrono::seconds>(createdAt).time_since_epoch().count();
+			if (secondsSinceEpoch > 1585544394 && secondsSinceEpoch < 1641681224) {
+				targetDateReceivedDistanceMonth = date::month(3);
+			}
+			return static_cast<unsigned>(targetDateReceivedDistanceMonth);
+		}
+
 		void GradidoCreationRole::validateTargetDate(Timepoint createdAtTimePoint)
 		{
 			auto target_date = date::year_month_day{ date::floor<date::days>(mGradidoCreation->getTargetDate().getAsTimepoint())};
-			auto received = date::year_month_day{ date::floor<date::days>(createdAtTimePoint) };
+			auto received = timepointAsYearMonth(createdAtTimePoint);
 
 			auto targetDateReceivedDistanceMonth = getTargetDateReceivedDistanceMonth(createdAtTimePoint);
 			//  2021-09-01 02:00:00 | 2021-12-04 01:22:14
@@ -226,20 +246,120 @@ namespace gradido {
 					);
 				}
 			}
+		}		
+
+		static Error validateAccount(const ConfirmedGradidoTx& tx, const blockchain::Abstract& blockchain)
+		{
+			CompactFilter filter = CompactFilter::lastTransaction();
+			filter.publicKeySearchType = PublicKeySearchType::BalanceChangingPublicKey;
+
+			// check if signer has a valid account
+			if (tx.hasColdData()) {
+				auto coldData = tx.coldData.get();
+				assert(coldData->signatureMap.size());
+				auto firstSignPublicKey = tx.coldData->signatureMap[0].first;
+				auto publicKeyIndex = (uint32_t)blockchain.getPublicKeyDictionary().getIndexForData(firstSignPublicKey);
+				if (!publicKeyIndex) {
+					throw DictionaryMissingEntryException("missing index for signature public of creation transaction", firstSignPublicKey.convertToHex());
+				}
+				filter.publicKeyIndex = {
+					.communityIdIndex = tx.txCommunityIdIndex,
+					.publicKeyIndex = publicKeyIndex
+				};
+				filter.timepointInterval = TimepointInterval(blockchain.getStartDate(), coldData->getCreatedAt());
+				auto signerAccountType = blockchain.getAddressType(filter);
+				if (AddressType::COMMUNITY_HUMAN != signerAccountType) {
+					return {
+						.type = ErrorType::Invalid_Address_Type,
+						.message = "signer for creation doesn't have a community human account",
+						.actual = string(enum_name(signerAccountType)),
+						.expected = "COMMUNITY_HUMAN"
+					};
+				}
+			}
+
+			// check if recipient has valid account for contribution
+			filter.publicKeyIndex = tx.getRecipient();
+			auto addressType = blockchain.getAddressType(filter);
+			if (AddressType::COMMUNITY_HUMAN != addressType) {
+				return {
+					.type = ErrorType::Invalid_Address_Type,
+					.message = "wrong address type for contribution",
+					.actual = string(enum_name(addressType)),
+					.expected = "COMMUNITY_HUMAN"
+				};
+			}
+			return {
+				.type = ErrorType::Success
+			};
 		}
 
-		unsigned GradidoCreationRole::getTargetDateReceivedDistanceMonth(Timepoint createdAt)
+		static Error validateTargetDate(Timepoint createdAtTimepoint, year_month targetDate)
 		{
-			date::month targetDateReceivedDistanceMonth(2);
-			// extra rule from the beginning and testing phase to keep transactions from beginning valid
-			// allow 3 month distance between created and target date between this dates
-			// 1585544394 = Mon Mar 30 2020 04:59:54 GMT+0000
-			// 1641681224 = Sat Jan 08 2022 22:33:44 GMT+0000
-			auto secondsSinceEpoch = time_point_cast<std::chrono::seconds>(createdAt).time_since_epoch().count();
-			if (secondsSinceEpoch > 1585544394 && secondsSinceEpoch < 1641681224) {
-				targetDateReceivedDistanceMonth = date::month(3);
+			auto targetDateReceivedDistanceMonth = getTargetDateReceivedDistanceMonth(createdAtTimepoint);
+			auto received = timepointAsYearMonth(createdAtTimepoint);
+
+			//  2021-09-01 02:00:00 | 2021-12-04 01:22:14
+			if (targetDate.year() == received.year()) {
+				if ((unsigned)targetDate.month() + targetDateReceivedDistanceMonth < (unsigned)received.month()) {
+					std::string expected = ">= "
+						+ timePointToString(createdAtTimepoint)
+						+ " - "
+						+ to_string((unsigned)targetDateReceivedDistanceMonth)
+						+ " months"
+						;
+					return {
+						.type = ErrorType::Contribution_Invalid_Target_Date,
+						.message = "invalid contribution targe date, year is the same, target date month is invalid",
+						.actual = to_string((int)targetDate.year()) + "-" + to_string((unsigned)targetDate.month()),
+						.expected = expected
+					};
+				}
+				if (targetDate.month() > received.month()) {
+					return {
+						.type = ErrorType::Contribution_Invalid_Target_Date,
+						.message = "invalid contribution targe date, year is the same, target date month is invalid",
+						.actual = to_string((unsigned)received.month()),
+						.expected = "<= " + to_string((unsigned)received.month())
+					};
+				}
 			}
-			return static_cast<unsigned>(targetDateReceivedDistanceMonth);
+			else if (targetDate.year() > received.year()) {
+				return {
+					.type = ErrorType::Contribution_Invalid_Target_Date,
+					.message = "invalid contribution targe date, target date year is in future",
+					.actual = to_string((int)targetDate.year()),
+					.expected = "<= " + to_string((int)received.year())
+				};
+			}
+			else if (((int)targetDate.year() + 1) < (int)received.year()) {
+				return {
+					.type = ErrorType::Contribution_Invalid_Target_Date,
+					.message = "invalid contribution targe date, target date year is in past",
+					.actual = to_string((int)targetDate.year()),
+					.expected = ">= " + to_string((int)received.year()) + " - 1 year"
+				};
+			}
+			else {
+				// target_date.year +1 == now.year
+				if (((unsigned)targetDate.month() + targetDateReceivedDistanceMonth) < ((unsigned)received.month() + 12)) {
+					string expected = ">= "
+						+ timePointToString(createdAtTimepoint)
+						+ " - "
+						+ to_string(static_cast<unsigned>(targetDateReceivedDistanceMonth))
+						+ " months"
+						;
+					return {
+						.type = ErrorType::Contribution_Invalid_Target_Date,
+						.message = "invalid contribution targe date, target date month is invalid",
+						.actual = to_string((int)targetDate.year()) + "-" + to_string((unsigned)targetDate.month()),
+						.expected = expected
+					};
+				}
+			}
+			return {
+				.type = ErrorType::Success
+			};
 		}
 
 		static Error validateMonthRange(const ConfirmedGradidoTx& tx, const blockchain::Abstract& blockchain)
@@ -374,6 +494,28 @@ namespace gradido {
 			if (tx.hasColdData()) {
 				const auto& coldData = tx.coldData.get();
 				result = validateSignatures(creation, tx.coldData.get(), publicKeyIdDict);
+				if (ErrorType::Success != result.type) {
+					return result;
+				}
+				result = validateTargetDate(coldData->getCreatedAt(), creation.targetMonthYear);
+			}
+			else {
+				// normally target date will be checked with created at date but without cold data we don't have created at,
+				// but confirmed at isn't allowed to be more than MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION away from created at
+				// so we can use this here to check if at least with one variant confirmedAt, confirmedAt + maxDistance or confirmedAt - maxDistance that target date is valid
+				result = validateTargetDate(tx.getConfirmedAt(), creation.targetMonthYear);
+				if (result.type != ErrorType::Success) {
+					result = validateTargetDate(
+						tx.getConfirmedAt().getAsTimepoint() + MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION, 
+						creation.targetMonthYear
+					);
+				}
+				if (result.type != ErrorType::Success) {
+					result = validateTargetDate(
+						tx.getConfirmedAt().getAsTimepoint() - MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION,
+						creation.targetMonthYear
+					);
+				}
 			}
 			if (ErrorType::Success != result.type) {
 				return result;
@@ -414,6 +556,12 @@ namespace gradido {
 			}
 			if ((Type::MONTH_RANGE & options.type) == Type::MONTH_RANGE) {
 				result = validateMonthRange(tx, *blockchain);
+				if (ErrorType::Success != result.type) {
+					return result;
+				}
+			}
+			if ((Type::ACCOUNT & options.type) == Type::ACCOUNT) {
+				result = validateAccount(tx, *blockchain);
 			}
 			return result;
 		}

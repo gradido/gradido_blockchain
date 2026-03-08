@@ -274,7 +274,10 @@ namespace gradido {
 			return result;
 		}
 
-		ConfirmedTxs InMemory::findAll(const CompactFilter& originalFilter) const
+		ConfirmedTxs InMemory::findAll(
+			const CompactFilter& originalFilter,
+			std::function<FilterResult(const ConfirmedGradidoTx&)> filterFunction /* = nullptr */
+		) const
 		{
 			std::lock_guard _lock(mWorkMutex);
 			CompactFilter filter(originalFilter);
@@ -290,11 +293,15 @@ namespace gradido {
 						break;
 					}
 					for (const auto& tx : balanceChangingTxsInRange) {
-						auto transaction = getConfirmedTxForId(tx);
-						if (!transaction) { 
+						auto it = mConfirmedTxByNr.find(tx);
+						if (it == mConfirmedTxByNr.end()) {
 							throw GradidoBlockchainTransactionNotFoundException("confirmed tx not found").setTransactionId(tx);
 						}
+						const auto& transaction = it->second;
 						auto filterResult = filter.matches(*transaction, FilterCriteria::TIMEPOINT_INTERVAL);
+						if ((filterResult & FilterResult::USE) == FilterResult::USE && filterFunction) {
+							filterResult = filterFunction(*transaction);
+						}
 						if ((filterResult & FilterResult::USE) == FilterResult::USE) {
 							if (paginationCursor >= skipEntries) {
 								results.push_back(transaction);
@@ -320,13 +327,17 @@ namespace gradido {
 			auto endIt = mTransactionsIndex.end(filter);
 			int cursor = 0;
 			auto it = startIt;
-			for (; it != endIt; ++it) 
-			{	
-				auto transaction = getConfirmedTxForId(*it);
-				if (!transaction) {
+			for (; it != endIt; ++it)
+			{
+				auto txIt = mConfirmedTxByNr.find(*it);
+				if (txIt == mConfirmedTxByNr.end()) {
 					throw GradidoBlockchainTransactionNotFoundException("confirmed tx not found").setTransactionId(*it);
 				}
+				const auto& transaction = txIt->second;
 				auto filterResult = filter.matches(*transaction, FilterCriteria::TIMEPOINT_INTERVAL);
+				if ((filterResult & FilterResult::USE) == FilterResult::USE && filterFunction) {
+					filterResult = filterFunction(*transaction);
+				}
 				if ((filterResult & FilterResult::USE) == FilterResult::USE) {
 					if (paginationCursor >= filter.pagination.skipEntriesCount()) {
 						results.push_back(transaction);

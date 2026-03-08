@@ -31,7 +31,6 @@ namespace gradido {
 				std::shared_ptr<blockchain::Abstract> blockchain = nullptr
 			) const;
 		protected:
-			unsigned getTargetDateReceivedDistanceMonth(Timepoint received);
 
 			std::shared_ptr<const data::GradidoCreation> mGradidoCreation;
 		};

@@ -14,6 +14,7 @@
 #include "../data/TransactionTriggerEvent.h"
 // #include "../data/compact/ConfirmedGradidoTx.h"
 
+#include <functional>
 #include <list>
 #include <memory>
 #include <optional>
@@ -77,7 +78,10 @@ namespace gradido {
 
 			// main search function, do all the work, reference from other functions
 			virtual TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const = 0;
-			virtual data::compact::ConfirmedTxs findAll(const CompactFilter& filter) const = 0;
+			virtual data::compact::ConfirmedTxs findAll(
+				const CompactFilter& filter, 
+				std::function<FilterResult(const data::compact::ConfirmedGradidoTx&)> filterFunction = nullptr
+			) const = 0;
 			// find all optimized for counting transaction nrs, better not use the filter.function for that, because this would slow down
 			virtual size_t countAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
 			virtual size_t countAll(const CompactFilter& filter) const;
@@ -89,9 +93,11 @@ namespace gradido {
 			//! \param use filter to check existing of a address in a subrange of transactions
 			//!        check for user and account public keys
 			virtual data::AddressType getAddressType(const Filter& filter = Filter::LAST_TRANSACTION) const;
+			virtual data::AddressType getAddressType(const CompactFilter& filter) const;
 			//! uncached version of getAddressType which will search via findOne in blockchain
 			//! TODO: better name
 			data::AddressType getAddressTypeSlow(const Filter& filter = Filter::LAST_TRANSACTION) const;
+			data::AddressType getAddressTypeSlow(const CompactFilter& filter) const;
 			virtual ConstTransactionEntryPtr getTransactionForId(uint64_t transactionId) const = 0;
 			virtual data::compact::ConstConfirmedTxPtr getConfirmedTxForId(uint64_t transactionId) const = 0;
 

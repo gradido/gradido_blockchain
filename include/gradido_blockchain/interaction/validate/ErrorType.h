@@ -4,9 +4,10 @@
 #include "gradido_blockchain/types.h"
 
 namespace gradido::interaction::validate {
-  enum class ErrorType: uint8_t {
+  enum class ErrorType : uint8_t {
     None,
     Success,
+    Invalid_Address_Type,
     Invalid_Field,
     Invalid_Dictionary_Index,
     Invalid_Transaction_Type,
@@ -15,6 +16,7 @@ namespace gradido::interaction::validate {
     Missing_Blockchain,
     Missing_Sign,
     Contribution_Sum_Exceeded,
+    Contribution_Invalid_Target_Date,
     Crypto_Sign_Invalid,
     Not_Implemented_Yet
   };

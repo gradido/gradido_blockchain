@@ -97,6 +97,10 @@ namespace gradido {
 		{
 			return getAddressTypeSlow(filter);
 		}
+		data::AddressType Abstract::getAddressType(const CompactFilter& filter) const
+		{
+			return getAddressTypeSlow(filter);
+		}
 
 		AddressType Abstract::getAddressTypeSlow(const Filter& filter/* = Filter::LAST_TRANSACTION */) const
 		{
@@ -140,6 +144,51 @@ namespace gradido {
 			};
 			transactionEntry = findOne(f);
 			if (transactionEntry) {
+				return data::AddressType::DEFERRED_TRANSFER;
+			}
+			return data::AddressType::NONE;
+		}
+
+		data::AddressType Abstract::getAddressTypeSlow(const CompactFilter& filter) const
+		{
+			if (PublicKeySearchType::InvolvedPublicKey != filter.publicKeySearchType || filter.publicKeyIndex.empty()) {
+				throw GradidoNodeInvalidDataException("involvedPublicKey must be set in filter for searching for address type");
+			}
+			auto firstTransaction = findOne(CompactFilter::firstTransaction());
+			if (!firstTransaction) return AddressType::NONE;
+			assert(firstTransaction->isCommunityRoot());
+			
+			if (firstTransaction->getAuf() == filter.publicKeyIndex) {
+				return AddressType::COMMUNITY_AUF;
+			}
+			else if (firstTransaction->getGmw() == filter.publicKeyIndex) {
+				return AddressType::COMMUNITY_GMW;
+			}
+
+			// copy filter
+			CompactFilter f(filter);
+			f.transactionType = TransactionType::REGISTER_ADDRESS;
+			f.pagination.size = 1;
+			// need be started from back because of moving
+			f.searchDirection = SearchDirection::DESC;
+			auto transactionEntry = findOne(f);
+			if (transactionEntry) {
+				return transactionEntry->specific.registerAddress.addressType;
+			}
+			// check for deferred transfer transaction
+			f.transactionType = TransactionType::DEFERRED_TRANSFER;
+			auto transactionEntries = findAll(f, 
+				[f](const ConfirmedGradidoTx& entry) -> FilterResult 
+				{
+					if (f.publicKeyIndex != entry.getRecipient()) {
+						return FilterResult::DISMISS;
+					}
+					else {
+						return FilterResult::USE | FilterResult::STOP;
+					}
+				}
+			);
+			if (transactionEntries.size()) {
 				return data::AddressType::DEFERRED_TRANSFER;
 			}
 			return data::AddressType::NONE;

@@ -135,19 +135,19 @@ namespace gradido {
       inline bool hasColdData() const { return (bool)coldData; }
 
       // full public key indices
-      //! get sender public key index if it transfer or deferred transfer transaction else std::nullopt
+      //! get sender public key index if it transfer or deferred transfer transaction else empty PublicKeyIndex
       PublicKeyIndex getSender() const;
-      //! get recipient public key index if it is creation, transfer or deferred transfer transaction else std::nullopt
+      //! get recipient public key index if it is creation, transfer or deferred transfer transaction else empty PublicKeyIndex
       PublicKeyIndex getRecipient() const;
-      //! get user public key on register address transaction else std::nullopt
+      //! get user public key on register address transaction else empty PublicKeyIndex
       inline PublicKeyIndex getRegisteredUser() const;
-      //! get account public key on register address transaction else std::nullopt
+      //! get account public key on register address transaction else empty PublicKeyIndex
       inline PublicKeyIndex getRegisteredAccount() const;
-      //! get root public key on community root transaction else std::nullopt
+      //! get root public key on community root transaction else empty PublicKeyIndex
       inline PublicKeyIndex getCommunityRootPublicKey() const;
-      //! get auf account public key on community root transaction else std::nullopt
+      //! get auf account public key on community root transaction else empty PublicKeyIndex
       inline PublicKeyIndex getAuf() const;
-      //! get gmw account public key on community root transaction else std::nullopt
+      //! get gmw account public key on community root transaction else empty PublicKeyIndex
       inline PublicKeyIndex getGmw() const;
 
       //! \param coinCommunityIdIndex ignored if set to 0
