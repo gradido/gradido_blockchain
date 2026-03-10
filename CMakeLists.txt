@@ -3,12 +3,16 @@
 cmake_minimum_required(VERSION 3.18.2)
 cmake_policy(VERSION 3.18.2)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/toolchain.cmake")
-execute_process(
-    COMMAND git describe --tags --dirty --always
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    OUTPUT_VARIABLE GRADIDO_BLOCKCHAIN_GIT_VER
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+if(DEFINED ENV{GRADIDO_BLOCKCHAIN_VERSION})
+    set(GRADIDO_BLOCKCHAIN_GIT_VER $ENV{GRADIDO_BLOCKCHAIN_VERSION})
+else()
+	execute_process(
+		COMMAND git describe --tags --dirty --always
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		OUTPUT_VARIABLE GRADIDO_BLOCKCHAIN_GIT_VER
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+	)
+endif()
 string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" GRADIDO_BLOCKCHAIN_CLEAN_VERSION "${GRADIDO_BLOCKCHAIN_GIT_VER}")
 project(GradidoBlockchain VERSION ${GRADIDO_BLOCKCHAIN_CLEAN_VERSION})
 option(ENABLE_IOTA_RUST_CLIENT "switch for include rust iota client into build, increase build time and size a lot" OFF)
