@@ -162,6 +162,7 @@ if(ENABLE_HTTPS)
 		file(DOWNLOAD
 			https://curl.se/ca/cacert-2025-08-12.pem
 			${CACERT_PEM}
+			STATUS download_status
 			EXPECTED_HASH SHA256=64dfd5b1026700e0a0a324964749da9adc69ae5e51e899bf16ff47d6fd0e9a5e
 		)
 		list(GET download_status 0 status_code)
@@ -381,7 +382,7 @@ if (ENABLE_HTTPS)
 	# bundle cacert compressed into binary
 	set(CACERT_H "include/gradido_blockchain/cacert.h")
 	set(COMPRESS_CACERT "${CMAKE_BINARY_DIR}/compressCacert")
-	add_compile_definitions(CACERT_PEM_PATH="${CACERT_PEM}")
+	add_compile_definitions(CACERT_PEM_FILE_PATH="${CACERT_PEM}")
 	add_compile_definitions(CACERT_H_OUT_PATH="${CACERT_H}")
 
 	add_executable(compressCacert cmake/compressCacert.c)
