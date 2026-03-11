@@ -66,7 +66,7 @@ namespace gradido {
 						"creation amount to high, max 1000 per month",
 						"amount",
 						"string",
-						"<= 10000",
+						"<= 1000",
 						recipientAmount.toString().data()
 					);
 				}
@@ -527,7 +527,7 @@ namespace gradido {
 						.type = ErrorType::Invalid_Field,
 						.message = "Creation must be tx nr 3 at least to have community root, recipient and someone to sign registered first",
 						.actual = to_string(tx.txNr),
-						.expected = "< 3"
+						.expected = ">= 3"
 					};
 				}
 				result = validateAccountBalancesSingle(tx);

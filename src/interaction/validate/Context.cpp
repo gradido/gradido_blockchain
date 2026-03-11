@@ -229,6 +229,9 @@ namespace gradido {
 					return result;
 				}
 			}
+			if ((Type::PREVIOUS_BALANCE & options.type) == Type::PREVIOUS_BALANCE) {
+				// todo check account balances
+			}
 			switch (tx.transactionType) {
 			case TransactionType::TRANSFER:
 			case TransactionType::DEFERRED_TRANSFER:
