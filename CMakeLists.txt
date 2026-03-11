@@ -155,6 +155,7 @@ endif()
 
 if(ENABLE_HTTPS)
 	# CA certificates for used with cpp-httplib, make it also available for projects including this one
+	set(CACERT_H "include/gradido_blockchain/cacert.h")
 	set(CACERT_PEM "${CMAKE_BINARY_DIR}/cacert.pem" CACHE PATH "Path to CA certificates" FORCE)
 
 	if(NOT EXISTS ${CACERT_PEM})
@@ -170,6 +171,19 @@ if(ENABLE_HTTPS)
 			message(FATAL_ERROR "Failed to download cacert.pem: ${download_status}")
 		endif()
 	endif()
+
+	add_custom_command(
+			OUTPUT ${CACERT_H}
+			COMMAND ${CMAKE_COMMAND}
+					-DINPUT_FILE=${CACERT_PEM}
+					-DOUTPUT_FILE=${CACERT_H}
+					-P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_cacert.cmake
+			DEPENDS ${CACERT_PEM}
+			COMMENT "Generating cacert.h from cacert.pem (using CMake script)"
+			VERBATIM
+	)
+
+	add_custom_target(cacert_bundle DEPENDS ${CACERT_H})
 
 	if(USE_VCPKG)
 		set(OPENSSL_ROOT_DIR "${VCPKG_PATH}/installed/${VCPKG_TARGET_TRIPLET}" CACHE PATH "" FORCE)
@@ -380,35 +394,35 @@ add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
 if (ENABLE_HTTPS)
 	# bundle cacert compressed into binary
-	set(CACERT_H "include/gradido_blockchain/cacert.h")
-	set(COMPRESS_CACERT "${CMAKE_BINARY_DIR}/compressCacert")
-	add_compile_definitions(CACERT_PEM_FILE_PATH="${CACERT_PEM}")
-	add_compile_definitions(CACERT_H_OUT_PATH="${CACERT_H}")
+	#set(CACERT_H "include/gradido_blockchain/cacert.h")
+	#set(COMPRESS_CACERT "${CMAKE_BINARY_DIR}/compressCacert")
+	#add_compile_definitions(CACERT_PEM_FILE_PATH="${CACERT_PEM}")
+	#add_compile_definitions(CACERT_H_OUT_PATH="${CACERT_H}")
 
-	add_executable(compressCacert cmake/compressCacert.c)
-	target_include_directories(compressCacert PRIVATE dependencies/miniz)
-	target_link_libraries(compressCacert PRIVATE miniz sodium)
+	#add_executable(compressCacert cmake/compressCacert.c)
+	#target_include_directories(compressCacert PRIVATE dependencies/miniz)
+	#target_link_libraries(compressCacert PRIVATE miniz sodium)
 
 	# --- generate C-Header ---
-	add_custom_command(
-			OUTPUT ${CACERT_H}
-			COMMAND $<TARGET_FILE:compressCacert>
-			DEPENDS compressCacert ${CACERT_PEM}
-			COMMENT "Generating cacert.h from cacert.pem"
-			VERBATIM
-	)
-	add_custom_command(
-    TARGET compressCacert POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE:sodium>
-            $<TARGET_FILE_DIR:compressCacert>
-	)
+	#add_custom_command(
+	#		OUTPUT ${CACERT_H}
+	#		COMMAND $<TARGET_FILE:compressCacert>
+	#		DEPENDS compressCacert ${CACERT_PEM}
+	#		COMMENT "Generating cacert.h from cacert.pem"
+	#		VERBATIM
+	#)
+	#add_custom_command(
+   # TARGET compressCacert POST_BUILD
+    #COMMAND ${CMAKE_COMMAND} -E copy_if_different
+     #       $<TARGET_FILE:sodium>
+      #      $<TARGET_FILE_DIR:compressCacert>
+	#)
 
-	add_custom_target(cacert_bundle DEPENDS ${CACERT_H})
+	#add_custom_target(cacert_bundle DEPENDS ${CACERT_H})
 	add_dependencies(${PROJECT_NAME} cacert_bundle)
 
 	# Make the generated header file visible to the main project
-	target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR})
+	#target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR})
 endif()
 
 target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz gradido_protobuf_zig)
