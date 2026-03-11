@@ -160,7 +160,7 @@ if(ENABLE_HTTPS)
 	if(NOT EXISTS ${CACERT_PEM})
 		message(STATUS "Downloading cacert.pem ...")
 		file(DOWNLOAD
-			https://curl.se/ca/cacert.pem
+			https://curl.se/ca/cacert-2025-08-12.pem
 			${CACERT_PEM}
 			EXPECTED_HASH SHA256=64dfd5b1026700e0a0a324964749da9adc69ae5e51e899bf16ff47d6fd0e9a5e
 		)
@@ -391,10 +391,16 @@ if (ENABLE_HTTPS)
 	# --- generate C-Header ---
 	add_custom_command(
 			OUTPUT ${CACERT_H}
-			COMMAND ${COMPRESS_CACERT}
+			COMMAND $<TARGET_FILE:compressCacert>
 			DEPENDS compressCacert ${CACERT_PEM}
 			COMMENT "Generating cacert.h from cacert.pem"
 			VERBATIM
+	)
+	add_custom_command(
+    TARGET compressCacert POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:sodium>
+            $<TARGET_FILE_DIR:compressCacert>
 	)
 
 	add_custom_target(cacert_bundle DEPENDS ${CACERT_H})

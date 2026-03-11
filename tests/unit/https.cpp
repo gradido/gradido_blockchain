@@ -38,6 +38,24 @@ TEST(HTTPS, HttpRequestSchemaHost)
     }
 }
 
+TEST(HTTPS, MultipleRequests)
+{
+  // httplib::SSLClient cli("google.com", 443);
+  HttpRequest request("https://testnet.mirrornode.hedera.com");
+  HttpRequest secondRequest("https://testnet.mirrornode.hedera.com");
+  try {
+    auto res = request.GET("/api/v1/blocks?limit=2&order=asc");
+    auto res2 = secondRequest.GET("/api/v1/blocks?limit=2&order=asc");
+    // printf("response body: %s\n", res.data());
+    ASSERT_FALSE(res.empty()) << "HTTPS request failed: " << res;
+    ASSERT_FALSE(res2.empty()) << "HTTPS request failed: " << res;
+  }
+  catch (const HttplibRequestException& e) {
+    // FAIL() << "Exception during HTTPS request: " << e.getFullString();
+    ASSERT_EQ(e.getStatus(), 301);
+  }
+}
+
 TEST(HTTPS, HttpRequestSchemaHostPort)
 {
     // httplib::SSLClient cli("google.com", 443);
