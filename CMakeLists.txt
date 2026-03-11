@@ -160,10 +160,8 @@ if(ENABLE_HTTPS)
 	if(NOT EXISTS ${CACERT_PEM})
 		message(STATUS "Downloading cacert.pem ...")
 		file(DOWNLOAD
-			https://curl.se/ca/cacert-2025-08-12.pem
+			https://curl.se/ca/cacert.pem
 			${CACERT_PEM}
-			SHOW_PROGRESS
-			STATUS download_status
 			EXPECTED_HASH SHA256=64dfd5b1026700e0a0a324964749da9adc69ae5e51e899bf16ff47d6fd0e9a5e
 		)
 		list(GET download_status 0 status_code)
@@ -171,8 +169,6 @@ if(ENABLE_HTTPS)
 			message(FATAL_ERROR "Failed to download cacert.pem: ${download_status}")
 		endif()
 	endif()
-
-	add_compile_definitions(CACERT_PEM_PATH="${CACERT_PEM}")
 
 	if(USE_VCPKG)
 		set(OPENSSL_ROOT_DIR "${VCPKG_PATH}/installed/${VCPKG_TARGET_TRIPLET}" CACHE PATH "" FORCE)
@@ -380,6 +376,33 @@ add_dependencies(gradido_protobuf_zig gradido_protobuf_zig_build)
 
 add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
+
+if (ENABLE_HTTPS)
+	# bundle cacert compressed into binary
+	set(CACERT_H "include/gradido_blockchain/cacert.h")
+	set(COMPRESS_CACERT "${CMAKE_BINARY_DIR}/compressCacert")
+	add_compile_definitions(CACERT_PEM_PATH="${CACERT_PEM}")
+	add_compile_definitions(CACERT_H_OUT_PATH="${CACERT_H}")
+
+	add_executable(compressCacert cmake/compressCacert.c)
+	target_include_directories(compressCacert PRIVATE dependencies/miniz)
+	target_link_libraries(compressCacert PRIVATE miniz sodium)
+
+	# --- generate C-Header ---
+	add_custom_command(
+			OUTPUT ${CACERT_H}
+			COMMAND ${COMPRESS_CACERT}
+			DEPENDS compressCacert ${CACERT_PEM}
+			COMMENT "Generating cacert.h from cacert.pem"
+			VERBATIM
+	)
+
+	add_custom_target(cacert_bundle DEPENDS ${CACERT_H})
+	add_dependencies(${PROJECT_NAME} cacert_bundle)
+
+	# Make the generated header file visible to the main project
+	target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR})
+endif()
 
 target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz gradido_protobuf_zig)
 if(OpenSSL_FOUND)
