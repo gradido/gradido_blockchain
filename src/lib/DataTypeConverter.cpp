@@ -326,6 +326,33 @@ namespace DataTypeConverter
 
 		return fmt.str();
 	}
+
+	std::string timespanToString(const std::chrono::steady_clock::duration& timespan)
+	{
+		auto days = duration_cast<duration<int, std::ratio<86400>>>(timespan);
+		auto hours = duration_cast<std::chrono::hours>(timespan % std::chrono::duration<int, std::ratio<86400>>(1));
+		auto minutes = duration_cast<std::chrono::minutes>(timespan % std::chrono::hours(1));
+		auto seconds = duration_cast<std::chrono::seconds>(timespan % std::chrono::minutes(1));
+
+		std::ostringstream fmt;
+		if (days.count() != 0) {
+			fmt << days.count() << " days";
+		}
+		if (hours.count() != 0) {
+			if (fmt.tellp() > 0) fmt << " ";
+			fmt << hours.count() << " hours";
+		}
+		if (minutes.count() != 0) {
+			if (fmt.tellp() > 0) fmt << " ";
+			fmt << minutes.count() << " minutes";
+		}
+		if (seconds.count() != 0) {
+			if (fmt.tellp() > 0) fmt << " ";
+			fmt << seconds.count() << " seconds";
+		}
+
+		return fmt.str();
+	}
 	
 	Timepoint monthYearToTimepoint(const date::year_month& ym)
 	{
