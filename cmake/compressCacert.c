@@ -5,8 +5,8 @@
 #include "sodium.h"
 
 
-#ifndef CACERT_PEM_PATH
-#define CACERT_PEM_PATH "cacert.pem"
+#ifndef CACERT_PEM_FILE_PATH
+#define CACERT_PEM_FILE_PATH "cacert.pem"
 #endif
 
 #ifndef CACERT_H_OUT_PATH
@@ -31,9 +31,9 @@ char* base64Encoded(uint8_t* data, size_t data_len, size_t* out_len) {
 
 int main(void) {
   sodium_init();
-  FILE *fp = fopen(CACERT_PEM_PATH, "r");
+  FILE *fp = fopen(CACERT_PEM_FILE_PATH, "r");
   if (!fp) {
-    fprintf(stderr, "Failed to open %s\n", CACERT_PEM_PATH);
+    fprintf(stderr, "Failed to open %s\n", CACERT_PEM_FILE_PATH);
     return 1;
   }
   fseek(fp, 0, SEEK_END);

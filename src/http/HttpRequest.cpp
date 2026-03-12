@@ -21,7 +21,7 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #endif
 #include "httplib.h"
-
+/*
 memory::Block loadCacert()
 {
 	size_t rawCompressedSize = (cacert_pem_base64_len / 4) * 3; // calculate the size of decoded data
@@ -50,7 +50,7 @@ memory::Block loadCacert()
 	}
 	return cacert;
 }
-
+*/
 // this is to prevent crashes, because at least with C++17 and C++20 httplib crashes with calling httplib::Client deconstructor
 // so we create a new client for each new host and keep them forever and don't delete them even on program exit
 // TODO: Fix bug in httplib which leads to this crash
@@ -85,8 +85,8 @@ static std::shared_ptr<httplib::Client> getClientForHost(const std::string& host
 		auto objs = X509_STORE_get0_objects(certStore);
 		if (!sk_X509_OBJECT_num(objs)) {
 			// PEM aus Memory laden
-			auto cacert = loadCacert();
-			BIO* bio = BIO_new_mem_buf(cacert, cacert.size());
+			// auto cacert = loadCacert();
+			BIO* bio = BIO_new_mem_buf(CACERT_PEM.data(), CACERT_PEM.size());
 			X509* cert = nullptr;
 
 			while ((cert = PEM_read_bio_X509(bio, nullptr, 0, nullptr)) != nullptr) {
