@@ -21,7 +21,7 @@ public:
 
 	static void terminate(bool crash = false);
 	static std::atomic<bool> gRunning;
-	std::stop_token getStopToken() const { return mMasterStopSource.get_token(); }
+	static std::stop_token getStopToken() { return mMasterStopSource.get_token(); }
 protected:
 	//! \return true on success, false on failure, if return false, exit will be called and program will end
 	virtual bool init() = 0;
