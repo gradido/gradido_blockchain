@@ -86,7 +86,7 @@ ByteArray<N> ByteArray<N>::fromHex(const char* hexString, size_t stringSize)
   ByteArray<N> result;
 
   size_t resultBinSize = 0;
-  if (0 != sodium_hex2bin(result.data(), binSize, hexString, stringSize, nullptr, &resultBinSize, nullptr)) {
+  if (0 != sodium_hex2bin(result.mData, binSize, hexString, stringSize, nullptr, &resultBinSize, nullptr)) {
     throw GradidoInvalidHexException("invalid hex for Block::fromHex", hexString);
   }
   return result;
