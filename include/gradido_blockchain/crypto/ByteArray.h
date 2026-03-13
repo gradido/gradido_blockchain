@@ -47,14 +47,15 @@ public:
   inline bool isTheSame(uint8_t* data) const { return std::memcmp(mData, data, N) == 0; }
   inline bool isEmpty() const;
   inline std::vector<uint8_t> copyAsVector() const { return { mData, mData + N }; }
-  inline std::string convertToHex() const;
+  inline std::string convertToHex() const;  
+  static inline ByteArray fromHex(const char* hexString, size_t stringSize);
     
 protected:
   uint8_t mData[N];
 };
 
 template<std::size_t N>
-inline bool ByteArray<N>::isEmpty() const {
+bool ByteArray<N>::isEmpty() const {
   for (auto i = 0; i < N; i++) {
     if (mData[i] != 0) {
       return false;
@@ -64,11 +65,31 @@ inline bool ByteArray<N>::isEmpty() const {
 }
 
 template<std::size_t N>
-inline std::string ByteArray<N>::convertToHex() const {
+std::string ByteArray<N>::convertToHex() const {
   constexpr uint32_t hexSize = N * 2 + 1;
   char buffer[hexSize];
   sodium_bin2hex(buffer, hexSize, mData, N);
   return { buffer, hexSize - 1 };
+}
+
+template<std::size_t N>
+ByteArray<N> ByteArray<N>::fromHex(const char* hexString, size_t stringSize) 
+{
+  size_t binSize = (stringSize) / 2;
+  // invalid hex size
+  if (binSize * 2 != stringSize) {
+    throw GradidoInvalidHexException("invalid hex size Block::fromHex", hexString);
+  }
+  if (binSize != N) {
+    throw GradidoInvalidHexException("invalid size Parameter for ByteArray", hexString);
+  }
+  ByteArray<N> result;
+
+  size_t resultBinSize = 0;
+  if (0 != sodium_hex2bin(result.data(), binSize, hexString, stringSize, nullptr, &resultBinSize, nullptr)) {
+    throw GradidoInvalidHexException("invalid hex for Block::fromHex", hexString);
+  }
+  return result;
 }
 
 template<std::size_t N>
