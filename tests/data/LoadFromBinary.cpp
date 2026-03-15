@@ -415,6 +415,8 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 		}
 		printf("%s for loading %u confirmed transactions for %s\n", timeUsed.string().c_str(), count, com.communityId);
 	}
+
+
 	timeUsed.reset();
 	timeSinceLastPrint.reset();
 	uint32_t count = 0;
@@ -453,7 +455,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 		);
 		communities[next].transactions.pop();
 		++count;
-	/*	if (timeSinceLastPrint.millis() > 100) {
+		/*if (timeSinceLastPrint.millis() > 100) {
 			timeSinceLastPrint.reset();
 			printf("\r%u", count);
 		}*/

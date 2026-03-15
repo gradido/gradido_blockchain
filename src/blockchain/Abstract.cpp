@@ -29,17 +29,33 @@ namespace gradido {
 
 		bool Abstract::isTransactionExist(ConstGradidoTransactionPtr gradidoTransaction, data::Timestamp confirmedAt) const
 		{
+			auto lastTransaction = findOne(Filter::LAST_TRANSACTION);
+			if (!lastTransaction) return false;
+			data::Timestamp lastTxConfirmedAt = lastTransaction->getConfirmedTransaction()->getConfirmedAt();
+			if (lastTxConfirmedAt < confirmedAt) {
+				return false;
+			}
+			if (lastTxConfirmedAt == confirmedAt) {
+				if (gradidoTransaction->isTheSame(*lastTransaction->getConfirmedTransaction()->getGradidoTransaction())) {
+					return true;
+				}
+			}
 			const auto& body = gradidoTransaction->getTransactionBody();
 			Filter f;
 			f.searchDirection = SearchDirection::DESC;
 			f.timepointInterval = TimepointInterval(confirmedAt);
-			f.transactionType = body->getTransactionType();
 			f.filterFunction = 
-				[&gradidoTransaction](const TransactionEntry& entry) -> FilterResult
+				[&gradidoTransaction, confirmedAt](const TransactionEntry& entry) -> FilterResult
 				{
-					const auto& otherGradidoTransaction = entry.getConfirmedTransaction()->getGradidoTransaction();
-					if (gradidoTransaction->isTheSame(*otherGradidoTransaction)) {
-						return FilterResult::USE | FilterResult::STOP;
+					auto otherConfirmed = entry.getConfirmedTransaction()->getConfirmedAt();
+					if (otherConfirmed < confirmedAt) {
+						return FilterResult::STOP;
+					}
+					if (otherConfirmed == confirmedAt) {
+						const auto& otherGradidoTransaction = entry.getConfirmedTransaction()->getGradidoTransaction();
+						if (gradidoTransaction->isTheSame(*otherGradidoTransaction)) {
+							return FilterResult::USE | FilterResult::STOP;
+						}
 					}
 					return FilterResult::DISMISS;
 				}

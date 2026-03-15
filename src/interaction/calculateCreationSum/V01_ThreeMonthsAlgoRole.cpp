@@ -34,7 +34,7 @@ namespace gradido {
 				filter.publicKeySearchType = PublicKeySearchType::BalanceChangingPublicKey;
 				filter.timepointInterval = { beforeReceivedYM, dateYM };
 				filter.transactionType = TransactionType::CREATION;
-
+				
 				auto txs = blockchain.findAll(filter);
 				for (const auto& txRef : txs) {
 					const auto& tx = txRef.get();

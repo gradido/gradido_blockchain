@@ -79,14 +79,14 @@ if (NOT BUILD_SHARED_LIBS)
 	add_definitions(-DSODIUM_STATIC)
 endif()
 
+	# Fetch Content Module
+include(FetchContent)
+
 set(SODIUM_DISABLE_TESTS ON)
 if(USE_INSTALLED_SODIUM)
 	find_package(Sodium REQUIRED)
 	message(STATUS "Using installed Sodium library")
 else()
-	# Fetch Content Module
-	include(FetchContent)
-
 	# Update the commit to point to whatever libsodium-cmake-commit you want to target.
 	FetchContent_Declare(Sodium
 			GIT_REPOSITORY https://github.com/robinlinden/libsodium-cmake.git
@@ -95,6 +95,20 @@ else()
 	FetchContent_MakeAvailable(Sodium)
 endif()
 
+# Roaring Bitmaps
+FetchContent_Declare(
+  roaring
+  GIT_REPOSITORY https://github.com/RoaringBitmap/CRoaring.git
+  GIT_TAG v4.6.1
+  GIT_SHALLOW TRUE
+)
+
+set(ENABLE_ROARING_TESTS OFF CACHE INTERNAL "")
+
+set(ROARING_BUILD_STATIC ON CACHE INTERNAL "")
+FetchContent_MakeAvailable(roaring)
+
+FetchContent_GetProperties(roaring)
 
 if(USE_VCPKG)
 	SET(VCPKG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vcpkg")
@@ -425,7 +439,7 @@ if (ENABLE_HTTPS)
 	#target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR})
 endif()
 
-target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz gradido_protobuf_zig)
+target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz gradido_protobuf_zig roaring)
 if(OpenSSL_FOUND)
 	target_link_libraries(GradidoBlockchain OpenSSL::SSL OpenSSL::Crypto)
 endif()

@@ -28,6 +28,21 @@ namespace gradido::data::compact {
       return publicKeyIndex < other.publicKeyIndex;
     };
   };
+
+  struct GRADIDOBLOCKCHAIN_EXPORT PublicKeyIndexHash
+  {
+    size_t operator()(const PublicKeyIndex& s) const noexcept {
+      uint64_t combined = (uint64_t)(s.communityIdIndex) << 32 | s.publicKeyIndex;
+      return std::hash<uint64_t>{}(combined);
+    }
+  };
+
+  struct GRADIDOBLOCKCHAIN_EXPORT PublicKeyIndexEqual
+  {
+    bool operator()(const PublicKeyIndex& a, const PublicKeyIndex& b) const noexcept {
+      return a == b;
+    }
+  };
 }
 
 #endif // __GRADIDO_BLOCKCHAIN_DATA_COMPACT_PUBLIC_KEY_INDEX_H

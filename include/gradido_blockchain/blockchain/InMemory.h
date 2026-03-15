@@ -4,6 +4,7 @@
 #include "Abstract.h"
 #include "FilterResult.h"
 #include "TransactionsIndex.h"
+#include "TransactionsIndexRoaringBitmaps.h"
 #include "gradido_blockchain/crypto/SignatureOctet.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
@@ -101,7 +102,7 @@ namespace gradido {
 			InMemory(std::string_view uniqueCommunityAlias, uint32_t communityIdIndex);
 
 			RuntimeDictionary<PublicKey, PublicKeyHash, PublicKeyEqual> mPublicKeyDirectory;
-			TransactionsIndex mTransactionsIndex;
+			TransactionsIndexRoaringBitmaps mTransactionsIndex;
 
 			// if called, mWorkMutex should be locked exclusive
 			void pushTransactionEntry(ConstTransactionEntryPtr transactionEntry);

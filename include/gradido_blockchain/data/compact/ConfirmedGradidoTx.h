@@ -114,6 +114,14 @@ namespace gradido {
 
       // if cold isn't loaded, doesn't contain pubkeys from signature map
       std::vector<PublicKeyIndex> getInvolvedAddresses() const;
+      //! \return all public key indices belongs to the same community as txCommunityId
+      std::vector<uint32_t> getBalanceChangingPublicKeyIndices() const;
+      //! \return work only if cold data exist, returned public key indices belong to txCommunityId
+      std::vector<uint32_t> getSignaturePublicKeyIndices(const IDictionary<PublicKey>& publicKeyDict) const;
+      bool isSignaturePublicKey(PublicKeyIndex pubkexIndex, const IDictionary<PublicKey>& publicKeyDict) const;
+      //! \return full public key indices for addresses not signing, not account balance changing but involved in tx, maybe from another community
+      std::vector<PublicKeyIndex> getOtherInvolved() const;
+      bool isOtherInvolved(PublicKeyIndex pubkeyIndex) const;
       bool isBalanceUpdated(PublicKeyIndex pubkeyIndex) const;
       // if cold isn't loaded, doesn't check pubkeys from signature map
       bool isInvolved(PublicKeyIndex pubkeyIndex) const;
