@@ -99,11 +99,11 @@ namespace gradido {
       mAddressIndex.addTransaction(tx);
     }
 
-    vector<uint64_t> TransactionsIndexRoaringBitmaps::findTransactions(
-      const CompactFilter& filter, 
-      std::function<FilterResult(const data::compact::ConfirmedGradidoTx&)> callback /* = nullptr */
-    ) const
+    vector<uint64_t> TransactionsIndexRoaringBitmaps::findTransactions(const CompactFilter& filter) const
     {
+      if (!mMinTransactionNr && !mMaxTransactionNr) {
+        return {};
+      }
       auto resultSet = aggregateTransactions(filter);
       if (!resultSet) { return {}; }
       auto resultSetSize = resultSet->cardinality();
@@ -169,6 +169,9 @@ namespace gradido {
 
     size_t TransactionsIndexRoaringBitmaps::countTransactions(const CompactFilter& filter) const
     {
+      if (!mMinTransactionNr && !mMaxTransactionNr) {
+        return 0;
+      }
       auto result = aggregateTransactions(filter);
       if (!result) {
         return 0;

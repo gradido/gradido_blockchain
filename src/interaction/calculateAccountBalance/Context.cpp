@@ -28,7 +28,7 @@ using namespace magic_enum;
 
 namespace gradido {
 	using data::adapter::toPublicKey;
-	using data::compact::PublicKeyIndex;
+	using data::compact::ConfirmedGradidoTx, data::compact::PublicKeyIndex;
 	using data::Timestamp;
 	using blockchain::CompactFilter, blockchain::Filter, blockchain::FilterBuilder, blockchain::FilterResult;
 	using blockchain::Pagination, blockchain::PublicKeySearchType, blockchain::SearchDirection, blockchain::TransactionEntry;
@@ -110,11 +110,19 @@ namespace gradido {
 					filter.coinCommunityIdIndex = *coinCommunityIdIndex;
 				}
 				filter.timepointInterval = TimepointInterval(Timepoint(), endDate);
-				auto lastMatchingTx = mBlockchain->findOne(filter);
-				if (lastMatchingTx) {
-					return lastMatchingTx->getAccountBalance(filter.publicKeyIndex, filter.coinCommunityIdIndex).getDecayedAmount(endDate);
-				}
-				return GradidoUnit::zero();
+				GradidoUnit resultGdds(GradidoUnit::zero());
+				mBlockchain->findAll(filter,
+					[endDate, filter, &resultGdds](const ConfirmedGradidoTx& tx) -> FilterResult
+					{
+						if (tx.getConfirmedAt() > endDate) {
+							return FilterResult::DISMISS;
+						}
+						resultGdds = tx.getAccountBalance(filter.publicKeyIndex, filter.coinCommunityIdIndex).getDecayedAmount(endDate);
+						return FilterResult::STOP;
+					}
+				);
+				
+				return resultGdds;
 			}
 
 			std::shared_ptr<AbstractRole> Context::getRole(std::shared_ptr<const data::TransactionBody> body, Timepoint confirmedAt) const

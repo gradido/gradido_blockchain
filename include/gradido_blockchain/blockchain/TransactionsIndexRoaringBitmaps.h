@@ -39,10 +39,7 @@ namespace gradido {
       void reset();
 
       void addTransactionIndices(const data::compact::ConfirmedGradidoTx& tx, const IDictionary<PublicKey>& publicKeyDict);
-      std::vector<uint64_t> findTransactions(
-        const CompactFilter& filter, 
-        std::function<FilterResult(const data::compact::ConfirmedGradidoTx&)> callback = nullptr
-      ) const;
+      std::vector<uint64_t> findTransactions(const CompactFilter& filter) const;
       size_t countTransactions(const CompactFilter& filter) const;
       StateChange<data::AddressType> getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const;
 

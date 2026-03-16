@@ -253,7 +253,7 @@ namespace gradido {
 
 		TransactionEntries InMemory::findAll(const Filter& filter/* = Filter::ALL_TRANSACTIONS*/) const
 		{
-			std::lock_guard _lock(mWorkMutex);
+			std::lock_guard _lock(mWorkMutex);			
 			TransactionEntries result;
 			// if pagination is used, filterCopy contain count of still to find transactions
 			CompactFilter filterCopy(filter, mPublicKeyDirectory, mCommunityIdIndex);
@@ -285,6 +285,45 @@ namespace gradido {
 				result.emplace_back(getConfirmedTxForId(tx));
 			}
 			return result;
+		}
+
+		std::vector<uint64_t> InMemory::findAllTxNrs(const CompactFilter& filter) const
+		{
+			std::lock_guard _lock(mWorkMutex);
+			return mTransactionsIndex.findTransactions(filter);
+		}
+
+		ConfirmedTxs InMemory::findAll(
+			const CompactFilter& filter,
+			std::function<FilterResult(const ConfirmedGradidoTx&)> elementFilter
+		) const
+		{
+			ConfirmedTxs resultTxs;
+			FilterResult result = FilterResult::DISMISS;
+			CompactFilter paginationModifiedFilter(filter);
+
+			if (filter.pagination.size) {
+				resultTxs.reserve(filter.pagination.size);
+			}
+			do {
+				auto txs = findAllTxNrs(paginationModifiedFilter);
+				if (txs.empty()) break;
+				for (int i = 0; i < txs.size(); ++i) {
+					auto it = mConfirmedTxByNr.find(txs[i]);
+					if (it == mConfirmedTxByNr.end()) {
+						throw GradidoBlockchainTransactionNotFoundException("cannot found confirmed tx in iterateAllImpl").setTransactionId(txs[i]);
+					}
+					result = elementFilter(*it->second);
+					if ((FilterResult::USE & result) == FilterResult::USE) {
+						resultTxs.emplace_back(it->second);
+					}
+					if ((FilterResult::STOP & result) == FilterResult::STOP) {
+						break;
+					}
+				}
+				++paginationModifiedFilter.pagination.page;
+			} while (filter.pagination.size && filter.pagination.hasCapacityLeft(resultTxs.size()) && (FilterResult::STOP & result) != FilterResult::STOP);
+			return resultTxs;
 		}
 
 		size_t InMemory::countAll(const CompactFilter& filter) const
