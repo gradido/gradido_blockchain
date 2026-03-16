@@ -85,7 +85,6 @@ namespace gradido {
 				const CompactFilter& filter,
 				std::function<FilterResult(const data::compact::ConfirmedGradidoTx&)> elementFilter
 			) const;
-			std::vector<uint64_t> findAllTxNrs(const CompactFilter& filter) const override;			
 			size_t countAll(const CompactFilter& filter) const override;
 			ConstTransactionEntryPtr findOne(const Filter& filter = Filter::LAST_TRANSACTION) const override;
 			data::AddressType getAddressType(const Filter& filter = Filter::ALL_TRANSACTIONS) const override;

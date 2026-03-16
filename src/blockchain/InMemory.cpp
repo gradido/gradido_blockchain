@@ -287,17 +287,12 @@ namespace gradido {
 			return result;
 		}
 
-		std::vector<uint64_t> InMemory::findAllTxNrs(const CompactFilter& filter) const
-		{
-			std::lock_guard _lock(mWorkMutex);
-			return mTransactionsIndex.findTransactions(filter);
-		}
-
 		ConfirmedTxs InMemory::findAll(
 			const CompactFilter& filter,
 			std::function<FilterResult(const ConfirmedGradidoTx&)> elementFilter
 		) const
 		{
+			std::lock_guard _lock(mWorkMutex);
 			ConfirmedTxs resultTxs;
 			FilterResult result = FilterResult::DISMISS;
 			CompactFilter paginationModifiedFilter(filter);
@@ -306,7 +301,7 @@ namespace gradido {
 				resultTxs.reserve(filter.pagination.size);
 			}
 			do {
-				auto txs = findAllTxNrs(paginationModifiedFilter);
+				auto txs = mTransactionsIndex.findTransactions(paginationModifiedFilter);
 				if (txs.empty()) break;
 				for (int i = 0; i < txs.size(); ++i) {
 					auto it = mConfirmedTxByNr.find(txs[i]);

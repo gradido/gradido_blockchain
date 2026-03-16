@@ -83,9 +83,7 @@ namespace gradido {
 			virtual data::compact::ConfirmedTxs findAll(
 				const CompactFilter& filter,
 				std::function<FilterResult(const data::compact::ConfirmedGradidoTx&)> elementFilter
-			) const = 0;
-			virtual std::vector<uint64_t> findAllTxNrs(const CompactFilter& filter) const = 0;
-			
+			) const = 0;			
 				
 			// find all optimized for counting transaction nrs, better not use the filter.function for that, because this would slow down
 			virtual size_t countAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
