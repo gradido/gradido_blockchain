@@ -125,7 +125,7 @@ namespace gradido {
           }
           else {
             resultSet->select(
-              resultSetSize - filter.pagination.skipEntriesCount() - filter.pagination.size - 1,
+              resultSetSize - filter.pagination.skipEntriesCount() - filter.pagination.size,
               &pageStartTx
             );
           }
@@ -139,7 +139,7 @@ namespace gradido {
           if (filter.pagination.size == 1) {
             return { pageStartTx };
           }
-          if (!resultSet->select(filter.pagination.skipEntriesCount() + filter.pagination.size, &pageEndTx)) {
+          if (!resultSet->select(filter.pagination.skipEntriesCount() + filter.pagination.size - 1, &pageEndTx)) {
             pageEndTx = resultSet->maximum();
           }
           if (filter.pagination.size == 2) {
