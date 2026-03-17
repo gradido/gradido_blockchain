@@ -110,14 +110,15 @@ namespace gradido {
       if (!resultSetSize || resultSetSize <= filter.pagination.skipEntriesCount()) {
         return {};
       }
-      if (filter.pagination.size) {
+      if (filter.pagination.size) 
+      {
         uint64_t pageStartTx = 0;
         uint64_t pageEndTx = 0;
         // cut out range described by pagination
         if (SearchDirection::DESC == filter.searchDirection)
         {
           resultSet->select(resultSetSize - filter.pagination.skipEntriesCount() - 1, &pageEndTx);
-          if (filter.pagination.size == 1) {
+          if (1 == filter.pagination.size || 1 == resultSetSize) {
             return { pageEndTx };
           }
           if (resultSetSize <= filter.pagination.skipEntriesCount() + filter.pagination.size) {
@@ -129,7 +130,7 @@ namespace gradido {
               &pageStartTx
             );
           }
-          if (filter.pagination.size == 2) {
+          if (2 == filter.pagination.size || 2 == resultSetSize) {
             return { pageEndTx, pageStartTx };
           }
         }
