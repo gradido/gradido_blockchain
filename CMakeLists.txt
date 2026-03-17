@@ -87,6 +87,7 @@ if(USE_INSTALLED_SODIUM)
 	find_package(Sodium REQUIRED)
 	message(STATUS "Using installed Sodium library")
 else()
+	message(STATUS "Fetch Sodium library from GitHub")
 	# Update the commit to point to whatever libsodium-cmake-commit you want to target.
 	FetchContent_Declare(Sodium
 			GIT_REPOSITORY https://github.com/robinlinden/libsodium-cmake.git
@@ -96,6 +97,9 @@ else()
 endif()
 
 # Roaring Bitmaps
+message(STATUS "Fetch Roaring Bitmap library from GitHub")
+# detection seems not work always correct with zig as compiler, so we disable AVX512 support in roaring
+set(ROARING_DISABLE_AVX512 ON)
 FetchContent_Declare(
   roaring
   GIT_REPOSITORY https://github.com/RoaringBitmap/CRoaring.git

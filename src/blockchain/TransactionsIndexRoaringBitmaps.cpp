@@ -13,7 +13,7 @@
 #include <date/date.h>
 #include <loguru/loguru.hpp>
 #include <magic_enum/magic_enum.hpp>
-#include <roaring/roaring64Map.hh>
+#include <roaring/roaring64map.hh>
 
 #include <algorithm>
 #include <array>

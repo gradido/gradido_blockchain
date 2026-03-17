@@ -11,7 +11,7 @@
 #include "gradido_blockchain/lib/TimepointInterval.h"
 
 #include <date/date.h>
-#include <roaring/roaring64Map.hh>
+#include <roaring/roaring64map.hh>
 
 #include <array>
 #include <deque>
