@@ -136,13 +136,13 @@ namespace gradido {
         else if (SearchDirection::ASC == filter.searchDirection)
         {
           resultSet->select(filter.pagination.skipEntriesCount(), &pageStartTx);
-          if (filter.pagination.size == 1) {
+          if (1 == filter.pagination.size || 1 == resultSetSize) {
             return { pageStartTx };
           }
           if (!resultSet->select(filter.pagination.skipEntriesCount() + filter.pagination.size - 1, &pageEndTx)) {
             pageEndTx = resultSet->maximum();
           }
-          if (filter.pagination.size == 2) {
+          if (2 == filter.pagination.size || 2 == resultSetSize) {
             return { pageStartTx, pageEndTx };
           }
         }
