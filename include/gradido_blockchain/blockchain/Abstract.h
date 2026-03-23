@@ -10,6 +10,7 @@
 #include "gradido_blockchain/data/Timestamp.h"
 
 #include "Filter.h"
+#include "RangeUtils.h"
 #include "../data/AddressType.h"
 #include "../data/TransactionTriggerEvent.h"
 // #include "../data/compact/ConfirmedGradidoTx.h"
@@ -78,10 +79,12 @@ namespace gradido {
 
 			// main search function, do all the work, reference from other functions
 			virtual TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const = 0;
+			virtual data::compact::ConfirmedTxs findAll(const CompactFilter& filter) const = 0;
 			virtual data::compact::ConfirmedTxs findAll(
-				const CompactFilter& filter, 
-				std::function<FilterResult(const data::compact::ConfirmedGradidoTx&)> filterFunction = nullptr
-			) const = 0;
+				const CompactFilter& filter,
+				std::function<FilterResult(const data::compact::ConfirmedGradidoTx&)> elementFilter
+			) const = 0;			
+				
 			// find all optimized for counting transaction nrs, better not use the filter.function for that, because this would slow down
 			virtual size_t countAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const;
 			virtual size_t countAll(const CompactFilter& filter) const;
@@ -117,7 +120,6 @@ namespace gradido {
 			uint32_t mCommunityIdIndex;
 			data::Timestamp mStartDate;
 		};
-
 	}
 }
 

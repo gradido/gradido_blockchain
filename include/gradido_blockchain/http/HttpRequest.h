@@ -31,4 +31,5 @@ protected:
 	bool mIsSSL;
 };
 
+
 #endif //__GRADIDO_POCO_HTTP_REQUEST

@@ -52,6 +52,7 @@ namespace gradido {
 						if (!result.has_value()) throw GradidoNodeInvalidDataException("protopuf failed with deserialize");;
 						const auto& [hieroAccountId, bufferEnd2] = *result;
 						mHieroAccountId = HieroAccountIdRole(hieroAccountId);
+						mType = Type::HIERO_ACCOUNT_ID;
 						return;
 					}
 					catch (std::exception& ex) {
@@ -67,6 +68,7 @@ namespace gradido {
 						if (!result.has_value()) throw GradidoNodeInvalidDataException("protopuf failed with deserialize");;
 						const auto& [hieroTopicId, bufferEnd2] = *result;
 						mHieroTopicId = HieroTopicIdRole(hieroTopicId);
+						mType = Type::HIERO_TOPIC_ID;
 						return;
 					}
 					catch (std::exception& ex) {
@@ -82,6 +84,7 @@ namespace gradido {
 						if (!result.has_value()) throw GradidoNodeInvalidDataException("protopuf failed with deserialize");;
 						const auto& [hieroTransactionId, bufferEnd2] = *result;
 						mHieroTransactionId = HieroTransactionIdRole(hieroTransactionId);
+						mType = Type::HIERO_TRANSACTION_ID;
 						return;
 					}
 					catch (std::exception& ex) {
@@ -97,6 +100,7 @@ namespace gradido {
 						if (!result.has_value()) throw GradidoNodeInvalidDataException("protopuf failed with deserialize");;
 						const auto& [ledgerAnchor, bufferEnd2] = *result;
 						mLedgerAnchor = LedgerAnchorRole(ledgerAnchor);
+						mType = Type::LEDGER_ANCHOR;
 						return;
 					}
 					catch (std::exception& ex) {

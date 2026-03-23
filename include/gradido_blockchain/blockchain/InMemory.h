@@ -4,6 +4,7 @@
 #include "Abstract.h"
 #include "FilterResult.h"
 #include "TransactionsIndex.h"
+#include "TransactionsIndexRoaringBitmaps.h"
 #include "gradido_blockchain/crypto/SignatureOctet.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
@@ -79,10 +80,12 @@ namespace gradido {
 
 			// from Abstract blockchain
 			TransactionEntries findAll(const Filter& filter = Filter::ALL_TRANSACTIONS) const override;
+			data::compact::ConfirmedTxs findAll(const CompactFilter& filter) const override;
 			data::compact::ConfirmedTxs findAll(
-				const CompactFilter& filter, 
-				std::function<FilterResult(const data::compact::ConfirmedGradidoTx&)> filterFunction = nullptr
-			) const override;
+				const CompactFilter& filter,
+				std::function<FilterResult(const data::compact::ConfirmedGradidoTx&)> elementFilter
+			) const;
+
 			size_t countAll(const CompactFilter& filter) const override;
 			ConstTransactionEntryPtr findOne(const Filter& filter = Filter::LAST_TRANSACTION) const override;
 			data::AddressType getAddressType(const Filter& filter = Filter::ALL_TRANSACTIONS) const override;
@@ -104,7 +107,7 @@ namespace gradido {
 			InMemory(std::string_view uniqueCommunityAlias, uint32_t communityIdIndex);
 
 			RuntimeDictionary<PublicKey, PublicKeyHash, PublicKeyEqual> mPublicKeyDirectory;
-			TransactionsIndex mTransactionsIndex;
+			TransactionsIndexRoaringBitmaps mTransactionsIndex;
 
 			// if called, mWorkMutex should be locked exclusive
 			void pushTransactionEntry(ConstTransactionEntryPtr transactionEntry);

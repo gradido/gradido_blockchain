@@ -1,6 +1,7 @@
 #include "gradido_blockchain/interaction/calculateCreationSum/V02_TargetDateAlgoRole.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/CompactFilter.h"
+#include "gradido_blockchain/blockchain/FilterResult.h"
 #include "gradido_blockchain/blockchain/PublicKeySearchType.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/TransactionType.h"
@@ -14,8 +15,9 @@
 using namespace std::chrono;
 
 namespace gradido {
-	using blockchain::CompactFilter, blockchain::PublicKeySearchType;
+	using blockchain::CompactFilter, blockchain::FilterResult, blockchain::PublicKeySearchType;
 	using blockchain::Abstract;
+	using data::compact::ConfirmedGradidoTx;
 	using data::TransactionType;
 
 	namespace interaction::calculateCreationSum {
@@ -59,17 +61,19 @@ namespace gradido {
 			filter.timepointInterval = { beforeReveived, date };
 			filter.transactionType = TransactionType::CREATION;
 
-			auto txs = blockchain.findAll(filter);
-			for (const auto& txRef : txs) {
-				const auto& tx = txRef.get();
-				if (!tx->isCreation()) {
-					throw GradidoNullPointerException("transaction isn't creation or invalid", "GradidoCreation", __FUNCTION__);
+			blockchain.findAll(filter,
+				[&sum, ym](const ConfirmedGradidoTx& tx) -> FilterResult
+				{
+					if (!tx.isCreation()) {
+						throw GradidoNullPointerException("transaction isn't creation or invalid", "GradidoCreation", __FUNCTION__);
+					}
+					auto targetDate = tx.specific.creation.targetMonthYear;
+					if (targetDate.month() == ym.month() && targetDate.year() == ym.year()) {
+						sum += tx.getAmount();
+					}
+					return FilterResult::DISMISS;
 				}
-				auto targetDate = tx->specific.creation.targetMonthYear;
-				if (targetDate.month() == ym.month() && targetDate.year() == ym.year()) {
-					sum += tx->getAmount();
-				}
-			}
+			);
 			return sum;
 		}
 	}

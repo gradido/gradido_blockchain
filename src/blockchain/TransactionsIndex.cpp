@@ -550,8 +550,8 @@ namespace gradido {
 					if (filter.maxTransactionNr && filter.maxTransactionNr < maxTx) {
 						maxTx = filter.maxTransactionNr;
 					}
-					if (maxTx > minTx) {
-						result += (maxTx - minTx);
+					if (maxTx >= minTx) {
+						result += (maxTx - minTx) + 1;
 					}
 				}
 			}

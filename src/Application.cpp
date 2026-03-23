@@ -19,17 +19,19 @@ SIGFPE	erroneous arithmetic operation such as divide by zero
 std::atomic<bool> Application::gRunning = true;
 std::mutex Application::mConditionMutex;
 std::condition_variable Application::mExitCondition;
+std::stop_source Application::mMasterStopSource;
 
 void signalHandler(int signum) {
 	if(!Application::gRunning) {
 		return;
 	}
 	switch (signum) {
-	case SIGTERM: LOG_F(INFO, "exit on termination request"); break;
-	case SIGSEGV: printf("exit because of segmentation fault\n"); break;
+	case SIGSEGV:
+	case SIGABRT:
+	case SIGILL: 
+		std::_Exit(EXIT_FAILURE);
+	case SIGTERM: LOG_F(INFO, "exit on termination request"); break;	
 	case SIGINT: LOG_F(INFO, "exit on external interrupt like STRG + C"); break;
-	case SIGILL: printf("exit because invalid program image\n"); break;
-	case SIGABRT: LOG_F(ERROR, "abnormal termination condition, as is e.g. initiated by std::abort()"); break;
 	case SIGFPE: LOG_F(ERROR, "erroneous arithmetic operation such as divide by zero"); break;
 	}
 	Application::terminate();
@@ -64,4 +66,13 @@ void Application::run()
 		mExitCondition.wait_for(lk, std::chrono::seconds(1));
 	}
 	exit();
+}
+
+void Application::terminate(bool crash /*= false */)
+{ 
+	gRunning = false;
+	if (!crash) {
+		mMasterStopSource.request_stop();
+		mExitCondition.notify_one();
+	}
 }

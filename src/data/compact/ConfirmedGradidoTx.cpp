@@ -6,6 +6,7 @@
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTxCold.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/rich/AccountBalance.h"
+#include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
 #include "gradido_protobuf_zig.h"
@@ -401,6 +402,73 @@ namespace gradido::data::compact {
       ++beginIt;
     }
     return vector<PublicKeyIndex>(beginIt, endIt);
+  }
+
+  vector<uint32_t> ConfirmedGradidoTx::getBalanceChangingPublicKeyIndices() const
+  {
+    vector<uint32_t> result(accountBalanceCount, 0);
+    for (int i = 0; i < accountBalanceCount; ++i) {
+      result[i] = accountBalances[i].publicKeyIndex;
+    }
+    return result;
+  }
+
+  std::vector<uint32_t> ConfirmedGradidoTx::getSignaturePublicKeyIndices(const IDictionary<PublicKey>& publicKeyDict) const
+  {
+    if (!coldData) return {};
+    vector<uint32_t> result(coldData->signatureMap.size(), 0);
+    for (int i = 0; i < coldData->signatureMap.size(); ++i) {
+      result[i] = publicKeyDict.getIndexForData(coldData->signatureMap[i].first);
+      if (!result[i]) {
+        throw DictionaryMissingEntryException("missing index for signature public key", coldData->signatureMap[i].first.convertToHex());
+      }
+    }
+    return result;
+  }
+
+  bool ConfirmedGradidoTx::isSignaturePublicKey(PublicKeyIndex pubkexIndex, const IDictionary<PublicKey>& publicKeyDict) const
+  {
+    if (pubkexIndex.communityIdIndex != txCommunityIdIndex) {
+      return false;
+    }
+    if (!coldData) {
+      throw GradidoNodeInvalidDataException("missing cold data for checking signature");
+    }
+    auto publicKey = publicKeyDict.getDataForIndexOrThrow(pubkexIndex.publicKeyIndex);
+    for (const auto& publicKeySignaturePair: coldData->signatureMap) {
+      if (publicKey.isTheSame(publicKeySignaturePair.first)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  std::vector<PublicKeyIndex> ConfirmedGradidoTx::getOtherInvolved() const
+  {
+    if (!isCrossCommunityTx()) {
+      if (isCommunityRoot()) {
+        return { getCommunityRootPublicKey() };
+      }
+      return {};
+    }
+    if (isInboundCrossCommunityTx()) {
+      return { getSender() };
+    }
+    else if (isOutboundCommunityTx()) {
+      return { getRecipient() };
+    }
+    return {};
+  }
+
+  bool ConfirmedGradidoTx::isOtherInvolved(PublicKeyIndex pubkeyIndex) const
+  {
+    auto otherInvolved = getOtherInvolved();
+    for (const auto& other : otherInvolved) {
+      if (other == pubkeyIndex) {
+        return true;
+      }
+    }
+    return false;
   }
 
   bool ConfirmedGradidoTx::isBalanceUpdated(PublicKeyIndex pubkeyIndex) const

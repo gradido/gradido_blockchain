@@ -3,12 +3,16 @@
 cmake_minimum_required(VERSION 3.18.2)
 cmake_policy(VERSION 3.18.2)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/toolchain.cmake")
-execute_process(
-    COMMAND git describe --tags --dirty --always
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    OUTPUT_VARIABLE GRADIDO_BLOCKCHAIN_GIT_VER
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+if(DEFINED ENV{GRADIDO_BLOCKCHAIN_VERSION})
+    set(GRADIDO_BLOCKCHAIN_GIT_VER $ENV{GRADIDO_BLOCKCHAIN_VERSION})
+else()
+	execute_process(
+		COMMAND git describe --tags --dirty --always
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		OUTPUT_VARIABLE GRADIDO_BLOCKCHAIN_GIT_VER
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+	)
+endif()
 string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" GRADIDO_BLOCKCHAIN_CLEAN_VERSION "${GRADIDO_BLOCKCHAIN_GIT_VER}")
 project(GradidoBlockchain VERSION ${GRADIDO_BLOCKCHAIN_CLEAN_VERSION})
 option(ENABLE_IOTA_RUST_CLIENT "switch for include rust iota client into build, increase build time and size a lot" OFF)
@@ -75,14 +79,15 @@ if (NOT BUILD_SHARED_LIBS)
 	add_definitions(-DSODIUM_STATIC)
 endif()
 
+	# Fetch Content Module
+include(FetchContent)
+
 set(SODIUM_DISABLE_TESTS ON)
 if(USE_INSTALLED_SODIUM)
 	find_package(Sodium REQUIRED)
 	message(STATUS "Using installed Sodium library")
 else()
-	# Fetch Content Module
-	include(FetchContent)
-
+	message(STATUS "Fetch Sodium library from GitHub")
 	# Update the commit to point to whatever libsodium-cmake-commit you want to target.
 	FetchContent_Declare(Sodium
 			GIT_REPOSITORY https://github.com/robinlinden/libsodium-cmake.git
@@ -91,6 +96,23 @@ else()
 	FetchContent_MakeAvailable(Sodium)
 endif()
 
+# Roaring Bitmaps
+message(STATUS "Fetch Roaring Bitmap library from GitHub")
+# detection seems not work always correct with zig as compiler, so we disable AVX512 support in roaring
+set(ROARING_DISABLE_AVX512 ON)
+FetchContent_Declare(
+  roaring
+  GIT_REPOSITORY https://github.com/RoaringBitmap/CRoaring.git
+  GIT_TAG v4.6.1
+  GIT_SHALLOW TRUE
+)
+
+set(ENABLE_ROARING_TESTS OFF CACHE INTERNAL "")
+
+set(ROARING_BUILD_STATIC ON CACHE INTERNAL "")
+FetchContent_MakeAvailable(roaring)
+
+FetchContent_GetProperties(roaring)
 
 if(USE_VCPKG)
 	SET(VCPKG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/vcpkg")
@@ -151,6 +173,7 @@ endif()
 
 if(ENABLE_HTTPS)
 	# CA certificates for used with cpp-httplib, make it also available for projects including this one
+	set(CACERT_H "include/gradido_blockchain/cacert.h")
 	set(CACERT_PEM "${CMAKE_BINARY_DIR}/cacert.pem" CACHE PATH "Path to CA certificates" FORCE)
 
 	if(NOT EXISTS ${CACERT_PEM})
@@ -158,7 +181,6 @@ if(ENABLE_HTTPS)
 		file(DOWNLOAD
 			https://curl.se/ca/cacert-2025-08-12.pem
 			${CACERT_PEM}
-			SHOW_PROGRESS
 			STATUS download_status
 			EXPECTED_HASH SHA256=64dfd5b1026700e0a0a324964749da9adc69ae5e51e899bf16ff47d6fd0e9a5e
 		)
@@ -168,7 +190,18 @@ if(ENABLE_HTTPS)
 		endif()
 	endif()
 
-	add_compile_definitions(CACERT_PEM_PATH="${CACERT_PEM}")
+	add_custom_command(
+			OUTPUT ${CACERT_H}
+			COMMAND ${CMAKE_COMMAND}
+					-DINPUT_FILE=${CACERT_PEM}
+					-DOUTPUT_FILE=${CACERT_H}
+					-P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_cacert.cmake
+			DEPENDS ${CACERT_PEM}
+			COMMENT "Generating cacert.h from cacert.pem (using CMake script)"
+			VERBATIM
+	)
+
+	add_custom_target(cacert_bundle DEPENDS ${CACERT_H})
 
 	if(USE_VCPKG)
 		set(OPENSSL_ROOT_DIR "${VCPKG_PATH}/installed/${VCPKG_TARGET_TRIPLET}" CACHE PATH "" FORCE)
@@ -344,13 +377,25 @@ set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP})
 
 ######################################################################
 # in zig rewritten parts
+if(CMAKE_CROSSCOMPILING AND DEFINED TARGET)
+    # Cross-Compilation: TARGET aus Toolchain-File nutzen
+    set(ZIG_BUILD_TARGET "-Dtarget=${TARGET}")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    # Nativ auf aarch64
+    set(ZIG_BUILD_TARGET "-Dtarget=aarch64-linux-gnu")
+else()
+    set(ZIG_BUILD_TARGET "")
+endif()
+
 add_custom_target(gradido_protobuf_zig_build
-    COMMAND ${CMAKE_COMMAND} -E env zig build
-        -Doptimize=ReleaseSmall
-    WORKING_DIRECTORY
-        ${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig
-		VERBATIM
+	COMMAND ${CMAKE_COMMAND} -E env zig build
+			${ZIG_BUILD_TARGET}
+			-Doptimize=ReleaseSmall
+	WORKING_DIRECTORY
+			${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig
+	VERBATIM
 )
+
 add_library(gradido_protobuf_zig STATIC IMPORTED)
 
 set_target_properties(gradido_protobuf_zig PROPERTIES
@@ -365,7 +410,40 @@ add_dependencies(gradido_protobuf_zig gradido_protobuf_zig_build)
 add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
 add_library(GradidoBlockchain::GradidoBlockchain ALIAS GradidoBlockchain)
 
-target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz gradido_protobuf_zig)
+if (ENABLE_HTTPS)
+	# bundle cacert compressed into binary
+	#set(CACERT_H "include/gradido_blockchain/cacert.h")
+	#set(COMPRESS_CACERT "${CMAKE_BINARY_DIR}/compressCacert")
+	#add_compile_definitions(CACERT_PEM_FILE_PATH="${CACERT_PEM}")
+	#add_compile_definitions(CACERT_H_OUT_PATH="${CACERT_H}")
+
+	#add_executable(compressCacert cmake/compressCacert.c)
+	#target_include_directories(compressCacert PRIVATE dependencies/miniz)
+	#target_link_libraries(compressCacert PRIVATE miniz sodium)
+
+	# --- generate C-Header ---
+	#add_custom_command(
+	#		OUTPUT ${CACERT_H}
+	#		COMMAND $<TARGET_FILE:compressCacert>
+	#		DEPENDS compressCacert ${CACERT_PEM}
+	#		COMMENT "Generating cacert.h from cacert.pem"
+	#		VERBATIM
+	#)
+	#add_custom_command(
+   # TARGET compressCacert POST_BUILD
+    #COMMAND ${CMAKE_COMMAND} -E copy_if_different
+     #       $<TARGET_FILE:sodium>
+      #      $<TARGET_FILE_DIR:compressCacert>
+	#)
+
+	#add_custom_target(cacert_bundle DEPENDS ${CACERT_H})
+	add_dependencies(${PROJECT_NAME} cacert_bundle)
+
+	# Make the generated header file visible to the main project
+	#target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR})
+endif()
+
+target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz gradido_protobuf_zig roaring)
 if(OpenSSL_FOUND)
 	target_link_libraries(GradidoBlockchain OpenSSL::SSL OpenSSL::Crypto)
 endif()

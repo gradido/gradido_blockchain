@@ -1,17 +1,56 @@
+#include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain/cacert.h"
 #include "gradido_blockchain/http/HttpRequest.h"
 #include "gradido_blockchain/http/RequestExceptions.h"
 #include "gradido_blockchain/http/ServerConfig.h"
+#include "gradido_blockchain/lib/minizLib.h"
+#include "gradido_blockchain/lib/Profiler.h"
+#include "gradido_blockchain/memory/Block.h"
+
 
 // TODO: remove furi dependency and replace with own implementation, it don't work like expected
 #include "furi/furi.hpp"
-#include "magic_enum/magic_enum.hpp"
 #include "loguru/loguru.hpp"
+#include "magic_enum/magic_enum.hpp"
+#include <openssl/ssl.h>
+#include <openssl/x509.h>
+#include <openssl/pem.h>
+#include "tinf/src/tinf.h"
 
 #ifdef USE_HTTPS
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #endif
 #include "httplib.h"
-
+/*
+memory::Block loadCacert()
+{
+	size_t rawCompressedSize = (cacert_pem_base64_len / 4) * 3; // calculate the size of decoded data
+	uint8_t* rawCompressed = (uint8_t*)malloc(rawCompressedSize); // allocate enough memory for decoded data
+	const char* firstInvalidByte = nullptr;
+	auto convertResult = sodium_base642bin(
+		rawCompressed, rawCompressedSize, // input buffer and its size
+		cacert_pem_base64, cacert_pem_base64_len, // out base64 encoded data and its size
+		nullptr,
+		nullptr, &firstInvalidByte, // result infos
+		sodium_base64_VARIANT_ORIGINAL
+	);
+	if (0 != convertResult) {
+		throw GradidoInvalidBase64Exception("invalid base64", cacert_pem_base64, firstInvalidByte - cacert_pem_base64);
+	}
+	// decompress data
+	memory::Block cacert(cacert_pem_size);
+	unsigned int finalSize = cacert_pem_size;
+	auto status = tinf_zlib_uncompress(cacert.data(), &finalSize, rawCompressed, rawCompressedSize);
+	free (rawCompressed);
+	if (cacert_pem_size != finalSize) {
+		LOG_F(WARNING, "expected cacert size: %lu, but got: %d", cacert_pem_size, finalSize);
+	}
+	if (TINF_OK != status) {
+		throw GradidoTinfDecompressException(status);
+	}
+	return cacert;
+}
+*/
 // this is to prevent crashes, because at least with C++17 and C++20 httplib crashes with calling httplib::Client deconstructor
 // so we create a new client for each new host and keep them forever and don't delete them even on program exit
 // TODO: Fix bug in httplib which leads to this crash
@@ -38,7 +77,30 @@ static std::shared_ptr<httplib::Client> getClientForHost(const std::string& host
 			return it->second;
 		}
 	}
-	auto httpClient = std::shared_ptr<httplib::Client>(new httplib::Client(host), FakeDeleter());
+	httplib::Client* client = nullptr;
+	if (isSSL) {
+		client = new httplib::Client(host, "", "");
+		Profiler timeUsed;
+		auto certStore = SSL_CTX_get_cert_store(client->ssl_context());
+		auto objs = X509_STORE_get0_objects(certStore);
+		if (!sk_X509_OBJECT_num(objs)) {
+			// PEM aus Memory laden
+			// auto cacert = loadCacert();
+			BIO* bio = BIO_new_mem_buf(CACERT_PEM.data(), CACERT_PEM.size());
+			X509* cert = nullptr;
+
+			while ((cert = PEM_read_bio_X509(bio, nullptr, 0, nullptr)) != nullptr) {
+					X509_STORE_add_cert(certStore, cert);
+					X509_free(cert);
+			}
+			BIO_free(bio);
+			LOG_F(INFO, "%s for loading cacert", timeUsed.string().c_str());
+		}
+	}
+	else {
+		client = new httplib::Client(host, 80);
+	}
+	auto httpClient = std::shared_ptr<httplib::Client>(client, FakeDeleter());
 	httpClient->set_keep_alive(true);
 	// some weird bug in httplib (debug, debian 12), intern it will move connection_timeout_sec_ to connection_timeout_usec_
 	// and setting connection_timeout_sec_ to 0 leading to calculating connection timeout:
