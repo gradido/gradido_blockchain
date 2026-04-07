@@ -9,30 +9,154 @@
 
 static const Timepoint DECAY_START_TIME = DataTypeConverter::dateTimeStringToTimePoint("2021-05-13 17:46:31");
 constexpr double SECONDS_PER_YEAR = 31556952.0; // seconds in a year in gregorian calender
+constexpr int64_t POW10[] = {1, 10, 100, 1000, 10000};
 
 using std::string, std::stringstream, std::fixed, std::setprecision, std::pow, std::round;
 
-string GradidoUnit::toString(int precision/* = 4*/) const
+GradidoUnit GradidoUnit::fromString(const std::string& stringAmount)
 {
-	if (precision < 0 || precision > 4) {
-		throw GradidoNodeInvalidDataException("expect precision in the range [0;4]");
-	}
-	stringstream ss;
-	ss << fixed << setprecision(precision);
-	double decimal = static_cast<double>(*this);
-	if (precision < 4) {
-	// round down like nodejs
-		double factor = pow(10.0, precision);
-		decimal = round(decimal * factor) / factor;
-	}
-	ss << decimal;
-	return ss.str();
+
+	// InvalidGradidoUnitStringException
+    const char* p = stringAmount.c_str();
+
+    // --- integer part ---
+    char* end;
+    int64_t integerPart = strtoll(p, &end, 10);
+    if (end == p && *p != '.') {
+				throw InvalidGradidoUnitStringException("invalid GradidoUnit string: no digits found", stringAmount);
+		}
+
+    int64_t fractionalPart = 0;
+    int digits = 0;
+
+    p = end;
+
+    // --- fractional part ---
+    if (*p == '.') {
+        p++;
+
+        // first 4 digits
+        while (isdigit(*p) && digits < 4) {
+            fractionalPart = fractionalPart * 10 + (*p - '0');
+            p++;
+            digits++;
+        }
+
+        // pad with zeros
+        while (digits < 4) {
+            fractionalPart *= 10;
+            digits++;
+        }
+
+        // --- rounding digit (5th) ---
+        if (isdigit(*p)) {
+            int roundDigit = *p - '0';
+
+            if (roundDigit >= 5) {
+                fractionalPart += 1;
+
+                // handle carry (e.g. 0.99995 -> 1.0000)
+                if (fractionalPart >= 10000) {
+                    fractionalPart = 0;
+                    integerPart += 1;
+                }
+            }
+
+            // skip remaining digits
+            while (isdigit(*p)) p++;
+        }
+    }
+
+    if (*p != '\0') throw InvalidGradidoUnitStringException("invalid GradidoUnit string: trailing characters", stringAmount);
+		// int64 max:  9,223,372,036,854,775,807
+		// int64 min: -9,223,372,036,854,775,807
+		// int64 max for integer part (without fractional part): 922,337,203,685,476
+    if (integerPart > 922337203685476 || integerPart < -922337203685476) {
+				throw InvalidGradidoUnitStringException("invalid GradidoUnit string: integer part out of bounds [-922337203685476, 922337203685476]", stringAmount);
+		}
+		int64_t result = 0;
+		if (integerPart < 0 && fractionalPart > 0) {
+			// e.g. -1.2041 -> -12041
+			result = integerPart * 10000 - fractionalPart;
+		} else {
+			result = integerPart * 10000 + fractionalPart;
+		}
+
+    return GradidoUnit(result);
 }
 
-double GradidoUnit::roundToPrecision(double GradidoUnit, uint8_t precision)
+string GradidoUnit::toString(int precision/* = 4*/) const
 {
-	auto factor = pow(10, precision);
-	return round(GradidoUnit * factor) / factor;
+  if (precision > 4) precision = 4;
+
+	auto rounded = roundToPrecision(precision);
+
+	int64_t factor = POW10[precision];
+	int written = 0;
+
+	const size_t bufferSize = 32; // enough for int64 with 4 decimal places and null terminator
+	char buffer[bufferSize]; // enough for int64 with 4 decimal places and null terminator
+	int64_t integerPart = rounded.mGradidoCent / 10000;
+	if (precision == 0) {
+			written = snprintf(buffer, bufferSize, "%lld", (long long)integerPart);
+	} else {
+		int64_t fractionalRaw = rounded.mGradidoCent % 10000;
+		if (fractionalRaw < 0) {
+			fractionalRaw = -fractionalRaw;
+		}
+
+		// Write to buffer
+		written = snprintf(
+				buffer,
+				bufferSize,
+				"%lld.%0*lld",
+				(long long)integerPart,
+				precision,
+				(long long)fractionalRaw
+		);
+		if (written > 0 && written < bufferSize && precision < 4) {
+			// remove trailing zeros
+			for (int i = 0; i < 4 - precision; i++) {
+				buffer[written - 1 - i] = '\0';
+			}
+		}
+	}
+
+  // snprintf returns number of chars that would have been written (excluding null)
+  // snprintf return negative value on encoding error
+  if (written < 0) {
+		throw GradidoNodeInvalidDataException("error converting GradidoUnit to string, snprintf failed");
+	}
+  if ((size_t)written < bufferSize) {
+    return string(buffer, written);
+  }
+  throw GradidoNodeInvalidDataException("error converting GradidoUnit to string, buffer size exceeded");
+}
+
+double GradidoUnit::roundToPrecisionDouble(double gradidoUnit, uint8_t precision)
+{
+	if (precision > 4) {
+		precision = 4;
+	}
+
+	double factor = POW10[precision];
+	return round(gradidoUnit * factor) / factor;
+}
+
+GradidoUnit GradidoUnit::roundToPrecision(uint8_t precision) const
+{
+	if (precision >= 4) return GradidoUnit(mGradidoCent);
+
+	int shift = 4 - precision;
+	int64_t divisor = POW10[shift];
+
+	// half-up rounding
+	int64_t half = divisor / 2;
+
+	if (mGradidoCent >= 0)
+		return GradidoUnit(((mGradidoCent + half) / divisor) * divisor);
+	else
+		return GradidoUnit(((mGradidoCent - half) / divisor) * divisor);
 }
 
 GradidoUnit GradidoUnit::calculateDecay(int64_t seconds) const
@@ -61,7 +185,7 @@ GradidoUnit GradidoUnit::calculateDecay(int64_t seconds) const
 	 *  lg q = (lg Kn - lg K0) / n => <br>
 	 *  q = e^((lg Kn - lg K0) / n)   <br>
 	 * <br>
-	 * with:
+	 * with:bufferSize
 	 * <ul>
 	 *  <li>q = decay_factor</li>
 	 *  <li>n = days_per_year * 60 * 60 * 24 = seconds per year</li>

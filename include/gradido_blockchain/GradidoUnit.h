@@ -13,14 +13,15 @@ class GRADIDOBLOCKCHAIN_EXPORT GradidoUnit
 public:
 	GradidoUnit() : mGradidoCent(0) {}
 	//! will be rounded to maximal 4 after comma so 1.271827 will be 1.2718
-	GradidoUnit(double gdd) : GradidoUnit(static_cast<int64_t>(roundToPrecision(gdd, 4) * 10000.0)) {};
-	GradidoUnit(const std::string& stringAmount) : GradidoUnit(std::stod(stringAmount)) {};
-    ~GradidoUnit() {};
+	GradidoUnit(double gdd) : GradidoUnit(static_cast<int64_t>(roundToPrecisionDouble(gdd, 4) * 10000.0)) {};
+  ~GradidoUnit() {};
 
 	//! expect decimal string, like 101.1728
-	static GradidoUnit fromString(const std::string& stringAmount) { return GradidoUnit(stringAmount); }
+	static GradidoUnit fromString(const std::string& stringAmount);
 	//! will be understood as gdd cent with 4 after comma, so gdd = gddCent / 10000
 	static GradidoUnit fromGradidoCent(int64_t gddCent) { return GradidoUnit(gddCent); }
+
+	GradidoUnit roundToPrecision(uint8_t precision = 4) const;
 
 //! \param precision expect value in the range [0;4]
 	std::string toString(int precision = 4) const;
@@ -70,7 +71,7 @@ public:
 protected:
   // will be understood as gdd cent with 4 after comma, so gdd = gddCent / 10000
   GradidoUnit(int64_t gddCent) : mGradidoCent(gddCent) {}
-	static double roundToPrecision(double GradidoUnit, uint8_t precision);
+	static double roundToPrecisionDouble(double GradidoUnit, uint8_t precision);
 
 	int64_t mGradidoCent;
 };
@@ -106,5 +107,20 @@ protected:
 	long long mX;
 };
 
+class InvalidGradidoUnitStringException : public GradidoBlockchainException
+{
+public:
+	explicit InvalidGradidoUnitStringException(const char* what, const std::string& gddString) noexcept
+		: GradidoBlockchainException(what), mGddString(gddString) {}
+
+	std::string getFullString() const {
+		std::string result = what();
+		result += ", gddString: " + mGddString;
+		return result;
+	}
+
+protected:
+		std::string mGddString;
+};
 
 #endif //__GRADIDO_BLOCKCHAIN_GRADIDO_UNI_H
