@@ -3,7 +3,6 @@
 
 #include <cstdint>
 #include <stack>
-#include <mutex>
 
 #define MEMORY_MANAGER_MEMORY_PAGE_STACK_MAX_COUNT_PER_SIZE_SMALLER_AS_128 256
 #define MEMORY_MANAGER_MEMORY_PAGE_STACK_MAX_COUNT_PER_SIZE_SMALLER_AS_512 32
@@ -20,7 +19,6 @@ namespace memory {
 
 	protected:
 		std::stack<uint8_t*> mBlockStack;
-		std::mutex mMutex;
 		const size_t mSize;
 	};
 

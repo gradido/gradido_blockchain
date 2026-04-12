@@ -37,7 +37,7 @@ namespace memory {
 	}
 	Manager* Manager::getInstance()
 	{
-		static Manager one;
+		thread_local static Manager one;
 		return &one;
 	}
 
