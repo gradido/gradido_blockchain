@@ -165,6 +165,16 @@ protected:
 
 };
 
+class GRADIDOBLOCKCHAIN_EXPORT GradidoMemoryAllocationFailed : public GradidoBlockchainException
+{
+public: 
+	explicit GradidoMemoryAllocationFailed(const char* what, size_t memorySize) noexcept;
+	std::string getFullString() const;
+
+protected:
+	std::string mMemorySizeString;
+};
+
 class GRADIDOBLOCKCHAIN_EXPORT GradidoNodeInvalidDataException : public GradidoBlockchainException
 {
 public: 

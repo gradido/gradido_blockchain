@@ -11,6 +11,7 @@
 
 using namespace magic_enum;
 using namespace rapidjson;
+using std::string, std::stringstream, std::to_string;
 
 GradidoBlockchainTransactionNotFoundException::GradidoBlockchainTransactionNotFoundException(const char* what) noexcept
 	: GradidoBlockchainException(what), mTransactionId(0)
@@ -18,10 +19,10 @@ GradidoBlockchainTransactionNotFoundException::GradidoBlockchainTransactionNotFo
 
 }
 
-std::string GradidoBlockchainTransactionNotFoundException::getFullString() const
+string GradidoBlockchainTransactionNotFoundException::getFullString() const
 {
-	std::string result;
-	std::string transactionIdString;
+	string result;
+	string transactionIdString;
 	size_t resultSize = strlen(what()) + 2;
 	if (mTransactionId) {
 		transactionIdString = std::to_string(mTransactionId);
@@ -40,10 +41,10 @@ GradidoBlockchainTransactionAlreadyExistException::GradidoBlockchainTransactionA
 
 }
 
-std::string GradidoBlockchainTransactionAlreadyExistException::getFullString() const
+string GradidoBlockchainTransactionAlreadyExistException::getFullString() const
 {
-	std::string result;
-	std::string transactionIdString;
+	string result;
+	string transactionIdString;
 	size_t resultSize = strlen(what()) + 2;
 	if (mTransactionId) {
 		transactionIdString = std::to_string(mTransactionId);
@@ -63,16 +64,16 @@ RapidjsonParseErrorException::RapidjsonParseErrorException(const char* what, Par
 
 }
 
-RapidjsonParseErrorException& RapidjsonParseErrorException::setRawText(const std::string& rawText)
+RapidjsonParseErrorException& RapidjsonParseErrorException::setRawText(const string& rawText)
 {
 	mRawText = rawText;
 	return *this;
 }
-std::string RapidjsonParseErrorException::getFullString() const
+string RapidjsonParseErrorException::getFullString() const
 {
-	std::string resultString;
+	string resultString;
 	auto parseErrorCodeString = GetParseError_En(mParseErrorCode);
-	std::string parseErrorOffsetString = std::to_string(mParseErrorOffset);
+	string parseErrorOffsetString = std::to_string(mParseErrorOffset);
 
 	size_t resultSize = strlen(what()) + strlen(parseErrorCodeString) + 15 + parseErrorOffsetString.size() + 14 + 2; 
 	if (mRawText.size()) {
@@ -108,9 +109,9 @@ RapidjsonMissingMemberException::RapidjsonMissingMemberException(const char* wha
 
 }
 
-std::string RapidjsonMissingMemberException::getFullString() const
+string RapidjsonMissingMemberException::getFullString() const
 {
-	std::string result;
+	string result;
 	result = what();
 	if (mFieldName.size()) {
 		result += ", field name: " + mFieldName;
@@ -122,15 +123,15 @@ std::string RapidjsonMissingMemberException::getFullString() const
 }
 
 // *************************** Invalid Enum Exception *****************************
-GradidoInvalidEnumException::GradidoInvalidEnumException(const char* what, const std::string& enumString) noexcept
+GradidoInvalidEnumException::GradidoInvalidEnumException(const char* what, const string& enumString) noexcept
 	: GradidoBlockchainException(what), mEnumString(enumString)
 {
 
 }
 
-std::string GradidoInvalidEnumException::getFullString() const
+string GradidoInvalidEnumException::getFullString() const
 {
-	std::string resultString;
+	string resultString;
 	size_t resultSize = strlen(what()) + mEnumString.size() + 10;
 	resultString.reserve(resultSize);
 	resultString = what();
@@ -145,9 +146,9 @@ GradidoUnknownEnumException::GradidoUnknownEnumException(const char* what, const
 
 }
 
-std::string GradidoUnknownEnumException::getFullString() const
+string GradidoUnknownEnumException::getFullString() const
 {
-	std::string resultString;
+	string resultString;
 	size_t resultSize = strlen(what()) + mEnumName.size() + mEnumValue.size() + 2 + 13 + 9;
 	resultString.reserve(resultSize);
 	resultString = what();
@@ -157,14 +158,14 @@ std::string GradidoUnknownEnumException::getFullString() const
 }
 
 // **************************** Invalid Base64 ****************************************
-GradidoInvalidBase64Exception::GradidoInvalidBase64Exception(const char* what, const std::string& base64, size_t lastValidCharacterIndex) noexcept
+GradidoInvalidBase64Exception::GradidoInvalidBase64Exception(const char* what, const string& base64, size_t lastValidCharacterIndex) noexcept
 	: GradidoBlockchainException(what), mBase64(base64), mLastValidCharacterIndex(lastValidCharacterIndex)
 {
 }
 
-std::string GradidoInvalidBase64Exception::getFullString() const
+string GradidoInvalidBase64Exception::getFullString() const
 {
-	std::string resultString;	
+	string resultString;	
 	size_t resultSize = strlen(what()) + 8 + mBase64.size() + 14 + mLastValidCharacterIndex + 2;
 	resultString.reserve(resultSize);
 	resultString = what();
@@ -179,15 +180,15 @@ std::string GradidoInvalidBase64Exception::getFullString() const
 }
 
 // ********************************* Invalid Hex **********************************************
-GradidoInvalidHexException::GradidoInvalidHexException(const char* what, const std::string& hex) noexcept
+GradidoInvalidHexException::GradidoInvalidHexException(const char* what, const string& hex) noexcept
 	: GradidoBlockchainException(what), mHex(hex)
 {
 
 }
 
-std::string GradidoInvalidHexException::getFullString() const
+string GradidoInvalidHexException::getFullString() const
 {
-	std::string resultString;
+	string resultString;
 	size_t resultSize = strlen(what()) + mHex.size() + 10;
 	resultString.reserve(resultSize);
 	resultString = what();
@@ -203,7 +204,7 @@ BlockchainOrderException::BlockchainOrderException(const char* what) noexcept
 
 }
 
-std::string BlockchainOrderException::getFullString() const
+string BlockchainOrderException::getFullString() const
 {
 	return what();
 }
@@ -214,9 +215,9 @@ InsufficientBalanceException::InsufficientBalanceException(const char* what, Gra
 {
 }
 
-std::string InsufficientBalanceException::getFullString() const noexcept
+string InsufficientBalanceException::getFullString() const noexcept
 {
-	std::string resultString;
+	string resultString;
 	size_t resultSize = strlen(what()) + mNeeded.size() + mExist.size() + 2 + 10;
 	resultString.reserve(resultSize);
 	resultString = what();
@@ -243,18 +244,31 @@ GradidoNullPointerException::GradidoNullPointerException(const char* what, const
 
 }
 
-std::string GradidoNullPointerException::getFullString() const
+string GradidoNullPointerException::getFullString() const
 {
-	std::string resulString = what();
+	string resulString = what();
 	resulString += ", type name: " + mTypeName + ", function name: " + mFunctionName;
+	return resulString;
+}
+
+// ****************************** Memory Allocation Failed Exception **********************************************
+GradidoMemoryAllocationFailed::GradidoMemoryAllocationFailed(const char* what, size_t memorySize) noexcept
+	: GradidoBlockchainException(what), mMemorySizeString(to_string(memorySize)) {
+
+}
+
+string GradidoMemoryAllocationFailed::getFullString() const
+{
+	string resulString = what();
+	resulString += ", memory Size: " + mMemorySizeString;
 	return resulString;
 }
 
 // ****************************** Invalid Size Exception **********************************************
 
-std::string InvalidSizeException::getFullString() const
+string InvalidSizeException::getFullString() const
 {
-	std::string result = what();
+	string result = what();
 	result += ", expected size: " + std::to_string(mExpectedSize);
 	result += ", actual size: " + std::to_string(mActualSize);
 	return result;
@@ -262,9 +276,9 @@ std::string InvalidSizeException::getFullString() const
 
 // **************************** Invalid Gradido Transaction Exception **********************************
 
-std::string InvalidGradidoTransaction::getFullString() const 
+string InvalidGradidoTransaction::getFullString() const 
 {
-	std::stringstream ss;
+	stringstream ss;
 	ss << what();
 	if(mRawData) {
 		ss << ", raw data in hex for analysis with protoscope" << std::endl;
@@ -274,9 +288,9 @@ std::string InvalidGradidoTransaction::getFullString() const
 }
 
 // **************************** end date before start date exception **********************************
-std::string EndDateBeforeStartDateException::getFullString() const 
+string EndDateBeforeStartDateException::getFullString() const 
 {
-	std::string result = what();
+	string result = what();
 	result += ", start date: " + DataTypeConverter::timePointToString(mStartDate);
 	result += ", end date: " + DataTypeConverter::timePointToString(mEndDate);
 	return result;

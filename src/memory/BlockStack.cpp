@@ -1,4 +1,5 @@
 #include "gradido_blockchain/memory/BlockStack.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 
 #include <cstring>
 namespace memory {
@@ -21,6 +22,9 @@ namespace memory {
 		}
 		if (!block) {
 			block = static_cast<uint8_t*>(malloc(mSize));
+		}
+		if (!block) {
+			throw GradidoMemoryAllocationFailed("BlockStack Allocation failed", mSize);
 		}
 		memset(block, 0, mSize);
 		return block;
