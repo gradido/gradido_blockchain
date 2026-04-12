@@ -9,14 +9,13 @@
 
 static const Timepoint DECAY_START_TIME = DataTypeConverter::dateTimeStringToTimePoint("2021-05-13 17:46:31");
 constexpr double SECONDS_PER_YEAR = 31556952.0; // seconds in a year in gregorian calender
-constexpr int64_t POW10[] = {1, 10, 100, 1000, 10000};
 
 using std::string, std::stringstream, std::fixed, std::setprecision, std::pow, std::round;
 
+constexpr int64_t POW10[] = { 1, 10, 100, 1000, 10000 };
+
 GradidoUnit GradidoUnit::fromString(const std::string& stringAmount)
 {
-
-	// InvalidGradidoUnitStringException
     const char* p = stringAmount.c_str();
 
     // --- integer part ---
@@ -33,8 +32,10 @@ GradidoUnit GradidoUnit::fromString(const std::string& stringAmount)
 
     // --- fractional part ---
     if (*p == '.') {
-        p++;
+				++p;
 
+				// why not using strtoll here also?
+				// because we need only the next 4 numbers, we will check the 5th later because of rounding and skip the rest
         // first 4 digits
         while (isdigit(*p) && digits < 4) {
             fractionalPart = fractionalPart * 10 + (*p - '0');
@@ -85,52 +86,50 @@ GradidoUnit GradidoUnit::fromString(const std::string& stringAmount)
     return GradidoUnit(result);
 }
 
-string GradidoUnit::toString(int precision/* = 4*/) const
+std::string GradidoUnit::toString(int precision/* = 4*/) const
 {
-  if (precision > 4) precision = 4;
+	if (precision > 4) precision = 4;
 
-	auto rounded = roundToPrecision(precision);
+	auto rounded = roundToPrecision(precision).getGradidoCent();
 
-	int64_t factor = POW10[precision];
-	int written = 0;
+	bool negative = rounded < 0;
 
 	const size_t bufferSize = 32; // enough for int64 with 4 decimal places and null terminator
-	char buffer[bufferSize]; // enough for int64 with 4 decimal places and null terminator
-	int64_t integerPart = rounded.mGradidoCent / 10000;
-	if (precision == 0) {
-			written = snprintf(buffer, bufferSize, "%lld", (long long)integerPart);
-	} else {
-		int64_t fractionalRaw = rounded.mGradidoCent % 10000;
-		if (fractionalRaw < 0) {
-			fractionalRaw = -fractionalRaw;
-		}
+	char buffer[bufferSize];
+	size_t cursor = 0;
 
-		// Write to buffer
-		written = snprintf(
-				buffer,
-				bufferSize,
-				"%lld.%0*lld",
-				(long long)integerPart,
-				precision,
-				(long long)fractionalRaw
-		);
-		if (written > 0 && written < bufferSize && precision < 4) {
-			// remove trailing zeros
-			for (int i = 0; i < 4 - precision; i++) {
-				buffer[written - 1 - i] = '\0';
-			}
-		}
+	if (negative) {
+		rounded *= -1;
+		buffer[cursor++] = '-';
 	}
-
-  // snprintf returns number of chars that would have been written (excluding null)
-  // snprintf return negative value on encoding error
-  if (written < 0) {
-		throw GradidoNodeInvalidDataException("error converting GradidoUnit to string, snprintf failed");
+	if (!precision) {
+		int64_t integerPart = rounded / 10000;
+		cursor += DataTypeConverter::uint64ToString(integerPart, &buffer[cursor]);
+		return string(buffer, cursor);
 	}
-  if ((size_t)written < bufferSize) {
-    return string(buffer, written);
-  }
-  throw GradidoNodeInvalidDataException("error converting GradidoUnit to string, buffer size exceeded");
+	// int64_t integerPart = rounded / 10000;
+	// int64_t fractional = rounded - integerPart * 10000;
+	
+	auto numberPlacesCount = DataTypeConverter::uint64ToString(rounded, &buffer[cursor]);
+	// pad with 0
+	if (numberPlacesCount < 5) {
+		auto paddingCount = 5 - numberPlacesCount;
+		memcpy(&buffer[paddingCount + cursor], &buffer[cursor], numberPlacesCount);
+		memset(&buffer[cursor], '0', paddingCount);
+		cursor += paddingCount;
+	}
+	cursor += numberPlacesCount;
+	// make room for .
+	memcpy(&buffer[cursor - 3], &buffer[cursor - 4], 5);
+	cursor++;
+	buffer[cursor - 5] = '.';
+	
+	if (precision != 4) {
+		cursor -= 4 - precision;
+		buffer[cursor] = '\0';
+	}
+	
+	return string(buffer, cursor);
 }
 
 double GradidoUnit::roundToPrecisionDouble(double gradidoUnit, uint8_t precision)
@@ -148,15 +147,23 @@ GradidoUnit GradidoUnit::roundToPrecision(uint8_t precision) const
 	if (precision >= 4) return GradidoUnit(mGradidoCent);
 
 	int shift = 4 - precision;
-	int64_t divisor = POW10[shift];
+	uint64_t divisor = POW10[shift];
 
 	// half-up rounding
-	int64_t half = divisor / 2;
-
-	if (mGradidoCent >= 0)
-		return GradidoUnit(((mGradidoCent + half) / divisor) * divisor);
-	else
-		return GradidoUnit(((mGradidoCent - half) / divisor) * divisor);
+	uint64_t half = divisor / 2;
+	uint64_t rounded = 0;
+	uint64_t gdd = mGradidoCent;
+	if (mGradidoCent < 0) {
+			gdd = -mGradidoCent;
+	}
+	rounded = ((gdd + half) / divisor) * divisor;
+	if (rounded > 9223372036854775807) {
+		throw FixedPointedArithmetikOverflowException("rounded value exceed int64 range", mGradidoCent);
+	}
+	if (mGradidoCent < 0) {
+		return GradidoUnit::fromGradidoCent(-(int64_t)rounded);
+	}
+	return GradidoUnit::fromGradidoCent(rounded);
 }
 
 GradidoUnit GradidoUnit::calculateDecay(int64_t seconds) const

@@ -65,6 +65,9 @@ namespace DataTypeConverter
 	GRADIDOBLOCKCHAIN_EXPORT int replaceBase64WithHex(rapidjson::Value &json, rapidjson::Document::AllocatorType &alloc);
 	GRADIDOBLOCKCHAIN_EXPORT std::string replaceNewLineWithBr(std::string &in);
 
+	GRADIDOBLOCKCHAIN_EXPORT size_t uint64ToString(uint64_t value, char* buffer);
+
+
 	class GRADIDOBLOCKCHAIN_EXPORT InvalidHexException : public GradidoBlockchainException
 	{
 	public:
