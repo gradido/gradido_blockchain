@@ -1,6 +1,5 @@
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
-#include "lr_printer_2_digits.hpp"
 
 #include "sodium.h"
 #include "date/date.h"
@@ -15,8 +14,6 @@
 #include <string.h>
 
 using namespace std::chrono;
-
-static const ml::printers::lr_printer_2_digits<uint64_t> g_fastPrinter;
 
 namespace DataTypeConverter
 {
