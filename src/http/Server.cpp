@@ -1,5 +1,6 @@
 #include "gradido_blockchain/http/Server.h"
 #include "gradido_blockchain/http/ServerExceptions.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 
 #ifdef USE_HTTPS
 #define CPPHTTPLIB_OPENSSL_SUPPORT
@@ -7,7 +8,9 @@
 
 #include "cpp-httplib/httplib.h"
 #include "loguru/loguru.hpp"
+#include "magic_enum/magic_enum.hpp"
 
+using namespace magic_enum;
 
 Server::Server(std::string_view host, int port, std::string_view name)
 	: mHost(host), mPort(port), mName(name), mServer(new httplib::Server), mServerThread(nullptr)
@@ -107,6 +110,23 @@ void Server::exit()
 		delete pair.second;
 	}
 	mRegisteredResponseHandlers.clear();
+}
+
+void Server::registerCallbackHandler(const std::string& pathName, MethodType type, Callback handler)
+{
+	switch (type) {
+	case MethodType::GET: mServer->Get(pathName, handler); break;
+	case MethodType::POST: mServer->Post(pathName, handler); break;
+	case MethodType::PUT: mServer->Put(pathName, handler); break;
+	case MethodType::OPTIONS: mServer->Options(pathName, handler); break;
+	case MethodType::DEL: mServer->Delete(pathName, handler); break;
+	default: 
+		throw GradidoUnhandledEnum(
+			"in Server::registerCallbackHandler", 
+			enum_type_name<decltype(type)>().data(), 
+			enum_name(type).data()
+		);
+	}
 }
 
 void Server::registerPath(const std::string& pathName)
