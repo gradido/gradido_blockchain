@@ -8,8 +8,6 @@
 #include <iomanip>
 #include <random>
 
-const long double DECAY_CONST = 0.9999999780350404;// 48973201202316767079413460520837376;
-
 ::testing::AssertionResult IsBetweenInclusive(int64_t val, int64_t a, int64_t b)
 {
   if ((val >= a) && (val <= b))
@@ -30,6 +28,7 @@ TEST(GradidoUnitTest, ConstructWithDouble)
 {
   auto doubleConstructor = GradidoUnit(0.10212);
   EXPECT_EQ(static_cast<double>(doubleConstructor), 0.1021);
+  EXPECT_EQ(doubleConstructor.getGradidoCent(), 1021);
   EXPECT_EQ(doubleConstructor.toString(), "0.1021");
 }
 
@@ -156,7 +155,6 @@ TEST(GradidoUnitTest, toString_AllCases)
   v = GradidoUnit(0.00004);
   EXPECT_EQ("0.0000", v.toString(4));
 
-  
   v = GradidoUnit::fromGradidoCent(3000);
   EXPECT_EQ("0.3", v.toString(1));
   EXPECT_EQ("0.30", v.toString(2));

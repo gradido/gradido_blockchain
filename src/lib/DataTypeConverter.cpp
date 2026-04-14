@@ -391,19 +391,19 @@ namespace DataTypeConverter
 
 	// string print using lr-algo
 	// https://medium.com/data-science/34-faster-integer-to-string-conversion-algorithm-c72453d25352
-	static int count_digits(uint64_t v) 
-	{		
+	static int count_digits(uint64_t v)
+	{
 		static uint64_t powers[] = {
 			10, 100, 1'000, 10'000, 100'000,
 			1'000'000, 10'000'000, 100'000'000,
 			1'000'000'000, 10'000'000'000, 100'000'000'000,
-			1'000'000'000'000, 10'000'000'000'000, 100'000'000'000'000, 
-			1'000'000'000'000'000, 10'000'000'000'000'000, 100'000'000'000'000'000, 
-			1'000'000'000'000'000'000, 10'000'000'000'000'000'000
+			1'000'000'000'000, 10'000'000'000'000, 100'000'000'000'000,
+			1'000'000'000'000'000, 10'000'000'000'000'000, 100'000'000'000'000'000,
+			1'000'000'000'000'000'000, 10'000'000'000'000'000'000u
 		};
 		int i = 0;
 		while (v >= powers[i++] && i < 19);
-		return i;		
+		return i;
 	}
 
 	size_t uint64ToString(uint64_t value, char* buffer)
@@ -413,8 +413,8 @@ namespace DataTypeConverter
 			buffer[1] = '\0';
 			return 1;
 		}
-		int len = count_digits(value);		
-		int cursor = len;		
+		int len = count_digits(value);
+		int cursor = len;
 		buffer[cursor] = '\0';
 
 		static const char DIGIT_TABLE[201] =

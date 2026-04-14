@@ -23,8 +23,7 @@ namespace memory {
 	protected:
 		Manager();
 		// bool mInitalized;
-		//std::unordered_map<size_t, BlockStack*> mBlockStacks;
-		 std::array<BlockStack, kNumBuckets> mBlockStacks;
+		std::array<BlockStack, kNumBuckets> mBlockStacks;
 	};
 
 	int Manager::roundUpToBucket(size_t size)
