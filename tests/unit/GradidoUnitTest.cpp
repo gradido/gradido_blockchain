@@ -5,7 +5,9 @@
 #include "gradido_blockchain/lib/MultithreadList.h"
 
 #include <array>
+#include <iomanip>
 #include <random>
+
 const long double DECAY_CONST = 0.9999999780350404;// 48973201202316767079413460520837376;
 
 ::testing::AssertionResult IsBetweenInclusive(int64_t val, int64_t a, int64_t b)
@@ -75,7 +77,13 @@ TEST(GradidoUnitTest, With100Gdd14DaysDecay)
   auto decayed = startValue.calculateDecay(60 * 60 * 24 * 14);
   // printf("decayed value: %s\n", decayed.toString().data());
   ASSERT_EQ(decayed.getGradidoCent(), 973781);
-}	
+}
+
+TEST(GradidoUnitTest, FromStringNegativeSubInteger)
+{
+  auto v = GradidoUnit::fromString("-0.0001");
+  EXPECT_EQ(v.getGradidoCent(), -1);
+}
 
 TEST(GradidoUnitTest, toString_AllCases)
 {

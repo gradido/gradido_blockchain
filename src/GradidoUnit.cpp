@@ -18,6 +18,12 @@ GradidoUnit GradidoUnit::fromString(const std::string& stringAmount)
 {
     const char* p = stringAmount.c_str();
 
+		bool negative = false;
+
+		if (*p == '-') {
+        negative = true;
+        ++p;
+		}
     // --- integer part ---
     char* end;
     int64_t integerPart = strtoll(p, &end, 10);
@@ -39,14 +45,14 @@ GradidoUnit GradidoUnit::fromString(const std::string& stringAmount)
         // first 4 digits
         while (isdigit(*p) && digits < 4) {
             fractionalPart = fractionalPart * 10 + (*p - '0');
-            p++;
-            digits++;
+            ++p;
+            ++digits;
         }
 
         // pad with zeros
         while (digits < 4) {
             fractionalPart *= 10;
-            digits++;
+            ++digits;
         }
 
         // --- rounding digit (5th) ---
@@ -76,12 +82,11 @@ GradidoUnit GradidoUnit::fromString(const std::string& stringAmount)
 				throw InvalidGradidoUnitStringException("invalid GradidoUnit string: integer part out of bounds [-922337203685476, 922337203685476]", stringAmount);
 		}
 		int64_t result = 0;
-		if (integerPart < 0 && fractionalPart > 0) {
-			// e.g. -1.2041 -> -12041
-			result = integerPart * 10000 - fractionalPart;
-		} else {
-			result = integerPart * 10000 + fractionalPart;
+		if (negative) {
+			integerPart *= -1;
+			fractionalPart *= -1;
 		}
+		result = integerPart * 10000 + fractionalPart;
 
     return GradidoUnit(result);
 }
