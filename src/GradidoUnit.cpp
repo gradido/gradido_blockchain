@@ -2,98 +2,47 @@
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
+#define R128_IMPLEMENTATION
+#include "r128.h"
+
 #include <cmath>
 #include <iomanip>
 #include <sstream>
 #include <cassert>
 
 static const Timepoint DECAY_START_TIME = DataTypeConverter::dateTimeStringToTimePoint("2021-05-13 17:46:31");
-constexpr double SECONDS_PER_YEAR = 31556952.0; // seconds in a year in gregorian calender
+constexpr long double SECONDS_PER_YEAR = 31556952.0; // seconds in a year in gregorian calender
 
 using std::string, std::stringstream, std::fixed, std::setprecision, std::pow, std::round;
 
-constexpr int64_t POW10[] = { 1, 10, 100, 1000, 10000 };
+constexpr int64_t POW10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
 
 GradidoUnit GradidoUnit::fromString(const std::string& stringAmount)
 {
-    const char* p = stringAmount.c_str();
-
-		bool negative = false;
-
-		if (*p == '-') {
-        negative = true;
-        ++p;
-		}
-    // --- integer part ---
-    char* end;
-    int64_t integerPart = strtoll(p, &end, 10);
-    if (end == p && *p != '.') {
-				throw InvalidGradidoUnitStringException("invalid GradidoUnit string: no digits found", stringAmount);
-		}
-
-    int64_t fractionalPart = 0;
-    int digits = 0;
-
-    p = end;
-
-    // --- fractional part ---
-    if (*p == '.') {
-				++p;
-
-				// why not using strtoll here also?
-				// because we need only the next 4 numbers, we will check the 5th later because of rounding and skip the rest
-        // first 4 digits
-        while (isdigit(*p) && digits < 4) {
-            fractionalPart = fractionalPart * 10 + (*p - '0');
-            ++p;
-            ++digits;
-        }
-
-        // pad with zeros
-        while (digits < 4) {
-            fractionalPart *= 10;
-            ++digits;
-        }
-
-        // --- rounding digit (5th) ---
-        if (isdigit(*p)) {
-            int roundDigit = *p - '0';
-
-            if (roundDigit >= 5) {
-                fractionalPart += 1;
-
-                // handle carry (e.g. 0.99995 -> 1.0000)
-                if (fractionalPart >= 10000) {
-                    fractionalPart = 0;
-                    integerPart += 1;
-                }
-            }
-
-            // skip remaining digits
-            while (isdigit(*p)) p++;
-        }
-    }
-
-    if (*p != '\0') throw InvalidGradidoUnitStringException("invalid GradidoUnit string: trailing characters", stringAmount);
-		// int64 max:  9,223,372,036,854,775,807
-		// int64 min: -9,223,372,036,854,775,807
-		// int64 max for integer part (without fractional part): 922,337,203,685,476
-    if (integerPart > 922337203685476 || integerPart < -922337203685476) {
-				throw InvalidGradidoUnitStringException("invalid GradidoUnit string: integer part out of bounds [-922337203685476, 922337203685476]", stringAmount);
-		}
-		int64_t result = 0;
-		if (negative) {
-			integerPart *= -1;
-			fractionalPart *= -1;
-		}
-		result = integerPart * 10000 + fractionalPart;
-
-    return GradidoUnit(result);
+		R128 gradidoPrecise;
+		r128FromString(&gradidoPrecise, stringAmount.c_str(), nullptr);
+		return gradidoPrecise;
+		
 }
 
 std::string GradidoUnit::toString(int precision/* = 4*/) const
 {
-	if (precision > 4) precision = 4;
+	auto rounded = roundToPrecision(precision).mGradidoPrecise;
+	R128ToStringFormat options{
+		.sign = R128ToStringSign_Default,
+		.width = 1 + precision,
+		.precision = precision,
+		.zeroPad = 0,
+		.decimal = 0,
+		.leftAlign = 0 // 0 = means right align
+	};
+	if (!rounded.lo) {
+		options.width = 0;
+	}
+	char buffer[42];
+	auto written = r128ToStringOpt(buffer, 42, &rounded, &options);
+	return string(buffer, written);
+	/*if (precision > 4) precision = 4;
 
 	auto rounded = roundToPrecision(precision).getGradidoCent();
 
@@ -135,62 +84,39 @@ std::string GradidoUnit::toString(int precision/* = 4*/) const
 	}
 	
 	return string(buffer, cursor);
+	*/
 }
 
-double GradidoUnit::roundToPrecisionDouble(double gradidoUnit, uint8_t precision)
+double GradidoUnit::roundToPrecisionDouble(R128 gradidoUnit, uint8_t precision)
 {
 	if (precision > 4) {
 		precision = 4;
 	}
 
-	double factor = POW10[precision];
-	return round(gradidoUnit * factor) / factor;
+	R128 factor = POW10[precision];
+	R128 scaled = gradidoUnit * factor;
+	R128 scaledRounded;
+	r128Round(&scaledRounded, &scaled);
+	return scaledRounded / factor;
 }
 
 GradidoUnit GradidoUnit::roundToPrecision(uint8_t precision) const
 {
-	if (precision >= 4) return GradidoUnit(mGradidoCent);
+	if (precision >= 8) precision = 8;
+	
+	R128 factor = POW10[precision];
 
-	int shift = 4 - precision;
-	uint64_t divisor = POW10[shift];
-
-	// half-up rounding
-	uint64_t half = divisor / 2;
-	uint64_t rounded = 0;
-	uint64_t gdd = mGradidoCent;
-	if (mGradidoCent < 0) {
-			gdd = -mGradidoCent;
-	}
-	rounded = ((gdd + half) / divisor) * divisor;
-	if (rounded > 9223372036854775807) {
-		throw FixedPointedArithmetikOverflowException("rounded value exceed int64 range", mGradidoCent);
-	}
-	if (mGradidoCent < 0) {
-		return GradidoUnit::fromGradidoCent(-(int64_t)rounded);
-	}
-	return GradidoUnit::fromGradidoCent(rounded);
+	R128 scaled = mGradidoPrecise * factor;
+	R128 rounded;
+	r128Round(&rounded, &scaled);
+	return rounded / factor;
 }
 
 GradidoUnit GradidoUnit::calculateDecay(int64_t seconds) const
 {
-	if (seconds == 0) return mGradidoCent;
+	if (seconds == 0) return GradidoUnit(mGradidoPrecise);
 	
-	// decay for one year is 50%
-	/*
-	* while (seconds >= SECONDS_PER_YEAR) {
-		mGradidoCent *= 0.5;
-		seconds -= SECONDS_PER_YEAR;
-	}
-	*/
-	int64_t gradidoCent = mGradidoCent;
-	// optimize version from above
-	if (seconds >= SECONDS_PER_YEAR) {
-		auto times = static_cast<uint64_t>(seconds / SECONDS_PER_YEAR);
-		seconds = seconds - times * SECONDS_PER_YEAR;
-		gradidoCent = mGradidoCent >> times;
-		if (!seconds) return gradidoCent;
-	}
-//	*/
+	//	*/
 	/*!
 	 *  calculate decay factor with compound interest formula converted to q <br>
 	 *  n = (lg Kn - lg K0) / lg q => <br>
@@ -211,7 +137,10 @@ GradidoUnit GradidoUnit::calculateDecay(int64_t seconds) const
 	 */
 	// https://www.wolframalpha.com/input?i=%28e%5E%28lg%282%29+%2F+31556952%29%29%5Ex&assumption=%7B%22FunClash%22%2C+%22lg%22%7D+-%3E+%7B%22Log%22%7D
 	// from wolframalpha, based on the interest rate formula
-	return GradidoUnit(static_cast<int64_t>(static_cast<double>(gradidoCent) * pow(2.0, static_cast<double>(static_cast<double>(-seconds) / SECONDS_PER_YEAR))));
+	// return GradidoUnit(static_cast<int64_t>(static_cast<double>(gradidoCent) * pow(2.0, static_cast<double>(static_cast<double>(-seconds) / SECONDS_PER_YEAR))));
+	R128 factorDouble((double)pow(2.0, -static_cast<double>(seconds) / SECONDS_PER_YEAR));
+	// 3. Multipliziere den Betrag mit dem skalierten Faktor
+	return mGradidoPrecise * factorDouble;
 }
 
 Duration GradidoUnit::calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime)

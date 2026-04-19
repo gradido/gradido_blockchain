@@ -333,6 +333,7 @@ include_directories(
 	"dependencies/furi/code"
 	"dependencies/magic_enum/include"
 	"dependencies/protopuf/include"
+	"dependencies/r128"
 	"dependencies/rapidjson/include"
 	"dependencies/tinf/src"
 	"dependencies/miniz"

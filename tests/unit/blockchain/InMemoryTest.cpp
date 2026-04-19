@@ -407,9 +407,15 @@ TEST_F(InMemoryTest, CreationTransactions)
 	auto balanceCalculator = calculateAccountBalance::Context(mBlockchain);
 	auto gmwBalance = balanceCalculator.fromEnd(g_KeyPairs[1]->getPublicKey(), mLastConfirmedAt);
 	auto aufBalance = balanceCalculator.fromEnd(g_KeyPairs[2]->getPublicKey(), mLastConfirmedAt);
+	auto balance6Str = getBalance(6, mLastConfirmedAt).toString(8);
+	auto balance8Str = getBalance(8, mLastConfirmedAt).toString(8);
 	auto creationSum = getBalance(8, mLastConfirmedAt) + getBalance(6, mLastConfirmedAt);
+	auto gmwStr = gmwBalance.toString(8);
+	auto creationStr = creationSum.toString(8);
+	auto aufStr = aufBalance.toString(8);
 	EXPECT_EQ(gmwBalance, creationSum);
 	EXPECT_EQ(aufBalance, creationSum);
+	logBlockchain();
 }
 
 
@@ -513,7 +519,8 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	auto userBalance = getBalance(6, mLastConfirmedAt);
 	auto lastUserBalanceDate = mLastConfirmedAt;
 	EXPECT_EQ(userBalance, GradidoUnit(438.7963));
-	auto diff = userBalance - (userBalanceAtDeferredTransferTime - blockedDeferredTransferBalance);
+
+	auto diff = (userBalanceAtDeferredTransferTime - blockedDeferredTransferBalance) - userBalance;
 	// the difference should be small, normaly it should be identical but we must account for rounding errors
 	EXPECT_LE(abs(diff.getGradidoCent()), 1);
 	EXPECT_LT(userBalance + deferredTransferBalance, GradidoUnit(1000.0));

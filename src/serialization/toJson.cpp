@@ -101,7 +101,7 @@ namespace serialization {
 	template<>
 	Value toJson(const GradidoUnit& gdd, Document::AllocatorType& alloc)
 	{
-		return toJson(gdd.toString(4), alloc);
+		return toJson(gdd.toString(8), alloc);
 	}
 
 #ifdef _WIN32
