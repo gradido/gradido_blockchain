@@ -237,4 +237,25 @@ protected:
 	Timepoint mStartDate;
 	Timepoint mEndDate;
 };
+
+class GRADIDOBLOCKCHAIN_EXPORT FixedPointedArithmetikOverflowException : public GradidoBlockchainException
+{
+public:
+	explicit FixedPointedArithmetikOverflowException(const char* what, long long x) noexcept;
+	std::string getFullString() const;
+
+protected:
+	long long mX;
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT InvalidGradidoUnitStringException : public GradidoBlockchainException
+{
+public:
+	explicit InvalidGradidoUnitStringException(const char* what, const std::string& gddString) noexcept;
+	std::string getFullString() const;
+
+protected:
+	std::string mGddString;
+};
+
 #endif //__GRADIDO_BLOCKCHAIN_EXCEPTION_H

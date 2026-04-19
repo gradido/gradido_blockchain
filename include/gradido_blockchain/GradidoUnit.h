@@ -77,42 +77,6 @@ protected:
 	R128 mGradidoPrecise;
 };
 
-
-/*!
-* will be thrown if x
-*/
-class GRADIDOBLOCKCHAIN_EXPORT FixedPointedArithmetikOverflowException : public GradidoBlockchainException
-{
-public:
-	explicit FixedPointedArithmetikOverflowException(const char* what, long long x) noexcept
-		: GradidoBlockchainException(what), mX(x) {}
-
-	std::string getFullString() const {
-		std::string result = what();
-		result += ", x: " + std::to_string(mX);
-		return result;
-	}
-protected:
-	long long mX;
-};
-
-class GRADIDOBLOCKCHAIN_EXPORT InvalidGradidoUnitStringException : public GradidoBlockchainException
-{
-public:
-	explicit InvalidGradidoUnitStringException(const char* what, const std::string& gddString) noexcept
-		: GradidoBlockchainException(what), mGddString(gddString) {}
-
-	std::string getFullString() const {
-		std::string result = what();
-		result += ", gddString: " + mGddString;
-		return result;
-	}
-
-protected:
-		std::string mGddString;
-};
-
-
 int64_t GradidoUnit::getGradidoCent() const
 {
 	R128 result = mGradidoPrecise * R128(10000);

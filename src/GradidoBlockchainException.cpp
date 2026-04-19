@@ -295,3 +295,29 @@ string EndDateBeforeStartDateException::getFullString() const
 	result += ", end date: " + DataTypeConverter::timePointToString(mEndDate);
 	return result;
 }
+
+// **************************** fixed pointed arithmetik overflow **********************************
+FixedPointedArithmetikOverflowException::FixedPointedArithmetikOverflowException(const char* what, long long x) noexcept
+		: GradidoBlockchainException(what), mX(x) 
+{
+}
+
+string FixedPointedArithmetikOverflowException::getFullString() const {
+	string result = what();
+	result += ", x: " + std::to_string(mX);
+	return result;
+}
+
+// **************************** invalid gradido unit string exception **********************************
+
+InvalidGradidoUnitStringException::InvalidGradidoUnitStringException(const char* what, const std::string& gddString) noexcept
+		: GradidoBlockchainException(what), mGddString(gddString) 
+{
+}
+
+string InvalidGradidoUnitStringException::getFullString() const 
+{
+	string result = what();
+	result += ", gddString: " + mGddString;
+	return result;
+}
