@@ -2,10 +2,13 @@
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 
+#include "r128.h"
+
+#include <cassert>
 #include <cmath>
 #include <iomanip>
 #include <sstream>
-#include <cassert>
+#include <string>
 
 static const Timepoint DECAY_START_TIME = DataTypeConverter::dateTimeStringToTimePoint("2021-05-13 17:46:31");
 constexpr double SECONDS_PER_YEAR = 31556952.0; // seconds in a year in gregorian calender
@@ -119,13 +122,13 @@ std::string GradidoUnit::toString(int precision/* = 4*/) const
 	// pad with 0
 	if (numberPlacesCount < 5) {
 		auto paddingCount = 5 - numberPlacesCount;
-		memcpy(&buffer[paddingCount + cursor], &buffer[cursor], numberPlacesCount);
+		memmove(&buffer[paddingCount + cursor], &buffer[cursor], numberPlacesCount);
 		memset(&buffer[cursor], '0', paddingCount);
 		cursor += paddingCount;
 	}
 	cursor += numberPlacesCount;
 	// make room for .
-	memcpy(&buffer[cursor - 3], &buffer[cursor - 4], 5);
+	memmove(&buffer[cursor - 3], &buffer[cursor - 4], 5);
 	cursor++;
 	buffer[cursor - 5] = '.';
 	
@@ -190,7 +193,7 @@ GradidoUnit GradidoUnit::calculateDecay(int64_t seconds) const
 		gradidoCent = mGradidoCent >> times;
 		if (!seconds) return gradidoCent;
 	}
-//	*/
+
 	/*!
 	 *  calculate decay factor with compound interest formula converted to q <br>
 	 *  n = (lg Kn - lg K0) / lg q => <br>
@@ -211,7 +214,12 @@ GradidoUnit GradidoUnit::calculateDecay(int64_t seconds) const
 	 */
 	// https://www.wolframalpha.com/input?i=%28e%5E%28lg%282%29+%2F+31556952%29%29%5Ex&assumption=%7B%22FunClash%22%2C+%22lg%22%7D+-%3E+%7B%22Log%22%7D
 	// from wolframalpha, based on the interest rate formula
-	return GradidoUnit(static_cast<int64_t>(static_cast<double>(gradidoCent) * pow(2.0, static_cast<double>(static_cast<double>(-seconds) / SECONDS_PER_YEAR))));
+	R128 factor = pow(2.0, static_cast<double>(-seconds) / SECONDS_PER_YEAR);
+	auto decayed = R128(gradidoCent) * factor;
+	R128 decayedAndRounded;
+	r128Round(&decayedAndRounded, &decayed);
+	return GradidoUnit::fromGradidoCent(r128ToInt(&decayedAndRounded));
+	// return GradidoUnit(static_cast<int64_t>(static_cast<double>(gradidoCent) * pow(2.0, static_cast<double>(static_cast<double>(-seconds) / SECONDS_PER_YEAR))));
 }
 
 Duration GradidoUnit::calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime)

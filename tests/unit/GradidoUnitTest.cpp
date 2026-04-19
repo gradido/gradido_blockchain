@@ -416,3 +416,448 @@ TEST(GradidoUnitTest, roundToPrecision_BoundarySweep)
     }
   }
 }
+
+
+
+#include <thread>
+#include <deque>
+
+struct ThreadResult {
+  int64_t exactMatches = 0;
+  int64_t diffByOne = 0;
+  int64_t diffByOther = 0;
+  std::deque<std::tuple<int64_t, int64_t, int64_t>> errors; // amount, duration, diff
+};
+
+TEST(GradidoUnitTest, testManyCasesDecayRevertDecayRandom)
+{
+  constexpr int64_t NUM_SAMPLES = 5000000; // 500k test cases
+  unsigned int NUM_THREADS = std::thread::hardware_concurrency();
+  constexpr int64_t MAX_AMOUNT_CENT = 1'000'000ll * 1000ll; // 1M Gradido * 10000 Cent = 1e13 Cent
+  constexpr int64_t MAX_DURATION_SECONDS = 60ll * 60ll * 24ll * 90ll; // 90 Days in seconds
+
+  std::atomic<int64_t> totalTests{ 0 };
+  std::atomic<int64_t> exactMatches{ 0 };
+  std::atomic<int64_t> diffByOne{ 0 };
+  std::atomic<int64_t> diffByOther{ 0 };
+  std::atomic<int64_t> diffByExactTenThousandth{ 0 }; // 0.0001 corresponds to 1 Cent difference in the Cent range
+
+  // Mutex only for outputting error examples, not for counting
+  std::mutex coutMutex;
+  std::vector<std::thread> threads;
+
+  auto worker = [&](int threadId) {
+    // Each thread gets its own random generator
+    std::random_device rd;
+    std::mt19937_64 gen(rd() + threadId);
+    std::uniform_int_distribution<int64_t> amountDist(1, MAX_AMOUNT_CENT);
+    std::uniform_int_distribution<int64_t> durationDist(1, MAX_DURATION_SECONDS);
+
+    for (int64_t i = 0; i < NUM_SAMPLES / NUM_THREADS; ++i) {
+      int64_t amountCent = amountDist(gen);
+      int64_t duration = durationDist(gen);
+
+      // Ignore duration == 0, since decay is then identity
+      if (duration == 0 || amountCent == 0) continue;
+
+      GradidoUnit original = GradidoUnit::fromGradidoCent(amountCent);
+      auto amountWithBuff = original.calculateDecay(-duration);
+      auto decayed = amountWithBuff.calculateDecay(duration);
+      // GradidoUnit decayed = original.calculateDecay(duration);
+      // GradidoUnit reversed = decayed.calculateDecay(-duration);
+
+      // int64_t originalCent = original.getGradidoCent();
+      // int64_t reversedCent = reversed.getGradidoCent();
+
+      totalTests++;
+
+      if (original == decayed) {
+        exactMatches++;
+      }
+      else {
+        GradidoUnit diff;
+        if (original > decayed) {
+          diff = original - decayed;
+        }
+        else {
+          diff = decayed - original;
+        }
+        if (diff.getGradidoCent() == 1) {
+          diffByOne++;
+        }
+        else {
+          diffByOther++;
+        }
+
+        // Specifically check if the difference is 0.0001 (i.e., 1 Cent in the internal format)
+        // But be careful: 0.0001 in Gradido units corresponds to 1 GradidoCent.
+        // Since your previous error was "0.0001", you probably mean 1 Cent difference.
+        // So: diff == 1 or -1. We already count this in diffByOne.
+
+        // Optional: We log some examples
+        if (diff != 0) {
+          std::lock_guard<std::mutex> lock(coutMutex);
+          // Only output every 1000th example, otherwise it becomes too much
+          static int sampleCounter = 0;
+          if (sampleCounter++ % 1000 == 0) {
+            std::cout << "Amount: " << original.toString(4)
+              << ", Duration: " << duration << "s"
+              << ", amountWithBuff: " << amountWithBuff.toString(4)
+              << ", decayed: " << decayed.toString(4)
+              << ", Diff: " << diff.toString(4)
+              << std::endl;
+          }
+        }
+      }
+    }
+    };
+
+  // Start threads
+  for (unsigned int t = 0; t < NUM_THREADS; ++t) {
+    threads.emplace_back(worker, t);
+  }
+
+  // Wait for all threads
+  for (auto& th : threads) {
+    th.join();
+  }
+
+  // Output results
+  std::cout << "\n=== Sample Results (" << totalTests << " Tests) ===" << std::endl;
+  std::cout << "Exact match: " << exactMatches << " ("
+    << (100.0 * exactMatches / totalTests) << "%)" << std::endl;
+  std::cout << "Difference by +-1 Cent (0.0001 GDD): " << diffByOne << " ("
+    << (100.0 * diffByOne / totalTests) << "%)" << std::endl;
+  std::cout << "Other difference: " << diffByOther << " ("
+    << (100.0 * diffByOther / totalTests) << "%)" << std::endl;
+
+  EXPECT_EQ(exactMatches, totalTests);
+}
+
+
+TEST(GradidoUnitTest, testManyCasesDecayRevertDecay)
+{
+  Profiler timeUsed;
+  unsigned int NUM_THREADS = std::thread::hardware_concurrency();
+
+  // We sample logarithmically across the value range to cover all orders of magnitude.
+  // Because errors in floating point arithmetic often depend on the order of magnitude.
+  std::deque<int64_t> amountSamples;
+  std::deque<int64_t> durationSamples;
+
+  // 1. Amounts: From 1 Cent to 10 billion Gradido, logarithmically distributed
+  for (int64_t exp = 0; exp <= 14; ++exp) { // 10^0 = 1 Cent to 10^14 Cent = 10^10 GDD
+    int64_t base = static_cast<int64_t>(std::pow(10.0, exp));
+    for (int64_t mul = 1; mul <= 9; ++mul) {
+      amountSamples.push_back(mul * base);
+    }
+  }
+  // Also some odd values, near overflows
+  amountSamples.push_back(std::numeric_limits<int64_t>::max() / 10000); // Maximum GDD value in Cent
+  amountSamples.push_back(std::numeric_limits<int64_t>::max() / 2);
+  amountSamples.push_back(std::numeric_limits<int64_t>::max() / 3);
+  amountSamples.push_back(std::numeric_limits<int64_t>::max() / 4);
+  amountSamples.push_back(std::numeric_limits<int64_t>::max() / 5);
+  amountSamples.push_back(std::numeric_limits<int64_t>::max() / 10);
+  amountSamples.push_back(std::numeric_limits<int64_t>::max() / 100);
+  amountSamples.push_back(std::numeric_limits<int64_t>::max() / 500);
+  amountSamples.push_back(std::numeric_limits<int64_t>::max() / 1000);
+  amountSamples.push_back(std::numeric_limits<int64_t>::max() / 2000);
+  amountSamples.push_back(std::numeric_limits<int64_t>::max() / 5000);
+  amountSamples.push_back(std::numeric_limits<int64_t>::max() / 9000);
+  amountSamples.push_back(std::numeric_limits<int64_t>::max() / 9900);
+  amountSamples.push_back(70000000000001);
+  amountSamples.push_back(69999999999999);
+  for (int64_t i = 69000000000000; i < 69000000800001; i++) {
+    amountSamples.push_back(i);
+  }
+  amountSamples.push_back(69000000000000);
+  amountSamples.push_back(12345678901234LL); // Just because it's pretty
+
+ 
+
+  constexpr int64_t SECONDS_PER_YEAR = 31556952; // 365.2425 days
+  
+  for (int64_t exp = 0; exp <= 6; ++exp) { // 10^0 = 1s to 10^6 seconds ~ 115 days
+    int64_t base = static_cast<int64_t>(std::pow(10.0, exp));
+    for (int64_t mul = 1; mul <= 9; ++mul) {
+      durationSamples.push_back(mul * base);
+    }
+  }
+  // Some typical durations
+  durationSamples.push_back(60);                      // 1 minute
+  durationSamples.push_back(3600);                    // 1 hour
+  durationSamples.push_back(86400);                   // 1 day
+  durationSamples.push_back(86400ll * 30ll);              // ~1 month
+  durationSamples.push_back(86400ll * 60ll);              // ~2 months
+  durationSamples.push_back(86400ll * 90ll);              // ~3 months
+  
+  durationSamples.push_back(86400 * 14);                   // 1 day
+
+  // Remove duplicates and sort for a good feeling
+  std::sort(amountSamples.begin(), amountSamples.end());
+  amountSamples.erase(std::unique(amountSamples.begin(), amountSamples.end()), amountSamples.end());
+  std::sort(durationSamples.begin(), durationSamples.end());
+  durationSamples.erase(std::unique(durationSamples.begin(), durationSamples.end()), durationSamples.end());
+
+  // Remove 0 from durations (makes no sense)
+  durationSamples.erase(std::remove(durationSamples.begin(), durationSamples.end(), 0), durationSamples.end());
+
+  size_t totalTests = amountSamples.size() * durationSamples.size();
+  std::cout << "Testing " << amountSamples.size() << " amounts x " << durationSamples.size()
+    << " durations = " << totalTests << " combinations." << std::endl;
+
+  std::cout << "Time for preparations: " << timeUsed.string() << std::endl;
+
+  std::vector<ThreadResult> threadResults(NUM_THREADS);
+  std::vector<std::thread> threads;
+
+  // Distribute the work evenly across threads
+  size_t chunkSize = (totalTests + NUM_THREADS - 1) / NUM_THREADS;
+  std::atomic<int64_t> smallestError = std::numeric_limits<int64_t>::max();
+  std::atomic<int64_t> smallestErrorDuration;
+
+  // 9223372036854775807
+       // 7'000'000'000,0000
+
+  for (unsigned int t = 0; t < NUM_THREADS; ++t)
+  {
+    threads.emplace_back([&, t]()
+      {
+        size_t startIdx = t * chunkSize;
+        size_t endIdx = std::min(startIdx + chunkSize, totalTests);
+
+        auto& res = threadResults[t];
+
+        for (size_t idx = startIdx; idx < endIdx; ++idx) {
+          // Calculate 2D index from flat index
+          size_t amountIdx = idx / durationSamples.size();
+          size_t durationIdx = idx % durationSamples.size();
+
+          // Skip if index is out of bounds (should not happen)
+          if (amountIdx >= amountSamples.size()) continue;
+
+          int64_t amountCent = amountSamples[amountIdx];
+          int64_t duration = durationSamples[durationIdx];
+
+          GradidoUnit original = GradidoUnit::fromGradidoCent(amountCent);
+          GradidoUnit buffed = original.calculateDecay(-duration);
+          GradidoUnit decayed = buffed.calculateDecay(duration);
+
+          int64_t diff;
+          if (original > decayed) {
+            diff = (original - decayed).getGradidoCent();
+          }
+          else {
+            diff = (decayed - original).getGradidoCent();
+          }
+          if (diff >= 1) {
+            if (amountCent < smallestError) {
+              smallestError = amountCent;
+              smallestErrorDuration = duration;
+            }
+          }
+          if (diff < 1) {
+            res.exactMatches++;
+          }
+          else if (diff == 1) {
+            res.diffByOne++;
+          }
+          else {
+            res.diffByOther++;
+
+            // Store each error for later analysis (or limit the number)
+            if (res.errors.size() < 1000) { // Do not store too many
+              res.errors.emplace_back(amountCent, duration, diff);
+            }
+          }
+        }
+      }
+    );
+  }
+
+  for (auto& th : threads) {
+    th.join();
+  }
+
+  // Aggregate results
+  int64_t totalExact = 0, totalDiffOne = 0, totalDiffOther = 0;
+  std::vector<std::tuple<int64_t, int64_t, int64_t>> allErrors;
+
+  for (const auto& res : threadResults) {
+    totalExact += res.exactMatches;
+    totalDiffOne += res.diffByOne;
+    totalDiffOther += res.diffByOther;
+    for (const auto& err : res.errors) {
+      if (allErrors.size() < 1000) {
+        allErrors.push_back(err);
+      }
+    }
+  }
+
+  // Output
+  std::cout << "\n=== Results of uniform grid tests (" << totalTests << " combinations) ===" << std::endl;
+  std::cout << "Exact matches: " << totalExact << " ("
+    << (100.0 * totalExact / totalTests) << "%)" << std::endl;
+  std::cout << "Difference +-1 Cent (0.0001 GDD): " << totalDiffOne << " ("
+    << (100.0 * totalDiffOne / totalTests) << "%)" << std::endl;
+  std::cout << "Other differences: " << totalDiffOther << " ("
+    << (100.0 * totalDiffOther / totalTests) << "%)" << std::endl;
+  std::cout << "Smallest Error: " << smallestError << ", " << smallestErrorDuration << " seconds " << std::endl;
+  // found 2,3 days, 6'900'000'000,0005 GDD as smallest error by duration range of 1 seconds - 115 days
+  // for 14 days: no error found
+
+
+  // Show the first 20 errors as examples
+  std::cout << "\nExample errors (amount in Cent, duration in seconds, difference in Cent):" << std::endl;
+  std::set<int64_t> postedGdd;
+  for (size_t i = 0; i < allErrors.size(); ++i) {
+    const auto& [amt, dur, diff] = allErrors[i];
+    if (!postedGdd.insert(amt).second) {
+      continue;
+    }
+    std::cout << "  " << amt << " Cent (" << (amt / 10000.0) << " GDD) | "
+      << dur << "s | Diff: " << diff << " Cent = " << (diff / 10000.0) << " GDD" << std::endl;
+    if (postedGdd.size() > 20) {
+      break;
+    }
+  }
+
+  EXPECT_GE((100.0 * totalExact / totalTests), 99.0);
+}
+
+TEST(GradidoUnitTest, testPrecisionDifferentTimeTransactions)
+{
+  using namespace std::chrono;
+
+  // --- Define time points ---
+  Timepoint start = Timepoint(seconds(0));
+  Timepoint t2 = Timepoint(seconds(60 * 60 * 24 * 30));   // +30 days
+  Timepoint t3 = Timepoint(seconds(60 * 60 * 24 * 90));   // +90 days
+  Timepoint end = Timepoint(seconds(60 * 60 * 24 * 365));  // +1 year
+
+  // --- Large values near int64 limit ---
+  // int64 max ~9.22e18 -> we stay a bit below because of *10000
+  int64_t maxSafeCent = std::numeric_limits<int64_t>::max() / 2;
+
+  GradidoUnit startAmount = GradidoUnit::fromGradidoCent(maxSafeCent);
+  GradidoUnit minusAmount = GradidoUnit::fromGradidoCent(100 * 10000); // -100 GDD
+  GradidoUnit plusAmount = GradidoUnit::fromGradidoCent(500 * 10000); // +500 GDD
+
+  // --- Variant 1: Step-by-step simulation ---
+  GradidoUnit step = startAmount;
+
+  // decay to t2
+  step = step.calculateDecay(start, t2);
+
+  // -100 GDD at t2
+  step -= minusAmount;
+
+  // decay to t3
+  step = step.calculateDecay(t2, t3);
+
+  // +500 GDD at t3
+  step += plusAmount;
+
+  // decay to end
+  step = step.calculateDecay(t3, end);
+
+
+  // --- Variant 2: Reference calculation ---
+  GradidoUnit ref = startAmount.calculateDecay(start, end);
+
+  // -100 GDD -> from t2 to end decayed
+  GradidoUnit minusDecayed = minusAmount.calculateDecay(t2, end);
+  ref -= minusDecayed;
+
+  // +500 GDD -> from t3 to end decayed
+  GradidoUnit plusDecayed = plusAmount.calculateDecay(t3, end);
+  ref += plusDecayed;
+
+
+  // --- Comparison ---
+  // Not exact due to rounding -> Tolerance via GradidoCent
+  int64_t stepCent = step.getGradidoCent();
+  int64_t refCent = ref.getGradidoCent();
+
+  int64_t diff = std::llabs(stepCent - refCent);
+
+  // Tolerance: 1 Cent (0.0001 GDD)
+  EXPECT_LE(diff, 1)
+    << "Mismatch between step-by-step and reference calculation. "
+    << "step=" << stepCent << " ref=" << refCent << " diff=" << diff;
+}
+
+TEST(GradidoUnitTest, testOverflowProvocation)
+{
+  using namespace std::chrono;
+
+  // --- Time ---
+  Timepoint start = Timepoint(seconds(0));
+
+  // Negative time period -> Compound Interest (GROWTH)
+  Duration hugeNegativeDuration = seconds(-60 * 60 * 24 * 365 * 10); // -10 years
+
+  // --- Start value near limit ---
+  int64_t nearMax = std::numeric_limits<int64_t>::max() / 10000 - 1;
+  GradidoUnit value = GradidoUnit::fromGradidoCent(nearMax);
+
+  bool overflowDetected = false;
+
+  try {
+    // Apply multiple times -> escalating growth
+    for (int i = 0; i < 10; ++i) {
+      value = value.calculateCompoundInterest(hugeNegativeDuration);
+
+      // Enforce critical multiplication
+      volatile int64_t cent = value.getGradidoCent();
+      (void)cent;
+    }
+  }
+  catch (const FixedPointedArithmetikOverflowException& ex) {
+    overflowDetected = true;
+    std::cout << "Expected overflow caught: " << ex.getFullString() << std::endl;
+  }
+  catch (...) {
+    overflowDetected = true;
+    std::cout << "Unknown overflow/exception caught" << std::endl;
+  }
+
+  EXPECT_FALSE(overflowDetected) << "Not expected overflow occur!";
+}
+
+TEST(GradidoUnitTest, findMaxSafeGradidoCent)
+{
+  int64_t low = 0;
+  int64_t high = std::numeric_limits<int64_t>::max();
+
+  int64_t lastGood = 0;
+
+  while (low <= high && low != std::numeric_limits<int64_t>::max() && low != std::numeric_limits<int64_t>::min()) {
+    int64_t mid = low + (high - low) / 2;
+    
+    GradidoUnit a = GradidoUnit::fromGradidoCent(mid);
+    int64_t cent = a.getGradidoCent();
+    GradidoUnit b = GradidoUnit::fromGradidoCent(cent);
+
+    if (a == b) {
+      lastGood = mid;
+      low = mid + 1; // go even higher
+    }
+    else {
+      high = mid - 1; // too large -> back
+    }
+  }
+
+  std::cout << "Max safe GradidoCent: " << lastGood << std::endl;
+
+  // Optional: directly show the first broken value
+  GradidoUnit brokenA = GradidoUnit::fromGradidoCent(lastGood + 1);
+  int64_t brokenCent = brokenA.getGradidoCent();
+  GradidoUnit brokenB = GradidoUnit::fromGradidoCent(brokenCent);
+
+  std::cout << "First broken value: " << (lastGood + 1) << std::endl;
+  std::cout << "Roundtrip result: " << brokenCent << std::endl;
+
+  EXPECT_TRUE(lastGood > 0);
+}

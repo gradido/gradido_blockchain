@@ -334,6 +334,7 @@ include_directories(
 	"dependencies/magic_enum/include"
 	"dependencies/protopuf/include"
 	"dependencies/rapidjson/include"
+	"dependencies/r128"
 	"dependencies/tinf/src"
 	"dependencies/miniz"
 	"build/dependencies/miniz"

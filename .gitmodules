@@ -40,3 +40,6 @@
 [submodule "dependencies/gradido_protobuf_zig"]
 	path = dependencies/gradido_protobuf_zig
 	url = https://github.com/einhornimmond/gradido_protobuf_zig
+[submodule "dependencies/r128"]
+	path = dependencies/r128
+	url = https://github.com/fahickman/r128.git
