@@ -19,7 +19,7 @@ constexpr int64_t POW10[] = { 1, 10, 100, 1000, 10000 };
 
 GradidoUnit GradidoUnit::fromString(const std::string& stringAmount)
 {
-    const char* p = stringAmount.c_str();
+  const char* p = stringAmount.c_str();
 
 		bool negative = false;
 
@@ -117,7 +117,7 @@ std::string GradidoUnit::toString(int precision/* = 4*/) const
 	}
 	// int64_t integerPart = rounded / 10000;
 	// int64_t fractional = rounded - integerPart * 10000;
-	
+
 	auto numberPlacesCount = DataTypeConverter::uint64ToString(rounded, &buffer[cursor]);
 	// pad with 0
 	if (numberPlacesCount < 5) {
@@ -131,12 +131,12 @@ std::string GradidoUnit::toString(int precision/* = 4*/) const
 	memmove(&buffer[cursor - 3], &buffer[cursor - 4], 5);
 	cursor++;
 	buffer[cursor - 5] = '.';
-	
+
 	if (precision != 4) {
 		cursor -= 4 - precision;
 		buffer[cursor] = '\0';
 	}
-	
+
 	return string(buffer, cursor);
 }
 
@@ -177,7 +177,7 @@ GradidoUnit GradidoUnit::roundToPrecision(uint8_t precision) const
 GradidoUnit GradidoUnit::calculateDecay(int64_t seconds) const
 {
 	if (seconds == 0) return mGradidoCent;
-	
+
 	// decay for one year is 50%
 	/*
 	* while (seconds >= SECONDS_PER_YEAR) {

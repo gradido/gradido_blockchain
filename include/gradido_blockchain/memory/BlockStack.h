@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_MEMORY_BLOCK_STACK_H
 
 #include <cstdint>
+#include <mutex>
 #include <stack>
 
 #define MEMORY_MANAGER_MEMORY_PAGE_STACK_MAX_COUNT_PER_SIZE_SMALLER_AS_128 256
@@ -19,6 +20,7 @@ namespace memory {
 
 	protected:
 		std::stack<uint8_t*> mBlockStack;
+		std::mutex mMutex;
 		const size_t mSize;
 	};
 

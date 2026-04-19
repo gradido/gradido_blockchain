@@ -157,7 +157,7 @@ namespace memory {
 			throw GradidoInvalidHexException("invalid hex size Block::fromHex", hexString);
 		}
 		Block result(binSize);
-	
+
 		size_t resultBinSize = 0;
 		if (0 != sodium_hex2bin(result.data(), binSize, hexString, stringSize, nullptr, &resultBinSize, nullptr)) {
 			throw GradidoInvalidHexException("invalid hex for Block::fromHex", hexString);
@@ -168,7 +168,7 @@ namespace memory {
 	Block Block::fromBase64(const char* base64String, size_t size, int variant /*= sodium_base64_VARIANT_ORIGINAL*/)
 	{
 		size_t binSize = (size / 4) * 3;
-		
+
 		Block bin(binSize);
 		size_t resultBinSize = 0;
 		const char* firstInvalidByte = nullptr;

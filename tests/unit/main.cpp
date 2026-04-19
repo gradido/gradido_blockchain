@@ -41,31 +41,14 @@
 #include <memory>
 #include <string>
 
-#if GTEST_OS_ESP8266 || GTEST_OS_ESP32
-#if GTEST_OS_ESP8266
-extern "C" {
-#endif
-	void setup() {
-	  generateKeyPairs();
-		testing::InitGoogleTest();
-	}
-
-	void loop() { RUN_ALL_TESTS(); }
-
-#if GTEST_OS_ESP8266
-}
-#endif
-
-#else
-
 using gradido::AppContext, gradido::g_appContext;
 using gradido::blockchain::InMemoryProvider;
 using std::string;
 using std::make_unique;
 using memory::ConstBlockPtr, memory::ConstBlockPtrHash; memory::ConstBlockPtrEqual;
 
-// GTEST_API_ 
-int main(int argc, char** argv) 
+// GTEST_API_
+int main(int argc, char** argv)
 {
 	try {
 		g_appContext = make_unique<AppContext>(
@@ -77,20 +60,21 @@ int main(int argc, char** argv)
 	catch (GradidoBlockchainException& ex) {
 		printf("error: %s\n", ex.getFullString().c_str());
 		return -1;
-	} 
+	}
 	catch (std::exception& ex) {
 		printf("error: %s\n", ex.what());
+		return -2;
 	}
 	testing::InitGoogleTest(&argc, argv);
 	generateKeyPairs();
 	CryptoConfig::g_ServerCryptoKey = std::make_shared<memory::Block>(memory::Block::fromHex("153afcd54ef316e45cd3e5ed4567cd21", 32));
-	//printf("Running main() from %s\n", __FILE__);
+	printf("Running main() from %s\n", __FILE__);
 	//
-	
+
 	printf("Gradido Blockchain Version: %s\n", GRADIDO_BLOCKCHAIN_VERSION);
 	auto result = RUN_ALL_TESTS();
 	return result;
 }
 
-#endif
+// #endif
 
