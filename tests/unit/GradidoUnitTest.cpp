@@ -417,6 +417,7 @@ TEST(GradidoUnitTest, roundToPrecision_BoundarySweep)
 
 
 
+#include <atomic>
 #include <thread>
 #include <deque>
 
@@ -493,7 +494,7 @@ TEST(GradidoUnitTest, testManyCasesDecayRevertDecayRandom)
         // So: diff == 1 or -1. We already count this in diffByOne.
 
         // Optional: We log some examples
-        if (diff != 0) {
+        if (diff != GradidoUnit::zero()) {
           std::lock_guard<std::mutex> lock(coutMutex);
           // Only output every 1000th example, otherwise it becomes too much
           static int sampleCounter = 0;

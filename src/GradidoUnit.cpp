@@ -185,39 +185,48 @@ GradidoUnit GradidoUnit::calculateDecay(int64_t seconds) const
 		seconds -= SECONDS_PER_YEAR;
 	}
 	*/
-	int64_t gradidoCent = mGradidoCent;
+	R128 gradidoCent;
+	r128FromInt(&gradidoCent, mGradidoCent);
 	// optimize version from above
 	if (seconds >= SECONDS_PER_YEAR) {
 		auto times = static_cast<uint64_t>(seconds / SECONDS_PER_YEAR);
 		seconds = seconds - times * SECONDS_PER_YEAR;
-		gradidoCent = mGradidoCent >> times;
-		if (!seconds) return gradidoCent;
+		R128 shifted;
+		r128Shr(&shifted, &gradidoCent, times);
+		gradidoCent = shifted;
+		// if (!seconds) return gradidoCent;
 	}
 
-	/*!
-	 *  calculate decay factor with compound interest formula converted to q <br>
-	 *  n = (lg Kn - lg K0) / lg q => <br>
-	 *  lg q = (lg Kn - lg K0) / n => <br>
-	 *  q = e^((lg Kn - lg K0) / n)   <br>
-	 * <br>
-	 * with:bufferSize
-	 * <ul>
-	 *  <li>q = decay_factor</li>
-	 *  <li>n = days_per_year * 60 * 60 * 24 = seconds per year</li>
-	 *  <li>Kn = 50 (capital after a year)</li>
-	 *  <li>K0 = 100 (capital at start)</li>
-	 * </ul>
-	 * further simplified:
-	 * lg 50 - lg 100 = lg 2 =>
-	 * q = e^(lg 2 / n) = 2^(x/n)
-	 * with x as seconds in which decay occured
-	 */
-	// https://www.wolframalpha.com/input?i=%28e%5E%28lg%282%29+%2F+31556952%29%29%5Ex&assumption=%7B%22FunClash%22%2C+%22lg%22%7D+-%3E+%7B%22Log%22%7D
-	// from wolframalpha, based on the interest rate formula
-	R128 factor = pow(2.0, static_cast<double>(-seconds) / SECONDS_PER_YEAR);
-	auto decayed = R128(gradidoCent) * factor;
+	if (seconds)
+	{
+		/*!
+		*  calculate decay factor with compound interest formula converted to q <br>
+		*  n = (lg Kn - lg K0) / lg q => <br>
+		*  lg q = (lg Kn - lg K0) / n => <br>
+		*  q = e^((lg Kn - lg K0) / n)   <br>
+		* <br>
+		* with:bufferSize
+		* <ul>
+		*  <li>q = decay_factor</li>
+		*  <li>n = days_per_year * 60 * 60 * 24 = seconds per year</li>
+		*  <li>Kn = 50 (capital after a year)</li>
+		*  <li>K0 = 100 (capital at start)</li>
+		* </ul>
+		* further simplified:
+		* lg 50 - lg 100 = lg 2 =>
+		* q = e^(lg 2 / n) = 2^(x/n)
+		* with x as seconds in which decay occured
+		*/
+		// https://www.wolframalpha.com/input?i=%28e%5E%28lg%282%29+%2F+31556952%29%29%5Ex&assumption=%7B%22FunClash%22%2C+%22lg%22%7D+-%3E+%7B%22Log%22%7D
+		// from wolframalpha, based on the interest rate formula
+		R128 factor;
+		r128FromFloat(&factor, pow(2.0, (double)(-seconds) / SECONDS_PER_YEAR));
+		R128 decayed;
+		r128Mul(&decayed, (R128*)&gradidoCent, &factor);
+		gradidoCent = decayed;
+	}
 	R128 decayedAndRounded;
-	r128Round(&decayedAndRounded, &decayed);
+	r128Round(&decayedAndRounded, &gradidoCent);
 	return GradidoUnit::fromGradidoCent(r128ToInt(&decayedAndRounded));
 	// return GradidoUnit(static_cast<int64_t>(static_cast<double>(gradidoCent) * pow(2.0, static_cast<double>(static_cast<double>(-seconds) / SECONDS_PER_YEAR))));
 }
