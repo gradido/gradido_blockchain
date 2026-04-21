@@ -12,6 +12,9 @@
 
 static const Timepoint DECAY_START_TIME = DataTypeConverter::dateTimeStringToTimePoint("2021-05-13 17:46:31");
 constexpr double SECONDS_PER_YEAR = 31556952.0; // seconds in a year in gregorian calender
+// 2^64 / 31556952, pre-calculated for better performance and deterministic decay calculation across different platforms
+constexpr uint64_t FACTOR_PER_SECOND_UINT64 = 18446743668527564800ULL;
+R128 FACTOR_PER_SECOND(FACTOR_PER_SECOND_UINT64, 0);
 
 using std::string, std::stringstream, std::fixed, std::setprecision, std::pow, std::round;
 
@@ -178,6 +181,23 @@ GradidoUnit GradidoUnit::calculateDecay(int64_t seconds) const
 {
 	if (seconds == 0) return mGradidoCent;
 
+	static ;
+	/*
+	static R128 zero = {0, 0};
+	if (r128Cmp(&factor, &zero) == 0) {
+			// q = 0.999999978... (Q64.64)
+			auto factor_double = powl(2.0, -1.0/SECONDS_PER_YEAR);
+			r128FromFloat(&factor, factor_double);
+			char buffer[32];
+			r128ToString(buffer,32, &factor);
+			printf("Decay factor (Q64.64): %s\n", buffer);
+			printf("lo: %lu\nhi: %lu\n", factor.lo, factor.hi);
+			// typeScript: 
+			// 99999997803504048973201202316767079413460520837376
+			// C++:
+			// 0.99999997803504048210
+	}
+*/
 	// decay for one year is 50%
 	/*
 	* while (seconds >= SECONDS_PER_YEAR) {
