@@ -4,9 +4,6 @@
 #include "gradido_blockchain/lib/Dictionary.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 
-#define R128_IMPLEMENTATION
-#include "r128.h"
-
 #include "loguru/loguru.hpp"
 #include <optional>
 #include <regex>

@@ -60,7 +60,7 @@ enable_testing()
 #find_package(Sodium REQUIRED)
 
 add_executable(GradidoBlockchainUnitTest ${TEST_SRC})
-target_link_libraries(GradidoBlockchainUnitTest GradidoBlockchain sodium loguru::loguru gradido_protobuf_zig) #libprotobuf
+target_link_libraries(GradidoBlockchainUnitTest GradidoBlockchain sodium loguru::loguru gradido_protobuf_zig gradido_blockchain_core) #libprotobuf
 target_link_libraries(GradidoBlockchainUnitTest gtest)
 if(openssl_FOUND) 
 	target_link_libraries(GradidoBlockchainUnitTest openssl::openssl)

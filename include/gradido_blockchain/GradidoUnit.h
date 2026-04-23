@@ -1,6 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_GRADIDO_UNI_H
 #define __GRADIDO_BLOCKCHAIN_GRADIDO_UNI_H
 
+#include "gradido_blockchain_core/data/unit.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/types.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
@@ -13,7 +14,7 @@ class GRADIDOBLOCKCHAIN_EXPORT GradidoUnit
 public:
 	GradidoUnit() : mGradidoCent(0) {}
 	//! will be rounded to maximal 4 after comma so 1.271827 will be 1.2718
-	GradidoUnit(double gdd) : GradidoUnit(static_cast<int64_t>(roundToPrecisionDouble(gdd, 4) * 10000.0)) {};
+	GradidoUnit(double gdd) : mGradidoCent(grdd_unit_from_decimal(gdd)) {};
   ~GradidoUnit() {};
 
 	//! expect decimal string, like 101.1728
@@ -29,7 +30,7 @@ public:
 
 	// access operators
 	inline operator std::string() const { return toString(); }
-	inline operator double() const { return static_cast<double>(mGradidoCent) / 10000; }
+	inline operator double() const { return grdd_unit_to_decimal(mGradidoCent); }
 
 	// math in place operators
 	inline GradidoUnit& operator+=(const GradidoUnit& other) { mGradidoCent += other.mGradidoCent; return *this; }
@@ -56,7 +57,9 @@ public:
 	inline GradidoUnit negated() const { return GradidoUnit(-mGradidoCent); }
 
     //! decay calculation
-	GradidoUnit calculateDecay(int64_t seconds) const;
+	GradidoUnit calculateDecay(grdd_duration_seconds seconds) const {
+		return grdd_unit_calculate_decay(mGradidoCent, seconds);
+	}
 	inline GradidoUnit calculateDecay(Duration duration) const;
 	inline GradidoUnit calculateDecay(Timepoint startTime, Timepoint endTime) const;
 
@@ -71,9 +74,8 @@ public:
 protected:
   // will be understood as gdd cent with 4 after comma, so gdd = gddCent / 10000
   GradidoUnit(int64_t gddCent) : mGradidoCent(gddCent) {}
-	static double roundToPrecisionDouble(double GradidoUnit, uint8_t precision);
 
-	int64_t mGradidoCent;
+	grdd_unit mGradidoCent;
 };
 
 GradidoUnit GradidoUnit::calculateCompoundInterest(Duration duration) const {

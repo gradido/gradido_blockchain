@@ -331,6 +331,7 @@ include_directories(
 	"dependencies/date/include"
 	"dependencies/fkYAML/single_include"
 	"dependencies/furi/code"
+	"dependencies/gradido-blockchain-core/include"
 	"dependencies/magic_enum/include"
 	"dependencies/protopuf/include"
 	"dependencies/rapidjson/include"
@@ -371,6 +372,7 @@ set(BUILD_SHARED_LIBS_TEMP ${BUILD_SHARED_LIBS})
 set(BUILD_SHARED_LIBS OFF)
 # Set the policy default before adding the third-party directory
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+add_subdirectory(dependencies/gradido-blockchain-core)
 add_subdirectory(dependencies/loguru)
 add_subdirectory(dependencies/fkYAML)
 add_subdirectory(dependencies/miniz)
@@ -444,7 +446,7 @@ if (ENABLE_HTTPS)
 	#target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR})
 endif()
 
-target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz gradido_protobuf_zig roaring)
+target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz gradido_protobuf_zig roaring gradido_blockchain_core)
 if(OpenSSL_FOUND)
 	target_link_libraries(GradidoBlockchain OpenSSL::SSL OpenSSL::Crypto)
 endif()
