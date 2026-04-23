@@ -24,8 +24,12 @@ public:
 
 	GradidoUnit roundToPrecision(uint8_t precision = 4) const;
 
-//! \param precision expect value in the range [0;4]
+	//! \param precision expect value in the range [0;4]
 	std::string toString(int precision = 4) const;
+	//! C-style to string function, without own memory allocation
+	inline size_t toString(char* buffer, size_t bufferSize, int precision = 4) const {
+		return grdd_unit_to_string(buffer, bufferSize, mGradidoCent, precision);
+	}
 	inline int64_t getGradidoCent() const { return mGradidoCent; }
 
 	// access operators

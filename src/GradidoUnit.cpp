@@ -1,5 +1,7 @@
 #include "gradido_blockchain/GradidoUnit.h"
 
+#include "loguru/loguru.hpp"
+
 #include <chrono>
 #include <string>
 
@@ -23,6 +25,7 @@ string GradidoUnit::toString(int precision/* = 4*/) const
     throw GradidoNodeInvalidDataException("grdd_unit_to_string return to big string size value");
   }
   if (resultSize >= 24) {
+    LOG_F(WARNING, "stack string buffer is to small for gradido unit string, size: %d, needed: %d for: %lu", 24, resultSize, mGradidoCent);
     auto resultSize2 = grdd_unit_to_string(result.data(), result.size(), mGradidoCent, precision);
     if (resultSize != resultSize2) {
       throw GradidoNodeInvalidDataException("grdd_unit_to_string work not like expected, it return different string size with same input");
@@ -30,7 +33,6 @@ string GradidoUnit::toString(int precision/* = 4*/) const
   }
   return result.substr(0, resultSize);
 }
-
 
 GradidoUnit GradidoUnit::roundToPrecision(uint8_t precision/* = 4*/) const {
 	GradidoUnit result;
