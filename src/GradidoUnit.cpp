@@ -5,7 +5,7 @@
 #include <chrono>
 #include <string>
 
-using std::string, std::stringstream, std::fixed, std::setprecision, std::pow, std::round;
+using std::string;
 using std::chrono::duration_cast, std::chrono::seconds;
 
 GradidoUnit GradidoUnit::fromString(const string& stringAmount)
