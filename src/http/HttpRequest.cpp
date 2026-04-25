@@ -4,7 +4,7 @@
 #include "gradido_blockchain/http/RequestExceptions.h"
 #include "gradido_blockchain/http/ServerConfig.h"
 #include "gradido_blockchain/lib/minizLib.h"
-#include "gradido_blockchain/lib/Profiler.h"
+#include "gradido_blockchain/lib/MonotonicTimer.h"
 #include "gradido_blockchain/memory/Block.h"
 
 
@@ -80,7 +80,7 @@ static std::shared_ptr<httplib::Client> getClientForHost(const std::string& host
 	httplib::Client* client = nullptr;
 	if (isSSL) {
 		client = new httplib::Client(host, "", "");
-		Profiler timeUsed;
+		MonotonicTimer timeUsed;
 		auto certStore = SSL_CTX_get_cert_store(client->ssl_context());
 		auto objs = X509_STORE_get0_objects(certStore);
 		if (!sk_X509_OBJECT_num(objs)) {

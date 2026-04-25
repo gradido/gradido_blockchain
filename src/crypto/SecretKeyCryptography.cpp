@@ -1,7 +1,7 @@
 #include "gradido_blockchain/crypto/SecretKeyCryptography.h"
 #include "gradido_blockchain/crypto/CryptoConfig.h"
 
-#include "gradido_blockchain/lib/Profiler.h"
+#include "gradido_blockchain/lib/MonotonicTimer.h"
 
 #include "sodium.h"
 #include "loguru/loguru.hpp"
@@ -38,7 +38,7 @@ void SecretKeyCryptography::createKey(const std::string& salt_parameter, const s
 		throw CryptoConfig::MissingKeyException("in SecretKeyCryptography::createKey key is missing", "crypto.server_key");
 	}
 #ifndef _TEST_BUILD
-	Profiler timeUsed;
+	MonotonicTimer timeUsed;
 #endif
 	std::unique_lock<std::shared_mutex> _lock(mWorkingMutex);
 #ifndef _TEST_BUILD

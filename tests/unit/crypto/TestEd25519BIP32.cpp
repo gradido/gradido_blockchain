@@ -1,6 +1,6 @@
 #include "TestEd25519BIP32.h"
 
-#include "gradido_blockchain/lib/Profiler.h"
+#include "gradido_blockchain/lib/MonotonicTimer.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/crypto/CryptoConfig.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519Ex.h"

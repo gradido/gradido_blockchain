@@ -9,7 +9,7 @@
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/serialization/toJsonString.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
-#include "gradido_blockchain/lib/Profiler.h"
+#include "gradido_blockchain/lib/MonotonicTimer.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 
@@ -631,7 +631,7 @@ TEST_F(InMemoryTest, ValidGradidoTimeoutDeferredTransfer)
 
 TEST_F(InMemoryTest, ManyTransactions)
 {
-	Profiler timeUsed;
+	MonotonicTimer timeUsed;
 	const int userCount = 100;
 	Timepoint previousConfirmedAt;
 	// admin

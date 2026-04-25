@@ -5,7 +5,7 @@
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/pointer.h"
-#include "gradido_blockchain/lib/Profiler.h"
+#include "gradido_blockchain/lib/MonotonicTimer.h"
 
 #include <iostream>
 
@@ -115,7 +115,7 @@ Document& JsonRPCRequest::batchRequest(std::vector<std::string> methods, rapidjs
 	for (auto& pair : orderResultsMap) {
 		results.PushBack(std::move(pair.second), alloc);
 	}
-	Profiler timeStart;
+	MonotonicTimer timeStart;
 
 	StringBuffer buffer;
 	PrettyWriter<StringBuffer> writer(buffer);

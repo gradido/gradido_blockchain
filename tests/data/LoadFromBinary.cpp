@@ -12,7 +12,7 @@
 #include "gradido_blockchain/data/hiero/AccountId.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/data/Timestamp.h"
-#include "gradido_blockchain/lib/Profiler.h"
+#include "gradido_blockchain/lib/MonotonicTimer.h"
 #include "gradido_blockchain/lib/MultithreadQueue.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/deserialize/Type.h"
@@ -70,7 +70,7 @@ struct DataWorkSet
 
 static void workerFunc(int index, vector<shared_ptr<DataWorkSet>> *workDataSet)
 {
-	Profiler timeUsed;
+	MonotonicTimer timeUsed;
 	int count = 0;
 	for(auto& work: *workDataSet) {
 		if (!work) break;
@@ -89,7 +89,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinaryMultithread)
 	queue<shared_ptr<DataWorkSet>> mWork;	
 	size_t transactionCount = 0;
 	
-	Profiler timeUsed;
+	MonotonicTimer timeUsed;
 
 	while (f.good()) {
 		f.read((char*)&transactionSize, sizeof(uint16_t));
@@ -140,7 +140,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreaded)
 	uint16_t transactionSize = 0;
 
 	// list<ConstGradidoTransactionPtr> transactions;
-	Profiler timeUsed;
+	MonotonicTimer timeUsed;
 	std::string communityId = "test";
 	auto provider = InMemoryProvider::getInstance();
 	auto blockchain = provider->findBlockchain("test");
@@ -189,7 +189,7 @@ TEST_F(LoadFromBinary, toFromProtobuf)
 	auto communityIdIndex = g_appContext->getOrAddCommunityIdIndex(communityId);
 	gradido::blockchain::InMemoryProvider::getInstance()->findBlockchain(communityIdIndex);
 
-	Profiler timeUsed;
+	MonotonicTimer timeUsed;
 	// std::deque<std::shared_ptr<memory::Block>> transactionBins;
 	std::deque<gradido::data::compact::ConfirmedGradidoTx> transactions;
 	//const size_t bufferSize = 800;
@@ -352,9 +352,9 @@ struct DataSet {
 
 TEST_F(LoadFromBinary, LoadAndConfirm)
 {
-	Profiler timeUsed;
-	Profiler timeUsedAll;
-	Profiler timeSinceLastPrint;
+	MonotonicTimer timeUsed;
+	MonotonicTimer timeUsedAll;
+	MonotonicTimer timeSinceLastPrint;
 	DataSet communities[] = {
 		{ .communityId = "gradido-akademie", .fileName = "gradido_akademie.dat" },
 		{ .communityId = "herzlicht", .fileName = "herzlicht.dat" },
@@ -486,7 +486,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 /*
 TEST_F(LoadFromBinary, LoadDataFromBinaryDeserializeSerialize)
 {
-	Profiler timeUsed;
+	MonotonicTimer timeUsed;
 	uint16_t transactionSize = 0;
 	uint16_t maxTransactionSize = 0;
 	
@@ -669,7 +669,7 @@ TEST_F(LoadFromBinary, LoadDataFromBinaryDeserializeSerialize)
 /*
 TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreadedBuffered)
 {
-	Profiler timeUsed;
+	MonotonicTimer timeUsed;
 	uint16_t transactionSize = 0;
 	std::vector<memory::ConstBlockPtr> herzlichRawTxs;
 	{

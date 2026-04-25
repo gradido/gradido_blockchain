@@ -1,12 +1,12 @@
 #include "gtest/gtest.h"
 #include "gradido_blockchain/GradidoUnit.h"
-#include "gradido_blockchain/lib/Profiler.h"
+#include "gradido_blockchain/lib/MonotonicTimer.h"
 #include <random>
 
 
 TEST(GradidoUnit, toString) {
   GradidoUnit value(1.2345);
-  Profiler timeUsed;
+  MonotonicTimer timeUsed;
   for (int i = 0; i < 1'000'000; i++) {
     value.toString();
   }
@@ -16,7 +16,7 @@ TEST(GradidoUnit, toString) {
 
 TEST(GradidoUnit, fromString) {
   std::string stringValue("1.2345");
-  Profiler timeUsed;
+  MonotonicTimer timeUsed;
   for (int i = 0; i < 1'000'000; i++) {
     GradidoUnit::fromString(stringValue);
   }
