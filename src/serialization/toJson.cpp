@@ -101,7 +101,12 @@ namespace serialization {
 	template<>
 	Value toJson(const GradidoUnit& gdd, Document::AllocatorType& alloc)
 	{
-		return toJson(gdd.toString(4), alloc);
+		char buffer[24];
+		auto strSize = gdd.toString(buffer, 24, 4);
+		if (strSize >= 24) {
+			return toJson(gdd.toString(4), alloc);
+		}
+		return rapidjson::Value(buffer, strSize, alloc);
 	}
 
 #ifdef _WIN32
