@@ -34,7 +34,7 @@ string GradidoUnit::toString(int precision/* = 4*/) const
   return result.substr(0, resultSize);
 }
 
-GradidoUnit GradidoUnit::roundToPrecision(uint8_t precision/* = 4*/) const {
+GradidoUnit GradidoUnit::roundToPrecision(int precision/* = 4*/) const {
 	GradidoUnit result;
 	if (!grdd_unit_round_to_precision(&result.mGradidoCent, mGradidoCent, precision)) {
 		throw FixedPointedArithmetikOverflowException("rounding error with", mGradidoCent);
