@@ -29,9 +29,9 @@ void signalHandler(int signum) {
 	switch (signum) {
 	case SIGSEGV:
 	case SIGABRT:
-	case SIGILL: 
+	case SIGILL:
 		std::_Exit(EXIT_FAILURE);
-	case SIGTERM: LOG_F(INFO, "exit on termination request"); break;	
+	case SIGTERM: LOG_F(INFO, "exit on termination request"); break;
 	case SIGINT: LOG_F(INFO, "exit on external interrupt like STRG + C"); break;
 	case SIGFPE: LOG_F(ERROR, "erroneous arithmetic operation such as divide by zero"); break;
 	}
@@ -68,13 +68,14 @@ void Application::run()
 		mExitCondition.wait_for(lk, std::chrono::seconds(1));
 	}
 	exit();
+	printf("Application stopped\n");
 }
 
 void Application::terminate(bool crash /*= false */)
-{ 
-	gRunning = false;
+{
 	if (!crash) {
 		mMasterStopSource.request_stop();
 		mExitCondition.notify_one();
 	}
+	gRunning = false;
 }
