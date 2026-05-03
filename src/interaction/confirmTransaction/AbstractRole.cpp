@@ -1,7 +1,10 @@
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
-#include "gradido_blockchain/blockchain/FilterBuilder.h"
+#include "gradido_blockchain/blockchain/CompactFilter.h"
 #include "gradido_blockchain/data/BalanceDerivationType.h"
+#include "gradido_blockchain/data/compact/AccountBalance.h"
+#include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/interaction/confirmTransaction/AbstractRole.h"
@@ -17,6 +20,8 @@ using namespace magic_enum;
 namespace gradido {
     using namespace blockchain;
     using namespace data;
+
+    using data::compact::PublicKeyIndex;
 
     namespace interaction {
         namespace confirmTransaction {
@@ -74,7 +79,6 @@ namespace gradido {
                 uint32_t coinCommunityIdIndex
             ) const 
             {
-                FilterBuilder builder;
                 GradidoUnit previousDecayedAccountBalance;
                 auto f = Filter::lastBalanceFor(publicKey);
                 f.coinCommunityIdIndex = coinCommunityIdIndex;
@@ -99,6 +103,42 @@ namespace gradido {
                     }
                 }
                 return AccountBalance(publicKey, newBalance, coinCommunityIdIndex);
+            }
+
+            compact::AccountBalance AbstractRole::calculateAccountBalance(
+              PublicKeyIndex publicKeyIndex,
+              uint64_t maxTransactionNr,
+              GradidoUnit amount,
+              uint32_t coinCommunityIdIndex
+            ) const {
+              GradidoUnit previousDecayedAccountBalance;
+              auto f = CompactFilter::lastBalanceFor(publicKeyIndex);
+              f.coinCommunityIdIndex = coinCommunityIdIndex;
+              const auto& lastBalanceChangingTransaction = mBlockchain->findOne(f);
+              if (lastBalanceChangingTransaction) 
+              {
+                previousDecayedAccountBalance = lastBalanceChangingTransaction
+                  ->getAccountBalance(publicKeyIndex, coinCommunityIdIndex)
+                  .getDecayedAmount(mConfirmedAt);
+              }
+              GradidoUnit newBalance = previousDecayedAccountBalance + amount;
+              if (newBalance < GradidoUnit::zero()) {
+                if (newBalance + GradidoUnit::fromGradidoCent(100) < GradidoUnit::zero()) {
+                  throw InsufficientBalanceException(
+                    "not enough Gradido Balance for operation",
+                    amount,
+                    previousDecayedAccountBalance
+                  );
+                }
+                else {
+                  newBalance = GradidoUnit::zero();
+                }
+              }
+              return {
+                .balanceGddCent = newBalance.getGradidoCent(),
+                .coinCommunityIdIndex = coinCommunityIdIndex,
+                .publicKeyIndex = publicKeyIndex.publicKeyIndex
+              };
             }
         }
     }

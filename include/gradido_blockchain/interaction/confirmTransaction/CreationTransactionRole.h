@@ -4,6 +4,9 @@
 #include "TransactionBodyRole.h"
 
 namespace gradido {
+    namespace data::compact {
+      struct CommunityRootTx;
+    }
     namespace interaction {
         namespace confirmTransaction {
             class GRADIDOBLOCKCHAIN_EXPORT CreationTransactionRole : public TransactionBodyRole
@@ -14,6 +17,12 @@ namespace gradido {
                     return TransactionBodyRole::getValidationType() | validate::Type::MONTH_RANGE;
                 }
                 virtual std::vector<data::AccountBalance> calculateAccountBalances(uint64_t maxTransactionNr) const;
+            private:
+                data::AccountBalance accountBalanceFromPublicKeyIndex(
+                  uint64_t maxTransactionNr,
+                  uint32_t publicKeyIndex, 
+                  data::compact::CommunityRootTx& startTransaction
+                ) const;
             };
         }
     }

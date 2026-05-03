@@ -5,6 +5,7 @@
 #include "gradido_blockchain/data/AccountBalance.h"
 #include "gradido_blockchain/data/BalanceDerivationType.h"
 #include "gradido_blockchain/data/Timestamp.h"
+#include "gradido_blockchain/data/TransferAmount.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/GradidoUnit.h"
 #include "gradido_blockchain/interaction/validate/Type.h"
@@ -19,6 +20,10 @@ namespace gradido {
     namespace data {
         class ConfirmedTransaction;
         class GradidoTransaction;  
+        namespace compact {
+          struct PublicKeyIndex;
+          struct AccountBalance;
+        }
     }
 
     namespace interaction {
@@ -67,6 +72,25 @@ namespace gradido {
                     uint64_t maxTransactionNr, 
                     GradidoUnit amount,
                     uint32_t coinCommunityIdIndex
+                ) const;
+
+                inline data::AccountBalance calculateAccountBalance(
+                  const data::TransferAmount& transferAmount,
+                  uint64_t maxTransactionNr
+                ) const {
+                  return calculateAccountBalance(
+                    transferAmount.getPublicKey(),
+                    maxTransactionNr, 
+                    transferAmount.getAmount(), 
+                    transferAmount.getCoinCommunityIdIndex()
+                  );
+                }
+
+                data::compact::AccountBalance calculateAccountBalance(
+                  data::compact::PublicKeyIndex publicKeyIndex,
+                  uint64_t maxTransactionNr,
+                  GradidoUnit amount,
+                  uint32_t coinCommunityIdIndex
                 ) const;
 
                 std::shared_ptr<const data::GradidoTransaction> mGradidoTransaction;
