@@ -87,7 +87,6 @@ std::shared_ptr<KeyPairEd25519> KeyPairEd25519::create(const memory::Block& seed
 // https://github.com/satoshilabs/slips/blob/master/slip-0010.md
 std::shared_ptr<KeyPairEd25519> KeyPairEd25519::create(const memory::Block &seed)
 {
-	assert(ED25519_PUBLIC_KEY_SIZE + ED25519_PRIVATE_KEY_SIZE == 64);
 	const uint8_t curveId[] = "ed25519 seed";
 	uint8_t I[64];
 
@@ -413,11 +412,14 @@ std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePrivateKey(uint32_t inde
 // slip0010
 std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePrivateKey(uint32_t index) const
 {
-		if (!mExtendedSecret || mExtendedSecret->size() != 32) {
+		if (getDerivationType(index) != Ed25519DerivationType::HARD) {
+			throw Ed25519DeriveException("only harden key allowed for ed25519 key derivation", mSodiumPublic);
+		}
+		if (!mExtendedSecret || mExtendedSecret->size() != ED25519_PRIVATE_KEY_SIZE) {
 			throw Ed25519DeriveException("invalid extended secret for private key derivation", mSodiumPublic);
 		}
 
-		if (mChainCode == nullptr || mChainCode->size() != 32) {
+		if (mChainCode == nullptr || mChainCode->size() != ED25519_PUBLIC_KEY_SIZE) {
 			throw Ed25519DeriveException("invalid chain code for private key derivation", mSodiumPublic);
 		}
 		uint8_t data[1 + 32 + 4];
@@ -441,8 +443,9 @@ std::shared_ptr<KeyPairEd25519Ex> KeyPairEd25519::derivePrivateKey(uint32_t inde
     crypto_auth_hmacsha512_update(&state, data, sizeof(data));
     crypto_auth_hmacsha512_final(&state, I);
 
-		auto privateKey = make_shared<memory::Block>(32, I);
-		auto publicKey = make_shared<memory::Block>(calculatePublicKey(*privateKey));
+		auto privateKey = make_shared<memory::Block>(ED25519_PRIVATE_KEY_SIZE);
+		auto publicKey = make_shared<memory::Block>(ED25519_PUBLIC_KEY_SIZE);
+		crypto_sign_seed_keypair(publicKey->data(), privateKey->data(), I);
 		auto chainCode = make_shared<memory::Block>(32, &I[32]);
 
     return std::make_shared<KeyPairEd25519Ex>(publicKey, privateKey, chainCode, index);

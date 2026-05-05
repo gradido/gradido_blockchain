@@ -45,7 +45,7 @@ namespace keyDerivation {
         if (crypto_core_ed25519_add(out, p1.data(), p2.data())) {
             throw Ed25519DeriveException("Invalid Addition", nullptr);
         }
-        out[32] ^= 0x80;
+        // out[31] ^= 0x80;
         return out;
     }
 

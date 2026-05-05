@@ -16,8 +16,8 @@ TEST(EncryptedMemo, EncryptDecryptTest)
 	auto fullKeyPair1 = KeyPairEd25519::create(Block(seed1));
 	auto fullKeyPair2 = KeyPairEd25519::create(Block(seed2));
 
-	EXPECT_STREQ(fullKeyPair1->getPublicKey()->convertToHex().c_str(), "dba53616f61204300f11e35e09864b7368256edfe6f7d40ee03041d0c6b1164a");
-	EXPECT_STREQ(fullKeyPair2->getPublicKey()->convertToHex().c_str(), "9eb2cad43e7ccfaeb2de6befffa2cd5cec3c9dfad87a3fd4389c748242b920eb");
+	EXPECT_STREQ(fullKeyPair1->getPublicKey()->convertToHex().c_str(), "593525666fb4bd619b3565501ac673b3200e84a0aa54d961b5f92237eb1fc3b0");
+	EXPECT_STREQ(fullKeyPair2->getPublicKey()->convertToHex().c_str(), "2eb732a70d88fa0bf0e26b157b371dfec77c0d03f9994a733022051b73a8eadb");
 
 	EncryptedMemo memo(
 		testMemo,

@@ -47,9 +47,9 @@ TEST_F(TestEd25519Bip32, TestPrivateDerivationHard)
 	int index = 0x80000000;
 	ASSERT_EQ(KeyPairEd25519::getDerivationType(index), Ed25519DerivationType::HARD);
 	auto child = mRootKeyPair->deriveChild(index);
-	EXPECT_EQ(child->getPublicKey()->convertToHex(), "b4d9c264083b946b4d5525f9f73b0a0b8831901d6e16f6f5b374d30e4bdade99");
-	EXPECT_EQ(child->getChainCode()->convertToHex(), "a9a224d6930bb5578569cf11075fe46e0f349805877bc52fde67d27a4090f0ec");
-	EXPECT_EQ(child->getPrivateKey()->convertToHex(), "e09bff42f10e137f3ba97265d392115177d2560853e54083e1641246bc056c555b67ab56c125d513479efebf111497c934173bfa49b0d0ee4b79acea829b3c16");
+	EXPECT_EQ(child->getPublicKey()->convertToHex(), "20d006e3205f15230f17f6e450bb0f68afb9b17d40b12b5dd6ca1a5552007da1");
+	EXPECT_EQ(child->getChainCode()->convertToHex(), "75afe17648978f47888db56c61ade7e258a5005abb21d21f2408b81146388cd2");
+	EXPECT_EQ(child->getPrivateKey()->convertToHex(), "68cbeddaacd1ee5966558a08c82ddccbd6b257065d2be069c7354af3dfceb08620d006e3205f15230f17f6e450bb0f68afb9b17d40b12b5dd6ca1a5552007da1");
 }
 
 TEST_F(TestEd25519Bip32, TestPublicDerivationSoft)
@@ -57,10 +57,10 @@ TEST_F(TestEd25519Bip32, TestPublicDerivationSoft)
 	int index = 1;
 	ASSERT_EQ(KeyPairEd25519::getDerivationType(index), Ed25519DerivationType::SOFT);
 	auto publicRootKey = std::make_shared<TestKeyPairEd25519>(mPublicKey, nullptr, mChainCode);
-	auto child = publicRootKey->deriveChild(index);
-	EXPECT_EQ(child->getPublicKey()->convertToHex(), "08074fb5fd5c630f0e56a08e1e2bd93a2d10e6edaeb56ca72ca1deb8d8363630");
+	EXPECT_THROW(publicRootKey->deriveChild(index), Ed25519DeriveException);
+	/*EXPECT_EQ(child->getPublicKey()->convertToHex(), "08074fb5fd5c630f0e56a08e1e2bd93a2d10e6edaeb56ca72ca1deb8d8363630");
 	EXPECT_EQ(child->getChainCode()->convertToHex(), "72f1fbf070eed9acbd40f3ba3998d985c734747afd4ffcd22824ceba9249ad71");
-	EXPECT_FALSE(child->getPrivateKey());
+	EXPECT_FALSE(child->getPrivateKey());*/
 }
 
 TEST_F(TestEd25519Bip32, TestPublicDerivationHard)
@@ -81,7 +81,8 @@ TEST_F(TestEd25519Bip32, TestLowLevelDerivationHelper)
 	keyDerivation::add28Mul8(resultSpan, kl, kr);
 	EXPECT_EQ(resultLocal.convertToHex(), "9d219000768c7fd471c594798a2305e569afd8e5e02180c3bb189e7671656374");
 }
-
+/*
+// ed25519-bip32
 TEST_F(TestEd25519Bip32, TestFromRustLibrary)
 {
 	auto privKey = std::make_shared<memory::Block>(std::vector<uint8_t>{
@@ -119,7 +120,7 @@ TEST_F(TestEd25519Bip32, TestFromRustLibrary)
 	EXPECT_EQ(child->getChainCode()->convertToHex(), "608763770eddf77248ab652984b21b849760d1da74a6f5bd633ce41adceef07a");
 	EXPECT_EQ(child->getPrivateKey()->convertToHex(), "60d399da83ef80d8d4f8d223239efdc2b8fef387e1b5219137ffb4e8fbdea15adc9366b7d003af37c11396de9a83734e30e05e851efa32745c9cd7b42712c890");
 }
-
+*/
 TEST_F(TestEd25519Bip32, signVerifyTest)
 {
 	memory::Block message(
@@ -127,10 +128,10 @@ TEST_F(TestEd25519Bip32, signVerifyTest)
 	);
 	auto signature = mRootKeyPair->sign(message);
 	//printf("signature: %s\n", signature.convertToHex().data());
-	EXPECT_EQ(signature.convertToHex(), "c6486839dff5f568c5757cd22556a0df545c4c738ca87660b96721d0a8f7f897b7da062a7c1ba9c1209071a3282b882a10cf31c5b78ea9441f8cf606780a9a0d");
+	EXPECT_EQ(signature.convertToHex(), "083873fb3426feb21413ac397a73155257a10dd8df729cdcf42f3f3dd06df5d70b32f37541cc70fc036320ab72b3eb5c5a1042593ee4cad849c1d90063bbd301");
 	EXPECT_TRUE(mRootKeyPair->verify(message, signature));
 }
-
+/*
 TEST_F(TestEd25519Bip32, publicPrivateKeyDerivation)
 {
 	uint32_t index = 10;
@@ -138,17 +139,17 @@ TEST_F(TestEd25519Bip32, publicPrivateKeyDerivation)
 	KeyPairEd25519 publicParent(mPublicKey, nullptr, mChainCode);
 	auto child2 = publicParent.deriveChild(index);
 	EXPECT_EQ(child1->getPublicKey()->convertToHex(), child2->getPublicKey()->convertToHex());
-}
+}*/
 
 TEST_F(TestEd25519Bip32, signVerifyWithChild)
 {
-	uint32_t index = 10;
+	uint32_t index = 10 | 0x80000000;
 	auto child = mRootKeyPair->deriveChild(index);
 	memory::Block message(
 		"Let the power of knowledge and innovation guide humanity towards a future where energy is infinite, borders are meaningless, and every mind is free to dream.Together, we can unlock the potential of this world and beyond. - Inspired by the vision of Nikola Tesla"
 	);
 	auto signature = child->sign(message);
 	//printf("signature: %s\n", signature.convertToHex().data());
-	EXPECT_EQ(signature.convertToHex(), "bbb451ae7a0fda8fe7cafef02de27245e017579505c5df33fbc8a3191c8030eec4207f9cee44be513c67c03fe0866e38fd29f6fbef56f0304a5b96ec77db0e02");
+	EXPECT_EQ(signature.convertToHex(), "5ed404efafdbc14a4f6ad5d2b886d63766f2a7784262e1b79ea16cfbea6b351c081db82305e11725354085a7fd8eacb28cda5a642ea8755391234837a71bf001");
 	EXPECT_TRUE(child->verify(message, signature));
 }

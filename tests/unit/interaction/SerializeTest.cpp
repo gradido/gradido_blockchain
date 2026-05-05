@@ -221,7 +221,7 @@ TEST(SerializeTest, SignatureMap) {
 	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
 	// printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(),
-		"CmQKIIFnAymUaYjt9FH0xCRpHYPPWpBDkEKILVu3IkPvVR70EkAE4ND2xLvS2H3Iefxfcr5I2/aCyIh1f9XT1toK9AJv7Mfu5U7ftL87CuOGbn+VfdemtvbIBr9amXNo4HI+BIYICmQKINfjqKCQqkSHMkb1xqz8F/907hdPVue9KlX/uBBB9tsdEkD82U+ofaXHmbiWJUf/cYiyb7xKW9MrNAjPlelL7a5+2WjM4mBPneSPn7iCK3ewWQXbN/OF6As/gWqQI7Mq7RAF"
+		"CmQKIKrRK6gmuRFEV1VMTFV/o6h4r58h+BYhsMPmFhUGESgpEkDrPQRNmTfBq7djv4XtqGZDi530KoYlNl+KXul0AAj9f46WLPKKwAknvAaj1mYKqpc6sWlaQ0nzkvmeFu+UcV0HCmQKIBS4pthWO7s1l999gnW3C1agRhpbeR1jwIzAWUfSBhyJEkDz260vdh3uViyPVRHqHt47qK53k9Ls/7LmCist4xj6MuaZeUYbWaqXie/eOEkHBUJPMnS+kKSLbqqA0VJJ7EwF"
 	);
 }
 
@@ -299,7 +299,7 @@ TEST(SerializeTest, CrossGroupTransactions) {
 	// printf("serialized outbound: %s\n", serializedOutbound->convertToBase64().c_str());
 	ASSERT_STREQ(
 		serializedOutbound->convertToBase64().c_str(),
-		"CAcS6QEKZgpkCiCBZwMplGmI7fRR9MQkaR2Dz1qQQ5BCiC1btyJD71Ue9BJABODQ9sS70th9yHn8X3K+SNv2gsiIdX/V09baCvQCb+z5+Tjbhx/eNy9tgFgVJzRoWuIfUwKQvMIpDFok/+fNDBJ9ChkIAhIVRGFua2UgZnVlciBkZWluIFNlaW4hEgYIgMy5/wUaAzMuNSACKgV0ZXN0MjJKCiYKINsO1hJaFPAwq+0b/IMeCiGM+fq/zufs1YHAwOeI8BfHEJSYPRIgJE0o18xb6P6PsNjh0bkN52AzhggteTzoh09jV+blMq0aABoGCMLyuf8FIgMzLjcqIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMhUIAhoRCgkIqemnUhD+4wESBBj8sgc6Jgog2w7WEloU8DCr7Rv8gx4KIYz5+r/O5+zVgcDA54jwF8cQwIQ9OicKICRNKNfMW+j+j7DY4dG5DedgM4YILXk86IdPY1fm5TKtEOuUpQRAAg=="
+		"CAcS6QEKZgpkCiCq0SuoJrkRRFdVTExVf6OoeK+fIfgWIbDD5hYVBhEoKRJAPiBGS3vpCis479t5WtK9jfkPXBHDVVNVvYeD/2n/Kp4axQ31lnBqnhjuYPqg9LGNmiftOFs5H9en07MNqLpKChJ9ChkIAhIVRGFua2UgZnVlciBkZWluIFNlaW4hEgYIgMy5/wUaAzMuNSACKgV0ZXN0MjJKCiYKIO/ykZNQpTrID4mAYrfGf/gCgkX0zETgjvIviFFxVU87EJSYPRIgfvV+405Mrl4BQDS3+AQ7pkDRom8H1iKsNC5krXW59g0aABoGCMLyuf8FIgMzLjcqIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMhUIAhoRCgkIqemnUhD+4wESBBj8sgc6Jgog7/KRk1ClOsgPiYBit8Z/+AKCRfTMROCO8i+IUXFVTzsQwIQ9OicKIH71fuNOTK5eAUA0t/gEO6ZA0aJvB9YirDQuZK11ufYNEOuUpQRAAg=="
 	);
 	deserialize::Context cDeserializeOutbound(serializedOutbound, deserialize::Type::CONFIRMED_TRANSACTION);
 	cDeserializeOutbound.run(g_appContext->getOrAddCommunityIdIndex(communityId));
@@ -325,7 +325,7 @@ TEST(SerializeTest, CrossGroupTransactions) {
 	// printf("serialized inbound: %s\n", serializedInbound->convertToBase64().c_str());
 	ASSERT_STREQ(
 		serializedInbound->convertToBase64().c_str(),
-		"CAcSmAIKZgpkCiCBZwMplGmI7fRR9MQkaR2Dz1qQQ5BCiC1btyJD71Ue9BJABODQ9sS70th9yHn8X3K+SNv2gsiIdX/V09baCvQCb+xrpCtIYAa2zlVoEbj2EVoyhcUuQqFW5MZJioXSy3fQAhKWAQoZCAISFURhbmtlIGZ1ZXIgZGVpbiBTZWluIRIGCIDMuf8FGgMzLjUgASoOdGVzdC1jb21tdW5pdHkyWgo2CiDbDtYSWhTwMKvtG/yDHgohjPn6v87n7NWBwMDniPAXxxCUmD0aDnRlc3QtY29tbXVuaXR5EiAkTSjXzFvo/o+w2OHRuQ3nYDOGCC15POiHT2NX5uUyrRoVCAIaEQoJCKnpp1IQ/uMBEgQY/LIHGgYIwvK5/wUiAzMuNyogAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyEAgCGgwKBgjC8rn/BRICGAI6Ngog2w7WEloU8DCr7Rv8gx4KIYz5+r/O5+zVgcDA54jwF8cQwIQ9Gg50ZXN0LWNvbW11bml0eTo3CiAkTSjXzFvo/o+w2OHRuQ3nYDOGCC15POiHT2NX5uUyrRDrlKUEGg50ZXN0LWNvbW11bml0eUAC"
+		"CAcSmAIKZgpkCiCq0SuoJrkRRFdVTExVf6OoeK+fIfgWIbDD5hYVBhEoKRJAoPzG2j6FwBMwcNuQlsxShZ/ACZ4hSvq8A6+hHVTlpMfxlM+Qcm0f1X7me3om/xJIsCo3VBsiVTUbllg/Kmv5ChKWAQoZCAISFURhbmtlIGZ1ZXIgZGVpbiBTZWluIRIGCIDMuf8FGgMzLjUgASoOdGVzdC1jb21tdW5pdHkyWgo2CiDv8pGTUKU6yA+JgGK3xn/4AoJF9MxE4I7yL4hRcVVPOxCUmD0aDnRlc3QtY29tbXVuaXR5EiB+9X7jTkyuXgFANLf4BDumQNGibwfWIqw0LmStdbn2DRoVCAIaEQoJCKnpp1IQ/uMBEgQY/LIHGgYIwvK5/wUiAzMuNyogAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyEAgCGgwKBgjC8rn/BRICGAI6Ngog7/KRk1ClOsgPiYBit8Z/+AKCRfTMROCO8i+IUXFVTzsQwIQ9Gg50ZXN0LWNvbW11bml0eTo3CiB+9X7jTkyuXgFANLf4BDumQNGibwfWIqw0LmStdbn2DRDrlKUEGg50ZXN0LWNvbW11bml0eUAC"
 	);
 	deserialize::Context cDeserializeInbound(serializedInbound, deserialize::Type::CONFIRMED_TRANSACTION);
 	cDeserializeInbound.run(g_appContext->getOrAddCommunityIdIndex(community2));
