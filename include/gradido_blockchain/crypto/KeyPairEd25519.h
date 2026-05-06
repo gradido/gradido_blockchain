@@ -65,6 +65,8 @@ public:
 	// bool is3rdHighestBitClear() const;
 
 	inline memory::ConstBlockPtr getPublicKey() const { return mSodiumPublic; }
+	memory::Block getSlip10PublicKey() const;
+	
 	inline memory::ConstBlockPtr getChainCode() const { return mChainCode; }
 
 	inline bool isTheSame(const KeyPairEd25519& b) const {

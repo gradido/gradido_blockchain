@@ -11,6 +11,19 @@ public:
 	TestKeyPairEd25519Ex(const KeyPairEd25519Ex& other)
 		: KeyPairEd25519Ex(other) {}
 	inline memory::ConstBlockPtr getPrivateKey() const {return KeyPairEd25519::getPrivateKey(); }
+
+	std::shared_ptr<TestKeyPairEd25519Ex> deriveChild(uint32_t index) const {
+		return std::make_shared<TestKeyPairEd25519Ex>(*KeyPairEd25519::deriveChild(index));
+	}
+	bool isTheSame(std::shared_ptr<TestKeyPairEd25519Ex> other) const {
+		if (!getPublicKey() && !other) {
+			return true;
+		}
+		if (getPublicKey() && other) {
+			return getPublicKey()->isTheSame(other->getPublicKey());
+		}
+		return false;
+	}
 };
 
 class TestKeyPairEd25519 : public KeyPairEd25519
@@ -28,9 +41,6 @@ public:
 	}
 	inline memory::ConstBlockPtr getPrivateKey() const {return KeyPairEd25519::getPrivateKey(); }
 };
-
-
-
 
 class TestEd25519Bip32 : public ::testing::Test
 {

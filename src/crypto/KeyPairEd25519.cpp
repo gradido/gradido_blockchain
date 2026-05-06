@@ -9,8 +9,14 @@ using namespace keyDerivation;
 using std::make_shared;
 
 KeyPairEd25519::KeyPairEd25519(memory::ConstBlockPtr publicKey, memory::ConstBlockPtr privateKey /* = nullptr*/, memory::ConstBlockPtr chainCode /* = nullptr*/)
-		: mExtendedSecret(privateKey), mChainCode(chainCode), mSodiumPublic(publicKey)
+		: mExtendedSecret(privateKey), mChainCode(chainCode)
 {
+	if (publicKey->size() == ED25519_PUBLIC_KEY_SIZE + 1) {
+		mSodiumPublic = make_shared<Block>(ED25519_PUBLIC_KEY_SIZE, publicKey->data(1));
+	}
+	else if(publicKey->size() == ED25519_PUBLIC_KEY_SIZE) {
+		mSodiumPublic = publicKey;
+	}
 	checkKeySizes();
 }
 
@@ -266,6 +272,14 @@ bool KeyPairEd25519::verify(const memory::Block &message, const memory::Block &s
 		return false;
 	}
 	return true;
+}
+
+memory::Block KeyPairEd25519::getSlip10PublicKey() const
+{
+	memory::Block result(ED25519_PUBLIC_KEY_SIZE + 1);
+	result[0] = 0x00;
+	memcpy(result.data() + 1, mSodiumPublic->data(), ED25519_PUBLIC_KEY_SIZE);
+	return result;
 }
 /*
 bool KeyPairEd25519::is3rdHighestBitClear() const
