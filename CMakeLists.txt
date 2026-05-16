@@ -15,7 +15,6 @@ else()
 endif()
 string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]+" GRADIDO_BLOCKCHAIN_CLEAN_VERSION "${GRADIDO_BLOCKCHAIN_GIT_VER}")
 project(GradidoBlockchain VERSION ${GRADIDO_BLOCKCHAIN_CLEAN_VERSION})
-option(ENABLE_IOTA_RUST_CLIENT "switch for include rust iota client into build, increase build time and size a lot" OFF)
 option(ENABLE_HTTP "switch for include http based classes into build, increase build time and size" OFF)
 option(ENABLE_HTTPS "switch for include openssl for https support" OFF)
 option(ENABLE_TEST "switch for include test into build config" OFF)
@@ -222,17 +221,14 @@ FILE(GLOB DATA "include/gradido_blockchain/data/*.h" "src/data/*.cpp")
 FILE(GLOB DATA_ADAPTER "include/gradido_blockchain/data/adapter/*.h" "src/data/adapter/*.cpp")
 FILE(GLOB DATA_COMPACT "include/gradido_blockchain/data/compact/*.h" "src/data/compact/*.cpp")
 FILE(GLOB DATA_RICH "include/gradido_blockchain/data/rich/*.h" "src/data/rich/*.cpp")
-FILE(GLOB DATA_IOTA "include/gradido_blockchain/data/iota/*.h" "src/data/iota/*.cpp")
 FILE(GLOB DATA_HIERO "include/gradido_blockchain/data/hiero/*.h" "src/data/hiero/*.cpp")
 FILE(GLOB HTTP "include/gradido_blockchain/http/*.h" "src/http/*.cpp")
 FILE(GLOB INTERACTION "include/gradido_blockchain/interaction/*.h" "src/interaction/*.cpp")
 FILE(GLOB LIB_SRC "include/gradido_blockchain/lib/*.h" "src/lib/*.cpp")
 FILE(GLOB MAIN "src/*.cpp" "src/*.c"  "include/gradido_blockchain/*.h")
 FILE(GLOB MEMORY "include/gradido_blockchain/memory/*.h" "src/memory/*.cpp")
-FILE(GLOB PROTO_GRADIDO "build/proto/gradido/*.cc" "build/proto/gradido/*.h")
 FILE(GLOB SERIALIZATION "include/gradido_blockchain/serialization/*.h" "src/serialization/*.cpp")
 FILE(GLOB TINF "dependencies/tinf/src/*.c" "dependencies/tinf/src/*.h")
-FIlE(GLOB THREADING "include/gradido_blockchain/threading/*.h" "src/threading/*.cpp")
 FILE(GLOB BLOCKCHAIN "include/gradido_blockchain/blockchain/*.h" "src/blockchain/*.cpp")
 FILE(GLOB BLOCKCHAIN_BATCH "include/gradido_blockchain/blockchain/batch/*.h" "src/blockchain/batch/*.cpp")
 
@@ -273,7 +269,7 @@ FILE(GLOB INTERACTION_VALIDATE
 SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${BLOCKCHAIN} ${BLOCKCHAIN_BATCH}
 	${CRYPTO}
-	${DATA} ${DATA_ADAPTER} ${DATA_COMPACT} ${DATA_HIERO} ${DATA_IOTA} ${DATA_RICH}
+	${DATA} ${DATA_ADAPTER} ${DATA_COMPACT} ${DATA_HIERO} ${DATA_RICH}
 	${INTERACTION}
 	${LIB_SRC}
 	${MAIN}
@@ -281,7 +277,6 @@ SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${MODEL_IOTA}
 	${SERIALIZATION}
 	${TINF}
-	${THREADING}
 	#${INTERACTION_ADVANCED_BLOCKCHAIN_FILTER}
 	${INTERACTION_CALCULATE_ACCOUNT_BALANCE}
 	${INTERACTION_CALCULATE_CREATION_SUM}
@@ -304,8 +299,7 @@ if(MSVC)
 	source_group("data\\adapter" FILES ${DATA_ADAPTER})
 	source_group("data\\compact" FILES ${DATA_COMPACT})	
 	source_group("data\\hiero" FILES ${DATA_HIERO})		
-	source_group("data\\iota" FILES ${DATA_IOTA})
-	source_group("data\\rich" FILES ${DATA_RICH})
+		source_group("data\\rich" FILES ${DATA_RICH})
 	source_group("data" FILES ${DATA})
 	if(ENABLE_HTTP)
 		source_group("http" FILES ${HTTP})
@@ -315,7 +309,6 @@ if(MSVC)
 	source_group("memory" FILES ${MEMORY})
 	source_group("serialization" FILES ${SERIALIZATION})
 	source_group("tinf" FILES ${TINF})
-	source_group("threading" FILES ${THREADING})
 	source_group("interaction\\advancedBlockchainFilter" FILES ${INTERACTION_ADVANCED_BLOCKCHAIN_FILTER})
 	source_group("interaction\\calculateAccountBalance" FILES ${INTERACTION_CALCULATE_ACCOUNT_BALANCE})
 	source_group("interaction\\calculateCreationSum" FILES ${INTERACTION_CALCULATE_CREATION_SUM})
@@ -357,15 +350,6 @@ IF(WIN32)
 	message("[GradidoBlockchain] project binary folder: ${GradidoBlockchain_BINARY_DIR}")
 ENDIF()
 
-############################# add rust and iota.rs ####################
-# https://webdevolutions.blob.core.windows.net/blog/pdf/insider-series-using-rust-code-in-a-cc-project-with-cmake.pdf
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/")
-if(ENABLE_IOTA_RUST_CLIENT)
-	enable_language(Rust)
-	include(CMakeCargo)
-	add_subdirectory(iota_rust_clib)
-endif()
-
 ############################ small libraries as subproject ###########
 set(LOGURU_INSTALL ON)
 set(BUILD_SHARED_LIBS_TEMP ${BUILD_SHARED_LIBS})
@@ -378,36 +362,7 @@ add_subdirectory(dependencies/fkYAML)
 add_subdirectory(dependencies/miniz)
 set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_TEMP})
 
-######################################################################
-# in zig rewritten parts
-if(CMAKE_CROSSCOMPILING AND DEFINED TARGET)
-    # Cross-Compilation: TARGET aus Toolchain-File nutzen
-    set(ZIG_BUILD_TARGET "-Dtarget=${TARGET}")
-elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-    # Nativ auf aarch64
-    set(ZIG_BUILD_TARGET "-Dtarget=aarch64-linux-gnu")
-else()
-    set(ZIG_BUILD_TARGET "")
-endif()
 
-add_custom_target(gradido_protobuf_zig_build
-	COMMAND ${CMAKE_COMMAND} -E env zig build
-			${ZIG_BUILD_TARGET}
-			-Doptimize=ReleaseSmall
-	WORKING_DIRECTORY
-			${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig
-	VERBATIM
-)
-
-add_library(gradido_protobuf_zig STATIC IMPORTED)
-
-set_target_properties(gradido_protobuf_zig PROPERTIES
-    IMPORTED_LOCATION
-        "${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig/zig-out/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gradido_protobuf_zig${CMAKE_STATIC_LIBRARY_SUFFIX}"
-    INTERFACE_INCLUDE_DIRECTORIES
-        "${CMAKE_CURRENT_LIST_DIR}/dependencies/gradido_protobuf_zig/include"
-)
-add_dependencies(gradido_protobuf_zig gradido_protobuf_zig_build)
 ######################################################################
 
 add_library(GradidoBlockchain ${GRADIDO_BLOCKCHAIN_LOCAL_SRCS})
@@ -446,31 +401,10 @@ if (ENABLE_HTTPS)
 	#target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR})
 endif()
 
-target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz gradido_protobuf_zig roaring gradido_blockchain_core)
+target_link_libraries(GradidoBlockchain loguru::loguru fkYAML::fkYAML miniz roaring gradido_blockchain_core sodium)
 if(OpenSSL_FOUND)
 	target_link_libraries(GradidoBlockchain OpenSSL::SSL OpenSSL::Crypto)
 endif()
-if(WIN32)
-	# needed for windows if linking to a rust lib
-	if(ENABLE_IOTA_RUST_CLIENT)
-		find_library(IOTA_RUST_C_LIB iota_rust_clib.dll.lib PATHS
-			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/${CMAKE_BUILD_TYPE}"
-			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/debug"
-			"${PROJECT_BINARY_DIR}/iota_rust_clib/x86_64-pc-windows-msvc/release"
-		)
-		IF(IOTA_RUST_C_LIB STREQUAL "IOTA_RUST_C_LIB-NOTFOUND" )
-				message("[GradidoBlockchain] !!!!!!\nplease build target iota_rust_clib_target and call again `cmake`\n!!!!!!")
-		ELSE()
-			target_link_libraries(GradidoBlockchain ${IOTA_RUST_C_LIB})
-		ENDIF()
-	endif()
-	target_link_libraries(GradidoBlockchain ws2_32 userenv)
-ELSE()
-	if(ENABLE_IOTA_RUST_CLIENT)
-		target_link_libraries(GradidoBlockchain iota_rust_clib)
-	endif()
-ENDIF()
-target_link_libraries(GradidoBlockchain sodium)
 
 set_target_properties(GradidoBlockchain PROPERTIES
                       VERSION ${GradidoBlockchain_VERSION}

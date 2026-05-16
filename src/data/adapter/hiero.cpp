@@ -21,7 +21,7 @@ namespace gradido::data::adapter {
     };
   }
 
-  compact::HieroTransactionId fromGrdw(grdw_hiero_transaction_id& grdw_hiero_tx_id)
+  compact::HieroTransactionId fromGrdw(const grdw_hiero_transaction_id& grdw_hiero_tx_id)
   {
     if (grdw_hiero_tx_id.accountID.realmNum
       || grdw_hiero_tx_id.accountID.shardNum 

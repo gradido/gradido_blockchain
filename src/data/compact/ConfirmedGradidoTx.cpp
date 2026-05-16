@@ -1,3 +1,5 @@
+#include "gradido_blockchain_core/data/wire/confirmed_transaction.h"
+#include "gradido_blockchain_core/data/wire/transaction_body.h"
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/adapter/types.h"
 #include "gradido_blockchain/data/adapter/timestamp.h"
@@ -7,9 +9,8 @@
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/rich/AccountBalance.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
+#include "gradido_blockchain/lib/Uuid.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
-
-#include "gradido_protobuf_zig.h"
 
 #include "loguru/loguru.hpp"
 #include "magic_enum/magic_enum.hpp"
@@ -150,9 +151,10 @@ namespace gradido::data::compact {
       const auto& tx_account_balance = tx->account_balances[i];
       accountBalance.balanceGddCent = tx->account_balances[i].balance;
       accountBalance.coinCommunityIdIndex = blockchainCommunityIdIndex;
-      if (tx_account_balance.community_id) {
-        accountBalance.coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(tx_account_balance.community_id);
-      }
+      
+      Uuid communityUuid(tx_account_balance.community_uuid);
+      accountBalance.coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(communityUuid.toString());
+      
       accountBalance.publicKeyIndex = appContext.getOrAddPublicKeyIndex(blockchainCommunityIdIndex, tx_account_balance.pubkey);
     }
     
@@ -213,13 +215,18 @@ namespace gradido::data::compact {
     
     uint32_t senderCommunityIdIndex = txCommunityIdIndex;
     uint32_t recipientCommunityIdIndex = txCommunityIdIndex;
-    if (crossGroupType != CrossGroupType::LOCAL) {
+    if (crossGroupType != CrossGroupType::LOCAL) 
+    {
+      if (!body->other_community_uuid) {
+        throw GradidoNodeInvalidDataException("missing other community uuid on cross group transaction");
+      }
+      Uuid otherUuid(body->other_community_uuid);
       switch (crossGroupType) {
       case CrossGroupType::OUTBOUND:
-        recipientCommunityIdIndex = appContext.getOrAddCommunityIdIndex(body->other_group);
+        recipientCommunityIdIndex = appContext.getOrAddCommunityIdIndex(otherUuid.toString());
         break;
       case CrossGroupType::INBOUND:
-        senderCommunityIdIndex = appContext.getOrAddCommunityIdIndex(body->other_group);
+        senderCommunityIdIndex = appContext.getOrAddCommunityIdIndex(otherUuid.toString());
         break;
       default:
         throw GradidoUnhandledEnum(
@@ -252,7 +259,7 @@ namespace gradido::data::compact {
       }
       else {
         auto& blockchain = appContext.getCommunityContext(txCommunityIdIndex).getBlockchain();
-        auto deferredTransfer = blockchain->getConfirmedTxForId(body->data.timeout_deferred_transfer->deferred_transfer_transaction_nr);
+        auto deferredTransfer = blockchain->getConfirmedTxForId(body->timeout_deferred_transfer.deferred_transfer_transaction_nr);
         if (!deferredTransfer) {
           throw GradidoNodeInvalidDataException("missing deferred transfer for timeout");
         }
@@ -266,52 +273,47 @@ namespace gradido::data::compact {
     {
       switch (transactionType) {
       case TransactionType::TRANSFER:
-        specific.transfer = TransferTx::fromGrdw(body->data.transfer, senderCommunityIdIndex, recipientCommunityIdIndex, appContext);
-        if (body->data.transfer->sender.community_id) {
-          coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(body->data.transfer->sender.community_id);
-        }
+        specific.transfer = TransferTx::fromGrdw(&body->transfer, senderCommunityIdIndex, recipientCommunityIdIndex, appContext);
+        coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->transfer.sender.community_uuid).toString());
         break;
       case TransactionType::CREATION:
         specific.creation = {
-          .amountGddCent = body->data.creation->recipient.amount,
-          .recipientPublicKeyIndex = appContext.getOrAddPublicKeyIndex(recipientCommunityIdIndex, body->data.creation->recipient.pubkey),
-          .targetMonthYear = adapter::fromGrdw(body->data.creation->target_date).getAsYearMonth()
+          .amountGddCent = body->creation.recipient.amount,
+          .recipientPublicKeyIndex = appContext.getOrAddPublicKeyIndex(recipientCommunityIdIndex, body->creation.recipient.pubkey),
+          .targetMonthYear = adapter::fromGrdw(body->creation.target_date).getAsYearMonth()
         };
+        coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->creation.recipient.community_uuid).toString());
         break;
       case TransactionType::REGISTER_ADDRESS:
-        if (body->data.register_address->derivation_index != static_cast<uint16_t>(body->data.register_address->derivation_index)) {
+        if (body->register_address.derivation_index != static_cast<uint16_t>(body->register_address.derivation_index)) {
           throw GradidoNodeInvalidDataException("derivation index exceed uint16_t");
         }
         specific.registerAddress = {
-          .addressType = adapter::fromGrdw(body->data.register_address->address_type),
-          .derivationIndex = static_cast<uint16_t>(body->data.register_address->derivation_index),
-          .nameHashIndex = appContext.getOrAddUserNameHashIndex(body->data.register_address->name_hash),
-          .userPublicKeyIndex = appContext.getOrAddPublicKeyIndex(senderCommunityIdIndex, body->data.register_address->user_pubkey),
-          .accountPublicKeyIndex = appContext.getOrAddPublicKeyIndex(senderCommunityIdIndex, body->data.register_address->account_pubkey)
+          .addressType = adapter::fromGrdw(body->register_address.address_type),
+          .derivationIndex = static_cast<uint16_t>(body->register_address.derivation_index),
+          .nameHashIndex = appContext.getOrAddUserNameHashIndex(body->register_address.name_hash),
+          .userPublicKeyIndex = appContext.getOrAddPublicKeyIndex(senderCommunityIdIndex, body->register_address.user_pubkey),
+          .accountPublicKeyIndex = appContext.getOrAddPublicKeyIndex(senderCommunityIdIndex, body->register_address.account_pubkey)
         };
         break;
       case TransactionType::DEFERRED_TRANSFER:
         if (crossGroupType != CrossGroupType::LOCAL) {
           throw GradidoNodeInvalidDataException("deferred transfer (currently) don't work cross community");
         }
-        if (body->data.deferred_transfer->transfer.sender.community_id) {
-          throw GradidoNodeInvalidDataException("deferred transfer not expected field coin community id filled");
-        }
-        if (body->data.deferred_transfer->transfer.sender.amount != (int64_t)((uint32_t)(body->data.deferred_transfer->transfer.sender.amount))) {
+        if (body->deferred_transfer.transfer.sender.amount != (int64_t)((uint32_t)(body->deferred_transfer.transfer.sender.amount))) {
           throw GradidoNodeInvalidDataException("deferred transfer amount exceed uint32_t (more than 429'496 GDD)");
         }
         specific.deferredTransfer = {
-          .amountGddCent = (uint32_t)(body->data.deferred_transfer->transfer.sender.amount),
-          .senderPublicKeyIndex = g_appContext->getOrAddPublicKeyIndex(txCommunityIdIndex, body->data.deferred_transfer->transfer.sender.pubkey),
-          .recipientPublicKeyIndex = g_appContext->getOrAddPublicKeyIndex(txCommunityIdIndex, body->data.deferred_transfer->transfer.recipient),
-          .timeoutDurationSeconds = body->data.deferred_transfer->timeout_duration
+          .amountGddCent = (uint32_t)(body->deferred_transfer.transfer.sender.amount),
+          .senderPublicKeyIndex = g_appContext->getOrAddPublicKeyIndex(txCommunityIdIndex, body->deferred_transfer.transfer.sender.pubkey),
+          .recipientPublicKeyIndex = g_appContext->getOrAddPublicKeyIndex(txCommunityIdIndex, body->deferred_transfer.transfer.recipient),
+          .timeoutDurationSeconds = body->deferred_transfer.timeout_duration
         };
+        coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->deferred_transfer.transfer.sender.community_uuid).toString());
         break;
       case TransactionType::REDEEM_DEFERRED_TRANSFER:
-        specific.transfer = TransferTx::fromGrdw(&body->data.redeem_deferred_transfer->transfer, senderCommunityIdIndex, recipientCommunityIdIndex, appContext);
-        if (body->data.redeem_deferred_transfer->transfer.sender.community_id) {
-          coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(body->data.redeem_deferred_transfer->transfer.sender.community_id);
-        }
+        specific.transfer = TransferTx::fromGrdw(&body->redeem_deferred_transfer.transfer, senderCommunityIdIndex, recipientCommunityIdIndex, appContext);
+        coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->redeem_deferred_transfer.transfer.sender.community_uuid).toString());
         break;
         //case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
           // throw GradidoUnhandledEnum("on ConfirmedGradidoTx::fromGrdw, removed because of simplify", "TransactionType", enum_name(transactionType).data());
@@ -319,9 +321,9 @@ namespace gradido::data::compact {
           //break;
       case TransactionType::COMMUNITY_ROOT:
         specific.communityRoot = {
-          .publicKeyIndex = appContext.getOrAddPublicKeyIndex(senderCommunityIdIndex, body->data.community_root->pubkey),
-          .gmwPublicKeyIndex = appContext.getOrAddPublicKeyIndex(senderCommunityIdIndex, body->data.community_root->gmw_pubkey),
-          .aufPublicKeyIndex = appContext.getOrAddPublicKeyIndex(senderCommunityIdIndex, body->data.community_root->auf_pubkey)
+          .publicKeyIndex = appContext.getOrAddPublicKeyIndex(senderCommunityIdIndex, body->community_root.pubkey),
+          .gmwPublicKeyIndex = appContext.getOrAddPublicKeyIndex(senderCommunityIdIndex, body->community_root.gmw_pubkey),
+          .aufPublicKeyIndex = appContext.getOrAddPublicKeyIndex(senderCommunityIdIndex, body->community_root.auf_pubkey)
         };
         break;
       default:

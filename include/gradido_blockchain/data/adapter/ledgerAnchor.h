@@ -4,13 +4,13 @@
 #include "gradido_blockchain/export.h"
 
 struct grdw_ledger_anchor;
-struct grdu_memory;
+struct grd_memory;
 
 namespace gradido::data {  
   class LedgerAnchor;
   namespace adapter {
     GRADIDOBLOCKCHAIN_EXPORT LedgerAnchor fromGrdw(const grdw_ledger_anchor& ledgerAnchor);
-    GRADIDOBLOCKCHAIN_EXPORT grdw_ledger_anchor toGrdw(grdu_memory* alloc, const LedgerAnchor& ledgerAnchor);
+    GRADIDOBLOCKCHAIN_EXPORT grdw_ledger_anchor toGrdw(grd_memory* alloc, const LedgerAnchor& ledgerAnchor);
   }
 }
 

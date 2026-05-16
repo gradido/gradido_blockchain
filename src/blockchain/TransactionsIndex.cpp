@@ -1,3 +1,4 @@
+#include "gradido_blockchain_core/data/wire/gradido_transaction.h"
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/CompactFilter.h"

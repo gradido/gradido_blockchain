@@ -3,16 +3,16 @@
 
 #include "gradido_blockchain/data/TransferAmount.h"
 #include "gradido_blockchain/export.h"
-#include "gradido_protobuf_zig.h"
 #include "ReturnType.h"
 
 struct grdw_transaction_body;
+struct grd_memory;
 
 namespace gradido::data {
   class TransactionBody;
   namespace adapter {
     GRADIDOBLOCKCHAIN_EXPORT TransferAmount fromGrdw(const grdw_transfer_amount& grdwAmount, uint32_t communityIdIndex);
-    GRADIDOBLOCKCHAIN_EXPORT grdw_transfer_amount toGrdw(grdu_memory* alloc, const TransferAmount& amount, uint32_t communityIdIndex);
+    GRADIDOBLOCKCHAIN_EXPORT grdw_transfer_amount toGrdw(grd_memory* alloc, const TransferAmount& amount, uint32_t communityIdIndex);
   }
 }
 

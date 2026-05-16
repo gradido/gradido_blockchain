@@ -1,11 +1,10 @@
+#include "gradido_blockchain_core/data/wire/transaction_body.h"
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
-#include "gradido_blockchain/interaction/deserialize/TransactionBodyZigRole.h"
+#include "gradido_blockchain/interaction/deserialize/TransactionBodyRole.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/memory/grdu_StaticBuffer.h"
-#include "gradido_protobuf_zig.h"
 
-#include "gradido_protobuf_zig.h"
 #include "loguru/loguru.hpp"
 #include "magic_enum/magic_enum.hpp"
 
@@ -22,28 +21,30 @@ namespace gradido {
   using data::TransactionBody;
   namespace interaction::deserialize {
 
-    TransactionBodyZigRole::TransactionBodyZigRole(ConstBlockPtr bodyBytes)
+    TransactionBodyRole::TransactionBodyRole(ConstBlockPtr bodyBytes)
       : mBodyBytes(bodyBytes)
     {
       
     }
 
-    void TransactionBodyZigRole::run(uint32_t communityIdIndex)
+    void TransactionBodyRole::run(uint32_t communityIdIndex)
     {
       assert(mBodyBytes);
       GrduStaticBuffer<STATIC_BUFFER_SIZE> buffer;
 
-      mTransactionBody = buffer.use(
-        [&](grdu_memory* alloc) -> shared_ptr<const TransactionBody> 
+      buffer.use(
+        [&](grd_memory* alloc) -> grd_result 
         {
           grdw_transaction_body body{};
-          auto result = grdw_transaction_body_decode(alloc, &body, mBodyBytes->data(), mBodyBytes->size());
-          // we skip GRDW_ENCODING_ERROR_C_ALLOC_FAILED because GrduStaticBuffer should handle this error
-          if (GRDW_ENCODING_ERROR_SUCCESS != result.state && GRDW_ENCODING_ERROR_C_ALLOC_FAILED != result.state) {
-            LOG_F(ERROR, "decode error: %s", enum_name(result.state).data());
+          grd_memory_block src = { .data = (uint8_t*)mBodyBytes->data(), .size = mBodyBytes->size() };
+          auto result = grdw_transaction_body_decode(&body, &src, alloc);
+          // we skip GRD_ERROR_STATIC_BUFFER_TO_SMALL because GrduStaticBuffer should handle this error
+          if (GRD_SUCCESS != result && GRD_ERROR_STATIC_BUFFER_TO_SMALL != result) {
+            LOG_F(ERROR, "decode error: %s", enum_name(result).data());
             throw GradidoNodeInvalidDataException("error deserialize body bytes");
           }
-          return TransactionBody::fromGrdw(&body, communityIdIndex);
+          mTransactionBody = TransactionBody::fromGrdw(&body, communityIdIndex);
+          return GRD_SUCCESS;
         }
       );
     }

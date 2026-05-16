@@ -1,15 +1,15 @@
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
-#include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionZigRole.h"
-#include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionZigCompactRole.h"
+#include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionRole.h"
+#include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionCompactRole.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
-#include "gradido_blockchain/interaction/deserialize/GradidoTransactionZigRole.h"
+#include "gradido_blockchain/interaction/deserialize/GradidoTransactionRole.h"
 #include "gradido_blockchain/interaction/deserialize/HieroAccountIdRole.h"
 #include "gradido_blockchain/interaction/deserialize/HieroTopicIdRole.h"
 #include "gradido_blockchain/interaction/deserialize/HieroTransactionIdRole.h"
 #include "gradido_blockchain/interaction/deserialize/LedgerAnchorRole.h"
-#include "gradido_blockchain/interaction/deserialize/TransactionBodyZigRole.h"
+#include "gradido_blockchain/interaction/deserialize/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/deserialize/TransactionTriggerEventRole.h"
 
 
@@ -119,7 +119,7 @@ namespace gradido {
 				}
 				if (Type::CONFIRMED_TRANSACTION_COMPACT == mType) {
 					try {
-						auto role = ConfirmedTransactionZigCompactRole(mData);
+						auto role = ConfirmedTransactionCompactRole(mData);
 						role.run(communityIdIndex);
 						mConfirmedTransactionCompact = role.getTransaction();
 						mType = Type::CONFIRMED_TRANSACTION_COMPACT;
@@ -132,7 +132,7 @@ namespace gradido {
 				}
 				if (Type::GRADIDO_TRANSACTION == mType || Type::UNKNOWN == mType) {
 					try {
-						auto role = GradidoTransactionZigRole(mData);
+						auto role = GradidoTransactionRole(mData);
 						role.run(communityIdIndex);
 						mGradidoTransaction = role.getTransaction();
 						mType = Type::GRADIDO_TRANSACTION;
@@ -147,7 +147,7 @@ namespace gradido {
 				}
 				if (Type::TRANSACTION_BODY == mType || Type::UNKNOWN == mType) {
 					try {
-						auto role = TransactionBodyZigRole(mData);
+						auto role = TransactionBodyRole(mData);
 						role.run(communityIdIndex);
 						mTransactionBody = role.getBody();
 						mType = Type::TRANSACTION_BODY;
@@ -162,7 +162,7 @@ namespace gradido {
 				}
 				
 				try {
-					auto role = ConfirmedTransactionZigRole(mData);
+					auto role = ConfirmedTransactionRole(mData);
 					role.run(communityIdIndex);
 					mConfirmedTransaction = role.getTransaction();
 					mType = Type::CONFIRMED_TRANSACTION;

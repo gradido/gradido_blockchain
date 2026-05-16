@@ -2,9 +2,10 @@
 #define __GRADIDO_BLOCKCHAIN_MEMORY_GRDU_STATIC_BUFFER_H
 
 #include "Block.h"
+#include "gradido_blockchain_core/memory.h"
+#include "gradido_blockchain_core/result.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/types.h"
-#include "gradido_protobuf_zig.h"
 
 #include "loguru/loguru.hpp"
 
@@ -18,39 +19,39 @@ namespace memory {
   {
   public:
     GrduStaticBuffer() {
-      grdu_memory_init_static(&mMemory, mBuffer, BufferSize);
+      grd_memory_init_arena_static(&mMemory, mBuffer, BufferSize);
     }
 
     // memory is reset after call to func
     template<typename Func>
-    inline auto use(Func&& func)
+    inline grd_result use(Func&& func)
     {
-      auto result = func(&mMemory);
+      grd_result result = func(&mMemory);
 
-      if (mMemory.out_of_memory_capacity) {
-        memory::Block dynBuffer(mMemory.capacity + mMemory.out_of_memory_capacity + 128);
-        grdu_memory_init_static(&mMemory, dynBuffer.data(), dynBuffer.size());
+      if (mMemory.out_of_memory_capacity || GRD_ERROR_STATIC_BUFFER_TO_SMALL == result) {
+        memory::Block dynBuffer((mMemory.capacity + mMemory.out_of_memory_capacity) * 2);
+        grd_memory_init_arena_static(&mMemory, dynBuffer.data(), dynBuffer.size());
 
         result = func(&mMemory);
 
-        if (mMemory.out_of_memory_capacity) {
+        if (mMemory.out_of_memory_capacity || GRD_ERROR_STATIC_BUFFER_TO_SMALL == result) {
           LOG_F(
             ERROR,
             "GrduStaticBuffer: out of memory capacity, after retry with: %lu, need at least %lu more bytes",
             dynBuffer.size(),
             mMemory.out_of_memory_capacity
           );
-          grdu_memory_init_static(&mMemory, mBuffer, BufferSize);
+          grd_memory_init_arena_static(&mMemory, mBuffer, BufferSize);
           throw GradidoNodeInvalidDataException("GrduStaticBuffer: out of memory capacity");
         }
       }
-      grdu_memory_init_static(&mMemory, mBuffer, BufferSize);
+      grd_memory_init_arena_static(&mMemory, mBuffer, BufferSize);
       return result;
     }
 
   protected:
     uint8_t mBuffer[BufferSize];
-    grdu_memory mMemory;
+    grd_memory mMemory;
   };
 }
 

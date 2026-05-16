@@ -1,3 +1,6 @@
+#include "gradido_blockchain_core/data/wire/confirmed_transaction.h"
+#include "gradido_blockchain_core/data/wire/transaction_body.h"
+#include "gradido_blockchain_core/memory.h"
 #include "gradido_blockchain/blockchain/CompactFilter.h"
 #include "gradido_blockchain/blockchain/InMemory.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
@@ -16,7 +19,6 @@
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
-#include "gradido_protobuf_zig.h"
 
 #include "loguru/loguru.hpp"
 #include "magic_enum/magic_enum.hpp"
@@ -418,8 +420,8 @@ namespace gradido {
 			// create compact version
 			try {
 				uint8_t buffer[1024];
-				grdu_memory alloc;
-				grdu_memory_init_static(&alloc, buffer, 1024);
+				grd_memory alloc;
+				grd_memory_init_arena_static(&alloc, buffer, 1024);
 				grdw_confirmed_transaction tx{};
 				transactionEntry->getConfirmedTransaction()->toGrdw(&alloc, &tx, mCommunityIdIndex);
 				auto confirmedTx =  make_shared<ConfirmedGradidoTx>(ConfirmedGradidoTx::fromGrdw(&tx, mCommunityIdIndex, *g_appContext));

@@ -1,5 +1,5 @@
-#ifndef __GRADIDO_BLOCKCHAIN_DATA_TRANSACTION_BODY_H
-#define __GRADIDO_BLOCKCHAIN_DATA_TRANSACTION_BODY_H
+#ifndef GRADIDO_BLOCKCHAIN_DATA_TRANSACTION_BODY_H
+#define GRADIDO_BLOCKCHAIN_DATA_TRANSACTION_BODY_H
 
 #include "CommunityFriendsUpdate.h"
 #include "CommunityRoot.h"
@@ -20,7 +20,7 @@
 #include <variant>
 
 struct grdw_transaction_body;
-struct grdu_memory;
+struct grd_memory;
 
 namespace gradido {
 	class GradidoTransactionBuilder;
@@ -49,7 +49,7 @@ namespace gradido {
 			~TransactionBody() {}
 
 			static std::shared_ptr<const TransactionBody> fromGrdw(grdw_transaction_body* grdw_body, uint32_t communityIdIndex);
-			void toGrdw(grdu_memory* alloc, grdw_transaction_body* grdw_body) const;
+			void toGrdw(grd_memory* alloc, grdw_transaction_body* grdw_body) const;
 
 			inline bool isTransfer() const { return TransactionType::TRANSFER == mTransactionType; }
 			inline bool isCreation() const { return TransactionType::CREATION == mTransactionType; }
@@ -131,4 +131,4 @@ namespace gradido {
 		typedef std::shared_ptr<const TransactionBody> ConstTransactionBodyPtr;
 	}
 }
-#endif //__GRADIDO_BLOCKCHAIN_DATA_TRANSACTION_BODY_H
+#endif //GRADIDO_BLOCKCHAIN_DATA_TRANSACTION_BODY_H

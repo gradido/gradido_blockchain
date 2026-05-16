@@ -1,10 +1,11 @@
+#include "gradido_blockchain_core/data/wire/confirmed_transaction.h"
+#include "gradido_blockchain_core/data/wire/transaction_body.h"
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTxCold.h"
 #include "gradido_blockchain/data/adapter/ledgerAnchor.h"
 #include "gradido_blockchain/data/adapter/types.h"
+#include "gradido_blockchain/lib/Uuid.h"
 #include "gradido_blockchain/memory/Block.h"
-
-#include "gradido_protobuf_zig.h"
 
 #include <utility>
 
@@ -60,7 +61,7 @@ namespace gradido::data {
           ));
         }
       }
-      txCold->bodyBytes = Block(tx->body_bytes_size, tx->body_bytes);
+      txCold->bodyBytes = Block(tx->body_bytes.size, tx->body_bytes.data);
       return txCold;
     }
 
@@ -83,15 +84,15 @@ namespace gradido::data {
       createdAtNanos = body->created_at.nanos;
 
       // pairing tx
-      if (!pairingLedgerAnchor.empty()) {
-        pairingTxCommunityIdIndex = appContext.getOrAddCommunityIdIndex(body->other_group);
+      if (!pairingLedgerAnchor.empty() && body->other_community_uuid) {
+        pairingTxCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->other_community_uuid).toString());
       }
       if (body->memos_count > 2) {
         throw GradidoNotImplementedException("memo count is more than expected");
       }
       // memos
       for (int i = 0; i < body->memos_count; i++) {
-        encryptedMemos[i] = EncryptedMemo(adapter::fromGrdw(body->memos[i].type), Block(body->memos[i].memo_size, body->memos[i].memo));
+        encryptedMemos[i] = EncryptedMemo(adapter::fromGrdw(body->memos[i].type), Block(body->memos[i].memo.size, body->memos[i].memo.data));
       }
     }
   }

@@ -1,3 +1,5 @@
+#include "gradido_blockchain_core/data/wire/confirmed_transaction.h"
+#include "gradido_blockchain_core/memory.h"
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/adapter/accountBalance.h"
@@ -11,7 +13,6 @@
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/memory/Block.h"
-#include "gradido_protobuf_zig.h"
 
 #include "loguru/loguru.hpp"
 
@@ -92,17 +93,16 @@ namespace gradido {
 			);
 		}
 
-		void ConfirmedTransaction::toGrdw(grdu_memory* alloc, grdw_confirmed_transaction* grdw_tx, uint32_t communityIdIndex) const
+		void ConfirmedTransaction::toGrdw(grd_memory* alloc, grdw_confirmed_transaction* grdw_tx, uint32_t communityIdIndex) const
 		{
 			assert(mGradidoTransaction);
 			grdw_tx->id = mId;
 			mGradidoTransaction->toGrdw(alloc, &grdw_tx->transaction, communityIdIndex);
 			grdw_tx->confirmed_at = adapter::toGrdw(mConfirmedAt);
-			grdw_tx->version_number = grdu_reserve_copy_string(alloc, GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING, grdu_strlen(GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING));
-			grdw_tx->running_hash = grdu_reserve_copy(alloc, mRunningHash->data(), mRunningHash->size());
+			memcpy(grdw_tx->running_hash, mRunningHash->data(), mRunningHash->size());
 			grdw_tx->ledger_anchor = adapter::toGrdw(alloc, mLedgerAnchor);
 			if (mAccountBalances.size()) {
-				grdw_confirmed_transaction_reserve_account_balances(alloc, grdw_tx, mAccountBalances.size());
+				grdw_confirmed_transaction_reserve_account_balances(grdw_tx, mAccountBalances.size(), alloc);
 				if (grdw_tx->account_balances) {
 					for (int i = 0; i < mAccountBalances.size(); i++) {
 						grdw_tx->account_balances[i] = adapter::toGrdw(alloc, mAccountBalances[i], communityIdIndex);

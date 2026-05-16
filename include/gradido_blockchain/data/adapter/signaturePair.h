@@ -1,9 +1,9 @@
 #ifndef GRADIDO_BLOCKCHAIN_DATA_ADAPTER_SIGNATUREPAIR_H
 #define GRADIDO_BLOCKCHAIN_DATA_ADAPTER_SIGNATUREPAIR_H
 
+#include "gradido_blockchain_core/data/wire/basic_types.h"
 #include "gradido_blockchain/data/SignaturePair.h"
 #include "gradido_blockchain/memory/Block.h"
-#include "gradido_protobuf_zig.h"
 
 namespace gradido::data::adapter {
   inline SignaturePair fromGrdw(grdw_signature_pair* signaturePair) {

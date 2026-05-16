@@ -1,5 +1,5 @@
-#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_TRANSACTIONBODYZIGROLE_H
-#define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_TRANSACTIONBODYZIGROLE_H
+#ifndef GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_TRANSACTION_BODY_ROLE_H
+#define GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_TRANSACTION_BODY_ROLE_H
 
 #include <memory>
 
@@ -13,10 +13,10 @@ namespace gradido {
     class TransactionBody;
   }
   namespace interaction::deserialize {
-    class TransactionBodyZigRole {
+    class TransactionBodyRole {
     public:
-      TransactionBodyZigRole(memory::ConstBlockPtr bodyBytes);
-      ~TransactionBodyZigRole() = default;
+      TransactionBodyRole(memory::ConstBlockPtr bodyBytes);
+      ~TransactionBodyRole() = default;
 
       void run(uint32_t communityIdIndex);
       inline std::shared_ptr<const data::TransactionBody> getBody() { return mTransactionBody; }
@@ -28,4 +28,4 @@ namespace gradido {
   }
 }
 
-#endif // __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_TRANSACTIONBODYZIGROLE_H
+#endif // GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_TRANSACTION_BODY_ROLE_H

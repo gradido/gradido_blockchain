@@ -1,5 +1,5 @@
-#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_CONFIRMED_TRANSACTION_ZIG_COMPACT_ROLE_H
-#define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_CONFIRMED_TRANSACTION_ZIG_COMPACT_ROLE_H
+#ifndef GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_CONFIRMED_TRANSACTION_COMPACT_ROLE_H
+#define GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_CONFIRMED_TRANSACTION_COMPACT_ROLE_H
 
 #include <memory>
 
@@ -13,10 +13,10 @@ namespace gradido {
     struct ConfirmedGradidoTx;
   }
   namespace interaction::deserialize {
-    class ConfirmedTransactionZigCompactRole {
+    class ConfirmedTransactionCompactRole {
     public:
-      ConfirmedTransactionZigCompactRole(memory::ConstBlockPtr bodyBytes);
-      ~ConfirmedTransactionZigCompactRole() = default;
+      ConfirmedTransactionCompactRole(memory::ConstBlockPtr bodyBytes);
+      ~ConfirmedTransactionCompactRole() = default;
 
       void run(uint32_t communityIdIndex);
       inline std::shared_ptr<const data::compact::ConfirmedGradidoTx> getTransaction() { return mTx; }
@@ -28,4 +28,4 @@ namespace gradido {
   }
 }
 
-#endif // __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_CONFIRMED_TRANSACTION_ZIG_COMPACT_ROLE_H
+#endif // GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_CONFIRMED_TRANSACTION_COMPACT_ROLE_H

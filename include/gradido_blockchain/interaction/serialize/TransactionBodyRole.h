@@ -1,5 +1,5 @@
-#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_TRANSACTION_BODY_ZIG_ROLE_H
-#define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_TRANSACTION_BODY_ZIG_ROLE_H
+#ifndef GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_TRANSACTION_BODY_ROLE_H
+#define GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_TRANSACTION_BODY_ROLE_H
 
 #include "gradido_blockchain/data/CrossGroupType.h"
 #include "AbstractRole.h"
@@ -12,12 +12,12 @@ namespace gradido {
 	namespace interaction {
 		namespace serialize {
 
-			class TransactionBodyZigRole: public AbstractRole
+			class TransactionBodyRole: public AbstractRole
 			{
 			public:
-				TransactionBodyZigRole(const data::TransactionBody& body) 
+				TransactionBodyRole(const data::TransactionBody& body) 
 					: mBody(body) {}
-				~TransactionBodyZigRole() {};
+				~TransactionBodyRole() {};
 
 				memory::ConstBlockPtr run() const override; 
 				size_t calculateSerializedSize() const override;
@@ -30,4 +30,4 @@ namespace gradido {
 }
 
 
-#endif // __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_TRANSACTION_BODY_ZIG_ROLE_H
+#endif // GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_TRANSACTION_BODY_ROLE_H

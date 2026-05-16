@@ -2,8 +2,6 @@
 #define GRADIDO_BLOCKCHAIN_DATA_ADAPTER_MEMORYBLOCK_H
 
 #include "gradido_blockchain/memory/Block.h"
-#include "gradido_protobuf_zig.h"
-
 #include <memory>
 
 namespace gradido::data::adapter {

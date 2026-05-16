@@ -1,9 +1,9 @@
+#include "gradido_blockchain_core/data/wire/specific_transactions.h"
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/adapter/types.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/compact/RegisterAddressTx.h"
 
-#include "gradido_protobuf_zig.h"
 
 namespace gradido::data::compact {
   RegisterAddressTx RegisterAddressTx::fromGrdw(const grdw_register_address* grdw_register_address, uint32_t blockchainCommunityIdIndex)

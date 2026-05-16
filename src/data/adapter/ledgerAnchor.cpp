@@ -1,10 +1,11 @@
+#include "gradido_blockchain_core/data/wire/ledger_anchor.h"
+#include "gradido_blockchain_core/memory.h"
 #include "gradido_blockchain/data/adapter/hiero.h"
 #include "gradido_blockchain/data/adapter/ledgerAnchor.h"
 #include "gradido_blockchain/data/adapter/timestamp.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/memory/Block.h"
-#include "gradido_protobuf_zig.h"
 
 #include <string>
 
@@ -18,74 +19,76 @@ namespace gradido::data {
         switch (ledgerAnchor.type) {
         case GRDW_LEDGER_ANCHOR_TYPE_UNSPECIFIED: 
           return {};
-        case GRDW_LEDGER_ANCHOR_TYPE_IOTA_MESSAGE_ID: 
-          return LedgerAnchor(Block(32, ledgerAnchor.anchor_id.iota_message_id));
         case GRDW_LEDGER_ANCHOR_TYPE_HIERO_TRANSACTION_ID:
-          return LedgerAnchor(fromGrdw(*ledgerAnchor.anchor_id.hiero_transaction_id));
+          return LedgerAnchor(fromGrdw(ledgerAnchor.hiero_transaction_id));
         case GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_TRANSACTION_ID:
-          return LedgerAnchor(ledgerAnchor.anchor_id.legacy_transaction_id, LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_ID);
+          return LedgerAnchor(ledgerAnchor.id, LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_ID);
         case GRDW_LEDGER_ANCHOR_TYPE_NODE_TRIGGER_TRANSACTION_ID:
-          return LedgerAnchor(ledgerAnchor.anchor_id.node_trigger_transaction_id, LedgerAnchor::Type::NODE_TRIGGER_TRANSACTION_ID);
+          return LedgerAnchor(ledgerAnchor.id, LedgerAnchor::Type::NODE_TRIGGER_TRANSACTION_ID);
         case GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_COMMUNITY_ID:
-          return LedgerAnchor(ledgerAnchor.anchor_id.legacy_community_id, LedgerAnchor::Type::LEGACY_GRADIDO_DB_COMMUNITY_ID);
+          return LedgerAnchor(ledgerAnchor.id, LedgerAnchor::Type::LEGACY_GRADIDO_DB_COMMUNITY_ID);
         case GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_USER_ID:
-          return LedgerAnchor(ledgerAnchor.anchor_id.legacy_user_id, LedgerAnchor::Type::LEGACY_GRADIDO_DB_USER_ID);
+          return LedgerAnchor(ledgerAnchor.id, LedgerAnchor::Type::LEGACY_GRADIDO_DB_USER_ID);
         case GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_CONTRIBUTION_ID:
-          return LedgerAnchor(ledgerAnchor.anchor_id.legacy_contribution_id, LedgerAnchor::Type::LEGACY_GRADIDO_DB_CONTRIBUTION_ID);
+          return LedgerAnchor(ledgerAnchor.id, LedgerAnchor::Type::LEGACY_GRADIDO_DB_CONTRIBUTION_ID);
         case GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID:
-          return LedgerAnchor(ledgerAnchor.anchor_id.legacy_transaction_link_id, LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID);
+          return LedgerAnchor(ledgerAnchor.id, LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID);
         default:
           throw GradidoUnhandledEnum("error converting ledger anchor to grdw (C-Interface)", "LedgerAnchor", to_string(static_cast<uint8_t>(ledgerAnchor.type)).c_str());
         }
         
       }
-      grdw_ledger_anchor toGrdw(grdu_memory* alloc, const LedgerAnchor& ledgerAnchor)
+      grdw_ledger_anchor toGrdw(grd_memory* alloc, const LedgerAnchor& ledgerAnchor)
       {        
         if (ledgerAnchor.isHieroTransactionId()) {
           const auto& hieroTxId = ledgerAnchor.getHieroTransactionIdCompact();
-          grdw_timestamp transactionValidStart = { .seconds = hieroTxId.seconds, .nanos = hieroTxId.nanos };
-          grdw_hiero_account_id accountID = { .shardNum = 0, .realmNum = 0, .accountNum = hieroTxId.accountNum };
           return {
             .type = GRDW_LEDGER_ANCHOR_TYPE_HIERO_TRANSACTION_ID,
-            .anchor_id = { .hiero_transaction_id = grdw_hiero_transaction_id_new(alloc, &transactionValidStart, &accountID) }
+            .hiero_transaction_id = {
+              .transactionValidStart = {
+                .seconds = hieroTxId.seconds, 
+                .nanos = hieroTxId.nanos 
+              },
+              .accountID = {
+                .shardNum = 0,
+                .realmNum = 0,
+                .accountNum = hieroTxId.accountNum 
+              }
+            }
           };
         }        
         switch(ledgerAnchor.getType()) {
           case LedgerAnchor::Type::IOTA_MESSAGE_ID:
-            assert(ledgerAnchor.getIotaMessageId().size() == 32);
-            return {
-              .type = GRDW_LEDGER_ANCHOR_TYPE_IOTA_MESSAGE_ID,
-              .anchor_id = { .iota_message_id = grdu_reserve_copy(alloc, ledgerAnchor.getIotaMessageId().data(), 32) }
-            };
+            throw GradidoUnhandledEnum("error converting ledger anchor to grdw (C-Interface)", "LedgerAnchor", to_string(static_cast<uint8_t>(ledgerAnchor.getType())).c_str());
           case LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_ID:
             return {
               .type = GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_TRANSACTION_ID,
-              .anchor_id = { .legacy_transaction_id = ledgerAnchor.getLegacyTransactionId() }
+              .id = ledgerAnchor.getLegacyTransactionId()
             };
           case LedgerAnchor::Type::NODE_TRIGGER_TRANSACTION_ID:
             return {
               .type = GRDW_LEDGER_ANCHOR_TYPE_NODE_TRIGGER_TRANSACTION_ID,
-              .anchor_id = { .node_trigger_transaction_id = ledgerAnchor.getNodeTriggeredTransactionId() }
+              .id = ledgerAnchor.getNodeTriggeredTransactionId()
             };
           case LedgerAnchor::Type::LEGACY_GRADIDO_DB_COMMUNITY_ID:
             return {
               .type = GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_COMMUNITY_ID,
-              .anchor_id = { .legacy_community_id = ledgerAnchor.getLegacyTransactionId() }
+              .id = ledgerAnchor.getLegacyTransactionId()
             };
           case LedgerAnchor::Type::LEGACY_GRADIDO_DB_USER_ID:
             return {
               .type = GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_USER_ID,
-              .anchor_id = { .legacy_user_id = ledgerAnchor.getLegacyTransactionId() }
+              .id = ledgerAnchor.getLegacyTransactionId()
             };
           case LedgerAnchor::Type::LEGACY_GRADIDO_DB_CONTRIBUTION_ID:
             return {
               .type = GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_CONTRIBUTION_ID,
-              .anchor_id = { .legacy_contribution_id = ledgerAnchor.getLegacyTransactionId() }
+              .id = ledgerAnchor.getLegacyTransactionId()
             };
           case LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID:
             return {
               .type = GRDW_LEDGER_ANCHOR_TYPE_LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID,
-              .anchor_id = { .legacy_transaction_link_id = ledgerAnchor.getLegacyTransactionId() }
+              .id = ledgerAnchor.getLegacyTransactionId()
             };
           case LedgerAnchor::Type::UNSPECIFIED:
             return {

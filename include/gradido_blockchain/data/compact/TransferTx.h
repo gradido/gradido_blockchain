@@ -1,13 +1,9 @@
 #ifndef __GRADIDO_BLOCKCHAIN_DATA_COMPACT_TRANSFER_TX_H__
 #define __GRADIDO_BLOCKCHAIN_DATA_COMPACT_TRANSFER_TX_H__
 
+#include "gradido_blockchain_core/data/wire/specific_transactions.h"
 #include "gradido_blockchain/AppContext.h"
-#include "PublicKeyIndex.h"
 #include "gradido_blockchain/export.h"
-#include "gradido_blockchain/GradidoUnit.h"
-#include "gradido_protobuf_zig.h"
-
-#include <set>
 
 namespace gradido::data::compact {
   struct GRADIDOBLOCKCHAIN_EXPORT TransferTx 
