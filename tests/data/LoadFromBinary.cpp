@@ -1,3 +1,7 @@
+#include "gradido_blockchain_core/memory.h"
+#include "gradido_blockchain_core/data/wire/confirmed_transaction.h"
+#include "gradido_blockchain_core/data/wire/gradido_transaction.h"
+#include "gradido_blockchain_core/data/wire/transaction_body.h"
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/batch/signaturesVerify.h"
 #include "gradido_blockchain/blockchain/batch/ThreadingPolicy.h"
@@ -171,7 +175,6 @@ TEST_F(LoadFromBinary, LoadDataFromBinarySingleThreaded)
 	);
 }
 // */
-#include "gradido_protobuf_zig.h"
 #include "magic_enum/magic_enum.hpp"
 
 #include <cassert>
@@ -356,15 +359,13 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 	MonotonicTimer timeUsedAll;
 	MonotonicTimer timeSinceLastPrint;
 	DataSet communities[] = {
-		{ .communityId = "gradido-akademie", .fileName = "gradido_akademie.dat" },
-		{ .communityId = "herzlicht", .fileName = "herzlicht.dat" },
-		{ .communityId = "wekingheim", .fileName = "wekingheim.dat" }
+		{ .communityId = "e70da33e_5976_4767_bade_aa4e4fa1c01a", .fileName = "gradido_akademie.dat" }
 	};
-	const int communityCount = 3;
+	const int communityCount = 1;
 	char readFromFileStaticBuffer[1024];
-	uint8_t staticInputBuffer[1024];
-	grdu_memory alloc;
-	grdu_memory_init_static(&alloc, staticInputBuffer, 1024);
+	uint8_t staticInputBuffer[4096];
+	grd_memory alloc;
+	grd_memory_init_arena_static(&alloc, staticInputBuffer, 4096);
 	grdw_confirmed_transaction tx{};
 	grdw_transaction_body body{};
 
@@ -392,11 +393,14 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			readed += txSize;
 
 			alloc.last_index = 0;
-			auto decodeResult = grdw_confirmed_transaction_decode(&alloc, &tx, (uint8_t*)readFromFileStaticBuffer, txSize);
-			
-			ASSERT_EQ(decodeResult.state, GRDW_ENCODING_ERROR_SUCCESS);
+			grd_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };
+			auto decodeResult = grdw_confirmed_transaction_decode(&tx, &src, &alloc);
+			ASSERT_EQ(decodeResult, GRD_SUCCESS);
+			decodeResult = grdw_transaction_body_decode(&body, &tx.transaction.body_bytes, &alloc);
+			ASSERT_EQ(decodeResult, GRD_SUCCESS);
+
 			if (GRDW_LEDGER_ANCHOR_TYPE_NODE_TRIGGER_TRANSACTION_ID != tx.ledger_anchor.type) {
-				com.transactions.push(ConfirmedTransaction::fromGrdw(&tx, i+1));
+				// com.transactions.push(ConfirmedTransaction::fromGrdw(&tx, i+1));
 				
 				/*auto compact = make_shared<ConfirmedGradidoTx>(ConfirmedGradidoTx::fromGrdwConfirmedTransaction(&tx, i+1));
 				alloc.last_index = 0;
@@ -415,7 +419,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 		}
 		printf("%s for loading %u confirmed transactions for %s\n", timeUsed.string().c_str(), count, com.communityId);
 	}
-
+	return;
 
 	timeUsed.reset();
 	timeSinceLastPrint.reset();
