@@ -149,7 +149,6 @@ namespace serialization {
 	DEFINE_TO_JSON(TransactionBody, {
 		obj.AddMember("memos", toJson(value.getMemos(), alloc), alloc);
 		obj.AddMember("createdAt", toJson(value.getCreatedAt().getAsTimepoint(), alloc), alloc);
-		obj.AddMember("versionNumber", Value(GRADIDO_TRANSACTION_BODY_VERSION_STRING, alloc), alloc);
 		obj.AddMember("type", toJson(value.getType(), alloc), alloc);
 		auto otherCommunityIdIndex = value.getOtherCommunityIdIndex();
 		if (otherCommunityIdIndex.has_value()) {
@@ -278,6 +277,5 @@ namespace serialization {
 		obj.AddMember("ledgerAnchor", toJson(value.getLedgerAnchor(), alloc), alloc);
 		obj.AddMember("accountBalances", toJson(value.getAccountBalances(), alloc), alloc);
 		obj.AddMember("balanceDerivationType", toJson(value.getBalanceDerivationType(), alloc), alloc);
-		obj.AddMember("versionNumber", Value(GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING, alloc), alloc);
 	})
 }

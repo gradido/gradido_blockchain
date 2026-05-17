@@ -108,7 +108,6 @@ TEST(SerializeTest, GradidoCreationBody) {
 	builder
 		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionCreation(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), communityIdIndex),
 			TimestampSeconds(1609459000)
@@ -130,7 +129,6 @@ TEST(SerializeTest, GradidoTransferBody) {
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 			g_KeyPairs[5]->getPublicKey()
@@ -152,7 +150,6 @@ TEST(SerializeTest, GradidoDeferredTransferBody) {
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500), communityIdIndex),
@@ -176,7 +173,6 @@ TEST(SerializeTest, CommunityFriendsUpdateBody) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setCommunityFriendsUpdate(true)
 		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
@@ -237,7 +233,6 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 		)
 		.setCreatedAt(createdAt)
 		.addMemo(completeTransactionMemoString)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[0])
 		.build();
@@ -258,12 +253,12 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 	auto serialized = c.run();
 	// printf("running hash: %s\n", confirmedTransaction.getRunningHash()->convertToHex().data());
 	// printf("serialized size: %llu, serialized in base64: %s\n", serialized->size(), serialized->convertToBase64().data());
-	printf("hex: %s\n", serialized->convertToHex().data());
+	// printf("hex: %s\n", serialized->convertToHex().data());
 	ASSERT_EQ(serialized->convertToBase64(), completeConfirmedTransaction);
 }
 
 TEST(SerializeTest, CrossGroupTransactions) {
-	auto community2 = "test2";
+	auto community2 = "019e347c-540a-7147-96bb-a57f34f31d5e";
 	GradidoTransactionBuilder builder;
 	builder
 		.setSenderCommunity(communityId)
@@ -277,7 +272,6 @@ TEST(SerializeTest, CrossGroupTransactions) {
 		)
 		.setCreatedAt(createdAt)
 		.addMemo(completeTransactionMemoString)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.sign(g_KeyPairs[0]);
 	
 	LedgerAnchor senderLedgerAnchor(defaultHieroTransactionId);
@@ -299,7 +293,7 @@ TEST(SerializeTest, CrossGroupTransactions) {
 	// printf("serialized outbound: %s\n", serializedOutbound->convertToBase64().c_str());
 	ASSERT_STREQ(
 		serializedOutbound->convertToBase64().c_str(),
-		"CAcS6QEKZgpkCiCq0SuoJrkRRFdVTExVf6OoeK+fIfgWIbDD5hYVBhEoKRJAPiBGS3vpCis479t5WtK9jfkPXBHDVVNVvYeD/2n/Kp4axQ31lnBqnhjuYPqg9LGNmiftOFs5H9en07MNqLpKChJ9ChkIAhIVRGFua2UgZnVlciBkZWluIFNlaW4hEgYIgMy5/wUaAzMuNSACKgV0ZXN0MjJKCiYKIO/ykZNQpTrID4mAYrfGf/gCgkX0zETgjvIviFFxVU87EJSYPRIgfvV+405Mrl4BQDS3+AQ7pkDRom8H1iKsNC5krXW59g0aABoGCMLyuf8FIgMzLjcqIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMhUIAhoRCgkIqemnUhD+4wESBBj8sgc6Jgog7/KRk1ClOsgPiYBit8Z/+AKCRfTMROCO8i+IUXFVTzsQwIQ9OicKIH71fuNOTK5eAUA0t/gEO6ZA0aJvB9YirDQuZK11ufYNEOuUpQRAAg=="
+		"CAcShAIKZgpkCiCq0SuoJrkRRFdVTExVf6OoeK+fIfgWIbDD5hYVBhEoKRJAWwYQELmK6ettwXCq2sbcuNktlg+0wReBP4rJIaJzSk/IaAMvJOvWfPISjxz/Ic/+TM6HDnJMKvNVPjzsHvyqCBKZATJcCjgKIO/ykZNQpTrID4mAYrfGf/gCgkX0zETgjvIviFFxVU87EJSYPRoQAZ40fFQKc9KYhn/s4A1aLhIgfvV+405Mrl4BQDS3+AQ7pkDRom8H1iKsNC5krXW59g0KGQgCEhVEYW5rZSBmdWVyIGRlaW4gU2VpbiESBgiAzLn/BRiIgAwgAioQAZ40fFQKcUeWu6V/NPMdXhoGCMLyuf8FIIiADCogAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyFRoRCgkIqemnUhD+4wESBBj8sgcIAjo4CiDv8pGTUKU6yA+JgGK3xn/4AoJF9MxE4I7yL4hRcVVPOxDAhD0aEAGeNHxUCnPSmIZ/7OANWi46OQogfvV+405Mrl4BQDS3+AQ7pkDRom8H1iKsNC5krXW59g0Q65SlBBoQAZ40fFQKc9KYhn/s4A1aLkAC"
 	);
 	deserialize::Context cDeserializeOutbound(serializedOutbound, deserialize::Type::CONFIRMED_TRANSACTION);
 	cDeserializeOutbound.run(g_appContext->getOrAddCommunityIdIndex(communityId));
@@ -325,7 +319,7 @@ TEST(SerializeTest, CrossGroupTransactions) {
 	// printf("serialized inbound: %s\n", serializedInbound->convertToBase64().c_str());
 	ASSERT_STREQ(
 		serializedInbound->convertToBase64().c_str(),
-		"CAcSmAIKZgpkCiCq0SuoJrkRRFdVTExVf6OoeK+fIfgWIbDD5hYVBhEoKRJAoPzG2j6FwBMwcNuQlsxShZ/ACZ4hSvq8A6+hHVTlpMfxlM+Qcm0f1X7me3om/xJIsCo3VBsiVTUbllg/Kmv5ChKWAQoZCAISFURhbmtlIGZ1ZXIgZGVpbiBTZWluIRIGCIDMuf8FGgMzLjUgASoOdGVzdC1jb21tdW5pdHkyWgo2CiDv8pGTUKU6yA+JgGK3xn/4AoJF9MxE4I7yL4hRcVVPOxCUmD0aDnRlc3QtY29tbXVuaXR5EiB+9X7jTkyuXgFANLf4BDumQNGibwfWIqw0LmStdbn2DRoVCAIaEQoJCKnpp1IQ/uMBEgQY/LIHGgYIwvK5/wUiAzMuNyogAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyEAgCGgwKBgjC8rn/BRICGAI6Ngog7/KRk1ClOsgPiYBit8Z/+AKCRfTMROCO8i+IUXFVTzsQwIQ9Gg50ZXN0LWNvbW11bml0eTo3CiB+9X7jTkyuXgFANLf4BDumQNGibwfWIqw0LmStdbn2DRDrlKUEGg50ZXN0LWNvbW11bml0eUAC"
+		"CAcSmwIKZgpkCiCq0SuoJrkRRFdVTExVf6OoeK+fIfgWIbDD5hYVBhEoKRJATavMScnHqwZojqJBaydWP8zUlvLV/ClasGmuBscHYmr2EpebAhohYqx8fnkHpqKIzXAjDUwuyJH9LobGKB00BxKZATJcCjgKIO/ykZNQpTrID4mAYrfGf/gCgkX0zETgjvIviFFxVU87EJSYPRoQAZ40fFQKc9KYhn/s4A1aLhIgfvV+405Mrl4BQDS3+AQ7pkDRom8H1iKsNC5krXW59g0KGQgCEhVEYW5rZSBmdWVyIGRlaW4gU2VpbiESBgiAzLn/BRiIgAwgASoQAZ40fFQKc9KYhn/s4A1aLhoVGhEKCQip6adSEP7jARIEGPyyBwgCGgYIwvK5/wUgiIAMKiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADIQGgwKBgjC8rn/BRICGAIIAjo4CiDv8pGTUKU6yA+JgGK3xn/4AoJF9MxE4I7yL4hRcVVPOxDAhD0aEAGeNHxUCnPSmIZ/7OANWi46OQogfvV+405Mrl4BQDS3+AQ7pkDRom8H1iKsNC5krXW59g0Q65SlBBoQAZ40fFQKc9KYhn/s4A1aLkAC"
 	);
 	deserialize::Context cDeserializeInbound(serializedInbound, deserialize::Type::CONFIRMED_TRANSACTION);
 	cDeserializeInbound.run(g_appContext->getOrAddCommunityIdIndex(community2));

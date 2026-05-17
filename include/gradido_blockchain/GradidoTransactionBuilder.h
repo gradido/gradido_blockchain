@@ -117,7 +117,6 @@ namespace gradido {
 		//! \param createAt timestamp when transaction where created
 		GradidoTransactionBuilder& setCreatedAt(Timepoint createdAt);
 		GradidoTransactionBuilder& addMemo(const data::EncryptedMemo& memo);
-		GradidoTransactionBuilder& setVersionNumber(std::string_view versionNumber);
 		//! \param body will be moved
 		GradidoTransactionBuilder& setTransactionBody(std::unique_ptr<data::TransactionBody> body);
 

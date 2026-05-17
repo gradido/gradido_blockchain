@@ -26,7 +26,6 @@ void InMemoryCrossGroupTest::SetUp()
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(mLastCreatedAt)
-		.setVersionNumber(VERSION_STRING)
 		.setCommunityRoot(
 			g_KeyPairs[0]->getPublicKey()->data(),
 			g_KeyPairs[1]->getPublicKey()->data(),

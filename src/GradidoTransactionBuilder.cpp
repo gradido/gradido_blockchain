@@ -409,12 +409,6 @@ namespace gradido {
 		return *this;
 	}
 
-	GradidoTransactionBuilder& GradidoTransactionBuilder::setVersionNumber(string_view versionNumber) {
-		checkBuildState(BuildingState::BUILDING_BODY);
-		// mBody->mVersionNumber = versionNumber;
-		return *this;
-	}
-
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setTransactionBody(unique_ptr<TransactionBody> body)
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);

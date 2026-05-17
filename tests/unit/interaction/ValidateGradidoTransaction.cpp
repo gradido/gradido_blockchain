@@ -28,7 +28,6 @@ TEST(ValidateGradidoTransaction, validCommunityRootGradidoTransaction)
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setSenderCommunity(communityId)
 		.setCommunityRoot(
 			g_KeyPairs[0]->getPublicKey()->data(),
@@ -51,7 +50,6 @@ TEST(ValidateGradidoTransaction, invalidCommunityRootWrongSigner)
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setSenderCommunity(communityId)
 		.setCommunityRoot(
 			g_KeyPairs[0]->getPublicKey()->data(),
@@ -72,7 +70,6 @@ TEST(ValidateGradidoTransaction, validRegisterAddressTransaction)
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
@@ -95,7 +92,6 @@ TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionMissingSignatu
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
@@ -118,7 +114,6 @@ TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionMissingRequire
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
@@ -144,7 +139,6 @@ TEST(ValidateGradidoTransaction, validGradidoCreationTransaction)
 	builder
 		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionCreation(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), communityId),
 			TimestampSeconds(1609459000)
@@ -165,7 +159,6 @@ TEST(ValidateGradidoTransaction, invalidGradidoCreationTransactionWrongSignature
 	builder
 		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionCreation(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), communityId),
 			TimestampSeconds(1609459000)
@@ -186,7 +179,6 @@ TEST(ValidateGradidoTransaction, validGradidoTransferTransaction)
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityId),
 			g_KeyPairs[5]->getPublicKey()
@@ -206,7 +198,6 @@ TEST(ValidateGradidoTransaction, invalidGradidoTransferTransactionWrongSignature
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setTransactionTransfer(
 			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityId),
 			g_KeyPairs[5]->getPublicKey()
@@ -227,7 +218,6 @@ TEST(ValidateGradidoTransaction, validGradidoDeferredTransferTransaction)
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500ll), communityId),
@@ -251,7 +241,6 @@ TEST(ValidateGradidoTransaction, invalidGradidoDeferredTransferTransactionWrongS
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500ll), communityId),

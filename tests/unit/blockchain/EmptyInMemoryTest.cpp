@@ -23,7 +23,7 @@ uint32_t communityIdIndex = 1;
 void EmptyInMemoryTest::SetUp()
 {
 	mBlockchain = dynamic_pointer_cast<InMemory>(
-		InMemoryProvider::getInstance()->findBlockchain("test-community")
+		InMemoryProvider::getInstance()->findBlockchain("019e347c-540a-73d2-9886-7fece00d5a2e")
 	);
 }
 

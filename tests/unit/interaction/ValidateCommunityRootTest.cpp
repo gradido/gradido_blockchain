@@ -16,7 +16,6 @@ TEST(ValidateCommunityRootTest, Valid)
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(GRADIDO_TRANSACTION_BODY_VERSION_STRING)
 		.setSenderCommunity(communityId)
 		.setCommunityRoot(
 			g_KeyPairs[0]->getPublicKey()->data(),

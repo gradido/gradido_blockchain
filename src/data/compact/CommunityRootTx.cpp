@@ -1,6 +1,6 @@
+#include "gradido_blockchain_core/data/wire/specific_transactions.h"
 #include "gradido_blockchain/data/compact/CommunityRootTx.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
-#include "gradido_protobuf_zig.h"
 
 namespace gradido::data::compact {
   CommunityRootTx CommunityRootTx::fromGrdw(const grdw_community_root* grdw_community_root, uint32_t blockchainCommunityIdIndex)

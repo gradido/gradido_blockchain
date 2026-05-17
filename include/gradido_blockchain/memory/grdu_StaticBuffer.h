@@ -28,13 +28,13 @@ namespace memory {
     {
       grd_result result = func(&mMemory);
 
-      if (mMemory.out_of_memory_capacity || GRD_ERROR_STATIC_BUFFER_TO_SMALL == result) {
+      if (mMemory.out_of_memory_capacity || GRD_ERROR_STATIC_BUFFER_TO_SMALL == result || GRD_ERROR_OUT_OF_MEMORY == result) {
         memory::Block dynBuffer((mMemory.capacity + mMemory.out_of_memory_capacity) * 2);
         grd_memory_init_arena_static(&mMemory, dynBuffer.data(), dynBuffer.size());
 
         result = func(&mMemory);
 
-        if (mMemory.out_of_memory_capacity || GRD_ERROR_STATIC_BUFFER_TO_SMALL == result) {
+        if (mMemory.out_of_memory_capacity || GRD_ERROR_STATIC_BUFFER_TO_SMALL == result || GRD_ERROR_OUT_OF_MEMORY == result) {
           LOG_F(
             ERROR,
             "GrduStaticBuffer: out of memory capacity, after retry with: %lu, need at least %lu more bytes",

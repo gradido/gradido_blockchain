@@ -31,7 +31,6 @@ using magic_enum::iostream_operators::operator<<;
 
 using gradido::AppContext, gradido::g_appContext;
 
-#define VERSION_STRING "3.5"
 static EncryptedMemo memo("dummy memo");
 const hiero::AccountId hieroAccount(0, 0, 121);
 
@@ -53,7 +52,7 @@ void InMemoryTest::SetUp()
 	gen = mt19937(rd()); // mersenne_twister_engine seeded with rd()
 	randTimeRange = uniform_int_distribution<int>(2400, 2 * 24 * 60 * 60);
 	mKeyPairCursor = 3;
-	mCommunityId = "test-community";
+	mCommunityId = "019e347c-540a-73d2-9886-7fece00d5a2e";
 	communityIdIndex = g_appContext->getOrAddCommunityIdIndex(mCommunityId);
 	mLastCreatedAt = std::chrono::system_clock::from_time_t(1641681324);
 	mBlockchain = InMemoryProvider::getInstance()->findBlockchain(mCommunityId);
@@ -61,7 +60,6 @@ void InMemoryTest::SetUp()
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(mLastCreatedAt)
-		.setVersionNumber(VERSION_STRING)
 		.setSenderCommunity(mCommunityId)
 		.setCommunityRoot(
 			g_KeyPairs[0]->getPublicKey()->data(),
@@ -112,7 +110,6 @@ void InMemoryTest::createRegisterAddress(int keyPairIndexStart)
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(generateNewCreatedAt())
-		.setVersionNumber(VERSION_STRING)
 		.setSenderCommunity(mCommunityId)
 		.setRegisterAddress(
 			g_KeyPairs[userPubkeyIndex]->getPublicKey(),
@@ -141,7 +138,6 @@ std::shared_ptr<KeyPairEd25519> InMemoryTest::createRegisterAddressGenerateKeyPa
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(generateNewCreatedAt())
-		.setVersionNumber(VERSION_STRING)
 		.setSenderCommunity(mCommunityId)
 		.setRegisterAddress(
 			userKeyPair->getPublicKey(),
@@ -182,7 +178,6 @@ bool InMemoryTest::createGradidoCreation(
 	builder
 		.addMemo(memo)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
 			TransferAmount(recipientPublicKey, amount, 1),
 			targetDate
@@ -207,7 +202,6 @@ bool InMemoryTest::createGradidoTransfer(
 	builder
 		.addMemo(memo)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
 			TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount, 1),
 			g_KeyPairs[recipientKeyPairIndex]->getPublicKey()
@@ -233,7 +227,6 @@ bool InMemoryTest::createGradidoDeferredTransfer(
 	builder
 		.addMemo(memo)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
 				TransferAmount(g_KeyPairs[senderKeyPairIndex]->getPublicKey(), amount, communityIdIndex),
@@ -262,7 +255,6 @@ bool InMemoryTest::createGradidoRedeemDeferredTransfer(
 	builder
 		.addMemo("redeem deferred")
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setRedeemDeferredTransfer(
 			deferredTransferNr,
 			GradidoTransfer(
@@ -681,7 +673,7 @@ TEST_F(InMemoryTest, CrossCommunityTransaction)
 	auto targetDate = getPreviousNMonth2(createdAt, 1);
 	createGradidoCreation(6, 4, 1000.0, createdAt, targetDate);
 
-	auto community2 = "test2";
+	auto community2 = "019e347c-540a-7147-96bb-a57f34f31d5e";
 	const hiero::AccountId hieroAccount2(0, 0, 17);
 	auto otherBlockchain = InMemoryProvider::getInstance()->findBlockchain(g_appContext->getOrAddCommunityIdIndex(community2));
 	GradidoTransactionBuilder builder;

@@ -3,9 +3,6 @@
 
 #include <chrono>
 
-constexpr const char* GRADIDO_TRANSACTION_BODY_VERSION_STRING = "3.5";
-constexpr const char* GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING = "3.7";
-
 // MAGIC NUMBER: max allowed Timespan between creation date of transaction and receiving date (iota milestone timestamp)
 // taken 2 minutes from hedera but maybe the time isn't enough if gradido is more used
 constexpr auto MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION = std::chrono::seconds(120);

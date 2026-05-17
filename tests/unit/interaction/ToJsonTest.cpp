@@ -20,10 +20,10 @@ TEST(ToJsonTest, TransactionBodyWithoutMemo)
 {
 	TransactionBody body(createdAt, 0);
 
-	EXPECT_EQ(toJsonString(body), "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\"}");
+	EXPECT_EQ(toJsonString(body), "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"type\":\"LOCAL\"}");
 
 	// printf("json pretty: %s\n", jsonPretty.data());
-	EXPECT_EQ(toJsonString(body, true), "{\n    \"memos\": [],\n    \"createdAt\": \"2021-01-01 00:00:00.0000Z\",\n    \"versionNumber\": \"3.5\",\n    \"type\": \"LOCAL\"\n}");
+	EXPECT_EQ(toJsonString(body, true), "{\n    \"memos\": [],\n    \"createdAt\": \"2021-01-01 00:00:00.0000Z\",\n    \"type\": \"LOCAL\"\n}");
 }
 
 TEST(ToJsonTest, CommunityRootBody)
@@ -43,7 +43,7 @@ TEST(ToJsonTest, CommunityRootBody)
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body->isCommunityRoot());
 
-	EXPECT_EQ(toJsonString(*body), "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"communityRoot\":{\"pubkey\":\"aad12ba826b9114457554c4c557fa3a878af9f21f81621b0c3e6161506112829\",\"gmwPubkey\":\"14b8a6d8563bbb3597df7d8275b70b56a0461a5b791d63c08cc05947d2061c89\",\"aufPubkey\":\"466fdd73bb81627f360fc8e68b3dea7fc02094b3a6f1cd2adfbd39a4f32e259e\"}}");
+	EXPECT_EQ(toJsonString(*body), "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"type\":\"LOCAL\",\"communityRoot\":{\"pubkey\":\"aad12ba826b9114457554c4c557fa3a878af9f21f81621b0c3e6161506112829\",\"gmwPubkey\":\"14b8a6d8563bbb3597df7d8275b70b56a0461a5b791d63c08cc05947d2061c89\",\"aufPubkey\":\"466fdd73bb81627f360fc8e68b3dea7fc02094b3a6f1cd2adfbd39a4f32e259e\"}}");
 }
 
 TEST(ToJsonTest, RegisterAddressBody) {
@@ -65,7 +65,7 @@ TEST(ToJsonTest, RegisterAddressBody) {
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body->isRegisterAddress());
 
-	EXPECT_EQ(toJsonString(*body), "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"registerAddress\":{\"userPubkey\":\"bc7125b7e4b7b534d232c215c2cbce344088604a0e8aee3932e9bf416a06cffe\",\"addressType\":\"COMMUNITY_HUMAN\",\"nameHash\":\"1fe41f7966a4b61a963886a0fa4d136d8579424d9c02a2751efba0e8e5559f61\",\"accountPubkey\":\"eff2919350a53ac80f898062b7c67ff8028245f4cc44e08ef22f885171554f3b\",\"derivationIndex\":1}}");
+	EXPECT_EQ(toJsonString(*body), "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"type\":\"LOCAL\",\"registerAddress\":{\"userPubkey\":\"bc7125b7e4b7b534d232c215c2cbce344088604a0e8aee3932e9bf416a06cffe\",\"addressType\":\"COMMUNITY_HUMAN\",\"nameHash\":\"1fe41f7966a4b61a963886a0fa4d136d8579424d9c02a2751efba0e8e5559f61\",\"accountPubkey\":\"eff2919350a53ac80f898062b7c67ff8028245f4cc44e08ef22f885171554f3b\",\"derivationIndex\":1}}");
 }
 
 TEST(ToJsonTest, GradidoCreationBody) {
@@ -86,7 +86,7 @@ TEST(ToJsonTest, GradidoCreationBody) {
 	EXPECT_EQ(body->getMemos().size(), 1);
 	EXPECT_TRUE(body->getMemos()[0].isPlain());
 	
-	EXPECT_EQ(toJsonString(*body), "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Deine erste Schoepfung ;)\"}],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"creation\":{\"recipient\":{\"pubkey\":\"eff2919350a53ac80f898062b7c67ff8028245f4cc44e08ef22f885171554f3b\",\"amount\":\"1000.0000\",\"coinCommunityId\":\"test-community\"},\"targetDate\":\"2020-12-31 23:56:40.0000Z\"}}");
+	EXPECT_EQ(toJsonString(*body), "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Deine erste Schoepfung ;)\"}],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"type\":\"LOCAL\",\"creation\":{\"recipient\":{\"pubkey\":\"eff2919350a53ac80f898062b7c67ff8028245f4cc44e08ef22f885171554f3b\",\"amount\":\"1000.0000\",\"coinCommunityId\":\"019e347c-540a-73d2-9886-7fece00d5a2e\"},\"targetDate\":\"2020-12-31 23:56:40.0000Z\"}}");
 }
 
 TEST(ToJsonTest, GradidoTransferBody) {
@@ -105,7 +105,7 @@ TEST(ToJsonTest, GradidoTransferBody) {
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body->isTransfer());
 	
-	EXPECT_EQ(toJsonString(*body), "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Ich teile mit dir\"}],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"transfer\":{\"sender\":{\"pubkey\":\"eff2919350a53ac80f898062b7c67ff8028245f4cc44e08ef22f885171554f3b\",\"amount\":\"500.5500\",\"coinCommunityId\":\"test-community\"},\"recipient\":\"7ef57ee34e4cae5e014034b7f8043ba640d1a26f07d622ac342e64ad75b9f60d\"}}");
+	EXPECT_EQ(toJsonString(*body), "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Ich teile mit dir\"}],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"type\":\"LOCAL\",\"transfer\":{\"sender\":{\"pubkey\":\"eff2919350a53ac80f898062b7c67ff8028245f4cc44e08ef22f885171554f3b\",\"amount\":\"500.5500\",\"coinCommunityId\":\"019e347c-540a-73d2-9886-7fece00d5a2e\"},\"recipient\":\"7ef57ee34e4cae5e014034b7f8043ba640d1a26f07d622ac342e64ad75b9f60d\"}}");
 }
 
 TEST(ToJsonTest, GradidoDeferredTransferBody) {
@@ -127,7 +127,7 @@ TEST(ToJsonTest, GradidoDeferredTransferBody) {
 
 	ASSERT_TRUE(body->isDeferredTransfer());
 
-	EXPECT_EQ(toJsonString(*body), "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Link zum einloesen\"}],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"deferredTransfer\":{\"transfer\":{\"sender\":{\"pubkey\":\"eff2919350a53ac80f898062b7c67ff8028245f4cc44e08ef22f885171554f3b\",\"amount\":\"555.5500\",\"coinCommunityId\":\"test-community\"},\"recipient\":\"7ef57ee34e4cae5e014034b7f8043ba640d1a26f07d622ac342e64ad75b9f60d\"},\"timeout\":\"1 hours 36 minutes 24 seconds\"}}");
+	EXPECT_EQ(toJsonString(*body), "{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Link zum einloesen\"}],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"type\":\"LOCAL\",\"deferredTransfer\":{\"transfer\":{\"sender\":{\"pubkey\":\"eff2919350a53ac80f898062b7c67ff8028245f4cc44e08ef22f885171554f3b\",\"amount\":\"555.5500\",\"coinCommunityId\":\"019e347c-540a-73d2-9886-7fece00d5a2e\"},\"recipient\":\"7ef57ee34e4cae5e014034b7f8043ba640d1a26f07d622ac342e64ad75b9f60d\"},\"timeout\":\"1 hours 36 minutes 24 seconds\"}}");
 }
 
 TEST(ToJsonTest, CommunityFriendsUpdateBody) {
@@ -143,7 +143,7 @@ TEST(ToJsonTest, CommunityFriendsUpdateBody) {
 	
 	ASSERT_TRUE(body->isCommunityFriendsUpdate());
 
-	EXPECT_EQ(toJsonString(*body), "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"communityFriendsUpdate\":{\"colorFusion\":true}}");
+	EXPECT_EQ(toJsonString(*body), "{\"memos\":[],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"type\":\"LOCAL\",\"communityFriendsUpdate\":{\"colorFusion\":true}}");
 }
 
 TEST(ToJsonTest, GradidoTransaction) {	
@@ -188,6 +188,6 @@ TEST(ToJsonTest, CompleteConfirmedTransaction) {
 		},
 		BalanceDerivationType::EXTERN
 	);
-	EXPECT_EQ(toJsonString(confirmedTransaction), "{\"id\":7,\"gradidoTransaction\":{\"signatureMap\":[{\"pubkey\":\"aad12ba826b9114457554c4c557fa3a878af9f21f81621b0c3e6161506112829\",\"signature\":\"bf60081bbc8e0eae4ecb9c09ea235f677cf302712e9915c803fa99c3ddfe07a16d7b5d34445153ca94ece053b9527bbe14d216f9fa2e0298d830f5eef1b95508\"}],\"bodyBytes\":{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Danke fuer dein Sein!\"}],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"versionNumber\":\"3.5\",\"type\":\"LOCAL\",\"transfer\":{\"sender\":{\"pubkey\":\"eff2919350a53ac80f898062b7c67ff8028245f4cc44e08ef22f885171554f3b\",\"amount\":\"100.2516\",\"coinCommunityId\":\"test-community\"},\"recipient\":\"7ef57ee34e4cae5e014034b7f8043ba640d1a26f07d622ac342e64ad75b9f60d\"}},\"pairingLedgerAnchor\":{\"type\":\"UNSPECIFIED\",\"value\":null}},\"confirmedAt\":\"2021-01-01 01:22:10.0000Z\",\"runningHash\":\"82cd39463688e68e1a8ac53621c676d68f6e187cb589894cf706202b15154c2f\",\"ledgerAnchor\":{\"type\":\"IOTA_MESSAGE_ID\",\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},\"accountBalances\":[{\"pubkey\":\"eff2919350a53ac80f898062b7c67ff8028245f4cc44e08ef22f885171554f3b\",\"balance\":\"100.0000\",\"coinCommunityId\":\"test-community\"},{\"pubkey\":\"7ef57ee34e4cae5e014034b7f8043ba640d1a26f07d622ac342e64ad75b9f60d\",\"balance\":\"899.7483\",\"coinCommunityId\":\"test-community\"}],\"balanceDerivationType\":\"EXTERN\",\"versionNumber\":\"3.7\"}");	
+	EXPECT_EQ(toJsonString(confirmedTransaction), "{\"id\":7,\"gradidoTransaction\":{\"signatureMap\":[{\"pubkey\":\"aad12ba826b9114457554c4c557fa3a878af9f21f81621b0c3e6161506112829\",\"signature\":\"53eaf619b7ef3fea85f7b4d36d5a874e76d7e62ba8238941f400ece9de94a1bc473759eff58c50219f365eeea5c7940cdd29a8147970efeaac2ce3f5c3d59b02\"}],\"bodyBytes\":{\"memos\":[{\"type\":\"PLAIN\",\"memo\":\"Danke fuer dein Sein!\"}],\"createdAt\":\"2021-01-01 00:00:00.0000Z\",\"type\":\"LOCAL\",\"transfer\":{\"sender\":{\"pubkey\":\"eff2919350a53ac80f898062b7c67ff8028245f4cc44e08ef22f885171554f3b\",\"amount\":\"100.2516\",\"coinCommunityId\":\"019e347c-540a-73d2-9886-7fece00d5a2e\"},\"recipient\":\"7ef57ee34e4cae5e014034b7f8043ba640d1a26f07d622ac342e64ad75b9f60d\"}},\"pairingLedgerAnchor\":{\"type\":\"UNSPECIFIED\",\"value\":null}},\"confirmedAt\":\"2021-01-01 01:22:10.0000Z\",\"runningHash\":\"7553e6dae02c0113da438d5c3855eec86370dabb7d5bb776a351bfc9889a307e\",\"ledgerAnchor\":{\"type\":\"IOTA_MESSAGE_ID\",\"value\":\"0000000000000000000000000000000000000000000000000000000000000000\"},\"accountBalances\":[{\"pubkey\":\"eff2919350a53ac80f898062b7c67ff8028245f4cc44e08ef22f885171554f3b\",\"balance\":\"100.0000\",\"coinCommunityId\":\"019e347c-540a-73d2-9886-7fece00d5a2e\"},{\"pubkey\":\"7ef57ee34e4cae5e014034b7f8043ba640d1a26f07d622ac342e64ad75b9f60d\",\"balance\":\"899.7483\",\"coinCommunityId\":\"019e347c-540a-73d2-9886-7fece00d5a2e\"}],\"balanceDerivationType\":\"EXTERN\"}");	
 	// printf("json pretty: %s\n", toJsonString(confirmedTransaction, true).data());
 }

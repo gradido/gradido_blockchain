@@ -58,7 +58,7 @@ namespace gradido {
 									return GRD_SUCCESS;
 								}
 							}
-							if (GRD_ERROR_STATIC_BUFFER_TO_SMALL == encodeResult) {
+							if (GRD_ERROR_STATIC_BUFFER_TO_SMALL == encodeResult || GRD_ERROR_OUT_OF_MEMORY == encodeResult) {
 								return encodeResult;
 							}
 							if (GRD_SUCCESS != encodeResult)
