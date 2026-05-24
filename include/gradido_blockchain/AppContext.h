@@ -2,9 +2,9 @@
 #define __GRADIDO_BLOCKCHAIN_APP_CONTEXT__
 
 #include "CommunityContext.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/export.h"
-#include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 
@@ -19,14 +19,14 @@ namespace gradido {
   {
   public:
     AppContext(
-      std::unique_ptr<IMutableDictionary<Uuid>> communityIds,
-      std::unique_ptr<IMutableDictionary<GenericHash>> userNameHashs 
+      std::unique_ptr<IMutableDictionary<gradido::data::Uuid>> communityIds,
+      std::unique_ptr<IMutableDictionary<gradido::data::GenericHash>> userNameHashs
     );
     uint32_t getOrAddCommunityIdIndex(const std::string& communityId);
-    uint32_t getOrAddCommunityIdIndex(const Uuid& communityUuid);
-    uint32_t getOrAddUserNameHashIndex(const GenericHash& hash);
-    inline const IDictionary<Uuid>& getCommunityIds() const { return *mCommunityIds; }
-    inline const IDictionary<GenericHash>& getUserNameHashs() const { return *mUserNameHashs; }
+    uint32_t getOrAddCommunityIdIndex(const gradido::data::Uuid& communityUuid);
+    uint32_t getOrAddUserNameHashIndex(const gradido::data::GenericHash& hash);
+    inline const IDictionary<gradido::data::Uuid>& getCommunityIds() const { return *mCommunityIds; }
+    inline const IDictionary<gradido::data::GenericHash>& getUserNameHashs() const { return *mUserNameHashs; }
     inline const CommunityContext& getCommunityContext(uint32_t communityIdIndex) const;
     // call getDataForIndex on mCommunityIds start by mCommunityContexts.size() until empty to synchronize mCommunityContexts with mCommunityIds
     // should be used on startup if IDictionary is a persistent Dictionary after loading entries from persistent storage
@@ -78,14 +78,14 @@ namespace gradido {
    *     end
    * @enduml
    */
-    std::optional<PublicKey> getPublicKey(data::compact::PublicKeyIndex index) const noexcept;
+    std::optional<gradido::data::PublicKey> getPublicKey(data::compact::PublicKeyIndex index) const noexcept;
 
     bool hasPublicKey(data::compact::PublicKeyIndex index) const noexcept;
-    uint32_t getOrAddPublicKeyIndex(uint32_t communityIdIndex, const PublicKey& publicKey);
+    uint32_t getOrAddPublicKeyIndex(uint32_t communityIdIndex, const gradido::data::PublicKey& publicKey);
   protected:
     bool isValidCommunityAlias(const std::string& communityId) const;
-    std::unique_ptr<IMutableDictionary<Uuid>> mCommunityIds;
-    std::unique_ptr<IMutableDictionary<GenericHash>> mUserNameHashs;
+    std::unique_ptr<IMutableDictionary<gradido::data::Uuid>> mCommunityIds;
+    std::unique_ptr<IMutableDictionary<gradido::data::GenericHash>> mUserNameHashs;
     // use communityIdIndex as index, start with 0, shouldn't contain holes
     std::deque<CommunityContext> mCommunityContexts;
   };

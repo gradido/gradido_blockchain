@@ -2,8 +2,8 @@
 #define __GRADIDO_BLOCKCHAIN_MEMORY_BLOCK_H
 
 #include "VectorCacheAllocator.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
-#include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/crypto/SignatureOctet.h"
 #include "gradido_blockchain/export.h"
 
@@ -28,7 +28,7 @@ namespace memory {
 		Block(const std::vector<unsigned char>& data);
 		Block(std::span<std::byte> data);
 		Block(const std::string& data);
-		Block(PublicKey publicKey);
+		Block(gradido::data::PublicKey publicKey);
 		// copy
 		Block(Block& other);
 		Block(const Block& other);
@@ -72,7 +72,7 @@ namespace memory {
 		static Block fromBase64(const char* base64String, size_t size, int variant /*= sodium_base64_VARIANT_ORIGINAL*/);
 
 		bool isTheSame(gradido::data::compact::PublicKeyIndex publicKeyIndex) const;
-		bool isTheSame(const PublicKey& publicKey) const;
+		bool isTheSame(const gradido::data::PublicKey& publicKey) const;
 		bool isTheSame(const Block& b) const;
 		inline bool isTheSame(const std::shared_ptr<const Block> b) const {
 			if (!b) return false;

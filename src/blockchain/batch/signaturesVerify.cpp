@@ -6,8 +6,8 @@
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/Pagination.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
-#include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/data/adapter/uuid.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 
@@ -28,6 +28,7 @@ using std::ref, std::thread, std::this_thread::sleep_for;
 using std::vector;
 
 using gradido::data::adapter::uuidToString, gradido::data::adapter::uuidFromString;
+using gradido::data::Uuid;
 
 namespace gradido::blockchain::batch {
 

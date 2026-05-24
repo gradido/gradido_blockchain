@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_DATA_ACCOUNT_BALANCE_H
 #define __GRADIDO_BLOCKCHAIN_DATA_ACCOUNT_BALANCE_H
 
-#include "gradido_blockchain/crypto/ByteArray.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/GradidoUnit.h"
 #include "gradido_blockchain/memory/Block.h"
 #include <optional>

@@ -34,6 +34,7 @@
 #include "KeyPairs.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/crypto/CryptoConfig.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/lib/Dictionary.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/version.h"
@@ -42,6 +43,8 @@
 
 using gradido::AppContext, gradido::g_appContext;
 using gradido::blockchain::InMemoryProvider;
+using gradido::data::GenericHash, gradido::data::GenericHashHash, gradido::data::GenericHashEqual;
+using gradido::data::Uuid, gradido::data::UuidHash, gradido::data::UuidEqual;
 using std::make_unique;
 using memory::ConstBlockPtr, memory::ConstBlockPtrHash; memory::ConstBlockPtrEqual;
 

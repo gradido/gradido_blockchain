@@ -19,6 +19,7 @@ using std::shared_ptr, std::make_unique, std::unique_ptr;
 namespace gradido {
   using data::adapter::uuidFromString, data::adapter::uuidToString;
   using data::compact::PublicKeyIndex;
+  using data::GenericHash, data::PublicKey, data::Uuid;
 
   unique_ptr<AppContext> g_appContext = nullptr;
   regex regExCommunityAlias(COMMUNITY_ID_REGEX_STRING);

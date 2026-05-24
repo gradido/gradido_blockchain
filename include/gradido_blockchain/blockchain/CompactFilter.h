@@ -1,7 +1,7 @@
 #ifndef GRADIDO_BLOCKCHAIN_COMPACT_FILTER_H
 #define GRADIDO_BLOCKCHAIN_COMPACT_FILTER_H
 
-#include "gradido_blockchain/crypto/ByteArray.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/export.h"
@@ -23,7 +23,7 @@ namespace gradido {
 		struct GRADIDOBLOCKCHAIN_EXPORT CompactFilter
 		{
 			CompactFilter();
-			CompactFilter(const Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary, uint32_t communityIdIndex = 0);
+			CompactFilter(const Filter& filter, const IDictionary<data::PublicKey>& publicKeyDictionary, uint32_t communityIdIndex = 0);
 
 			//! search direction and result order, default: DESC
 			SearchDirection searchDirection;

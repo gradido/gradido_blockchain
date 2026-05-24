@@ -30,7 +30,7 @@
 #include <cstdio>
 #include "gtest/gtest.h"
 #include "gradido_blockchain/AppContext.h"
-#include "gradido_blockchain/crypto/ByteArray.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/crypto/CryptoConfig.h"
 #include "gradido_blockchain/lib/Dictionary.h"
 #include "gradido_blockchain/version.h"
@@ -55,6 +55,8 @@ extern "C" {
 #else
 
 using gradido::AppContext, gradido::g_appContext;
+using gradido::data::GenericHash, gradido::data::GenericHashHash, gradido::data::GenericHashEqual;
+using gradido::data::Uuid, gradido::data::UuidHash, gradido::data::UuidEqual;
 using memory::Block;
 using std::make_shared, std::make_unique;
 

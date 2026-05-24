@@ -1,7 +1,7 @@
 #ifndef GRADIDO_BLOCKCHAIN_LIB_UUID_H
 #define GRADIDO_BLOCKCHAIN_LIB_UUID_H
 
-#include "gradido_blockchain/crypto/ByteArray.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include <string>

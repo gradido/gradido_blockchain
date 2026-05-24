@@ -1,6 +1,7 @@
 #include "gradido_blockchain/blockchain/AddressIndex.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/data/adapter/publicKey.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
@@ -18,6 +19,7 @@ namespace gradido {
 	using data::adapter::toPublicKey;
 	using data::compact::ConfirmedGradidoTx;
 	using data::AddressType;
+	using data::PublicKey;
 
 	namespace blockchain {
 

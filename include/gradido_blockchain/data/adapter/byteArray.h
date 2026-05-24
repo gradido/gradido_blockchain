@@ -1,7 +1,7 @@
 #ifndef __GRADIDO_BLOCKCHAIN_DATA_ADAPTER_ARRAY_BUFFER_H
 #define __GRADIDO_BLOCKCHAIN_DATA_ADAPTER_ARRAY_BUFFER_H
 
-#include "gradido_blockchain/crypto/ByteArray.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/memory/Block.h"
 

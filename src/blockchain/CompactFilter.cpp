@@ -6,6 +6,7 @@
 namespace gradido {
   using data::adapter::toPublicKey;
   using data::compact::PublicKeyIndex;
+  using data::PublicKey;
 
   namespace blockchain {
     CompactFilter::CompactFilter()

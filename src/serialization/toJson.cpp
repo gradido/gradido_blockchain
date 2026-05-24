@@ -1,7 +1,7 @@
 #include "gradido_blockchain/data/adapter/uuid.h"
 #include "gradido_blockchain/export.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/GradidoUnit.h"
-#include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/serialization/toJson.h"
 #include "gradido_blockchain/memory/Block.h"
@@ -19,6 +19,7 @@
 using namespace rapidjson;
 
 using gradido::data::adapter::uuidToString;
+using gradido::data::ByteArray, gradido::data::Uuid;
 
 namespace serialization {
 

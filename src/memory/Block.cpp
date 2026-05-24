@@ -1,4 +1,5 @@
 #include "gradido_blockchain/crypto/SignatureOctet.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/memory/Block.h"
@@ -7,6 +8,7 @@
 #include "loguru/loguru.hpp"
 
 using gradido::data::compact::PublicKeyIndex;
+using gradido::data::PublicKey;
 using std::string;
 using std::vector, std::byte;
 

@@ -6,6 +6,7 @@
 #include "TransactionsIndex.h"
 #include "TransactionsIndexRoaringBitmaps.h"
 #include "gradido_blockchain/crypto/SignatureOctet.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/export.h"
@@ -99,13 +100,13 @@ namespace gradido {
 			) const override;
 
 			AbstractProvider* getProvider() const override;
-			const IDictionary<PublicKey>& getPublicKeyDictionary() const override { return mPublicKeyDirectory; }
-			uint32_t getOrAddPublicKey(const PublicKey& publicKey) override;
+			const IDictionary<data::PublicKey>& getPublicKeyDictionary() const override { return mPublicKeyDirectory; }
+			uint32_t getOrAddPublicKey(const data::PublicKey& publicKey) override;
 
 		protected:
 			InMemory(std::string_view uniqueCommunityAlias, uint32_t communityIdIndex);
 
-			RuntimeDictionary<PublicKey, PublicKeyHash, PublicKeyEqual> mPublicKeyDirectory;
+			RuntimeDictionary<data::PublicKey, data::PublicKeyHash, data::PublicKeyEqual> mPublicKeyDirectory;
 			TransactionsIndexRoaringBitmaps mTransactionsIndex;
 
 			// if called, mWorkMutex should be locked exclusive

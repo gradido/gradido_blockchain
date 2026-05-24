@@ -53,6 +53,7 @@ namespace gradido {
 	using data::compact::CommunityRootTx;
 	using data::CrossGroupType;
 	using data::EncryptedMemo;
+	using data::GenericHash;
 	using data::GradidoCreation;
 	using data::GradidoDeferredTransfer;
 	using data::GradidoRedeemDeferredTransfer;
@@ -61,11 +62,13 @@ namespace gradido {
 	using data::GradidoTransfer;
 	using data::LedgerAnchor;
 	using data::compact::RegisterAddressTx;
+	using data::PublicKey;
 	using data::SignaturePair;
 	using data::Timestamp;
 	using data::TransactionBody;
 	using data::TransactionType;
 	using data::TransferAmount;
+	using data::Uuid;
 	using data::adapter::toByteArray, data::adapter::toPublicKeyIndex;
 	using data::compact::PublicKeyIndex;
 

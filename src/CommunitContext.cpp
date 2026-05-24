@@ -1,5 +1,6 @@
 #include "gradido_blockchain/CommunityContext.h"
 #include "gradido_blockchain/data/adapter/uuid.h"
+#include "gradido_blockchain/data/ByteArray.h"
 
 #include "loguru/loguru.hpp"
 
@@ -11,6 +12,7 @@ using std::string;
 
 namespace gradido {
   using data::adapter::uuidFromString;
+  using data::PublicKey, data::Uuid;
 
   CommunityContext::CommunityContext(const string& communityId, uint32_t communityIdIndex) 
   : mCommunityUuid(uuidFromString(communityId.c_str())), mCommunityIdIndex(communityIdIndex)

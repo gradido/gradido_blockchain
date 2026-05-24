@@ -5,6 +5,7 @@
 #include "gradido_blockchain/blockchain/AddressIndex.h"
 #include "gradido_blockchain/blockchain/FilterResult.h"
 #include "gradido_blockchain/blockchain/StateChange.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
@@ -38,7 +39,7 @@ namespace gradido {
 
       void reset();
 
-      void addTransactionIndices(const data::compact::ConfirmedGradidoTx& tx, const IDictionary<PublicKey>& publicKeyDict);
+      void addTransactionIndices(const data::compact::ConfirmedGradidoTx& tx, const IDictionary<data::PublicKey>& publicKeyDict);
       std::vector<uint64_t> findTransactions(const CompactFilter& filter) const;
       size_t countTransactions(const CompactFilter& filter) const;
       StateChange<data::AddressType> getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const;

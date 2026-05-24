@@ -12,12 +12,14 @@
 #include "furi/furi.hpp"
 #include "loguru/loguru.hpp"
 #include "magic_enum/magic_enum.hpp"
-#include <openssl/ssl.h>
-#include <openssl/x509.h>
-#include <openssl/pem.h>
+
 #include "tinf/src/tinf.h"
 
 #ifdef USE_HTTPS
+#include <openssl/ssl.h>
+#include <openssl/x509.h>
+#include <openssl/pem.h>
+
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #endif
 #include "httplib.h"
@@ -78,6 +80,7 @@ static std::shared_ptr<httplib::Client> getClientForHost(const std::string& host
 		}
 	}
 	httplib::Client* client = nullptr;
+#ifdef USE_HTTPS
 	if (isSSL) {
 		client = new httplib::Client(host, "", "");
 		MonotonicTimer timeUsed;
@@ -100,6 +103,9 @@ static std::shared_ptr<httplib::Client> getClientForHost(const std::string& host
 	else {
 		client = new httplib::Client(host, 80);
 	}
+#else 
+	client = new httplib::Client(host, 80);
+#endif
 	auto httpClient = std::shared_ptr<httplib::Client>(client, FakeDeleter());
 	httpClient->set_keep_alive(true);
 	// some weird bug in httplib (debug, debian 12), intern it will move connection_timeout_sec_ to connection_timeout_usec_

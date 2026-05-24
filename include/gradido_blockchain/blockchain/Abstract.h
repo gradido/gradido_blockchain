@@ -4,7 +4,7 @@
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/types.h"
 #include "gradido_blockchain/blockchain/CompactFilter.h"
-#include "gradido_blockchain/crypto/ByteArray.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
 #include "gradido_blockchain/lib/TimepointInterval.h"
 #include "gradido_blockchain/data/Timestamp.h"
@@ -111,8 +111,8 @@ namespace gradido {
 			inline uint32_t getCommunityIdIndex() const { return mCommunityIdIndex; }
 			inline data::Timestamp getStartDate() const { return mStartDate; }
 			virtual AbstractProvider* getProvider() const = 0;
-			virtual const IDictionary<PublicKey>& getPublicKeyDictionary() const = 0;
-			virtual uint32_t getOrAddPublicKey(const PublicKey& publicKey) = 0;
+			virtual const IDictionary<data::PublicKey>& getPublicKeyDictionary() const = 0;
+			virtual uint32_t getOrAddPublicKey(const data::PublicKey& publicKey) = 0;
 
 		protected:
 			uint32_t mCommunityIdIndex;

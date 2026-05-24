@@ -4,7 +4,7 @@
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/types.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
-#include "gradido_blockchain/crypto/ByteArray.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/SignatureMap.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 
@@ -83,10 +83,10 @@ namespace gradido {
 		);
 
 		GradidoTransactionBuilder& setRegisterAddress(
-			const PublicKey& userPubkey,
+			const data::PublicKey& userPubkey,
 			data::AddressType type,
-			const GenericHash& nameHash,
-			const PublicKey& accountPubkey
+			const data::GenericHash& nameHash,
+			const data::PublicKey& accountPubkey
 		);
 		// GradidoTransactionBuilder& setRegisterAddress(std::unique_ptr<data::RegisterAddress> registerAddress);
 
@@ -97,9 +97,9 @@ namespace gradido {
 		GradidoTransactionBuilder& setTransactionTransfer(std::unique_ptr<data::GradidoTransfer> transfer);
 
 		GradidoTransactionBuilder& setCommunityRoot(
-			const PublicKey& pubkey,
-			const PublicKey& gmwPubkey,
-			const PublicKey& aufPubkey
+			const data::PublicKey& pubkey,
+			const data::PublicKey& gmwPubkey,
+			const data::PublicKey& aufPubkey
 		);
 		GradidoTransactionBuilder& setCommunityRoot(
 			memory::ConstBlockPtr pubkey,

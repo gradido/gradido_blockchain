@@ -7,8 +7,8 @@
 #include "gradido_blockchain/blockchain/CompactFilter.h"
 #include "gradido_blockchain/blockchain/SearchDirection.h"
 #include "gradido_blockchain/blockchain/StateChange.h"
-#include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/data/AddressType.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
@@ -58,7 +58,7 @@ namespace gradido {
 
 			rapidjson::Value serializeToJson(rapidjson::Document::AllocatorType& alloc) const;
 
-			bool addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry, IMutableDictionary<PublicKey>& publicKeyDictionary);
+			bool addIndicesForTransaction(ConstTransactionEntryPtr transactionEntry, IMutableDictionary<data::PublicKey>& publicKeyDictionary);
 			bool addIndicesForTransaction(const data::compact::ConfirmedGradidoTx& compactTx);
 			// compactHotTx without coldData, so involved public keys don't contain public keys from sig map
 			bool addIndicesForTransaction(const grdw_gradido_transaction* tx, const data::compact::ConfirmedGradidoTx& compactHotTx);
@@ -66,7 +66,7 @@ namespace gradido {
 			//! \brief search transaction nrs for search criteria in filter, ignore filter function
 			//! \return transaction nrs
 			[[deprecated("Use findTransactions with CompactFilter instead.")]]
-			std::vector<uint64_t> findTransactions(const Filter& filter, const IDictionary<PublicKey>& publicKeyDictionary, uint32_t communityIdIndex) const;
+			std::vector<uint64_t> findTransactions(const Filter& filter, const IDictionary<data::PublicKey>& publicKeyDictionary, uint32_t communityIdIndex) const;
 
 			//! \brief search transaction nrs for search criteria in filter
 			//! //! \return transaction nrs
@@ -76,7 +76,7 @@ namespace gradido {
 			
 			StateChange<data::AddressType> getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const;
 
-			inline void updateAddressIndex(const TransactionEntry& transactionEntry, const IDictionary<PublicKey>& publicKeyDictionary) const;
+			inline void updateAddressIndex(const TransactionEntry& transactionEntry, const IDictionary<data::PublicKey>& publicKeyDictionary) const;
 
 			//! count all, ignore pagination
 			size_t countTransactions(const CompactFilter& filter) const;
@@ -258,7 +258,7 @@ namespace gradido {
 
 		void TransactionsIndex::updateAddressIndex(
 			const gradido::blockchain::TransactionEntry& transactionEntry,
-			const IDictionary<PublicKey>& publicKeyDictionary
+			const IDictionary<data::PublicKey>& publicKeyDictionary
 		) const {
 			mAddressIndex.addTransaction(transactionEntry, publicKeyDictionary);
 		}

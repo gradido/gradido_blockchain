@@ -7,6 +7,7 @@
 #include "gradido_blockchain/blockchain/RangeUtils.h"
 #include "gradido_blockchain/data/AccountBalance.h"
 #include "gradido_blockchain/data/adapter/publicKey.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
@@ -37,7 +38,7 @@ namespace gradido {
 
 	using data::adapter::toPublicKey;
 	using data::compact::ConfirmedGradidoTx, data::compact::ConfirmedTxs, data::compact::ConstConfirmedTxPtr;
-	using data::AddressType, data::ConstGradidoTransactionPtr, data::Timestamp, data::LedgerAnchor, data::AccountBalance;
+	using data::AddressType, data::ConstGradidoTransactionPtr, data::PublicKey, data::Timestamp, data::LedgerAnchor, data::AccountBalance;
 	using namespace interaction;
 
 	namespace blockchain {

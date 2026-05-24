@@ -5,8 +5,8 @@
 #include "AccountBalance.h"
 #include "BalanceDerivationType.h"
 #include "LedgerAnchor.h"
-#include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/crypto/SignatureOctet.h"
+#include "gradido_blockchain/data/ByteArray.h"
 
 #include <optional>
 

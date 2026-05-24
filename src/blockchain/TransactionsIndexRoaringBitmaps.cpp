@@ -5,6 +5,7 @@
 #include "gradido_blockchain/blockchain/TransactionsIndex.h"
 #include "gradido_blockchain/blockchain/TransactionsIndexRoaringBitmaps.h"
 #include "gradido_blockchain/data/AddressType.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/TransactionType.h"
@@ -30,6 +31,7 @@ using std::array, std::pair, std::unordered_map, std::nullopt, std::optional, st
 namespace gradido {
   using data::compact::ConfirmedGradidoTx, data::compact::PublicKeyIndex, data::compact::PublicKeyIndexHash, data::compact::PublicKeyIndexEqual;
   using data::AddressType, data::TransactionType;
+  using data::PublicKey;
 
   namespace blockchain {
     TransactionsIndexRoaringBitmaps::TransactionsIndexRoaringBitmaps(uint32_t communityIdIndex)

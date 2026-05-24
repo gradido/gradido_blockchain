@@ -3,7 +3,7 @@
 
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/types.h"
-#include "gradido_blockchain/crypto/ByteArray.h"
+#include "gradido_blockchain/data/ByteArray.h"
 
 namespace gradido::data::compact {
   struct GRADIDOBLOCKCHAIN_EXPORT PublicKeyIndex 

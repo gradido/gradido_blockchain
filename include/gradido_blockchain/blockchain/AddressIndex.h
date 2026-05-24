@@ -2,8 +2,8 @@
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_ADDRESS_INDEX_H
 
 #include "gradido_blockchain/export.h"
-#include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/data/AddressType.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
 
@@ -35,7 +35,7 @@ namespace gradido {
 
 			//! public keys need to be already in publicKeyDictionary
 			//! \return added entries count
-			void addTransaction(const TransactionEntry& transactionEntry, const IDictionary<PublicKey>& publicKeyDictionary);
+			void addTransaction(const TransactionEntry& transactionEntry, const IDictionary<data::PublicKey>& publicKeyDictionary);
 			void addTransaction(const data::compact::ConfirmedGradidoTx& compactTx);
 			const std::vector<uint64_t>& getTransactionsNrs(data::compact::PublicKeyIndex publicKeyIndex) const;
 			bool isExist(data::compact::PublicKeyIndex publicKeyIndex) const;
