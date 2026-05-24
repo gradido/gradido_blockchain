@@ -20,13 +20,13 @@ FetchContent_MakeAvailable(googletest)
 FILE(GLOB TEST_MAIN "*.cpp" "*.h")
 
 
-SET(TEST_SRC 
+SET(TEST_SRC
   ${TEST_MAIN}
 )
 
 if(MSVC)
 	# src
-	
+
 endif()
 
 IF(WIN32)
@@ -42,7 +42,7 @@ enable_testing()
 add_executable(GradidoBlockchainProfiling ${TEST_SRC})
 target_link_libraries(GradidoBlockchainProfiling GradidoBlockchain sodium loguru::loguru gradido_blockchain_core) #libprotobuf
 target_link_libraries(GradidoBlockchainProfiling gtest)
-if(openssl_FOUND) 
+if(openssl_FOUND)
 	target_link_libraries(GradidoBlockchainProfiling openssl::openssl)
 endif()
 
@@ -51,7 +51,7 @@ include_directories(
   "${googletest_SOURCE_DIR}/googletest/include"
 )
 
-IF(WIN32)
+IF(WIN32 AND BUILD_SHARED_LIBS)
   add_custom_command(TARGET GradidoBlockchainProfiling POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:GradidoBlockchainProfiling> $<TARGET_FILE_DIR:GradidoBlockchainProfiling>
     COMMAND_EXPAND_LISTS
