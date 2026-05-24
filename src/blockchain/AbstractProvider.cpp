@@ -6,7 +6,7 @@ namespace gradido {
 		std::string GroupNotFoundException::getFullString() const
 		{
 			std::string result = what();
-			result += ", community id: " + mCommunityId;
+			result += ", community id: " + mCommunityUuid;
 			return result;
 		}
 	} 

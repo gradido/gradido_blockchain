@@ -1,6 +1,7 @@
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
+#include "gradido_blockchain/data/adapter/uuid.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 
 #include <memory>
@@ -15,6 +16,7 @@ using std::shared_lock, std::unique_lock;
 
 
 namespace gradido {
+	using data::adapter::uuidToString;
 	namespace blockchain {
 		InMemoryProvider::InMemoryProvider()
 		{
@@ -59,7 +61,7 @@ namespace gradido {
 
 		shared_ptr<Abstract> InMemoryProvider::addBlockchain(const string& communityId, optional<uint32_t> communityIdIndex)
 		{
-			string_view communityIdValue;
+			string communityIdValue;
 			uint32_t communityIdIndexValue = 0;
 			// we got both values
 			if (!communityId.empty() && communityIdIndex.has_value()) {
@@ -71,7 +73,7 @@ namespace gradido {
 				if (!communityIdOptional.has_value()) {
 					throw DictionaryMissingEntryException("cannot find community id for addBlockchain", to_string(communityIdIndex.value()));
 				}
-				communityIdValue = communityIdOptional.value();
+				communityIdValue = uuidToString(communityIdOptional.value());
 				communityIdIndexValue = communityIdIndex.value();
 			}  // we need to resolve the community id index
 			else if (!communityId.empty() && !communityIdIndex.value()) {

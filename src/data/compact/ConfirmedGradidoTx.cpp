@@ -9,7 +9,6 @@
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/rich/AccountBalance.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
-#include "gradido_blockchain/lib/Uuid.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
 #include "loguru/loguru.hpp"
@@ -153,7 +152,7 @@ namespace gradido::data::compact {
       accountBalance.coinCommunityIdIndex = blockchainCommunityIdIndex;
       
       Uuid communityUuid(tx_account_balance.community_uuid);
-      accountBalance.coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(communityUuid.toString());
+      accountBalance.coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(communityUuid);
       
       accountBalance.publicKeyIndex = appContext.getOrAddPublicKeyIndex(blockchainCommunityIdIndex, tx_account_balance.pubkey);
     }
@@ -223,10 +222,10 @@ namespace gradido::data::compact {
       Uuid otherUuid(body->other_community_uuid);
       switch (crossGroupType) {
       case CrossGroupType::OUTBOUND:
-        recipientCommunityIdIndex = appContext.getOrAddCommunityIdIndex(otherUuid.toString());
+        recipientCommunityIdIndex = appContext.getOrAddCommunityIdIndex(otherUuid);
         break;
       case CrossGroupType::INBOUND:
-        senderCommunityIdIndex = appContext.getOrAddCommunityIdIndex(otherUuid.toString());
+        senderCommunityIdIndex = appContext.getOrAddCommunityIdIndex(otherUuid);
         break;
       default:
         throw GradidoUnhandledEnum(
@@ -274,7 +273,7 @@ namespace gradido::data::compact {
       switch (transactionType) {
       case TransactionType::TRANSFER:
         specific.transfer = TransferTx::fromGrdw(&body->transfer, senderCommunityIdIndex, recipientCommunityIdIndex, appContext);
-        coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->transfer.sender.community_uuid).toString());
+        coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->transfer.sender.community_uuid));
         break;
       case TransactionType::CREATION:
         specific.creation = {
@@ -282,7 +281,7 @@ namespace gradido::data::compact {
           .recipientPublicKeyIndex = appContext.getOrAddPublicKeyIndex(recipientCommunityIdIndex, body->creation.recipient.pubkey),
           .targetMonthYear = adapter::fromGrdw(body->creation.target_date).getAsYearMonth()
         };
-        coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->creation.recipient.community_uuid).toString());
+        coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->creation.recipient.community_uuid));
         break;
       case TransactionType::REGISTER_ADDRESS:
         if (body->register_address.derivation_index != static_cast<uint16_t>(body->register_address.derivation_index)) {
@@ -309,11 +308,11 @@ namespace gradido::data::compact {
           .recipientPublicKeyIndex = g_appContext->getOrAddPublicKeyIndex(txCommunityIdIndex, body->deferred_transfer.transfer.recipient),
           .timeoutDurationSeconds = body->deferred_transfer.timeout_duration
         };
-        coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->deferred_transfer.transfer.sender.community_uuid).toString());
+        coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->deferred_transfer.transfer.sender.community_uuid));
         break;
       case TransactionType::REDEEM_DEFERRED_TRANSFER:
         specific.transfer = TransferTx::fromGrdw(&body->redeem_deferred_transfer.transfer, senderCommunityIdIndex, recipientCommunityIdIndex, appContext);
-        coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->redeem_deferred_transfer.transfer.sender.community_uuid).toString());
+        coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->redeem_deferred_transfer.transfer.sender.community_uuid));
         break;
         //case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
           // throw GradidoUnhandledEnum("on ConfirmedGradidoTx::fromGrdw, removed because of simplify", "TransactionType", enum_name(transactionType).data());

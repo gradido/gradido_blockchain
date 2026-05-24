@@ -12,15 +12,15 @@ namespace gradido {
 		{
 		public:
 			explicit ConstructBlockchainException(const char* what, std::string_view communityId) noexcept
-				: GradidoBlockchainException(what), mCommunityId(communityId) {}
+				: GradidoBlockchainException(what), mCommunityUuid(communityId) {}
 
 			std::string getFullString() const {
 				std::string result = what();
-				result += ", communityId: " + mCommunityId;
+				result += ", communityId: " + mCommunityUuid;
 				return result;
 			}
 		protected:
-			std::string mCommunityId;
+			std::string mCommunityUuid;
 		};
 
 		class GRADIDOBLOCKCHAIN_EXPORT AccountNotFoundException : public GradidoBlockchainException
@@ -65,7 +65,7 @@ namespace gradido {
 			std::string getFullString() const;
 
 		protected:
-			std::string mCommunityId;
+			std::string mCommunityUuid;
 
 		};
 	}

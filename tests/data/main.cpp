@@ -57,13 +57,12 @@ extern "C" {
 using gradido::AppContext, gradido::g_appContext;
 using memory::Block;
 using std::make_shared, std::make_unique;
-using std::string;
 
 // GTEST_API_ 
 int main(int argc, char** argv) {
 	testing::InitGoogleTest(&argc, argv);
 	g_appContext = make_unique<AppContext>(
-		make_unique<ThreadsafeRuntimeDictionary<string>>("communityIdDictionary"),
+		make_unique<ThreadsafeRuntimeDictionary<Uuid, UuidHash, UuidEqual>>("communityIdDictionary"),
 		make_unique<ThreadsafeRuntimeDictionary<GenericHash, GenericHashHash, GenericHashEqual>>("userNameHashDictionary")
 	);
 	CryptoConfig::g_ServerCryptoKey = make_shared<Block>(Block::fromHex("153afcd54ef316e45cd3e5ed4567cd21", 32));

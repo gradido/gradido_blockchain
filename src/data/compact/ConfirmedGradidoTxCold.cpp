@@ -4,7 +4,6 @@
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTxCold.h"
 #include "gradido_blockchain/data/adapter/ledgerAnchor.h"
 #include "gradido_blockchain/data/adapter/types.h"
-#include "gradido_blockchain/lib/Uuid.h"
 #include "gradido_blockchain/memory/Block.h"
 
 #include <utility>
@@ -85,7 +84,7 @@ namespace gradido::data {
 
       // pairing tx
       if (!pairingLedgerAnchor.empty() && body->other_community_uuid) {
-        pairingTxCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->other_community_uuid).toString());
+        pairingTxCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->other_community_uuid));
       }
       if (body->memos_count > 2) {
         throw GradidoNotImplementedException("memo count is more than expected");

@@ -8,6 +8,7 @@
 #include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/adapter/timestamp.h"
 #include "gradido_blockchain/data/adapter/types.h"
+#include "gradido_blockchain/data/adapter/uuid.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
@@ -30,7 +31,7 @@ using std::vector;
 
 namespace gradido {
 	namespace data {
-		using adapter::toPublicKeyIndex;
+		using adapter::toPublicKeyIndex, adapter::uuidFromString, adapter::uuidToString;
 		using namespace interaction;
 		using compact::PublicKeyIndex;
 
@@ -173,12 +174,17 @@ namespace gradido {
 
 		AccountBalance ConfirmedTransaction::getAccountBalance(memory::ConstBlockPtr publicKey, const std::string& communityId) const
 		{
-			auto communityIdIndex = g_appContext->getCommunityIds().getIndexForData(communityId);
+			return getAccountBalance(publicKey, uuidFromString(communityId.c_str()));
+		}
+
+		AccountBalance ConfirmedTransaction::getAccountBalance(memory::ConstBlockPtr publicKey, const Uuid& communityUuid) const
+		{
+			auto communityIdIndex = g_appContext->getCommunityIds().getIndexForData(communityUuid);
 			if (communityIdIndex) {
 				return getAccountBalance(publicKey, static_cast<uint32_t>(communityIdIndex));
 			}
 			else {
-				LOG_F(WARNING, "community id index not found for: %s", communityId.c_str());
+				LOG_F(WARNING, "community id index not found for: %s", uuidToString(communityUuid).c_str());
 			}
 			return AccountBalance(publicKey, GradidoUnit::zero(), mGradidoTransaction->getCommunityIdIndex());
 		}

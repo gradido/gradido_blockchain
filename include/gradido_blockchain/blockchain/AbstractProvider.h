@@ -26,10 +26,10 @@ namespace gradido {
 		{
 		public:
 			explicit GroupNotFoundException(const char* what, const std::string& communityId) noexcept
-				: GradidoBlockchainException(what), mCommunityId(communityId) {}
+				: GradidoBlockchainException(what), mCommunityUuid(communityId) {}
 			std::string getFullString() const;
 		protected:
-			std::string mCommunityId;
+			std::string mCommunityUuid;
 		};
 	}
 }

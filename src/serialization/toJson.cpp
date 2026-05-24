@@ -1,3 +1,4 @@
+#include "gradido_blockchain/data/adapter/uuid.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/GradidoUnit.h"
 #include "gradido_blockchain/crypto/ByteArray.h"
@@ -16,6 +17,8 @@
 #include <sstream>
 
 using namespace rapidjson;
+
+using gradido::data::adapter::uuidToString;
 
 namespace serialization {
 
@@ -38,6 +41,14 @@ namespace serialization {
 			return Value("");
 		}
 		return toJson(*ptr, alloc);
+	}
+
+	template<>
+	Value toJson(const Uuid& uuid, Document::AllocatorType& alloc)
+	{
+		char buffer[37];
+		uuidToString(buffer, uuid);
+		return Value(buffer, 36, alloc);
 	}
 
 	template<>

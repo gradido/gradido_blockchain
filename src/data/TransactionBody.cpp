@@ -14,7 +14,6 @@
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
-#include "gradido_blockchain/lib/Uuid.h"
 #include "gradido_blockchain/memory/Block.h"
 
 #include "magic_enum/magic_enum.hpp"
@@ -50,7 +49,7 @@ namespace gradido {
 			result->mTransactionType = adapter::fromGrdw(grdw_body->transaction_type);
 			result->mCommunityIdIndex = communityIdIndex;
 			if (grdw_body->other_community_uuid) {
-				result->mOtherCommunityIdIndex = g_appContext->getOrAddCommunityIdIndex(Uuid(grdw_body->other_community_uuid).toString());
+				result->mOtherCommunityIdIndex = g_appContext->getOrAddCommunityIdIndex(Uuid(grdw_body->other_community_uuid));
 			}
 			switch (result->mTransactionType) {
 			case TransactionType::TRANSFER: 
@@ -126,7 +125,7 @@ namespace gradido {
 				if (!otherCommunityId) {
 					throw DictionaryMissingEntryException("missing other community id", to_string(mOtherCommunityIdIndex.value()));
 				}
-				Uuid otherCommunityUuid(otherCommunityId->c_str());
+				Uuid otherCommunityUuid(otherCommunityId.value());
 				grd_memory_buffer_alloc((uint8_t**)&grdw_body->other_community_uuid, alloc, 16);
 				memcpy(grdw_body->other_community_uuid, otherCommunityUuid.data(), 16);
 			}

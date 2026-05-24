@@ -1,6 +1,7 @@
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/adapter/byteArray.h"
 #include "gradido_blockchain/data/adapter/publicKey.h"
+#include "gradido_blockchain/data/adapter/uuid.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/memory/Block.h"
 
@@ -19,7 +20,7 @@ namespace gradido::data::adapter {
       string keyString;
       auto communityId = g_appContext->getCommunityIds().getDataForIndex(publicKeyIndex.communityIdIndex);
       if (communityId) {
-        keyString = communityId.value();
+        keyString = uuidToString(communityId.value());
       }
       else {
         keyString = to_string(publicKeyIndex.communityIdIndex);

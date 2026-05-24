@@ -19,12 +19,13 @@ namespace gradido {
   {
   public:
     AppContext(
-      std::unique_ptr<IMutableDictionary<std::string>> communityIds,
+      std::unique_ptr<IMutableDictionary<Uuid>> communityIds,
       std::unique_ptr<IMutableDictionary<GenericHash>> userNameHashs 
     );
     uint32_t getOrAddCommunityIdIndex(const std::string& communityId);
+    uint32_t getOrAddCommunityIdIndex(const Uuid& communityUuid);
     uint32_t getOrAddUserNameHashIndex(const GenericHash& hash);
-    inline const IDictionary<std::string>& getCommunityIds() const { return *mCommunityIds; }
+    inline const IDictionary<Uuid>& getCommunityIds() const { return *mCommunityIds; }
     inline const IDictionary<GenericHash>& getUserNameHashs() const { return *mUserNameHashs; }
     inline const CommunityContext& getCommunityContext(uint32_t communityIdIndex) const;
     // call getDataForIndex on mCommunityIds start by mCommunityContexts.size() until empty to synchronize mCommunityContexts with mCommunityIds
@@ -83,7 +84,7 @@ namespace gradido {
     uint32_t getOrAddPublicKeyIndex(uint32_t communityIdIndex, const PublicKey& publicKey);
   protected:
     bool isValidCommunityAlias(const std::string& communityId) const;
-    std::unique_ptr<IMutableDictionary<std::string>> mCommunityIds;
+    std::unique_ptr<IMutableDictionary<Uuid>> mCommunityIds;
     std::unique_ptr<IMutableDictionary<GenericHash>> mUserNameHashs;
     // use communityIdIndex as index, start with 0, shouldn't contain holes
     std::deque<CommunityContext> mCommunityContexts;

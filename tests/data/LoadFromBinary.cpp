@@ -8,6 +8,7 @@
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/blockchain/TransactionsIndex.h"
+#include "gradido_blockchain/data/adapter/uuid.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
@@ -47,6 +48,7 @@ using hiero::TransactionId, hiero::AccountId;
 using gradido::g_appContext;
 using gradido::blockchain::batch::verifySignatures, gradido::blockchain::batch::ThreadingPolicy;
 using gradido::blockchain::Filter, gradido::blockchain::InMemoryProvider, gradido::blockchain::TransactionsIndex;
+using gradido::data::adapter::uuidToString;
 using gradido::data::GradidoTransaction, gradido::data::ConstGradidoTransactionPtr;
 using gradido::data::ConfirmedTransaction, gradido::data::ConstConfirmedTransactionPtr;
 using gradido::data::CrossGroupType;
@@ -359,7 +361,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 	MonotonicTimer timeUsedAll;
 	MonotonicTimer timeSinceLastPrint;
 	DataSet communities[] = {
-		{ .communityId = "e70da33e_5976_4767_bade_aa4e4fa1c01a", .fileName = "gradido_akademie.dat" }
+		{ .communityId = "e70da33e-5976-4767-bade-aa4e4fa1c01a", .fileName = "gradido_akademie.dat" }
 	};
 	const int communityCount = 1;
 	char readFromFileStaticBuffer[1024];
@@ -481,7 +483,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 	printf("found txs: %d\n", txs.size());
 	for (const auto& tx : txs) {
 		auto coin = g_appContext->getCommunityIds().getDataForIndexOrThrow(tx->getConfirmedTransaction()->getAccountBalances()[0].getCoinCommunityIdIndex());
-		printf("coin color: %s\n", coin.c_str());
+		printf("coin color: %s\n", uuidToString(coin).c_str());
 	}
 
 	int zahl = 0;

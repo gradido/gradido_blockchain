@@ -7,6 +7,7 @@
 #include "gradido_blockchain/blockchain/Pagination.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/crypto/ByteArray.h"
+#include "gradido_blockchain/data/adapter/uuid.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 
@@ -25,6 +26,8 @@ using std::mutex, std::unique_lock;
 using std::queue;
 using std::ref, std::thread, std::this_thread::sleep_for;
 using std::vector;
+
+using gradido::data::adapter::uuidToString, gradido::data::adapter::uuidFromString;
 
 namespace gradido::blockchain::batch {
 
@@ -83,12 +86,16 @@ namespace gradido::blockchain::batch {
     }
   }
 
-  vector<uint64_t> verifySignatures(const Filter& filter, const std::string& communityId, ThreadingPolicy policy)
+  vector<uint64_t> verifySignatures(const Filter& filter, const std::string& communityId, ThreadingPolicy policy) {
+    return verifySignatures(filter, uuidFromString(communityId.c_str()), policy);
+  }
+
+  vector<uint64_t> verifySignatures(const Filter& filter, const Uuid& communityId, ThreadingPolicy policy)
   {
     auto threadCount = resolveThreadCount(policy);
     auto communityIdIndex = g_appContext->getCommunityIds().getIndexForData(communityId);
     if (!communityIdIndex) {
-      throw DictionaryMissingEntryException("communityId not found", communityId);
+      throw DictionaryMissingEntryException("communityId not found", uuidToString(communityId));
     }
     auto& blockchain = g_appContext->getCommunityContext(communityIdIndex).getBlockchain();
     vector<uint64_t> invalidTxNrs;

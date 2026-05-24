@@ -114,6 +114,9 @@ typedef ByteArrayEqual<32> PublicKeyEqual;
 typedef ByteArray<crypto_generichash_BYTES> GenericHash;
 typedef ByteArrayHash<crypto_generichash_BYTES> GenericHashHash;
 typedef ByteArrayEqual<crypto_generichash_BYTES> GenericHashEqual;
+typedef ByteArray<16> Uuid;
+typedef ByteArrayHash<16> UuidHash;
+typedef ByteArrayEqual<16> UuidEqual;
 typedef ByteArray<64> Signature;
 typedef ByteArray<64> PrivateKey;
 

@@ -5,6 +5,7 @@
 #include "AccountBalance.h"
 #include "BalanceDerivationType.h"
 #include "LedgerAnchor.h"
+#include "gradido_blockchain/crypto/ByteArray.h"
 #include "gradido_blockchain/crypto/SignatureOctet.h"
 
 #include <optional>
@@ -62,6 +63,7 @@ namespace gradido {
 			//! \return accountBalance if found one with same public key or an new empty AccountBalance with this public key
 			AccountBalance getAccountBalance(memory::ConstBlockPtr publicKey, std::optional<uint32_t> communityIdIndex) const;
 			AccountBalance getAccountBalance(memory::ConstBlockPtr publicKey, const std::string& communityIdIndex) const;
+			AccountBalance getAccountBalance(memory::ConstBlockPtr publicKey, const Uuid& communityUuid) const;
 			inline GradidoUnit getDecayedAccountBalance(
 				memory::ConstBlockPtr publicKey,
 				std::optional<uint32_t> coinCommunityIdIndex,

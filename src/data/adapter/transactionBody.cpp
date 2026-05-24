@@ -6,7 +6,6 @@
 #include "gradido_blockchain/data/adapter/transactionBody.h"
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
-#include "gradido_blockchain/lib/Uuid.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/GradidoUnit.h"
 
@@ -23,7 +22,7 @@ namespace gradido::data::adapter {
     return TransferAmount(
       make_shared<Block>(32, grdwAmount.pubkey),
       GradidoUnit::fromGradidoCent(grdwAmount.amount),
-      g_appContext->getOrAddCommunityIdIndex(Uuid(grdwAmount.community_uuid).toString())
+      g_appContext->getOrAddCommunityIdIndex(Uuid(grdwAmount.community_uuid))
     );
   }
 
@@ -33,12 +32,12 @@ namespace gradido::data::adapter {
     grdw_transfer_amount grdwAmount;
     memcpy(grdwAmount.pubkey, amount.getPublicKey()->data(), 32);
     grdwAmount.amount = amount.getAmount().getGradidoCent();
-    auto const& coinCommunityId = g_appContext->getCommunityIds().getDataForIndex(amount.getCoinCommunityIdIndex());
-    if (!coinCommunityId) {
+    auto const& coinCommunityUuid = g_appContext->getCommunityIds().getDataForIndex(amount.getCoinCommunityIdIndex());
+    if (!coinCommunityUuid) {
       throw DictionaryMissingEntryException("missing community id", to_string(communityIdIndex));
     }
-    Uuid coinCommunityUuid(coinCommunityId->c_str());
-    memcpy(grdwAmount.community_uuid, coinCommunityUuid.data(), 16);
+    assert(coinCommunityUuid->size(), 16);
+    memcpy(grdwAmount.community_uuid, coinCommunityUuid->data(), coinCommunityUuid->size());
 
     return grdwAmount;
   }

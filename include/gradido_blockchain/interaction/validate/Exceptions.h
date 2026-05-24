@@ -181,7 +181,7 @@ namespace gradido {
 			protected:
 				data::AddressType mType;
 				std::string mPublicKeyHex;
-				std::string mCommunityId;
+				std::string mCommunityUuid;
 			};
 		}
 	}

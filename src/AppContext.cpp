@@ -1,5 +1,6 @@
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/const.h"
+#include "gradido_blockchain/data/adapter/uuid.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/lib/Dictionary.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
@@ -16,13 +17,14 @@ using std::string, std::to_string;
 using std::shared_ptr, std::make_unique, std::unique_ptr;
 
 namespace gradido {
+  using data::adapter::uuidFromString, data::adapter::uuidToString;
   using data::compact::PublicKeyIndex;
 
   unique_ptr<AppContext> g_appContext = nullptr;
   regex regExCommunityAlias(COMMUNITY_ID_REGEX_STRING);
 
   AppContext::AppContext(
-    unique_ptr<IMutableDictionary<string>> communityIds,
+    unique_ptr<IMutableDictionary<Uuid>> communityIds,
     unique_ptr<IMutableDictionary<GenericHash>> userNameHashs
   ) : mCommunityIds(std::move(communityIds)), mUserNameHashs(std::move(userNameHashs))
   {
@@ -31,13 +33,18 @@ namespace gradido {
 
   uint32_t AppContext::getOrAddCommunityIdIndex(const string& communityId)
   {
+    auto uuid = uuidFromString(communityId.c_str());
+    auto index = mCommunityIds->getIndexForData(uuid);
+    if (index) {
+      return index;
+    }
     if (!isValidCommunityAlias(communityId)) {
       // TODO: Custom exception types for this
       string error = "invalid character, only lowercase english latin letter, numbers and - are allowed for communityId: ";
       error += communityId;
       throw GradidoNodeInvalidDataException(error.c_str());      
     }
-    auto index = mCommunityIds->getOrAddIndexForData(communityId);
+    index = mCommunityIds->getOrAddIndexForData(uuid);
     size_t arrayIndex = index - 1;
     if (static_cast<uint32_t>(arrayIndex) != arrayIndex) {
       LOG_F(FATAL, "more communities as expected, uint32_t don't is enough");
@@ -50,6 +57,24 @@ namespace gradido {
       throw DictionaryHoleException("community contexts deque has a hole", "communityIds", mCommunityContexts.size(), index);
     }
     
+    return index;
+  }
+
+  uint32_t AppContext::getOrAddCommunityIdIndex(const Uuid& communityUuid)
+  {
+    auto index = mCommunityIds->getOrAddIndexForData(communityUuid);
+    size_t arrayIndex = index - 1;
+    if (static_cast<uint32_t>(arrayIndex) != arrayIndex) {
+      LOG_F(FATAL, "more communities as expected, uint32_t don't is enough");
+      throw GradidoNotImplementedException("communities with more then uint32_t index can handle isn't implemented");
+    }
+    if (mCommunityContexts.size() == arrayIndex) {
+      mCommunityContexts.emplace_back(communityUuid, static_cast<uint32_t>(index));
+    }
+    else if (mCommunityContexts.size() < arrayIndex) {
+      throw DictionaryHoleException("community contexts deque has a hole", "communityIds", mCommunityContexts.size(), index);
+    }
+
     return index;
   }
 
@@ -83,7 +108,7 @@ namespace gradido {
       string entryName = to_string(communityIdIndex);
       auto communityId = mCommunityIds->getDataForIndex(communityIdIndex);      
       if (communityId) {
-        entryName = communityId.value();
+        entryName = uuidToString(communityId.value());
       }
       throw DictionaryMissingEntryException("missing CommunityContext", entryName);
     }

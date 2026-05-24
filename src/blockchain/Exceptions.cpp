@@ -2,6 +2,7 @@
 #include "gradido_blockchain/blockchain/CompactFilter.h"
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
+#include "gradido_blockchain/data/adapter/uuid.h"
 #include "gradido_blockchain/serialization/toJsonString.h"
 
 #include <string>
@@ -10,6 +11,7 @@
 using std::string, std::string_view, std::to_string;
 
 namespace gradido {
+	using data::adapter::uuidToString;
 	namespace blockchain {
 
 		AccountNotFoundException::AccountNotFoundException(const char* what, const string& groupAlias, const string& pubkeyHex) noexcept
@@ -72,7 +74,7 @@ namespace gradido {
 		}
 
 		CommunityNotFoundException::CommunityNotFoundException(const char* what, string_view communityId) noexcept
-			: GradidoBlockchainException(what), mCommunityId(communityId)
+			: GradidoBlockchainException(what), mCommunityUuid(communityId)
 		{
 
 		}
@@ -82,17 +84,17 @@ namespace gradido {
 		{
 			auto communityId = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex);
 			if (communityId.has_value()) {
-				mCommunityId = communityId.value();
+				mCommunityUuid = uuidToString(communityId.value());
 			}
 			else {
-				mCommunityId = to_string(communityIdIndex);
+				mCommunityUuid = to_string(communityIdIndex);
 			}
 		}
 
 		string CommunityNotFoundException::getFullString() const
 		{
 			string result = what();
-			result += ", community: " + mCommunityId;
+			result += ", community: " + mCommunityUuid;
 			return result;
 		}
 

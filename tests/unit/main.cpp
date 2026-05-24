@@ -39,11 +39,9 @@
 #include "gradido_blockchain/version.h"
 
 #include <memory>
-#include <string>
 
 using gradido::AppContext, gradido::g_appContext;
 using gradido::blockchain::InMemoryProvider;
-using std::string;
 using std::make_unique;
 using memory::ConstBlockPtr, memory::ConstBlockPtrHash; memory::ConstBlockPtrEqual;
 
@@ -52,7 +50,7 @@ int main(int argc, char** argv)
 {
 	try {
 		g_appContext = make_unique<AppContext>(
-			make_unique<ThreadsafeRuntimeDictionary<std::string>>("communityIdDictionary"),
+			make_unique<ThreadsafeRuntimeDictionary<Uuid, UuidHash, UuidEqual>>("communityIdDictionary"),
 			make_unique<ThreadsafeRuntimeDictionary<GenericHash, GenericHashHash, GenericHashEqual>>("userNameHashDictionary")
 		);
 		InMemoryProvider::getInstance()->findBlockchain(g_appContext->getOrAddCommunityIdIndex(communityId));

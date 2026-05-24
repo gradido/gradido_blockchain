@@ -1,4 +1,5 @@
 #include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/data/adapter/uuid.h"
 #include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
@@ -25,6 +26,7 @@ using std::vector;
 
 namespace gradido {	
 	using data::AddressType;
+	using data::adapter::uuidToString;
 	using data::compact::PublicKeyIndex;
 
 	namespace interaction {
@@ -398,10 +400,10 @@ namespace gradido {
 				if (communityIdIndex) {
 					auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex.value());
 					if (communityIdOptional.has_value()) {
-						mCommunityId = communityIdOptional.value();
+						mCommunityUuid = uuidToString(communityIdOptional.value());
 					}
 					else {
-						mCommunityId = to_string(communityIdIndex.value());
+						mCommunityUuid = to_string(communityIdIndex.value());
 					}
 				}
 			}
@@ -413,10 +415,10 @@ namespace gradido {
 				if (communityIdIndex) {
 					auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex.value());
 					if (communityIdOptional.has_value()) {
-						mCommunityId = communityIdOptional.value();
+						mCommunityUuid = uuidToString(communityIdOptional.value());
 					}
 					else {
-						mCommunityId = to_string(communityIdIndex.value());
+						mCommunityUuid = to_string(communityIdIndex.value());
 					}
 				}
 			}
@@ -428,11 +430,11 @@ namespace gradido {
 				if (communityIdIndex) {
 					auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex.value());
 					if (communityIdOptional.has_value()) {
-						mCommunityId = communityIdOptional.value();
+						mCommunityUuid = uuidToString(communityIdOptional.value());
 						mPublicKeyHex = g_appContext->getPublicKey({ .communityIdIndex = *communityIdIndex, .publicKeyIndex = pubkeyIndex })->convertToHex();
 					}
 					else {
-						mCommunityId = to_string(communityIdIndex.value());
+						mCommunityUuid = to_string(communityIdIndex.value());
 					}
 				}
 			}
@@ -441,14 +443,14 @@ namespace gradido {
 			{
 				std::string result;
 				auto addressTypeName = enum_name(mType);
-				size_t resultSize = strlen(what()) + addressTypeName.size() + 2 + 14 + 10 + mPublicKeyHex.size() + 15 + mCommunityId.size();
+				size_t resultSize = strlen(what()) + addressTypeName.size() + 2 + 14 + 10 + mPublicKeyHex.size() + 15 + mCommunityUuid.size();
 				result.reserve(resultSize);
 				result = what();
 				result += ", address type: ";
 				result += addressTypeName;
 				result += ", pubkey: " + mPublicKeyHex;
-				if (!mCommunityId.empty()) {
-					result += ", communityId: " + mCommunityId;
+				if (!mCommunityUuid.empty()) {
+					result += ", communityId: " + mCommunityUuid;
 				}
 
 				return result;
@@ -461,7 +463,7 @@ namespace gradido {
 
 				auto addressTypeName = enum_name(mType);
 				jsonDetails.AddMember("addressType", Value(addressTypeName.data(), addressTypeName.size(), alloc), alloc);
-				jsonDetails.AddMember("communityId", Value(mCommunityId.data(), alloc), alloc);
+				jsonDetails.AddMember("communityId", Value(mCommunityUuid.data(), alloc), alloc);
 				return std::move(jsonDetails);
 			}
 		}

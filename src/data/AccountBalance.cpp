@@ -8,6 +8,7 @@ using std::string;
 namespace gradido {
 	namespace data {
 		AccountBalance::AccountBalance()
+			: mPublicKey(nullptr), mCoinCommunityIdIndex(0)
 		{
 		}
 
@@ -19,6 +20,12 @@ namespace gradido {
 		AccountBalance::AccountBalance(ConstBlockPtr publicKey, GradidoUnit balance, const string& communityId)
 			: mPublicKey(publicKey), mBalance(balance), mCoinCommunityIdIndex(g_appContext->getOrAddCommunityIdIndex(communityId))
 		{
+		}
+
+		AccountBalance::AccountBalance(ConstBlockPtr publicKey, GradidoUnit balance, const Uuid& communityUuid)
+			: mPublicKey(publicKey), mBalance(balance), mCoinCommunityIdIndex(g_appContext->getOrAddCommunityIdIndex(communityUuid))
+		{
+
 		}
 
 		AccountBalance::~AccountBalance()

@@ -1,9 +1,11 @@
 #include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/data/adapter/uuid.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 
 #include <string>
 using std::string, std::to_string;
+using gradido::data::adapter::uuidToString;
 
 namespace gradido::data::compact {
     PublicKeyIndex PublicKeyIndex::fromPublicKey(uint32_t communityIdIndex, const PublicKey& publicKey) {
@@ -18,7 +20,7 @@ namespace gradido::data::compact {
         string entryName;
         auto communityId = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex);
         if (communityId) {
-          entryName = communityId.value();
+          entryName = uuidToString(communityId.value());
         }
         else {
           entryName = to_string(communityIdIndex);
@@ -35,7 +37,7 @@ namespace gradido::data::compact {
       string result;
       auto communityId = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex);
       if (communityId) {
-        result = communityId.value();
+        result = uuidToString(communityId.value());
       }
       else {
         result = to_string(communityIdIndex);

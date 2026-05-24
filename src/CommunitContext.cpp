@@ -1,4 +1,5 @@
 #include "gradido_blockchain/CommunityContext.h"
+#include "gradido_blockchain/data/adapter/uuid.h"
 
 #include "loguru/loguru.hpp"
 
@@ -9,10 +10,18 @@ using std::shared_ptr;
 using std::string;
 
 namespace gradido {
+  using data::adapter::uuidFromString;
+
   CommunityContext::CommunityContext(const string& communityId, uint32_t communityIdIndex) 
-  : mCommunityId(communityId), mCommunityIdIndex(communityIdIndex) 
+  : mCommunityUuid(uuidFromString(communityId.c_str())), mCommunityIdIndex(communityIdIndex)
   {
     
+  }
+
+  CommunityContext::CommunityContext(const Uuid& communityuuid, uint32_t communityIdIndex)
+    : mCommunityUuid(communityuuid), mCommunityIdIndex(communityIdIndex)
+  {
+
   }
 
   uint32_t CommunityContext::getOrAddPublicKey(const PublicKey& publicKey)
