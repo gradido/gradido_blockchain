@@ -9,6 +9,7 @@
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/GradidoUnit.h"
 
+#include <cassert>
 #include <memory>
 #include <string>
 
@@ -36,7 +37,7 @@ namespace gradido::data::adapter {
     if (!coinCommunityUuid) {
       throw DictionaryMissingEntryException("missing community id", to_string(communityIdIndex));
     }
-    assert(coinCommunityUuid->size(), 16);
+    assert(coinCommunityUuid->size() == 16);
     memcpy(grdwAmount.community_uuid, coinCommunityUuid->data(), coinCommunityUuid->size());
 
     return grdwAmount;
