@@ -10,15 +10,15 @@
 #include "TransferTx.h"
 #include "TxId.h"
 #include "gradido_blockchain/export.h"
-#include "gradido_blockchain/data/AddressType.h"
-#include "gradido_blockchain/data/BalanceDerivationType.h"
-#include "gradido_blockchain/data/CrossGroupType.h"
 #include "gradido_blockchain/data/rich/AccountBalance.h"
 #include "gradido_blockchain/data/Timestamp.h"
-#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/GradidoUnit.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
+#include "gradido_blockchain_core/types/address.h"
+#include "gradido_blockchain_core/types/balance_derivation.h"
+#include "gradido_blockchain_core/types/cross_group.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 #include <date/date.h>
 #include <memory>
@@ -92,9 +92,9 @@ namespace gradido {
       inline TxId getTxId() const { return TxId(txNr, txCommunityIdIndex); }
 
       // enums, usually uint8_t
-      CrossGroupType crossGroupType;
-      TransactionType transactionType;
-      BalanceDerivationType balanceDerivationType;
+      grdt_cross_group crossGroupType;
+      grdt_transaction transactionType;
+      grdt_balance_derivation balanceDerivationType;
       uint8_t accountBalanceCount;
 
       // TODO: check if bring more performance to put this else where
@@ -126,16 +126,16 @@ namespace gradido {
       // if cold isn't loaded, doesn't check pubkeys from signature map
       bool isInvolved(PublicKeyIndex pubkeyIndex) const;
 
-      inline bool isTransfer() const { return TransactionType::TRANSFER == transactionType; }
-      inline bool isCreation() const { return TransactionType::CREATION == transactionType; }
-      inline bool isRegisterAddress() const { return TransactionType::REGISTER_ADDRESS == transactionType; }
-      inline bool isDeferredTransfer() const { return TransactionType::DEFERRED_TRANSFER == transactionType; }
-      inline bool isRedeemDeferredTransfer() const { return TransactionType::REDEEM_DEFERRED_TRANSFER == transactionType; }
-      inline bool isTimeoutDeferredTransfer() const { return TransactionType::TIMEOUT_DEFERRED_TRANSFER == transactionType; }
-      inline bool isCommunityRoot() const { return TransactionType::COMMUNITY_ROOT == transactionType; }
-      inline bool isCrossCommunityTx() const { return CrossGroupType::LOCAL != crossGroupType; }
-      inline bool isOutboundCommunityTx() const { return CrossGroupType::OUTBOUND == crossGroupType; }
-      inline bool isInboundCrossCommunityTx() const { return CrossGroupType::INBOUND == crossGroupType; }
+      inline bool isTransfer() const { return GRDT_TRANSACTION_TRANSFER == transactionType; }
+      inline bool isCreation() const { return GRDT_TRANSACTION_CREATION == transactionType; }
+      inline bool isRegisterAddress() const { return GRDT_TRANSACTION_REGISTER_ADDRESS == transactionType; }
+      inline bool isDeferredTransfer() const { return GRDT_TRANSACTION_DEFERRED_TRANSFER == transactionType; }
+      inline bool isRedeemDeferredTransfer() const { return GRDT_TRANSACTION_REDEEM_DEFERRED_TRANSFER == transactionType; }
+      inline bool isTimeoutDeferredTransfer() const { return GRDT_TRANSACTION_TIMEOUT_DEFERRED_TRANSFER == transactionType; }
+      inline bool isCommunityRoot() const { return GRDT_TRANSACTION_COMMUNITY_ROOT == transactionType; }
+      inline bool isCrossCommunityTx() const { return GRDT_CROSS_GROUP_LOCAL != crossGroupType; }
+      inline bool isOutboundCommunityTx() const { return GRDT_CROSS_GROUP_OUTBOUND == crossGroupType; }
+      inline bool isInboundCrossCommunityTx() const { return GRDT_CROSS_GROUP_INBOUND == crossGroupType; }
       // can be also used for not confirmed transactions
       inline bool isConfirmedTx() const { return txNr != 0; }
 
@@ -235,7 +235,7 @@ namespace gradido {
       std::string getFullString() const;
     protected:
       uint64_t mTxNr;
-      data::TransactionType mTransactionType;
+      grdt_transaction mgrdt_transaction;
     };
   }
 }

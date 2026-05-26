@@ -2,14 +2,13 @@
 #include "TransactionsIndex.h"
 #include "gradido_blockchain/blockchain/CompactFilter.h"
 #include "gradido_blockchain/blockchain/SearchDirection.h"
-#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/lib/TimepointInterval.h"
+#include "gradido_blockchain_core/types/transaction.h"
 #include "../interaction/const.h"
 
 #include "date/date.h"
 
 using gradido::blockchain::CompactFilter, gradido::blockchain::SearchDirection;
-using gradido::data::TransactionType;
 
 TEST(TransactionIndex, EmptyIndexTest) {
   TransactionsIndexPublic txIdx(communityIdIndex);
@@ -24,7 +23,7 @@ TEST(TransactionIndex, EmptyIndexTest) {
 TEST(TransactionIndex, LoopWithOneEntry)
 {
   TransactionsIndexPublic txIdx(1);
-  txIdx.addIndicesForTransaction(TransactionType::COMMUNITY_ROOT, communityIdIndex, date::year(1989), date::month(1), 1, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_COMMUNITY_ROOT, communityIdIndex, date::year(1989), date::month(1), 1, nullptr, 0, 0);
     
   CompactFilter f;
   f.searchDirection = SearchDirection::ASC;
@@ -52,11 +51,11 @@ TEST(TransactionIndex, LoopWithOneEntry)
 TEST(TransactionIndex, LoopWithFiveEntries)
 {
   TransactionsIndexPublic txIdx(1);
-  txIdx.addIndicesForTransaction(TransactionType::COMMUNITY_ROOT, communityIdIndex, date::year(1989), date::month(1), 1, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::REGISTER_ADDRESS, communityIdIndex, date::year(1989), date::month(1), 2, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::REGISTER_ADDRESS, communityIdIndex, date::year(1989), date::month(1), 3, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::CREATION, communityIdIndex, date::year(1989), date::month(2), 4, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::CREATION, communityIdIndex, date::year(1989), date::month(4), 5, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_COMMUNITY_ROOT, communityIdIndex, date::year(1989), date::month(1), 1, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_REGISTER_ADDRESS, communityIdIndex, date::year(1989), date::month(1), 2, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_REGISTER_ADDRESS, communityIdIndex, date::year(1989), date::month(1), 3, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_CREATION, communityIdIndex, date::year(1989), date::month(2), 4, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_CREATION, communityIdIndex, date::year(1989), date::month(4), 5, nullptr, 0, 0);
 
   CompactFilter f;
   f.searchDirection = SearchDirection::ASC;
@@ -81,15 +80,15 @@ TEST(TransactionIndex, LoopWithFiveEntries)
 TEST(TransactionIndex, LoopWithFiveEntriesFilterRegisterAddress)
 {
   TransactionsIndexPublic txIdx(1);
-  txIdx.addIndicesForTransaction(TransactionType::COMMUNITY_ROOT, communityIdIndex, date::year(1989), date::month(1), 1, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::REGISTER_ADDRESS, communityIdIndex, date::year(1989), date::month(1), 2, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::REGISTER_ADDRESS, communityIdIndex, date::year(1989), date::month(1), 3, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::CREATION, communityIdIndex, date::year(1989), date::month(2), 4, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::CREATION, communityIdIndex, date::year(1989), date::month(4), 5, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_COMMUNITY_ROOT, communityIdIndex, date::year(1989), date::month(1), 1, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_REGISTER_ADDRESS, communityIdIndex, date::year(1989), date::month(1), 2, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_REGISTER_ADDRESS, communityIdIndex, date::year(1989), date::month(1), 3, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_CREATION, communityIdIndex, date::year(1989), date::month(2), 4, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_CREATION, communityIdIndex, date::year(1989), date::month(4), 5, nullptr, 0, 0);
 
   CompactFilter f;
   f.searchDirection = SearchDirection::ASC;
-  f.transactionType = TransactionType::REGISTER_ADDRESS;
+  f.transactionType = GRDT_TRANSACTION_REGISTER_ADDRESS;
   auto startIt = txIdx.begin(f);
   auto endIt = txIdx.end(f);
   int count = 1;
@@ -109,15 +108,15 @@ TEST(TransactionIndex, LoopWithFiveEntriesFilterRegisterAddress)
 TEST(TransactionIndex, LoopWithFiveEntriesFilterCreation)
 {
   TransactionsIndexPublic txIdx(1);
-  txIdx.addIndicesForTransaction(TransactionType::COMMUNITY_ROOT, communityIdIndex, date::year(1989), date::month(1), 1, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::REGISTER_ADDRESS, communityIdIndex, date::year(1989), date::month(1), 2, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::REGISTER_ADDRESS, communityIdIndex, date::year(1989), date::month(1), 3, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::CREATION, communityIdIndex, date::year(1989), date::month(2), 4, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::CREATION, communityIdIndex, date::year(1989), date::month(4), 5, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_COMMUNITY_ROOT, communityIdIndex, date::year(1989), date::month(1), 1, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_REGISTER_ADDRESS, communityIdIndex, date::year(1989), date::month(1), 2, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_REGISTER_ADDRESS, communityIdIndex, date::year(1989), date::month(1), 3, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_CREATION, communityIdIndex, date::year(1989), date::month(2), 4, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_CREATION, communityIdIndex, date::year(1989), date::month(4), 5, nullptr, 0, 0);
 
   CompactFilter f;
   f.searchDirection = SearchDirection::ASC;
-  f.transactionType = TransactionType::CREATION;
+  f.transactionType = GRDT_TRANSACTION_CREATION;
   auto startIt = txIdx.begin(f);
   auto endIt = txIdx.end(f);
   int count = 3;
@@ -140,11 +139,11 @@ TEST(TransactionIndex, LoopWithFiveEntriesFilterCreation)
 TEST(TransactionIndex, LoopWithFiveEntriesFilterIntervalHole)
 {
   TransactionsIndexPublic txIdx(1);
-  txIdx.addIndicesForTransaction(TransactionType::COMMUNITY_ROOT, communityIdIndex, date::year(1989), date::month(1), 1, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::REGISTER_ADDRESS, communityIdIndex, date::year(1989), date::month(1), 2, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::REGISTER_ADDRESS, communityIdIndex, date::year(1989), date::month(1), 3, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::CREATION, communityIdIndex, date::year(1989), date::month(2), 4, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::CREATION, communityIdIndex, date::year(1989), date::month(4), 5, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_COMMUNITY_ROOT, communityIdIndex, date::year(1989), date::month(1), 1, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_REGISTER_ADDRESS, communityIdIndex, date::year(1989), date::month(1), 2, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_REGISTER_ADDRESS, communityIdIndex, date::year(1989), date::month(1), 3, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_CREATION, communityIdIndex, date::year(1989), date::month(2), 4, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_CREATION, communityIdIndex, date::year(1989), date::month(4), 5, nullptr, 0, 0);
 
   CompactFilter f;
   f.searchDirection = SearchDirection::ASC;
@@ -168,11 +167,11 @@ TEST(TransactionIndex, LoopWithFiveEntriesFilterIntervalHole)
 TEST(TransactionIndex, TriggerResize)
 {
   TransactionsIndexPublic txIdx(1);
-  txIdx.addIndicesForTransaction(TransactionType::COMMUNITY_ROOT, communityIdIndex, date::year(1989), date::month(1), 1, nullptr, 0, 0);
-  txIdx.addIndicesForTransaction(TransactionType::REGISTER_ADDRESS, communityIdIndex, date::year(2000), date::month(1), 2, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_COMMUNITY_ROOT, communityIdIndex, date::year(1989), date::month(1), 1, nullptr, 0, 0);
+  txIdx.addIndicesForTransaction(GRDT_TRANSACTION_REGISTER_ADDRESS, communityIdIndex, date::year(2000), date::month(1), 2, nullptr, 0, 0);
 
   EXPECT_THROW(
-    txIdx.addIndicesForTransaction(TransactionType::REGISTER_ADDRESS, communityIdIndex, date::year(2100), date::month(1), 2, nullptr, 0, 0),
+    txIdx.addIndicesForTransaction(GRDT_TRANSACTION_REGISTER_ADDRESS, communityIdIndex, date::year(2100), date::month(1), 2, nullptr, 0, 0),
     GradidoNodeInvalidDataException
   );
 

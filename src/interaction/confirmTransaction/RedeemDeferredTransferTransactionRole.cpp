@@ -6,10 +6,10 @@
 #include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
-#include "gradido_blockchain/data/CrossGroupType.h"
 #include "gradido_blockchain/data/TransactionTriggerEvent.h"
 #include "gradido_blockchain/data/TransactionTriggerEventType.h"
 #include "gradido_blockchain/interaction/confirmTransaction/RedeemDeferredTransferTransactionRole.h"
+#include "gradido_blockchain_core/types/cross_group.h"
 
 #include <loguru/loguru.hpp>
 #include <magic_enum/magic_enum.hpp>
@@ -25,7 +25,7 @@ namespace gradido {
   using data::AccountBalance;
   using data::adapter::toPublicKeyIndex;
   using data::compact::ConfirmedGradidoTx;
-  using data::ConfirmedTransaction, data::CrossGroupType;
+  using data::ConfirmedTransaction;
   using data::TransactionTriggerEvent, data::TransactionTriggerEventType;
 
     namespace interaction {
@@ -90,7 +90,7 @@ namespace gradido {
                     };
                 }
                 switch (mBody->getType()) {
-                case CrossGroupType::LOCAL:
+                case GRDT_CROSS_GROUP_LOCAL:
                   return {
                     // sender
                     AccountBalance(transferAmount.getPublicKey(), GradidoUnit::zero(), coinCommunityIdIndex),
@@ -99,14 +99,14 @@ namespace gradido {
                     // change back to original sender of deferred transfer
                     calculateAccountBalance(deferredTransferAmount.getPublicKey(), maxTransactionNr, change, coinCommunityIdIndex)
                   };
-                case CrossGroupType::OUTBOUND:
+                case GRDT_CROSS_GROUP_OUTBOUND:
                   return {
                     // sender
                     AccountBalance(transferAmount.getPublicKey(), GradidoUnit::zero(), coinCommunityIdIndex),
                     // change back to original sender of deferred transfer
                     calculateAccountBalance(deferredTransferAmount.getPublicKey(), maxTransactionNr, change, coinCommunityIdIndex)
                   };
-                case CrossGroupType::INBOUND:
+                case GRDT_CROSS_GROUP_INBOUND:
                   return {
                     // recipient
                     calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, transferAmount.getAmount(), coinCommunityIdIndex),
@@ -114,7 +114,7 @@ namespace gradido {
                 default:
                   throw GradidoUnhandledEnum(
                     "interaction::confirmTransaction redeem deferred transfer account balance",
-                    "CrossGroupType",
+                    "grdt_cross_group",
                     enum_name(mBody->getType()).data()
                   );
                 }

@@ -3,7 +3,6 @@
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTxCold.h"
 #include "gradido_blockchain/data/adapter/ledgerAnchor.h"
-#include "gradido_blockchain/data/adapter/types.h"
 #include "gradido_blockchain/memory/Block.h"
 
 #include <utility>
@@ -47,7 +46,7 @@ namespace gradido::data {
       auto txCold = make_unique<ConfirmedGradidoTxCold>();
 
       // pairing tx
-      if (tx->pairing_ledger_anchor.type != GRDW_LEDGER_ANCHOR_TYPE_UNSPECIFIED) {
+      if (tx->pairing_ledger_anchor.type != GRDT_LEDGER_ANCHOR_UNSPECIFIED) {
         txCold->pairingLedgerAnchor = adapter::fromGrdw(tx->pairing_ledger_anchor);
       }
       // signatures
@@ -91,7 +90,7 @@ namespace gradido::data {
       }
       // memos
       for (int i = 0; i < body->memos_count; i++) {
-        encryptedMemos[i] = EncryptedMemo(adapter::fromGrdw(body->memos[i].type), Block(body->memos[i].memo.size, body->memos[i].memo.data));
+        encryptedMemos[i] = EncryptedMemo(body->memos[i].type, Block(body->memos[i].memo.size, body->memos[i].memo.data));
       }
     }
   }

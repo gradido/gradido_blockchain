@@ -2,8 +2,8 @@
 #define __GRADIDO_BLOCKCHAIN_DATA_ENCRYPTED_MEMO_H
 
 #include "gradido_blockchain/GradidoUnit.h"
-#include "MemoKeyType.h"
 #include "gradido_blockchain/memory/Block.h"
+#include "gradido_blockchain_core/types/memo_key.h"
 
 class AuthenticatedEncryption;
 
@@ -12,14 +12,14 @@ namespace gradido {
         class GRADIDOBLOCKCHAIN_EXPORT EncryptedMemo
         {
         public:
-            EncryptedMemo() : mKeyType(MemoKeyType::PLAIN), mMemo(0) {}
+            EncryptedMemo() : mKeyType(GRDT_MEMO_KEY_PLAIN), mMemo(0) {}
             //! key type will be PLAIN, memo isn't encrypted at all
             EncryptedMemo(const std::string& memo)
-                : mKeyType(MemoKeyType::PLAIN), mMemo(memo) {}
+                : mKeyType(GRDT_MEMO_KEY_PLAIN), mMemo(memo) {}
             //! key type will be PLAIN, memo isn't encrypted at all
             EncryptedMemo(const char* memo)
                 : EncryptedMemo(std::string(memo)) {}
-            EncryptedMemo(MemoKeyType type, memory::Block&& memo)
+            EncryptedMemo(grdt_memo_key type, memory::Block&& memo)
                 : mKeyType(type), mMemo(memo) {}
             //! key type will be COMMUNITY_SECRET, memo is encrypted with community server key and can be seen by all community server user
             EncryptedMemo(const std::string& memo, const AuthenticatedEncryption& communityKeyPair);
@@ -39,10 +39,10 @@ namespace gradido {
             EncryptedMemo(const EncryptedMemo& other) : mKeyType(other.mKeyType), mMemo(other.mMemo) {}
             ~EncryptedMemo() {}
 
-            inline MemoKeyType getKeyType() const { return mKeyType; }
-            inline bool isPlain() const { return mKeyType == MemoKeyType::PLAIN; }
-            inline bool isCommunitySecret() const { return mKeyType == MemoKeyType::COMMUNITY_SECRET; }
-            inline bool isSharedSecret() const { return mKeyType == MemoKeyType::SHARED_SECRET; }
+            inline grdt_memo_key getKeyType() const { return mKeyType; }
+            inline bool isPlain() const { return mKeyType == GRDT_MEMO_KEY_PLAIN; }
+            inline bool isCommunitySecret() const { return mKeyType == GRDT_MEMO_KEY_COMMUNITY_SECRET; }
+            inline bool isSharedSecret() const { return mKeyType == GRDT_MEMO_KEY_SHARED_SECRET; }
             inline bool empty() const { return !mMemo; }
 
             inline const memory::Block& getMemo() const { return mMemo; }
@@ -73,7 +73,7 @@ namespace gradido {
             ) const;
             
         protected:
-            MemoKeyType mKeyType;
+            grdt_memo_key mKeyType;
             memory::Block mMemo;
         };
 

@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_GRADIDO_TRANSFER_ROLE_H
 
 #include "AbstractRole.h"
-#include "gradido_blockchain/data/CrossGroupType.h"
+#include "gradido_blockchain_core/types/cross_group.h"
 
 namespace gradido {
 	namespace data {
@@ -16,7 +16,7 @@ namespace gradido {
 				GradidoTransferRole(std::shared_ptr<const data::GradidoTransfer> gradidoTransfer);
 
 				void run(Type type, ContextData& c);
-				inline void setCrossGroupType(data::CrossGroupType crossGroupType) { mCrossGroupType = crossGroupType; }
+				inline void setCrossGroupType(grdt_cross_group crossGroupType) { mCrossGroupType = crossGroupType; }
 
 			protected:
 				void validatePrevious(
@@ -29,7 +29,7 @@ namespace gradido {
 				void validateAccount(ContextData& c);
 
 				std::shared_ptr<const data::GradidoTransfer> mGradidoTransfer;
-				data::CrossGroupType mCrossGroupType;
+				grdt_cross_group mCrossGroupType;
 			};
 		}
 	}

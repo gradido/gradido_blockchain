@@ -1,13 +1,13 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/const.h"
-#include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/GradidoDeferredTransfer.h"
 #include "gradido_blockchain/interaction/validate/GradidoDeferredTransferRole.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain_core/types/address.h"
 
 #include "date/date.h"
 
@@ -20,7 +20,7 @@ using std::string;
 
 namespace gradido {
 	using blockchain::Filter;
-	using data::AddressType, data::ConfirmedTransaction, data::GradidoDeferredTransfer;
+	using data::ConfirmedTransaction, data::GradidoDeferredTransfer;
 	namespace interaction {
 		namespace validate {
 
@@ -72,7 +72,7 @@ namespace gradido {
 
 					// check if sender address was registered
 					auto senderAddressType = c.senderBlockchain->getAddressType(filter);
-					if (AddressType::NONE == senderAddressType) {
+					if (GRDT_ADDRESS_NONE == senderAddressType) {
 						throw WrongAddressTypeException(
 							"sender address not registered",
 							senderAddressType,
@@ -80,7 +80,7 @@ namespace gradido {
 							c.senderBlockchain->getCommunityIdIndex()
 						);
 					}
-					else if (AddressType::DEFERRED_TRANSFER == senderAddressType) {
+					else if (GRDT_ADDRESS_DEFERRED_TRANSFER == senderAddressType) {
 						throw WrongAddressTypeException(
 							"sender address is deferred transfer, please use redeemDeferredTransferTransaction for that",
 							senderAddressType,
@@ -92,7 +92,7 @@ namespace gradido {
 					filter.involvedPublicKey = mDeferredTransfer->getRecipientPublicKey();
 					auto recipientAddressType = c.senderBlockchain->getAddressType(filter);
 					// with deferred transfer recipient address is completely new
-					if (AddressType::NONE != recipientAddressType) {
+					if (GRDT_ADDRESS_NONE != recipientAddressType) {
 						throw WrongAddressTypeException(
 							"deferred transfer address already exist",
 							recipientAddressType,

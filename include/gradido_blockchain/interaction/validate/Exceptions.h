@@ -2,9 +2,9 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_EXCEPTIONS_H
 
 #include "gradido_blockchain/GradidoBlockchainException.h"
-#include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
-#include "gradido_blockchain/data/TransactionType.h"
+#include "gradido_blockchain_core/types/address.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 #include "gradido_blockchain/GradidoUnit.h"
 
@@ -29,14 +29,14 @@ namespace gradido {
 				inline TransactionValidationException& setMemo(const std::string& memo) { mTransactionMemo = memo; return *this; }
 				inline const std::string& getMemo() const { return mTransactionMemo; }
 
-				inline TransactionValidationException& setTransactionType(data::TransactionType type) { mType = type; return *this; }
-				inline data::TransactionType getTransactionType() { return mType; }
+				inline TransactionValidationException& setTransactionType(grdt_transaction type) { mType = type; return *this; }
+				inline grdt_transaction getTransactionType() { return mType; }
 
 				TransactionValidationException& setTransactionBody(const data::TransactionBody& transactionBody);
 				inline std::string_view getTransactionTypeString() const { return magic_enum::enum_name(mType); }
 			protected:
 				std::string mTransactionMemo;
-				data::TransactionType mType;
+				grdt_transaction mType;
 			};
 
 			class GRADIDOBLOCKCHAIN_EXPORT TransactionValidationInvalidInputException : public TransactionValidationException
@@ -139,14 +139,14 @@ namespace gradido {
 			class GRADIDOBLOCKCHAIN_EXPORT AddressAlreadyExistException : public TransactionValidationException
 			{
 			public:
-				explicit AddressAlreadyExistException(const char* what, const std::string& addressHex, data::AddressType addressType) noexcept;
+				explicit AddressAlreadyExistException(const char* what, const std::string& addressHex, grdt_address addressType) noexcept;
 
 				std::string getFullString() const noexcept;
 				rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 
 			protected:
 				std::string mAddressHex;
-				data::AddressType mAddressType;
+				grdt_address mAddressType;
 			};
 
 			class GRADIDOBLOCKCHAIN_EXPORT InvalidCreationException : public TransactionValidationException
@@ -171,15 +171,15 @@ namespace gradido {
 			class GRADIDOBLOCKCHAIN_EXPORT WrongAddressTypeException : public TransactionValidationException
 			{
 			public:
-				explicit WrongAddressTypeException(const char* what, data::AddressType type, memory::ConstBlockPtr pubkey, std::optional<uint32_t> communityIdIndex) noexcept;
-				explicit WrongAddressTypeException(const char* what, data::AddressType type, data::compact::PublicKeyIndex pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept;
-				explicit WrongAddressTypeException(const char* what, data::AddressType type, uint32_t pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept;
+				explicit WrongAddressTypeException(const char* what, grdt_address type, memory::ConstBlockPtr pubkey, std::optional<uint32_t> communityIdIndex) noexcept;
+				explicit WrongAddressTypeException(const char* what, grdt_address type, data::compact::PublicKeyIndex pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept;
+				explicit WrongAddressTypeException(const char* what, grdt_address type, uint32_t pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept;
 
 				std::string getFullString() const noexcept;
 				rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;
 
 			protected:
-				data::AddressType mType;
+				grdt_address mType;
 				std::string mPublicKeyHex;
 				std::string mCommunityUuid;
 			};

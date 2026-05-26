@@ -19,7 +19,7 @@ TEST(ValidateTransactionBody, InvalidMissingSpecificTransaction)
 
 TEST(ValidateTransactionBody, InvalidOtherGroup)
 {
-	TransactionBody body(createdAt, 0, CrossGroupType::LOCAL, 7);
+	TransactionBody body(createdAt, 0, GRDT_CROSS_GROUP_LOCAL, 7);
 	validate::Context c(body);
 	EXPECT_THROW(c.run(), validate::TransactionValidationException);
 }

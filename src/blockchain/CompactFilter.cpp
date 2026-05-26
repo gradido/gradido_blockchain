@@ -2,6 +2,7 @@
 #include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 namespace gradido {
   using data::adapter::toPublicKey;
@@ -10,7 +11,7 @@ namespace gradido {
 
   namespace blockchain {
     CompactFilter::CompactFilter()
-      : searchDirection(SearchDirection::DESC), transactionType(data::TransactionType::NONE), publicKeySearchType(PublicKeySearchType::None),
+      : searchDirection(SearchDirection::DESC), transactionType(GRDT_TRANSACTION_NONE), publicKeySearchType(PublicKeySearchType::None),
       coinCommunityIdIndex(0), maxTransactionNr(0), minTransactionNr(0),
       publicKeyIndex({})
     {
@@ -92,7 +93,7 @@ namespace gradido {
 				}
 			}
 			if ((type & FilterCriteria::TRANSACTION_TYPE) == FilterCriteria::TRANSACTION_TYPE) {
-				if (transactionType != data::TransactionType::NONE && confirmedTx.transactionType != transactionType) {
+				if (transactionType != GRDT_TRANSACTION_NONE && confirmedTx.transactionType != transactionType) {
 					return FilterResult::DISMISS;
 				}
 			}

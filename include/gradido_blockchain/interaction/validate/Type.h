@@ -21,7 +21,7 @@ namespace gradido {
                 //! previous transaction belonging to same address
                 //! sender by transfer transaction
                 PREVIOUS = 2,
-                //! check account balance with previous transactions, only for BalanceDerivationType = Node
+                //! check account balance with previous transactions, only for grdt_balance_derivation = Node
                 PREVIOUS_BALANCE = 4,
                 //! check all transaction from same address in same month
                 //! by creation the target date month

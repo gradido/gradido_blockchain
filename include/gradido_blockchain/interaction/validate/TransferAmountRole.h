@@ -2,7 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_TRANSFER_AMOUNT_ROLE_H
 
 #include "AbstractRole.h"
-#include "gradido_blockchain/data/CrossGroupType.h"
+#include "gradido_blockchain_core/types/cross_group.h"
 
 namespace gradido {
 	namespace data {
@@ -13,14 +13,14 @@ namespace gradido {
 			class TransferAmountRole : public AbstractRole
 			{
 			public:
-				TransferAmountRole(const data::TransferAmount& transferAmount) : mTransferAmount(transferAmount), mCrossGroupType(data::CrossGroupType::LOCAL) {}
+				TransferAmountRole(const data::TransferAmount& transferAmount) : mTransferAmount(transferAmount), mCrossGroupType(GRDT_CROSS_GROUP_LOCAL) {}
 
 				void run(Type type, ContextData& c);
-				inline void setCrossGroupType(data::CrossGroupType crossGroupType) { mCrossGroupType = crossGroupType; }
+				inline void setCrossGroupType(grdt_cross_group crossGroupType) { mCrossGroupType = crossGroupType; }
 
 			protected:
 				const data::TransferAmount& mTransferAmount;
-				data::CrossGroupType mCrossGroupType;
+				grdt_cross_group mCrossGroupType;
 			};
 		}
 	}

@@ -5,7 +5,7 @@
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/blockchain/TransactionRelationType.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
-#include "gradido_blockchain/data/TransactionType.h"
+#include "gradido_blockchain/data/grdt_transaction.h"
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/Context.h"
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/CommunityRootTransactionRole.h"
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/CreationTransactionRole.h"
@@ -25,7 +25,7 @@ using memory::Block, memory::ConstBlockPtr;
 using std::shared_ptr, std::make_shared;
 
 namespace gradido {
-	using data::ConfirmedTransaction, data::TransactionBody, data::TransactionType;
+	using data::ConfirmedTransaction, data::TransactionBody, grdt_transaction;
 	using blockchain::Filter, blockchain::FilterBuilder, blockchain::FilterResult;
 	using blockchain::SearchDirection;
 	using blockchain::TransactionEntry, blockchain::TransactionRelationType;
@@ -51,7 +51,7 @@ namespace gradido {
 				auto publicKey = getPublicKeyForRelation(type, transactionRole);
 				if (publicKey && !publicKey->isEmpty()) {
 					FilterBuilder builder;
-					
+
 					return mBlockchain->findOne(builder
 						.setInvolvedPublicKey(publicKey)
 						.setSearchDirection(SearchDirection::DESC)
@@ -65,7 +65,7 @@ namespace gradido {
 						.build()
 					);
 				}
-				else 
+				else
 				{
 					throw  GradidoUnhandledEnum(
 						"role for this TransactionRelationType is currently not implemented",
@@ -78,7 +78,7 @@ namespace gradido {
 			shared_ptr<AbstractTransactionRole> Context::getRole(shared_ptr<const TransactionBody> transactionBody)
 			{
 				// attention! work only if order in enum don't change
-				static const std::array<std::function<shared_ptr<AbstractTransactionRole>()>, enum_integer(TransactionType::MAX_VALUE)> roleCreators = {
+				static const std::array<std::function<shared_ptr<AbstractTransactionRole>()>, enum_integer(GRDT_TRANSACTION_COUNT)> roleCreators = {
 					[&]() { return std::make_shared<CreationTransactionRole>(transactionBody); },
 					[&]() { return std::make_shared<TransferTransactionRole>(transactionBody); },
 					[&]() { return nullptr; },
@@ -109,8 +109,8 @@ namespace gradido {
 				}
 				else if (TransactionRelationType::SenderPrevious == type) {
 					return role->getSenderPublicKey();
-				} 
-				else if (TransactionRelationType::AufPrevious == type || TransactionRelationType::GmwPrevious == type) 
+				}
+				else if (TransactionRelationType::AufPrevious == type || TransactionRelationType::GmwPrevious == type)
 				{
 					auto firstTransactionEntry = mBlockchain->findOne(Filter::FIRST_TRANSACTION);
 					assert(firstTransactionEntry->getTransactionBody()->isCommunityRoot());
@@ -127,4 +127,3 @@ namespace gradido {
 		}
 	}
 }
-

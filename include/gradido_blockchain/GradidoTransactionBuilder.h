@@ -7,6 +7,7 @@
 #include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/SignatureMap.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
+#include "gradido_blockchain_core/types/address.h"
 
 #include <memory>
 #include <optional>
@@ -23,10 +24,8 @@ namespace memory {
 
 namespace gradido {
 	namespace data {
-		enum class AddressType : uint8_t;
 		class CommunityFriendsUpdate;
 		class CommunityRoot;
-		enum class CrossGroupType: uint8_t;
 		class DurationSeconds;
 		class EncryptedMemo;
 		class GradidoTransaction;
@@ -77,14 +76,14 @@ namespace gradido {
 
 		GradidoTransactionBuilder& setRegisterAddress(
 			memory::ConstBlockPtr userPubkey,
-			data::AddressType type,
+			grdt_address type,
 			memory::ConstBlockPtr nameHash,
 			memory::ConstBlockPtr accountPubkey
 		);
 
 		GradidoTransactionBuilder& setRegisterAddress(
 			const data::PublicKey& userPubkey,
-			data::AddressType type,
+			grdt_address type,
 			const data::GenericHash& nameHash,
 			const data::PublicKey& accountPubkey
 		);

@@ -7,12 +7,12 @@
 #include "gradido_blockchain/blockchain/CompactFilter.h"
 #include "gradido_blockchain/blockchain/SearchDirection.h"
 #include "gradido_blockchain/blockchain/StateChange.h"
-#include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
 #include "gradido_blockchain/lib/TimepointInterval.h"
+#include "gradido_blockchain_core/types/address.h"
 
 #include "rapidjson/document.h"
 
@@ -74,7 +74,7 @@ namespace gradido {
 			std::vector<uint64_t> getBalanceChangingTxs(uint32_t publicKeyIndex) const;
 			std::vector<uint64_t> findTransactionsBalanceChangingForPublicKey(const CompactFilter& filter) const;
 			
-			StateChange<data::AddressType> getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const;
+			StateChange<grdt_address> getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const;
 
 			inline void updateAddressIndex(const TransactionEntry& transactionEntry, const IDictionary<data::PublicKey>& publicKeyDictionary) const;
 
@@ -205,7 +205,7 @@ namespace gradido {
 			size_t yearMonthToIndexUpdateBounds(date::year year, date::month month);
 			void transactionNrUpdateBounds(uint64_t transactionNr);
 			bool addIndicesForTransaction(
-				gradido::data::TransactionType transactionType,
+				grdt_transaction transactionType,
 				uint32_t coinCommunityIdIndex,
 				date::year year,
 				date::month month,
@@ -223,7 +223,7 @@ namespace gradido {
 			// TODO: add cross group type
 			struct TransactionsIndexEntry
 			{
-				gradido::data::TransactionType	transactionType;
+				grdt_transaction	transactionType;
 				uint8_t							addressIndiceCount;
 				// Bitmask for addressIndices, if bit is set, transaction has changed account balance of addressIndex
 				uint8_t							isBalanceChanging;
@@ -236,7 +236,7 @@ namespace gradido {
 
 			struct BalanceTransactionIndexEntry
 			{
-				gradido::data::TransactionType	transactionType;
+				grdt_transaction	transactionType;
 				date::month					confirmedMonth;
 				date::year					confirmedYear;
 				uint32_t						coinCommunityIdIndex;
@@ -247,7 +247,7 @@ namespace gradido {
 
 			// is used like a cache, even from const
 			mutable AddressIndex mAddressIndex;
-			// std::map<uint32_t, data::AddressType> mPublicKeyAddressTypes;
+			// std::map<uint32_t, grdt_address> mPublicKeyAddressTypes;
 			// TODO: check if replace std::list<std::vector> with std::deque make sense (performance side)
 			// TODO: check if flatten maps to std::vector<FlatTransactionsIndexEntry> mEntries[month * years] make sense
 			// std::map<date::year, std::map<date::month, std::list<std::vector<TransactionsIndexEntry>>>> mYearMonthAddressIndexEntries;

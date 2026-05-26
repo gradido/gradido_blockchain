@@ -3,7 +3,7 @@
 
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/memory/Block.h"
-#include "AddressType.h"
+#include "gradido_blockchain_core/types/address.h"
 
 namespace gradido {
 	namespace data {
@@ -11,7 +11,7 @@ namespace gradido {
 		{
 		public:
 			RegisterAddress(
-				AddressType _addressType,
+				grdt_address _addressType,
 				uint32_t _derivationIndex,
 				memory::ConstBlockPtr userPubkeyPtr,
 				memory::ConstBlockPtr nameHashPtr,
@@ -34,14 +34,14 @@ namespace gradido {
 			bool isInvolved(const memory::Block& publicKey) const;
 
 			inline memory::ConstBlockPtr getUserPublicKey() const { return mUserPubkey; }
-			inline AddressType getAddressType() const { return mAddressType; }
+			inline grdt_address getAddressType() const { return mAddressType; }
 			inline memory::ConstBlockPtr getNameHash() const { return mNameHash; }
 			inline memory::ConstBlockPtr getAccountPublicKey() const { return mAccountPubkey; }
 			inline uint32_t getDerivationIndex() const { return mDerivationIndex; }
 
 		protected:
 			memory::ConstBlockPtr	mUserPubkey;
-			AddressType				mAddressType;
+			grdt_address				mAddressType;
 			memory::ConstBlockPtr	mNameHash;
 			memory::ConstBlockPtr   mAccountPubkey;
 			uint32_t				mDerivationIndex;

@@ -34,7 +34,7 @@ namespace gradido {
 				Pagination _pagination = Pagination(0),					
 				std::optional<uint32_t> coinCommunityIdIndex = std::nullopt,
 				TimepointInterval _timepointInterval = TimepointInterval(),
-				data::TransactionType _transactionType = data::TransactionType::NONE,
+				grdt_transaction _transactionType = GRDT_TRANSACTION_NONE,
 				std::function<FilterResult(const TransactionEntry&)> _filterFunction = nullptr
 			);
 			// constructor for calculate creation sum in validate GradidoCreationRole
@@ -65,7 +65,7 @@ namespace gradido {
 			//! search direction and result order, default: DESC
 			SearchDirection searchDirection;
 			//! transaction type
-			data::TransactionType transactionType;
+			grdt_transaction transactionType;
 			//! search result scope 
 			Pagination pagination;				
 			//! for colored coins, default = "" no filtering

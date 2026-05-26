@@ -2,6 +2,7 @@
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain_core/types/ledger_anchor.h"
 
 #include "loguru/loguru.hpp"
 #include "magic_enum/magic_enum.hpp"
@@ -15,7 +16,7 @@ namespace gradido {
 	namespace data {
 
 		LedgerAnchor::LedgerAnchor()
-			: mType(Type::UNSPECIFIED)
+			: mType(GRDT_LEDGER_ANCHOR_UNSPECIFIED)
 		{
 
 		}
@@ -26,36 +27,26 @@ namespace gradido {
 
 		}
 
-		LedgerAnchor::LedgerAnchor(const memory::Block& iotaMessageId)
-			: mType(Type::IOTA_MESSAGE_ID), mValue(iotaMessageId)
-		{
-
-		}
-
 		LedgerAnchor::LedgerAnchor(const TransactionId& hieroTransactionId)
-			: mType(Type::HIERO_TRANSACTION_ID), mValue(adapter::toCompact(hieroTransactionId))
+			: mType(GRDT_LEDGER_ANCHOR_HIERO_TRANSACTION_ID), mValue(adapter::toCompact(hieroTransactionId))
 		{
 
 		}
 
 		LedgerAnchor::LedgerAnchor(const compact::HieroTransactionId& hieroTransactionId)
-			: mType(Type::HIERO_TRANSACTION_ID), mValue(hieroTransactionId)
+			: mType(GRDT_LEDGER_ANCHOR_HIERO_TRANSACTION_ID), mValue(hieroTransactionId)
 		{
 
 		}
 
-		LedgerAnchor::LedgerAnchor(uint64_t transactionId, Type type)
+		LedgerAnchor::LedgerAnchor(uint64_t transactionId, grdt_ledger_anchor type)
 			: mType(type)
 		{
-			if (Type::LEGACY_GRADIDO_DB_TRANSACTION_ID == type ||
-				Type::LEGACY_GRADIDO_DB_COMMUNITY_ID == type ||
-				Type::LEGACY_GRADIDO_DB_USER_ID == type ||
-				Type::LEGACY_GRADIDO_DB_CONTRIBUTION_ID == type ||
-				Type::LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID == type) {
-				mValue = AnchorValue(std::in_place_index<3>, transactionId);
+			if (isLegacyGradidoId()) {
+				mValue = AnchorValue(std::in_place_index<2>, transactionId);
 			}
-			else if (Type::NODE_TRIGGER_TRANSACTION_ID == type) {
-				mValue = AnchorValue(std::in_place_index<4>, transactionId);
+			else if (isNodeTriggeredTransactionId()) {
+				mValue = AnchorValue(std::in_place_index<3>, transactionId);
 			}
 			else {
 				throw GradidoInvalidEnumException(
@@ -72,16 +63,7 @@ namespace gradido {
 
 		std::string LedgerAnchor::toString() const
 		{
-			if (isIotaMessageId()) 
-			{
-				const auto& data = getIotaMessageId();
-				if (data.isEmpty()) {
-					LOG_F(WARNING, "empty iota message id in ledger anchor");
-					return "empty iota message id";
-				}
-				return data.copyAsString();
-			} 
-			else if (isHieroTransactionId()) 
+			if (isHieroTransactionId()) 
 			{
 				const auto& data = getHieroTransactionId();
 				if (data.empty()) {
@@ -92,12 +74,12 @@ namespace gradido {
 			} 
 			else if (isLegacyGradidoDbTransactionId()) 
 			{
-				const auto& data = getLegacyTransactionId();
+				const auto& data = getLegacyGradidoDbId();
 				if (!data) {
 					LOG_F(WARNING, "empty legacy transaction id in ledger anchor");
 					return "empty legacy transaction id";
 				}
-				return to_string(getLegacyTransactionId());
+				return to_string(getLegacyGradidoDbId());
 			} 
 			else if (isNodeTriggeredTransactionId()) 
 			{

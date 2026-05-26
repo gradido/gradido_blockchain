@@ -7,6 +7,7 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/memory/Block.h"
+#include "gradido_blockchain_core/types/address.h"
 
 #include "loguru/loguru.hpp"
 
@@ -18,7 +19,6 @@ using memory::ConstBlockPtr;
 namespace gradido {
 	using data::adapter::toPublicKey;
 	using data::compact::ConfirmedGradidoTx;
-	using data::AddressType;
 	using data::PublicKey;
 
 	namespace blockchain {
@@ -56,10 +56,10 @@ namespace gradido {
 			if (body->isCommunityRoot()) 
 			{
 				auto communityRoot = body->getCommunityRoot().value();
-				if (!addTransactionNrForIndex(communityRoot.aufPublicKeyIndex, txNr, AddressType::COMMUNITY_AUF)) {
+				if (!addTransactionNrForIndex(communityRoot.aufPublicKeyIndex, txNr, GRDT_ADDRESS_COMMUNITY_AUF)) {
 					LOG_F(WARNING, "couldn't add Community Auf Key to Address Indices");
 				}
-				if (!addTransactionNrForIndex(communityRoot.gmwPublicKeyIndex, txNr, AddressType::COMMUNITY_GMW)) {
+				if (!addTransactionNrForIndex(communityRoot.gmwPublicKeyIndex, txNr, GRDT_ADDRESS_COMMUNITY_GMW)) {
 					LOG_F(WARNING, "couldn't add Community GMW Key to Address Indices");
 				}
 			} 
@@ -78,7 +78,7 @@ namespace gradido {
 			else if (body->isDeferredTransfer()) 
 			{
 				const auto& deferredTransfer = body->getDeferredTransfer();
-				if (!addTransactionNrForIndex(getPublicKeyIndex(deferredTransfer->getRecipientPublicKey()), txNr, AddressType::DEFERRED_TRANSFER)) {
+				if (!addTransactionNrForIndex(getPublicKeyIndex(deferredTransfer->getRecipientPublicKey()), txNr, GRDT_ADDRESS_DEFERRED_TRANSFER)) {
 					LOG_F(WARNING, "couldn't add deferred address Key to Address Indices");
 				}
 			}
@@ -93,10 +93,10 @@ namespace gradido {
 			uint64_t txNr = compactTx.txNr;
 			if (compactTx.isCommunityRoot()) {
 				const auto& communityRoot = compactTx.specific.communityRoot;
-				if (!addTransactionNrForIndex(communityRoot.aufPublicKeyIndex, txNr, AddressType::COMMUNITY_AUF)) {
+				if (!addTransactionNrForIndex(communityRoot.aufPublicKeyIndex, txNr, GRDT_ADDRESS_COMMUNITY_AUF)) {
 					LOG_F(WARNING, "couldn't add Community Auf Key to Address Indices");
 				}
-				if (!addTransactionNrForIndex(communityRoot.gmwPublicKeyIndex, txNr, AddressType::COMMUNITY_GMW)) {
+				if (!addTransactionNrForIndex(communityRoot.gmwPublicKeyIndex, txNr, GRDT_ADDRESS_COMMUNITY_GMW)) {
 					LOG_F(WARNING, "couldn't add Community GMW Key to Address Indices");
 				}
 			}
@@ -114,7 +114,7 @@ namespace gradido {
 			}
 			else if (compactTx.isDeferredTransfer()) {
 				const auto& deferredTransfer = compactTx.specific.deferredTransfer;
-				if (!addTransactionNrForIndex(deferredTransfer.recipientPublicKeyIndex, txNr, AddressType::DEFERRED_TRANSFER)) {
+				if (!addTransactionNrForIndex(deferredTransfer.recipientPublicKeyIndex, txNr, GRDT_ADDRESS_DEFERRED_TRANSFER)) {
 					LOG_F(WARNING, "couldn't add deferred address Key to Address Indices");
 				}
 			}
@@ -124,7 +124,7 @@ namespace gradido {
 			}
 		}
 
-		bool AddressIndex::addTransactionNrForIndex(uint32_t publicKeyIndex, uint64_t transactionNr, data::AddressType addressType)
+		bool AddressIndex::addTransactionNrForIndex(uint32_t publicKeyIndex, uint64_t transactionNr, grdt_address addressType)
 		{
 			auto it = mIndexTransactionNrs.find(publicKeyIndex);
 			if (it == mIndexTransactionNrs.end()) {
@@ -173,14 +173,14 @@ namespace gradido {
 			return it->second.transactionNrs;
 		}
 
-		AddressType AddressIndex::getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const
+		grdt_address AddressIndex::getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const
 		{
 			if (publicKeyIndex.communityIdIndex != mCommunityIdIndex) {
 				throw GradidoNodeInvalidDataException("dont't call AddressIndex::getAddressType with foreign publicKey");
 			}
 			auto it = mIndexTransactionNrs.find(publicKeyIndex.publicKeyIndex);
 			if (it == mIndexTransactionNrs.end()) {
-				return AddressType::NONE;
+				return GRDT_ADDRESS_NONE;
 			}
 			return it->second.addressType;
 		}

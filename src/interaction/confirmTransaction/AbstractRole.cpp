@@ -1,7 +1,6 @@
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/CompactFilter.h"
-#include "gradido_blockchain/data/BalanceDerivationType.h"
 #include "gradido_blockchain/data/compact/AccountBalance.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
@@ -11,6 +10,7 @@
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/Context.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain_core/types/balance_derivation.h"
 
 #include "magic_enum/magic_enum.hpp"
 
@@ -35,7 +35,7 @@ namespace gradido {
                 const data::LedgerAnchor& ledgerAnchor,
                 Timestamp confirmedAt,
                 std::shared_ptr<blockchain::Abstract> blockchain
-            ): mGradidoTransaction(gradidoTransaction), mLedgerAnchor(ledgerAnchor), mConfirmedAt(confirmedAt), mBlockchain(blockchain), mBalanceDerivationType(BalanceDerivationType::NODE)
+            ): mGradidoTransaction(gradidoTransaction), mLedgerAnchor(ledgerAnchor), mConfirmedAt(confirmedAt), mBlockchain(blockchain), mBalanceDerivationType(GRDT_BALANCE_DERIVATION_NODE)
             {
                 if (!gradidoTransaction) {
                     throw GradidoNullPointerException("missing transaction", "GradidoTransactionPtr", __FUNCTION__);
@@ -47,7 +47,7 @@ namespace gradido {
                 std::shared_ptr<const ConfirmedTransaction> lastConfirmedTransaction
             ) {
                 std::vector<AccountBalance> accountBalances;
-                if (BalanceDerivationType::NODE == mBalanceDerivationType) {
+                if (GRDT_BALANCE_DERIVATION_NODE == mBalanceDerivationType) {
                     accountBalances = calculateAccountBalances(id - 1);
                 }
                 else {
@@ -69,7 +69,7 @@ namespace gradido {
             void AbstractRole::setAccountBalances(std::vector<data::AccountBalance> accountBalances)
             {
                 mAccountBalances = accountBalances;
-                mBalanceDerivationType = BalanceDerivationType::EXTERN;
+                mBalanceDerivationType = GRDT_BALANCE_DERIVATION_EXTERN;
             }
 
             AccountBalance AbstractRole::calculateAccountBalance(

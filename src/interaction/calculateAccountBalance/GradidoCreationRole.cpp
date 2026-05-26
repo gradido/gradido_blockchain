@@ -17,7 +17,7 @@ namespace gradido {
 					return getTransferAmount().getAmount();
 				}
 				auto firstTransactionEntry = mBlockchain->findOne(Filter::FIRST_TRANSACTION);
-				assert(firstTransactionEntry->getTransactionType() == TransactionType::COMMUNITY_ROOT);
+				assert(firstTransactionEntry->getTransactionType() == GRDT_TRANSACTION_COMMUNITY_ROOT);
 				auto communityRoot = firstTransactionEntry->getTransactionBody()->getCommunityRoot().value();
 				assert(accountPublicKey->size() == 32);
 

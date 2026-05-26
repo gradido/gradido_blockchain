@@ -4,7 +4,7 @@
 namespace gradido {
 	namespace data {
 		RegisterAddress::RegisterAddress(
-			AddressType _addressType,
+			grdt_address _addressType,
 			uint32_t _derivationIndex,
 			memory::ConstBlockPtr userPubkeyPtr,
 			memory::ConstBlockPtr nameHashPtr,

@@ -10,7 +10,6 @@
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/Timestamp.h"
-#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/AbstractRole.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/GradidoCreationRole.h"
@@ -21,6 +20,7 @@
 #include "gradido_blockchain/interaction/calculateAccountBalance/RegisterAddressRole.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/lib/TimepointInterval.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 #include "magic_enum/magic_enum.hpp"
 
@@ -128,7 +128,7 @@ namespace gradido {
 			std::shared_ptr<AbstractRole> Context::getRole(std::shared_ptr<const data::TransactionBody> body, Timepoint confirmedAt) const
 			{
 				// attention! work only if order in enum don't change
-				static const std::array<std::function<std::shared_ptr<AbstractRole>()>, enum_integer(TransactionType::MAX_VALUE)> roleCreators = {
+				static const std::array<std::function<std::shared_ptr<AbstractRole>()>, enum_integer(GRDT_TRANSACTION_COUNT)> roleCreators = {
 					[&]() { return make_shared<GradidoCreationRole>(body, mBlockchain); },
 					[&]() { return make_shared<GradidoTransferRole>(body); },
 					[&]() { return nullptr; },

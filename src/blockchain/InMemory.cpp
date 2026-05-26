@@ -1,6 +1,3 @@
-#include "gradido_blockchain_core/data/wire/confirmed_transaction.h"
-#include "gradido_blockchain_core/data/wire/transaction_body.h"
-#include "gradido_blockchain_core/memory.h"
 #include "gradido_blockchain/blockchain/CompactFilter.h"
 #include "gradido_blockchain/blockchain/InMemory.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
@@ -20,6 +17,11 @@
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain_core/data/wire/confirmed_transaction.h"
+#include "gradido_blockchain_core/data/wire/transaction_body.h"
+#include "gradido_blockchain_core/memory.h"
+#include "gradido_blockchain_core/types/address.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 #include "loguru/loguru.hpp"
 #include "magic_enum/magic_enum.hpp"
@@ -38,7 +40,7 @@ namespace gradido {
 
 	using data::adapter::toPublicKey;
 	using data::compact::ConfirmedGradidoTx, data::compact::ConfirmedTxs, data::compact::ConstConfirmedTxPtr;
-	using data::AddressType, data::ConstGradidoTransactionPtr, data::PublicKey, data::Timestamp, data::LedgerAnchor, data::AccountBalance;
+	using data::ConstGradidoTransactionPtr, data::PublicKey, data::Timestamp, data::LedgerAnchor, data::AccountBalance;
 	using namespace interaction;
 
 	namespace blockchain {
@@ -337,14 +339,14 @@ namespace gradido {
 			return Abstract::findOne(filter);
 		}
 
-		data::AddressType InMemory::getAddressType(const Filter& filter/* = Filter::ALL_TRANSACTIONS*/) const
+		grdt_address InMemory::getAddressType(const Filter& filter/* = Filter::ALL_TRANSACTIONS*/) const
 		{
 			if (!filter.involvedPublicKey || filter.involvedPublicKey->isEmpty()) {
 				throw GradidoNodeInvalidDataException("missing public key, please use filter with involvedPublicKey set");
 			}
 			auto publicKeyIndexOptional = mPublicKeyDirectory.getIndexForData(toPublicKey(filter.involvedPublicKey));
 			if (!publicKeyIndexOptional) {
-				return AddressType::NONE;
+				return GRDT_ADDRESS_NONE;
 			}
 			uint32_t publicKeyUint32 = (uint32_t)publicKeyIndexOptional;
 			if (publicKeyUint32 != publicKeyIndexOptional) {

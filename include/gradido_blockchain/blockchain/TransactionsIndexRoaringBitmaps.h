@@ -6,10 +6,11 @@
 #include "gradido_blockchain/blockchain/FilterResult.h"
 #include "gradido_blockchain/blockchain/StateChange.h"
 #include "gradido_blockchain/data/ByteArray.h"
-#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
 #include "gradido_blockchain/lib/TimepointInterval.h"
+#include "gradido_blockchain_core/types/address.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 #include <date/date.h>
 #include <roaring/roaring64map.hh>
@@ -42,7 +43,7 @@ namespace gradido {
       void addTransactionIndices(const data::compact::ConfirmedGradidoTx& tx, const IDictionary<data::PublicKey>& publicKeyDict);
       std::vector<uint64_t> findTransactions(const CompactFilter& filter) const;
       size_t countTransactions(const CompactFilter& filter) const;
-      StateChange<data::AddressType> getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const;
+      StateChange<grdt_address> getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const;
 
       size_t yearMonthToIndex(date::year_month_day ymd) const;
       std::pair<uint64_t, uint64_t> getTxRangeOfInterval(date::year_month_day startDate, date::year_month_day endDate) const;
@@ -86,8 +87,8 @@ namespace gradido {
         data::compact::PublicKeyIndexEqual
       > mInvolvedPublicKeys;
 
-      // store txs per TransactionType
-      std::array<roaring::Roaring64Map, (size_t)data::TransactionType::MAX_VALUE> mTxPerType;
+      // store txs per grdt_transaction
+      std::array<roaring::Roaring64Map, (size_t)GRDT_TRANSACTION_COUNT> mTxPerType;
       // store txs with other coin community id as the blockchain in which the txs are 
       std::unordered_map<uint32_t, roaring::Roaring64Map> mOtherCoinCommunityTx;
     };

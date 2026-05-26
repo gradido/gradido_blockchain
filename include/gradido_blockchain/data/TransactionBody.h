@@ -3,7 +3,6 @@
 
 #include "CommunityFriendsUpdate.h"
 #include "CommunityRoot.h"
-#include "CrossGroupType.h"
 #include "EncryptedMemo.h"
 #include "GradidoCreation.h"
 #include "GradidoDeferredTransfer.h"
@@ -11,10 +10,12 @@
 #include "GradidoTimeoutDeferredTransfer.h"
 #include "RegisterAddress.h"
 #include "Timestamp.h"
-#include "TransactionType.h"
 
 #include "compact/CommunityRootTx.h"
 #include "compact/RegisterAddressTx.h"
+
+#include "gradido_blockchain_core/types/cross_group.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 #include <optional>
 #include <variant>
@@ -38,28 +39,28 @@ namespace gradido {
 			friend GradidoTransactionBuilder;
 			friend interaction::deserialize::TransactionBodyRole;
 		public:
-			TransactionBody() : mType(CrossGroupType::LOCAL), mTransactionType(TransactionType::NONE), mCommunityIdIndex(0) {}
+			TransactionBody() : mType(GRDT_CROSS_GROUP_LOCAL), mTransactionType(GRDT_TRANSACTION_NONE), mCommunityIdIndex(0) {}
 			TransactionBody(
 				Timepoint createdAt,
 				uint32_t communityIdIndex,
-				CrossGroupType type = CrossGroupType::LOCAL,
+				grdt_cross_group type = GRDT_CROSS_GROUP_LOCAL,
 				std::optional<uint32_t> otherCommunityIdIndex = std::nullopt
-			) : mCreatedAt(createdAt), mType(type), mTransactionType(TransactionType::NONE), mCommunityIdIndex(communityIdIndex), mOtherCommunityIdIndex(otherCommunityIdIndex) {};
+			) : mCreatedAt(createdAt), mType(type), mTransactionType(GRDT_TRANSACTION_NONE), mCommunityIdIndex(communityIdIndex), mOtherCommunityIdIndex(otherCommunityIdIndex) {};
 
 			~TransactionBody() {}
 
 			static std::shared_ptr<const TransactionBody> fromGrdw(grdw_transaction_body* grdw_body, uint32_t communityIdIndex);
 			void toGrdw(grd_memory* alloc, grdw_transaction_body* grdw_body) const;
 
-			inline bool isTransfer() const { return TransactionType::TRANSFER == mTransactionType; }
-			inline bool isCreation() const { return TransactionType::CREATION == mTransactionType; }
-			inline bool isCommunityFriendsUpdate() const { return TransactionType::COMMUNITY_FRIENDS_UPDATE == mTransactionType; }
-			inline bool isRegisterAddress() const { return TransactionType::REGISTER_ADDRESS == mTransactionType; }
-			inline bool isDeferredTransfer() const { return TransactionType::DEFERRED_TRANSFER == mTransactionType; }
-			inline bool isCommunityRoot() const { return TransactionType::COMMUNITY_ROOT == mTransactionType; }
-			inline bool isRedeemDeferredTransfer() const { return TransactionType::REDEEM_DEFERRED_TRANSFER == mTransactionType; }
-			inline bool isTimeoutDeferredTransfer() const { return TransactionType::TIMEOUT_DEFERRED_TRANSFER == mTransactionType; }
-			inline TransactionType getTransactionType() const { return mTransactionType; }
+			inline bool isTransfer() const { return GRDT_TRANSACTION_TRANSFER == mTransactionType; }
+			inline bool isCreation() const { return GRDT_TRANSACTION_CREATION == mTransactionType; }
+			inline bool isCommunityFriendsUpdate() const { return GRDT_TRANSACTION_COMMUNITY_FRIENDS_UPDATE == mTransactionType; }
+			inline bool isRegisterAddress() const { return GRDT_TRANSACTION_REGISTER_ADDRESS == mTransactionType; }
+			inline bool isDeferredTransfer() const { return GRDT_TRANSACTION_DEFERRED_TRANSFER == mTransactionType; }
+			inline bool isCommunityRoot() const { return GRDT_TRANSACTION_COMMUNITY_ROOT == mTransactionType; }
+			inline bool isRedeemDeferredTransfer() const { return GRDT_TRANSACTION_REDEEM_DEFERRED_TRANSFER == mTransactionType; }
+			inline bool isTimeoutDeferredTransfer() const { return GRDT_TRANSACTION_TIMEOUT_DEFERRED_TRANSFER == mTransactionType; }
+			inline grdt_transaction getTransactionType() const { return mTransactionType; }
 
 			bool isPairing(const TransactionBody& other) const;
 			[[deprecated("Replaced by isInvolved with compact::PublicKeyIndex")]]
@@ -75,7 +76,7 @@ namespace gradido {
 
 			inline const std::vector<EncryptedMemo>& getMemos() const { return mMemos; }
 			inline Timestamp getCreatedAt() const { return mCreatedAt; }
-			inline CrossGroupType getType() const { return mType; }
+			inline grdt_cross_group getType() const { return mType; }
 			inline uint32_t getCommunityIdIndex() const { return mCommunityIdIndex; }
 			inline std::optional<uint32_t> getOtherCommunityIdIndex() const { return mOtherCommunityIdIndex; }
 
@@ -95,8 +96,8 @@ namespace gradido {
 
 			std::vector<EncryptedMemo>				mMemos;
 			Timestamp													mCreatedAt;
-			CrossGroupType										mType;
-			TransactionType										mTransactionType;
+			grdt_cross_group									mType;
+			grdt_transaction									mTransactionType;
 			uint32_t													mCommunityIdIndex;
 			std::optional<uint32_t> 					mOtherCommunityIdIndex;			
 			using Specific = std::variant<

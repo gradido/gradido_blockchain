@@ -17,6 +17,7 @@
 #include "gradido_blockchain/interaction/createTransactionByEvent/Context.h"
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/Context.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
+#include "gradido_blockchain_core/types/ledger_anchor.h"
 
 #include "magic_enum/magic_enum.hpp"
 #include "loguru/loguru.hpp"
@@ -39,7 +40,7 @@ namespace gradido {
 			) const {
 				// attention! work only if order in enum don't change
 				// todo: check if it is possible to use a template class for that
-				const std::array<std::function<std::shared_ptr<AbstractRole>()>, enum_integer(TransactionType::MAX_VALUE)> roleCreators = {
+				const std::array<std::function<std::shared_ptr<AbstractRole>()>, enum_integer(GRDT_TRANSACTION_COUNT)> roleCreators = {
 					[&]() { return nullptr; },
 					[&]() { return std::make_shared<CreationTransactionRole>(gradidoTransaction, ledgerAnchor, confirmedAt, mBlockchain); },
 					[&]() { return std::make_shared<TransferTransactionRole>(gradidoTransaction, ledgerAnchor, confirmedAt, mBlockchain); },
@@ -139,7 +140,7 @@ namespace gradido {
 					createTransactionByEvent::Context createTransactionByEvent(mBlockchain);
 					if (!mBlockchain->createAndAddConfirmedTransaction(
 						createTransactionByEvent.run(transactionTriggerEvent),
-						LedgerAnchor(transactionTriggerEvent->getLinkedTransactionId(), LedgerAnchor::Type::NODE_TRIGGER_TRANSACTION_ID),
+						LedgerAnchor(transactionTriggerEvent->getLinkedTransactionId(), GRDT_LEDGER_ANCHOR_NODE_TRIGGER_TRANSACTION_ID),
 						transactionTriggerEvent->getTargetDate()
 					)
 						) {
