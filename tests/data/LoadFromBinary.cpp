@@ -401,7 +401,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			decodeResult = grdw_transaction_body_decode(&body, &tx.transaction.body_bytes, &alloc);
 			ASSERT_EQ(decodeResult, GRD_SUCCESS);
 
-			if (GRDW_LEDGER_ANCHOR_TYPE_NODE_TRIGGER_TRANSACTION_ID != tx.ledger_anchor.type) {
+			if (GRDT_LEDGER_ANCHOR_NODE_TRIGGER_TRANSACTION_ID != tx.ledger_anchor.type) {
 				// com.transactions.push(ConfirmedTransaction::fromGrdw(&tx, i+1));
 				
 				/*auto compact = make_shared<ConfirmedGradidoTx>(ConfirmedGradidoTx::fromGrdwConfirmedTransaction(&tx, i+1));

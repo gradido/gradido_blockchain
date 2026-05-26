@@ -47,7 +47,7 @@ namespace gradido::data {
       auto txCold = make_unique<ConfirmedGradidoTxCold>();
 
       // pairing tx
-      if (tx->pairing_ledger_anchor.type != GRDW_LEDGER_ANCHOR_TYPE_UNSPECIFIED) {
+      if (tx->pairing_ledger_anchor.type != GRDT_LEDGER_ANCHOR_UNSPECIFIED) {
         txCold->pairingLedgerAnchor = adapter::fromGrdw(tx->pairing_ledger_anchor);
       }
       // signatures
