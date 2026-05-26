@@ -144,7 +144,7 @@ namespace gradido {
 				auto gdd = accountBalance.getBalance().getGradidoCent();
 				crypto_generichash_update(&state, (const unsigned char*)&gdd, sizeof(gdd));
 			}
-			crypto_generichash_update(&state, (const unsigned char*)&mBalanceDerivationType, sizeof(grdt_balance_derivation));
+			crypto_generichash_update(&state, (const unsigned char*)&mBalanceDerivationType, 1);
 			crypto_generichash_final(&state, hash->data(), hash->size());
 			return hash;
 		}
