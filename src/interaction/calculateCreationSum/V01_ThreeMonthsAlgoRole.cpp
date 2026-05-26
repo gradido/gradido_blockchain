@@ -4,8 +4,8 @@
 #include "gradido_blockchain/blockchain/FilterResult.h"
 #include "gradido_blockchain/blockchain/PublicKeySearchType.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
-#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/types.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 #include <chrono>
 #include <cassert>
@@ -17,7 +17,6 @@ namespace gradido {
 	using blockchain::CompactFilter, blockchain::FilterResult, blockchain::PublicKeySearchType;
 	using blockchain::Abstract;
 	using data::compact::ConfirmedGradidoTx;
-	using data::TransactionType;
 
 	namespace interaction {
 		namespace calculateCreationSum {
@@ -35,7 +34,7 @@ namespace gradido {
 				filter.publicKeyIndex = mPublicKey;
 				filter.publicKeySearchType = PublicKeySearchType::BalanceChangingPublicKey;
 				filter.timepointInterval = { beforeReceivedYM, dateYM };
-				filter.transactionType = TransactionType::CREATION;
+				filter.transactionType = GRDT_TRANSACTION_CREATION;
 				
 				blockchain.findAll(filter,
 					[&sum, dateYM](const ConfirmedGradidoTx& tx) -> FilterResult

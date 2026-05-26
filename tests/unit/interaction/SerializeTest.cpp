@@ -3,7 +3,6 @@
 #include "../serializedTransactions.h"
 #include "const.h"
 #include "gradido_blockchain/AppContext.h"
-#include "gradido_blockchain/data/BalanceDerivationType.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/data/TransactionTriggerEvent.h"
@@ -15,6 +14,8 @@
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain_core/types/balance_derivation.h"
+#include "gradido_blockchain_core/types/cross_group.h"
 
 using namespace gradido;
 using namespace data;
@@ -70,7 +71,7 @@ TEST(SerializeTest, CommunityRootBody)
 	auto transaction = builder.build();
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body->isCommunityRoot());
-	ASSERT_EQ(body->getType(), data::CrossGroupType::LOCAL);
+	ASSERT_EQ(body->getType(), GRDT_CROSS_GROUP_LOCAL);
 	
 	serialize::Context c(*transaction);
 	auto serialized = c.run();
@@ -86,7 +87,7 @@ TEST(SerializeTest, RegisterAddressBody) {
 		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
-			AddressType::COMMUNITY_HUMAN,
+			GRDT_ADDRESS_COMMUNITY_HUMAN,
 			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
 		)
@@ -247,7 +248,7 @@ TEST(SerializeTest, CompleteConfirmedTransaction) {
 			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), communityIdIndex},
 			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483), communityIdIndex}
 		},
-		BalanceDerivationType::EXTERN
+		GRDT_BALANCE_DERIVATION_EXTERN
 	);
 	serialize::Context c(confirmedTransaction);
 	auto serialized = c.run();
@@ -286,7 +287,7 @@ TEST(SerializeTest, CrossGroupTransactions) {
 			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), communityIdIndex},
 			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483), communityIdIndex}
 		},
-		BalanceDerivationType::EXTERN
+		GRDT_BALANCE_DERIVATION_EXTERN
 	);
 	serialize::Context cOutbound(confirmedTransactionOutbound);
 	auto serializedOutbound = cOutbound.run();
@@ -312,7 +313,7 @@ TEST(SerializeTest, CrossGroupTransactions) {
 			{ g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000), communityIdIndex},
 			{ g_KeyPairs[5]->getPublicKey(), GradidoUnit::fromGradidoCent(8997483), communityIdIndex}
 		},
-		BalanceDerivationType::EXTERN
+		GRDT_BALANCE_DERIVATION_EXTERN
 	);
 	serialize::Context cInbound(confirmedTransactionInbound);
 	auto serializedInbound = cInbound.run();

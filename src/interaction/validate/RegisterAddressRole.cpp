@@ -4,16 +4,16 @@
 #include "gradido_blockchain/blockchain/SearchDirection.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/data/adapter/publicKey.h"
-#include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/compact/RegisterAddressTx.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/RegisterAddress.h"
 #include "gradido_blockchain/data/SignatureMap.h"
-#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/interaction/validate/RegisterAddressRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/memory/Block.h"
+#include "gradido_blockchain_core/types/address.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 #include "date/date.h"
 #include "magic_enum/magic_enum.hpp"
@@ -33,7 +33,7 @@ namespace gradido {
 	using blockchain::Filter, blockchain::FilterBuilder, blockchain::SearchDirection, blockchain::TransactionEntry;
 	using data::adapter::toConstBlockPtr;
 	using data::compact::PublicKeyIndex;
-	using data::AddressType, data::RegisterAddress, data::SignatureMap, data::TransactionType;
+	using data::RegisterAddress, data::SignatureMap;
 	namespace interaction {
 		namespace validate {
 
@@ -58,20 +58,20 @@ namespace gradido {
 				auto accountPubkeyIndex = mRegisterAddress.accountPublicKeyIndex;
 				auto userPubkeyIndex = mRegisterAddress.userPublicKeyIndex;
 
-				if (AddressType::COMMUNITY_PROJECT == addressType ||
-					AddressType::COMMUNITY_HUMAN == addressType) {
+				if (GRDT_ADDRESS_COMMUNITY_PROJECT == addressType ||
+					GRDT_ADDRESS_COMMUNITY_HUMAN == addressType) {
 				}
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
-					if (AddressType::COMMUNITY_GMW == addressType ||
-						AddressType::COMMUNITY_AUF == addressType ||
-						AddressType::NONE == addressType) 
+					if (GRDT_ADDRESS_COMMUNITY_GMW == addressType ||
+						GRDT_ADDRESS_COMMUNITY_AUF == addressType ||
+						GRDT_ADDRESS_NONE == addressType) 
 					{
 						optional<uint32_t> communityIdIndex = std::nullopt;
 						if (c.senderBlockchain) {
 							communityIdIndex = c.senderBlockchain->getCommunityIdIndex();
 						}
-						throw WrongAddressTypeException(
+						throw Wronggrdt_addressException(
 							"register address transaction not allowed with community auf or gmw account or None",
 							addressType,
 							userPubkeyIndex,
@@ -103,7 +103,7 @@ namespace gradido {
 							__FUNCTION__
 						);
 					}
-					if (AddressType::SUBACCOUNT == addressType) {
+					if (GRDT_ADDRESS_SUBACCOUNT == addressType) {
 						transactionWithSameAddress = c.senderBlockchain->findOne(
 							filterBuilder
 							.setInvolvedPublicKey(toConstBlockPtr({ .communityIdIndex = mCommunityIdIndex, .publicKeyIndex = userPubkeyIndex }))
@@ -124,9 +124,9 @@ namespace gradido {
 						Filter f;
 						f.involvedPublicKey = toConstBlockPtr({ .communityIdIndex = mCommunityIdIndex, .publicKeyIndex = userPubkeyIndex });
 						f.maxTransactionNr = c.senderPreviousConfirmedTransaction->getId();
-						f.transactionType = TransactionType::REGISTER_ADDRESS;
+						f.transactionType = GRDT_TRANSACTION_REGISTER_ADDRESS;
 						auto addressType = c.senderBlockchain->getAddressType(f);
-						if (AddressType::NONE != addressType) {
+						if (GRDT_ADDRESS_NONE != addressType) {
 							throw AddressAlreadyExistException(
 								"cannot register address because it already exist",
 								to_string(userPubkeyIndex),

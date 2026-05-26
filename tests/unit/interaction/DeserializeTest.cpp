@@ -74,7 +74,7 @@ TEST(DeserializeTest, CommunityRootBody)
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
-	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
+	EXPECT_EQ(body->getType(), GRDT_CROSS_GROUP_LOCAL);
 
 	EXPECT_FALSE(body->isCommunityFriendsUpdate());
 	ASSERT_TRUE(body->isCommunityRoot());
@@ -109,7 +109,7 @@ TEST(DeserializeTest, RegisterAddressBody) {
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
-	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
+	EXPECT_EQ(body->getType(), GRDT_CROSS_GROUP_LOCAL);
 
 	EXPECT_FALSE(body->isCommunityFriendsUpdate());
 	EXPECT_FALSE(body->isCommunityRoot());
@@ -119,7 +119,7 @@ TEST(DeserializeTest, RegisterAddressBody) {
 	EXPECT_FALSE(body->isTransfer());
 
 	auto registerAddress = body->getRegisterAddress();
-	EXPECT_EQ(registerAddress->addressType, AddressType::COMMUNITY_HUMAN);
+	EXPECT_EQ(registerAddress->addressType, GRDT_ADDRESS_COMMUNITY_HUMAN);
 	EXPECT_EQ(registerAddress->derivationIndex, 1);
 	
 	const auto& dict = g_appContext->getCommunityContext(communityIdIndex).getBlockchain()->getPublicKeyDictionary();
@@ -147,7 +147,7 @@ TEST(DeserializeTest, GradidoCreationBody) {
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
-	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
+	EXPECT_EQ(body->getType(), GRDT_CROSS_GROUP_LOCAL);
 	auto& memos = body->getMemos();
 	ASSERT_GE(memos.size(), 1);
 	EXPECT_EQ(memos[0].getMemo().copyAsString(), std::string("Deine erste Schoepfung ;)"));
@@ -182,7 +182,7 @@ TEST(DeserializeTest, GradidoTransferBody) {
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
-	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
+	EXPECT_EQ(body->getType(), GRDT_CROSS_GROUP_LOCAL);
 	auto& memos = body->getMemos();
 	ASSERT_GE(memos.size(), 1);
 	EXPECT_EQ(memos[0].getMemo().copyAsString(), std::string("Ich teile mit dir"));
@@ -216,7 +216,7 @@ TEST(DeserializeTest, GradidoDeferredTransferBody) {
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
-	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
+	EXPECT_EQ(body->getType(), GRDT_CROSS_GROUP_LOCAL);
 	auto& memos = body->getMemos();
 	ASSERT_GE(memos.size(), 1);
 	EXPECT_EQ(memos[0].getMemo().copyAsString(), std::string("Link zum einloesen"));
@@ -251,7 +251,7 @@ TEST(DeserializeTest, CommunityFriendsUpdateBody) {
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
-	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
+	EXPECT_EQ(body->getType(), GRDT_CROSS_GROUP_LOCAL);
 
 	ASSERT_TRUE(body->isCommunityFriendsUpdate());
 	EXPECT_FALSE(body->isCommunityRoot());

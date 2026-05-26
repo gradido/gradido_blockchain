@@ -1,6 +1,5 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/Filter.h"
-#include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/GradidoTransfer.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
@@ -19,12 +18,12 @@ using std::string_view;
 
 namespace gradido {
 	using blockchain::Filter;
-	using data::AddressType, data::ConfirmedTransaction, data::GradidoTransfer;
+	using data::ConfirmedTransaction, data::GradidoTransfer;
 	namespace interaction {
 		namespace validate {
 
 			GradidoTransferRole::GradidoTransferRole(shared_ptr<const GradidoTransfer> gradidoTransfer)
-				: mGradidoTransfer(gradidoTransfer), mCrossGroupType(data::CrossGroupType::LOCAL)
+				: mGradidoTransfer(gradidoTransfer), mCrossGroupType(GRDT_CROSS_GROUP_LOCAL)
 			{
 				assert(gradidoTransfer);
 				// prepare for signature check
@@ -101,19 +100,19 @@ namespace gradido {
 				filter.maxTransactionNr = c.senderPreviousConfirmedTransaction->getId();
 
 				// check if sender address was registered
-				auto senderAddressType = c.senderBlockchain->getAddressType(filter);
-				if (AddressType::NONE == senderAddressType) {
-					throw WrongAddressTypeException(
+				auto sendergrdt_address = c.senderBlockchain->getAddressType(filter);
+				if (GRDT_ADDRESS_NONE == sendergrdt_address) {
+					throw Wronggrdt_addressException(
 						"sender address not registered",
-						senderAddressType,
+						sendergrdt_address,
 						mGradidoTransfer->getSender().getPublicKey(),
 						c.senderBlockchain->getCommunityIdIndex()
 					);
 				}
-				if (AddressType::DEFERRED_TRANSFER == senderAddressType) {
-					throw WrongAddressTypeException(
+				if (GRDT_ADDRESS_DEFERRED_TRANSFER == sendergrdt_address) {
+					throw Wronggrdt_addressException(
 						"sender address is deferred transfer, please use redeemDeferredTransferTransaction for that",
-						senderAddressType,
+						sendergrdt_address,
 						mGradidoTransfer->getSender().getPublicKey(),
 						c.senderBlockchain->getCommunityIdIndex()
 					);
@@ -122,19 +121,19 @@ namespace gradido {
 				// check if recipient address was registered
 				filter.involvedPublicKey = mGradidoTransfer->getRecipient();
 				filter.maxTransactionNr = c.recipientPreviousConfirmedTransaction->getId();
-				auto recipientAddressType = c.recipientBlockchain->getAddressType(filter);
-				if (AddressType::NONE == recipientAddressType) {
-					throw WrongAddressTypeException(
+				auto recipientgrdt_address = c.recipientBlockchain->getAddressType(filter);
+				if (GRDT_ADDRESS_NONE == recipientgrdt_address) {
+					throw Wronggrdt_addressException(
 						"recipient address not registered", 
-						recipientAddressType, 
+						recipientgrdt_address, 
 						mGradidoTransfer->getRecipient(),
 						c.recipientBlockchain->getCommunityIdIndex()
 					);
 				}
-				if (AddressType::DEFERRED_TRANSFER == recipientAddressType) {
-					throw WrongAddressTypeException(
+				if (GRDT_ADDRESS_DEFERRED_TRANSFER == recipientgrdt_address) {
+					throw Wronggrdt_addressException(
 						"recipient cannot be a deferred transfer address",
-						recipientAddressType,
+						recipientgrdt_address,
 						mGradidoTransfer->getRecipient(),
 						c.recipientBlockchain->getCommunityIdIndex()
 					);

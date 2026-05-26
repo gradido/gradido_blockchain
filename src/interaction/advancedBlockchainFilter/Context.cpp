@@ -5,7 +5,7 @@
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/blockchain/TransactionRelationType.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
-#include "gradido_blockchain/data/TransactionType.h"
+#include "gradido_blockchain/data/grdt_transaction.h"
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/Context.h"
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/CommunityRootTransactionRole.h"
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/CreationTransactionRole.h"
@@ -25,7 +25,7 @@ using memory::Block, memory::ConstBlockPtr;
 using std::shared_ptr, std::make_shared;
 
 namespace gradido {
-	using data::ConfirmedTransaction, data::TransactionBody, data::TransactionType;
+	using data::ConfirmedTransaction, data::TransactionBody, grdt_transaction;
 	using blockchain::Filter, blockchain::FilterBuilder, blockchain::FilterResult;
 	using blockchain::SearchDirection;
 	using blockchain::TransactionEntry, blockchain::TransactionRelationType;
@@ -78,7 +78,7 @@ namespace gradido {
 			shared_ptr<AbstractTransactionRole> Context::getRole(shared_ptr<const TransactionBody> transactionBody)
 			{
 				// attention! work only if order in enum don't change
-				static const std::array<std::function<shared_ptr<AbstractTransactionRole>()>, enum_integer(TransactionType::MAX_VALUE)> roleCreators = {
+				static const std::array<std::function<shared_ptr<AbstractTransactionRole>()>, enum_integer(GRDT_TRANSACTION_COUNT)> roleCreators = {
 					[&]() { return std::make_shared<CreationTransactionRole>(transactionBody); },
 					[&]() { return std::make_shared<TransferTransactionRole>(transactionBody); },
 					[&]() { return nullptr; },
@@ -89,7 +89,7 @@ namespace gradido {
 					[&]() { return std::make_shared<TimeoutDeferredTransferTransactionRole>(transactionBody, mBlockchain); }
 				};
 
-				auto type = transactionBody->getTransactionType();
+				auto type = transactionBody->getgrdt_transaction();
 				auto result = roleCreators[enum_integer(type)]();
 
 				if (!result) {

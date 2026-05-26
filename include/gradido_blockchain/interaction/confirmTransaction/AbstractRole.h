@@ -3,7 +3,6 @@
 
 #include "gradido_blockchain/blockchain/TransactionRelationType.h"
 #include "gradido_blockchain/data/AccountBalance.h"
-#include "gradido_blockchain/data/BalanceDerivationType.h"
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/data/TransferAmount.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
@@ -11,6 +10,7 @@
 #include "gradido_blockchain/interaction/validate/Type.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/types.h"
+#include "gradido_blockchain_core/types/balance_derivation.h"
 
 namespace gradido {
     namespace blockchain {
@@ -64,7 +64,7 @@ namespace gradido {
                 //! \param accountBalances move
                 void setAccountBalances(std::vector<data::AccountBalance> accountBalances);
 
-                inline bool isExternBalanceDerivationType() const { return data::BalanceDerivationType::EXTERN == mBalanceDerivationType; }
+                inline bool isExternBalanceDerivation() const { return GRDT_BALANCE_DERIVATION_EXTERN == mBalanceDerivationType; }
 
             protected:
                 data::AccountBalance calculateAccountBalance(
@@ -97,7 +97,7 @@ namespace gradido {
                 data::LedgerAnchor mLedgerAnchor;
                 data::Timestamp mConfirmedAt;
                 std::shared_ptr<blockchain::Abstract> mBlockchain;
-                data::BalanceDerivationType mBalanceDerivationType;
+                grdt_balance_derivation mBalanceDerivationType;
                 std::vector<data::AccountBalance> mAccountBalances;
             };
         }

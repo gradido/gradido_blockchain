@@ -1,6 +1,5 @@
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/adapter/uuid.h"
-#include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
@@ -9,6 +8,9 @@
 #include "gradido_blockchain/serialization/toJson.h"
 #include "gradido_blockchain/serialization/toJsonString.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain_core/types/address.h"
+#include "gradido_blockchain_core/types/memo_key.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 #include "loguru/loguru.hpp"
 #include "magic_enum/magic_enum.hpp"
@@ -25,14 +27,13 @@ using std::string, std::to_string;
 using std::vector;
 
 namespace gradido {	
-	using data::AddressType;
 	using data::adapter::uuidToString;
 	using data::compact::PublicKeyIndex;
 
 	namespace interaction {
 		namespace validate {
 			TransactionValidationException::TransactionValidationException(const char* what) noexcept
-				: GradidoBlockchainException (what), mType(data::TransactionType::NONE)
+				: GradidoBlockchainException (what), mType(GRDT_TRANSACTION_NONE)
 			{
 
 			}
@@ -46,7 +47,7 @@ namespace gradido {
 			{
 				const auto& memos = transactionBody.getMemos();
 				for (const auto& memo : memos) {
-					if (memo.getKeyType() == data::MemoKeyType::PLAIN) {
+					if (GRDT_MEMO_KEY_PLAIN == memo.getKeyType()) {
 						mTransactionMemo = memo.getMemo().copyAsString();
 						break;
 					}
@@ -314,8 +315,8 @@ namespace gradido {
 
 
 			// *********************************** Address Already Exist **********************************************************
-			AddressAlreadyExistException::AddressAlreadyExistException(const char* what, const std::string& addressHex, data::AddressType addressType) noexcept
-				: TransactionValidationException(what), mAddressHex(addressHex), mAddressType(addressType)
+			AddressAlreadyExistException::AddressAlreadyExistException(const char* what, const std::string& addressHex, grdt_address addressType) noexcept
+				: TransactionValidationException(what), mAddressHex(addressHex), mgrdt_address(addressType)
 			{
 
 			}
@@ -323,7 +324,7 @@ namespace gradido {
 			std::string AddressAlreadyExistException::getFullString() const noexcept
 			{
 				std::string resultString;
-				auto addressTypeString = enum_name(mAddressType);
+				auto addressTypeString = enum_name(mgrdt_address);
 				size_t resultStringSize = strlen(what()) + addressTypeString.size() + mAddressHex.size() + 9 + 16 + 2;
 				resultString.reserve(resultStringSize);
 				resultString = what();
@@ -339,7 +340,7 @@ namespace gradido {
 			{
 				Value detailsObjs(kObjectType);
 				detailsObjs.AddMember("what", Value(what(), alloc), alloc);
-				auto addressTypeName = enum_name(mAddressType);
+				auto addressTypeName = enum_name(mgrdt_address);
 				detailsObjs.AddMember("addressType", Value(addressTypeName.data(), addressTypeName.size(), alloc), alloc);
 				detailsObjs.AddMember("address", Value(mAddressHex.data(), alloc), alloc);
 				return std::move(detailsObjs);
@@ -388,7 +389,7 @@ namespace gradido {
 			}
 
 			// **************************** Wrong Address Type Exception ***********************************
-			WrongAddressTypeException::WrongAddressTypeException(const char* what, AddressType type, ConstBlockPtr pubkey, optional<uint32_t> communityIdIndex) noexcept
+			Wronggrdt_addressException::Wronggrdt_addressException(const char* what, grdt_address type, ConstBlockPtr pubkey, optional<uint32_t> communityIdIndex) noexcept
 				: TransactionValidationException(what), mType(type)
 			{
 				if (pubkey) {
@@ -408,7 +409,7 @@ namespace gradido {
 				}
 			}
 
-			WrongAddressTypeException::WrongAddressTypeException(const char* what, AddressType type, PublicKeyIndex pubkeyIndex, optional<uint32_t> communityIdIndex) noexcept
+			Wronggrdt_addressException::Wronggrdt_addressException(const char* what, grdt_address type, PublicKeyIndex pubkeyIndex, optional<uint32_t> communityIdIndex) noexcept
 				: TransactionValidationException(what), mType(type)
 			{
 				mPublicKeyHex = pubkeyIndex.toString();
@@ -423,7 +424,7 @@ namespace gradido {
 				}
 			}
 
-			WrongAddressTypeException::WrongAddressTypeException(const char* what, data::AddressType type, uint32_t pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept
+			Wronggrdt_addressException::Wronggrdt_addressException(const char* what, grdt_address type, uint32_t pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept
 				: TransactionValidationException(what), mType(type)
 			{
 				mPublicKeyHex = to_string(pubkeyIndex);
@@ -439,7 +440,7 @@ namespace gradido {
 				}
 			}
 
-			std::string WrongAddressTypeException::getFullString() const noexcept
+			std::string Wronggrdt_addressException::getFullString() const noexcept
 			{
 				std::string result;
 				auto addressTypeName = enum_name(mType);
@@ -456,7 +457,7 @@ namespace gradido {
 				return result;
 			}
 
-			Value WrongAddressTypeException::getDetails(Document::AllocatorType& alloc) const
+			Value Wronggrdt_addressException::getDetails(Document::AllocatorType& alloc) const
 			{
 				Value jsonDetails(kObjectType);
 				jsonDetails.AddMember("what", Value(what(), alloc), alloc);

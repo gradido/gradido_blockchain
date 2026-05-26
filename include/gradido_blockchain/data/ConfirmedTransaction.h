@@ -3,10 +3,10 @@
 
 #include "GradidoTransaction.h"
 #include "AccountBalance.h"
-#include "BalanceDerivationType.h"
 #include "LedgerAnchor.h"
 #include "gradido_blockchain/crypto/SignatureOctet.h"
 #include "gradido_blockchain/data/ByteArray.h"
+#include "gradido_blockchain_core/types/balance_derivation.h"
 
 #include <optional>
 
@@ -31,7 +31,7 @@ namespace gradido {
 				Timestamp confirmedAt,
 				const LedgerAnchor& ledgerAnchor,
 				std::vector<AccountBalance> accountBalances,
-				BalanceDerivationType balanceDerivationType,
+				grdt_balance_derivation balanceDerivationType,
 				std::shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction = nullptr
 			);
 			//! copy running hash
@@ -42,7 +42,7 @@ namespace gradido {
 				memory::ConstBlockPtr runningHash,
 				const LedgerAnchor& ledgerAnchor,
 				std::vector<AccountBalance> accountBalances,
-				BalanceDerivationType balanceDerivationType
+				grdt_balance_derivation balanceDerivationType
 			);
 
 			~ConfirmedTransaction() {}
@@ -69,9 +69,9 @@ namespace gradido {
 				std::optional<uint32_t> coinCommunityIdIndex,
 				Timepoint endDate = std::chrono::system_clock::now()
 			) const;
-			BalanceDerivationType getBalanceDerivationType() const { return mBalanceDerivationType; }
-			bool isBalanceNodeComputed() const { return BalanceDerivationType::NODE == mBalanceDerivationType; }
-			bool isBalanceExternComputed() const { return BalanceDerivationType::EXTERN == mBalanceDerivationType; }
+			grdt_balance_derivation getgrdt_balance_derivation() const { return mBalanceDerivationType; }
+			bool isBalanceNodeComputed() const { return GRDT_BALANCE_DERIVATION_NODE == mBalanceDerivationType; }
+			bool isBalanceExternComputed() const { return GRDT_BALANCE_DERIVATION_EXTERN == mBalanceDerivationType; }
 			[[deprecated("Replaced by isInvolved with compact::PublicKeyIndex")]]
 			bool isInvolved(const memory::Block& publicKey) const;
 			bool isInvolved(const compact::PublicKeyIndex publicKeyIndex) const;
@@ -92,7 +92,7 @@ namespace gradido {
 			memory::ConstBlockPtr 						mRunningHash;
 			LedgerAnchor								mLedgerAnchor;
 			std::vector<AccountBalance>					mAccountBalances;
-			BalanceDerivationType						mBalanceDerivationType;
+			grdt_balance_derivation						mBalanceDerivationType;
 
 		private:
 			// for faster public key comparisation

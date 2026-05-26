@@ -12,7 +12,6 @@
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
-#include "gradido_blockchain/data/CrossGroupType.h"
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/data/hiero/AccountId.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
@@ -23,6 +22,7 @@
 #include "gradido_blockchain/interaction/deserialize/Type.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/serialization/toJsonString.h"
+#include "gradido_blockchain_core/types/cross_group.h"
 #include "LoadFromBinary.h"
 
 #include <atomic>
@@ -51,7 +51,6 @@ using gradido::blockchain::Filter, gradido::blockchain::InMemoryProvider, gradid
 using gradido::data::adapter::uuidToString;
 using gradido::data::GradidoTransaction, gradido::data::ConstGradidoTransactionPtr;
 using gradido::data::ConfirmedTransaction, gradido::data::ConstConfirmedTransactionPtr;
-using gradido::data::CrossGroupType;
 using gradido::data::LedgerAnchor;
 using gradido::data::Timestamp;
 using serialization::toJsonString;
@@ -441,7 +440,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			else if (confirmedAt == oldest && i != next) {
 				auto bodyThis = communities[i].transactions.front()->getGradidoTransaction()->getTransactionBody();
 				auto bodyNext = communities[next].transactions.front()->getGradidoTransaction()->getTransactionBody();
-				if (bodyThis->getType() == CrossGroupType::OUTBOUND && bodyNext->getType() == CrossGroupType::INBOUND) {
+				if (bodyThis->getType() == GRDT_CROSS_GROUP_OUTBOUND && bodyNext->getType() == GRDT_CROSS_GROUP_INBOUND) {
 					next = i;
 				}
 			}
@@ -451,7 +450,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 		}
 		const auto& confirmedTx = communities[next].transactions.front();
 		auto tx = communities[next].transactions.front()->getGradidoTransaction();
-		if (tx->getTransactionBody()->getType() == CrossGroupType::INBOUND) {
+		if (tx->getTransactionBody()->getType() == GRDT_CROSS_GROUP_INBOUND) {
 			int zahl = 0;
 		}
 		ASSERT_NO_THROW(

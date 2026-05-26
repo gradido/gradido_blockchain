@@ -3,12 +3,12 @@
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/TransactionBody.h"
-#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/memory/Block.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 #include <mutex>
 
@@ -19,7 +19,6 @@ using memory::ConstBlockPtr;
 namespace gradido {
 	using data::ConstConfirmedTransactionPtr;
 	using data::ConstTransactionBodyPtr;
-	using data::TransactionType;
 
 	namespace blockchain {
 
@@ -71,7 +70,7 @@ namespace gradido {
 			uint64_t transactionNr,
 			date::month month,
 			date::year year,
-			TransactionType transactionType,
+			grdt_transaction transactionType,
 			optional<uint32_t> coinCommunityIdIndex,
 			uint32_t blockchainCommunityIdIndex
 		) : 

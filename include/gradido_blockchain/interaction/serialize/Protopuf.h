@@ -5,13 +5,9 @@
 #include <bit>
 #include "protopuf/message.h"
 
-#include "gradido_blockchain/data/AddressType.h"
-#include "gradido_blockchain/data/BalanceDerivationType.h"
-#include "gradido_blockchain/data/CrossGroupType.h"
-#include "gradido_blockchain/data/LedgerAnchor.h"
-#include "gradido_blockchain/data/MemoKeyType.h"
 #include "gradido_blockchain/data/TransactionTriggerEventType.h"
 #include "gradido_blockchain/memory/VectorCacheAllocator.h"
+#include "gradido_blockchain_core/types/ledger_anchor.h"
 
 using namespace pp;
 using namespace memory;
@@ -62,17 +58,12 @@ namespace gradido {
 
             // ledger_metadata.proto
             using LedgerAnchorMessage = message<
-                enum_field<"type", 1, data::LedgerAnchor::Type>,
+                enum_field<"type", 1, grdt_ledger_anchor>,
                 // oneof isn't supported from protopuf
                 // oneof anchor_id
-                bytes_field<"iota_message_id", 2>,
+                // bytes_field<"iota_message_id", 2>,
                 message_field<"hiero_transaction_id", 3, HieroTransactionIdMessage>,
-                uint64_field<"legacy_transaction_id", 4>,
-                uint64_field<"node_trigger_transaction_id", 5>,
-                uint64_field<"legacy_community_id", 6>,
-                uint64_field<"legacy_user_id", 7>,
-                uint64_field<"legacy_contribution_id", 8>,
-                uint64_field<"legacy_transaction_link_id", 9>
+                uint64_field<"id", 4>
             >;
 
             // -- helper classes

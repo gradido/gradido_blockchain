@@ -3,11 +3,11 @@
 
 #include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
-#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/lib/DictionaryInterface.h"
 #include "gradido_blockchain/lib/TimepointInterval.h"
 #include "gradido_blockchain/types.h"
+#include "gradido_blockchain_core/types/transaction.h"
 #include "Pagination.h"
 #include "SearchDirection.h"
 #include "Filter.h"
@@ -29,7 +29,7 @@ namespace gradido {
 			SearchDirection searchDirection;
 
 			//! transaction type
-			data::TransactionType transactionType;
+			grdt_transaction transactionType;
 
 			//! type of data publicKeyIndex contains
 			PublicKeySearchType publicKeySearchType;

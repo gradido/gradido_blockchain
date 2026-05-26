@@ -4,12 +4,12 @@
 #include "gradido_blockchain/blockchain/SearchDirection.h"
 #include "gradido_blockchain/blockchain/TransactionsIndex.h"
 #include "gradido_blockchain/blockchain/TransactionsIndexRoaringBitmaps.h"
-#include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
-#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/memory/Block.h"
+#include "gradido_blockchain_core/types/address.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 #include <date/date.h>
 #include <loguru/loguru.hpp>
@@ -30,7 +30,6 @@ using std::array, std::pair, std::unordered_map, std::nullopt, std::optional, st
 
 namespace gradido {
   using data::compact::ConfirmedGradidoTx, data::compact::PublicKeyIndex, data::compact::PublicKeyIndexHash, data::compact::PublicKeyIndexEqual;
-  using data::AddressType, data::TransactionType;
   using data::PublicKey;
 
   namespace blockchain {
@@ -182,13 +181,13 @@ namespace gradido {
       return result->cardinality();
     }
 
-    StateChange<AddressType> TransactionsIndexRoaringBitmaps::getAddressType(PublicKeyIndex publicKeyIndex) const
+    StateChange<grdt_address> TransactionsIndexRoaringBitmaps::getAddressType(PublicKeyIndex publicKeyIndex) const
     {
       auto addressType = mAddressIndex.getAddressType(publicKeyIndex);
-      if (AddressType::NONE == addressType) {
-        return AddressType::NONE;
+      if (GRDT_ADDRESS_NONE == addressType) {
+        return GRDT_ADDRESS_NONE;
       }
-      auto txs = mAddressIndex.getAddressTypeChangingTransactions(publicKeyIndex);
+      auto txs = mAddressIndex.getgrdt_addressChangingTransactions(publicKeyIndex);
       if (txs.empty()) {
         return addressType;
       }
@@ -419,7 +418,7 @@ namespace gradido {
         }
       }
       
-      if (TransactionType::NONE != filter.transactionType) {
+      if (GRDT_TRANSACTION_NONE != filter.transactionType) {
         if (!mTxPerType[(unsigned)filter.transactionType].isEmpty()) {
           roaringMaps[roaringMapLastCursor++] = &mTxPerType[(unsigned)filter.transactionType];
         }

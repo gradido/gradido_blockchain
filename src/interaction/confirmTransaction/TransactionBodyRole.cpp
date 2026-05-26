@@ -4,6 +4,7 @@
 #include "gradido_blockchain/blockchain/FilterBuilder.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/interaction/confirmTransaction/TransactionBodyRole.h"
+#include "gradido_blockchain_core/types/cross_group.h"
 
 using namespace std;
 
@@ -27,7 +28,7 @@ namespace gradido {
             validate::Type TransactionBodyRole::getValidationType() const
             {
                 auto type = validate::Type::SINGLE | validate::Type::ACCOUNT;
-                if (mBody->getType() != data::CrossGroupType::LOCAL) {
+                if (mBody->getType() != GRDT_CROSS_GROUP_LOCAL) {
                     type = type | validate::Type::PAIRED;
                 }
                 return type;

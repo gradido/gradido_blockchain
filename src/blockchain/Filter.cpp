@@ -1,7 +1,7 @@
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
-#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/memory/Block.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 #include <optional>
 #include <functional>
@@ -12,14 +12,13 @@ using std::optional, std::function;
 using std::shared_ptr;
 
 namespace gradido {
-	using data::TransactionType;
 	namespace blockchain {
 
 		Filter::Filter()
 			: minTransactionNr(0),
 			maxTransactionNr(0),
 			searchDirection(SearchDirection::DESC),
-			transactionType(data::TransactionType::NONE),
+			transactionType(GRDT_TRANSACTION_NONE),
 			filterFunction(nullptr)			
 		{
 		}
@@ -28,7 +27,7 @@ namespace gradido {
 			: minTransactionNr(0),
 			maxTransactionNr(0),
 			searchDirection(SearchDirection::DESC),
-			transactionType(TransactionType::NONE),
+			transactionType(GRDT_TRANSACTION_NONE),
 			filterFunction(_filterFunction)			
 		{
 		}
@@ -41,7 +40,7 @@ namespace gradido {
 			Pagination _pagination /*= Pagination(0)*/,
 			optional<uint32_t> _coinCommunityIdIndex /*= std::nullopt() */,
 			TimepointInterval _timepointInterval/* = MonthYearInterval()*/,
-			TransactionType _transactionType /* = data::TransactionType::NONE*/,
+			grdt_transaction _transactionType /* = data::GRDT_TRANSACTION_NONE*/,
 			function<FilterResult(const TransactionEntry&)> _filterFunction/* = nullptr*/
 		) :
 			minTransactionNr(_minTransactionNr),
@@ -68,7 +67,7 @@ namespace gradido {
 			involvedPublicKey(_involvedPublicKey),
 			searchDirection(SearchDirection::DESC),
 			timepointInterval(_timepointInterval),
-			transactionType(data::TransactionType::NONE),
+			transactionType(GRDT_TRANSACTION_NONE),
 			filterFunction(_filterFunction)
 		{
 		}
@@ -86,7 +85,7 @@ namespace gradido {
 			involvedPublicKey(_involvedPublicKey),
 			searchDirection(_searchDirection),
 			coinCommunityIdIndex(_coinCommunityIdIndex),
-			transactionType(data::TransactionType::NONE),
+			transactionType(GRDT_TRANSACTION_NONE),
 			filterFunction(_filterFunction)
 		{
 		}
@@ -137,7 +136,7 @@ namespace gradido {
 				}					
 			}
 			if ((type & FilterCriteria::TRANSACTION_TYPE) == FilterCriteria::TRANSACTION_TYPE) {
-				if (transactionType != data::TransactionType::NONE) {
+				if (transactionType != GRDT_TRANSACTION_NONE) {
 					if (entry->getTransactionType() != transactionType) {
 						return FilterResult::DISMISS;
 					}

@@ -3,11 +3,9 @@
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 #include "gradido_blockchain/data/adapter/byteArray.h"
 #include "gradido_blockchain/data/adapter/publicKey.h"
-#include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/CommunityFriendsUpdate.h"
 #include "gradido_blockchain/data/compact/CommunityRootTx.h"
 #include "gradido_blockchain/data/compact/RegisterAddressTx.h"
-#include "gradido_blockchain/data/CrossGroupType.h"
 #include "gradido_blockchain/data/DurationSeconds.h"
 #include "gradido_blockchain/data/EncryptedMemo.h"
 #include "gradido_blockchain/data/GradidoCreation.h"
@@ -20,12 +18,14 @@
 #include "gradido_blockchain/data/SignaturePair.h"
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/data/TransactionBody.h"
-#include "gradido_blockchain/data/TransactionType.h"
 #include "gradido_blockchain/data/TransferAmount.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/memory/Block.h"
+#include "gradido_blockchain_core/types/address.h"
+#include "gradido_blockchain_core/types/cross_group.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 #include "magic_enum/magic_enum.hpp"
 #include <chrono>
@@ -47,11 +47,9 @@ using memory::Block;
 using memory::ConstBlockPtr;
 
 namespace gradido {
-	using data::AddressType;
 	using data::DurationSeconds;
 	using data::CommunityFriendsUpdate;
 	using data::compact::CommunityRootTx;
-	using data::CrossGroupType;
 	using data::EncryptedMemo;
 	using data::GenericHash;
 	using data::GradidoCreation;
@@ -66,7 +64,6 @@ namespace gradido {
 	using data::SignaturePair;
 	using data::Timestamp;
 	using data::TransactionBody;
-	using data::TransactionType;
 	using data::TransferAmount;
 	using data::Uuid;
 	using data::adapter::toByteArray, data::adapter::toPublicKeyIndex;
@@ -75,7 +72,7 @@ namespace gradido {
 	GradidoTransactionBuilder::GradidoTransactionBuilder()
 		: mState(BuildingState::BUILDING_BODY),
 		mBody(make_unique<TransactionBody>(
-			system_clock::now(), 0, CrossGroupType::LOCAL
+			system_clock::now(), 0, GRDT_CROSS_GROUP_LOCAL
 		)),
 		mSpecificTransactionChoosen(false)
 	{
@@ -89,7 +86,7 @@ namespace gradido {
 	void GradidoTransactionBuilder::reset() 
 	{
 		mState = BuildingState::BUILDING_BODY;
-		mBody = make_unique<data::TransactionBody>(system_clock::now(), 0, CrossGroupType::LOCAL);
+		mBody = make_unique<data::TransactionBody>(system_clock::now(), 0, GRDT_CROSS_GROUP_LOCAL);
 		mSenderCommunityIdIndex = nullopt;
 		mRecipientCommunityIdIndex = nullopt;
 		mBodyByteSignatureMaps.clear();
@@ -160,7 +157,7 @@ namespace gradido {
 		if (mSpecificTransactionChoosen) {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
-		mBody->mTransactionType = TransactionType::DEFERRED_TRANSFER;
+		mBody->mTransactionType = GRDT_TRANSACTION_DEFERRED_TRANSFER;
 		mBody->mSpecific = std::move(deferredTransfer);
 
 		mSpecificTransactionChoosen = true;
@@ -182,7 +179,7 @@ namespace gradido {
 		if (mSpecificTransactionChoosen) {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
-		mBody->mTransactionType = TransactionType::COMMUNITY_FRIENDS_UPDATE;
+		mBody->mTransactionType = GRDT_TRANSACTION_COMMUNITY_FRIENDS_UPDATE;
 		mBody->mSpecific = std::move(communityFriendsUpdate);
 
 		mSpecificTransactionChoosen = true;
@@ -191,7 +188,7 @@ namespace gradido {
 
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setRegisterAddress(
 		ConstBlockPtr userPubkey,
-		AddressType type,
+		grdt_address type,
 		ConstBlockPtr nameHash/* = nullptr*/,
 		ConstBlockPtr accountPubkey/* = nullptr*/
 	)
@@ -204,7 +201,7 @@ namespace gradido {
 			throw GradidoTransactionBuilderException("sender community id index missing, please call setSenderCommunity before setRegisterAddress");
 		}
 		auto comIdIdx = mSenderCommunityIdIndex.value();
-		mBody->mTransactionType = TransactionType::REGISTER_ADDRESS;
+		mBody->mTransactionType = GRDT_TRANSACTION_REGISTER_ADDRESS;
 		RegisterAddressTx registerAddress{};
 		registerAddress.addressType = type;
 		registerAddress.derivationIndex = 1;
@@ -220,7 +217,7 @@ namespace gradido {
 
 	GradidoTransactionBuilder& GradidoTransactionBuilder::setRegisterAddress(
 		const PublicKey& userPubkey,
-		data::AddressType type,
+		grdt_address type,
 		const GenericHash& nameHash,
 		const PublicKey& accountPubkey
 	)
@@ -233,7 +230,7 @@ namespace gradido {
 			throw GradidoTransactionBuilderException("sender community id index missing, please call setSenderCommunity before setRegisterAddress");
 		}
 		auto comIdIdx = mSenderCommunityIdIndex.value();
-		mBody->mTransactionType = TransactionType::REGISTER_ADDRESS;
+		mBody->mTransactionType = GRDT_TRANSACTION_REGISTER_ADDRESS;
 		RegisterAddressTx registerAddress{};
 		registerAddress.addressType = type;
 		registerAddress.derivationIndex = 1;
@@ -264,7 +261,7 @@ namespace gradido {
 		if (mSpecificTransactionChoosen) {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
-		mBody->mTransactionType = TransactionType::CREATION;
+		mBody->mTransactionType = GRDT_TRANSACTION_CREATION;
 		mBody->mSpecific = std::move(creation);
 
 		mSpecificTransactionChoosen = true;
@@ -292,7 +289,7 @@ namespace gradido {
 		if (mSpecificTransactionChoosen) {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
-		mBody->mTransactionType = TransactionType::TRANSFER;
+		mBody->mTransactionType = GRDT_TRANSACTION_TRANSFER;
 		mBody->mSpecific = std::move(transfer);
 
 		mSpecificTransactionChoosen = true;
@@ -314,7 +311,7 @@ namespace gradido {
 		}
 		auto comIdIdx = mSenderCommunityIdIndex.value();
 		
-		mBody->mTransactionType = TransactionType::COMMUNITY_ROOT;
+		mBody->mTransactionType = GRDT_TRANSACTION_COMMUNITY_ROOT;
 
 		CommunityRootTx communityRoot;
 		communityRoot.publicKeyIndex = toPublicKeyIndex(pubkey, comIdIdx).publicKeyIndex;
@@ -340,7 +337,7 @@ namespace gradido {
 		}
 		auto comIdIdx = mSenderCommunityIdIndex.value();
 
-		mBody->mTransactionType = TransactionType::COMMUNITY_ROOT;
+		mBody->mTransactionType = GRDT_TRANSACTION_COMMUNITY_ROOT;
 
 		CommunityRootTx communityRoot{};
 		communityRoot.publicKeyIndex = toPublicKeyIndex(pubkey, comIdIdx).publicKeyIndex;
@@ -369,7 +366,7 @@ namespace gradido {
 		if (mSpecificTransactionChoosen) {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
-		mBody->mTransactionType = TransactionType::REDEEM_DEFERRED_TRANSFER;
+		mBody->mTransactionType = GRDT_TRANSACTION_REDEEM_DEFERRED_TRANSFER;
 		mBody->mSpecific = std::move(redeemDeferredTransfer);
 
 		mSpecificTransactionChoosen = true;
@@ -392,7 +389,7 @@ namespace gradido {
 		if (mSpecificTransactionChoosen) {
 			throw GradidoTransactionBuilderException("specific transaction already choosen, only one is possible!");
 		}
-		mBody->mTransactionType = TransactionType::TIMEOUT_DEFERRED_TRANSFER;
+		mBody->mTransactionType = GRDT_TRANSACTION_TIMEOUT_DEFERRED_TRANSFER;
 		mBody->mSpecific = std::move(timeoutDeferredTransfer);
 		// special case, because TimeoutDeferredTransfer didn't need signatures
 		switchBuildState();
@@ -416,7 +413,7 @@ namespace gradido {
 	{
 		checkBuildState(BuildingState::BUILDING_BODY);
 		mBody = std::move(body);
-		if (mBody->getTransactionType() >= TransactionType::MAX_VALUE) {
+		if (mBody->getTransactionType() >= GRDT_TRANSACTION_COUNT) {
 			throw GradidoTransactionBuilderException("missing transaction type in TransactionBody");
 		}
 		return *this;
@@ -522,13 +519,13 @@ namespace gradido {
 		if (isCrossCommunityTransaction()) {
 			mState = BuildingState::CROSS_COMMUNITY;
 			// prepare outbound body
-			mBody->mType = CrossGroupType::OUTBOUND;
+			mBody->mType = GRDT_CROSS_GROUP_OUTBOUND;
 			mBody->mCommunityIdIndex = mSenderCommunityIdIndex.value();
 			mBody->mOtherCommunityIdIndex = mRecipientCommunityIdIndex;
 			mBodyByteSignatureMaps[0].bodyBytes = serializer.run();
 
 			// prepare inbound body
-			mBody->mType = CrossGroupType::INBOUND;
+			mBody->mType = GRDT_CROSS_GROUP_INBOUND;
 			mBody->mCommunityIdIndex = mRecipientCommunityIdIndex.value();
 			mBody->mOtherCommunityIdIndex = mSenderCommunityIdIndex;
 			mBodyByteSignatureMaps.push_back(BodyBytesSignatureMap());
@@ -536,7 +533,7 @@ namespace gradido {
 		}
 		else {
 			mState = BuildingState::LOCAL;
-			mBody->mType = CrossGroupType::LOCAL;
+			mBody->mType = GRDT_CROSS_GROUP_LOCAL;
 			if (mBody->isCreation()) {
 				if (!mRecipientCommunityIdIndex.has_value()) {
 					throw GradidoTransactionBuilderException("missing recipient community id index for creation transaction");

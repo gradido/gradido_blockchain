@@ -21,7 +21,7 @@ TEST(ToJsonTest, Filter) {
 	filter.pagination = Pagination{1, 2};
 	filter.coinCommunityIdIndex = 0;
 	filter.timepointInterval = TimepointInterval(startDate, endDate);
-	filter.transactionType = TransactionType::COMMUNITY_ROOT;
+	filter.transactionType = GRDT_TRANSACTION_COMMUNITY_ROOT;
 	filter.filterFunction = [](const TransactionEntry&) -> FilterResult { 
 		return FilterResult::STOP;
 	};	
@@ -63,6 +63,6 @@ TEST(ToJsonTest, Filter) {
 	EXPECT_EQ(0, json["coinCommunityIdIndex"].GetInt());
 	// EXPECT_EQ(startDate.time_since_epoch().count(), json["timepointInterval"]["start"]["value"].GetInt64());
 	// EXPECT_EQ(endDate.time_since_epoch().count() + 1, json["timepointInterval"]["end"]["value"].GetInt64());
-	EXPECT_STREQ("COMMUNITY_ROOT", json["transactionType"].GetString());
+	EXPECT_STREQ("GRDT_TRANSACTION_COMMUNITY_ROOT", json["transactionType"].GetString());
 	EXPECT_TRUE(json["filterFunction"].GetBool());
 }

@@ -4,11 +4,12 @@
 #include "gradido_blockchain/crypto/SealedBoxes.h"
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/lib/minizLib.h"
+#include "gradido_blockchain_core/types/memo_key.h"
 
 namespace gradido {
     namespace data {
         EncryptedMemo::EncryptedMemo(const std::string& memo, const AuthenticatedEncryption& communityKeyPair)
-         : mKeyType(MemoKeyType::COMMUNITY_SECRET), mMemo(0)
+         : mKeyType(GRDT_MEMO_KEY_COMMUNITY_SECRET), mMemo(0)
         {
             auto compressedMemo = compress(memo);
             mMemo = SealedBoxes::encrypt(communityKeyPair, compressedMemo.copyAsString());
@@ -18,7 +19,7 @@ namespace gradido {
             const std::string& memo,
             const AuthenticatedEncryption& firstKeyPair,
             const AuthenticatedEncryption& secondKeyPair
-        ) : mKeyType(MemoKeyType::SHARED_SECRET), mMemo(0)
+        ) : mKeyType(GRDT_MEMO_KEY_SHARED_SECRET), mMemo(0)
         {
             auto compressedMemo = compress(memo);
             if (firstKeyPair.hasPrivateKey()) {

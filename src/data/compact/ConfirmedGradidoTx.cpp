@@ -1,7 +1,6 @@
 #include "gradido_blockchain_core/data/wire/confirmed_transaction.h"
 #include "gradido_blockchain_core/data/wire/transaction_body.h"
 #include "gradido_blockchain/AppContext.h"
-#include "gradido_blockchain/data/adapter/types.h"
 #include "gradido_blockchain/data/adapter/timestamp.h"
 #include "gradido_blockchain/data/compact/AccountBalance.h"
 #include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
@@ -28,7 +27,7 @@ namespace gradido::data::compact {
 
   ConfirmedGradidoTx::ConfirmedGradidoTx()
     : txNr(0), confirmedAtSeconds(0), confirmedAtNanos(0), txCommunityIdIndex(0), coinCommunityIdIndex(0),
-    crossGroupType(CrossGroupType::LOCAL), transactionType(TransactionType::NONE), balanceDerivationType(BalanceDerivationType::UNSPECIFIED),
+    crossGroupType(GRDT_CROSS_GROUP_LOCAL), transactionType(GRDT_TRANSACTION_NONE), balanceDerivationType(GRDT_BALANCE_DERIVATION_UNSPECIFIED),
     accountBalanceCount(0),
     coldData(nullptr)
   {
@@ -78,7 +77,7 @@ namespace gradido::data::compact {
 
     // neuter the source
     other.accountBalanceCount = 0;
-    other.transactionType = TransactionType::NONE;
+    other.transactionType = GRDT_TRANSACTION_NONE;
   }
   // move
   ConfirmedGradidoTx& ConfirmedGradidoTx::operator=(ConfirmedGradidoTx&& other) noexcept
@@ -99,7 +98,7 @@ namespace gradido::data::compact {
 
     // neuter the source
     other.accountBalanceCount = 0;
-    other.transactionType = TransactionType::NONE;
+    other.transactionType = GRDT_TRANSACTION_NONE;
     return *this;
   }
 
@@ -139,7 +138,7 @@ namespace gradido::data::compact {
     confirmedTx.confirmedAtNanos = tx->confirmed_at.nanos;
     confirmedTx.txCommunityIdIndex = blockchainCommunityIdIndex;
     confirmedTx.coinCommunityIdIndex = blockchainCommunityIdIndex;
-    confirmedTx.balanceDerivationType = adapter::fromGrdw(tx->balance_derivation);
+    confirmedTx.balanceDerivationType = tx->balance_derivation;
     if (tx->account_balances_count > 3) {
       throw GradidoNotImplementedException("more than 3 account balances, currently not supported from compact::ConfirmedGradidoTx");
     }
@@ -187,7 +186,7 @@ namespace gradido::data::compact {
     confirmedTx.confirmedAtNanos = 0;
     confirmedTx.txCommunityIdIndex = blockchainCommunityIdIndex;
     confirmedTx.coinCommunityIdIndex = blockchainCommunityIdIndex;
-    confirmedTx.balanceDerivationType = BalanceDerivationType::UNSPECIFIED;
+    confirmedTx.balanceDerivationType = GRDT_BALANCE_DERIVATION_UNSPECIFIED;
     
     if (loadColdData) {
       confirmedTx.coldData = ConfirmedGradidoTxCold::fromGrdw(tx);
@@ -209,22 +208,22 @@ namespace gradido::data::compact {
 
   void ConfirmedGradidoTx::fillFromGrdwTransactionBody(const grdw_transaction_body* body, AppContext& appContext)
   {
-    crossGroupType = adapter::fromGrdw(body->type);
-    transactionType = adapter::fromGrdw(body->transaction_type);
+    crossGroupType = body->type;
+    transactionType = body->transaction_type;
     
     uint32_t senderCommunityIdIndex = txCommunityIdIndex;
     uint32_t recipientCommunityIdIndex = txCommunityIdIndex;
-    if (crossGroupType != CrossGroupType::LOCAL) 
+    if (crossGroupType != GRDT_CROSS_GROUP_LOCAL) 
     {
       if (!body->other_community_uuid) {
         throw GradidoNodeInvalidDataException("missing other community uuid on cross group transaction");
       }
       Uuid otherUuid(body->other_community_uuid);
       switch (crossGroupType) {
-      case CrossGroupType::OUTBOUND:
+      case GRDT_CROSS_GROUP_OUTBOUND:
         recipientCommunityIdIndex = appContext.getOrAddCommunityIdIndex(otherUuid);
         break;
-      case CrossGroupType::INBOUND:
+      case GRDT_CROSS_GROUP_INBOUND:
         senderCommunityIdIndex = appContext.getOrAddCommunityIdIndex(otherUuid);
         break;
       default:
@@ -235,7 +234,7 @@ namespace gradido::data::compact {
         );
       }
     }
-    if (TransactionType::TIMEOUT_DEFERRED_TRANSFER == transactionType)
+    if (GRDT_TRANSACTION_TIMEOUT_DEFERRED_TRANSFER == transactionType)
     {
       int senderIdx = -1;
       for (int i = 0; i < accountBalanceCount; i++) {
@@ -271,11 +270,11 @@ namespace gradido::data::compact {
     else 
     {
       switch (transactionType) {
-      case TransactionType::TRANSFER:
+      case GRDT_TRANSACTION_TRANSFER:
         specific.transfer = TransferTx::fromGrdw(&body->transfer, senderCommunityIdIndex, recipientCommunityIdIndex, appContext);
         coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->transfer.sender.community_uuid));
         break;
-      case TransactionType::CREATION:
+      case GRDT_TRANSACTION_CREATION:
         specific.creation = {
           .amountGddCent = body->creation.recipient.amount,
           .recipientPublicKeyIndex = appContext.getOrAddPublicKeyIndex(recipientCommunityIdIndex, body->creation.recipient.pubkey),
@@ -283,20 +282,20 @@ namespace gradido::data::compact {
         };
         coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->creation.recipient.community_uuid));
         break;
-      case TransactionType::REGISTER_ADDRESS:
+      case GRDT_TRANSACTION_REGISTER_ADDRESS:
         if (body->register_address.derivation_index != static_cast<uint16_t>(body->register_address.derivation_index)) {
           throw GradidoNodeInvalidDataException("derivation index exceed uint16_t");
         }
         specific.registerAddress = {
-          .addressType = adapter::fromGrdw(body->register_address.address_type),
+          .addressType = body->register_address.address_type,
           .derivationIndex = static_cast<uint16_t>(body->register_address.derivation_index),
           .nameHashIndex = appContext.getOrAddUserNameHashIndex(body->register_address.name_hash),
           .userPublicKeyIndex = appContext.getOrAddPublicKeyIndex(senderCommunityIdIndex, body->register_address.user_pubkey),
           .accountPublicKeyIndex = appContext.getOrAddPublicKeyIndex(senderCommunityIdIndex, body->register_address.account_pubkey)
         };
         break;
-      case TransactionType::DEFERRED_TRANSFER:
-        if (crossGroupType != CrossGroupType::LOCAL) {
+      case GRDT_TRANSACTION_DEFERRED_TRANSFER:
+        if (crossGroupType != GRDT_CROSS_GROUP_LOCAL) {
           throw GradidoNodeInvalidDataException("deferred transfer (currently) don't work cross community");
         }
         if (body->deferred_transfer.transfer.sender.amount != (int64_t)((uint32_t)(body->deferred_transfer.transfer.sender.amount))) {
@@ -310,15 +309,15 @@ namespace gradido::data::compact {
         };
         coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->deferred_transfer.transfer.sender.community_uuid));
         break;
-      case TransactionType::REDEEM_DEFERRED_TRANSFER:
+      case GRDT_TRANSACTION_REDEEM_DEFERRED_TRANSFER:
         specific.transfer = TransferTx::fromGrdw(&body->redeem_deferred_transfer.transfer, senderCommunityIdIndex, recipientCommunityIdIndex, appContext);
         coinCommunityIdIndex = appContext.getOrAddCommunityIdIndex(Uuid(body->redeem_deferred_transfer.transfer.sender.community_uuid));
         break;
-        //case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
-          // throw GradidoUnhandledEnum("on ConfirmedGradidoTx::fromGrdw, removed because of simplify", "TransactionType", enum_name(transactionType).data());
+        //case GRDT_TRANSACTION_TIMEOUT_DEFERRED_TRANSFER:
+          // throw GradidoUnhandledEnum("on ConfirmedGradidoTx::fromGrdw, removed because of simplify", "grdt_transaction", enum_name(transactionType).data());
 
           //break;
-      case TransactionType::COMMUNITY_ROOT:
+      case GRDT_TRANSACTION_COMMUNITY_ROOT:
         specific.communityRoot = {
           .publicKeyIndex = appContext.getOrAddPublicKeyIndex(senderCommunityIdIndex, body->community_root.pubkey),
           .gmwPublicKeyIndex = appContext.getOrAddPublicKeyIndex(senderCommunityIdIndex, body->community_root.gmw_pubkey),
@@ -326,7 +325,7 @@ namespace gradido::data::compact {
         };
         break;
       default:
-        throw GradidoUnhandledEnum("on ConfirmedGradidoTx::fromGrdw", "TransactionType", enum_name(transactionType).data());
+        throw GradidoUnhandledEnum("on ConfirmedGradidoTx::fromGrdw", "grdt_transaction", enum_name(transactionType).data());
       }
     }
     if (coldData) {
@@ -370,29 +369,29 @@ namespace gradido::data::compact {
     }
     
     switch (transactionType) {
-    case TransactionType::TRANSFER:
-    case TransactionType::DEFERRED_TRANSFER:
-    case TransactionType::REDEEM_DEFERRED_TRANSFER:
-    case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
+    case GRDT_TRANSACTION_TRANSFER:
+    case GRDT_TRANSACTION_DEFERRED_TRANSFER:
+    case GRDT_TRANSACTION_REDEEM_DEFERRED_TRANSFER:
+    case GRDT_TRANSACTION_TIMEOUT_DEFERRED_TRANSFER:
       result[resultCursor++] = getSender();
       [[fallthrough]]; // getRecipient is also needed for transfer and deferred transfer
-    case TransactionType::CREATION:
+    case GRDT_TRANSACTION_CREATION:
       result[resultCursor++] = getRecipient(); // used for creation, transfer and deferred transfer
       break;
-    case TransactionType::REGISTER_ADDRESS:
+    case GRDT_TRANSACTION_REGISTER_ADDRESS:
       result[resultCursor++] = getRegisteredUser();
       result[resultCursor++] = getRegisteredAccount();
       break;
-    //case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
-//      throw GradidoUnhandledEnum("on ConfirmedGradidoTx::getInvolvedAddresses, removed because of simplify", "TransactionType", enum_name(transactionType).data());
+    //case GRDT_TRANSACTION_TIMEOUT_DEFERRED_TRANSFER:
+//      throw GradidoUnhandledEnum("on ConfirmedGradidoTx::getInvolvedAddresses, removed because of simplify", "grdt_transaction", enum_name(transactionType).data());
   //    break;
-    case TransactionType::COMMUNITY_ROOT:
+    case GRDT_TRANSACTION_COMMUNITY_ROOT:
       result[resultCursor++] = getCommunityRootPublicKey();
       result[resultCursor++] = getAuf();
       result[resultCursor++] = getGmw();
       break;
     default: 
-      throw GradidoUnhandledEnum("on ConfirmedGradidoTx::getInvolvedAddresses", "TransactionType", enum_name(transactionType).data());
+      throw GradidoUnhandledEnum("on ConfirmedGradidoTx::getInvolvedAddresses", "grdt_transaction", enum_name(transactionType).data());
     }
     sort(result.begin(), result.end());
     auto beginIt = result.begin();
@@ -488,29 +487,29 @@ namespace gradido::data::compact {
     }
     
     switch (transactionType) {
-    case TransactionType::TRANSFER:
-    case TransactionType::DEFERRED_TRANSFER:
-    case TransactionType::REDEEM_DEFERRED_TRANSFER:
-    case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
+    case GRDT_TRANSACTION_TRANSFER:
+    case GRDT_TRANSACTION_DEFERRED_TRANSFER:
+    case GRDT_TRANSACTION_REDEEM_DEFERRED_TRANSFER:
+    case GRDT_TRANSACTION_TIMEOUT_DEFERRED_TRANSFER:
       if (pubkeyIndex == getSender()) return true;
       [[fallthrough]]; 
-    case TransactionType::CREATION:
+    case GRDT_TRANSACTION_CREATION:
       if (pubkeyIndex == getRecipient()) return true; // used for creation, transfer and deferred transfer
       break;
-    case TransactionType::REGISTER_ADDRESS:
+    case GRDT_TRANSACTION_REGISTER_ADDRESS:
       if (pubkeyIndex == getRegisteredUser()) return true;
       if (pubkeyIndex == getRegisteredAccount()) return true;
       break;
-    //case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
-      //throw GradidoUnhandledEnum("on ConfirmedGradidoTx::getInvolvedAddresses, removed because of simplify", "TransactionType", enum_name(transactionType).data());
+    //case GRDT_TRANSACTION_TIMEOUT_DEFERRED_TRANSFER:
+      //throw GradidoUnhandledEnum("on ConfirmedGradidoTx::getInvolvedAddresses, removed because of simplify", "grdt_transaction", enum_name(transactionType).data());
       // break;
-    case TransactionType::COMMUNITY_ROOT:
+    case GRDT_TRANSACTION_COMMUNITY_ROOT:
       if (pubkeyIndex == getCommunityRootPublicKey()) return true;
       if (pubkeyIndex == getAuf()) return true;
       if (pubkeyIndex == getGmw()) return true;
       break;
     default:
-      throw GradidoUnhandledEnum("on ConfirmedGradidoTx::getInvolvedAddresses", "TransactionType", enum_name(transactionType).data());
+      throw GradidoUnhandledEnum("on ConfirmedGradidoTx::getInvolvedAddresses", "grdt_transaction", enum_name(transactionType).data());
     }
     if (coldData && pubkeyIndex.communityIdIndex == txCommunityIdIndex) {
       auto rawKey = pubkeyIndex.getRawKey();
@@ -601,7 +600,7 @@ namespace gradido::data::compact {
   }
 
   MissingColdDataException::MissingColdDataException(const char* what, const ConfirmedGradidoTx& parent) noexcept
-    : GradidoBlockchainException(what), mTxNr(parent.txNr), mTransactionType(parent.transactionType)
+    : GradidoBlockchainException(what), mTxNr(parent.txNr), mgrdt_transaction(parent.transactionType)
   {
   }
 
@@ -610,7 +609,7 @@ namespace gradido::data::compact {
     string result = what();
     result += ", txNr: " + to_string(mTxNr);
     result += ", type: ";
-    result += enum_name(mTransactionType);
+    result += enum_name(mgrdt_transaction);
     return result;
   }
 

@@ -73,7 +73,7 @@ TEST(ValidateGradidoTransaction, validRegisterAddressTransaction)
 		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
-			AddressType::COMMUNITY_HUMAN,
+			GRDT_ADDRESS_COMMUNITY_HUMAN,
 			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
 		)		
@@ -95,7 +95,7 @@ TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionMissingSignatu
 		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
-			AddressType::COMMUNITY_HUMAN,
+			GRDT_ADDRESS_COMMUNITY_HUMAN,
 			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
 		)		
@@ -117,7 +117,7 @@ TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionMissingRequire
 		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
-			AddressType::COMMUNITY_HUMAN,
+			GRDT_ADDRESS_COMMUNITY_HUMAN,
 			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
 		)		

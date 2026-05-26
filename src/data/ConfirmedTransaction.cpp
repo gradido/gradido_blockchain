@@ -7,7 +7,6 @@
 #include "gradido_blockchain/data/adapter/memoryBlock.h"
 #include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/adapter/timestamp.h"
-#include "gradido_blockchain/data/adapter/types.h"
 #include "gradido_blockchain/data/adapter/uuid.h"
 #include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
@@ -41,7 +40,7 @@ namespace gradido {
 			Timestamp confirmedAt,
 			const LedgerAnchor& ledgerAnchor,
 			vector<AccountBalance> accountBalances,
-			BalanceDerivationType balanceDerivationType,
+			grdt_balance_derivation balanceDerivationType,
 			shared_ptr<const ConfirmedTransaction> previousConfirmedTransaction/* = nullptr */
 		) : mId(id),
 			mGradidoTransaction(gradidoTransaction),
@@ -61,7 +60,7 @@ namespace gradido {
 			ConstBlockPtr runningHash,
 			const LedgerAnchor& ledgerAnchor,
 			std::vector<AccountBalance> accountBalances,
-			BalanceDerivationType balanceDerivationType
+			grdt_balance_derivation balanceDerivationType
 		) : mId(id),
 			mGradidoTransaction(gradidoTransaction),
 			mConfirmedAt(confirmedAt),
@@ -90,7 +89,7 @@ namespace gradido {
 				adapter::fromGrdw(grdw_tx->running_hash),
 				adapter::fromGrdw(grdw_tx->ledger_anchor),
 				accountBalances,
-				adapter::fromGrdw(grdw_tx->balance_derivation)
+				grdw_tx->balance_derivation
 			);
 		}
 
@@ -110,7 +109,7 @@ namespace gradido {
 					}
 				}
 			}
-			grdw_tx->balance_derivation = adapter::toGrdw(mBalanceDerivationType);
+			grdw_tx->balance_derivation = mBalanceDerivationType;
 		}
 
 		ConstBlockPtr ConfirmedTransaction::calculateRunningHash(
@@ -145,7 +144,7 @@ namespace gradido {
 				auto gdd = accountBalance.getBalance().getGradidoCent();
 				crypto_generichash_update(&state, (const unsigned char*)&gdd, sizeof(gdd));
 			}
-			crypto_generichash_update(&state, (const unsigned char*)&mBalanceDerivationType, sizeof(BalanceDerivationType));
+			crypto_generichash_update(&state, (const unsigned char*)&mBalanceDerivationType, sizeof(grdt_balance_derivation));
 			crypto_generichash_final(&state, hash->data(), hash->size());
 			return hash;
 		}

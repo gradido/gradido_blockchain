@@ -2,7 +2,6 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/blockchain/Filter.h"
-#include "gradido_blockchain/data/AddressType.h"
 #include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/GradidoCreation.h"
@@ -11,6 +10,7 @@
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/validate/TransferAmountRole.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain_core/types/address.h"
 
 #include "date/date.h"
 
@@ -24,7 +24,7 @@ using DataTypeConverter::timePointToString;
 namespace gradido {
 	using blockchain::Filter;
 	using data::adapter::toPublicKeyIndex;
-	using data::AddressType, data::SignatureMap, data::GradidoCreation, data::ConfirmedTransaction;
+	using data::SignatureMap, data::GradidoCreation, data::ConfirmedTransaction;
 
 	namespace interaction {
 		namespace validate {
@@ -106,8 +106,8 @@ namespace gradido {
 					Filter filter(Filter::LAST_TRANSACTION);
 					filter.involvedPublicKey = mGradidoCreation->getRecipient().getPublicKey();
 					auto addressType = c.senderBlockchain->getAddressType(filter);
-					if (AddressType::COMMUNITY_HUMAN != addressType) {
-						throw WrongAddressTypeException(
+					if (GRDT_ADDRESS_COMMUNITY_HUMAN != addressType) {
+						throw Wronggrdt_addressException(
 							"wrong address type for creation",
 							addressType,
 							mGradidoCreation->getRecipient().getPublicKey(),
@@ -132,8 +132,8 @@ namespace gradido {
 					filter.timepointInterval = TimepointInterval(blockchain->getStartDate(), mCreatedAt);
 
 					auto signerAccountType = blockchain->getAddressType(filter);
-					if (AddressType::COMMUNITY_HUMAN != signerAccountType) {
-						throw WrongAddressTypeException(
+					if (GRDT_ADDRESS_COMMUNITY_HUMAN != signerAccountType) {
+						throw Wronggrdt_addressException(
 							"signer for creation doesn't have a community human account",
 							signerAccountType,
 							signPair.getPublicKey(),

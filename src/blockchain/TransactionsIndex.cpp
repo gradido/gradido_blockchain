@@ -1,4 +1,3 @@
-#include "gradido_blockchain_core/data/wire/gradido_transaction.h"
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/CompactFilter.h"
@@ -14,6 +13,10 @@
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/serialization/toJson.h"
 #include "gradido_blockchain/serialization/toJsonString.h"
+#include "gradido_blockchain_core/data/wire/gradido_transaction.h"
+#include "gradido_blockchain_core/types/address.h"
+#include "gradido_blockchain_core/types/transaction.h"
+
 
 #include "date/date.h"
 #include "loguru/loguru.hpp"
@@ -31,10 +34,8 @@ using memory::Block;
 
 namespace gradido {
 	using data::adapter::toPublicKey;
-	using data::AddressType;
 	using data::compact::ConfirmedGradidoTx, data::compact::PublicKeyIndex;
 	using data::PublicKey;
-	using data::TransactionType;
 	using blockchain::Filter;
 
 	namespace blockchain {
@@ -142,7 +143,7 @@ namespace gradido {
 
 
 		bool TransactionsIndex::addIndicesForTransaction(
-			gradido::data::TransactionType transactionType,
+			grdt_transaction transactionType,
 			uint32_t coinCommunityIdIndex,
 			date::year year,
 			date::month month,
@@ -221,7 +222,7 @@ namespace gradido {
 				}
 			}
 			mAddressIndex.addTransaction(*transactionEntry, publicKeyDictionary);
-			// TODO: fill address types into mPublicKeyAddressTypes, use it for check address request
+			// TODO: fill address types into mPublicKeygrdt_addresss, use it for check address request
 			return addIndicesForTransaction(
 				transactionEntry->getTransactionType(),
 				coinCommunityIndex,
@@ -480,13 +481,13 @@ namespace gradido {
 			);
 		}
 
-		StateChange<data::AddressType> TransactionsIndex::getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const
+		StateChange<grdt_address> TransactionsIndex::getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const
 		{
 			auto addressType = mAddressIndex.getAddressType(publicKeyIndex);
-			if (AddressType::NONE == addressType) {
-				return AddressType::NONE;
+			if (GRDT_ADDRESS_NONE == addressType) {
+				return GRDT_ADDRESS_NONE;
 			}
-			auto txs = mAddressIndex.getAddressTypeChangingTransactions(publicKeyIndex);
+			auto txs = mAddressIndex.getgrdt_addressChangingTransactions(publicKeyIndex);
 			if (txs.empty()) {
 				return addressType;
 			}
@@ -536,7 +537,7 @@ namespace gradido {
 						break;
 					}
 				}
-				if (TransactionType::NONE != filter.transactionType || PublicKeySearchType::None != filter.publicKeySearchType || filter.coinCommunityIdIndex) {
+				if (GRDT_TRANSACTION_NONE != filter.transactionType || PublicKeySearchType::None != filter.publicKeySearchType || filter.coinCommunityIdIndex) {
 					for (const auto& entry : entriesOfMonthYear) {
 						auto filterResult = entry.isMatchingFilter(filter);
 						if ((filterResult & FilterResult::USE) == FilterResult::USE) {
@@ -572,7 +573,7 @@ namespace gradido {
 				if (
 					!filter.minTransactionNr && 
 					!filter.maxTransactionNr && 
-					TransactionType::NONE == filter.transactionType && 
+					GRDT_TRANSACTION_NONE == filter.transactionType && 
 					filter.timepointInterval.isEmpty() && 
 					!filter.coinCommunityIdIndex
 					) {
@@ -662,7 +663,7 @@ namespace gradido {
 
 		FilterResult TransactionsIndex::TransactionsIndexEntry::isMatchingFilter(const CompactFilter& filter) const
 		{
-			if (filter.transactionType != TransactionType::NONE
+			if (filter.transactionType != GRDT_TRANSACTION_NONE
 				&& filter.transactionType != transactionType) {
 				return FilterResult::DISMISS;
 			}
@@ -703,7 +704,7 @@ namespace gradido {
 
 		FilterResult TransactionsIndex::BalanceTransactionIndexEntry::isMatchingFilter(const CompactFilter& filter, date::year_month startYM, date::year_month endYM) const
 		{
-			if (filter.transactionType != TransactionType::NONE
+			if (filter.transactionType != GRDT_TRANSACTION_NONE
 				&& filter.transactionType != transactionType) {
 				return FilterResult::DISMISS;
 			}

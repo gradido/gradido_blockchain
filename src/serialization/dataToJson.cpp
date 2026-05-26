@@ -23,6 +23,8 @@
 #include "gradido_blockchain/data/TransactionTriggerEvent.h"
 #include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/serialization/toJson.h"
+#include "gradido_blockchain_core/types/ledger_anchor.h"
+#include "gradido_blockchain_core/types/memo_key.h"
 
 #include "magic_enum/magic_enum.hpp"
 #include <string>
@@ -65,7 +67,7 @@ namespace serialization {
 
 	DEFINE_TO_JSON(EncryptedMemo, {
 		obj.AddMember("type", toJson(value.getKeyType(), alloc), alloc);
-		if (MemoKeyType::PLAIN == value.getKeyType()) {
+		if (GRDT_MEMO_KEY_PLAIN == value.getKeyType()) {
 			obj.AddMember("memo", toJson(value.getMemo().copyAsString(), alloc), alloc);
 		}
 		else {
@@ -199,26 +201,26 @@ namespace serialization {
 		}
 		else {
 			switch (value.getTransactionType()) {
-			case TransactionType::TRANSFER:
+			case GRDT_TRANSACTION_TRANSFER:
 				obj.AddMember("transfer", toJson(*value.getTransfer(), alloc), alloc);
 				break;
-			case TransactionType::CREATION:
+			case GRDT_TRANSACTION_CREATION:
 				obj.AddMember("creation", toJson(*value.getCreation(), alloc), alloc);
 				break;
-			case TransactionType::COMMUNITY_FRIENDS_UPDATE:
+			case GRDT_TRANSACTION_COMMUNITY_FRIENDS_UPDATE:
 				obj.AddMember("communityFriendsUpdate", toJson(*value.getCommunityFriendsUpdate(), alloc), alloc);
 				break;
-			case TransactionType::DEFERRED_TRANSFER:
+			case GRDT_TRANSACTION_DEFERRED_TRANSFER:
 				obj.AddMember("deferredTransfer", toJson(*value.getDeferredTransfer(), alloc), alloc);
 				break;
-			case TransactionType::REDEEM_DEFERRED_TRANSFER:
+			case GRDT_TRANSACTION_REDEEM_DEFERRED_TRANSFER:
 				obj.AddMember("redeemDeferredTransfer", toJson(*value.getRedeemDeferredTransfer(), alloc), alloc);
 				break;
-			case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
+			case GRDT_TRANSACTION_TIMEOUT_DEFERRED_TRANSFER:
 				obj.AddMember("timeoutDeferredTransfer", toJson(*value.getTimeoutDeferredTransfer(), alloc), alloc);
 				break;
-			case TransactionType::NONE: break;
-			default: throw GradidoUnhandledEnum("missing toJson call", "TransactionType on transactionBody", magic_enum::enum_name(value.getTransactionType()).data());
+			case GRDT_TRANSACTION_NONE: break;
+			default: throw GradidoUnhandledEnum("missing toJson call", "grdt_transaction on transactionBody", magic_enum::enum_name(value.getTransactionType()).data());
 			}
 		}
 	})
@@ -227,20 +229,17 @@ namespace serialization {
 		auto type = value.getType();
 		obj.AddMember("type", toJson(type, alloc), alloc);
 		switch (type) {
-		case LedgerAnchor::Type::IOTA_MESSAGE_ID:
-			obj.AddMember("value", toJson(value.getIotaMessageId(), alloc), alloc);
-			break;
-		case LedgerAnchor::Type::HIERO_TRANSACTION_ID:
+		case GRDT_LEDGER_ANCHOR_HIERO_TRANSACTION_ID:
 			obj.AddMember("value", toJson(value.toString(), alloc), alloc);
 			break;
-		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_ID:
-		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_COMMUNITY_ID:
-		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_CONTRIBUTION_ID:
-		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID:
-		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_USER_ID:
-			obj.AddMember("value", value.getLegacyTransactionId(), alloc);
+		case GRDT_LEDGER_ANCHOR_LEGACY_GRADIDO_DB_TRANSACTION_ID:
+		case GRDT_LEDGER_ANCHOR_LEGACY_GRADIDO_DB_COMMUNITY_ID:
+		case GRDT_LEDGER_ANCHOR_LEGACY_GRADIDO_DB_USER_ID:
+		case GRDT_LEDGER_ANCHOR_LEGACY_GRADIDO_DB_CONTRIBUTION_ID:
+		case GRDT_LEDGER_ANCHOR_LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID:
+			obj.AddMember("value", value.getLegacyGradidoDbId(), alloc);
 			break;
-		case LedgerAnchor::Type::NODE_TRIGGER_TRANSACTION_ID:
+		case GRDT_LEDGER_ANCHOR_NODE_TRIGGER_TRANSACTION_ID:
 			obj.AddMember("value", value.getNodeTriggeredTransactionId(), alloc);
 			break;
 		default:
@@ -276,6 +275,6 @@ namespace serialization {
 		}
 		obj.AddMember("ledgerAnchor", toJson(value.getLedgerAnchor(), alloc), alloc);
 		obj.AddMember("accountBalances", toJson(value.getAccountBalances(), alloc), alloc);
-		obj.AddMember("balanceDerivationType", toJson(value.getBalanceDerivationType(), alloc), alloc);
+		obj.AddMember("balanceDerivationType", toJson(value.getgrdt_balance_derivation(), alloc), alloc);
 	})
 }

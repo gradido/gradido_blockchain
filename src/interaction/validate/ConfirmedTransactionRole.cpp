@@ -1,12 +1,12 @@
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
-#include "gradido_blockchain/data/BalanceDerivationType.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/validate/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransactionRole.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain_core/types/balance_derivation.h"
 
 #include "magic_enum/magic_enum.hpp"
 #include <memory>
@@ -19,7 +19,7 @@ using std::string, std::to_string;
 using DataTypeConverter::timePointToString, DataTypeConverter::timespanToString;
 
 namespace gradido {
-	using data::BalanceDerivationType, data::ConfirmedTransaction;
+	using data::ConfirmedTransaction;
 	namespace interaction {
 		namespace validate {
 
@@ -118,8 +118,7 @@ namespace gradido {
 						}
 						const auto& ledgerAnchor = mConfirmedTransaction.getLedgerAnchor();
 						const auto& previousLedgerAnchor = previousConfirmedTransaction->getLedgerAnchor();
-						if ((previousLedgerAnchor.isHieroTransactionId() || previousLedgerAnchor.isIotaMessageId())
-							&& ledgerAnchor.isLegacyGradidoDbTransactionId()) {
+						if (previousLedgerAnchor.isHieroTransactionId() && ledgerAnchor.isLegacyGradidoId()) {
 							throw TransactionValidationInvalidInputException(
 								"current transaction was imported from db while last transaction was confirmed by ledger",
 								"ledger_anchor",
@@ -132,7 +131,7 @@ namespace gradido {
 				}
 				auto modifiedType = type;
 				if (
-					BalanceDerivationType::EXTERN == mConfirmedTransaction.getBalanceDerivationType()
+					GRDT_BALANCE_DERIVATION_EXTERN == mConfirmedTransaction.getgrdt_balance_derivation()
 					&& (modifiedType & Type::PREVIOUS_BALANCE) == Type::PREVIOUS_BALANCE
 				) {
 					modifiedType = modifiedType - Type::PREVIOUS_BALANCE;

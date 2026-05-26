@@ -4,12 +4,12 @@
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
-#include "gradido_blockchain/data/CrossGroupType.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransactionRole.h"
 #include "gradido_blockchain/interaction/validate/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
+#include "gradido_blockchain_core/types/cross_group.h"
 
 #include "loguru/loguru.hpp"
 #include "magic_enum/magic_enum.hpp"
@@ -21,7 +21,7 @@ using std::shared_ptr, std::make_shared;
 
 namespace gradido {
 	using blockchain::Filter, blockchain::TransactionEntry;
-	using data::ConfirmedTransaction, data::CrossGroupType, data::GradidoTransaction;
+	using data::ConfirmedTransaction, data::GradidoTransaction;
 
 	namespace interaction {
 		namespace validate {
@@ -44,14 +44,14 @@ namespace gradido {
 							otherPreviousTx = otherPreviousTxEntry->getConfirmedTransaction();
 						}
 					}
-					if (body->getType() == CrossGroupType::OUTBOUND) {
+					if (body->getType() == GRDT_CROSS_GROUP_OUTBOUND) {
 						c.recipientBlockchain = otherBlockchain;
 						if (otherPreviousTx) {
 							c.recipientPreviousConfirmedTransaction = otherPreviousTx;
 						}
 
 					}
-					else if (body->getType() == CrossGroupType::INBOUND)
+					else if (body->getType() == GRDT_CROSS_GROUP_INBOUND)
 					{
 						c.recipientBlockchain = c.senderBlockchain;
 						c.senderBlockchain = otherBlockchain;
@@ -61,7 +61,7 @@ namespace gradido {
 						}
 					}
 					else {
-						LOG_F(WARNING, "CrossGroupType::%s not implemented in GradidoTransactionRole", enum_name(body->getType()).data());
+						LOG_F(WARNING, "grdt_cross_group::%s not implemented in GradidoTransactionRole", enum_name(body->getType()).data());
 					}
 					auto lastRecipientEntry = c.recipientBlockchain->findOne(Filter::LAST_TRANSACTION);
 					if (!lastRecipientEntry) {
@@ -102,10 +102,10 @@ namespace gradido {
 				if ((type & Type::PAIRED) == Type::PAIRED && body->getOtherCommunityIdIndex().has_value()) 
 				{
 					switch (body->getType()) {
-					case CrossGroupType::LOCAL: break; // no cross group
-					case CrossGroupType::OUTBOUND: break; // happen first, no pairing transaction yet
-					case CrossGroupType::INBOUND:
-					case CrossGroupType::CROSS:
+					case GRDT_CROSS_GROUP_LOCAL: break; // no cross group
+					case GRDT_CROSS_GROUP_OUTBOUND: break; // happen first, no pairing transaction yet
+					case GRDT_CROSS_GROUP_INBOUND:
+					case GRDT_CROSS_GROUP_CROSS:
 						if (mGradidoTransaction.getPairingLedgerAnchor().empty()) {
 							throw TransactionValidationInvalidInputException(
 								"pairing ledger anchor not set for outbound or cross",
@@ -126,7 +126,7 @@ namespace gradido {
 							}
 						}
 						break;
-					default: throw GradidoUnknownEnumException("unknown cross group type", "data::CrossGroupType", enum_name(body->getType()).data());
+					default: throw GradidoUnknownEnumException("unknown cross group type", "grdt_cross_group", enum_name(body->getType()).data());
 					}
 				}				
 			}

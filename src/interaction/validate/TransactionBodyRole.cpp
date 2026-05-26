@@ -2,8 +2,6 @@
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/const.h"
-#include "gradido_blockchain/data/CrossGroupType.h"
-#include "gradido_blockchain/data/MemoKeyType.h"
 #include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/interaction/validate/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/validate/CommunityRootRole.h"
@@ -16,6 +14,8 @@
 #include "gradido_blockchain/interaction/validate/RegisterAddressRole.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/memory/Block.h"
+#include "gradido_blockchain_core/types/cross_group.h"
+#include "gradido_blockchain_core/types/memo_key.h"
 
 #include "magic_enum/magic_enum.hpp"
 #include "magic_enum/magic_enum_flags.hpp"
@@ -33,7 +33,6 @@ using std::regex, std::regex_match;
 
 namespace gradido {
 	using blockchain::Filter;
-	using data::CrossGroupType, data::MemoKeyType;
 
 	namespace interaction {
 		namespace validate {
@@ -64,7 +63,7 @@ namespace gradido {
 							}
 							for (auto& memo : mBody.getMemos()) 
 							{
-								if (MemoKeyType::PLAIN == memo.getKeyType())
+								if (GRDT_MEMO_KEY_PLAIN == memo.getKeyType())
 								{
 									if (!isLikelyPlainText(memo.getMemo())) {
 										LOG_F(ERROR, "plain memo don't seem to be plain!");
@@ -99,7 +98,7 @@ namespace gradido {
 								}
 							}
 						}
-						if (mBody.getType() != CrossGroupType::LOCAL && !mBody.getOtherCommunityIdIndex().has_value()) 
+						if (mBody.getType() != GRDT_CROSS_GROUP_LOCAL && !mBody.getOtherCommunityIdIndex().has_value()) 
 						{
 							throw TransactionValidationInvalidInputException(
 								"missing other community id index for cross group transaction",

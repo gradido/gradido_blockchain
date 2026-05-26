@@ -113,7 +113,7 @@ void InMemoryTest::createRegisterAddress(int keyPairIndexStart)
 		.setSenderCommunity(mCommunityId)
 		.setRegisterAddress(
 			g_KeyPairs[userPubkeyIndex]->getPublicKey(),
-			AddressType::COMMUNITY_HUMAN,
+			GRDT_ADDRESS_COMMUNITY_HUMAN,
 			make_shared<const Block>(g_KeyPairs[userPubkeyIndex]->getPublicKey()->calculateHash()),
 			g_KeyPairs[accountPubkeyIndex]->getPublicKey()
 		)		
@@ -141,7 +141,7 @@ std::shared_ptr<KeyPairEd25519> InMemoryTest::createRegisterAddressGenerateKeyPa
 		.setSenderCommunity(mCommunityId)
 		.setRegisterAddress(
 			userKeyPair->getPublicKey(),
-			AddressType::COMMUNITY_HUMAN,
+			GRDT_ADDRESS_COMMUNITY_HUMAN,
 			make_shared<const Block>(userKeyPair->getPublicKey()->calculateHash()),
 			accountKeyPair->getPublicKey()
 		)		
@@ -289,7 +289,7 @@ GradidoUnit InMemoryTest::getBalance(int keyPairIndex, Timepoint date)
 TEST_F(InMemoryTest, FindCommunityRootTransactionByType)
 {
 	Filter f;
-	f.transactionType = TransactionType::COMMUNITY_ROOT;
+	f.transactionType = GRDT_TRANSACTION_COMMUNITY_ROOT;
 	auto transaction = mBlockchain->findOne(f);
 	ASSERT_TRUE(transaction);
 	EXPECT_TRUE(transaction->getTransactionBody()->isCommunityRoot());
@@ -313,7 +313,7 @@ TEST_F(InMemoryTest, FindCommunityRootTransactionByPublicKey)
 	// after adding two create addresses
 	createRegisterAddress();
 	createRegisterAddress();
-	f.transactionType = TransactionType::COMMUNITY_ROOT;
+	f.transactionType = GRDT_TRANSACTION_COMMUNITY_ROOT;
 	transaction = mBlockchain->findOne(f);
 	ASSERT_TRUE(transaction);
 	EXPECT_TRUE(transaction->getTransactionBody()->isCommunityRoot());
@@ -519,7 +519,7 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	ASSERT_EQ(balanceWhenSecondsDeferredTransferStart, GradidoUnit(560.4132));
 	EXPECT_THROW(
 		createGradidoDeferredTransfer(recipientKeyPairIndex, secondRecipientKeyPairIndex, 483.0, createdAt, secondTimeoutDuration),
-		validate::WrongAddressTypeException
+		validate::Wronggrdt_addressException
 	);
 	try {
 		// redeem from creator, only two account balances in confirmed transaction
@@ -694,7 +694,7 @@ TEST_F(InMemoryTest, CrossCommunityTransaction)
 		.setSenderCommunity(community2)
 		.setRegisterAddress(
 			g_KeyPairs[11]->getPublicKey()->data(),
-			AddressType::COMMUNITY_HUMAN,
+			GRDT_ADDRESS_COMMUNITY_HUMAN,
 			g_KeyPairs[11]->getPublicKey()->calculateHash().data(),
 			g_KeyPairs[12]->getPublicKey()->data()
 		)

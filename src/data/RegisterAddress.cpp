@@ -4,12 +4,12 @@
 namespace gradido {
 	namespace data {
 		RegisterAddress::RegisterAddress(
-			AddressType _addressType,
+			grdt_address _addressType,
 			uint32_t _derivationIndex,
 			memory::ConstBlockPtr userPubkeyPtr,
 			memory::ConstBlockPtr nameHashPtr,
 			memory::ConstBlockPtr accountPubkeyPtr
-		) : mUserPubkey(userPubkeyPtr), mAddressType(_addressType), mNameHash(nameHashPtr),
+		) : mUserPubkey(userPubkeyPtr), mgrdt_address(_addressType), mNameHash(nameHashPtr),
 			mAccountPubkey(accountPubkeyPtr), mDerivationIndex(_derivationIndex) 
 		{
 			KeyPairEd25519::validatePublicKey(userPubkeyPtr);

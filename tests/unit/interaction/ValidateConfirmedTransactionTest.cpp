@@ -1,5 +1,4 @@
 #include "gtest/gtest.h"
-#include "gradido_blockchain/data/BalanceDerivationType.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
@@ -7,6 +6,7 @@
 #include "gradido_blockchain/interaction/validate/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
+#include "gradido_blockchain_core/types/balance_derivation.h"
 #include "../KeyPairs.h"
 #include "../serializedTransactions.h"
 #include "const.h"
@@ -28,7 +28,7 @@ TEST(ValidateConfirmedTransactionTest, validCommunityRootGradidoTransaction) {
 		confirmedAt,
 		LedgerAnchor(defaultHieroTransactionId),
 		{},
-		BalanceDerivationType::EXTERN
+		GRDT_BALANCE_DERIVATION_EXTERN
 	);
 
 	validate::Context c(confirmedTransaction);
@@ -48,7 +48,7 @@ TEST(ValidateConfirmedTransactionTest, invalidMessageID) {
 		confirmedAt,
 		LedgerAnchor(),
 		{},
-		BalanceDerivationType::EXTERN
+		GRDT_BALANCE_DERIVATION_EXTERN
 	);
 
 	validate::Context c(confirmedTransaction);
@@ -69,7 +69,7 @@ TEST(ValidateConfirmedTransactionTest, invalidConfirmedBeforeCreated) {
 		GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
 		LedgerAnchor(defaultHieroTransactionId),
 		{},
-		BalanceDerivationType::EXTERN
+		GRDT_BALANCE_DERIVATION_EXTERN
 	);
 
 	validate::Context c(confirmedTransaction);
