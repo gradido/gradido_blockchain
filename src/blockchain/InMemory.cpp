@@ -20,6 +20,7 @@
 #include "gradido_blockchain_core/data/wire/confirmed_transaction.h"
 #include "gradido_blockchain_core/data/wire/transaction_body.h"
 #include "gradido_blockchain_core/memory.h"
+#include "gradido_blockchain_core/types/address.h"
 #include "gradido_blockchain_core/types/transaction.h"
 
 #include "loguru/loguru.hpp"

@@ -275,6 +275,6 @@ namespace serialization {
 		}
 		obj.AddMember("ledgerAnchor", toJson(value.getLedgerAnchor(), alloc), alloc);
 		obj.AddMember("accountBalances", toJson(value.getAccountBalances(), alloc), alloc);
-		obj.AddMember("balanceDerivationType", toJson(value.getgrdt_balance_derivation(), alloc), alloc);
+		obj.AddMember("balanceDerivationType", toJson(value.getBalanceDerivationType(), alloc), alloc);
 	})
 }

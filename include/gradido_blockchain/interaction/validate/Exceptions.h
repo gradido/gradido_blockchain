@@ -29,11 +29,11 @@ namespace gradido {
 				inline TransactionValidationException& setMemo(const std::string& memo) { mTransactionMemo = memo; return *this; }
 				inline const std::string& getMemo() const { return mTransactionMemo; }
 
-				inline TransactionValidationException& setgrdt_transaction(grdt_transaction type) { mType = type; return *this; }
+				inline TransactionValidationException& setTransactionType(grdt_transaction type) { mType = type; return *this; }
 				inline grdt_transaction getTransactionType() { return mType; }
 
 				TransactionValidationException& setTransactionBody(const data::TransactionBody& transactionBody);
-				inline std::string_view getgrdt_transactionString() const { return magic_enum::enum_name(mType); }
+				inline std::string_view getTransactionTypeString() const { return magic_enum::enum_name(mType); }
 			protected:
 				std::string mTransactionMemo;
 				grdt_transaction mType;
@@ -168,12 +168,12 @@ namespace gradido {
 				std::string mAlreadyCreatedBalance;
 			};
 
-			class GRADIDOBLOCKCHAIN_EXPORT Wronggrdt_addressException : public TransactionValidationException
+			class GRADIDOBLOCKCHAIN_EXPORT WrongAddressTypeException : public TransactionValidationException
 			{
 			public:
-				explicit Wronggrdt_addressException(const char* what, grdt_address type, memory::ConstBlockPtr pubkey, std::optional<uint32_t> communityIdIndex) noexcept;
-				explicit Wronggrdt_addressException(const char* what, grdt_address type, data::compact::PublicKeyIndex pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept;
-				explicit Wronggrdt_addressException(const char* what, grdt_address type, uint32_t pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept;
+				explicit WrongAddressTypeException(const char* what, grdt_address type, memory::ConstBlockPtr pubkey, std::optional<uint32_t> communityIdIndex) noexcept;
+				explicit WrongAddressTypeException(const char* what, grdt_address type, data::compact::PublicKeyIndex pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept;
+				explicit WrongAddressTypeException(const char* what, grdt_address type, uint32_t pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept;
 
 				std::string getFullString() const noexcept;
 				rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const;

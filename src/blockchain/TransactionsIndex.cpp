@@ -222,7 +222,7 @@ namespace gradido {
 				}
 			}
 			mAddressIndex.addTransaction(*transactionEntry, publicKeyDictionary);
-			// TODO: fill address types into mPublicKeygrdt_addresss, use it for check address request
+			// TODO: fill address types into mPublicKeyAddressTypes, use it for check address request
 			return addIndicesForTransaction(
 				transactionEntry->getTransactionType(),
 				coinCommunityIndex,
@@ -487,7 +487,7 @@ namespace gradido {
 			if (GRDT_ADDRESS_NONE == addressType) {
 				return GRDT_ADDRESS_NONE;
 			}
-			auto txs = mAddressIndex.getgrdt_addressChangingTransactions(publicKeyIndex);
+			auto txs = mAddressIndex.getAddressTypeChangingTransactions(publicKeyIndex);
 			if (txs.empty()) {
 				return addressType;
 			}

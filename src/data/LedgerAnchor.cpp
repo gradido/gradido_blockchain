@@ -42,14 +42,10 @@ namespace gradido {
 		LedgerAnchor::LedgerAnchor(uint64_t transactionId, grdt_ledger_anchor type)
 			: mType(type)
 		{
-			if (GRDT_LEDGER_ANCHOR_LEGACY_GRADIDO_DB_TRANSACTION_ID == type ||
-				GRDT_LEDGER_ANCHOR_LEGACY_GRADIDO_DB_COMMUNITY_ID == type ||
-				GRDT_LEDGER_ANCHOR_LEGACY_GRADIDO_DB_USER_ID == type ||
-				GRDT_LEDGER_ANCHOR_LEGACY_GRADIDO_DB_CONTRIBUTION_ID == type ||
-				GRDT_LEDGER_ANCHOR_LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID == type) {
+			if (isLegacyGradidoId()) {
 				mValue = AnchorValue(std::in_place_index<2>, transactionId);
 			}
-			else if (GRDT_LEDGER_ANCHOR_NODE_TRIGGER_TRANSACTION_ID == type) {
+			else if (isNodeTriggeredTransactionId()) {
 				mValue = AnchorValue(std::in_place_index<3>, transactionId);
 			}
 			else {

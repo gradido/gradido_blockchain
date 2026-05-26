@@ -26,7 +26,7 @@ namespace gradido {
 			// default is zero, don't filter for date
 			inline FilterBuilder& setTimepointInterval(TimepointInterval timepointInterval) { mFilter.timepointInterval = timepointInterval; return *this; }
 			// default is none, don't filter for transaction type
-			inline FilterBuilder& setgrdt_transaction(grdt_transaction transactionType) { mFilter.transactionType = transactionType; return *this; }
+			inline FilterBuilder& setTransactionType(grdt_transaction transactionType) { mFilter.transactionType = transactionType; return *this; }
 
 			inline FilterBuilder& setFilterFunction(std::function<FilterResult(const TransactionEntry&)> filterFunction) {
 				mFilter.filterFunction = filterFunction;

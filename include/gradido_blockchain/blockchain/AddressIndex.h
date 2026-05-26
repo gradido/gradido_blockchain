@@ -40,7 +40,7 @@ namespace gradido {
 			const std::vector<uint64_t>& getTransactionsNrs(data::compact::PublicKeyIndex publicKeyIndex) const;
 			bool isExist(data::compact::PublicKeyIndex publicKeyIndex) const;
 			grdt_address getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const;
-			std::vector<uint64_t> getgrdt_addressChangingTransactions(data::compact::PublicKeyIndex publicKeyIndex) const;
+			std::vector<uint64_t> getAddressTypeChangingTransactions(data::compact::PublicKeyIndex publicKeyIndex) const;
 			//! \return 0 if not found, else return last transaction nr where the balance of the account was changed
 			uint64_t lastBalanceChanged(data::compact::PublicKeyIndex publicKeyIndex) const;
 

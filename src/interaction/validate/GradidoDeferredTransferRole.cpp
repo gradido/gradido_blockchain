@@ -71,31 +71,31 @@ namespace gradido {
 					filter.maxTransactionNr = c.senderPreviousConfirmedTransaction->getId();
 
 					// check if sender address was registered
-					auto sendergrdt_address = c.senderBlockchain->getAddressType(filter);
-					if (GRDT_ADDRESS_NONE == sendergrdt_address) {
-						throw Wronggrdt_addressException(
+					auto senderAddressType = c.senderBlockchain->getAddressType(filter);
+					if (GRDT_ADDRESS_NONE == senderAddressType) {
+						throw WrongAddressTypeException(
 							"sender address not registered",
-							sendergrdt_address,
+							senderAddressType,
 							mDeferredTransfer->getSenderPublicKey(),
 							c.senderBlockchain->getCommunityIdIndex()
 						);
 					}
-					else if (GRDT_ADDRESS_DEFERRED_TRANSFER == sendergrdt_address) {
-						throw Wronggrdt_addressException(
+					else if (GRDT_ADDRESS_DEFERRED_TRANSFER == senderAddressType) {
+						throw WrongAddressTypeException(
 							"sender address is deferred transfer, please use redeemDeferredTransferTransaction for that",
-							sendergrdt_address,
+							senderAddressType,
 							mDeferredTransfer->getSenderPublicKey(),
 							c.senderBlockchain->getCommunityIdIndex()
 						);
 					}
 					// check if recipient address was registered
 					filter.involvedPublicKey = mDeferredTransfer->getRecipientPublicKey();
-					auto recipientgrdt_address = c.senderBlockchain->getAddressType(filter);
+					auto recipientAddressType = c.senderBlockchain->getAddressType(filter);
 					// with deferred transfer recipient address is completely new
-					if (GRDT_ADDRESS_NONE != recipientgrdt_address) {
-						throw Wronggrdt_addressException(
+					if (GRDT_ADDRESS_NONE != recipientAddressType) {
+						throw WrongAddressTypeException(
 							"deferred transfer address already exist",
-							recipientgrdt_address,
+							recipientAddressType,
 							mDeferredTransfer->getRecipientPublicKey(),
 							c.senderBlockchain->getCommunityIdIndex()
 						);

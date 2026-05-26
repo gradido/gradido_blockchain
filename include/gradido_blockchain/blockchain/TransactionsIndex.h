@@ -247,7 +247,7 @@ namespace gradido {
 
 			// is used like a cache, even from const
 			mutable AddressIndex mAddressIndex;
-			// std::map<uint32_t, grdt_address> mPublicKeygrdt_addresss;
+			// std::map<uint32_t, grdt_address> mPublicKeyAddressTypes;
 			// TODO: check if replace std::list<std::vector> with std::deque make sense (performance side)
 			// TODO: check if flatten maps to std::vector<FlatTransactionsIndexEntry> mEntries[month * years] make sense
 			// std::map<date::year, std::map<date::month, std::list<std::vector<TransactionsIndexEntry>>>> mYearMonthAddressIndexEntries;

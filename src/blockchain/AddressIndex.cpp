@@ -176,7 +176,7 @@ namespace gradido {
 		grdt_address AddressIndex::getAddressType(data::compact::PublicKeyIndex publicKeyIndex) const
 		{
 			if (publicKeyIndex.communityIdIndex != mCommunityIdIndex) {
-				throw GradidoNodeInvalidDataException("dont't call AddressIndex::getgrdt_address with foreign publicKey");
+				throw GradidoNodeInvalidDataException("dont't call AddressIndex::getAddressType with foreign publicKey");
 			}
 			auto it = mIndexTransactionNrs.find(publicKeyIndex.publicKeyIndex);
 			if (it == mIndexTransactionNrs.end()) {
@@ -185,10 +185,10 @@ namespace gradido {
 			return it->second.addressType;
 		}
 
-		vector<uint64_t> AddressIndex::getgrdt_addressChangingTransactions(data::compact::PublicKeyIndex publicKeyIndex) const
+		vector<uint64_t> AddressIndex::getAddressTypeChangingTransactions(data::compact::PublicKeyIndex publicKeyIndex) const
 		{
 			if (publicKeyIndex.communityIdIndex != mCommunityIdIndex) {
-				throw GradidoNodeInvalidDataException("dont't call AddressIndex::getgrdt_addressChangingTransactions with foreign publicKey");
+				throw GradidoNodeInvalidDataException("dont't call AddressIndex::getAddressTypeChangingTransactions  with foreign publicKey");
 			}
 			auto it = mIndexTransactionNrs.find(publicKeyIndex.publicKeyIndex);
 			if (it == mIndexTransactionNrs.end()) {
