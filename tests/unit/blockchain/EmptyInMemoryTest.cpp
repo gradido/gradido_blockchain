@@ -61,7 +61,7 @@ TEST_F(EmptyInMemoryTest, InvalidGradidoCreationAsFirst) {
 	ASSERT_TRUE(deserializer.isGradidoTransaction());
 	EXPECT_THROW(
 		mBlockchain->createAndAddConfirmedTransaction(deserializer.getGradidoTransaction(), LedgerAnchor({ confirmedAt, hieroAccount }), confirmedAt),
-		validate::Wronggrdt_addressException
+		validate::WrongAddressTypeException
 	);
 }
 TEST_F(EmptyInMemoryTest, InvalidGradidoTransferAsFirst) {

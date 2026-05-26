@@ -105,7 +105,7 @@ namespace gradido {
 				type = type - interaction::validate::Type::SINGLE;
 				if (lastConfirmedTransaction) {
 					type = type | interaction::validate::Type::PREVIOUS;
-					if (!role->isExternBalanceDerivation()) {
+					if (!role->isExternBalanceDerivationType()) {
 						type = type | interaction::validate::Type::PREVIOUS_BALANCE;
 					}
 				}

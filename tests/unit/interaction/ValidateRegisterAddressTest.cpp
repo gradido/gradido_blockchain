@@ -50,7 +50,7 @@ TEST(ValidateRegisterAddressTest, Invalidgrdt_addressGMW) {
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body->isRegisterAddress());
 	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::Wronggrdt_addressException);
+	EXPECT_THROW(c.run(), validate::WrongAddressTypeException);
 }
 
 TEST(ValidateRegisterAddressTest, Invalidgrdt_addressAUF) {
@@ -71,7 +71,7 @@ TEST(ValidateRegisterAddressTest, Invalidgrdt_addressAUF) {
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body->isRegisterAddress());
 	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::Wronggrdt_addressException);
+	EXPECT_THROW(c.run(), validate::WrongAddressTypeException);
 }
 
 TEST(ValidateRegisterAddressTest, Invalidgrdt_addressNONE) {
@@ -92,7 +92,7 @@ TEST(ValidateRegisterAddressTest, Invalidgrdt_addressNONE) {
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body->isRegisterAddress());
 	validate::Context c(*body);
-	EXPECT_THROW(c.run(), validate::Wronggrdt_addressException);
+	EXPECT_THROW(c.run(), validate::WrongAddressTypeException);
 }
 
 TEST(ValidateRegisterAddressTest, UserAndAccountPublicKeySame) {

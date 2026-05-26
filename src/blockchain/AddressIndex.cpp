@@ -188,7 +188,7 @@ namespace gradido {
 		vector<uint64_t> AddressIndex::getAddressTypeChangingTransactions(data::compact::PublicKeyIndex publicKeyIndex) const
 		{
 			if (publicKeyIndex.communityIdIndex != mCommunityIdIndex) {
-				throw GradidoNodeInvalidDataException("dont't call AddressIndex::getAddressTypeChangingTransactions  with foreign publicKey");
+				throw GradidoNodeInvalidDataException("dont't call AddressIndex::getAddressTypeChangingTransactions with foreign publicKey");
 			}
 			auto it = mIndexTransactionNrs.find(publicKeyIndex.publicKeyIndex);
 			if (it == mIndexTransactionNrs.end()) {

@@ -131,7 +131,7 @@ namespace gradido {
 				}
 				auto modifiedType = type;
 				if (
-					GRDT_BALANCE_DERIVATION_EXTERN == mConfirmedTransaction.getgrdt_balance_derivation()
+					GRDT_BALANCE_DERIVATION_EXTERN == mConfirmedTransaction.getBalanceDerivationType()
 					&& (modifiedType & Type::PREVIOUS_BALANCE) == Type::PREVIOUS_BALANCE
 				) {
 					modifiedType = modifiedType - Type::PREVIOUS_BALANCE;

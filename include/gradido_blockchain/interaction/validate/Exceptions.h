@@ -146,7 +146,7 @@ namespace gradido {
 
 			protected:
 				std::string mAddressHex;
-				grdt_address mgrdt_address;
+				grdt_address mAddressType;
 			};
 
 			class GRADIDOBLOCKCHAIN_EXPORT InvalidCreationException : public TransactionValidationException

@@ -69,7 +69,7 @@ namespace gradido {
 				std::optional<uint32_t> coinCommunityIdIndex,
 				Timepoint endDate = std::chrono::system_clock::now()
 			) const;
-			grdt_balance_derivation getgrdt_balance_derivation() const { return mBalanceDerivationType; }
+			grdt_balance_derivation getBalanceDerivationType() const { return mBalanceDerivationType; }
 			bool isBalanceNodeComputed() const { return GRDT_BALANCE_DERIVATION_NODE == mBalanceDerivationType; }
 			bool isBalanceExternComputed() const { return GRDT_BALANCE_DERIVATION_EXTERN == mBalanceDerivationType; }
 			[[deprecated("Replaced by isInvolved with compact::PublicKeyIndex")]]

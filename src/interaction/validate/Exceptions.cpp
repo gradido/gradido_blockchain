@@ -316,7 +316,7 @@ namespace gradido {
 
 			// *********************************** Address Already Exist **********************************************************
 			AddressAlreadyExistException::AddressAlreadyExistException(const char* what, const std::string& addressHex, grdt_address addressType) noexcept
-				: TransactionValidationException(what), mAddressHex(addressHex), mgrdt_address(addressType)
+				: TransactionValidationException(what), mAddressHex(addressHex), mAddressType(addressType)
 			{
 
 			}
@@ -324,7 +324,7 @@ namespace gradido {
 			std::string AddressAlreadyExistException::getFullString() const noexcept
 			{
 				std::string resultString;
-				auto addressTypeString = enum_name(mgrdt_address);
+				auto addressTypeString = enum_name(mAddressType);
 				size_t resultStringSize = strlen(what()) + addressTypeString.size() + mAddressHex.size() + 9 + 16 + 2;
 				resultString.reserve(resultStringSize);
 				resultString = what();
@@ -340,7 +340,7 @@ namespace gradido {
 			{
 				Value detailsObjs(kObjectType);
 				detailsObjs.AddMember("what", Value(what(), alloc), alloc);
-				auto addressTypeName = enum_name(mgrdt_address);
+				auto addressTypeName = enum_name(mAddressType);
 				detailsObjs.AddMember("addressType", Value(addressTypeName.data(), addressTypeName.size(), alloc), alloc);
 				detailsObjs.AddMember("address", Value(mAddressHex.data(), alloc), alloc);
 				return std::move(detailsObjs);
@@ -389,7 +389,7 @@ namespace gradido {
 			}
 
 			// **************************** Wrong Address Type Exception ***********************************
-			Wronggrdt_addressException::Wronggrdt_addressException(const char* what, grdt_address type, ConstBlockPtr pubkey, optional<uint32_t> communityIdIndex) noexcept
+			WrongAddressTypeException::WrongAddressTypeException(const char* what, grdt_address type, ConstBlockPtr pubkey, optional<uint32_t> communityIdIndex) noexcept
 				: TransactionValidationException(what), mType(type)
 			{
 				if (pubkey) {
@@ -409,7 +409,7 @@ namespace gradido {
 				}
 			}
 
-			Wronggrdt_addressException::Wronggrdt_addressException(const char* what, grdt_address type, PublicKeyIndex pubkeyIndex, optional<uint32_t> communityIdIndex) noexcept
+			WrongAddressTypeException::WrongAddressTypeException(const char* what, grdt_address type, PublicKeyIndex pubkeyIndex, optional<uint32_t> communityIdIndex) noexcept
 				: TransactionValidationException(what), mType(type)
 			{
 				mPublicKeyHex = pubkeyIndex.toString();
@@ -424,7 +424,7 @@ namespace gradido {
 				}
 			}
 
-			Wronggrdt_addressException::Wronggrdt_addressException(const char* what, grdt_address type, uint32_t pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept
+			WrongAddressTypeException::WrongAddressTypeException(const char* what, grdt_address type, uint32_t pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept
 				: TransactionValidationException(what), mType(type)
 			{
 				mPublicKeyHex = to_string(pubkeyIndex);
@@ -440,7 +440,7 @@ namespace gradido {
 				}
 			}
 
-			std::string Wronggrdt_addressException::getFullString() const noexcept
+			std::string WrongAddressTypeException::getFullString() const noexcept
 			{
 				std::string result;
 				auto addressTypeName = enum_name(mType);
@@ -457,7 +457,7 @@ namespace gradido {
 				return result;
 			}
 
-			Value Wronggrdt_addressException::getDetails(Document::AllocatorType& alloc) const
+			Value WrongAddressTypeException::getDetails(Document::AllocatorType& alloc) const
 			{
 				Value jsonDetails(kObjectType);
 				jsonDetails.AddMember("what", Value(what(), alloc), alloc);

@@ -107,7 +107,7 @@ namespace gradido {
 					filter.involvedPublicKey = mGradidoCreation->getRecipient().getPublicKey();
 					auto addressType = c.senderBlockchain->getAddressType(filter);
 					if (GRDT_ADDRESS_COMMUNITY_HUMAN != addressType) {
-						throw Wronggrdt_addressException(
+						throw WrongAddressTypeException(
 							"wrong address type for creation",
 							addressType,
 							mGradidoCreation->getRecipient().getPublicKey(),
@@ -133,7 +133,7 @@ namespace gradido {
 
 					auto signerAccountType = blockchain->getAddressType(filter);
 					if (GRDT_ADDRESS_COMMUNITY_HUMAN != signerAccountType) {
-						throw Wronggrdt_addressException(
+						throw WrongAddressTypeException(
 							"signer for creation doesn't have a community human account",
 							signerAccountType,
 							signPair.getPublicKey(),

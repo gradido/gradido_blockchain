@@ -23,7 +23,7 @@ namespace gradido {
 			inline bool operator==(const RegisterAddress& other) const {
 				return
 					mUserPubkey && mUserPubkey->isTheSame(other.mUserPubkey) &&
-					mgrdt_address == other.mgrdt_address &&
+					mAddressType == other.mAddressType &&
 					mNameHash && mNameHash->isTheSame(other.mNameHash) &&
 					mAccountPubkey && mAccountPubkey->isTheSame(other.mAccountPubkey) &&
 					mDerivationIndex == other.mDerivationIndex
@@ -34,14 +34,14 @@ namespace gradido {
 			bool isInvolved(const memory::Block& publicKey) const;
 
 			inline memory::ConstBlockPtr getUserPublicKey() const { return mUserPubkey; }
-			inline grdt_address getAddressType() const { return mgrdt_address; }
+			inline grdt_address getAddressType() const { return mAddressType; }
 			inline memory::ConstBlockPtr getNameHash() const { return mNameHash; }
 			inline memory::ConstBlockPtr getAccountPublicKey() const { return mAccountPubkey; }
 			inline uint32_t getDerivationIndex() const { return mDerivationIndex; }
 
 		protected:
 			memory::ConstBlockPtr	mUserPubkey;
-			grdt_address				mgrdt_address;
+			grdt_address				mAddressType;
 			memory::ConstBlockPtr	mNameHash;
 			memory::ConstBlockPtr   mAccountPubkey;
 			uint32_t				mDerivationIndex;

@@ -187,7 +187,7 @@ namespace gradido {
       if (GRDT_ADDRESS_NONE == addressType) {
         return GRDT_ADDRESS_NONE;
       }
-      auto txs = mAddressIndex.getgrdt_addressChangingTransactions(publicKeyIndex);
+      auto txs = mAddressIndex.getAddressTypeChangingTransactions(publicKeyIndex);
       if (txs.empty()) {
         return addressType;
       }

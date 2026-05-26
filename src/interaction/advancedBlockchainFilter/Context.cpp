@@ -51,7 +51,7 @@ namespace gradido {
 				auto publicKey = getPublicKeyForRelation(type, transactionRole);
 				if (publicKey && !publicKey->isEmpty()) {
 					FilterBuilder builder;
-					
+
 					return mBlockchain->findOne(builder
 						.setInvolvedPublicKey(publicKey)
 						.setSearchDirection(SearchDirection::DESC)
@@ -65,7 +65,7 @@ namespace gradido {
 						.build()
 					);
 				}
-				else 
+				else
 				{
 					throw  GradidoUnhandledEnum(
 						"role for this TransactionRelationType is currently not implemented",
@@ -89,7 +89,7 @@ namespace gradido {
 					[&]() { return std::make_shared<TimeoutDeferredTransferTransactionRole>(transactionBody, mBlockchain); }
 				};
 
-				auto type = transactionBody->getgrdt_transaction();
+				auto type = transactionBody->getTransactionType();
 				auto result = roleCreators[enum_integer(type)]();
 
 				if (!result) {
@@ -109,8 +109,8 @@ namespace gradido {
 				}
 				else if (TransactionRelationType::SenderPrevious == type) {
 					return role->getSenderPublicKey();
-				} 
-				else if (TransactionRelationType::AufPrevious == type || TransactionRelationType::GmwPrevious == type) 
+				}
+				else if (TransactionRelationType::AufPrevious == type || TransactionRelationType::GmwPrevious == type)
 				{
 					auto firstTransactionEntry = mBlockchain->findOne(Filter::FIRST_TRANSACTION);
 					assert(firstTransactionEntry->getTransactionBody()->isCommunityRoot());
@@ -127,4 +127,3 @@ namespace gradido {
 		}
 	}
 }
-

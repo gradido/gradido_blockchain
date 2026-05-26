@@ -9,7 +9,7 @@ namespace gradido {
 			memory::ConstBlockPtr userPubkeyPtr,
 			memory::ConstBlockPtr nameHashPtr,
 			memory::ConstBlockPtr accountPubkeyPtr
-		) : mUserPubkey(userPubkeyPtr), mgrdt_address(_addressType), mNameHash(nameHashPtr),
+		) : mUserPubkey(userPubkeyPtr), mAddressType(_addressType), mNameHash(nameHashPtr),
 			mAccountPubkey(accountPubkeyPtr), mDerivationIndex(_derivationIndex) 
 		{
 			KeyPairEd25519::validatePublicKey(userPubkeyPtr);

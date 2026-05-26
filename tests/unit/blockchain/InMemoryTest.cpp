@@ -519,7 +519,7 @@ TEST_F(InMemoryTest, ValidGradidoDeferredTransfer)
 	ASSERT_EQ(balanceWhenSecondsDeferredTransferStart, GradidoUnit(560.4132));
 	EXPECT_THROW(
 		createGradidoDeferredTransfer(recipientKeyPairIndex, secondRecipientKeyPairIndex, 483.0, createdAt, secondTimeoutDuration),
-		validate::Wronggrdt_addressException
+		validate::WrongAddressTypeException
 	);
 	try {
 		// redeem from creator, only two account balances in confirmed transaction

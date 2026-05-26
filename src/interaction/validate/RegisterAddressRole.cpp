@@ -71,7 +71,7 @@ namespace gradido {
 						if (c.senderBlockchain) {
 							communityIdIndex = c.senderBlockchain->getCommunityIdIndex();
 						}
-						throw Wronggrdt_addressException(
+						throw WrongAddressTypeException(
 							"register address transaction not allowed with community auf or gmw account or None",
 							addressType,
 							userPubkeyIndex,
