@@ -39,7 +39,7 @@ namespace gradido {
           grd_memory_block src = { .data = (uint8_t*)mTxRaw->data(), .size = mTxRaw->size() };
           auto result = grdw_gradido_transaction_decode(&tx, &src, alloc);
           // we skip GRD_ERROR_STATIC_BUFFER_TO_SMALL because GrduStaticBuffer should handle this error
-          if (GRD_SUCCESS != result && GRD_ERROR_STATIC_BUFFER_TO_SMALL != result && GRD_ERROR_OUT_OF_MEMORY != result) {
+          if (GRD_SUCCESS != result && GRD_ERROR_OUT_OF_MEMORY != result) {
             LOG_F(ERROR, "decode error: %s", enum_name(result).data());
             throw GradidoNodeInvalidDataException("error deserialize transaction");
           }

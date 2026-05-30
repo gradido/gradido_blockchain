@@ -1,7 +1,9 @@
 #include "gradido_blockchain_core/memory.h"
+#include "gradido_blockchain_core/data/runtime/complete_transaction.h"
 #include "gradido_blockchain_core/data/wire/confirmed_transaction.h"
 #include "gradido_blockchain_core/data/wire/gradido_transaction.h"
 #include "gradido_blockchain_core/data/wire/transaction_body.h"
+#include "gradido_blockchain_core/mapping/runtime_from_wire.h"
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/batch/signaturesVerify.h"
 #include "gradido_blockchain/blockchain/batch/ThreadingPolicy.h"
@@ -48,7 +50,7 @@ using hiero::TransactionId, hiero::AccountId;
 using gradido::g_appContext;
 using gradido::blockchain::batch::verifySignatures, gradido::blockchain::batch::ThreadingPolicy;
 using gradido::blockchain::Filter, gradido::blockchain::InMemoryProvider, gradido::blockchain::TransactionsIndex;
-using gradido::data::adapter::uuidToString;
+using gradido::data::adapter::uuidToString, gradido::data::adapter::uuidFromString;
 using gradido::data::GradidoTransaction, gradido::data::ConstGradidoTransactionPtr;
 using gradido::data::ConfirmedTransaction, gradido::data::ConstConfirmedTransactionPtr;
 using gradido::data::LedgerAnchor;
@@ -363,12 +365,14 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 		{ .communityId = "e70da33e-5976-4767-bade-aa4e4fa1c01a", .fileName = "gradido_akademie.dat" }
 	};
 	const int communityCount = 1;
+	auto uuid = uuidFromString(communities[0].communityId);
 	char readFromFileStaticBuffer[1024];
 	uint8_t staticInputBuffer[4096];
 	grd_memory alloc;
 	grd_memory_init_arena_static(&alloc, staticInputBuffer, 4096);
 	grdw_confirmed_transaction tx{};
 	grdw_transaction_body body{};
+	grdr_complete_transaction completeTx{};
 
 	auto provider = InMemoryProvider::getInstance();
 	for (int i = 0; i < communityCount; ++i) {
@@ -395,10 +399,24 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 
 			alloc.last_index = 0;
 			grd_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };
+			
 			auto decodeResult = grdw_confirmed_transaction_decode(&tx, &src, &alloc);
 			ASSERT_EQ(decodeResult, GRD_SUCCESS);
+			if (count == 200) {
+				int zahl = 1;
+			}
 			decodeResult = grdw_transaction_body_decode(&body, &tx.transaction.body_bytes, &alloc);
 			ASSERT_EQ(decodeResult, GRD_SUCCESS);
+			
+			/*auto res = grdm_complete_transaction_from_wire(&completeTx, &body, &tx, uuid.data());
+			if (res != GRD_SUCCESS) {
+				int zahl = 1;
+			}*/
+			ASSERT_EQ(grdm_complete_transaction_from_wire(&completeTx, &body, &tx, uuid.data()), GRD_SUCCESS);
+			grdr_complete_transaction_release(&completeTx);
+			
+			grdw_transaction_body_free(&body, &alloc);
+			grdw_confirmed_transaction_free(&tx, &alloc);
 
 			if (GRDT_LEDGER_ANCHOR_NODE_TRIGGER_TRANSACTION_ID != tx.ledger_anchor.type) {
 				// com.transactions.push(ConfirmedTransaction::fromGrdw(&tx, i+1));
