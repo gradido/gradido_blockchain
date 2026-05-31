@@ -12,6 +12,8 @@
 
 #include <variant>
 
+struct grdw_ledger_anchor;
+
 namespace gradido {
 	namespace data {
 		class GRADIDOBLOCKCHAIN_EXPORT LedgerAnchor
@@ -23,6 +25,7 @@ namespace gradido {
 			explicit LedgerAnchor(const hiero::TransactionId& hieroTransactionId);
 			explicit LedgerAnchor(const compact::HieroTransactionId& hieroTransactionId);
 			explicit LedgerAnchor(uint64_t transactionId, grdt_ledger_anchor type);
+			LedgerAnchor(const grdw_ledger_anchor& ledgerAnchor);
 			~LedgerAnchor();
 
 			inline bool isHieroTransactionId() const noexcept { return std::holds_alternative<compact::HieroTransactionId>(mValue); }

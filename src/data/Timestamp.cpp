@@ -18,6 +18,8 @@ namespace gradido {
 			mNanos = (duration_cast<std::chrono::nanoseconds>(duration) - duration_cast<std::chrono::nanoseconds>(secondsDuration)).count();
 		}
 
+		
+
 		Timestamp Timestamp::now()
 		{
 			return system_clock::now();

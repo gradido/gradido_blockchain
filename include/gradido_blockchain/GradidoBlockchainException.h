@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "gradido_blockchain/export.h"
+#include "gradido_blockchain_core/result.h"
 #include "rapidjson/error/error.h"
 #include "rapidjson/document.h"
 
@@ -22,6 +23,15 @@ public:
 	virtual ~GradidoBlockchainException() {};
 	virtual std::string getFullString() const = 0;
 	virtual rapidjson::Value getDetails(rapidjson::Document::AllocatorType& alloc) const { return rapidjson::Value(rapidjson::kObjectType); }
+};
+
+class GRADIDOBLOCKCHAIN_EXPORT GradidoBlockchainCoreException : public GradidoBlockchainException
+{
+public:
+	explicit GradidoBlockchainCoreException(const char* what, grd_result result) noexcept;
+	virtual std::string getFullString() const;
+protected:
+	grd_result mResult;
 };
 
 class GRADIDOBLOCKCHAIN_EXPORT GradidoNotImplementedException : public GradidoBlockchainException

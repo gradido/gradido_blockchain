@@ -6,6 +6,7 @@
 #include "gradido_blockchain_core/types/memo_key.h"
 
 class AuthenticatedEncryption;
+struct grdw_encrypted_memo;
 
 namespace gradido {
     namespace data {
@@ -37,6 +38,7 @@ namespace gradido {
             EncryptedMemo(EncryptedMemo&& other) noexcept : mKeyType(other.mKeyType), mMemo(std::move(other.mMemo)) {}
             // copy 
             EncryptedMemo(const EncryptedMemo& other) : mKeyType(other.mKeyType), mMemo(other.mMemo) {}
+            EncryptedMemo(const grdw_encrypted_memo& memo);
             ~EncryptedMemo() {}
 
             inline grdt_memo_key getKeyType() const { return mKeyType; }

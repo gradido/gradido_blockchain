@@ -17,6 +17,7 @@
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/data/hiero/AccountId.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
+#include "gradido_blockchain/data/runtime/CompleteTransaction.h"
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/lib/MonotonicTimer.h"
 #include "gradido_blockchain/lib/MultithreadQueue.h"
@@ -345,6 +346,7 @@ TEST_F(LoadFromBinary, toFromProtobuf)
 }
 // */
 using gradido::data::compact::ConfirmedGradidoTx;
+using gradido::data::runtime::CompleteTransaction;
 using std::shared_ptr;
 using namespace gradido;
 
@@ -367,12 +369,12 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 	const int communityCount = 1;
 	auto uuid = uuidFromString(communities[0].communityId);
 	char readFromFileStaticBuffer[1024];
-	uint8_t staticInputBuffer[4096];
-	grd_memory alloc;
-	grd_memory_init_arena_static(&alloc, staticInputBuffer, 4096);
-	grdw_confirmed_transaction tx{};
-	grdw_transaction_body body{};
-	grdr_complete_transaction completeTx{};
+	// uint8_t staticInputBuffer[4096];
+	//grd_memory alloc;
+	//grd_memory_init_arena_static(&alloc, staticInputBuffer, 4096);
+	//grdw_confirmed_transaction tx{};
+	//grdw_transaction_body body{};
+	// grdr_complete_transaction completeTx{};
 
 	auto provider = InMemoryProvider::getInstance();
 	for (int i = 0; i < communityCount; ++i) {
@@ -380,6 +382,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 		provider->findBlockchain(communities[i].communityId);
 	}
 	// load from file, deserialize, create object
+	
 	for (uint32_t i = 0; i < communityCount; ++i) {
 		timeUsed.reset();
 		auto& com = communities[i];
@@ -397,6 +400,10 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			f.read(readFromFileStaticBuffer, txSize);
 			readed += txSize;
 
+			CompleteTransaction completeTx;
+			grd_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };
+			ASSERT_EQ(completeTx.initFromProtobuf(src, uuid.data()), GRD_SUCCESS);
+			/*
 			alloc.last_index = 0;
 			grd_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };
 			
@@ -412,6 +419,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			if (res != GRD_SUCCESS) {
 				int zahl = 1;
 			}*/
+			/*
 			ASSERT_EQ(grdm_complete_transaction_from_wire(&completeTx, &body, &tx, uuid.data()), GRD_SUCCESS);
 			grdr_complete_transaction_release(&completeTx);
 			
@@ -429,7 +437,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 				
 				// com.compactTransactions.push(compact);
 				// */
-			}
+			// }
 
 			if (readed + 32 >= fileSize) {
 				break;

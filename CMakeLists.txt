@@ -221,6 +221,7 @@ FILE(GLOB DATA "include/gradido_blockchain/data/*.h" "src/data/*.cpp")
 FILE(GLOB DATA_ADAPTER "include/gradido_blockchain/data/adapter/*.h" "src/data/adapter/*.cpp")
 FILE(GLOB DATA_COMPACT "include/gradido_blockchain/data/compact/*.h" "src/data/compact/*.cpp")
 FILE(GLOB DATA_RICH "include/gradido_blockchain/data/rich/*.h" "src/data/rich/*.cpp")
+FILE(GLOB DATA_RUNTIME "include/gradido_blockchain/data/runtime/*.h" "src/data/runtime/*.cpp")
 FILE(GLOB DATA_HIERO "include/gradido_blockchain/data/hiero/*.h" "src/data/hiero/*.cpp")
 FILE(GLOB HTTP "include/gradido_blockchain/http/*.h" "src/http/*.cpp")
 FILE(GLOB INTERACTION "include/gradido_blockchain/interaction/*.h" "src/interaction/*.cpp")
@@ -269,7 +270,7 @@ FILE(GLOB INTERACTION_VALIDATE
 SET(GRADIDO_BLOCKCHAIN_LOCAL_SRCS
 	${BLOCKCHAIN} ${BLOCKCHAIN_BATCH}
 	${CRYPTO}
-	${DATA} ${DATA_ADAPTER} ${DATA_COMPACT} ${DATA_HIERO} ${DATA_RICH}
+	${DATA} ${DATA_ADAPTER} ${DATA_COMPACT} ${DATA_HIERO} ${DATA_RICH} ${DATA_RUNTIME}
 	${INTERACTION}
 	${LIB_SRC}
 	${MAIN}
@@ -299,7 +300,8 @@ if(MSVC)
 	source_group("data\\adapter" FILES ${DATA_ADAPTER})
 	source_group("data\\compact" FILES ${DATA_COMPACT})
 	source_group("data\\hiero" FILES ${DATA_HIERO})
-		source_group("data\\rich" FILES ${DATA_RICH})
+	source_group("data\\rich" FILES ${DATA_RICH})
+	source_group("data\\runtime" FILES ${DATA_RUNTIME})
 	source_group("data" FILES ${DATA})
 	if(ENABLE_HTTP)
 		source_group("http" FILES ${HTTP})

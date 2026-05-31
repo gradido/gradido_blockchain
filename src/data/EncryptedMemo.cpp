@@ -1,10 +1,12 @@
 
-#include "gradido_blockchain/data/EncryptedMemo.h"
 #include "gradido_blockchain/crypto/AuthenticatedEncryption.h"
 #include "gradido_blockchain/crypto/SealedBoxes.h"
 #include "gradido_blockchain/const.h"
+#include "gradido_blockchain/data/EncryptedMemo.h"
 #include "gradido_blockchain/lib/minizLib.h"
+#include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain_core/types/memo_key.h"
+#include "gradido_blockchain_core/data/wire/basic_types.h"
 
 namespace gradido {
     namespace data {
@@ -28,6 +30,12 @@ namespace gradido {
             else {
                 mMemo = secondKeyPair.encrypt(compressedMemo, firstKeyPair);
             }
+        }
+
+        EncryptedMemo::EncryptedMemo(const grdw_encrypted_memo& memo)
+            : mKeyType(memo.type), mMemo(memo.memo.size, memo.memo.data)
+        {
+
         }
 
         std::string EncryptedMemo::decrypt(const AuthenticatedEncryption& communityKeyPair) const

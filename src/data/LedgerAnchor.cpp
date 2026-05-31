@@ -2,6 +2,8 @@
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain_core/data/wire/hiero.h"
+#include "gradido_blockchain_core/data/wire/ledger_anchor.h"
 #include "gradido_blockchain_core/types/ledger_anchor.h"
 
 #include "loguru/loguru.hpp"
@@ -53,6 +55,20 @@ namespace gradido {
 					"for uint64_t transactionId only types LEGACY_GRADIDO_DB_* and NODE_TRIGGER_TRANSACTION_ID are allowed",
 					enum_name(type).data()
 				);
+			}
+		}
+
+		LedgerAnchor::LedgerAnchor(const grdw_ledger_anchor& ledgerAnchor)
+			: mType(ledgerAnchor.type)
+		{
+			if (GRDT_LEDGER_ANCHOR_HIERO_TRANSACTION_ID == ledgerAnchor.type) {
+				mValue = adapter::toCompact(ledgerAnchor.hiero_transaction_id);
+			}
+			else if (isLegacyGradidoId()) {
+				mValue = AnchorValue(std::in_place_index<2>, ledgerAnchor.id);
+			}
+			else if (isNodeTriggeredTransactionId()) {
+				mValue = AnchorValue(std::in_place_index<3>, ledgerAnchor.id);
 			}
 		}
 

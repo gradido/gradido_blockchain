@@ -1,4 +1,5 @@
 #include "gradido_blockchain/data/hiero/AccountId.h"
+#include "gradido_blockchain_core/data/wire/hiero.h"
 #include <loguru.hpp>
 
 using namespace std;
@@ -24,6 +25,15 @@ namespace hiero {
 
 	AccountId::AccountId(int64_t shardNum, int64_t realmNum, memory::Block&& alias)
 		: mShardNum(shardNum), mRealmNum(realmNum), mAccountNum(0), mAlias(std::move(alias))
+	{
+
+	}
+
+	AccountId::AccountId(const grdw_hiero_account_id& coreHieroAccountId)
+		: mShardNum(coreHieroAccountId.shardNum), 
+		mRealmNum(coreHieroAccountId.realmNum),
+		mAccountNum(coreHieroAccountId.accountNum),
+		mAlias(memory::Block(0))
 	{
 
 	}

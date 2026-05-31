@@ -54,6 +54,8 @@
 
 #include <functional>
 
+struct grdw_hiero_transaction_id;
+
 namespace hiero {
 	class GRADIDOBLOCKCHAIN_EXPORT TransactionId
 	{
@@ -63,6 +65,7 @@ namespace hiero {
 		//! expect string in format 0.0.2-17281772-21022 or 0.0.256009@1755503343.736000193
 		//! sharedNum.realmNum.accountNum-seconds-nanoseconds
 		TransactionId(const std::string& transactionIdString);
+		TransactionId(const grdw_hiero_transaction_id& coreHieroGradidoId);
 		~TransactionId();
 		inline void setScheduled();
 		inline void setNonce(int32_t nonce);
