@@ -43,15 +43,8 @@ namespace memory {
 
 	}
 
-	Block::Block(PublicKey publicKey)
+	Block::Block(const PublicKey& publicKey)
 		: Block(publicKey.size(), publicKey.data())
-	{
-
-	}
-
-	// copy
-	Block::Block(Block& other)
-		: Block(other.size(), other.data())
 	{
 
 	}
@@ -68,7 +61,7 @@ namespace memory {
 		other.mSize = 0;
 		other.mData = nullptr;
 	}
-	// also move 
+	// also move
 	Block& Block::operator=(Block&& other) noexcept
 	{
 		clear();
@@ -228,5 +221,3 @@ namespace memory {
 		return std::hash<int64_t>()(SignatureOctet(*s).octet);
 	}
 }
-
-

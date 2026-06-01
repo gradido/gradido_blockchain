@@ -28,9 +28,8 @@ namespace memory {
 		Block(const std::vector<unsigned char>& data);
 		Block(std::span<std::byte> data);
 		Block(const std::string& data);
-		Block(gradido::data::PublicKey publicKey);
+		Block(const gradido::data::PublicKey& publicKey);
 		// copy
-		Block(Block& other);
 		Block(const Block& other);
 		// move
 		Block(Block&& other) noexcept;
@@ -103,7 +102,7 @@ namespace memory {
 	struct GRADIDOBLOCKCHAIN_EXPORT ConstBlockPtrComparator {
 		bool operator()(ConstBlockPtr a, ConstBlockPtr b) const
 		{
-			// Compare based on string length 
+			// Compare based on string length
 			return *a < *b;
 		}
 	};
