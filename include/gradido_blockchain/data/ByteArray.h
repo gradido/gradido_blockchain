@@ -37,6 +37,36 @@ namespace gradido::data {
       }
       memcpy(mData, data.data(), N);
     }
+    // copy
+    ByteArray(const ByteArray<N>& other)
+    {
+        memcpy(mData, other.mData, N);
+    }
+    // move
+    ByteArray(ByteArray<N>&& other)
+    {
+        memcpy(mData, other.mData, N);
+        memset(other.mData, 0, N);
+    }
+
+    // copy assignment
+    ByteArray& operator=(const ByteArray<N>& other)
+    {
+        if (this != &other) {
+            memcpy(mData, other.mData, N);
+        }
+        return *this;
+    }
+
+    // move assignment
+    ByteArray& operator=(ByteArray<N>&& other)
+    {
+        if (this != &other) {
+            memcpy(mData, other.mData, N);
+            memset(other.mData, 0, N);
+        }
+        return *this;
+    }
 
     ByteArray(const uint8_t data[N]) { memcpy(mData, data, N); }
 

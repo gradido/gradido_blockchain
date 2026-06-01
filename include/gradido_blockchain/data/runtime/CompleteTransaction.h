@@ -125,7 +125,7 @@ namespace gradido::data::runtime {
 		const Uuid& coinCommunityUuid,
 		Timepoint endDate/* = std::chrono::system_clock::now()*/
 	) const {
-		return AccountBalance(getAccountBalance(publicKey, coinCommunityIdIndex))
+		return AccountBalance(getAccountBalance(publicKey, coinCommunityUuid))
 			.getBalance()
 			.calculateDecay(Timestamp(confirmed_at).getAsTimepoint(), endDate);
 	}
