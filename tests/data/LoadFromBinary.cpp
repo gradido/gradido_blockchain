@@ -1,9 +1,4 @@
-#include "gradido_blockchain_core/memory.h"
-#include "gradido_blockchain_core/data/runtime/complete_transaction.h"
-#include "gradido_blockchain_core/data/wire/confirmed_transaction.h"
-#include "gradido_blockchain_core/data/wire/gradido_transaction.h"
-#include "gradido_blockchain_core/data/wire/transaction_body.h"
-#include "gradido_blockchain_core/mapping/runtime_from_wire.h"
+
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/batch/signaturesVerify.h"
 #include "gradido_blockchain/blockchain/batch/ThreadingPolicy.h"
@@ -25,6 +20,16 @@
 #include "gradido_blockchain/interaction/deserialize/Type.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
 #include "gradido_blockchain/serialization/toJsonString.h"
+#include "gradido_blockchain_core/data/runtime/complete_transaction.h"
+#include "gradido_blockchain_core/data/wire/confirmed_transaction.h"
+#include "gradido_blockchain_core/data/wire/gradido_transaction.h"
+#include "gradido_blockchain_core/data/wire/transaction_body.h"
+#include "gradido_blockchain_core/error_details.h"
+#include "gradido_blockchain_core/interactions/validate/context.h"
+#include "gradido_blockchain_core/interactions/validate/options.h"
+#include "gradido_blockchain_core/interactions/validate/result_type.h"
+#include "gradido_blockchain_core/mapping/runtime_from_wire.h"
+#include "gradido_blockchain_core/memory.h"
 #include "gradido_blockchain_core/types/cross_group.h"
 #include "LoadFromBinary.h"
 
@@ -403,6 +408,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			CompleteTransaction completeTx;
 			grd_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };
 			ASSERT_EQ(completeTx.initFromProtobuf(src, uuid.data()), GRD_SUCCESS);
+			ASSERT_EQ(completeTx.validate(false), GRD_SUCCESS);
 			/*
 			alloc.last_index = 0;
 			grd_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };

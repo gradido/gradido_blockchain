@@ -1,6 +1,9 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/GradidoUnit.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain_core/error_details.h"
+#include "gradido_blockchain_core/interactions/validate/result_type.h"
+#include "gradido_blockchain_core/result.h"
 #include "rapidjson/error/en.h"
 
 #include <string>
@@ -14,16 +17,48 @@ using namespace rapidjson;
 using std::string, std::stringstream, std::to_string;
 
 GradidoBlockchainCoreException::GradidoBlockchainCoreException(const char* what, grd_result result) noexcept
-	: GradidoBlockchainException(what), mResult(result)
+	: GradidoBlockchainException(what), mResult(enum_name(result))
 {
 
+}
+GradidoBlockchainCoreException::GradidoBlockchainCoreException(const char* what, grdi_validate_result_type result) noexcept
+	: GradidoBlockchainException(what), mResult(enum_name(result))
+{
+
+}
+
+void GradidoBlockchainCoreException::addDetails(const grd_error_details* details)
+{
+	if (details->message) {
+		mMessage = details->message;
+	}
+	if (details->actual) {
+		mActual = details->actual;
+	}
+	if (details->expected) {
+		mExpected = details->expected;
+	}
 }
 
 string GradidoBlockchainCoreException::getFullString() const
 {
 	string result = what();
 	result += ", core error: ";
-	result += enum_name(mResult);
+	result += mResult;
+	if (mMessage.size() || mActual.size() || mExpected.size()) {
+		result += ", details: ";
+	}
+	if (mMessage.size()) {
+		result += mMessage;
+	}
+	if (mActual.size()) {
+		result += ", actual: ";
+		result += mActual;
+	}
+	if (mExpected.size()) {
+		result += ", expected: ";
+		result += mExpected;
+	}
 	return result;
 }
 

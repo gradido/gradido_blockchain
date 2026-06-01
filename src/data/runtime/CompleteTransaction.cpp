@@ -4,6 +4,10 @@
 #include "gradido_blockchain/memory/grdu_StaticBuffer.h"
 #include "gradido_blockchain_core/data/wire/confirmed_transaction.h"
 #include "gradido_blockchain_core/data/wire/transaction_body.h"
+#include "gradido_blockchain_core/error_details.h"
+#include "gradido_blockchain_core/interactions/validate/context.h"
+#include "gradido_blockchain_core/interactions/validate/options.h"
+#include "gradido_blockchain_core/interactions/validate/result_type.h"
 #include "gradido_blockchain_core/mapping/runtime_from_wire.h"
 #include "gradido_blockchain_core/memory.h"
 #include "gradido_blockchain_core/result.h"
@@ -64,6 +68,27 @@ namespace gradido::data::runtime {
         return initFromGrdw(&body, &tx, communityUuid);
       }
     );
+  }
+
+  grd_result CompleteTransaction::validate(bool verifySignatures/* = true */)
+  {
+    grdi_validate_options opt = {
+      .enable_verify = verifySignatures
+    };
+    grd_error_details errorDetails;
+    // TODO: think about using static allocator, to speed up runs with errors
+    grd_result result = grd_error_details_init(&errorDetails, nullptr);
+    if (result != GRD_SUCCESS) { return result; }
+    grdi_validate_result_type validateResult = grdi_validate_complete_transaction(this, &opt, &errorDetails);
+    if (validateResult != GRDI_VALIDATE_SUCCESS) {
+      auto exception = GradidoBlockchainCoreException("error validating complete tx", validateResult);
+      exception.addDetails(&errorDetails);
+      grd_error_details_release(&errorDetails);
+      throw exception;
+    }
+
+    grd_error_details_release(&errorDetails);
+    return GRD_SUCCESS;
   }
 
   vector<grdw_account_balance> CompleteTransaction::getAccountBalances() const

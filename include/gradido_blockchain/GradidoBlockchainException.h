@@ -3,13 +3,17 @@
 
 #include "types.h"
 #include "gradido_blockchain/export.h"
-#include "gradido_blockchain_core/result.h"
+
 #include "rapidjson/error/error.h"
 #include "rapidjson/document.h"
 
 #include <stdexcept>
 
 class GradidoUnit;
+enum grdi_validate_result_type;
+struct grd_error_details;
+enum grd_result;
+
 
 namespace memory {
 	class Block;
@@ -29,9 +33,15 @@ class GRADIDOBLOCKCHAIN_EXPORT GradidoBlockchainCoreException : public GradidoBl
 {
 public:
 	explicit GradidoBlockchainCoreException(const char* what, grd_result result) noexcept;
+	explicit GradidoBlockchainCoreException(const char* what, grdi_validate_result_type result) noexcept;
+	
+	void addDetails(const grd_error_details* details);
 	virtual std::string getFullString() const;
 protected:
-	grd_result mResult;
+	std::string mResult;
+	std::string mMessage;
+	std::string mActual;
+	std::string mExpected;
 };
 
 class GRADIDOBLOCKCHAIN_EXPORT GradidoNotImplementedException : public GradidoBlockchainException

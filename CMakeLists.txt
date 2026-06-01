@@ -81,20 +81,6 @@ endif()
 	# Fetch Content Module
 include(FetchContent)
 
-set(SODIUM_DISABLE_TESTS ON)
-if(USE_INSTALLED_SODIUM)
-	find_package(Sodium REQUIRED)
-	message(STATUS "Using installed Sodium library")
-else()
-	message(STATUS "Fetch Sodium library from GitHub")
-	# Update the commit to point to whatever libsodium-cmake-commit you want to target.
-	FetchContent_Declare(Sodium
-			GIT_REPOSITORY https://github.com/robinlinden/libsodium-cmake.git
-			GIT_TAG e5b985ad0dd235d8c4307ea3a385b45e76c74c6a # HEAD, last updated at 2025-04-13
-	)
-	FetchContent_MakeAvailable(Sodium)
-endif()
-
 # Roaring Bitmaps
 message(STATUS "Fetch Roaring Bitmap library from GitHub")
 # detection seems not work always correct with zig as compiler, so we disable AVX512 support in roaring
@@ -358,6 +344,7 @@ set(BUILD_SHARED_LIBS_TEMP ${BUILD_SHARED_LIBS})
 set(BUILD_SHARED_LIBS OFF)
 # Set the policy default before adding the third-party directory
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+set(USE_SODIUM ON)
 add_subdirectory(dependencies/gradido-blockchain-core)
 add_subdirectory(dependencies/loguru)
 add_subdirectory(dependencies/fkYAML)

@@ -43,6 +43,8 @@ namespace gradido::data::runtime {
 			return initFromProtobuf(src, communityUuid);
 		};
 
+		grd_result validate(bool verifySignatures = true);
+
 		// getter
 		// confirmed tx
 		inline uint64_t getId() const { return  tx_nr; }
