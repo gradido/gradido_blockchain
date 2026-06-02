@@ -11,6 +11,7 @@
 #include "gradido_blockchain_core/mapping/runtime_from_wire.h"
 #include "gradido_blockchain_core/memory.h"
 #include "gradido_blockchain_core/result.h"
+#include "gradido_blockchain_core/types/cross_group.h"
 
 #include "magic_enum/magic_enum.hpp"
 
@@ -37,7 +38,7 @@ namespace gradido::data::runtime {
   )
   {
     grdr_complete_transaction_release(this);
-    return grdm_complete_transaction_from_wire(this, body, confirmedTx, communityUuid.data());    
+    return grdm_complete_transaction_from_wire(this, body, confirmedTx, communityUuid.data());
   }
 
   grd_result CompleteTransaction::initFromProtobuf(const grd_memory_block& inputBuffer, Uuid communityUuid)
@@ -189,7 +190,7 @@ namespace gradido::data::runtime {
       result.push_back(community_root.gmw_public_key);
       result.push_back(community_root.auf_public_key);
       break;
-    default: 
+    default:
       throw GradidoUnhandledEnum("on CompleteTransaction::getInvolvedAddresses", "grdt_transaction", enum_name(transaction_type).data());
     }
     return result;
@@ -216,6 +217,32 @@ namespace gradido::data::runtime {
     for (int i = 0; i < encrypted_memos_count; ++i) {
       memos.push_back(encrypted_memos[i]);
     }
-    return memos;    
+    return memos;
+  }
+
+  Uuid CompleteTransaction::getSenderCommunityUuid() const
+  {
+    if (GRDT_CROSS_GROUP_LOCAL == cross_group_type || GRDT_CROSS_GROUP_OUTBOUND == cross_group_type) {
+      return tx_community_uuid;
+    } else if (GRDT_CROSS_GROUP_INBOUND == cross_group_type) {
+      if (!tx_pairing_community_uuid) {
+        throw GradidoNodeInvalidDataException("missing pairing community uuid for inbound cross group transaction");
+      }
+      return tx_pairing_community_uuid;
+    }
+    throw GradidoNotImplementedException("GRDT_CROSS_GROUP_CROSS not implemented for getSenderCommunityUuid");
+  }
+
+  Uuid CompleteTransaction::getRecipientCommunityUuid() const
+  {
+    if (GRDT_CROSS_GROUP_LOCAL == cross_group_type ||GRDT_CROSS_GROUP_INBOUND == cross_group_type) {
+      return tx_community_uuid;
+    } else if (GRDT_CROSS_GROUP_OUTBOUND == cross_group_type) {
+      if (!tx_pairing_community_uuid) {
+        throw GradidoNodeInvalidDataException("missing pairing community uuid for outbound cross group transaction");
+      }
+      return tx_pairing_community_uuid;
+    }
+    throw GradidoNotImplementedException("GRDT_CROSS_GROUP_CROSS not implemented for getRecipientCommunityUuid");
   }
 }

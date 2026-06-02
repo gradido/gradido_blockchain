@@ -89,17 +89,17 @@ namespace gradido::data::runtime {
 		inline std::optional<GradidoUnit> getAmount() const;
 		inline std::optional<Uuid> getCoinCommunityUuid() const;
 		inline bool hasTransferAmount() const { return isTransfer() || isRedeemDeferredTransfer() || isDeferredTransfer() || isCreation(); }
-		inline
-
-		std::vector<EncryptedMemo> getMemos() const;
+		inline std::vector<EncryptedMemo> getMemos() const;
 		inline Timestamp getCreatedAt() const { return created_at; }
 		inline grdt_cross_group getCrossGroupType() const { return cross_group_type; }
 		inline std::optional<Uuid> getOtherCommunityUuid() const;
 		// full public key
 		//! get sender public key index if it transfer or deferred transfer transaction else std::nullopt
 		inline std::optional<PublicKey> getSender() const;
+		Uuid getSenderCommunityUuid() const;
 		//! get recipient public key index if it is creation, transfer or deferred transfer transaction else std::nullopt
 		inline std::optional<PublicKey> getRecipient() const;
+		Uuid getRecipientCommunityUuid() const;
 		//! get user public key on register address transaction else std::nullopt
 		inline std::optional<PublicKey> getRegisteredUser() const;
 		//! get account public key on register address transaction else std::nullopt
