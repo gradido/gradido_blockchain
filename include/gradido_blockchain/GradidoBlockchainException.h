@@ -3,6 +3,8 @@
 
 #include "types.h"
 #include "gradido_blockchain/export.h"
+#include "gradido_blockchain_core/interactions/validate/result_type.h"
+#include "gradido_blockchain_core/result.h"
 
 #include "rapidjson/error/error.h"
 #include "rapidjson/document.h"
@@ -10,10 +12,7 @@
 #include <stdexcept>
 
 class GradidoUnit;
-enum grdi_validate_result_type;
 struct grd_error_details;
-enum grd_result;
-
 
 namespace memory {
 	class Block;
@@ -34,7 +33,7 @@ class GRADIDOBLOCKCHAIN_EXPORT GradidoBlockchainCoreException : public GradidoBl
 public:
 	explicit GradidoBlockchainCoreException(const char* what, grd_result result) noexcept;
 	explicit GradidoBlockchainCoreException(const char* what, grdi_validate_result_type result) noexcept;
-	
+
 	void addDetails(const grd_error_details* details);
 	virtual std::string getFullString() const;
 protected:
@@ -89,7 +88,7 @@ protected:
 
 class GRADIDOBLOCKCHAIN_EXPORT RapidjsonMissingMemberException : public GradidoBlockchainException
 {
-public: 
+public:
 	explicit RapidjsonMissingMemberException(const char* what, const char* fieldName, const char* fieldType) noexcept;
 
 	std::string getFullString() const;
@@ -187,7 +186,7 @@ protected:
 
 class GRADIDOBLOCKCHAIN_EXPORT GradidoMemoryAllocationFailed : public GradidoBlockchainException
 {
-public: 
+public:
 	explicit GradidoMemoryAllocationFailed(const char* what, size_t memorySize) noexcept;
 	std::string getFullString() const;
 
@@ -197,7 +196,7 @@ protected:
 
 class GRADIDOBLOCKCHAIN_EXPORT GradidoNodeInvalidDataException : public GradidoBlockchainException
 {
-public: 
+public:
 	explicit GradidoNodeInvalidDataException(const char* what) noexcept :GradidoBlockchainException(what) {};
 	std::string getFullString() const { return what(); }
 };
