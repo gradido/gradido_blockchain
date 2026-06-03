@@ -14,11 +14,12 @@
 #include <vector>
 
 namespace gradido::data {
-
   template<std::size_t N>
   class ByteArray
   {
   public:
+    using ConstViewType = std::span<const uint8_t, N>;
+
     ByteArray()
     {
       memset(mData, 0, N);
@@ -75,13 +76,18 @@ namespace gradido::data {
 
     ByteArray(const uint8_t data[N]) { memcpy(mData, data, N); }
 
+    inline operator ConstViewType() const { return ConstViewType(mData, N); }
+    inline ConstViewType view() const { return ConstViewType(mData, N); }
+
     inline const uint8_t* data() const { return mData; }
     inline size_t size() const { return N; }
+
     inline bool operator==(const ByteArray& other) const { return std::memcmp(mData, other.mData, N) == 0; }
     inline bool operator!=(const ByteArray& other) const { return !(*this == other); }
     inline bool operator<(const ByteArray& other) const { return std::memcmp(mData, other.mData, N) < 0; }
     inline bool isTheSame(const ByteArray& other) const { return std::memcmp(mData, other.mData, N) == 0; }
     inline bool isTheSame(uint8_t* data) const { return std::memcmp(mData, data, N) == 0; }
+    inline bool isTheSame(ConstViewType other) const { return std::memcmp(mData, other.data(), N) == 0; }
     inline bool isEmpty() const;
     inline std::vector<uint8_t> copyAsVector() const { return { mData, mData + N }; }
     inline std::string convertToHex() const;
@@ -127,6 +133,11 @@ namespace gradido::data {
       throw GradidoInvalidHexException("invalid hex for Block::fromHex", hexString);
     }
     return result;
+  }
+
+  template<size_t N>
+  inline bool isTheSame(std::span<const uint8_t, N> a, std::span<const uint8_t, N> b) {
+    return std::memcmp(a.data(), b.data(), N) == 0;
   }
 
   template<std::size_t N>

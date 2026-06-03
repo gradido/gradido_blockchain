@@ -37,10 +37,10 @@ namespace gradido::data::runtime {
 		grd_result initFromGrdw(
 			const grdw_transaction_body* body,
 			const grdw_confirmed_transaction* confirmedTx,
-			Uuid communityUuid
+			Uuid::ConstViewType communityUuid
 		);
-		grd_result initFromProtobuf(const grd_memory_block& inputBuffer, Uuid communityUuid);
-		inline grd_result initFromProtobuf(const memory::Block& serializedConfirmedTx, Uuid communityUuid) {
+		grd_result initFromProtobuf(const grd_memory_block& inputBuffer, Uuid::ConstViewType communityUuid);
+		inline grd_result initFromProtobuf(const memory::Block& serializedConfirmedTx, Uuid::ConstViewType communityUuid) {
 			grd_memory_block src = { .data = (uint8_t*)serializedConfirmedTx.data(), .size = serializedConfirmedTx.size() };
 			return initFromProtobuf(src, communityUuid);
 		};
@@ -56,23 +56,23 @@ namespace gradido::data::runtime {
 		std::vector<grdw_account_balance> getAccountBalances() const;
 
 		//! \param coinCommunityUuid optional
-		bool hasAccountBalance(const PublicKey& publicKey, const Uuid* coinCommunityUuid = nullptr) const;
-
-		//! \param coinCommunityUuid optional
 		//! \return accountBalance if found one with same public key or nullptr
-		inline const grdw_account_balance* getAccountBalance(const PublicKey& publicKey, const Uuid* coinCommunityUuid = nullptr) const;
+		inline const grdw_account_balance* getAccountBalance(
+		  PublicKey::ConstViewType publicKey,
+			std::optional<Uuid::ConstViewType> coinCommunityUuid = std::nullopt
+		) const;
 
 		//! \return 0 if account balance couldn't be find
 		inline GradidoUnit getDecayedAccountBalance(
-			const PublicKey& publicKey,
-			const Uuid* coinCommunityUuid = nullptr,
+			PublicKey::ConstViewType publicKey,
+			std::optional<Uuid::ConstViewType> coinCommunityUuid = std::nullopt,
 			Timepoint endDate = std::chrono::system_clock::now()
 		) const;
 		grdt_balance_derivation getBalanceDerivationType() const { return balance_derivation_type; }
 		bool isBalanceNodeComputed() const { return GRDT_BALANCE_DERIVATION_NODE == balance_derivation_type; }
 		bool isBalanceExternComputed() const { return GRDT_BALANCE_DERIVATION_EXTERN == balance_derivation_type; }
-		bool isInvolved(const PublicKey& publicKey) const;
-		bool isBalanceUpdated(const PublicKey& publicKey) const;
+		bool isInvolved(PublicKey::ConstViewType publicKey) const;
+		bool isBalanceUpdated(PublicKey::ConstViewType publicKey) const;
 		std::vector<PublicKey> getInvolvedAddresses() const;
 		// bool isTheSame(const CompleteTransaction& other) const;
 
@@ -95,32 +95,32 @@ namespace gradido::data::runtime {
 		inline grdt_transaction getTransactionType() const { return transaction_type; }
 
 		inline std::optional<GradidoUnit> getAmount() const;
-		inline std::optional<std::span<const uint8_t, 16>> getCoinCommunityUuid() const;
+		inline std::optional<Uuid::ConstViewType> getCoinCommunityUuid() const;
 		inline bool hasTransferAmount() const { return isTransfer() || isRedeemDeferredTransfer() || isDeferredTransfer() || isCreation(); }
 		inline std::vector<EncryptedMemo> getMemos() const;
 		inline Timestamp getCreatedAt() const { return created_at; }
 		inline grdt_cross_group getCrossGroupType() const { return cross_group_type; }
-		inline std::optional<std::span<const uint8_t, 16>> getOtherCommunityUuid() const;
+		inline std::optional<Uuid::ConstViewType> getOtherCommunityUuid() const;
 		// full public key
 		//! get sender public key index if it transfer or deferred transfer transaction else std::nullopt
-		inline std::optional<std::span<const uint8_t, 32>> getSenderPublicKey() const;
-		inline std::optional<std::span<const uint8_t, 16>> getSenderCommunityUuid() const;
+		inline std::optional<PublicKey::ConstViewType> getSenderPublicKey() const;
+		inline std::optional<Uuid::ConstViewType> getSenderCommunityUuid() const;
 		//! get recipient public key index if it is creation, transfer or deferred transfer transaction else std::nullopt
-		inline std::optional<std::span<const uint8_t, 32>> getRecipientPublicKey() const;
-		inline std::optional<std::span<const uint8_t, 16>> getRecipientCommunityUuid() const;
+		inline std::optional<PublicKey::ConstViewType> getRecipientPublicKey() const;
+		inline std::optional<Uuid::ConstViewType> getRecipientCommunityUuid() const;
 		//! get user public key on register address transaction else std::nullopt
-		inline std::optional<std::span<const uint8_t, 32>> getRegisteredUser() const;
+		inline std::optional<PublicKey::ConstViewType> getRegisteredUser() const;
 		//! get account public key on register address transaction else std::nullopt
-		inline std::optional<std::span<const uint8_t, 32>> getRegisteredAccount() const;
+		inline std::optional<PublicKey::ConstViewType> getRegisteredAccount() const;
 		inline std::optional<grdt_address> getRegisteredAddressType() const;
 		inline std::optional<uint32_t> getRegisteredDerivationIndex() const;
-		inline std::optional<std::span<const uint8_t, 32>> getRegisteredNameHash() const;
+		inline std::optional<GenericHash::ConstViewType> getRegisteredNameHash() const;
 		//! get root public key on community root transaction else std::nullopt
-		inline std::optional<std::span<const uint8_t, 32>> getCommunityRootPublicKey() const;
+		inline std::optional<PublicKey::ConstViewType> getCommunityRootPublicKey() const;
 		//! get auf account public key on community root transaction else std::nullopt
-		inline std::optional<std::span<const uint8_t, 32>> getAuf() const;
+		inline std::optional<PublicKey::ConstViewType> getAuf() const;
 		//! get gmw account public key on community root transaction else std::nullopt
-		inline std::optional<std::span<const uint8_t, 32>> getGmw() const;
+		inline std::optional<PublicKey::ConstViewType> getGmw() const;
 
 		inline std::optional<grdd_timestamp_seconds> getCreationTargetDate() const;
 		inline std::optional<grdd_duration_seconds> getDeferredTransferTimeoutDuration() const;
@@ -131,19 +131,21 @@ namespace gradido::data::runtime {
 	};
 
 	const grdw_account_balance* CompleteTransaction::getAccountBalance(
-	  const PublicKey& publicKey,
-		const Uuid* coinCommunityUuid/*  = nullptr */
+	  PublicKey::ConstViewType publicKey,
+		std::optional<Uuid::ConstViewType> coinCommunityUuid /* = std::nullopt */
 	) const {
 	  const grdw_account_balance* account_balance = grdr_complete_transaction_get_account_balance_for_public_key(this, publicKey.data());
-		if (coinCommunityUuid && account_balance && !coinCommunityUuid->isTheSame(account_balance->community_uuid)) {
+		if (coinCommunityUuid.has_value() && account_balance &&
+		  !isTheSame(coinCommunityUuid.value(), Uuid::ConstViewType(account_balance->community_uuid, 16))
+		) {
 		  return nullptr;
 		}
 		return account_balance;
 	}
 
 	GradidoUnit CompleteTransaction::getDecayedAccountBalance(
-		const PublicKey& publicKey,
-		const Uuid* coinCommunityUuid,
+		PublicKey::ConstViewType publicKey,
+		std::optional<Uuid::ConstViewType> coinCommunityUuid /* = std::nullopt */,
 		Timepoint endDate/* = std::chrono::system_clock::now()*/
 	) const {
 	  const grdw_account_balance* account_balance = getAccountBalance(publicKey, coinCommunityUuid);
@@ -167,53 +169,53 @@ namespace gradido::data::runtime {
 		return std::nullopt;
 	}
 
-	std::optional<std::span<const uint8_t, 16>> CompleteTransaction::getCoinCommunityUuid() const {
+	std::optional<Uuid::ConstViewType> CompleteTransaction::getCoinCommunityUuid() const {
 		if (hasTransferAmount()) {
 			return transfer.coin_community_uuid;
 		}
 		return std::nullopt;
 	}
 
-	std::optional<std::span<const uint8_t, 16>> CompleteTransaction::getOtherCommunityUuid() const {
+	std::optional<Uuid::ConstViewType> CompleteTransaction::getOtherCommunityUuid() const {
 		if (tx_pairing_community_uuid) {
-			return std::span<const uint8_t, 16>(tx_pairing_community_uuid, 16);
+			return Uuid::ConstViewType(tx_pairing_community_uuid, 16);
 		}
 		return std::nullopt;
 	}
 
-	std::optional<std::span<const uint8_t, 32>> CompleteTransaction::getSenderPublicKey() const {
+	std::optional<PublicKey::ConstViewType> CompleteTransaction::getSenderPublicKey() const {
 		if (isTransfer() || isRedeemDeferredTransfer() || isDeferredTransfer()) {
 			return transfer.sender_pubkey;
 		}
 		return std::nullopt;
 	}
 
-	std::optional<std::span<const uint8_t, 16>> CompleteTransaction::getSenderCommunityUuid() const {
+	std::optional<Uuid::ConstViewType> CompleteTransaction::getSenderCommunityUuid() const {
 	  const uint8_t* uuid_ptr = grdr_complete_transaction_get_sender_community_uuid(this);
-		if (uuid_ptr) { return std::span<const uint8_t, 16>(uuid_ptr, 16); }
+		if (uuid_ptr) { return Uuid::ConstViewType(uuid_ptr, 16); }
 		return std::nullopt;
 	}
 
-	std::optional<std::span<const uint8_t, 32>> CompleteTransaction::getRecipientPublicKey() const {
+	std::optional<PublicKey::ConstViewType> CompleteTransaction::getRecipientPublicKey() const {
 		if (isTransfer() || isRedeemDeferredTransfer() || isDeferredTransfer() || isCreation()) {
 			return transfer.recipient_pubkey;
 		}
 		return std::nullopt;
 	}
 
-	std::optional<std::span<const uint8_t, 16>> CompleteTransaction::getRecipientCommunityUuid() const
+	std::optional<Uuid::ConstViewType> CompleteTransaction::getRecipientCommunityUuid() const
 	{
 	  const uint8_t* uuid_ptr = grdr_complete_transaction_get_recipient_community_uuid(this);
-		if (uuid_ptr) { return std::span<const uint8_t, 16>(uuid_ptr, 16); }
+		if (uuid_ptr) { return Uuid::ConstViewType(uuid_ptr, 16); }
 		return std::nullopt;
 	}
 
-	std::optional<std::span<const uint8_t, 32>> CompleteTransaction::getRegisteredUser() const {
+	std::optional<PublicKey::ConstViewType> CompleteTransaction::getRegisteredUser() const {
 		if (!isRegisterAddress()) { return std::nullopt; }
 		return register_address.user_public_key;
 	}
 
-	std::optional<std::span<const uint8_t, 32>> CompleteTransaction::getRegisteredAccount() const {
+	std::optional<PublicKey::ConstViewType> CompleteTransaction::getRegisteredAccount() const {
 		if (!isRegisterAddress()) { return std::nullopt; }
 		return register_address.account_public_key;
 	}
@@ -228,23 +230,23 @@ namespace gradido::data::runtime {
 		return derivation_index;
 	}
 
-	std::optional<std::span<const uint8_t, 32>> CompleteTransaction::getRegisteredNameHash() const
+	std::optional<GenericHash::ConstViewType> CompleteTransaction::getRegisteredNameHash() const
 	{
 		if (!isRegisterAddress()) { return std::nullopt; }
 		return register_address.name_hash;
 	}
 
-	std::optional<std::span<const uint8_t, 32>> CompleteTransaction::getCommunityRootPublicKey() const {
+	std::optional<PublicKey::ConstViewType> CompleteTransaction::getCommunityRootPublicKey() const {
 		if (!isCommunityRoot()) { return std::nullopt; }
 		return community_root.public_key;
 	}
 
-	std::optional<std::span<const uint8_t, 32>> CompleteTransaction::getAuf() const {
+	std::optional<PublicKey::ConstViewType> CompleteTransaction::getAuf() const {
 		if (!isCommunityRoot()) { return std::nullopt; }
 		return community_root.auf_public_key;
 	}
 
-	std::optional<std::span<const uint8_t, 32>> CompleteTransaction::getGmw() const {
+	std::optional<PublicKey::ConstViewType> CompleteTransaction::getGmw() const {
 		if (!isCommunityRoot()) { return std::nullopt; }
 		return community_root.gmw_public_key;
 	}

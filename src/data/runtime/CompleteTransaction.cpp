@@ -34,14 +34,14 @@ namespace gradido::data::runtime {
   grd_result CompleteTransaction::initFromGrdw(
     const grdw_transaction_body* body,
     const grdw_confirmed_transaction* confirmedTx,
-    Uuid communityUuid
+    Uuid::ConstViewType communityUuid
   )
   {
     grdr_complete_transaction_release(this);
     return grdm_complete_transaction_from_wire(this, body, confirmedTx, communityUuid.data());
   }
 
-  grd_result CompleteTransaction::initFromProtobuf(const grd_memory_block& inputBuffer, Uuid communityUuid)
+  grd_result CompleteTransaction::initFromProtobuf(const grd_memory_block& inputBuffer, Uuid::ConstViewType communityUuid)
   {
     memory::GrduStaticBuffer<4096> buffer;
     return buffer.use(
@@ -105,26 +105,12 @@ namespace gradido::data::runtime {
     return result;
   }
 
-  bool CompleteTransaction::hasAccountBalance(const PublicKey& publicKey, const Uuid* coinCommunityUuid /* = nullptr */) const
-  {
-    if (!account_balances_count) {
-      return false;
-    }
-    for (int i = 0; i < account_balances_count; ++i) {
-      if (publicKey.isTheSame(account_balances[i].pubkey) &&
-        (!coinCommunityUuid || coinCommunityUuid->isTheSame(account_balances[i].community_uuid))) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  bool CompleteTransaction::isInvolved(const PublicKey& publicKey) const
+  bool CompleteTransaction::isInvolved(PublicKey::ConstViewType publicKey) const
   {
     if (isBalanceUpdated(publicKey)) { return true; }
     if (signature_pairs_count) {
       for (int i = 0; i < signature_pairs_count; ++i) {
-        if (publicKey.isTheSame(signature_pairs[i].public_key)) {
+        if (isTheSame(publicKey, PublicKey::ConstViewType(signature_pairs[i].public_key, 32))) {
           return true;
         }
       }
@@ -132,13 +118,13 @@ namespace gradido::data::runtime {
     return false;
   }
 
-  bool CompleteTransaction::isBalanceUpdated(const PublicKey& publicKey) const
+  bool CompleteTransaction::isBalanceUpdated(PublicKey::ConstViewType publicKey) const
   {
     if (!account_balances_count) {
       return false;
     }
     for (int i = 0; i < account_balances_count; ++i) {
-      if (publicKey.isTheSame(account_balances[i].pubkey)) {
+      if (isTheSame(publicKey, PublicKey::ConstViewType(account_balances[i].pubkey, 32))) {
         return true;
       }
     }
