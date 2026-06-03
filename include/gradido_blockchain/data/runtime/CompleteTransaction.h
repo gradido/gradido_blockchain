@@ -97,7 +97,7 @@ namespace gradido::data::runtime {
 		inline std::optional<GradidoUnit> getAmount() const;
 		inline std::optional<Uuid> getCoinCommunityUuid() const;
 		inline bool hasTransferAmount() const { return isTransfer() || isRedeemDeferredTransfer() || isDeferredTransfer() || isCreation(); }
-		inline std::vector<EncryptedMemo> getMemos() const;
+		std::vector<EncryptedMemo> getMemos() const;
 		inline Timestamp getCreatedAt() const { return created_at; }
 		inline grdt_cross_group getCrossGroupType() const { return cross_group_type; }
 		inline std::optional<Uuid> getOtherCommunityUuid() const;
