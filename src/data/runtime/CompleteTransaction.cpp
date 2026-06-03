@@ -105,30 +105,18 @@ namespace gradido::data::runtime {
     return result;
   }
 
-  bool CompleteTransaction::hasAccountBalance(const PublicKey& publicKey, const Uuid& coinCommunityUuid) const
+  bool CompleteTransaction::hasAccountBalance(const PublicKey& publicKey, const Uuid* coinCommunityUuid /* = nullptr */) const
   {
     if (!account_balances_count) {
       return false;
     }
     for (int i = 0; i < account_balances_count; ++i) {
-      if (publicKey.isTheSame(account_balances[i].pubkey) && coinCommunityUuid.isTheSame(account_balances[i].community_uuid)) {
+      if (publicKey.isTheSame(account_balances[i].pubkey) &&
+        (!coinCommunityUuid || coinCommunityUuid->isTheSame(account_balances[i].community_uuid))) {
         return true;
       }
     }
     return false;
-  }
-
-  grdw_account_balance CompleteTransaction::getAccountBalance(const PublicKey& publicKey, const Uuid& coinCommunityUuid) const
-  {
-    if (!account_balances_count) {
-      return {};
-    }
-    for (int i = 0; i < account_balances_count; ++i) {
-      if (publicKey.isTheSame(account_balances[i].pubkey) && coinCommunityUuid.isTheSame(account_balances[i].community_uuid)) {
-        return account_balances[i];
-      }
-    }
-    return {};
   }
 
   bool CompleteTransaction::isInvolved(const PublicKey& publicKey) const
@@ -218,31 +206,5 @@ namespace gradido::data::runtime {
       memos.push_back(encrypted_memos[i]);
     }
     return memos;
-  }
-
-  Uuid CompleteTransaction::getSenderCommunityUuid() const
-  {
-    if (GRDT_CROSS_GROUP_LOCAL == cross_group_type || GRDT_CROSS_GROUP_OUTBOUND == cross_group_type) {
-      return tx_community_uuid;
-    } else if (GRDT_CROSS_GROUP_INBOUND == cross_group_type) {
-      if (!tx_pairing_community_uuid) {
-        throw GradidoNodeInvalidDataException("missing pairing community uuid for inbound cross group transaction");
-      }
-      return tx_pairing_community_uuid;
-    }
-    throw GradidoNotImplementedException("GRDT_CROSS_GROUP_CROSS not implemented for getSenderCommunityUuid");
-  }
-
-  Uuid CompleteTransaction::getRecipientCommunityUuid() const
-  {
-    if (GRDT_CROSS_GROUP_LOCAL == cross_group_type ||GRDT_CROSS_GROUP_INBOUND == cross_group_type) {
-      return tx_community_uuid;
-    } else if (GRDT_CROSS_GROUP_OUTBOUND == cross_group_type) {
-      if (!tx_pairing_community_uuid) {
-        throw GradidoNodeInvalidDataException("missing pairing community uuid for outbound cross group transaction");
-      }
-      return tx_pairing_community_uuid;
-    }
-    throw GradidoNotImplementedException("GRDT_CROSS_GROUP_CROSS not implemented for getRecipientCommunityUuid");
   }
 }

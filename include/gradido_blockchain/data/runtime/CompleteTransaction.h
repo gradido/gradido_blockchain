@@ -7,6 +7,7 @@
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/export.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain_core/data/runtime/complete_transaction.h"
 #include "gradido_blockchain_core/data/wire/basic_types.h"
 #include "gradido_blockchain_core/result.h"
@@ -52,12 +53,18 @@ namespace gradido::data::runtime {
 		inline GenericHash getRunningHash() const { return tx_running_hash; }
 		inline LedgerAnchor getLedgerAnchor() const { return ledger_anchor; }
 		std::vector<grdw_account_balance> getAccountBalances() const;
-		bool hasAccountBalance(const PublicKey& publicKey, const Uuid& coinCommunityUuid) const;
-		//! \return accountBalance if found one with same public key or an new empty AccountBalance with this public key
-		grdw_account_balance getAccountBalance(const PublicKey& publicKey, const Uuid& coinCommunityUuid) const;
+
+		//! \param coinCommunityUuid optional
+		bool hasAccountBalance(const PublicKey& publicKey, const Uuid* coinCommunityUuid = nullptr) const;
+
+		//! \param coinCommunityUuid optional
+		//! \return accountBalance if found one with same public key or nullptr
+		inline const grdw_account_balance* getAccountBalance(const PublicKey& publicKey, const Uuid* coinCommunityUuid = nullptr) const;
+
+		//! \return 0 if account balance couldn't be find
 		inline GradidoUnit getDecayedAccountBalance(
 			const PublicKey& publicKey,
-			const Uuid& coinCommunityUuid,
+			const Uuid* coinCommunityUuid = nullptr,
 			Timepoint endDate = std::chrono::system_clock::now()
 		) const;
 		grdt_balance_derivation getBalanceDerivationType() const { return balance_derivation_type; }
@@ -95,11 +102,11 @@ namespace gradido::data::runtime {
 		inline std::optional<Uuid> getOtherCommunityUuid() const;
 		// full public key
 		//! get sender public key index if it transfer or deferred transfer transaction else std::nullopt
-		inline std::optional<PublicKey> getSender() const;
-		Uuid getSenderCommunityUuid() const;
+		inline std::optional<PublicKey> getSenderPublicKey() const;
+		inline Uuid getSenderCommunityUuid() const;
 		//! get recipient public key index if it is creation, transfer or deferred transfer transaction else std::nullopt
-		inline std::optional<PublicKey> getRecipient() const;
-		Uuid getRecipientCommunityUuid() const;
+		inline std::optional<PublicKey> getRecipientPublicKey() const;
+		inline Uuid getRecipientCommunityUuid() const;
 		//! get user public key on register address transaction else std::nullopt
 		inline std::optional<PublicKey> getRegisteredUser() const;
 		//! get account public key on register address transaction else std::nullopt
@@ -122,12 +129,25 @@ namespace gradido::data::runtime {
 	protected:
 	};
 
+	const grdw_account_balance* CompleteTransaction::getAccountBalance(
+	  const PublicKey& publicKey,
+		const Uuid* coinCommunityUuid/*  = nullptr */
+	) const {
+	  const grdw_account_balance* account_balance = grdr_complete_transaction_get_account_balance_for_public_key(this, publicKey.data());
+		if (coinCommunityUuid && account_balance && !coinCommunityUuid->isTheSame(account_balance->community_uuid)) {
+		  return nullptr;
+		}
+		return account_balance;
+	}
+
 	GradidoUnit CompleteTransaction::getDecayedAccountBalance(
 		const PublicKey& publicKey,
-		const Uuid& coinCommunityUuid,
+		const Uuid* coinCommunityUuid,
 		Timepoint endDate/* = std::chrono::system_clock::now()*/
 	) const {
-		return AccountBalance(getAccountBalance(publicKey, coinCommunityUuid))
+	  const grdw_account_balance* account_balance = getAccountBalance(publicKey, coinCommunityUuid);
+		if (!account_balance) return GradidoUnit::zero();
+		return AccountBalance(account_balance)
 			.getBalance()
 			.calculateDecay(Timestamp(confirmed_at).getAsTimepoint(), endDate);
 	}
@@ -160,18 +180,35 @@ namespace gradido::data::runtime {
 		return std::nullopt;
 	}
 
-	std::optional<PublicKey> CompleteTransaction::getSender() const {
+	std::optional<PublicKey> CompleteTransaction::getSenderPublicKey() const {
 		if (isTransfer() || isRedeemDeferredTransfer() || isDeferredTransfer()) {
 			return transfer.sender_pubkey;
 		}
 		return std::nullopt;
 	}
 
-	std::optional<PublicKey> CompleteTransaction::getRecipient() const {
+	Uuid CompleteTransaction::getSenderCommunityUuid() const {
+	  const uint8_t* uuid_ptr = grdr_complete_transaction_get_sender_community_uuid(this);
+		if (!uuid_ptr) {
+		  throw GradidoNodeInvalidDataException("hasn't sender community uuid");
+		}
+		return uuid_ptr;
+	}
+
+	std::optional<PublicKey> CompleteTransaction::getRecipientPublicKey() const {
 		if (isTransfer() || isRedeemDeferredTransfer() || isDeferredTransfer() || isCreation()) {
 			return transfer.recipient_pubkey;
 		}
 		return std::nullopt;
+	}
+
+	Uuid CompleteTransaction::getRecipientCommunityUuid() const
+	{
+	  const uint8_t* uuid_ptr = grdr_complete_transaction_get_recipient_community_uuid(this);
+    if (!uuid_ptr) {
+      throw GradidoNodeInvalidDataException("hasn't recipient community uuid");
+    }
+    return uuid_ptr;
 	}
 
 	std::optional<PublicKey> CompleteTransaction::getRegisteredUser() const {

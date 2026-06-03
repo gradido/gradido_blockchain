@@ -20,6 +20,7 @@ namespace gradido {
             AccountBalance(memory::ConstBlockPtr publicKey, GradidoUnit balance, const std::string& communityId);
             AccountBalance(memory::ConstBlockPtr publicKey, GradidoUnit balance, const Uuid& communityUuid);
             AccountBalance(const grdw_account_balance& coreAccountBalance);
+            AccountBalance(const grdw_account_balance* coreAccountBalance);
             ~AccountBalance();
 
             inline memory::ConstBlockPtr getPublicKey() const { return mPublicKey; }

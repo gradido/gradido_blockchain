@@ -33,9 +33,17 @@ namespace gradido {
 		}
 
 		AccountBalance::AccountBalance(const grdw_account_balance& coreAccountBalance)
-			: mPublicKey(make_shared<const Block>(coreAccountBalance.pubkey)), 
+			: mPublicKey(make_shared<const Block>(coreAccountBalance.pubkey)),
 			mBalance(GradidoUnit::fromGradidoCent(coreAccountBalance.balance)),
 			mCoinCommunityIdIndex(g_appContext->getOrAddCommunityIdIndex(coreAccountBalance.community_uuid))
+		{
+
+		}
+
+		AccountBalance::AccountBalance(const grdw_account_balance* coreAccountBalance)
+		: mPublicKey(make_shared<const Block>(coreAccountBalance->pubkey)),
+		mBalance(GradidoUnit::fromGradidoCent(coreAccountBalance->balance)),
+		mCoinCommunityIdIndex(g_appContext->getOrAddCommunityIdIndex(coreAccountBalance->community_uuid))
 		{
 
 		}
