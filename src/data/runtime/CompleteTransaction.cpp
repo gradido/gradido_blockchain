@@ -34,14 +34,14 @@ namespace gradido::data::runtime {
   grd_result CompleteTransaction::initFromGrdw(
     const grdw_transaction_body* body,
     const grdw_confirmed_transaction* confirmedTx,
-    Uuid::ConstViewType communityUuid
+    Uuid communityUuid
   )
   {
     grdr_complete_transaction_release(this);
     return grdm_complete_transaction_from_wire(this, body, confirmedTx, communityUuid.data());
   }
 
-  grd_result CompleteTransaction::initFromProtobuf(const grd_memory_block& inputBuffer, Uuid::ConstViewType communityUuid)
+  grd_result CompleteTransaction::initFromProtobuf(const grd_memory_block& inputBuffer, Uuid communityUuid)
   {
     memory::GrduStaticBuffer<4096> buffer;
     return buffer.use(
