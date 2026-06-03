@@ -13,6 +13,7 @@
 #include "gradido_blockchain_core/result.h"
 
 #include <optional>
+#include <span>
 #include <vector>
 
 struct grdw_account_balance;
@@ -94,32 +95,32 @@ namespace gradido::data::runtime {
 		inline grdt_transaction getTransactionType() const { return transaction_type; }
 
 		inline std::optional<GradidoUnit> getAmount() const;
-		inline std::optional<Uuid> getCoinCommunityUuid() const;
+		inline std::optional<std::span<const uint8_t, 16>> getCoinCommunityUuid() const;
 		inline bool hasTransferAmount() const { return isTransfer() || isRedeemDeferredTransfer() || isDeferredTransfer() || isCreation(); }
 		inline std::vector<EncryptedMemo> getMemos() const;
 		inline Timestamp getCreatedAt() const { return created_at; }
 		inline grdt_cross_group getCrossGroupType() const { return cross_group_type; }
-		inline std::optional<Uuid> getOtherCommunityUuid() const;
+		inline std::optional<std::span<const uint8_t, 16>> getOtherCommunityUuid() const;
 		// full public key
 		//! get sender public key index if it transfer or deferred transfer transaction else std::nullopt
-		inline std::optional<PublicKey> getSenderPublicKey() const;
-		inline Uuid getSenderCommunityUuid() const;
+		inline std::optional<std::span<const uint8_t, 32>> getSenderPublicKey() const;
+		inline std::optional<std::span<const uint8_t, 16>> getSenderCommunityUuid() const;
 		//! get recipient public key index if it is creation, transfer or deferred transfer transaction else std::nullopt
-		inline std::optional<PublicKey> getRecipientPublicKey() const;
-		inline Uuid getRecipientCommunityUuid() const;
+		inline std::optional<std::span<const uint8_t, 32>> getRecipientPublicKey() const;
+		inline std::optional<std::span<const uint8_t, 16>> getRecipientCommunityUuid() const;
 		//! get user public key on register address transaction else std::nullopt
-		inline std::optional<PublicKey> getRegisteredUser() const;
+		inline std::optional<std::span<const uint8_t, 32>> getRegisteredUser() const;
 		//! get account public key on register address transaction else std::nullopt
-		inline std::optional<PublicKey> getRegisteredAccount() const;
+		inline std::optional<std::span<const uint8_t, 32>> getRegisteredAccount() const;
 		inline std::optional<grdt_address> getRegisteredAddressType() const;
 		inline std::optional<uint32_t> getRegisteredDerivationIndex() const;
-		inline std::optional<GenericHash> getRegisteredNameHash() const;
+		inline std::optional<std::span<const uint8_t, 32>> getRegisteredNameHash() const;
 		//! get root public key on community root transaction else std::nullopt
-		inline std::optional<PublicKey> getCommunityRootPublicKey() const;
+		inline std::optional<std::span<const uint8_t, 32>> getCommunityRootPublicKey() const;
 		//! get auf account public key on community root transaction else std::nullopt
-		inline std::optional<PublicKey> getAuf() const;
+		inline std::optional<std::span<const uint8_t, 32>> getAuf() const;
 		//! get gmw account public key on community root transaction else std::nullopt
-		inline std::optional<PublicKey> getGmw() const;
+		inline std::optional<std::span<const uint8_t, 32>> getGmw() const;
 
 		inline std::optional<grdd_timestamp_seconds> getCreationTargetDate() const;
 		inline std::optional<grdd_duration_seconds> getDeferredTransferTimeoutDuration() const;
@@ -166,57 +167,53 @@ namespace gradido::data::runtime {
 		return std::nullopt;
 	}
 
-	std::optional<Uuid> CompleteTransaction::getCoinCommunityUuid() const {
+	std::optional<std::span<const uint8_t, 16>> CompleteTransaction::getCoinCommunityUuid() const {
 		if (hasTransferAmount()) {
 			return transfer.coin_community_uuid;
 		}
 		return std::nullopt;
 	}
 
-	std::optional<Uuid> CompleteTransaction::getOtherCommunityUuid() const {
+	std::optional<std::span<const uint8_t, 16>> CompleteTransaction::getOtherCommunityUuid() const {
 		if (tx_pairing_community_uuid) {
-			return tx_pairing_community_uuid;
+			return std::span<const uint8_t, 16>(tx_pairing_community_uuid, 16);
 		}
 		return std::nullopt;
 	}
 
-	std::optional<PublicKey> CompleteTransaction::getSenderPublicKey() const {
+	std::optional<std::span<const uint8_t, 32>> CompleteTransaction::getSenderPublicKey() const {
 		if (isTransfer() || isRedeemDeferredTransfer() || isDeferredTransfer()) {
 			return transfer.sender_pubkey;
 		}
 		return std::nullopt;
 	}
 
-	Uuid CompleteTransaction::getSenderCommunityUuid() const {
+	std::optional<std::span<const uint8_t, 16>> CompleteTransaction::getSenderCommunityUuid() const {
 	  const uint8_t* uuid_ptr = grdr_complete_transaction_get_sender_community_uuid(this);
-		if (!uuid_ptr) {
-		  throw GradidoNodeInvalidDataException("hasn't sender community uuid");
-		}
-		return uuid_ptr;
+		if (uuid_ptr) { return std::span<const uint8_t, 16>(uuid_ptr, 16); }
+		return std::nullopt;
 	}
 
-	std::optional<PublicKey> CompleteTransaction::getRecipientPublicKey() const {
+	std::optional<std::span<const uint8_t, 32>> CompleteTransaction::getRecipientPublicKey() const {
 		if (isTransfer() || isRedeemDeferredTransfer() || isDeferredTransfer() || isCreation()) {
 			return transfer.recipient_pubkey;
 		}
 		return std::nullopt;
 	}
 
-	Uuid CompleteTransaction::getRecipientCommunityUuid() const
+	std::optional<std::span<const uint8_t, 16>> CompleteTransaction::getRecipientCommunityUuid() const
 	{
 	  const uint8_t* uuid_ptr = grdr_complete_transaction_get_recipient_community_uuid(this);
-    if (!uuid_ptr) {
-      throw GradidoNodeInvalidDataException("hasn't recipient community uuid");
-    }
-    return uuid_ptr;
+		if (uuid_ptr) { return std::span<const uint8_t, 16>(uuid_ptr, 16); }
+		return std::nullopt;
 	}
 
-	std::optional<PublicKey> CompleteTransaction::getRegisteredUser() const {
+	std::optional<std::span<const uint8_t, 32>> CompleteTransaction::getRegisteredUser() const {
 		if (!isRegisterAddress()) { return std::nullopt; }
 		return register_address.user_public_key;
 	}
 
-	std::optional<PublicKey> CompleteTransaction::getRegisteredAccount() const {
+	std::optional<std::span<const uint8_t, 32>> CompleteTransaction::getRegisteredAccount() const {
 		if (!isRegisterAddress()) { return std::nullopt; }
 		return register_address.account_public_key;
 	}
@@ -231,23 +228,23 @@ namespace gradido::data::runtime {
 		return derivation_index;
 	}
 
-	std::optional<GenericHash> CompleteTransaction::getRegisteredNameHash() const
+	std::optional<std::span<const uint8_t, 32>> CompleteTransaction::getRegisteredNameHash() const
 	{
 		if (!isRegisterAddress()) { return std::nullopt; }
 		return register_address.name_hash;
 	}
 
-	std::optional<PublicKey> CompleteTransaction::getCommunityRootPublicKey() const {
+	std::optional<std::span<const uint8_t, 32>> CompleteTransaction::getCommunityRootPublicKey() const {
 		if (!isCommunityRoot()) { return std::nullopt; }
 		return community_root.public_key;
 	}
 
-	std::optional<PublicKey> CompleteTransaction::getAuf() const {
+	std::optional<std::span<const uint8_t, 32>> CompleteTransaction::getAuf() const {
 		if (!isCommunityRoot()) { return std::nullopt; }
 		return community_root.auf_public_key;
 	}
 
-	std::optional<PublicKey> CompleteTransaction::getGmw() const {
+	std::optional<std::span<const uint8_t, 32>> CompleteTransaction::getGmw() const {
 		if (!isCommunityRoot()) { return std::nullopt; }
 		return community_root.gmw_public_key;
 	}

@@ -30,6 +30,11 @@ namespace gradido::data {
       }
       memcpy(mData, data.data(), N);
     }
+
+    ByteArray(std::span<const uint8_t, N> data)
+    {
+      memcpy(mData, data.data(), N);
+    }
     ByteArray(std::vector<uint8_t> data)
     {
       if (data.size() != N) {
