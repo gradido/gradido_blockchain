@@ -79,7 +79,7 @@ namespace gradido::data::runtime {
 		// gradido transaction
 		std::vector<grdw_signature_pair> getSignatureMap();
 		inline memory::Block getBodyBytes() const { return memory::Block(body_bytes.size, body_bytes.data); }
-		inline Uuid getCommunityUuid() const { return tx_community_uuid; }
+		inline Uuid::ConstViewType getCommunityUuid() const { return Uuid::ConstViewType(tx_community_uuid, 16); }
 		inline std::optional<LedgerAnchor> getPairingLedgerAnchor() const;
 
 		// transaction body
