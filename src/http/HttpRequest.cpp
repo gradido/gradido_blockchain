@@ -101,10 +101,10 @@ static std::shared_ptr<httplib::Client> getClientForHost(const std::string& host
 		}
 	}
 	else {
-		client = new httplib::Client(host, 80);
+		client = new httplib::Client(host);
 	}
 #else 
-	client = new httplib::Client(host, 80);
+	client = new httplib::Client(host);
 #endif
 	auto httpClient = std::shared_ptr<httplib::Client>(client, FakeDeleter());
 	httpClient->set_keep_alive(true);
@@ -164,6 +164,7 @@ HttpRequest::HttpRequest(const std::string& url)
 }
 
 HttpRequest::HttpRequest(const std::string& host, int port, const char* path/* = nullptr*/, const char* query/* = nullptr*/)
+	: mIsSSL(false)
 {
 	if (host.find("http") == std::string::npos) {
 		if (port == 443) {
@@ -189,9 +190,11 @@ std::string HttpRequest::POST(const std::string& body, const char* contentType/*
 	auto cli = getClientForHost(constructHostString(), mIsSSL);
 	auto uri = furi::uri_split::from_uri(mUrl);
 
-	std::string finalPath;
+	std::string finalPath("/");
 	if (!path) {
-		finalPath = uri.path;
+		if (uri.path.size()) {
+			finalPath = uri.path;
+		}
 	}
 	else {
 		finalPath = path;
@@ -215,7 +218,7 @@ std::string HttpRequest::GET(const std::map<std::string, std::string> query, con
 
 	if (!path) {
 		if (uri.path.size()) {
-			if(uri.path.data()[0] != '/') pathAndQuery += "/";
+			// if(uri.path.data()[0] != '/') pathAndQuery += "/";
 			pathAndQuery = std::string(uri.path.data(), uri.path.size());
 		}
 	}
