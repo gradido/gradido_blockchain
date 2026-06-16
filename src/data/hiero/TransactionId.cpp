@@ -1,4 +1,5 @@
 #include "gradido_blockchain/data/hiero/TransactionId.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain_core/data/wire/hiero.h"
 
 #include <loguru.hpp>
@@ -13,12 +14,12 @@ namespace hiero {
     }
 
     TransactionId::TransactionId(const gradido::data::Timestamp& transactionValidStart, const AccountId& accountId)
-        : mTransactionValidStart(transactionValidStart), mAccountId(accountId), mScheduled(false), mNonce(0) 
+        : mTransactionValidStart(transactionValidStart), mAccountId(accountId), mScheduled(false), mNonce(0)
     {
 
     }
 
-	  TransactionId::TransactionId(const std::string& transactionIdString) 
+	  TransactionId::TransactionId(const std::string& transactionIdString)
 		  : mAccountId(transactionIdString), mScheduled(false), mNonce(0)
 	  {
         const char* str = transactionIdString.c_str();
@@ -54,20 +55,32 @@ namespace hiero {
 
     }
 
-    TransactionId::~TransactionId() 
+    TransactionId::~TransactionId()
     {
 
     }
 
 	  std::string TransactionId::toString() const
 	  {
-		    std::string result;
-		    std::string accountIdString = mAccountId.toString();
-		    std::string seconds = std::to_string(mTransactionValidStart.getSeconds());
-        // need always 9 character, fill in with zero at the start
-		    std::string nanos = std::to_string(mTransactionValidStart.getNanos());
-		    result.reserve(accountIdString.size() + 2 + seconds.size() + nanos.size());
-		    result = accountIdString + '@' + seconds + '.' + nanos;
-		    return result;
+			grdw_hiero_transaction_id hieroTxId = {
+			  .transactionValidStart = {
+					.seconds = mTransactionValidStart.getSeconds(),
+					.nanos = mTransactionValidStart.getNanos(),
+				},
+				.accountID = {
+				  .shardNum = mAccountId.getShardNum(),
+					.realmNum = mAccountId.getRealmNum(),
+					.accountNum = mAccountId.getAccountNum()
+				}
+			};
+
+	    std::string result;
+			result.reserve(grdw_hiero_transaction_id_calculate_string_size(&hieroTxId)+1);
+			size_t written = grdw_hiero_transaction_id_to_string(result.data(), result.size(), &hieroTxId);
+			if (written != result.size() + 1) {
+			  printf("written: %zu, result size: %zu, result: %s\n", written, result.size(), result.c_str());
+			  throw GradidoNodeInvalidDataException("error in hiero::TransactionId::toString()");
+			}
+	    return result;
 	  }
 }
