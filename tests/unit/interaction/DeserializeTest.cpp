@@ -54,7 +54,7 @@ TEST(DeserializeTest, HieroTransactionId)
 	EXPECT_FALSE(context.isHieroAccountId());
 	ASSERT_TRUE(context.isHieroTransactionId());
 
-	EXPECT_EQ(context.getHieroTransactionId().toString(), "0.0.121212@172618921.29182");
+	EXPECT_EQ(context.getHieroTransactionId().toString(), "0.0.121212@172618921.000029182");
 }
 
 

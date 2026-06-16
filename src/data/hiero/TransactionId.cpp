@@ -1,6 +1,7 @@
 #include "gradido_blockchain/data/hiero/TransactionId.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain_core/data/wire/hiero.h"
+#include "gradido_blockchain/memory/Block.h"
 
 #include <loguru.hpp>
 
@@ -74,13 +75,22 @@ namespace hiero {
 				}
 			};
 
-	    std::string result;
-			result.reserve(grdw_hiero_transaction_id_calculate_string_size(&hieroTxId)+1);
-			size_t written = grdw_hiero_transaction_id_to_string(result.data(), result.size(), &hieroTxId);
-			if (written != result.size() + 1) {
-			  printf("written: %zu, result size: %zu, result: %s\n", written, result.size(), result.c_str());
-			  throw GradidoNodeInvalidDataException("error in hiero::TransactionId::toString()");
-			}
-	    return result;
+      size_t bufferSize = grdw_hiero_transaction_id_calculate_string_size(&hieroTxId) + 1;
+      if (bufferSize < 64) {
+        char buffer[64]{};
+        size_t written = grdw_hiero_transaction_id_to_string(buffer, 64, &hieroTxId);
+        if (written >= 64) {
+          throw GradidoNodeInvalidDataException("grdw_hiero_transaction_id_calculate_string_size and grdw_hiero_transaction_id_to_string don't calculate same string size");
+        }
+        return std::string(buffer, written);
+      } 
+      else if (bufferSize > 1024) {
+        throw GradidoNodeInvalidDataException("hiero transaction id is calculated way to big (> 1 kbyte)");
+      }
+      else {
+        memory::Block block(bufferSize);
+        size_t written = grdw_hiero_transaction_id_to_string(reinterpret_cast<char*>(block.data()), bufferSize, &hieroTxId);
+        return block.copyAsString();
+      }
 	  }
 }
