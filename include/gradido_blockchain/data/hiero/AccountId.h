@@ -80,6 +80,8 @@
 #include "gradido_blockchain/types.h"
 #include "gradido_blockchain/memory/Block.h"
 
+struct grdw_hiero_account_id;
+
 namespace hiero {
 	class GRADIDOBLOCKCHAIN_EXPORT AccountId
 	{
@@ -93,6 +95,7 @@ namespace hiero {
 		//! expect string like 0.0.2
 		//! can also parse string like 0.0.2-1321201-212122 for example a transaction id, will ignore everything after the third number
 		AccountId(const std::string& accountIdString);
+		AccountId(const grdw_hiero_account_id& coreHieroAccountId);
 		~AccountId();
 
 		// default constructor and operators

@@ -2,6 +2,7 @@
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
+#include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "../KeyPairs.h"
 #include "const.h"
 
@@ -16,11 +17,11 @@ TEST(ValidateGradidoTransferTest, Valid) {
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -35,13 +36,12 @@ TEST(ValidateGradidoTransferTest, Outbound) {
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 			g_KeyPairs[5]->getPublicKey()
 		)
-		.setSenderCommunity("dummy-group")
-		.setRecipientCommunity("gratitude")
+		.setSenderCommunity("019e347c-540a-724d-991c-9af318e952fe")
+		.setRecipientCommunity("019e347c-540a-7e9e-8966-a70f1dc10d72")
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.buildOutbound();
@@ -55,11 +55,11 @@ TEST(ValidateGradidoTransferTest, invalidMemoEmpty) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -76,11 +76,11 @@ TEST(ValidateGradidoTransferTest, invalidMemoToShort) {
 	builder
 		.addMemo(hallMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -97,11 +97,11 @@ TEST(ValidateGradidoTransferTest, invalidMemoToBig) {
 	builder
 		.addMemo(aFilledMemoString) // fill with 451 x a
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -120,11 +120,11 @@ TEST(ValidateGradidoTransferTest, InvalidAmountZero) {
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::zero()), // zero amount
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::zero(), communityIdIndex), // zero amount
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -139,11 +139,11 @@ TEST(ValidateGradidoTransferTest, InvalidAmountNegative) {
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000).negated()), // negative amount
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000).negated(), communityIdIndex), // negative amount
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -154,61 +154,16 @@ TEST(ValidateGradidoTransferTest, InvalidAmountNegative) {
 }
 
 
-TEST(ValidateGradidoTransferTest, InvalidCoinCommunityIdIdenticalToBlockchainCommunityId) {
-	std::string communityId = "testGroup";
-	GradidoTransactionBuilder builder;
-	builder
-		.addMemo(transferMemoString)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setTransactionTransfer(
-			// coin community id is identical to blockchain community id to which transaction belong
-			// not needed so it is a error
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityId),
-			g_KeyPairs[5]->getPublicKey()
-		)
-		.sign(g_KeyPairs[4])
-		;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isTransfer());
-
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(validate::Type::SINGLE), validate::TransactionValidationInvalidInputException);
-}
-
-TEST(ValidateGradidoTransferTest, InvalidCoinCommunityId) {
-	GradidoTransactionBuilder builder;
-	builder
-		.addMemo(transferMemoString)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setTransactionTransfer(
-			// invalid character in coin community id
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), "<script>"),
-			g_KeyPairs[5]->getPublicKey()
-		)
-		.sign(g_KeyPairs[4])
-		;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isTransfer());
-
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(validate::Type::SINGLE), validate::TransactionValidationInvalidInputException);
-}
-
-
 TEST(ValidateGradidoTransferTest, SenderAndRecipientIdentical) {
 	GradidoTransactionBuilder builder;
 	builder
 		.addMemo(transferMemoString)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setCreatedAt(createdAt)		
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 			g_KeyPairs[4]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -221,7 +176,7 @@ TEST(ValidateGradidoTransferTest, SenderAndRecipientIdentical) {
 
 TEST(ValidateGradidoTransferTest, NullptrRecipientPublicKey) {
 	EXPECT_THROW(
-		GradidoTransfer(TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)), nullptr),
+		GradidoTransfer(TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex), nullptr),
 		GradidoNullPointerException
 	);
 }
@@ -229,7 +184,7 @@ TEST(ValidateGradidoTransferTest, NullptrRecipientPublicKey) {
 
 TEST(ValidateGradidoTransferTest, EmptyRecipientPublicKey) {
 	EXPECT_THROW(
-		GradidoTransfer(TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)), std::make_shared<memory::Block>(32)),
+		GradidoTransfer(TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex), std::make_shared<memory::Block>(32)),
 		GradidoNodeInvalidDataException
 	);
 }
@@ -237,7 +192,7 @@ TEST(ValidateGradidoTransferTest, EmptyRecipientPublicKey) {
 TEST(ValidateGradidoTransferTest, InvalidRecipientPublicKey) {
 	EXPECT_THROW(
 		GradidoTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 			std::make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a", 18))
 		), Ed25519InvalidKeyException
 	);

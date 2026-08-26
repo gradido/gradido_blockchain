@@ -3,6 +3,7 @@
 
 #include "TransactionBodyRole.h"
 #include "gradido_blockchain/data/AccountBalance.h"
+#include "gradido_blockchain/data/adapter/publicKey.h"
 
 namespace gradido {
     namespace interaction {
@@ -12,9 +13,11 @@ namespace gradido {
             public:
                 using TransactionBodyRole::TransactionBodyRole;
                 virtual std::vector<data::AccountBalance> calculateAccountBalances(uint64_t maxTransactionNr) const {
-                    auto accountPublicKey = mBody->getRegisterAddress()->getAccountPublicKey();
+                    auto accountPublicKey = data::adapter::toConstBlockPtr(
+                      { .communityIdIndex = mBody->getCommunityIdIndex(), .publicKeyIndex = mBody->getRegisterAddress()->accountPublicKeyIndex }
+                    );
                     if (!accountPublicKey || accountPublicKey->isEmpty()) return {};
-                    return { data::AccountBalance(accountPublicKey, GradidoUnit::zero(), "")};
+                    return { data::AccountBalance(accountPublicKey, GradidoUnit::zero(), mBlockchain->getCommunityIdIndex())};
                 }
             };
         }

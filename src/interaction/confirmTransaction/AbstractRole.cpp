@@ -1,13 +1,16 @@
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
-#include "gradido_blockchain/blockchain/FilterBuilder.h"
-#include "gradido_blockchain/data/BalanceDerivationType.h"
+#include "gradido_blockchain/blockchain/CompactFilter.h"
+#include "gradido_blockchain/data/compact/AccountBalance.h"
+#include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/interaction/confirmTransaction/AbstractRole.h"
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/Context.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain_core/types/balance_derivation.h"
 
 #include "magic_enum/magic_enum.hpp"
 
@@ -17,6 +20,8 @@ using namespace magic_enum;
 namespace gradido {
     using namespace blockchain;
     using namespace data;
+
+    using data::compact::PublicKeyIndex;
 
     namespace interaction {
         namespace confirmTransaction {
@@ -30,7 +35,7 @@ namespace gradido {
                 const data::LedgerAnchor& ledgerAnchor,
                 Timestamp confirmedAt,
                 std::shared_ptr<blockchain::Abstract> blockchain
-            ): mGradidoTransaction(gradidoTransaction), mLedgerAnchor(ledgerAnchor), mConfirmedAt(confirmedAt), mBlockchain(blockchain), mBalanceDerivationType(BalanceDerivationType::NODE)
+            ): mGradidoTransaction(gradidoTransaction), mLedgerAnchor(ledgerAnchor), mConfirmedAt(confirmedAt), mBlockchain(blockchain), mBalanceDerivationType(GRDT_BALANCE_DERIVATION_NODE)
             {
                 if (!gradidoTransaction) {
                     throw GradidoNullPointerException("missing transaction", "GradidoTransactionPtr", __FUNCTION__);
@@ -42,7 +47,7 @@ namespace gradido {
                 std::shared_ptr<const ConfirmedTransaction> lastConfirmedTransaction
             ) {
                 std::vector<AccountBalance> accountBalances;
-                if (BalanceDerivationType::NODE == mBalanceDerivationType) {
+                if (GRDT_BALANCE_DERIVATION_NODE == mBalanceDerivationType) {
                     accountBalances = calculateAccountBalances(id - 1);
                 }
                 else {
@@ -54,7 +59,6 @@ namespace gradido {
                    std::make_shared<data::GradidoTransaction>(*mGradidoTransaction),
                    // mGradidoTransaction, // don't work as native node module. TODO: find underlying issue
                    mConfirmedAt,
-                   GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
                    mLedgerAnchor,
                    accountBalances,
                    mBalanceDerivationType,
@@ -65,23 +69,26 @@ namespace gradido {
             void AbstractRole::setAccountBalances(std::vector<data::AccountBalance> accountBalances)
             {
                 mAccountBalances = accountBalances;
-                mBalanceDerivationType = BalanceDerivationType::EXTERN;
+                mBalanceDerivationType = GRDT_BALANCE_DERIVATION_EXTERN;
             }
 
             AccountBalance AbstractRole::calculateAccountBalance(
                 memory::ConstBlockPtr publicKey,
                 uint64_t maxTransactionNr,
                 GradidoUnit amount,
-                const std::string& communityId
+                uint32_t coinCommunityIdIndex
             ) const 
             {
-                FilterBuilder builder;
                 GradidoUnit previousDecayedAccountBalance;
                 auto f = Filter::lastBalanceFor(publicKey);
-                f.coinCommunityId = communityId;
+                f.coinCommunityIdIndex = coinCommunityIdIndex;
                 const auto& lastBalanceChangingTransaction = mBlockchain->findOne(f);
                 if (lastBalanceChangingTransaction) {
-                    previousDecayedAccountBalance = lastBalanceChangingTransaction->getConfirmedTransaction()->getDecayedAccountBalance(publicKey, communityId, mConfirmedAt);
+                    previousDecayedAccountBalance = lastBalanceChangingTransaction->getConfirmedTransaction()->getDecayedAccountBalance(
+                      publicKey, 
+                      coinCommunityIdIndex,
+                      mConfirmedAt
+                    );
                 }
                 GradidoUnit newBalance = previousDecayedAccountBalance + amount;
                 if (newBalance < GradidoUnit::zero()) {
@@ -95,7 +102,43 @@ namespace gradido {
                         newBalance = GradidoUnit::zero();
                     }
                 }
-                return AccountBalance(publicKey, newBalance, communityId);
+                return AccountBalance(publicKey, newBalance, coinCommunityIdIndex);
+            }
+
+            compact::AccountBalance AbstractRole::calculateAccountBalance(
+              PublicKeyIndex publicKeyIndex,
+              uint64_t maxTransactionNr,
+              GradidoUnit amount,
+              uint32_t coinCommunityIdIndex
+            ) const {
+              GradidoUnit previousDecayedAccountBalance;
+              auto f = CompactFilter::lastBalanceFor(publicKeyIndex);
+              f.coinCommunityIdIndex = coinCommunityIdIndex;
+              const auto& lastBalanceChangingTransaction = mBlockchain->findOne(f);
+              if (lastBalanceChangingTransaction) 
+              {
+                previousDecayedAccountBalance = lastBalanceChangingTransaction
+                  ->getAccountBalance(publicKeyIndex, coinCommunityIdIndex)
+                  .getDecayedAmount(mConfirmedAt);
+              }
+              GradidoUnit newBalance = previousDecayedAccountBalance + amount;
+              if (newBalance < GradidoUnit::zero()) {
+                if (newBalance + GradidoUnit::fromGradidoCent(100) < GradidoUnit::zero()) {
+                  throw InsufficientBalanceException(
+                    "not enough Gradido Balance for operation",
+                    amount,
+                    previousDecayedAccountBalance
+                  );
+                }
+                else {
+                  newBalance = GradidoUnit::zero();
+                }
+              }
+              return {
+                .balanceGddCent = newBalance.getGradidoCent(),
+                .coinCommunityIdIndex = coinCommunityIdIndex,
+                .publicKeyIndex = publicKeyIndex.publicKeyIndex
+              };
             }
         }
     }

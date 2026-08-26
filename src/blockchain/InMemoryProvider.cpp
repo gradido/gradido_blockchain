@@ -1,7 +1,22 @@
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
+#include "gradido_blockchain/data/adapter/uuid.h"
+#include "gradido_blockchain/lib/DictionaryExceptions.h"
+
+#include <memory>
+#include <optional>
+#include <string>
+#include <string_view>
+
+using std::optional, std::nullopt;
+using std::shared_ptr, std::make_shared;
+using std::string, std::string_view, std::to_string;
+using std::shared_lock, std::unique_lock;
+
 
 namespace gradido {
+	using data::adapter::uuidToString;
 	namespace blockchain {
 		InMemoryProvider::InMemoryProvider()
 		{
@@ -19,24 +34,67 @@ namespace gradido {
 			return &one;
 		}
 
-		std::shared_ptr<Abstract> InMemoryProvider::findBlockchain(std::string_view communityId)
+		shared_ptr<Abstract> InMemoryProvider::findBlockchain(uint32_t communityIdIndex) 
 		{
-			std::lock_guard _lock(mWorkMutex);
-			auto it = mBlockchainsPerGroup.find(communityId);
-			if (it == mBlockchainsPerGroup.end()) {
-				std::shared_ptr<InMemory> blockchain(new InMemory(communityId));
-				auto insertedIt = mBlockchainsPerGroup.insert({ std::string(communityId), blockchain });
-				if (!insertedIt.second) {
-					throw ConstructBlockchainException("cannot insert into mBlockchainsPerGroup", communityId);
+			{
+				shared_lock _lock(mWorkMutex);
+				auto it = mBlockchainsPerGroup.find(communityIdIndex);
+				if (it != mBlockchainsPerGroup.end()) {
+					return it->second;
 				}
-				it = insertedIt.first;
 			}
-			return it->second;
+			return addBlockchain("", communityIdIndex);
+		}
+
+		shared_ptr<Abstract> InMemoryProvider::findBlockchain(const string& communityId)
+		{
+			auto communityIdIndex = g_appContext->getOrAddCommunityIdIndex(communityId);
+			{
+				shared_lock _lock(mWorkMutex);
+				auto it = mBlockchainsPerGroup.find(communityIdIndex);
+				if (it != mBlockchainsPerGroup.end()) {
+					return it->second;
+				}
+			}
+			return addBlockchain(communityId, communityIdIndex);
+		}
+
+		shared_ptr<Abstract> InMemoryProvider::addBlockchain(const string& communityId, optional<uint32_t> communityIdIndex)
+		{
+			string communityIdValue;
+			uint32_t communityIdIndexValue = 0;
+			// we got both values
+			if (!communityId.empty() && communityIdIndex.has_value()) {
+				communityIdValue = communityId;
+				communityIdIndexValue = communityIdIndex.value();
+			} // we need to resolve the community id string
+			else if (communityId.empty() && communityIdIndex.has_value()) {
+				auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex.value());
+				if (!communityIdOptional.has_value()) {
+					throw DictionaryMissingEntryException("cannot find community id for addBlockchain", to_string(communityIdIndex.value()));
+				}
+				communityIdValue = uuidToString(communityIdOptional.value());
+				communityIdIndexValue = communityIdIndex.value();
+			}  // we need to resolve the community id index
+			else if (!communityId.empty() && !communityIdIndex.value()) {
+				communityIdIndexValue = g_appContext->getOrAddCommunityIdIndex(communityId);
+				communityIdValue = communityId;
+			}
+			else {
+				throw GradidoNodeInvalidDataException("please call addBlockchain either with a value for communityId or for communityIdIndex");
+			}
+			unique_lock _lock(mWorkMutex);
+			// cannot use make_shared here, because InMemory has private constructor
+			// TODO: maybe use enable_shared_from_this like blockchain::FileBased in GradidoNode
+			shared_ptr<InMemory> blockchain(new InMemory(communityIdValue, communityIdIndexValue));
+			g_appContext->addBlockchain(communityIdIndexValue, blockchain);
+			auto result = mBlockchainsPerGroup.insert({ communityIdIndexValue, blockchain });
+			return result.first->second;
 		}
 
 		void InMemoryProvider::clear()
 		{
-			std::lock_guard _lock(mWorkMutex);
+			unique_lock _lock(mWorkMutex);
 			mBlockchainsPerGroup.clear();
 		}
 	}

@@ -37,3 +37,9 @@
 [submodule "dependencies/vcpkg"]
 	path = dependencies/vcpkg
 	url = https://github.com/microsoft/vcpkg.git
+[submodule "dependencies/r128"]
+	path = dependencies/r128
+	url = https://github.com/fahickman/r128.git
+[submodule "dependencies/gradido-blockchain-core"]
+	path = dependencies/gradido-blockchain-core
+	url = https://github.com/gradido/gradido-blockchain-core.git

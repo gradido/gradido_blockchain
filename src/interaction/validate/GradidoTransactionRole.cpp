@@ -1,62 +1,111 @@
 ﻿#include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
+#include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/TransactionEntry.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/crypto/KeyPairEd25519.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransactionRole.h"
 #include "gradido_blockchain/interaction/validate/TransactionBodyRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
+#include "gradido_blockchain_core/types/cross_group.h"
 
+#include "loguru/loguru.hpp"
 #include "magic_enum/magic_enum.hpp"
 
+#include <memory>
+
 using namespace magic_enum;
+using std::shared_ptr, std::make_shared;
 
 namespace gradido {
+	using blockchain::Filter, blockchain::TransactionEntry;
+	using data::ConfirmedTransaction, data::GradidoTransaction;
+
 	namespace interaction {
 		namespace validate {
 
-			void GradidoTransactionRole::run(
-				Type type,
-				std::shared_ptr<blockchain::Abstract> blockchain,
-				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
-				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
-			) {
+			void GradidoTransactionRole::run(Type type, ContextData& c)
+			{
 				const auto& body = mGradidoTransaction.getTransactionBody();
+
+				// cross group transaction preparations
+				shared_ptr<blockchain::Abstract> otherBlockchain;
+				if (body->getOtherCommunityIdIndex().has_value() && c.senderBlockchain) {
+					otherBlockchain = findBlockchain(c.senderBlockchain->getProvider(), body->getOtherCommunityIdIndex().value(), __FUNCTION__);
+					shared_ptr<const ConfirmedTransaction> otherPreviousTx;
+					if (otherBlockchain && !mGradidoTransaction.getPairingLedgerAnchor().empty()) {
+						c.pairingTx = otherBlockchain->findByLedgerAnchor(mGradidoTransaction.getPairingLedgerAnchor());
+					}
+					if (c.pairingTx) {
+						auto otherPreviousTxEntry = otherBlockchain->getTransactionForId(c.pairingTx->getTransactionNr());
+						if (otherPreviousTxEntry) {
+							otherPreviousTx = otherPreviousTxEntry->getConfirmedTransaction();
+						}
+					}
+					if (body->getType() == GRDT_CROSS_GROUP_OUTBOUND) {
+						c.recipientBlockchain = otherBlockchain;
+						if (otherPreviousTx) {
+							c.recipientPreviousConfirmedTransaction = otherPreviousTx;
+						}
+
+					}
+					else if (body->getType() == GRDT_CROSS_GROUP_INBOUND)
+					{
+						c.recipientBlockchain = c.senderBlockchain;
+						c.senderBlockchain = otherBlockchain;
+						c.recipientPreviousConfirmedTransaction = c.senderPreviousConfirmedTransaction;
+						if (otherPreviousTx) {
+							c.senderPreviousConfirmedTransaction = otherPreviousTx;
+						}
+					}
+					else {
+						LOG_F(WARNING, "grdt_cross_group::%s not implemented in GradidoTransactionRole", enum_name(body->getType()).data());
+					}
+					auto lastRecipientEntry = c.recipientBlockchain->findOne(Filter::LAST_TRANSACTION);
+					if (!lastRecipientEntry) {
+						throw GradidoNodeInvalidDataException("missing last transaction of other community id");
+					}
+					c.recipientPreviousConfirmedTransaction = lastRecipientEntry->getConfirmedTransaction();
+				}
+
 				TransactionBodyRole bodyRole(*body);
+				if (mDisableVerify) {
+					bodyRole.disableVerify();
+				}
 				bodyRole.setConfirmedAt(mConfirmedAt);
 				// recursive validation					
-				bodyRole.run(type, blockchain, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
+				bodyRole.run(type, c);
 
 				if ((type & Type::SINGLE) == Type::SINGLE)
 				{
 					for (auto& sigPair : mGradidoTransaction.getSignatureMap().getSignaturePairs()) {
 						validateEd25519PublicKey(sigPair.getPublicKey(), __FUNCTION__);
 						validateEd25519Signature(sigPair.getSignature(), __FUNCTION__);
-							
-						KeyPairEd25519 key_pair(sigPair.getPublicKey());
-						if (!key_pair.verify(*mGradidoTransaction.getBodyBytes(), *sigPair.getSignature())) {
-							throw TransactionValidationInvalidSignatureException(
-								"pubkey don't belong to body bytes", 
-								sigPair.getPublicKey(),
-								sigPair.getSignature(),
-								mGradidoTransaction.getBodyBytes()
-							);
+						if (!mDisableVerify) {
+							KeyPairEd25519 key_pair(sigPair.getPublicKey());
+							if (!key_pair.verify(*mGradidoTransaction.getBodyBytes(), *sigPair.getSignature())) {
+								throw TransactionValidationInvalidSignatureException(
+									"pubkey don't belong to body bytes",
+									sigPair.getPublicKey(),
+									sigPair.getSignature(),
+									mGradidoTransaction.getBodyBytes()
+								);
+							}
 						}
 					}
 				}
 				// check signatures
-				bodyRole.checkRequiredSignatures(mGradidoTransaction.getSignatureMap(), blockchain);
+				bodyRole.checkRequiredSignatures(mGradidoTransaction.getSignatureMap(), c.senderBlockchain);
 
-				if ((type & Type::PAIRED) == Type::PAIRED && !body->getOtherGroup().empty()) {
-					assert(blockchain);
-					auto otherBlockchain = findBlockchain(blockchain->getProvider(), body->getOtherGroup(), __FUNCTION__);
-					
-					std::shared_ptr<const blockchain::TransactionEntry> pairTransactionEntry;
+				if ((type & Type::PAIRED) == Type::PAIRED && body->getOtherCommunityIdIndex().has_value()) 
+				{
 					switch (body->getType()) {
-					case data::CrossGroupType::LOCAL: break; // no cross group
-					case data::CrossGroupType::OUTBOUND: break; // happen first, no pairing transaction yet
-					case data::CrossGroupType::INBOUND:
-					case data::CrossGroupType::CROSS:
+					case GRDT_CROSS_GROUP_LOCAL: break; // no cross group
+					case GRDT_CROSS_GROUP_OUTBOUND: break; // happen first, no pairing transaction yet
+					case GRDT_CROSS_GROUP_INBOUND:
+					case GRDT_CROSS_GROUP_CROSS:
 						if (mGradidoTransaction.getPairingLedgerAnchor().empty()) {
 							throw TransactionValidationInvalidInputException(
 								"pairing ledger anchor not set for outbound or cross",
@@ -65,21 +114,19 @@ namespace gradido {
 							);
 						}
 						else {
-							pairTransactionEntry = otherBlockchain->findByLedgerAnchor(mGradidoTransaction.getPairingLedgerAnchor());
-							if (!pairTransactionEntry) {
-								throw TransactionValidationException("pairing transaction not found");
+							if (!c.pairingTx || !c.pairingTx->getConfirmedTransaction()) {
+								throw TransactionValidationException("pairing transaction not found or invalid");
 							}
-							const auto& pairingTransaction = pairTransactionEntry->getConfirmedTransaction()->getGradidoTransaction();
-							if(!mGradidoTransaction.isPairing(*pairingTransaction)) {
+							if(!mGradidoTransaction.isPairing(*c.pairingTx->getConfirmedTransaction()->getGradidoTransaction())) {
 								throw PairingTransactionNotMatchException(
 									"pairing transaction not matching",
-									mGradidoTransaction.getSerializedTransaction(),
-									pairingTransaction->getSerializedTransaction()
+									make_shared<const GradidoTransaction>(mGradidoTransaction),
+									c.pairingTx->getConfirmedTransaction()->getGradidoTransaction()
 								);
 							}
 						}
 						break;
-					default: throw GradidoUnknownEnumException("unknown cross group type", "data::CrossGroupType", enum_name(body->getType()).data());
+					default: throw GradidoUnknownEnumException("unknown cross group type", "grdt_cross_group", enum_name(body->getType()).data());
 					}
 				}				
 			}

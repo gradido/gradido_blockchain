@@ -1,8 +1,11 @@
 #include "gradido_blockchain/interaction/calculateCreationSum/V01_ThreeMonthsAlgoRole.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
-#include "gradido_blockchain/blockchain/Filter.h"
-#include "gradido_blockchain/blockchain/FilterBuilder.h"
-#include "gradido_blockchain/serialization/toJsonString.h"
+#include "gradido_blockchain/blockchain/CompactFilter.h"
+#include "gradido_blockchain/blockchain/FilterResult.h"
+#include "gradido_blockchain/blockchain/PublicKeySearchType.h"
+#include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
+#include "gradido_blockchain/types.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 #include <chrono>
 #include <cassert>
@@ -11,9 +14,9 @@
 using namespace std::chrono;
 
 namespace gradido {
-	using blockchain::Filter;
-	using blockchain::FilterBuilder;
+	using blockchain::CompactFilter, blockchain::FilterResult, blockchain::PublicKeySearchType;
 	using blockchain::Abstract;
+	using data::compact::ConfirmedGradidoTx;
 
 	namespace interaction {
 		namespace calculateCreationSum {
@@ -23,38 +26,32 @@ namespace gradido {
 
 				// received = max
 				// received - 2 month = min
-				auto beforeReceived = mDate - months(2);
-				auto ymd = date::year_month_day{ date::floor<date::days>(mDate) };
-
-				FilterBuilder builder;
-				builder
-					// static filter
-					.setMaxTransactionNr(mTransactionNrMax)
-					.setUpdatedBalancePublicKey(mPublicKey)
-					.setTimepointInterval({ beforeReceived, mDate })
-					.setTransactionType(data::TransactionType::CREATION)
-					// dynamic filter
-					// called for each transaction which fulfills the static filters
-					.setFilterFunction(	
-						[&](const blockchain::TransactionEntry& entry) -> blockchain::FilterResult
-						{
-							auto creation = entry.getTransactionBody()->getCreation();
-							if (!creation) {
-								throw GradidoNullPointerException("transaction isn't creation or invalid", "GradidoCreation", __FUNCTION__);
-							}
-							if (creation->getRecipient().getPublicKey()->isTheSame(mPublicKey)) {
-								if (
-									(entry.getYear() == ymd.year() && ymd.month() - entry.getMonth() <= date::months(2)) ||
-									(ymd.year() - entry.getYear() == date::years(1) && entry.getMonth() - date::months(10) == ymd.month())
-								) {
-									sum += creation->getRecipient().getAmount();
-								}
-							}
-							// we don't need any of it in our result set
-							return blockchain::FilterResult::DISMISS;
-						})
-					;
-				blockchain.findAll(builder.getFilter());
+				auto dateYM = timepointAsYearMonth(mDate);
+				auto beforeReceivedYM = dateYM - date::months(2);
+				
+				CompactFilter filter;
+				filter.maxTransactionNr = mTransactionNrMax;
+				filter.publicKeyIndex = mPublicKey;
+				filter.publicKeySearchType = PublicKeySearchType::BalanceChangingPublicKey;
+				filter.timepointInterval = { beforeReceivedYM, dateYM };
+				filter.transactionType = GRDT_TRANSACTION_CREATION;
+				
+				blockchain.findAll(filter,
+					[&sum, dateYM](const ConfirmedGradidoTx& tx) -> FilterResult
+					{
+						if (!tx.isCreation()) {
+							throw GradidoNullPointerException("transaction isn't creation or invalid", "GradidoCreation", __FUNCTION__);
+						}
+						auto confirmedYmd = timepointAsYearMonthDay(tx.getConfirmedAt().getAsTimepoint());
+						if (
+							(confirmedYmd.year() == dateYM.year() && dateYM.month() - confirmedYmd.month() <= date::months(2)) ||
+							(dateYM.year() - confirmedYmd.year() == date::years(1) && confirmedYmd.month() - date::months(10) == dateYM.month())
+							) {
+							sum += tx.getAmount();
+						}
+						return FilterResult::DISMISS;
+					}
+				);
 				return sum;
 			}
 		}

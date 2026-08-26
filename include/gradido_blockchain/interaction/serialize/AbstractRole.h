@@ -9,6 +9,7 @@
 #include <array>
 #include <vector>
 #include <string>
+#include <optional>
 #include "protopuf/message.h"
 #include "sodium.h"
 
@@ -21,6 +22,7 @@ namespace gradido {
 			class AbstractRole
 			{
 			public:
+				AbstractRole() {}
 				virtual ~AbstractRole() {};
 				virtual memory::ConstBlockPtr run() const = 0; 
 				virtual size_t calculateSerializedSize() const = 0;

@@ -4,10 +4,14 @@
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/types.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/data/SignatureMap.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
+#include "gradido_blockchain_core/types/address.h"
 
 #include <memory>
+#include <optional>
+#include <vector>
 #include <string>
 #include <string_view>
 
@@ -20,10 +24,8 @@ namespace memory {
 
 namespace gradido {
 	namespace data {
-		enum class AddressType;
 		class CommunityFriendsUpdate;
 		class CommunityRoot;
-		enum class CrossGroupType;
 		class DurationSeconds;
 		class EncryptedMemo;
 		class GradidoTransaction;
@@ -74,11 +76,18 @@ namespace gradido {
 
 		GradidoTransactionBuilder& setRegisterAddress(
 			memory::ConstBlockPtr userPubkey,
-			data::AddressType type,
-			memory::ConstBlockPtr nameHash = nullptr,
-			memory::ConstBlockPtr accountPubkey = nullptr
+			grdt_address type,
+			memory::ConstBlockPtr nameHash,
+			memory::ConstBlockPtr accountPubkey
 		);
-		GradidoTransactionBuilder& setRegisterAddress(std::unique_ptr<data::RegisterAddress> registerAddress);
+
+		GradidoTransactionBuilder& setRegisterAddress(
+			const data::PublicKey& userPubkey,
+			grdt_address type,
+			const data::GenericHash& nameHash,
+			const data::PublicKey& accountPubkey
+		);
+		// GradidoTransactionBuilder& setRegisterAddress(std::unique_ptr<data::RegisterAddress> registerAddress);
 
 		GradidoTransactionBuilder& setTransactionCreation(const data::TransferAmount& recipient, Timepoint targetDate);
 		GradidoTransactionBuilder& setTransactionCreation(std::unique_ptr<data::GradidoCreation> creation);
@@ -87,11 +96,16 @@ namespace gradido {
 		GradidoTransactionBuilder& setTransactionTransfer(std::unique_ptr<data::GradidoTransfer> transfer);
 
 		GradidoTransactionBuilder& setCommunityRoot(
+			const data::PublicKey& pubkey,
+			const data::PublicKey& gmwPubkey,
+			const data::PublicKey& aufPubkey
+		);
+		GradidoTransactionBuilder& setCommunityRoot(
 			memory::ConstBlockPtr pubkey,
 			memory::ConstBlockPtr gmwPubkey,
 			memory::ConstBlockPtr aufPubkey
 		);
-		GradidoTransactionBuilder& setCommunityRoot(std::unique_ptr<data::CommunityRoot> communityRoot);
+		// GradidoTransactionBuilder& setCommunityRoot(std::unique_ptr<data::CommunityRoot> communityRoot);
 
 		GradidoTransactionBuilder& setRedeemDeferredTransfer(uint64_t deferredTransferTransactionNr, data::GradidoTransfer transactionTransfer);
 		GradidoTransactionBuilder& setRedeemDeferredTransfer(std::unique_ptr<data::GradidoRedeemDeferredTransfer> redeemDeferredTransfer);
@@ -102,17 +116,17 @@ namespace gradido {
 		//! \param createAt timestamp when transaction where created
 		GradidoTransactionBuilder& setCreatedAt(Timepoint createdAt);
 		GradidoTransactionBuilder& addMemo(const data::EncryptedMemo& memo);
-		GradidoTransactionBuilder& setVersionNumber(std::string_view versionNumber);
 		//! \param body will be moved
 		GradidoTransactionBuilder& setTransactionBody(std::unique_ptr<data::TransactionBody> body);
 
 		GradidoTransactionBuilder& setTransactionBody(memory::ConstBlockPtr bodyBytes);
-		//! set sender community for cross community transaction
 		//! Outbound transaction goes onto sender community blockchain and mark the starting point of transaction
-		GradidoTransactionBuilder& setSenderCommunity(const std::string& senderCommunity);
+		GradidoTransactionBuilder& setSenderCommunity(const std::string& senderCommunityId);
+		GradidoTransactionBuilder& setSenderCommunity(uint32_t senderCommunityIdIndex);
 		//! set recipient community for cross community transaction
 		//! Inbound transaction goes onto recipient community blockchain and mark the end point of transaction
-		GradidoTransactionBuilder& setRecipientCommunity(const std::string& recipientCommunity);
+		GradidoTransactionBuilder& setRecipientCommunity(const std::string& recipientCommunityId);
+		GradidoTransactionBuilder& setRecipientCommunity(uint32_t recipientCommunityIdIndex);
 		GradidoTransactionBuilder& sign(std::shared_ptr<KeyPairEd25519> keyPair);
 		//! \param paringMessageId usually only for cross community transactions, the iota message id of outbound transaction
 		GradidoTransactionBuilder& setParentLedgerAnchor(const data::LedgerAnchor& ledgerAnchor);
@@ -143,8 +157,8 @@ namespace gradido {
 
 		BuildingState mState;
 		std::unique_ptr<data::TransactionBody> mBody;
-		std::string mSenderCommunity;
-		std::string mRecipientCommunity;
+		std::optional<uint32_t> mSenderCommunityIdIndex;
+		std::optional<uint32_t> mRecipientCommunityIdIndex;
 		// for local transaction it contain only one entry
 		// for cross group transaction it contain outbound on index = 0 and inbound on index = 1
 		std::vector<BodyBytesSignatureMap> mBodyByteSignatureMaps;

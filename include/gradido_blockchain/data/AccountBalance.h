@@ -1,35 +1,40 @@
 #ifndef __GRADIDO_BLOCKCHAIN_DATA_ACCOUNT_BALANCE_H
 #define __GRADIDO_BLOCKCHAIN_DATA_ACCOUNT_BALANCE_H
 
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/GradidoUnit.h"
+#include "gradido_blockchain/memory/Block.h"
+#include <optional>
 #include <string>
 
-namespace memory {
-    class Block;
-    using ConstBlockPtr = std::shared_ptr<const Block>;
-}
+struct grdw_account_balance;
 
 namespace gradido {
     namespace data {
-        class GRADIDOBLOCKCHAIN_EXPORT AccountBalance 
+        class GRADIDOBLOCKCHAIN_EXPORT AccountBalance
         {
         public:
             // empty constructor needed for swig
             AccountBalance();
+            AccountBalance(memory::ConstBlockPtr publicKey, GradidoUnit balance, uint32_t communityIdIndex);
             AccountBalance(memory::ConstBlockPtr publicKey, GradidoUnit balance, const std::string& communityId);
+            AccountBalance(memory::ConstBlockPtr publicKey, GradidoUnit balance, const Uuid& communityUuid);
+            AccountBalance(const grdw_account_balance& coreAccountBalance);
+            AccountBalance(const grdw_account_balance* coreAccountBalance);
             ~AccountBalance();
 
             inline memory::ConstBlockPtr getPublicKey() const { return mPublicKey; }
             inline GradidoUnit getBalance() const { return mBalance; }
-            inline const std::string& getCommunityId() const { return mCommunityId; }
+            inline uint32_t getCoinCommunityIdIndex() const { return mCoinCommunityIdIndex; }
             inline bool isTheSame(const AccountBalance& other) const;
+            inline bool belongsTo(const memory::Block& publicKey, std::optional<uint32_t> communityIdIndex) const;
 
         protected:
             memory::ConstBlockPtr mPublicKey;
             GradidoUnit mBalance;
-            std::string mCommunityId; // empty for home community
+            uint32_t mCoinCommunityIdIndex;
         };
-       
+
         bool AccountBalance::isTheSame(const AccountBalance& other) const
         {
             if (!mPublicKey->isTheSame(other.mPublicKey)) {
@@ -38,14 +43,21 @@ namespace gradido {
             if (mBalance != other.mBalance) {
                 return false;
             }
-            if (!mCommunityId.empty() || !other.mCommunityId.empty()) {
-                throw GradidoNotImplementedException("comparing AccountBalances between foreign and home community");
-            }
-            // TODO: think about a way for getting correct community id for home community
-            /*if (mCommunityId != other.mCommunityId) {
+            if (mCoinCommunityIdIndex != other.mCoinCommunityIdIndex) {
                 return false;
-            }*/
+            }
             return true;
+        }
+
+        bool AccountBalance::belongsTo(const memory::Block& publicKey, std::optional<uint32_t> communityIdIndex) const
+        {
+          if (!mPublicKey->isTheSame(publicKey)) {
+            return false;
+          }
+          if (communityIdIndex.has_value() && communityIdIndex != mCoinCommunityIdIndex) {
+            return false;
+          }
+          return true;
         }
     }
 }

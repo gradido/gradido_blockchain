@@ -1,19 +1,28 @@
+#include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/blockchain/CompactFilter.h"
 #include "gradido_blockchain/blockchain/Filter.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
+#include "gradido_blockchain/data/adapter/uuid.h"
 #include "gradido_blockchain/serialization/toJsonString.h"
 
+#include <string>
+#include <string_view>
+
+using std::string, std::string_view, std::to_string;
+
 namespace gradido {
+	using data::adapter::uuidToString;
 	namespace blockchain {
 
-		AccountNotFoundException::AccountNotFoundException(const char* what, const std::string& groupAlias, const std::string& pubkeyHex) noexcept
+		AccountNotFoundException::AccountNotFoundException(const char* what, const string& groupAlias, const string& pubkeyHex) noexcept
 			: GradidoBlockchainException(what), mGroupAlias(groupAlias), mPubkeyHex(pubkeyHex)
 		{
 
 		}
 
-		std::string AccountNotFoundException::getFullString() const
+		string AccountNotFoundException::getFullString() const
 		{
-			std::string result = what();
+			string result = what();
 			result += ", group alias: " + mGroupAlias;
 			result += ", pubkey: " + mPubkeyHex;
 			return std::move(result);
@@ -25,11 +34,11 @@ namespace gradido {
 
 		}
 
-		std::string MissingTransactionNrException::getFullString() const
+		string MissingTransactionNrException::getFullString() const
 		{
-			std::string result = what();
-			result += ", hole between transaction nr: " + std::to_string(mLastTransactionNr);
-			result += " and transaction nr: " + std::to_string(mNextTransactionNr);
+			string result = what();
+			result += ", hole between transaction nr: " + to_string(mLastTransactionNr);
+			result += " and transaction nr: " + to_string(mNextTransactionNr);
 			return result;
 		}
 
@@ -43,9 +52,19 @@ namespace gradido {
 		{
 		}
 
-		std::string TransactionResultCountException::getFullString() const
+		TransactionResultCountException::TransactionResultCountException(
+			const char* what, int expectedResultCount, int actuallyResultCount, const CompactFilter& filter
+		) noexcept
+			: GradidoBlockchainException(what),
+			mExpectedResultCount(expectedResultCount),
+			mActuallyResultCount(actuallyResultCount),
+			mFilterJson(serialization::toJsonString(filter, true))
 		{
-			std::string result;
+		}
+
+		string TransactionResultCountException::getFullString() const
+		{
+			string result;
 			result.reserve(mFilterJson.size() + strlen(what()) + 60);
 			result = what();
 			result += ", expected result count: " + std::to_string(mExpectedResultCount);
@@ -54,16 +73,28 @@ namespace gradido {
 			return result;
 		}
 
-		CommunityNotFoundException::CommunityNotFoundException(const char* what, std::string_view communityId) noexcept
-			: GradidoBlockchainException(what), mCommunityId(communityId)
+		CommunityNotFoundException::CommunityNotFoundException(const char* what, string_view communityId) noexcept
+			: GradidoBlockchainException(what), mCommunityUuid(communityId)
 		{
 
 		}
 
-		std::string CommunityNotFoundException::getFullString() const
+		CommunityNotFoundException::CommunityNotFoundException(const char* what, uint32_t communityIdIndex) noexcept
+			: GradidoBlockchainException(what)
 		{
-			std::string result = what();
-			result += ", community: " + mCommunityId;
+			auto communityId = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex);
+			if (communityId.has_value()) {
+				mCommunityUuid = uuidToString(communityId.value());
+			}
+			else {
+				mCommunityUuid = to_string(communityIdIndex);
+			}
+		}
+
+		string CommunityNotFoundException::getFullString() const
+		{
+			string result = what();
+			result += ", community: " + mCommunityUuid;
 			return result;
 		}
 

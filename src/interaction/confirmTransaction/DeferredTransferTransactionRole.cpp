@@ -1,5 +1,6 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/data/TransactionTriggerEvent.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/confirmTransaction/DeferredTransferTransactionRole.h"
 
 namespace gradido {
@@ -23,13 +24,13 @@ namespace gradido {
             {
                 auto& transfer = mBody->getDeferredTransfer()->getTransfer();
                 auto& transferAmount = transfer.getSender();
-                auto& communityId = transferAmount.getCommunityId();
+                auto coinCommunityIdIndex = transferAmount.getCoinCommunityIdIndex();
 
                 return {
                     // sender
-                    calculateAccountBalance(transferAmount.getPublicKey(), maxTransactionNr, transferAmount.getAmount().negated(), communityId),
+                    calculateAccountBalance(transferAmount.getPublicKey(), maxTransactionNr, transferAmount.getAmount().negated(), coinCommunityIdIndex),
                     // recipient
-                    calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, transferAmount.getAmount(), communityId)
+                    calculateAccountBalance(transfer.getRecipient(), maxTransactionNr, transferAmount.getAmount(), coinCommunityIdIndex)
                 };
 
             }

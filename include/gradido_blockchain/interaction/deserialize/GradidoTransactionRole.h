@@ -1,29 +1,31 @@
-#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_GRADIDO_TRANSACTION_ROLE_H
-#define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_GRADIDO_TRANSACTION_ROLE_H
+#ifndef GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_GRADIDO_TRANSACTION_ROLE_H
+#define GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_GRADIDO_TRANSACTION_ROLE_H
 
-#include "Protopuf.h"
+#include <memory>
 
-namespace gradido {
-	namespace data {
-		class GradidoTransaction;
-	}
-	namespace interaction {
-		namespace deserialize {
-
-			class GradidoTransactionRole
-			{
-			public:
-				GradidoTransactionRole(const GradidoTransactionMessage& message);
-				~GradidoTransactionRole();
-
-				inline std::unique_ptr<const data::GradidoTransaction> getGradidoTransaction() { return std::move(mGradidoTransaction); }
-			protected:
-				std::unique_ptr<const data::GradidoTransaction> mGradidoTransaction;
-			};
-
-		}
-	}
+namespace memory {
+  class Block;
+  using ConstBlockPtr = std::shared_ptr<const Block>;
 }
 
+namespace gradido {
+  namespace data {
+    class GradidoTransaction;
+  }
+  namespace interaction::deserialize {
+    class GradidoTransactionRole {
+    public:
+      GradidoTransactionRole(memory::ConstBlockPtr bodyBytes);
+      ~GradidoTransactionRole() = default;
 
-#endif // __GRADIDO_BLOCKCHAIN_V3_3_INTERACTION_SERIALIZE_GRADIDO_TRANSACTION_ROLE_H
+      void run(uint32_t communityIdIndex);
+      inline std::shared_ptr<const data::GradidoTransaction> getTransaction() { return mTx; }
+
+    protected:
+      memory::ConstBlockPtr mTxRaw;
+      std::shared_ptr<const data::GradidoTransaction> mTx;
+    };
+  }
+}
+
+#endif //GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_GRADIDO_TRANSACTION_ROLE_H

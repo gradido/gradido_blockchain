@@ -62,9 +62,11 @@ public:
 	//! \return true if signature is valid
 	bool verify(const std::string& message, const std::string& signature) const;
 	bool verify(const memory::Block& message, const memory::Block& signature) const;
-	bool is3rdHighestBitClear() const;
+	// bool is3rdHighestBitClear() const;
 
 	inline memory::ConstBlockPtr getPublicKey() const { return mSodiumPublic; }
+	memory::Block getSlip10PublicKey() const;
+	
 	inline memory::ConstBlockPtr getChainCode() const { return mChainCode; }
 
 	inline bool isTheSame(const KeyPairEd25519& b) const {
@@ -96,9 +98,11 @@ public:
 	/// takes the given raw bytes and perform some modifications to normalize
 	/// to a valid Ed25519 extended key, but it does also force
 	/// the 3rd highest bit to be cleared too.
+	/*
 	static void normalizeBytesForce3rd(memory::Block& key);
 	static bool isNormalized(const memory::Block& key);
 	bool isNormalized() const;
+	*/
 
 protected:
 	inline memory::ConstBlockPtr getPrivateKey() const { return mExtendedSecret; }

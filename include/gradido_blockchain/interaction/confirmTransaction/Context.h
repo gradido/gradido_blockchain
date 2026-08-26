@@ -25,7 +25,7 @@ namespace gradido {
             {
             public:
                 Context(std::shared_ptr<blockchain::Abstract> blockchain)
-                    : mBlockchain(blockchain) {}
+                    : mBlockchain(blockchain), mDisableVerify(false), mDisableRunningHashTest(false) {}
 
                 virtual ~Context() {}
 
@@ -36,10 +36,14 @@ namespace gradido {
                 ) const;
 
                 std::shared_ptr<const data::ConfirmedTransaction> run(std::shared_ptr<AbstractRole> role);
+                inline void disableVerify() { mDisableVerify = true; }
+                inline void disableRunningHashTest() { mDisableRunningHashTest = true; }
                 
             protected:
-                bool processTransactionTrigger(Timepoint endDate);
+                bool processTransactionTrigger(data::Timestamp endDate);
                 std::shared_ptr<blockchain::Abstract> mBlockchain;
+                bool mDisableVerify;
+                bool mDisableRunningHashTest;
 
             };
         }

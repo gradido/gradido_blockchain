@@ -1,9 +1,11 @@
+#include "gradido_blockchain/data/adapter/publicKey.h"
 #include "gradido_blockchain/data/SignatureMap.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 
 #include <map>
+#include <set>
 
-using std::map;
+using std::map, std::set;
 
 namespace gradido {
 	namespace data {
@@ -40,6 +42,29 @@ namespace gradido {
 					return false;
 				}
 				if (it->second != otherSigPair) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		bool SignatureMap::isPairing(const SignatureMap& other) const
+		{
+			if (mSignaturePairs.size() != other.mSignaturePairs.size()) {
+				return false;
+			}
+			// most cases
+			if (mSignaturePairs.size() == 1) {
+				return mSignaturePairs[0].getPublicKey()->isTheSame(other.mSignaturePairs[0].getPublicKey());
+			}
+			set<PublicKey> pubkeys;
+			for (const auto& sigPair : mSignaturePairs) {
+				pubkeys.insert(adapter::toPublicKey(sigPair.getPublicKey()));
+			}
+			// compare with other
+			for (const auto& otherSigPair : other.mSignaturePairs) {
+				auto it = pubkeys.find(adapter::toPublicKey(otherSigPair.getPublicKey()));
+				if (it == pubkeys.end()) {
 					return false;
 				}
 			}

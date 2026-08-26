@@ -11,7 +11,7 @@
 *
 * @brief Create Indices for strings, for more efficient working with bigger data in memory
 * So basically every one use only the uint32_t index value for comparisation and stuff and only if the real value is needed,
-* they will ask the Dictionary for the real value*
+* they will ask the Dictionary for the real value*, index starts with 1 to let 0 be used as check if index exist
 */
 
 template<typename DataType>
@@ -23,17 +23,25 @@ public:
 	/*!
 	 * @brief Returns the index associated with the given data.
 	 * @param data The data value to look up.
-	 * @return The index associated with the data or nullopt if not exist
+	 * @return The index associated with the data or 0 if not exist
 	 */
-	virtual std::optional<uint32_t> getIndexForData(const DataType& data) const = 0;
+	virtual size_t getIndexForData(const DataType& data) const = 0;
 	/*!
 	 * TODO: remove usage
 	 * @brief Returns the data associated with a given index.
 	 * @param index The index to look up.
+	 * @return The data value associated with the index or std::nullopt if not exist
+	 */
+	virtual std::optional<DataType> getDataForIndex(size_t index) const = 0;
+
+	/*!
+	 *@brief Returns the data associated with a given index.
+	 * @param index The index to look up.
 	 * @return The data value associated with the index.
 	 * @throws DictionaryNotFoundException if the index does not exist.
 	 */
-	virtual std::optional<DataType> getDataForIndex(uint32_t index) const = 0;
+	virtual DataType getDataForIndexOrThrow(size_t index) const = 0;
+	virtual bool hasIndex(size_t index) const = 0;
 };
 
 
@@ -50,7 +58,7 @@ public:
 	 * @param data The data value to look up or insert.
 	 * @return The index associated with the data (new or existing).
 	 */
-	virtual uint32_t getOrAddIndexForData(const DataType& data) = 0;
+	virtual size_t getOrAddIndexForData(const DataType& data) = 0;
 };
 
 #endif //__GRADIDO_BLOCKCHAIN_LIB_DICTIONARY_INTERFACE_H

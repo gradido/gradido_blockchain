@@ -1,5 +1,8 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/Filter.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/GradidoTimeoutDeferredTransfer.h"
+#include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/interaction/calculateAccountBalance/Context.h"
 #include "gradido_blockchain/interaction/validate/GradidoTimeoutDeferredTransferRole.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
@@ -8,11 +11,14 @@
 
 #include "date/date.h"
 
+#include <memory>
+#include <optional>
+
+using std::nullopt;
 using std::shared_ptr;
 
 namespace gradido {
 	using data::Timestamp, data::ConfirmedTransaction, data::GradidoTimeoutDeferredTransfer;
-	using blockchain::Abstract;
 
 	namespace interaction {
 		namespace validate {
@@ -26,12 +32,8 @@ namespace gradido {
 				mMinSignatureCount = 0;
 			}
 
-			void GradidoTimeoutDeferredTransferRole::run(
-				Type type,
-				shared_ptr<Abstract> blockchain,
-				shared_ptr<const ConfirmedTransaction> senderPreviousConfirmedTransaction,
-				shared_ptr<const ConfirmedTransaction> recipientPreviousConfirmedTransaction
-			) {
+			void GradidoTimeoutDeferredTransferRole::run(Type type, ContextData& c) 
+			{
 				if ((type & Type::SINGLE) == Type::SINGLE) {
 					if (mTimeoutDeferredTransfer->getDeferredTransferTransactionNr() <= 3) {
 						throw TransactionValidationInvalidInputException(
@@ -44,8 +46,8 @@ namespace gradido {
 					}
 				}
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS) {
-					assert(blockchain);
-					auto deferredTransferEntry = blockchain->getTransactionForId(mTimeoutDeferredTransfer->getDeferredTransferTransactionNr());
+					assert(c.senderBlockchain);
+					auto deferredTransferEntry = c.senderBlockchain->getTransactionForId(mTimeoutDeferredTransfer->getDeferredTransferTransactionNr());
 					if (!deferredTransferEntry) {
 						throw TransactionValidationInvalidInputException(
 							"deferredTransferTransactionNr is invalid, couldn't find transaction",
@@ -71,17 +73,18 @@ namespace gradido {
 
 				}
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
-					assert(blockchain);
-					auto deferredTransferEntry = blockchain->getTransactionForId(mTimeoutDeferredTransfer->getDeferredTransferTransactionNr());
+					assert(c.senderBlockchain);
+					auto deferredTransferEntry = c.senderBlockchain->getTransactionForId(mTimeoutDeferredTransfer->getDeferredTransferTransactionNr());
 					auto body = deferredTransferEntry->getTransactionBody();
 					assert(body->isDeferredTransfer());
 					auto deferredTransfer = deferredTransferEntry->getTransactionBody()->getDeferredTransfer();
-					calculateAccountBalance::Context calculateAccountBalance(blockchain);
+					calculateAccountBalance::Context calculateAccountBalance(c.senderBlockchain);
 					Timestamp beforeCreateAt(mCreatedAt.getSeconds(), mCreatedAt.getNanos() - 1000);
 					auto balance = calculateAccountBalance.fromEnd(
 						deferredTransfer->getRecipientPublicKey(), 
 						beforeCreateAt,
-						deferredTransfer->getTransfer().getSender().getCommunityId()
+						std::nullopt,
+						c.senderPreviousConfirmedTransaction->getId()
 					);
 					if(GradidoUnit::zero() == balance) {
 						throw TransactionValidationInvalidInputException(

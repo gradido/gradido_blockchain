@@ -4,6 +4,9 @@
 #include "AbstractRole.h"
 
 namespace gradido {
+	namespace data{
+		class GradidoTimeoutDeferredTransfer;
+	}
 	namespace interaction {
 		namespace validate {
 			class GradidoTimeoutDeferredTransferRole : public AbstractRole
@@ -11,12 +14,7 @@ namespace gradido {
 			public:
 				GradidoTimeoutDeferredTransferRole(std::shared_ptr<const data::GradidoTimeoutDeferredTransfer> timeoutDeferredTransfer);
 
-				void run(
-					Type type,
-					std::shared_ptr<blockchain::Abstract> blockchain,
-					std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
-					std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
-				);
+				void run(Type type, ContextData& c);
 			protected:
 				std::shared_ptr<const data::GradidoTimeoutDeferredTransfer> mTimeoutDeferredTransfer;
 			};

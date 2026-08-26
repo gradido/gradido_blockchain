@@ -1,40 +1,53 @@
+#include "gradido_blockchain_core/data/wire/gradido_transaction.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/interaction/deserialize/GradidoTransactionRole.h"
-#include "gradido_blockchain/interaction/deserialize/LedgerAnchorRole.h"
+#include "gradido_blockchain/memory/Block.h"
+#include "gradido_blockchain/memory/grdu_StaticBuffer.h"
+
+#include "loguru/loguru.hpp"
+#include "magic_enum/magic_enum.hpp"
+
+#include <cassert>
+#include <memory>
+
+using namespace magic_enum;
+using memory::Block, memory::ConstBlockPtr, memory::GrduStaticBuffer;
+using std::shared_ptr;
+
+constexpr size_t STATIC_BUFFER_SIZE = 1024;
 
 namespace gradido {
-	namespace interaction {
-		namespace deserialize {
-			GradidoTransactionRole::~GradidoTransactionRole()
-			{
+  using data::GradidoTransaction;
+  namespace interaction::deserialize {
 
-			}
-			
-			GradidoTransactionRole::GradidoTransactionRole(const GradidoTransactionMessage& message)
-			{
-				data::SignatureMap signatures;
-				memory::BlockPtr bodyBytesPtr;
-				
-				const auto& sigMap = &message["sig_map"_f];
-				if (sigMap->has_value() && sigMap->value()["sig_pair"_f].size()) {
-					const auto& sigPairs = &sigMap->value()["sig_pair"_f];
-					signatures.reserve(sigPairs->size());
-					for (int i = 0; i < sigPairs->size(); i++) {
-						signatures.push(data::SignaturePair(
-							std::make_shared<memory::Block>((*sigPairs)[i]["pubkey"_f].value()),
-							std::make_shared<memory::Block>((*sigPairs)[i]["signature"_f].value())
-						));
-					}
-				}
-				const auto& bodyBytes = &message["body_bytes"_f];
-				if (bodyBytes->has_value()) {
-					bodyBytesPtr = std::make_shared<memory::Block>(bodyBytes->value());
-				}
-				LedgerAnchorRole ledgerAnchorRole(message["pairing_ledger_anchor"_f].value());
-				mGradidoTransaction = std::make_unique<const data::GradidoTransaction>(signatures, bodyBytesPtr, ledgerAnchorRole);
-			}
-		}
-	}
+    GradidoTransactionRole::GradidoTransactionRole(ConstBlockPtr txRaw)
+      : mTxRaw(txRaw)
+    {
+
+    }
+
+    void GradidoTransactionRole::run(uint32_t communityIdIndex)
+    {
+      assert(mTxRaw);
+      
+      GrduStaticBuffer<STATIC_BUFFER_SIZE> buffer;
+      buffer.use(
+        [&](grd_memory* alloc) -> grd_result
+        {
+          grdw_gradido_transaction tx{};
+          grd_memory_block src = { .data = (uint8_t*)mTxRaw->data(), .size = mTxRaw->size() };
+          auto result = grdw_gradido_transaction_decode(&tx, &src, alloc);
+          // we skip GRD_ERROR_STATIC_BUFFER_TO_SMALL because GrduStaticBuffer should handle this error
+          if (GRD_SUCCESS != result && GRD_ERROR_OUT_OF_MEMORY != result) {
+            LOG_F(ERROR, "decode error: %s", enum_name(result).data());
+            throw GradidoNodeInvalidDataException("error deserialize transaction");
+          }
+          if (GRD_SUCCESS != result) { return result; }
+          mTx = GradidoTransaction::fromGrdw(&tx, communityIdIndex);
+          return GRD_SUCCESS;
+        }
+      );
+    }
+  }
 }
-

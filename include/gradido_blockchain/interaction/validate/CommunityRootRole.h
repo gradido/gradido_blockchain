@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_COMMUNITY_ROOT_ROLE_H
 
 #include "AbstractRole.h"
+#include "gradido_blockchain/data/compact/CommunityRootTx.h"
 
 namespace gradido {
 	namespace interaction {
@@ -9,16 +10,12 @@ namespace gradido {
 			class CommunityRootRole : public AbstractRole
 			{
 			public:
-				CommunityRootRole(std::shared_ptr<const data::CommunityRoot> communityRoot);
+				CommunityRootRole(data::compact::CommunityRootTx&& communityRoot, uint32_t communityIdIndex);
 
-				void run(
-					Type type,
-					std::shared_ptr<blockchain::Abstract> blockchain,
-					std::shared_ptr<const data::ConfirmedTransaction> previousConfirmedTransaction,
-					std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
-				);
+				void run(Type type, ContextData& c);
 			protected:
-				std::shared_ptr<const data::CommunityRoot> mCommunityRoot;
+				data::compact::CommunityRootTx mCommunityRoot;
+				uint32_t mCommunityIdIndex;
 			};
 		}
 	}

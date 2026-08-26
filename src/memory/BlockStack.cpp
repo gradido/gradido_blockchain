@@ -1,4 +1,5 @@
 #include "gradido_blockchain/memory/BlockStack.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 
 #include <cstring>
 namespace memory {
@@ -6,7 +7,7 @@ namespace memory {
 		: mSize(size)
 	{
 	}
-	
+
 	uint8_t* BlockStack::getBlock()
 	{
 		if (!mSize) {
@@ -14,7 +15,7 @@ namespace memory {
 		}
 		uint8_t* block = nullptr;
 		{
-			std::scoped_lock _lock(mMutex);
+			std::lock_guard<std::mutex> lock(mMutex);
 			if (!mBlockStack.empty()) {
 				block = mBlockStack.top();
 				mBlockStack.pop();
@@ -23,6 +24,9 @@ namespace memory {
 		if (!block) {
 			block = static_cast<uint8_t*>(malloc(mSize));
 		}
+		if (!block) {
+			throw GradidoMemoryAllocationFailed("BlockStack Allocation failed", mSize);
+		}
 		memset(block, 0, mSize);
 		return block;
 	}
@@ -30,8 +34,7 @@ namespace memory {
 	void BlockStack::releaseBlock(uint8_t* memory)
 	{
 		if (!memory) return;
-		std::scoped_lock _lock(mMutex);
-
+		std::lock_guard<std::mutex> lock(mMutex);
 		if (
 			(mSize < 128 && mBlockStack.size() > MEMORY_MANAGER_MEMORY_PAGE_STACK_MAX_COUNT_PER_SIZE_SMALLER_AS_128) ||
 			(mSize < 512 && mBlockStack.size() > MEMORY_MANAGER_MEMORY_PAGE_STACK_MAX_COUNT_PER_SIZE_SMALLER_AS_512) ||

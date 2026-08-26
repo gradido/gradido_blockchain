@@ -1,4 +1,6 @@
+#include "gradido_blockchain/data/adapter/uuid.h"
 #include "gradido_blockchain/export.h"
+#include "gradido_blockchain/data/ByteArray.h"
 #include "gradido_blockchain/GradidoUnit.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain/serialization/toJson.h"
@@ -8,12 +10,16 @@
 #include "sodium.h"
 
 #include "date/date.h"
+
 #include <chrono>
 #include <iomanip>
+#include <optional>
 #include <sstream>
 
 using namespace rapidjson;
 
+using gradido::data::adapter::uuidToString;
+using gradido::data::ByteArray, gradido::data::Uuid;
 
 namespace serialization {
 
@@ -36,6 +42,38 @@ namespace serialization {
 			return Value("");
 		}
 		return toJson(*ptr, alloc);
+	}
+
+	template<>
+	Value toJson(const Uuid& uuid, Document::AllocatorType& alloc)
+	{
+		char buffer[37];
+		uuidToString(buffer, uuid);
+		return Value(buffer, 36, alloc);
+	}
+
+	template<>
+	Value toJson(const ByteArray<32>& byteArray, Document::AllocatorType& alloc)
+	{
+		if (byteArray.isEmpty()) {
+			return Value("");
+		}
+		constexpr uint32_t hexSize = 32 * 2 + 1;
+		char buffer[hexSize];
+		sodium_bin2hex(buffer, hexSize, byteArray.data(), 32);
+		return Value(buffer, hexSize - 1, alloc);
+	}
+
+	template<>
+	Value toJson(const ByteArray<64>& byteArray, Document::AllocatorType& alloc)
+	{
+		if (byteArray.isEmpty()) {
+			return Value("");
+		}
+		constexpr uint32_t hexSize = 64 * 2 + 1;
+		char buffer[hexSize];
+		sodium_bin2hex(buffer, hexSize, byteArray.data(), 64);
+		return Value(buffer, hexSize - 1, alloc);
 	}
 
 	template<>
@@ -62,11 +100,25 @@ namespace serialization {
 	{
 		return toJson(std::to_string(static_cast<unsigned int>(month)), alloc);
 	}
+
+	template<>
+	Value toJson(const date::year_month& ym, Document::AllocatorType& alloc)
+	{
+		Value value(kObjectType);
+		value.AddMember("month", toJson(ym.month(), alloc), alloc);
+		value.AddMember("year", toJson(ym.year(), alloc), alloc);
+		return value;
+	}
 	
 	template<>
 	Value toJson(const GradidoUnit& gdd, Document::AllocatorType& alloc)
 	{
-		return toJson(gdd.toString(4), alloc);
+		char buffer[24];
+		auto strSize = gdd.toString(buffer, 24, 4);
+		if (strSize >= 24) {
+			return toJson(gdd.toString(4), alloc);
+		}
+		return rapidjson::Value(buffer, strSize, alloc);
 	}
 
 #ifdef _WIN32
@@ -75,10 +127,13 @@ namespace serialization {
 	// the symbols are visible to consuming code.
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const memory::Block& block, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const memory::ConstBlockPtr& ptr, Document::AllocatorType& alloc);
+	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const ByteArray<32>& byteArray, Document::AllocatorType& alloc);
+	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const ByteArray<64>& byteArray, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const Timepoint& timepoint, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const Duration& duration, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const date::year& year, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const date::month& month, Document::AllocatorType& alloc);
+	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const date::year_month& ym, Document::AllocatorType& alloc);
 	template GRADIDOBLOCKCHAIN_EXPORT Value toJson(const GradidoUnit& gdd, Document::AllocatorType& alloc);
 #endif
 }

@@ -1,3 +1,5 @@
+#include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/const.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/data/AccountBalance.h"
 #include "gradido_blockchain/data/CommunityFriendsUpdate.h"
@@ -19,22 +21,28 @@
 #include "gradido_blockchain/data/TimestampSeconds.h"
 #include "gradido_blockchain/data/TransferAmount.h"
 #include "gradido_blockchain/data/TransactionTriggerEvent.h"
+#include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/serialization/toJson.h"
+#include "gradido_blockchain_core/types/ledger_anchor.h"
+#include "gradido_blockchain_core/types/memo_key.h"
 
 #include "magic_enum/magic_enum.hpp"
+#include <string>
 
 using namespace rapidjson;
 using namespace gradido::data;
+using gradido::g_appContext;
+using std::to_string;
 
 namespace serialization {
 
-	// basic 
+	// basic
 	DEFINE_TO_JSON(TransferAmount, {
 		obj.AddMember("pubkey", toJson(value.getPublicKey(), alloc), alloc);
 		obj.AddMember("amount", toJson(value.getAmount(), alloc), alloc);
-		auto communityId = value.getCommunityId();
-		if (!communityId.empty()) {
-			obj.AddMember("communityId", toJson(communityId, alloc), alloc);
+		auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(value.getCoinCommunityIdIndex());
+		if (communityIdOptional.has_value()) {
+			obj.AddMember("coinCommunityId", toJson(communityIdOptional.value(), alloc), alloc);
 		}
 	})
 
@@ -47,9 +55,9 @@ namespace serialization {
 	DEFINE_TO_JSON(AccountBalance, {
 		obj.AddMember("pubkey", toJson(value.getPublicKey(), alloc), alloc);
 		obj.AddMember("balance", toJson(value.getBalance(), alloc), alloc);
-		auto communityId = value.getCommunityId();
-		if (!communityId.empty()) {
-			obj.AddMember("communityId", toJson(communityId, alloc), alloc);
+		auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(value.getCoinCommunityIdIndex());
+		if (communityIdOptional.has_value()) {
+			obj.AddMember("coinCommunityId", toJson(communityIdOptional.value(), alloc), alloc);
 		}
 	})
 
@@ -59,7 +67,7 @@ namespace serialization {
 
 	DEFINE_TO_JSON(EncryptedMemo, {
 		obj.AddMember("type", toJson(value.getKeyType(), alloc), alloc);
-		if (MemoKeyType::PLAIN == value.getKeyType()) {
+		if (GRDT_MEMO_KEY_PLAIN == value.getKeyType()) {
 			obj.AddMember("memo", toJson(value.getMemo().copyAsString(), alloc), alloc);
 		}
 		else {
@@ -143,39 +151,77 @@ namespace serialization {
 	DEFINE_TO_JSON(TransactionBody, {
 		obj.AddMember("memos", toJson(value.getMemos(), alloc), alloc);
 		obj.AddMember("createdAt", toJson(value.getCreatedAt().getAsTimepoint(), alloc), alloc);
-		obj.AddMember("versionNumber", toJson(value.getVersionNumber(), alloc), alloc);
 		obj.AddMember("type", toJson(value.getType(), alloc), alloc);
-		auto otherGroup = value.getOtherGroup();
-		if (!otherGroup.empty()) {
-			obj.AddMember("otherGroup", toJson(otherGroup, alloc), alloc);
+		auto otherCommunityIdIndex = value.getOtherCommunityIdIndex();
+		if (otherCommunityIdIndex.has_value()) {
+			auto otherCommunityIdString = g_appContext->getCommunityIds().getDataForIndex(otherCommunityIdIndex.value());
+			if (!otherCommunityIdString.has_value()) {
+				throw DictionaryMissingEntryException("couldn't find communityId", to_string(otherCommunityIdIndex.value()));
+			}
+			obj.AddMember("otherCommunity", toJson(otherCommunityIdString.value(), alloc), alloc);
 		}
-		switch (value.getTransactionType()) {
-		case TransactionType::TRANSFER: 
-			obj.AddMember("transfer", toJson(*value.getTransfer(), alloc), alloc);
-			break;
-		case TransactionType::CREATION:
-			obj.AddMember("creation", toJson(*value.getCreation(), alloc), alloc);
-			break;
-		case TransactionType::COMMUNITY_FRIENDS_UPDATE:
-			obj.AddMember("communityFriendsUpdate", toJson(*value.getCommunityFriendsUpdate(), alloc), alloc);
-			break;
-		case TransactionType::REGISTER_ADDRESS:
-			obj.AddMember("registerAddress", toJson(*value.getRegisterAddress(), alloc), alloc);
-			break;
-		case TransactionType::DEFERRED_TRANSFER:
-			obj.AddMember("deferredTransfer", toJson(*value.getDeferredTransfer(), alloc), alloc);
-			break;
-		case TransactionType::COMMUNITY_ROOT: 
-			obj.AddMember("communityRoot", toJson(*value.getCommunityRoot(), alloc), alloc);
-			break;
-		case TransactionType::REDEEM_DEFERRED_TRANSFER:
-			obj.AddMember("redeemDeferredTransfer", toJson(*value.getRedeemDeferredTransfer(), alloc), alloc);
-			break;
-		case TransactionType::TIMEOUT_DEFERRED_TRANSFER:
-			obj.AddMember("timeoutDeferredTransfer", toJson(*value.getTimeoutDeferredTransfer(), alloc), alloc);
-			break;
-		case TransactionType::NONE: break;
-		default: throw GradidoUnhandledEnum("missing toJson call", "TransactionType on transactionBody", magic_enum::enum_name(value.getTransactionType()).data());
+		if (value.isRegisterAddress()) {
+			auto registerAddress = value.getRegisterAddress().value();
+			Value regAddVal(kObjectType);
+			regAddVal.AddMember("userPubkey",
+				toJson(g_appContext->getPublicKey({ .communityIdIndex = value.getCommunityIdIndex(), .publicKeyIndex = registerAddress.userPublicKeyIndex }), alloc),
+				alloc
+			);
+			regAddVal.AddMember("addressType", toJson(registerAddress.addressType, alloc), alloc);
+			auto nameHash = g_appContext->getUserNameHashs().getDataForIndex(registerAddress.nameHashIndex);
+			if (nameHash) {
+				regAddVal.AddMember("nameHash", toJson(nameHash->convertToHex(), alloc), alloc);
+			}
+			regAddVal.AddMember("accountPubkey",
+				toJson(g_appContext->getPublicKey({ .communityIdIndex = value.getCommunityIdIndex(), .publicKeyIndex = registerAddress.accountPublicKeyIndex }), alloc),
+				alloc
+			);
+			regAddVal.AddMember("derivationIndex", registerAddress.derivationIndex, alloc);
+			obj.AddMember("registerAddress", regAddVal, alloc);
+		}
+		else if (value.isCommunityRoot()) {
+			auto communityRoot = value.getCommunityRoot().value();
+			Value comRootVal(kObjectType);
+			comRootVal.AddMember(
+				"pubkey",
+				toJson(g_appContext->getPublicKey({ .communityIdIndex = value.getCommunityIdIndex(), .publicKeyIndex = communityRoot.publicKeyIndex }), alloc),
+				alloc
+			);
+			comRootVal.AddMember(
+				"gmwPubkey",
+				toJson(g_appContext->getPublicKey({ .communityIdIndex = value.getCommunityIdIndex(), .publicKeyIndex = communityRoot.gmwPublicKeyIndex }), alloc),
+				alloc
+			);
+			comRootVal.AddMember(
+				"aufPubkey",
+				toJson(g_appContext->getPublicKey({ .communityIdIndex = value.getCommunityIdIndex(), .publicKeyIndex = communityRoot.aufPublicKeyIndex }), alloc),
+				alloc
+			);
+			obj.AddMember("communityRoot", comRootVal, alloc);
+		}
+		else {
+			switch (value.getTransactionType()) {
+			case GRDT_TRANSACTION_TRANSFER:
+				obj.AddMember("transfer", toJson(*value.getTransfer(), alloc), alloc);
+				break;
+			case GRDT_TRANSACTION_CREATION:
+				obj.AddMember("creation", toJson(*value.getCreation(), alloc), alloc);
+				break;
+			case GRDT_TRANSACTION_COMMUNITY_FRIENDS_UPDATE:
+				obj.AddMember("communityFriendsUpdate", toJson(*value.getCommunityFriendsUpdate(), alloc), alloc);
+				break;
+			case GRDT_TRANSACTION_DEFERRED_TRANSFER:
+				obj.AddMember("deferredTransfer", toJson(*value.getDeferredTransfer(), alloc), alloc);
+				break;
+			case GRDT_TRANSACTION_REDEEM_DEFERRED_TRANSFER:
+				obj.AddMember("redeemDeferredTransfer", toJson(*value.getRedeemDeferredTransfer(), alloc), alloc);
+				break;
+			case GRDT_TRANSACTION_TIMEOUT_DEFERRED_TRANSFER:
+				obj.AddMember("timeoutDeferredTransfer", toJson(*value.getTimeoutDeferredTransfer(), alloc), alloc);
+				break;
+			case GRDT_TRANSACTION_NONE: break;
+			default: throw GradidoUnhandledEnum("missing toJson call", "grdt_transaction on transactionBody", magic_enum::enum_name(value.getTransactionType()).data());
+			}
 		}
 	})
 
@@ -183,20 +229,17 @@ namespace serialization {
 		auto type = value.getType();
 		obj.AddMember("type", toJson(type, alloc), alloc);
 		switch (type) {
-		case LedgerAnchor::Type::IOTA_MESSAGE_ID:
-			obj.AddMember("value", toJson(value.getIotaMessageId(), alloc), alloc);
+		case GRDT_LEDGER_ANCHOR_HIERO_TRANSACTION_ID:
+			obj.AddMember("value", toJson(value.toString(), alloc), alloc);
 			break;
-		case LedgerAnchor::Type::HIERO_TRANSACTION_ID:
-			obj.AddMember("value", toJson(value.getHieroTransactionId(), alloc), alloc);
+		case GRDT_LEDGER_ANCHOR_LEGACY_GRADIDO_DB_TRANSACTION_ID:
+		case GRDT_LEDGER_ANCHOR_LEGACY_GRADIDO_DB_COMMUNITY_ID:
+		case GRDT_LEDGER_ANCHOR_LEGACY_GRADIDO_DB_CONTRIBUTION_ID:
+		case GRDT_LEDGER_ANCHOR_LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID:
+		case GRDT_LEDGER_ANCHOR_LEGACY_GRADIDO_DB_USER_ID:
+			obj.AddMember("value", value.getLegacyGradidoDbId(), alloc);
 			break;
-		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_ID:
-		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_COMMUNITY_ID:
-		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_CONTRIBUTION_ID:
-		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_TRANSACTION_LINK_ID:
-		case LedgerAnchor::Type::LEGACY_GRADIDO_DB_USER_ID:
-			obj.AddMember("value", value.getLegacyTransactionId(), alloc);
-			break;
-		case LedgerAnchor::Type::NODE_TRIGGER_TRANSACTION_ID:
+		case GRDT_LEDGER_ANCHOR_NODE_TRIGGER_TRANSACTION_ID:
 			obj.AddMember("value", value.getNodeTriggeredTransactionId(), alloc);
 			break;
 		default:
@@ -226,7 +269,6 @@ namespace serialization {
 			obj.AddMember("gradidoTransaction", toJson(*gradidoTransaction, alloc), alloc);
 		}
 		obj.AddMember("confirmedAt", toJson(value.getConfirmedAt().getAsTimepoint(), alloc), alloc);
-		obj.AddMember("versionNumber", toJson(value.getVersionNumber(), alloc), alloc);
 		auto runningHash = value.getRunningHash();
 		if (runningHash) {
 			obj.AddMember("runningHash", toJson(runningHash, alloc), alloc);

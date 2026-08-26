@@ -3,6 +3,7 @@
 
 namespace gradido {
 	namespace data {
+
 		GradidoTransfer::GradidoTransfer(const TransferAmount& _sender, memory::ConstBlockPtr recipientPtr)
 			: mSender(_sender), mRecipient(recipientPtr) 
 		{

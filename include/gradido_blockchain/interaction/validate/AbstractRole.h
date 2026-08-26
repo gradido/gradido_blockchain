@@ -2,67 +2,84 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_ABSTRACT_ROLE_H
 
 #include "Type.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/memory/Block.h"
+#include "ContextData.h"
+
+#include <array>
+#include <memory>
 
 namespace gradido {
-    namespace blockchain {
-        class Abstract;
-        class AbstractProvider;
+  namespace blockchain {
+    class AbstractProvider;
+  }
+  namespace data {
+    namespace compact {
+      struct ConfirmedGradidoTx;
     }
-    namespace data {
-        class ConfirmedTransaction;
-        class SignatureMap;
-    }
+    class SignatureMap;
+  }
 	namespace interaction {
 		namespace validate {
             
-            class AbstractRole 
-            {
-            public:
-                AbstractRole() : mMinSignatureCount(0) {}
-                virtual ~AbstractRole() {}
-                // test if transaction is valid, throw an exception on error
-                virtual void run(
-                    Type type = Type::SINGLE,
-                    std::shared_ptr<blockchain::Abstract> blockchain = nullptr,
-                    std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction = nullptr,
-                    std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction = nullptr
-                ) = 0;
+      class AbstractRole 
+      {
+      public:
+        AbstractRole(std::shared_ptr<const data::compact::ConfirmedGradidoTx> confirmedGradidoTx = nullptr) 
+          : mMinSignatureCount(0), mRequiredSignPublicKeyIndicesCount(0), mForbiddenSignPublicKeyIndicesCount(0), 
+            mRequiredSignPublicKeyIndices{}, mForbiddenSignPublicKeyIndices{}, mDisableVerify(false), mDisableRunningHashTest(false), mConfirmedGradidoTx(confirmedGradidoTx)
+        {
+        }
+        virtual ~AbstractRole() {}
+        // test if transaction is valid, throw an exception on error
+        virtual void run(Type type, ContextData& c) = 0;
 
-                inline void setConfirmedAt(data::TimestampSeconds confirmedAt) { mConfirmedAt = confirmedAt; }
-                inline void setCreatedAt(data::Timestamp createdAt) { mCreatedAt = createdAt; }
+        inline void setConfirmedAt(data::Timestamp confirmedAt) { mConfirmedAt = confirmedAt; }
+        inline void setCreatedAt(data::Timestamp createdAt) { mCreatedAt = createdAt; }
 
-                //! \param blockchain can be nullptr, so if overloading this function, don't forget to check
-                virtual void checkRequiredSignatures(
-                    const data::SignatureMap& signatureMap,
-                    std::shared_ptr<blockchain::Abstract> blockchain = nullptr
-                ) const;
+        //! \param blockchain can be nullptr, so if overloading this function, don't forget to check
+        virtual void checkRequiredSignatures(
+          const data::SignatureMap& signatureMap,
+          std::shared_ptr<blockchain::Abstract> blockchain = nullptr
+        ) const;
+
+        inline void disableVerify() { mDisableVerify = true; }
+        inline void disableRunningHashTest() { mDisableRunningHashTest = true; }
 			        
-            protected:
-                bool isValidCommunityAlias(std::string_view communityAlias) const;
-                void validateEd25519PublicKey(memory::ConstBlockPtr ed25519PublicKey, const char* name) const;                    
-                void validateEd25519Signature(memory::ConstBlockPtr ed25519Signature, const char* name) const;
+      protected:
+        bool isValidCommunityAlias(std::string_view communityAlias) const;
+        void validateEd25519PublicKey(memory::ConstBlockPtr ed25519PublicKey, const char* name) const;                    
+        void validateEd25519Signature(memory::ConstBlockPtr ed25519Signature, const char* name) const;
 
 				void isPublicKeyForbidden(memory::ConstBlockPtr pubkey) const;
+        void isPublicKeyForbidden(data::compact::PublicKeyIndex publicKeyIndex) const;
 
-                //! throw if blockchainProvider is null or no blockchain can be found for communityId
-                //! \return valid blockchain pointer
-                std::shared_ptr<blockchain::Abstract> findBlockchain(
-                    blockchain::AbstractProvider* blockchainProvider,
-                    std::string_view communityId,
-                    const char* callerFunction
-                );
+        std::vector<data::compact::PublicKeyIndex> getRequiredSignPublicKeyIndicesVector() const;
 
-                const static std::string mCommunityIdRegexString;
-                data::TimestampSeconds mConfirmedAt;
-                data::Timestamp mCreatedAt;
+        //! throw if blockchainProvider is null or no blockchain can be found for communityId
+        //! \return valid blockchain pointer
+        std::shared_ptr<blockchain::Abstract> findBlockchain(
+          blockchain::AbstractProvider* blockchainProvider,
+          uint32_t communityIdIndex,
+          const char* callerFunction
+        );
+
+        data::Timestamp mConfirmedAt;
+        data::Timestamp mCreatedAt;
 				uint32_t mMinSignatureCount;
+        uint8_t  mRequiredSignPublicKeyIndicesCount;
+        uint8_t  mForbiddenSignPublicKeyIndicesCount;
+        bool     mDisableVerify;
+        bool     mDisableRunningHashTest;
 				std::vector<memory::ConstBlockPtr> mRequiredSignPublicKeys;
+        std::array<data::compact::PublicKeyIndex, 2> mRequiredSignPublicKeyIndices;
 				std::vector<memory::ConstBlockPtr> mForbiddenSignPublicKeys;
-            };
-        }
+        std::array<data::compact::PublicKeyIndex, 1> mForbiddenSignPublicKeyIndices;
+        std::shared_ptr<const data::compact::ConfirmedGradidoTx> mConfirmedGradidoTx;
+      };
     }
+  }
 }
 
 

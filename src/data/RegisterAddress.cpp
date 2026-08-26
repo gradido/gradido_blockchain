@@ -4,25 +4,27 @@
 namespace gradido {
 	namespace data {
 		RegisterAddress::RegisterAddress(
-			AddressType _addressType,
-			uint32_t _derivationIndex /* = 1*/,
-			memory::ConstBlockPtr userPubkeyPtr /* = nullptr*/,
-			memory::ConstBlockPtr nameHashPtr /* = nullptr*/,
-			memory::ConstBlockPtr accountPubkeyPtr /* = nullptr*/
+			grdt_address _addressType,
+			uint32_t _derivationIndex,
+			memory::ConstBlockPtr userPubkeyPtr,
+			memory::ConstBlockPtr nameHashPtr,
+			memory::ConstBlockPtr accountPubkeyPtr
 		) : mUserPubkey(userPubkeyPtr), mAddressType(_addressType), mNameHash(nameHashPtr),
 			mAccountPubkey(accountPubkeyPtr), mDerivationIndex(_derivationIndex) 
 		{
-			if (userPubkeyPtr) {
-				KeyPairEd25519::validatePublicKey(userPubkeyPtr);
-			}
-			if (accountPubkeyPtr) {
-				KeyPairEd25519::validatePublicKey(accountPubkeyPtr);
-			}
-			if (accountPubkeyPtr && userPubkeyPtr && accountPubkeyPtr->isTheSame(userPubkeyPtr)) {
+			KeyPairEd25519::validatePublicKey(userPubkeyPtr);
+			KeyPairEd25519::validatePublicKey(accountPubkeyPtr);
+			if (accountPubkeyPtr->isTheSame(userPubkeyPtr)) {
 				throw GradidoNodeInvalidDataException("accountPubkey and userPubkey are the same");
 			}
-			if (!accountPubkeyPtr && !userPubkeyPtr) {
-				throw GradidoNodeInvalidDataException("accountPubkey and userPubkey are both nullptr, at least one is needed");
+			if (!nameHashPtr) {
+				throw GradidoNullPointerException("nameHash cannot be a nullptr", "memory::Block", __FUNCTION__);
+			}
+			if (nameHashPtr->isEmpty()) {
+				throw GradidoNodeInvalidDataException("nameHash cannot be empty");
+			}
+			if (crypto_generichash_BYTES != nameHashPtr->size()) {
+				throw Ed25519InvalidKeyException("invalid key size for nameHash", *nameHashPtr, crypto_generichash_BYTES);
 			}
 		}
 

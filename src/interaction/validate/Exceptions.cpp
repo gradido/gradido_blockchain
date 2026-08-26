@@ -1,20 +1,39 @@
+#include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/data/adapter/uuid.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
+#include "gradido_blockchain/memory/Block.h"
+#include "gradido_blockchain/serialization/toJson.h"
 #include "gradido_blockchain/serialization/toJsonString.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain_core/types/address.h"
+#include "gradido_blockchain_core/types/memo_key.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 #include "loguru/loguru.hpp"
 #include "magic_enum/magic_enum.hpp"
 
+#include <string>
+#include <vector>
+
 using namespace rapidjson;
 using namespace magic_enum;
 
-namespace gradido {
+using memory::ConstBlockPtr;
+using serialization::toJson, serialization::toJsonString;
+using std::string, std::to_string;
+using std::vector;
+
+namespace gradido {	
+	using data::adapter::uuidToString;
+	using data::compact::PublicKeyIndex;
+
 	namespace interaction {
 		namespace validate {
 			TransactionValidationException::TransactionValidationException(const char* what) noexcept
-				: GradidoBlockchainException (what), mType(data::TransactionType::NONE)
+				: GradidoBlockchainException (what), mType(GRDT_TRANSACTION_NONE)
 			{
 
 			}
@@ -28,7 +47,7 @@ namespace gradido {
 			{
 				const auto& memos = transactionBody.getMemos();
 				for (const auto& memo : memos) {
-					if (memo.getKeyType() == data::MemoKeyType::PLAIN) {
+					if (GRDT_MEMO_KEY_PLAIN == memo.getKeyType()) {
 						mTransactionMemo = memo.getMemo().copyAsString();
 						break;
 					}
@@ -106,7 +125,7 @@ namespace gradido {
 				if(!mActual.empty()) {
 					detailsObjs.AddMember("actual", Value(mActual.data(), alloc), alloc);
 				}
-				
+
 				return std::move(detailsObjs);
 			}
 
@@ -162,8 +181,12 @@ namespace gradido {
 			}
 
 			// ************* Forbidden Sign *******************
-			TransactionValidationForbiddenSignException::TransactionValidationForbiddenSignException(memory::ConstBlockPtr forbiddenPubkey) noexcept
-				: TransactionValidationException("Forbidden Sign"), mForbiddenPubkey(forbiddenPubkey)
+			TransactionValidationForbiddenSignException::TransactionValidationForbiddenSignException(ConstBlockPtr forbiddenPubkey) noexcept
+				: TransactionValidationException("Forbidden Sign"), mForbiddenPubkeyHex(forbiddenPubkey->convertToHex())
+			{
+			}
+			TransactionValidationForbiddenSignException::TransactionValidationForbiddenSignException(PublicKeyIndex publicKeyIndex) noexcept
+				: TransactionValidationException("Forbidden Sign"), mForbiddenPubkeyHex(publicKeyIndex.toString())
 			{
 			}
 			TransactionValidationForbiddenSignException::~TransactionValidationForbiddenSignException()
@@ -173,24 +196,23 @@ namespace gradido {
 
 			std::string TransactionValidationForbiddenSignException::getFullString() const noexcept
 			{
-				std::string forbiddenPubkeyHex = mForbiddenPubkey ? mForbiddenPubkey->convertToHex() : "";
 				size_t resultSize = 0;
 				if (mTransactionMemo.size()) {
 					resultSize += mTransactionMemo.size() + 25;
 				}
-				if (forbiddenPubkeyHex.size()) {
-					resultSize += forbiddenPubkeyHex.size() + 47;
+				if (mForbiddenPubkeyHex.size()) {
+					resultSize += mForbiddenPubkeyHex.size() + 47;
 				}
 				std::string result;
 				result.reserve(resultSize);
 				if (mTransactionMemo.size()) {
 					result += "transaction with memo: " + mTransactionMemo;
 				}
-				if (forbiddenPubkeyHex.size()) {
+				if (mForbiddenPubkeyHex.size()) {
 					if(result.size()) {
 						result += ", ";
 					}
-					result += "this forbidden pubkey was used for signing: " + forbiddenPubkeyHex;
+					result += "this forbidden pubkey was used for signing: " + mForbiddenPubkeyHex;
 				}
 				return result;
 			}
@@ -199,8 +221,8 @@ namespace gradido {
 			{
 				Value detailsObjs(kObjectType);
 				detailsObjs.AddMember("what", Value(what(), alloc), alloc);
-				if (mForbiddenPubkey) {
-					detailsObjs.AddMember("forbiddenPubkey", Value(mForbiddenPubkey->convertToHex().data(), alloc), alloc);
+				if (!mForbiddenPubkeyHex.empty()) {
+					detailsObjs.AddMember("forbiddenPubkey", toJson(mForbiddenPubkeyHex, alloc), alloc);
 				}
 				detailsObjs.AddMember("memo", Value(mTransactionMemo.data(), alloc), alloc);
 				return std::move(detailsObjs);
@@ -236,7 +258,7 @@ namespace gradido {
 			}
 
 			// ******************************* Missing required sign *****************************************************
-			TransactionValidationRequiredSignMissingException::TransactionValidationRequiredSignMissingException(const std::vector<memory::ConstBlockPtr>& missingPublicKeys) noexcept
+			TransactionValidationRequiredSignMissingException::TransactionValidationRequiredSignMissingException(const vector<ConstBlockPtr>& missingPublicKeys) noexcept
 				: TransactionValidationException("missing required sign")
 			{
 				for (auto pubkey : missingPublicKeys) {
@@ -246,36 +268,40 @@ namespace gradido {
 				}
 			}
 
+			TransactionValidationRequiredSignMissingException::TransactionValidationRequiredSignMissingException(const vector<PublicKeyIndex>& missingPublicKeyIndices) noexcept
+				: TransactionValidationException("missing required sign")
+			{
+				for (auto pubkeyIndex : missingPublicKeyIndices) {
+					std::string pubkeyStr = "";
+					try {
+						pubkeyStr = pubkeyIndex.getRawKey().convertToHex();
+					}
+					catch (GradidoBlockchainException& ex) {
+						pubkeyStr = ex.getFullString();
+					}
+					catch (...) {
+						pubkeyStr = "exception";
+					}
+					mMissingPublicKeysHex.emplace_back(std::move(pubkeyStr));
+				}
+			}
+
 			// ******************************** Invalid Pairing transaction **********************************************
 			PairingTransactionNotMatchException::PairingTransactionNotMatchException(
 				const char* what,
-				memory::ConstBlockPtr serializedTransaction,
-				memory::ConstBlockPtr serializedPairingTransaction
+				std::shared_ptr<const data::GradidoTransaction> transaction,
+				std::shared_ptr<const data::GradidoTransaction> pairingTransaction
 			) noexcept
-				:TransactionValidationException(what)
+				:TransactionValidationException(what), mTransaction(transaction), mPairingTransaction(pairingTransaction)
 			{
-				try {
-					interaction::deserialize::Context deserializeTransaction(serializedTransaction, interaction::deserialize::Type::GRADIDO_TRANSACTION);
-					deserializeTransaction.run();
-					if (deserializeTransaction.isGradidoTransaction()) {
-						mTransaction = deserializeTransaction.getGradidoTransaction();
-					}
-					interaction::deserialize::Context deserializePairingTransaction(serializedPairingTransaction, interaction::deserialize::Type::GRADIDO_TRANSACTION);
-					deserializePairingTransaction.run();
-					if (deserializePairingTransaction.isGradidoTransaction()) {
-						mPairingTransaction = deserializePairingTransaction.getGradidoTransaction();
-					}
-				}
-				catch (...) {
-					LOG_F(WARNING, "exception by creating transaction from serialized string");
-				}
+				
 			}
 
 			std::string PairingTransactionNotMatchException::getFullString() const noexcept
 			{
 				std::string resultString;
-				auto transactionJson = serialization::toJsonString(*mTransaction, true);
-				auto pairedTransactionJson = serialization::toJsonString(*mPairingTransaction, true);
+				auto transactionJson = toJsonString(*mTransaction, true);
+				auto pairedTransactionJson = toJsonString(*mPairingTransaction, true);
 				size_t resultSize = strlen(what()) + transactionJson.size() + pairedTransactionJson.size() + 4;
 				resultString.reserve(resultSize);
 				resultString = what();
@@ -289,7 +315,7 @@ namespace gradido {
 
 
 			// *********************************** Address Already Exist **********************************************************
-			AddressAlreadyExistException::AddressAlreadyExistException(const char* what, const std::string& addressHex, data::AddressType addressType) noexcept
+			AddressAlreadyExistException::AddressAlreadyExistException(const char* what, const std::string& addressHex, grdt_address addressType) noexcept
 				: TransactionValidationException(what), mAddressHex(addressHex), mAddressType(addressType)
 			{
 
@@ -324,8 +350,8 @@ namespace gradido {
 			InvalidCreationException::InvalidCreationException(
 				const char* what,
 				int targetMonth, int targetYear,
-				const std::string& newCreationAmount,
-				const std::string& alreadyCreatedBalance
+				const string& newCreationAmount,
+				const string& alreadyCreatedBalance
 			) noexcept
 				: TransactionValidationException(what), mTargetMonth(targetMonth), mTargetYear(targetYear),
 				mNewCreationAmount(newCreationAmount), mAlreadyCreatedBalance(alreadyCreatedBalance)
@@ -333,10 +359,10 @@ namespace gradido {
 
 			}
 
-			std::string InvalidCreationException::getFullString() const noexcept
+			string InvalidCreationException::getFullString() const noexcept
 			{
-				std::string result;
-				auto targetDate = std::to_string(mTargetMonth) + " " + std::to_string(mTargetYear);
+				string result;
+				auto targetDate = to_string(mTargetMonth) + " " + to_string(mTargetYear);
 				size_t resultSize = strlen(what()) + 2 + targetDate.size() + 15;
 				resultSize += mNewCreationAmount.size() + 21;
 				resultSize += mAlreadyCreatedBalance.size() + 45;
@@ -363,25 +389,70 @@ namespace gradido {
 			}
 
 			// **************************** Wrong Address Type Exception ***********************************
-			WrongAddressTypeException::WrongAddressTypeException(const char* what, data::AddressType type, memory::ConstBlockPtr pubkey) noexcept
-				: TransactionValidationException(what), mType(type), mPublicKey(pubkey)
+			WrongAddressTypeException::WrongAddressTypeException(const char* what, grdt_address type, ConstBlockPtr pubkey, optional<uint32_t> communityIdIndex) noexcept
+				: TransactionValidationException(what), mType(type)
 			{
-
+				if (pubkey) {
+					mPublicKeyHex = pubkey->convertToHex();
+				}
+				else {
+					mPublicKeyHex = "empty";
+				}
+				if (communityIdIndex) {
+					auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex.value());
+					if (communityIdOptional.has_value()) {
+						mCommunityUuid = uuidToString(communityIdOptional.value());
+					}
+					else {
+						mCommunityUuid = to_string(communityIdIndex.value());
+					}
+				}
 			}
+
+			WrongAddressTypeException::WrongAddressTypeException(const char* what, grdt_address type, PublicKeyIndex pubkeyIndex, optional<uint32_t> communityIdIndex) noexcept
+				: TransactionValidationException(what), mType(type)
+			{
+				mPublicKeyHex = pubkeyIndex.toString();
+				if (communityIdIndex) {
+					auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex.value());
+					if (communityIdOptional.has_value()) {
+						mCommunityUuid = uuidToString(communityIdOptional.value());
+					}
+					else {
+						mCommunityUuid = to_string(communityIdIndex.value());
+					}
+				}
+			}
+
+			WrongAddressTypeException::WrongAddressTypeException(const char* what, grdt_address type, uint32_t pubkeyIndex, std::optional<uint32_t> communityIdIndex) noexcept
+				: TransactionValidationException(what), mType(type)
+			{
+				mPublicKeyHex = to_string(pubkeyIndex);
+				if (communityIdIndex) {
+					auto communityIdOptional = g_appContext->getCommunityIds().getDataForIndex(communityIdIndex.value());
+					if (communityIdOptional.has_value()) {
+						mCommunityUuid = uuidToString(communityIdOptional.value());
+						mPublicKeyHex = g_appContext->getPublicKey({ .communityIdIndex = *communityIdIndex, .publicKeyIndex = pubkeyIndex })->convertToHex();
+					}
+					else {
+						mCommunityUuid = to_string(communityIdIndex.value());
+					}
+				}
+			}
+
 			std::string WrongAddressTypeException::getFullString() const noexcept
 			{
 				std::string result;
 				auto addressTypeName = enum_name(mType);
-				std::string pubkeyHex;
-				if (mPublicKey) {
-					pubkeyHex = mPublicKey->convertToHex();
-				}
-				size_t resultSize = strlen(what()) + addressTypeName.size() + 2 + 14 + 10 + pubkeyHex.size();
+				size_t resultSize = strlen(what()) + addressTypeName.size() + 2 + 14 + 10 + mPublicKeyHex.size() + 15 + mCommunityUuid.size();
 				result.reserve(resultSize);
 				result = what();
 				result += ", address type: ";
 				result += addressTypeName;
-				result += ", pubkey: " + pubkeyHex;
+				result += ", pubkey: " + mPublicKeyHex;
+				if (!mCommunityUuid.empty()) {
+					result += ", communityId: " + mCommunityUuid;
+				}
 
 				return result;
 			}
@@ -393,6 +464,7 @@ namespace gradido {
 
 				auto addressTypeName = enum_name(mType);
 				jsonDetails.AddMember("addressType", Value(addressTypeName.data(), addressTypeName.size(), alloc), alloc);
+				jsonDetails.AddMember("communityId", Value(mCommunityUuid.data(), alloc), alloc);
 				return std::move(jsonDetails);
 			}
 		}

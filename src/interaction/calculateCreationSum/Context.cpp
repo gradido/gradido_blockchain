@@ -10,7 +10,7 @@ using namespace std::chrono;
 namespace gradido {
 	namespace interaction {
 		namespace calculateCreationSum {
-			Context::Context(Timepoint date, Timepoint targetDate, memory::ConstBlockPtr publicKey, uint64_t transactionNrMax/* = 0 */)
+			Context::Context(Timepoint date, Timepoint targetDate, data::compact::PublicKeyIndex publicKey, uint64_t transactionNrMax/* = 0 */)
 			{
 				auto secondsSinceEpoch = time_point_cast<seconds>(date).time_since_epoch().count();
 				if (secondsSinceEpoch < 1588503608) {

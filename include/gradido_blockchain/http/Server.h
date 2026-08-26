@@ -12,12 +12,15 @@
 
 namespace httplib {
 	class Server;
+	class Request;
+	class Response;
 }
-
 
 class GRADIDOBLOCKCHAIN_EXPORT Server
 {
 public:
+	using Callback = std::function<void(const httplib::Request&, httplib::Response&)>;
+
 	Server(std::string_view host, int port, std::string_view name);
 #ifdef USE_HTTPS
 	Server(
@@ -40,6 +43,9 @@ public:
 	
 	//! stop server and clean up
 	void exit();
+
+	void registerCallbackHandler(const std::string& pathName, MethodType type, Callback handler);
+
 protected:
 	void registerPath(const std::string& pathName);
 	

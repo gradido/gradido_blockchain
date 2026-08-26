@@ -1,59 +1,53 @@
+#include "gradido_blockchain_core/data/wire/confirmed_transaction.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
-#include "gradido_blockchain/interaction/deserialize/AccountBalanceRole.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/interaction/deserialize/ConfirmedTransactionRole.h"
-#include "gradido_blockchain/interaction/deserialize/GradidoTransactionRole.h"
-#include "gradido_blockchain/interaction/deserialize/LedgerAnchorRole.h"
-#include "gradido_blockchain/interaction/deserialize/TimestampRole.h"
-#include "gradido_blockchain/interaction/deserialize/Exceptions.h"
-#include "gradido_blockchain/interaction/serialize/GradidoTransactionRole.h"
+#include "gradido_blockchain/memory/Block.h"
+#include "gradido_blockchain/memory/grdu_StaticBuffer.h"
 
-using memory::Block, memory::ConstBlockPtr;
-using std::make_shared;
+#include "loguru/loguru.hpp"
+#include "magic_enum/magic_enum.hpp"
+
+#include <cassert>
+#include <memory>
+
+using namespace magic_enum;
+using memory::Block, memory::ConstBlockPtr, memory::GrduStaticBuffer;
+using std::shared_ptr;
+
+constexpr size_t STATIC_BUFFER_SIZE = 2048;
 
 namespace gradido {
-	namespace interaction {
-		namespace deserialize {
+  using data::ConfirmedTransaction;
+  namespace interaction::deserialize {
 
-			ConfirmedTransactionRole::ConfirmedTransactionRole(const ConfirmedTransactionMessage& message)
-			{
-				const char* exceptionMessage = "missing member on deserialize confirmed transaction";
-				ConstBlockPtr messageId = nullptr;
+    ConfirmedTransactionRole::ConfirmedTransactionRole(ConstBlockPtr txRaw)
+      : mTxRaw(txRaw)
+    {
+      
+    }
 
-				if (!message["id"_f].has_value()) {
-					throw MissingMemberException(exceptionMessage, "id");
-				}
-				if (!message["transaction"_f].has_value()) {
-					throw MissingMemberException(exceptionMessage, "transaction");
-				}
-				if (!message["confirmed_at"_f].has_value()) {
-					throw MissingMemberException(exceptionMessage, "confirmed_at");
-				}
-				if (!message["version_number"_f].has_value()) {
-					throw MissingMemberException(exceptionMessage, "version_number");
-				}
-				if (!message["running_hash"_f].has_value()) {
-					throw MissingMemberException(exceptionMessage, "running_hash");
-				}
-				std::vector<data::AccountBalance> accountBalances;
-				auto accountBalanceMessages = message["account_balances"_f];
-				if (accountBalanceMessages.size()) {
-					accountBalances.reserve(accountBalanceMessages.size());
-					for (int i = 0; i < accountBalanceMessages.size(); i++) {
-						accountBalances.push_back(AccountBalanceRole(accountBalanceMessages[i]));
-					}
-				}
-				mConfirmedTransaction = std::make_shared<data::ConfirmedTransaction>(
-					message["id"_f].value(),
-					GradidoTransactionRole(message["transaction"_f].value()).getGradidoTransaction(),
-					TimestampRole(message["confirmed_at"_f].value()).data(),
-					message["version_number"_f].value(),
-					make_shared<Block>(message["running_hash"_f].value()),
-					LedgerAnchorRole(message["ledger_anchor"_f].value()),
-					accountBalances,
-					message["balance_derivation"_f].value()
-				);
-			}
-
-		}
-	}
+    void ConfirmedTransactionRole::run(uint32_t communityIdIndex)
+    {
+      assert(mTxRaw);      
+      GrduStaticBuffer<STATIC_BUFFER_SIZE> buffer;
+      buffer.use(
+        [&](grd_memory* alloc) -> grd_result 
+        {
+          grdw_confirmed_transaction tx{};
+          grd_memory_block src = { .data = (uint8_t*)mTxRaw->data(), .size = mTxRaw->size() };
+          auto result = grdw_confirmed_transaction_decode(&tx, &src, alloc);
+          // we skip GRD_ERROR_STATIC_BUFFER_TO_SMALL because GrduStaticBuffer should handle this error
+          if (GRD_SUCCESS != result && GRD_ERROR_OUT_OF_MEMORY != result) {
+            LOG_F(ERROR, "decode error: %s", enum_name(result).data());
+            throw GradidoNodeInvalidDataException("error deserialize confirmed transaction");
+          }
+          if (GRD_SUCCESS != result) { return result; }
+          // copy data
+          mTx = ConfirmedTransaction::fromGrdw(&tx, communityIdIndex);
+          return GRD_SUCCESS;
+        }
+      );      
+    }
+  }
 }

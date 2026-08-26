@@ -21,5 +21,5 @@ TEST(HieroTransactionIdTest, Constrcutor)
 TEST(HieroTransactionIdTest, toString)
 {
 	auto transactionId = TransactionId(gradido::data::Timestamp(171627121, 2912), AccountId(0, 0, 1233));
-	EXPECT_EQ(transactionId.toString(), "0.0.1233@171627121.2912");
+	EXPECT_EQ(transactionId.toString(), "0.0.1233@171627121.000002912");
 }

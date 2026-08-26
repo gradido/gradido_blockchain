@@ -1,3 +1,4 @@
+#include "gradido_blockchain/interaction/validate/ContextData.h"
 #include "gradido_blockchain/blockchain/AbstractProvider.h"
 #include "gradido_blockchain/blockchain/Exceptions.h"
 #include "gradido_blockchain/interaction/validate/ConfirmedTransactionRole.h"
@@ -11,17 +12,17 @@ namespace gradido {
 		namespace validate {
 
 			Context::Context(const data::TransactionBody& body)
-				: mRole(std::make_unique<TransactionBodyRole>(body)) 
+				: mRole(std::make_unique<TransactionBodyRole>(body)), mDisableVerify(false), mDisableRunningHashTest(false)
 			{
 			}
 
 			Context::Context(const data::GradidoTransaction& body)
-				: mRole(std::make_unique<GradidoTransactionRole>(body)) 
+				: mRole(std::make_unique<GradidoTransactionRole>(body)), mDisableVerify(false), mDisableRunningHashTest(false)
 			{
 			}
 
 			Context::Context(const data::ConfirmedTransaction& body)
-				: mRole(std::make_unique<ConfirmedTransactionRole>(body)) 
+				: mRole(std::make_unique<ConfirmedTransactionRole>(body)), mDisableVerify(false), mDisableRunningHashTest(false)
 			{
 			}
 
@@ -38,7 +39,17 @@ namespace gradido {
 						mSenderPreviousConfirmedTransaction = transactionEntry->getConfirmedTransaction();
 					}
 				}
-				mRole->run(type, blockchain, mSenderPreviousConfirmedTransaction, mRecipientPreviousConfirmedTransaction);
+				ContextData c(blockchain, mSenderPreviousConfirmedTransaction);
+				if (mRecipientPreviousConfirmedTransaction) {
+					c.recipientPreviousConfirmedTransaction = mRecipientPreviousConfirmedTransaction;
+				}
+				if (mDisableVerify) {
+					mRole->disableVerify();
+				}
+				if (mDisableRunningHashTest) {
+					mRole->disableRunningHashTest();
+				}
+				mRole->run(type, c);
 			}
 		}
 	}

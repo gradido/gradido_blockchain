@@ -7,26 +7,20 @@ namespace gradido {
 	namespace interaction {
 		namespace validate {
 
-            class TransactionBodyRole: public AbstractRole 
-            {
-            public:
+      class TransactionBodyRole: public AbstractRole 
+      {
+      public:
 				TransactionBodyRole(const data::TransactionBody& body) : mBody(body) {}
-				void run(
-					Type type,
-					std::shared_ptr<blockchain::Abstract> blockchain,
-					std::shared_ptr<const data::ConfirmedTransaction> previousConfirmedTransaction,
-					std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
-				);
+				void run(Type type, ContextData& c);
 
 				inline void checkRequiredSignatures(
 					const data::SignatureMap& signatureMap,
 					std::shared_ptr<blockchain::Abstract> blockchain
 				) { 
-					getSpecificTransactionRole(blockchain)
-						.checkRequiredSignatures(signatureMap, blockchain);
+					getSpecificTransactionRole().checkRequiredSignatures(signatureMap, blockchain);
 				}
-            protected:
-				AbstractRole& getSpecificTransactionRole(std::shared_ptr<blockchain::Abstract> blockchain);
+      protected:
+				AbstractRole& getSpecificTransactionRole();
 
 				/**
 				 * @brief Checks if the given memory block is likely plain text.
@@ -47,7 +41,7 @@ namespace gradido {
 
 				std::unique_ptr<AbstractRole> mSpecificTransactionRole;
 				const data::TransactionBody& mBody;
-            };
+      };
 		}
 	}
 }

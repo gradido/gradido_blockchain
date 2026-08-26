@@ -1,16 +1,34 @@
 #ifndef __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_TRANSACTION_ENTRY_H
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_TRANSACTION_ENTRY_H
 
-#include "gradido_blockchain/data/ConfirmedTransaction.h"
-#include "gradido_blockchain/data/TransactionType.h"
+#include "gradido_blockchain/export.h"
+#include "gradido_blockchain/types.h"
+#include "gradido_blockchain_core/types/transaction.h"
 
 #include "date/date.h"
 
-#include <vector>
 #include <list>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <vector>
+
+namespace memory
+{
+	class Block;
+	using ConstBlockPtr = std::shared_ptr<const Block>;
+}
 
 namespace gradido {
+	namespace data {
+		class ConfirmedTransaction;
+		class TransactionBody;
+		using ConstConfirmedTransactionPtr = std::shared_ptr<const ConfirmedTransaction>;
+		using ConstTransactionBodyPtr = std::shared_ptr<const TransactionBody>;
+	}
 	namespace blockchain {
+
+		class AbstractProvider;
 
 		/*!
 		* @author Dario Rekowski
@@ -24,22 +42,26 @@ namespace gradido {
 		{
 		public:
 			TransactionEntry()
-				: mTransactionNr(0), mMonth(0), mYear(0), mTransactionType(data::TransactionType::NONE) {}
+				: mTransactionNr(0), mMonth(0), mYear(0), mTransactionType(GRDT_TRANSACTION_NONE), mBlockchainCommunityIdIndex(0) {}
 
 			//! \brief init entry object from serialized transaction, deserialize transaction to get infos
-			TransactionEntry(memory::ConstBlockPtr serializedTransaction);
+			TransactionEntry(memory::ConstBlockPtr serializedTransaction, uint32_t blockchainCommunityIdIndex);
+			TransactionEntry(data::ConstConfirmedTransactionPtr confirmedTransaction, uint32_t blockchainCommunityIdIndex);
 
-			TransactionEntry(data::ConstConfirmedTransactionPtr confirmedTransaction);
-
-			TransactionEntry(memory::ConstBlockPtr serializedTransaction, data::ConstConfirmedTransactionPtr confirmedTransaction);
+			TransactionEntry(
+				memory::ConstBlockPtr serializedTransaction, 
+				data::ConstConfirmedTransactionPtr confirmedTransaction, 
+				uint32_t blockchainCommunityIdIndex
+			);
 
 			//! \brief init entry object without indices
 			TransactionEntry(
 				uint64_t transactionNr,
 				date::month month,
 				date::year year,
-				data::TransactionType transactionType,
-				std::string communityId
+				grdt_transaction transactionType,
+				std::optional<uint32_t> coinCommunityIdIndex,
+			  uint32_t blockchainCommunityIdIndex
 			);
 			virtual ~TransactionEntry() {}
 
@@ -48,32 +70,35 @@ namespace gradido {
 			bool operator > (const TransactionEntry& b) const { return mTransactionNr > b.mTransactionNr; }
 
 			inline uint64_t getTransactionNr() const { return mTransactionNr; }
-			inline memory::ConstBlockPtr getSerializedTransaction() const { return mSerializedTransaction; }
+			memory::ConstBlockPtr getSerializedTransaction() const;
 			data::ConstConfirmedTransactionPtr getConfirmedTransaction() const;
 			inline date::month getMonth() const { return mMonth; }
 			inline date::year getYear() const { return mYear; }
-			inline data::TransactionType getTransactionType() const { return mTransactionType; }
-			inline std::string_view getCoinCommunityId() const { return mCoinCommunityId; }
-			static std::string getCoinCommunityId(const data::TransactionBody& body);
-			inline data::ConstTransactionBodyPtr getTransactionBody() const { return getConfirmedTransaction()->getGradidoTransaction()->getTransactionBody(); }
+			inline grdt_transaction getTransactionType() const { return mTransactionType; }
+			inline std::optional<uint32_t> getCoinCommunityIdIndex() const { return mCoinCommunityIdIndex; }
+			inline uint32_t getBlockchainCommunityIdIndex() const { return mBlockchainCommunityIdIndex; }
+			static std::optional<uint32_t> getCoinCommunityIdIndex(const data::TransactionBody& body);
+			data::ConstTransactionBodyPtr getTransactionBody() const;
 
 			// default transactions
-			inline bool isTransfer() const { return mTransactionType == data::TransactionType::TRANSFER; }
-			inline bool isCreation() const { return mTransactionType == data::TransactionType::CREATION; }
-			inline bool isCommunityFriendsUpdate() const { return mTransactionType == data::TransactionType::COMMUNITY_FRIENDS_UPDATE; }
-			inline bool isRegisterAddress() const { return mTransactionType == data::TransactionType::REGISTER_ADDRESS; }
-			inline bool isDeferredTransfer() const { return mTransactionType == data::TransactionType::DEFERRED_TRANSFER; }
-			inline bool isCommunityRoot() const { return mTransactionType == data::TransactionType::COMMUNITY_ROOT; }
-			inline bool isRedeemDeferredTransfer() const { return mTransactionType == data::TransactionType::REDEEM_DEFERRED_TRANSFER; }			
-			inline bool isTimeoutDeferredTransfer() const { return mTransactionType == data::TransactionType::TIMEOUT_DEFERRED_TRANSFER; }
+			inline bool isTransfer() const { return mTransactionType == GRDT_TRANSACTION_TRANSFER; }
+			inline bool isCreation() const { return mTransactionType == GRDT_TRANSACTION_CREATION; }
+			inline bool isCommunityFriendsUpdate() const { return mTransactionType == GRDT_TRANSACTION_COMMUNITY_FRIENDS_UPDATE; }
+			inline bool isRegisterAddress() const { return mTransactionType == GRDT_TRANSACTION_REGISTER_ADDRESS; }
+			inline bool isDeferredTransfer() const { return mTransactionType == GRDT_TRANSACTION_DEFERRED_TRANSFER; }
+			inline bool isCommunityRoot() const { return mTransactionType == GRDT_TRANSACTION_COMMUNITY_ROOT; }
+			inline bool isRedeemDeferredTransfer() const { return mTransactionType == GRDT_TRANSACTION_REDEEM_DEFERRED_TRANSFER; }			
+			inline bool isTimeoutDeferredTransfer() const { return mTransactionType == GRDT_TRANSACTION_TIMEOUT_DEFERRED_TRANSFER; }
 
 		protected:
 			uint64_t mTransactionNr;
-			memory::ConstBlockPtr mSerializedTransaction;
+			mutable memory::ConstBlockPtr mSerializedTransaction;
 			date::month mMonth;
 			date::year mYear;
-			data::TransactionType mTransactionType;
-			std::string mCoinCommunityId;
+			grdt_transaction mTransactionType;
+			std::optional<uint32_t> mCoinCommunityIdIndex;
+			uint32_t mBlockchainCommunityIdIndex;
+
 			mutable std::mutex mFastMutex;
 			mutable data::ConstConfirmedTransactionPtr mConfirmedTransaction;
 		};

@@ -25,7 +25,7 @@ namespace gradido {
 			unsigned int page;
 
 			//! return entries to skip, only if page > 0, else return 0
-			inline unsigned int skipEntriesCount() const {
+			inline uint64_t skipEntriesCount() const {
 				if (!page) return 0;
 				return (page-1) * size;
 			}
@@ -39,6 +39,9 @@ namespace gradido {
 			}
 			inline bool operator !=(const Pagination& other) const {
 				return !(*this == other);
+			}
+			inline bool empty() const {
+				return !size;
 			}
 		};
 	}

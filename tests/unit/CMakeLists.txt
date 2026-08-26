@@ -27,10 +27,10 @@ FILE(GLOB TEST_DATA_HIERO "data/hiero/*.cpp" "data/hiero/*.h")
 FILE(GLOB TEST_SERIALIZATION "serialization/*.cpp" "serialization/*.h")
 
 
-SET(TEST_SRC 
+SET(TEST_SRC
   ${TEST_BLOCKCHAIN}
   ${TEST_MAIN}
-  ${TEST_LIB} 
+  ${TEST_LIB}
   ${TEST_CRYPTO}
   ${TEST_DATA}
   ${TEST_DATA_HIERO}
@@ -45,8 +45,8 @@ if(MSVC)
   source_group("crypto" FILES ${TEST_CRYPTO})
   source_group("data\\hiero" FILES ${TEST_DATA_HIERO})
   source_group("data" FILES ${TEST_DATA})
-  source_group("interaction" FILES ${TEST_INTERACTION})    
-  source_group("serialization" FILES ${TEST_SERIALIZATION})    
+  source_group("interaction" FILES ${TEST_INTERACTION})
+  source_group("serialization" FILES ${TEST_SERIALIZATION})
 endif()
 
 IF(WIN32)
@@ -60,9 +60,9 @@ enable_testing()
 #find_package(Sodium REQUIRED)
 
 add_executable(GradidoBlockchainUnitTest ${TEST_SRC})
-target_link_libraries(GradidoBlockchainUnitTest GradidoBlockchain sodium loguru::loguru) #libprotobuf
+target_link_libraries(GradidoBlockchainUnitTest GradidoBlockchain sodium loguru::loguru gradido_blockchain_core) #libprotobuf
 target_link_libraries(GradidoBlockchainUnitTest gtest)
-if(openssl_FOUND) 
+if(openssl_FOUND)
 	target_link_libraries(GradidoBlockchainUnitTest openssl::openssl)
 endif()
 
@@ -71,7 +71,7 @@ include_directories(
   "${googletest_SOURCE_DIR}/googletest/include"
 )
 
-IF(WIN32)
+IF(WIN32 AND BUILD_SHARED_LIBS)
   add_custom_command(TARGET GradidoBlockchainUnitTest POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:GradidoBlockchainUnitTest> $<TARGET_FILE_DIR:GradidoBlockchainUnitTest>
     COMMAND_EXPAND_LISTS

@@ -1,10 +1,12 @@
 #ifndef __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_FILTER_H
 #define __GRADIDO_BLOCKCHAIN_BLOCKCHAIN_FILTER_H
 
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/export.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "SearchDirection.h"
 #include "Pagination.h"
+#include "PublicKeySearchType.h"
 #include "FilterResult.h"
 #include "FilterCriteria.h"
 #include "TransactionEntry.h"
@@ -12,6 +14,7 @@
 
 #include <functional>
 #include <cstdint>
+#include <optional>
 
 namespace gradido {
 	namespace blockchain {
@@ -29,9 +32,9 @@ namespace gradido {
 				memory::ConstBlockPtr _involvedPublicKey = nullptr,
 				SearchDirection _searchDirection = SearchDirection::DESC,
 				Pagination _pagination = Pagination(0),					
-				std::string_view coinCommunityId = std::string_view(),
+				std::optional<uint32_t> coinCommunityIdIndex = std::nullopt,
 				TimepointInterval _timepointInterval = TimepointInterval(),
-				data::TransactionType _transactionType = data::TransactionType::NONE,
+				grdt_transaction _transactionType = GRDT_TRANSACTION_NONE,
 				std::function<FilterResult(const TransactionEntry&)> _filterFunction = nullptr
 			);
 			// constructor for calculate creation sum in validate GradidoCreationRole
@@ -46,7 +49,7 @@ namespace gradido {
 				uint64_t _maxTransactionNr,
 				memory::ConstBlockPtr _involvedPublicKey,
 				SearchDirection _searchDirection,
-				std::string_view coinCommunityId,
+				std::optional<uint32_t> coinCommunityIdIndex,
 				std::function<FilterResult(const TransactionEntry&)> _filterFunction
 			);
 
@@ -56,16 +59,17 @@ namespace gradido {
 			uint64_t maxTransactionNr;
 			//! return only transaction in which the public key is involved, either directly in the transaction or as signer
 			memory::ConstBlockPtr involvedPublicKey;
+			
 			//! return only transaction in which public key account balance was changed
 			memory::ConstBlockPtr updatedBalancePublicKey;
 			//! search direction and result order, default: DESC
 			SearchDirection searchDirection;
 			//! transaction type
-			data::TransactionType transactionType;
+			grdt_transaction transactionType;
 			//! search result scope 
 			Pagination pagination;				
 			//! for colored coins, default = "" no filtering
-			std::string coinCommunityId;
+			std::optional<uint32_t> coinCommunityIdIndex;
 			//! interval between two dates with 1 month resolution
 			TimepointInterval timepointInterval;			
 

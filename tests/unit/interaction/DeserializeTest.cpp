@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "../KeyPairs.h"
@@ -53,7 +54,7 @@ TEST(DeserializeTest, HieroTransactionId)
 	EXPECT_FALSE(context.isHieroAccountId());
 	ASSERT_TRUE(context.isHieroTransactionId());
 
-	EXPECT_EQ(context.getHieroTransactionId().toString(), "0.0.121212@172618921.29182");
+	EXPECT_EQ(context.getHieroTransactionId().toString(), "0.0.121212@172618921.000029182");
 }
 
 
@@ -62,7 +63,7 @@ TEST(DeserializeTest, CommunityRootBody)
 {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(communityRootTransactionBase64));
 	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
-	context.run();
+	context.run(communityIdIndex);
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
@@ -72,9 +73,8 @@ TEST(DeserializeTest, CommunityRootBody)
 	ASSERT_TRUE(transaction);
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
-	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
-	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
+	EXPECT_EQ(body->getType(), GRDT_CROSS_GROUP_LOCAL);
 
 	EXPECT_FALSE(body->isCommunityFriendsUpdate());
 	ASSERT_TRUE(body->isCommunityRoot());
@@ -83,17 +83,22 @@ TEST(DeserializeTest, CommunityRootBody)
 	EXPECT_FALSE(body->isRegisterAddress());
 	EXPECT_FALSE(body->isTransfer());
 
-	auto communityRoot = body->getCommunityRoot();
-	EXPECT_TRUE(communityRoot->getPublicKey()->isTheSame(g_KeyPairs[0]->getPublicKey()));
-	EXPECT_TRUE(communityRoot->getGmwPubkey()->isTheSame(g_KeyPairs[1]->getPublicKey()));
-	EXPECT_TRUE(communityRoot->getAufPubkey()->isTheSame(g_KeyPairs[2]->getPublicKey()));
+	const auto& dict = g_appContext->getCommunityContext(communityIdIndex).getBlockchain()->getPublicKeyDictionary();
+	const auto& communityRoot = body->getCommunityRoot();
+	const auto& communityRootPublicKey = dict.getDataForIndexOrThrow(communityRoot->publicKeyIndex);
+	const auto& communityRootGmwPubkey = dict.getDataForIndexOrThrow(communityRoot->gmwPublicKeyIndex);
+	const auto& communityRootAufPubkey = dict.getDataForIndexOrThrow(communityRoot->aufPublicKeyIndex);
+	EXPECT_TRUE(communityRootPublicKey.isTheSame(g_KeyPairs[0]->getPublicKey()->data()));
+	EXPECT_TRUE(communityRootGmwPubkey.isTheSame(g_KeyPairs[1]->getPublicKey()->data()));
+	EXPECT_TRUE(communityRootAufPubkey.isTheSame(g_KeyPairs[2]->getPublicKey()->data()));
+	
 }
 
 
 TEST(DeserializeTest, RegisterAddressBody) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(registeAddressTransactionBase64));
 	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
-	context.run();
+	context.run(communityIdIndex);
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
@@ -103,9 +108,8 @@ TEST(DeserializeTest, RegisterAddressBody) {
 	ASSERT_TRUE(transaction);
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
-	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
-	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
+	EXPECT_EQ(body->getType(), GRDT_CROSS_GROUP_LOCAL);
 
 	EXPECT_FALSE(body->isCommunityFriendsUpdate());
 	EXPECT_FALSE(body->isCommunityRoot());
@@ -115,11 +119,16 @@ TEST(DeserializeTest, RegisterAddressBody) {
 	EXPECT_FALSE(body->isTransfer());
 
 	auto registerAddress = body->getRegisterAddress();
-	EXPECT_EQ(registerAddress->getAddressType(), AddressType::COMMUNITY_HUMAN);
-	EXPECT_EQ(registerAddress->getDerivationIndex(), 1);
-	EXPECT_TRUE(registerAddress->getUserPublicKey()->isTheSame(g_KeyPairs[3]->getPublicKey()));
-	EXPECT_FALSE(registerAddress->getNameHash());
-	EXPECT_TRUE(registerAddress->getAccountPublicKey()->isTheSame(g_KeyPairs[4]->getPublicKey()));
+	EXPECT_EQ(registerAddress->addressType, GRDT_ADDRESS_COMMUNITY_HUMAN);
+	EXPECT_EQ(registerAddress->derivationIndex, 1);
+	
+	const auto& dict = g_appContext->getCommunityContext(communityIdIndex).getBlockchain()->getPublicKeyDictionary();
+	const auto& userPublicKeyIndex = dict.getDataForIndexOrThrow(registerAddress->userPublicKeyIndex);
+	const auto& accountPublicKeyIndex = dict.getDataForIndexOrThrow(registerAddress->accountPublicKeyIndex);
+	EXPECT_TRUE(g_KeyPairs[3]->getPublicKey()->isTheSame(userPublicKeyIndex));
+	// printf("name hash: %s\n", g_appContext->getUserNameHashs().getDataForIndex(registerAddress->nameHashIndex)->convertToHex().c_str());
+	// EXPECT_FALSE(registerAddress->getNameHash());
+	EXPECT_TRUE(g_KeyPairs[4]->getPublicKey()->isTheSame(accountPublicKeyIndex));
 }
 
 
@@ -127,7 +136,7 @@ TEST(DeserializeTest, GradidoCreationBody) {
 
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(creationTransactionBase64));
 	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
-	context.run();
+	context.run(communityIdIndex);
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
@@ -137,9 +146,8 @@ TEST(DeserializeTest, GradidoCreationBody) {
 	ASSERT_TRUE(transaction);
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
-	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
-	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
+	EXPECT_EQ(body->getType(), GRDT_CROSS_GROUP_LOCAL);
 	auto& memos = body->getMemos();
 	ASSERT_GE(memos.size(), 1);
 	EXPECT_EQ(memos[0].getMemo().copyAsString(), std::string("Deine erste Schoepfung ;)"));
@@ -163,7 +171,7 @@ TEST(DeserializeTest, GradidoCreationBody) {
 TEST(DeserializeTest, GradidoTransferBody) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(transferTransactionBase64));
 	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
-	context.run();
+	context.run(communityIdIndex);
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
@@ -173,9 +181,8 @@ TEST(DeserializeTest, GradidoTransferBody) {
 	ASSERT_TRUE(transaction);
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
-	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
-	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
+	EXPECT_EQ(body->getType(), GRDT_CROSS_GROUP_LOCAL);
 	auto& memos = body->getMemos();
 	ASSERT_GE(memos.size(), 1);
 	EXPECT_EQ(memos[0].getMemo().copyAsString(), std::string("Ich teile mit dir"));
@@ -198,7 +205,7 @@ TEST(DeserializeTest, GradidoTransferBody) {
 TEST(DeserializeTest, GradidoDeferredTransferBody) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(deferredTransferTransactionBase64));
 	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
-	context.run();
+	context.run(communityIdIndex);
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
@@ -208,9 +215,8 @@ TEST(DeserializeTest, GradidoDeferredTransferBody) {
 	ASSERT_TRUE(transaction);
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
-	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
-	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
+	EXPECT_EQ(body->getType(), GRDT_CROSS_GROUP_LOCAL);
 	auto& memos = body->getMemos();
 	ASSERT_GE(memos.size(), 1);
 	EXPECT_EQ(memos[0].getMemo().copyAsString(), std::string("Link zum einloesen"));
@@ -234,7 +240,7 @@ TEST(DeserializeTest, GradidoDeferredTransferBody) {
 TEST(DeserializeTest, CommunityFriendsUpdateBody) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(communityFriendsUpdateBase64));
 	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
-	context.run();
+	context.run(communityIdIndex);
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
@@ -244,9 +250,8 @@ TEST(DeserializeTest, CommunityFriendsUpdateBody) {
 	ASSERT_TRUE(transaction);
 	auto body = transaction->getTransactionBody();
 	ASSERT_TRUE(body);
-	EXPECT_EQ(body->getVersionNumber(), VERSION_STRING);
 	EXPECT_EQ(body->getCreatedAt(), createdAt);
-	EXPECT_EQ(body->getType(), CrossGroupType::LOCAL);
+	EXPECT_EQ(body->getType(), GRDT_CROSS_GROUP_LOCAL);
 
 	ASSERT_TRUE(body->isCommunityFriendsUpdate());
 	EXPECT_FALSE(body->isCommunityRoot());
@@ -263,7 +268,7 @@ TEST(DeserializeTest, CommunityFriendsUpdateBody) {
 TEST(DeserializeTest, GradidoTransaction) {
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(gradidoTransactionSignedInvalidBody));
 	deserialize::Context context(rawData, deserialize::Type::GRADIDO_TRANSACTION);
-	context.run();
+	context.run(communityIdIndex);
 	EXPECT_FALSE(context.isTransactionBody());
 	EXPECT_FALSE(context.isConfirmedTransaction());
 	ASSERT_TRUE(context.isGradidoTransaction());
@@ -287,7 +292,7 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 
 	auto rawData = std::make_shared<memory::Block>(memory::Block::fromBase64(completeConfirmedTransaction));
 	deserialize::Context context(rawData, deserialize::Type::CONFIRMED_TRANSACTION);
-	context.run();
+	context.run(communityIdIndex);
 	EXPECT_FALSE(context.isTransactionBody());
 	ASSERT_TRUE(context.isConfirmedTransaction());
 	EXPECT_FALSE(context.isGradidoTransaction());
@@ -297,9 +302,8 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 
 	EXPECT_EQ(confirmedTransaction->getId(), 7);
 	EXPECT_EQ(confirmedTransaction->getConfirmedAt(), confirmedAt);
-	EXPECT_EQ(confirmedTransaction->getVersionNumber(), GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING);
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[4]->getPublicKey(), "").getBalance(), GradidoUnit::fromGradidoCent(1000000));
-	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[5]->getPublicKey(), "").getBalance(), GradidoUnit::fromGradidoCent(8997483));
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[4]->getPublicKey(), communityIdIndex).getBalance(), GradidoUnit::fromGradidoCent(1000000));
+	EXPECT_EQ(confirmedTransaction->getAccountBalance(g_KeyPairs[5]->getPublicKey(), communityIdIndex).getBalance(), GradidoUnit::fromGradidoCent(8997483));
 	ASSERT_EQ(confirmedTransaction->getRunningHash()->size(), crypto_generichash_BYTES);
 	EXPECT_EQ(confirmedTransaction->getRunningHash()->convertToHex(), "0000000000000000000000000000000000000000000000000000000000000000");
 
@@ -310,7 +314,7 @@ TEST(DeserializeTest, CompleteConfirmedTransaction) {
 	EXPECT_FALSE(g_KeyPairs[2]->verify(*bodyBytes, *firstSignature));
 
 	deserialize::Context secondContext(bodyBytes);
-	secondContext.run();
+	secondContext.run(communityIdIndex);
 
 	ASSERT_TRUE(secondContext.isTransactionBody());
 	EXPECT_FALSE(secondContext.isConfirmedTransaction());

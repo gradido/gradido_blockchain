@@ -28,12 +28,13 @@ TEST(ValidateGradidoTransaction, validCommunityRootGradidoTransaction)
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setCommunityRoot(
-			g_KeyPairs[0]->getPublicKey(),
-			g_KeyPairs[1]->getPublicKey(),
-			g_KeyPairs[2]->getPublicKey()
+			g_KeyPairs[0]->getPublicKey()->data(),
+			g_KeyPairs[1]->getPublicKey()->data(),
+			g_KeyPairs[2]->getPublicKey()->data()
 		)
+
 		.sign(g_KeyPairs[0])
 		;
 	auto transaction = builder.build();
@@ -49,11 +50,11 @@ TEST(ValidateGradidoTransaction, invalidCommunityRootWrongSigner)
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setCommunityRoot(
-			g_KeyPairs[0]->getPublicKey(),
-			g_KeyPairs[1]->getPublicKey(),
-			g_KeyPairs[2]->getPublicKey()
+			g_KeyPairs[0]->getPublicKey()->data(),
+			g_KeyPairs[1]->getPublicKey()->data(),
+			g_KeyPairs[2]->getPublicKey()->data()
 		)
 		.sign(g_KeyPairs[1])
 		;
@@ -69,14 +70,15 @@ TEST(ValidateGradidoTransaction, validRegisterAddressTransaction)
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
-			AddressType::COMMUNITY_HUMAN,
-			nullptr,
+			GRDT_ADDRESS_COMMUNITY_HUMAN,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
-		)
+		)		
 		.sign(g_KeyPairs[0])
+		.sign(g_KeyPairs[3])
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -90,13 +92,13 @@ TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionMissingSignatu
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
-			AddressType::COMMUNITY_HUMAN,
-			nullptr,
+			GRDT_ADDRESS_COMMUNITY_HUMAN,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
-		)
+		)		
 		.sign(g_KeyPairs[0])
 		;
 	auto transaction = builder.build();
@@ -112,14 +114,15 @@ TEST(ValidateGradidoTransaction, invalidRegisterAddressTransactionMissingRequire
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
-			AddressType::COMMUNITY_HUMAN,
-			nullptr,
+			GRDT_ADDRESS_COMMUNITY_HUMAN,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
-		)
+		)		
 		.sign(g_KeyPairs[0])
+		.sign(g_KeyPairs[2])
 		.sign(g_KeyPairs[3])
 		;
 	auto transaction = builder.build();
@@ -136,11 +139,11 @@ TEST(ValidateGradidoTransaction, validGradidoCreationTransaction)
 	builder
 		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000)),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), communityId),
 			TimestampSeconds(1609459000)
 		)
+		.setRecipientCommunity(communityId)
 		.sign(g_KeyPairs[6])
 		;
 	auto transaction = builder.build();
@@ -156,11 +159,11 @@ TEST(ValidateGradidoTransaction, invalidGradidoCreationTransactionWrongSignature
 	builder
 		.addMemo(creationMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setTransactionCreation(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000)),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(10000000), communityId),
 			TimestampSeconds(1609459000)
 		)
+		.setRecipientCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -176,11 +179,11 @@ TEST(ValidateGradidoTransaction, validGradidoTransferTransaction)
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityId),
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -195,11 +198,11 @@ TEST(ValidateGradidoTransaction, invalidGradidoTransferTransactionWrongSignature
 	builder
 		.addMemo(transferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setTransactionTransfer(
-			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+			TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityId),
 			g_KeyPairs[5]->getPublicKey()
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[3])
 		;
 	auto transaction = builder.build();
@@ -215,14 +218,14 @@ TEST(ValidateGradidoTransaction, validGradidoDeferredTransferTransaction)
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500ll)),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500ll), communityId),
 				g_KeyPairs[5]->getPublicKey()
 			),
 			timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -238,14 +241,14 @@ TEST(ValidateGradidoTransaction, invalidGradidoDeferredTransferTransactionWrongS
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500ll)),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5555500ll), communityId),
 				g_KeyPairs[5]->getPublicKey()
 			),
 			timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[5])
 		;
 	auto transaction = builder.build();

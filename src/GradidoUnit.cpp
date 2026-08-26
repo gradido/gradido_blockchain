@@ -1,90 +1,55 @@
 #include "gradido_blockchain/GradidoUnit.h"
-#include "gradido_blockchain/lib/DataTypeConverter.h"
 
-#include <cmath>
-#include <iomanip>
-#include <sstream>
-#include <cassert>
+#include "loguru/loguru.hpp"
 
-static const Timepoint DECAY_START_TIME = DataTypeConverter::dateTimeStringToTimePoint("2021-05-13 17:46:31");
-constexpr double SECONDS_PER_YEAR = 31556952.0; // seconds in a year in gregorian calender
+#include <chrono>
+#include <string>
 
-using std::string, std::stringstream, std::fixed, std::setprecision, std::pow, std::round;
+using std::string;
+using std::chrono::duration_cast, std::chrono::seconds;
+
+GradidoUnit GradidoUnit::fromString(const string& stringAmount)
+{
+  grdd_unit gdd;
+  if (!grdd_unit_from_string(&gdd, stringAmount.c_str())) {
+    throw FixedPointedArithmetikOverflowException("rounding error with string", gdd);
+  }
+  return gdd;
+}
 
 string GradidoUnit::toString(int precision/* = 4*/) const
 {
-	if (precision < 0 || precision > 4) {
-		throw GradidoNodeInvalidDataException("expect precision in the range [0;4]");
-	}
-	stringstream ss;
-	ss << fixed << setprecision(precision);
-	double decimal = static_cast<double>(*this);
-	if (precision < 4) {
-	// round down like nodejs
-		double factor = pow(10.0, precision);
-		decimal = round(decimal * factor) / factor;
-	}
-	ss << decimal;
-
-	return ss.str();
+  string result(24, 0);
+  auto resultSize = grdd_unit_to_string(result.data(), 24, mGradidoCent, precision);
+  if (resultSize == INT_MAX) {
+    throw GradidoNodeInvalidDataException("grdd_unit_to_string return to big string size value");
+  }
+  if (resultSize >= 24) {
+    LOG_F(WARNING, "stack string buffer is to small for gradido unit string, size: %d, needed: %d for: %lu", 24, resultSize, mGradidoCent);
+    auto resultSize2 = grdd_unit_to_string(result.data(), result.size(), mGradidoCent, precision);
+    if (resultSize != resultSize2) {
+      throw GradidoNodeInvalidDataException("grdd_unit_to_string work not like expected, it return different string size with same input");
+    }
+  }
+  return result.substr(0, resultSize);
 }
 
-double GradidoUnit::roundToPrecision(double GradidoUnit, uint8_t precision)
-{
-	auto factor = pow(10, precision);
-	return round(GradidoUnit * factor) / factor;
-}
-
-GradidoUnit GradidoUnit::calculateDecay(int64_t seconds) const
-{
-	if (seconds == 0) return mGradidoCent;
-	
-	// decay for one year is 50%
-	/*
-	* while (seconds >= SECONDS_PER_YEAR) {
-		mGradidoCent *= 0.5;
-		seconds -= SECONDS_PER_YEAR;
+GradidoUnit GradidoUnit::roundToPrecision(int precision/* = 4*/) const {
+	GradidoUnit result;
+	if (!grdd_unit_round_to_precision(&result.mGradidoCent, mGradidoCent, precision)) {
+		throw FixedPointedArithmetikOverflowException("rounding error with", mGradidoCent);
 	}
-	*/
-	int64_t gradidoCent = mGradidoCent;
-	// optimize version from above
-	if (seconds >= SECONDS_PER_YEAR) {
-		auto times = static_cast<uint64_t>(seconds / SECONDS_PER_YEAR);
-		seconds = seconds - times * SECONDS_PER_YEAR;
-		gradidoCent = mGradidoCent >> times;
-		if (!seconds) return gradidoCent;
-	}
-//	*/
-	/*!
-	 *  calculate decay factor with compound interest formula converted to q <br>
-	 *  n = (lg Kn - lg K0) / lg q => <br>
-	 *  lg q = (lg Kn - lg K0) / n => <br>
-	 *  q = e^((lg Kn - lg K0) / n)   <br>
-	 * <br>
-	 * with:
-	 * <ul>
-	 *  <li>q = decay_factor</li>
-	 *  <li>n = days_per_year * 60 * 60 * 24 = seconds per year</li>
-	 *  <li>Kn = 50 (capital after a year)</li>
-	 *  <li>K0 = 100 (capital at start)</li>
-	 * </ul>
-	 * further simplified:
-	 * lg 50 - lg 100 = lg 2 =>
-	 * q = e^(lg 2 / n) = 2^(x/n)
-	 * with x as seconds in which decay occured
-	 */
-	// https://www.wolframalpha.com/input?i=%28e%5E%28lg%282%29+%2F+31556952%29%29%5Ex&assumption=%7B%22FunClash%22%2C+%22lg%22%7D+-%3E+%7B%22Log%22%7D
-	// from wolframalpha, based on the interest rate formula
-	return GradidoUnit(static_cast<int64_t>(static_cast<double>(gradidoCent) * pow(2.0, static_cast<double>(static_cast<double>(-seconds) / SECONDS_PER_YEAR))));
+	return result;
 }
 
 Duration GradidoUnit::calculateDecayDurationSeconds(Timepoint startTime, Timepoint endTime)
 {
-	if(startTime > endTime) {
+	auto startTimeSeconds = duration_cast<seconds>(startTime.time_since_epoch()).count();
+	auto endTimeSeconds = duration_cast<seconds>(endTime.time_since_epoch()).count();
+
+	grdd_duration_seconds duration;
+	if(!grdd_unit_calculate_duration_seconds(startTimeSeconds, endTimeSeconds, &duration)) {
 		throw EndDateBeforeStartDateException("startTime is before endTime in decay duration", startTime, endTime);
 	}
-	Timepoint start = startTime > DECAY_START_TIME ? startTime : DECAY_START_TIME;
-	Timepoint end = endTime > DECAY_START_TIME ? endTime : DECAY_START_TIME;
-	if (start == end) return std::chrono::seconds{ 0 };
-	return end - start;
+	return seconds(duration);
 }

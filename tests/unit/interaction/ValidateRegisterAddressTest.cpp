@@ -14,14 +14,15 @@ TEST(ValidateRegisterAddressTest, Valid) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
-			AddressType::COMMUNITY_HUMAN,
-			nullptr, 
+			GRDT_ADDRESS_COMMUNITY_HUMAN,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
 		)
 		.sign(g_KeyPairs[0])
+		.sign(g_KeyPairs[3])
 		.sign(g_KeyPairs[4])
 	;
 	auto transaction = builder.build();
@@ -31,15 +32,15 @@ TEST(ValidateRegisterAddressTest, Valid) {
 	EXPECT_NO_THROW(c.run());
 }
 
-TEST(ValidateRegisterAddressTest, InvalidAddressTypeGMW) {
+TEST(ValidateRegisterAddressTest, Invalidgrdt_addressGMW) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
-			AddressType::COMMUNITY_GMW,
-			nullptr,
+			GRDT_ADDRESS_COMMUNITY_GMW,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
 		)
 		.sign(g_KeyPairs[0])
@@ -52,17 +53,17 @@ TEST(ValidateRegisterAddressTest, InvalidAddressTypeGMW) {
 	EXPECT_THROW(c.run(), validate::WrongAddressTypeException);
 }
 
-TEST(ValidateRegisterAddressTest, InvalidAddressTypeAUF) {
+TEST(ValidateRegisterAddressTest, Invalidgrdt_addressAUF) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
-			AddressType::COMMUNITY_AUF,
-			nullptr,
+			GRDT_ADDRESS_COMMUNITY_AUF,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
-		)
+		)		
 		.sign(g_KeyPairs[0])
 		.sign(g_KeyPairs[4])
 		;
@@ -73,17 +74,17 @@ TEST(ValidateRegisterAddressTest, InvalidAddressTypeAUF) {
 	EXPECT_THROW(c.run(), validate::WrongAddressTypeException);
 }
 
-TEST(ValidateRegisterAddressTest, InvalidAddressTypeNONE) {
+TEST(ValidateRegisterAddressTest, Invalidgrdt_addressNONE) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
+		.setSenderCommunity(communityId)
 		.setRegisterAddress(
 			g_KeyPairs[3]->getPublicKey(),
-			AddressType::NONE,
-			nullptr,
+			GRDT_ADDRESS_NONE,
+			make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 			g_KeyPairs[4]->getPublicKey()
-		)
+		)		
 		.sign(g_KeyPairs[0])
 		.sign(g_KeyPairs[4])
 		;
@@ -96,40 +97,40 @@ TEST(ValidateRegisterAddressTest, InvalidAddressTypeNONE) {
 
 TEST(ValidateRegisterAddressTest, UserAndAccountPublicKeySame) {
 	EXPECT_THROW(RegisterAddress(
-		AddressType::COMMUNITY_HUMAN,
+		GRDT_ADDRESS_COMMUNITY_HUMAN,
 		1,
 		g_KeyPairs[3]->getPublicKey(),
-		nullptr,
+		make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 		g_KeyPairs[3]->getPublicKey()
 	), GradidoNodeInvalidDataException);
 }
 
 TEST(ValidateRegisterAddressTest, NullptrPublicKey) {
 	EXPECT_THROW(RegisterAddress(
-		AddressType::COMMUNITY_HUMAN,
+		GRDT_ADDRESS_COMMUNITY_HUMAN,
 		1,
 		nullptr,
 		nullptr,
 		nullptr
-	), GradidoNodeInvalidDataException);
+	), GradidoNullPointerException);
 }
 
 TEST(ValidateRegisterAddressTest, EmptyUserPublicKey) {
 	EXPECT_THROW(RegisterAddress(
-		AddressType::COMMUNITY_HUMAN,
+		GRDT_ADDRESS_COMMUNITY_HUMAN,
 		1,
 		std::make_shared<memory::Block>(32),
-		nullptr,
+		make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 		g_KeyPairs[4]->getPublicKey()
 	), GradidoNodeInvalidDataException);
 }
 
 TEST(ValidateRegisterAddressTest, EmptyAccountPublicKey) {
 	EXPECT_THROW(RegisterAddress(
-		AddressType::COMMUNITY_HUMAN,
+		GRDT_ADDRESS_COMMUNITY_HUMAN,
 		1,
 		g_KeyPairs[3]->getPublicKey(),
-		nullptr,
+		make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 		std::make_shared<memory::Block>(32)
 	), GradidoNodeInvalidDataException);
 }
@@ -137,20 +138,20 @@ TEST(ValidateRegisterAddressTest, EmptyAccountPublicKey) {
 
 TEST(ValidateRegisterAddressTest, InvalidUserPublicKey) {
 	EXPECT_THROW(RegisterAddress(
-		AddressType::COMMUNITY_HUMAN,
+		GRDT_ADDRESS_COMMUNITY_HUMAN,
 		1,
 		std::make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a", 18)),
-		nullptr,
+		make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 		g_KeyPairs[4]->getPublicKey()
 	), Ed25519InvalidKeyException);
 }
 
 TEST(ValidateRegisterAddressTest, InvalidAccountPublicKey) {
 	EXPECT_THROW(RegisterAddress(
-		AddressType::COMMUNITY_HUMAN,
+		GRDT_ADDRESS_COMMUNITY_HUMAN,
 		1,
 		g_KeyPairs[3]->getPublicKey(),
-		nullptr,
+		make_shared<const Block>(g_KeyPairs[3]->getPublicKey()->calculateHash()),
 		std::make_shared<memory::Block>(memory::Block::fromHex("9a3b4c5d6e7f8c9b0a", 18))
 	), Ed25519InvalidKeyException);
 }

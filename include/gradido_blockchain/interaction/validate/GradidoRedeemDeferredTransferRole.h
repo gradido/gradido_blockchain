@@ -2,8 +2,12 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_VALIDATE_GRADIDO_REDEEM_DEFERRED_TRANSFER_ROLE_H
 
 #include "AbstractRole.h"
+#include "gradido_blockchain_core/types/cross_group.h"
 
 namespace gradido {
+	namespace data {
+		class GradidoRedeemDeferredTransfer;
+	}
 	namespace interaction {
 		namespace validate {
 			class GradidoRedeemDeferredTransferRole : public AbstractRole
@@ -11,14 +15,12 @@ namespace gradido {
 			public:
 				GradidoRedeemDeferredTransferRole(std::shared_ptr<const data::GradidoRedeemDeferredTransfer> redeemDeferredTransfer);
 
-				void run(
-					Type type,
-					std::shared_ptr<blockchain::Abstract> blockchain,
-					std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
-					std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
-				);
+				inline void setCrossGroupType(grdt_cross_group crossGroupType) { mCrossGroupType = crossGroupType; }
+
+				void run(Type type, ContextData& c);
 			protected:
 				std::shared_ptr<const data::GradidoRedeemDeferredTransfer> mRedeemDeferredTransfer;
+				grdt_cross_group mCrossGroupType;
 			};
 		}
 	}

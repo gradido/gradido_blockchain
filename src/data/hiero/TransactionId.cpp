@@ -1,4 +1,7 @@
 #include "gradido_blockchain/data/hiero/TransactionId.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain_core/data/wire/hiero.h"
+#include "gradido_blockchain/memory/Block.h"
 
 #include <loguru.hpp>
 
@@ -12,14 +15,14 @@ namespace hiero {
     }
 
     TransactionId::TransactionId(const gradido::data::Timestamp& transactionValidStart, const AccountId& accountId)
-        : mTransactionValidStart(transactionValidStart), mAccountId(accountId), mScheduled(false), mNonce(0) 
+        : mTransactionValidStart(transactionValidStart), mAccountId(accountId), mScheduled(false), mNonce(0)
     {
 
     }
 
-	TransactionId::TransactionId(const std::string& transactionIdString) 
-		: mAccountId(transactionIdString), mScheduled(false), mNonce(0)
-	{
+	  TransactionId::TransactionId(const std::string& transactionIdString)
+		  : mAccountId(transactionIdString), mScheduled(false), mNonce(0)
+	  {
         const char* str = transactionIdString.c_str();
         const char* separator = strchr(str, '-'); // erstes '-' finden
         if (!separator) {
@@ -45,22 +48,49 @@ namespace hiero {
             LOG_F(WARNING, "Parsing nonce may have failed");
         }
         mTransactionValidStart = gradido::data::Timestamp(seconds, nanos);
-	}
+	  }
 
-    TransactionId::~TransactionId() 
+    TransactionId::TransactionId(const grdw_hiero_transaction_id& coreHieroGradidoId)
+      : mTransactionValidStart(coreHieroGradidoId.transactionValidStart), mAccountId(coreHieroGradidoId.accountID)
     {
 
     }
 
-	std::string TransactionId::toString() const
-	{
-		std::string result;
-		std::string accountIdString = mAccountId.toString();
-		std::string seconds = std::to_string(mTransactionValidStart.getSeconds());
-        // need always 9 character, fill in with zero at the start
-		std::string nanos = std::to_string(mTransactionValidStart.getNanos());
-		result.reserve(accountIdString.size() + 2 + seconds.size() + nanos.size());
-		result = accountIdString + '@' + seconds + '.' + nanos;
-		return result;
-	}
+    TransactionId::~TransactionId()
+    {
+
+    }
+
+	  std::string TransactionId::toString() const
+	  {
+			grdw_hiero_transaction_id hieroTxId = {
+			  .transactionValidStart = {
+					.seconds = mTransactionValidStart.getSeconds(),
+					.nanos = mTransactionValidStart.getNanos(),
+				},
+				.accountID = {
+				  .shardNum = mAccountId.getShardNum(),
+					.realmNum = mAccountId.getRealmNum(),
+					.accountNum = mAccountId.getAccountNum()
+				}
+			};
+
+      size_t bufferSize = grdw_hiero_transaction_id_calculate_string_size(&hieroTxId) + 1;
+      if (bufferSize < 64) {
+        char buffer[64]{};
+        size_t written = grdw_hiero_transaction_id_to_string(buffer, 64, &hieroTxId);
+        if (written >= 64) {
+          throw GradidoNodeInvalidDataException("grdw_hiero_transaction_id_calculate_string_size and grdw_hiero_transaction_id_to_string don't calculate same string size");
+        }
+        return std::string(buffer, written);
+      } 
+      else if (bufferSize > 1024) {
+        throw GradidoNodeInvalidDataException("hiero transaction id is calculated way to big (> 1 kbyte)");
+      }
+      else {
+        memory::Block block(bufferSize);
+        size_t written = grdw_hiero_transaction_id_to_string(reinterpret_cast<char*>(block.data()), bufferSize, &hieroTxId);
+        return block.copyAsString();
+      }
+	  }
 }

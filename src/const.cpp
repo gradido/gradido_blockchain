@@ -1,0 +1,22 @@
+#include "gradido_blockchain/const.h"
+
+// const char* GRADIDO_TRANSACTION_BODY_VERSION_STRING = "3.5";
+// const char* GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING = "3.7";
+
+// MAGIC NUMBER: max allowed Timespan between creation date of transaction and receiving date (iota milestone timestamp)
+// taken 2 minutes from hedera but maybe the time isn't enough if gradido is more used
+/*constexpr auto MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION = std::chrono::seconds(120);
+
+constexpr auto GRADIDO_DEFERRED_TRANSFER_MAX_TIMEOUT_INTERVAL = std::chrono::months(3);
+constexpr auto GRADIDO_DEFERRED_TRANSFER_MIN_TIMEOUT_INTERVAL = std::chrono::hours(1);
+
+// default buffer used for memo text compression, if memo is larger than 512, larger buffer will be used
+constexpr auto GRADIDO_ENCRYPTED_MEMO_COMPRESSION_DEFAULT_BUFFER_BYTES = 512;
+// skip compression if input data smaller than 120, because compressed data most likly will be bigger
+constexpr auto GRADIDO_ENCRYPTED_MEMO_COMPRESSION_DEFAULT_SKIP_SIZE_BYTES = 120;
+
+// passphrase word count
+constexpr auto PHRASE_WORD_COUNT = 24;
+*/
+// allowed character for community id
+// const char* COMMUNITY_ID_REGEX_STRING = "^[a-z0-9-]{3,120}$";

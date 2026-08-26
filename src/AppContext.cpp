@@ -1,0 +1,165 @@
+#include "gradido_blockchain/AppContext.h"
+#include "gradido_blockchain/const.h"
+#include "gradido_blockchain/data/adapter/uuid.h"
+#include "gradido_blockchain/GradidoBlockchainException.h"
+#include "gradido_blockchain/lib/Dictionary.h"
+#include "gradido_blockchain/lib/DictionaryExceptions.h"
+
+#include "loguru/loguru.hpp"
+#include <optional>
+#include <regex>
+#include <string>
+#include <memory>
+
+using std::optional, std::nullopt;
+using std::regex, std::regex_match;
+using std::string, std::to_string;
+using std::shared_ptr, std::make_unique, std::unique_ptr;
+
+namespace gradido {
+  using data::adapter::uuidFromString, data::adapter::uuidToString;
+  using data::compact::PublicKeyIndex;
+  using data::GenericHash, data::PublicKey, data::Uuid;
+
+  unique_ptr<AppContext> g_appContext = nullptr;
+  regex regExCommunityAlias(COMMUNITY_ID_REGEX_STRING);
+
+  AppContext::AppContext(
+    unique_ptr<IMutableDictionary<Uuid>> communityIds,
+    unique_ptr<IMutableDictionary<GenericHash>> userNameHashs
+  ) : mCommunityIds(std::move(communityIds)), mUserNameHashs(std::move(userNameHashs))
+  {
+
+  }
+
+  uint32_t AppContext::getOrAddCommunityIdIndex(const string& communityId)
+  {
+    auto uuid = uuidFromString(communityId.c_str());
+    auto index = mCommunityIds->getIndexForData(uuid);
+    if (index) {
+      return index;
+    }
+    if (!isValidCommunityAlias(communityId)) {
+      // TODO: Custom exception types for this
+      string error = "invalid character, only lowercase english latin letter, numbers and - are allowed for communityId: ";
+      error += communityId;
+      throw GradidoNodeInvalidDataException(error.c_str());      
+    }
+    index = mCommunityIds->getOrAddIndexForData(uuid);
+    size_t arrayIndex = index - 1;
+    if (static_cast<uint32_t>(arrayIndex) != arrayIndex) {
+      LOG_F(FATAL, "more communities as expected, uint32_t don't is enough");
+      throw GradidoNotImplementedException("communities with more then uint32_t index can handle isn't implemented");
+    }
+    if (mCommunityContexts.size() == arrayIndex) {
+      mCommunityContexts.emplace_back(communityId, static_cast<uint32_t>(index));
+    }
+    else if (mCommunityContexts.size() < arrayIndex) {
+      throw DictionaryHoleException("community contexts deque has a hole", "communityIds", mCommunityContexts.size(), index);
+    }
+    
+    return index;
+  }
+
+  uint32_t AppContext::getOrAddCommunityIdIndex(const Uuid& communityUuid)
+  {
+    auto index = mCommunityIds->getOrAddIndexForData(communityUuid);
+    size_t arrayIndex = index - 1;
+    if (static_cast<uint32_t>(arrayIndex) != arrayIndex) {
+      LOG_F(FATAL, "more communities as expected, uint32_t don't is enough");
+      throw GradidoNotImplementedException("communities with more then uint32_t index can handle isn't implemented");
+    }
+    if (mCommunityContexts.size() == arrayIndex) {
+      mCommunityContexts.emplace_back(communityUuid, static_cast<uint32_t>(index));
+    }
+    else if (mCommunityContexts.size() < arrayIndex) {
+      throw DictionaryHoleException("community contexts deque has a hole", "communityIds", mCommunityContexts.size(), index);
+    }
+
+    return index;
+  }
+
+  uint32_t AppContext::getOrAddUserNameHashIndex(const GenericHash& hash)
+  {
+    if (hash.isEmpty()) {
+      throw GradidoNodeInvalidDataException("try to add empty user name hash");
+    }
+    auto index = mUserNameHashs->getOrAddIndexForData(hash);
+    if (static_cast<uint32_t>(index) != index) {
+      LOG_F(FATAL, "more user name hashes as expected, uint32_t don't is enough");
+      throw GradidoNotImplementedException("more user name hashes with more then uint32_t index can handle isn't implemented");
+    }
+    return index;
+  }
+
+  void AppContext::syncCommunityContextsWithCommunityIds()
+  {
+    size_t index = mCommunityContexts.size() + 1;
+
+    while (auto data = mCommunityIds->getDataForIndex(index)) {
+      mCommunityContexts.emplace_back(data.value(), static_cast<uint32_t>(index));
+      ++index;
+    }
+  }
+
+  void AppContext::addBlockchain(uint32_t communityIdIndex, shared_ptr<blockchain::Abstract> blockchain)
+  {
+    auto arrayIndex = communityIdIndex - 1;
+    if (mCommunityContexts.size() <= arrayIndex) {
+      string entryName = to_string(communityIdIndex);
+      auto communityId = mCommunityIds->getDataForIndex(communityIdIndex);      
+      if (communityId) {
+        entryName = uuidToString(communityId.value());
+      }
+      throw DictionaryMissingEntryException("missing CommunityContext", entryName);
+    }
+    mCommunityContexts[arrayIndex].setBlockchain(blockchain);
+  }
+
+  uint32_t AppContext::addCommunity(const string& communityId, shared_ptr<blockchain::Abstract> blockchain)
+  {
+    auto index = getOrAddCommunityIdIndex(communityId);
+    mCommunityContexts[index-1].setBlockchain(blockchain);
+    return index;
+  }
+
+  optional<PublicKey> AppContext::getPublicKey(PublicKeyIndex index) const noexcept
+  {
+    auto arrayIndex = index.communityIdIndex - 1;
+    if (!mCommunityIds || mCommunityContexts.size() <= arrayIndex) {
+      return nullopt;
+    }
+    const auto& blockchain = mCommunityContexts[arrayIndex].getBlockchain();
+    if (!blockchain) {
+      return nullopt;
+    }
+    return blockchain->getPublicKeyDictionary().getDataForIndex(index.publicKeyIndex);
+  }
+
+  bool AppContext::hasPublicKey(data::compact::PublicKeyIndex index) const noexcept
+  {
+    auto arrayIndex = index.communityIdIndex - 1;
+    if (!mCommunityIds || mCommunityContexts.size() <= arrayIndex) {
+      return false;
+    }
+    const auto& blockchain = mCommunityContexts[arrayIndex].getBlockchain();
+    if (!blockchain) {
+      return false;
+    }
+    return blockchain->getPublicKeyDictionary().hasIndex(index.publicKeyIndex);
+  }
+
+  uint32_t AppContext::getOrAddPublicKeyIndex(uint32_t communityIdIndex, const PublicKey& publicKey)
+  {
+    auto arrayIndex = communityIdIndex - 1;
+    if (!mCommunityIds || mCommunityContexts.size() <= arrayIndex) {
+      throw DictionaryMissingEntryException("missing community entry", to_string(communityIdIndex));
+    }
+    return mCommunityContexts[arrayIndex].getOrAddPublicKey(publicKey);
+  }
+
+  bool AppContext::isValidCommunityAlias(const string& communityId) const
+  {
+    return regex_match(communityId.begin(), communityId.end(), regExCommunityAlias);
+  }
+}

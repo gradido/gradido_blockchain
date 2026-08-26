@@ -1,10 +1,14 @@
 #include "gradido_blockchain/crypto/SignatureOctet.h"
+#include "gradido_blockchain/data/ByteArray.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/memory/Manager.h"
 
 #include "loguru/loguru.hpp"
 
+using gradido::data::compact::PublicKeyIndex;
+using gradido::data::PublicKey;
 using std::string;
 using std::vector, std::byte;
 
@@ -18,8 +22,7 @@ namespace memory {
 	Block::Block(size_t size, const unsigned char* data)
 		: Block(size)
 	{
-		if (!size) return;
-		mShortHash = SignatureOctet(data, size);
+		if (!size || !data) return;
 		memcpy(mData, data, size);
 	}
 
@@ -39,9 +42,9 @@ namespace memory {
 	{
 
 	}
-	// copy
-	Block::Block(Block& other)
-		: Block(other.size(), other.data())
+
+	Block::Block(const PublicKey& publicKey)
+		: Block(publicKey.size(), publicKey.data())
 	{
 
 	}
@@ -53,22 +56,19 @@ namespace memory {
 	}
 	// move
 	Block::Block(Block&& other) noexcept
-		: mSize(other.size()), mData(other.data()), mShortHash(other.mShortHash)
+		: mSize(other.size()), mData(other.data())
 	{
 		other.mSize = 0;
 		other.mData = nullptr;
-		other.mShortHash.octet = 0;
 	}
-	// also move 
+	// also move
 	Block& Block::operator=(Block&& other) noexcept
 	{
 		clear();
 		mSize = other.mSize;
 		mData = other.mData;
-		mShortHash = other.mShortHash;
 		other.mSize = 0;
 		other.mData = nullptr;
-		other.mShortHash.octet = 0;
 		return *this;
 	}
 	// also copy
@@ -84,7 +84,6 @@ namespace memory {
 		mData = Manager::getInstance()->getBlock(other.mSize);
 		if (!mData) throw std::bad_alloc();
 		memcpy(mData, other.mData, mSize);
-		mShortHash = other.mShortHash;
 		return *this;
 	}
 
@@ -99,7 +98,6 @@ namespace memory {
 			Manager::getInstance()->releaseBlock(mSize, mData);
 			mData = nullptr;
 			mSize = 0;
-			mShortHash.octet = 0;
 		}
 	}
 
@@ -143,7 +141,6 @@ namespace memory {
 	{
 		memory::Block hash(crypto_generichash_BYTES);
 		crypto_generichash(hash, crypto_generichash_BYTES, mData, mSize, nullptr, 0);
-		hash.mShortHash = SignatureOctet(mData, mSize);
 		return hash;
 	}
 
@@ -155,19 +152,18 @@ namespace memory {
 			throw GradidoInvalidHexException("invalid hex size Block::fromHex", hexString);
 		}
 		Block result(binSize);
-	
+
 		size_t resultBinSize = 0;
 		if (0 != sodium_hex2bin(result.data(), binSize, hexString, stringSize, nullptr, &resultBinSize, nullptr)) {
 			throw GradidoInvalidHexException("invalid hex for Block::fromHex", hexString);
 		}
-		result.mShortHash = SignatureOctet(result.data(), result.size());
 		return result;
 	}
 
 	Block Block::fromBase64(const char* base64String, size_t size, int variant /*= sodium_base64_VARIANT_ORIGINAL*/)
 	{
 		size_t binSize = (size / 4) * 3;
-		
+
 		Block bin(binSize);
 		size_t resultBinSize = 0;
 		const char* firstInvalidByte = nullptr;
@@ -179,15 +175,27 @@ namespace memory {
 			Block bin_real(resultBinSize, bin);
 			return bin_real;
 		}
-		bin.mShortHash = SignatureOctet(bin.data(), bin.size());
 		return bin;
+	}
+	bool Block::isTheSame(PublicKeyIndex publicKeyIndex) const
+	{
+		if (mSize != 32) {
+			return false;
+		}
+		auto publicKey = publicKeyIndex.getRawKey();
+		return memcmp(publicKey.data(), mData, 32) == 0;
+	}
+
+	bool Block::isTheSame(const PublicKey& publicKey) const
+	{
+		if (mSize != 32) {
+			return false;
+		}
+		return memcmp(publicKey.data(), mData, 32) == 0;
 	}
 
 	bool Block::isTheSame(const Block& b) const
 	{
-		if (!mShortHash.empty() && !b.mShortHash.empty() && mShortHash != b.mShortHash) {
-			return false;
-		}
 		if (b.size() != size()) {
 			return false;
 		}
@@ -210,10 +218,6 @@ namespace memory {
 	size_t ConstBlockPtrHash::operator()(const ConstBlockPtr& s) const noexcept
 	{
 		if (!s) { return 0; }
-		int64_t octet = s->hash().octet;
-		if (!octet) { octet = SignatureOctet(*s).octet; }
-		return std::hash<int64_t>()(octet);
+		return std::hash<int64_t>()(SignatureOctet(*s).octet);
 	}
 }
-
-

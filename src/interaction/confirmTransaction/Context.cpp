@@ -1,6 +1,8 @@
 #include "gradido_blockchain/interaction/confirmTransaction/Context.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
 #include "gradido_blockchain/blockchain/TransactionRelationType.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/data/Timestamp.h"
 #include "gradido_blockchain/data/TransactionBody.h"
@@ -15,6 +17,7 @@
 #include "gradido_blockchain/interaction/createTransactionByEvent/Context.h"
 #include "gradido_blockchain/interaction/advancedBlockchainFilter/Context.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
+#include "gradido_blockchain_core/types/ledger_anchor.h"
 
 #include "magic_enum/magic_enum.hpp"
 #include "loguru/loguru.hpp"
@@ -37,7 +40,7 @@ namespace gradido {
 			) const {
 				// attention! work only if order in enum don't change
 				// todo: check if it is possible to use a template class for that
-				const std::array<std::function<std::shared_ptr<AbstractRole>()>, enum_integer(TransactionType::MAX_VALUE)> roleCreators = {
+				const std::array<std::function<std::shared_ptr<AbstractRole>()>, enum_integer(GRDT_TRANSACTION_COUNT)> roleCreators = {
 					[&]() { return nullptr; },
 					[&]() { return std::make_shared<CreationTransactionRole>(gradidoTransaction, ledgerAnchor, confirmedAt, mBlockchain); },
 					[&]() { return std::make_shared<TransferTransactionRole>(gradidoTransaction, ledgerAnchor, confirmedAt, mBlockchain); },
@@ -63,17 +66,20 @@ namespace gradido {
 			}
 
 			std::shared_ptr<const data::ConfirmedTransaction> Context::run(std::shared_ptr<AbstractRole> role)
-            {				
+      {
 				assert(role);
 
 				// simple validate
 				// to expensive, better check in other thread before adding to blockchain
 				interaction::validate::Context validateGradidoTransaction(*role->getGradidoTransaction());
+				if (mDisableVerify) {
+					validateGradidoTransaction.disableVerify();
+				}
 				validateGradidoTransaction.run(interaction::validate::Type::SINGLE, mBlockchain);
 
 				// check if already exist
 				auto tx = role->getGradidoTransaction();
-				if (mBlockchain->isTransactionExist(tx)) {
+				if (mBlockchain->isTransactionExist(tx, role->getConfirmedAt())) {
 					LOG_F(WARNING, "transaction skipped because it already exist");
 					return nullptr;
 				}
@@ -88,13 +94,15 @@ namespace gradido {
 						throw BlockchainOrderException("previous transaction is younger");
 					}
 				}
-				
+
 				auto confirmedTransaction = role->createConfirmedTransaction(id, lastConfirmedTransaction);
 				role->runPreValidate(confirmedTransaction, mBlockchain);
 
 				// important! validation
 				interaction::validate::Context validate(*confirmedTransaction);
 				auto type = role->getValidationType();
+				// we need to validate single only once
+				type = type - interaction::validate::Type::SINGLE;
 				if (lastConfirmedTransaction) {
 					type = type | interaction::validate::Type::PREVIOUS;
 					if (!role->isExternBalanceDerivationType()) {
@@ -102,14 +110,16 @@ namespace gradido {
 					}
 				}
 				validate.setSenderPreviousConfirmedTransaction(lastConfirmedTransaction);
-				// throw if some error occure				
-
+				// throw if some error occure
+				if (mDisableRunningHashTest) {
+					validate.disableRunningHashTest();
+				}
 				validate.run(type, mBlockchain);
-				
-				return confirmedTransaction;
-            }
 
-			bool Context::processTransactionTrigger(Timepoint endDate)
+				return confirmedTransaction;
+      }
+
+			bool Context::processTransactionTrigger(Timestamp endDate)
 			{
 				auto lastTransaction = mBlockchain->findOne(Filter::LAST_TRANSACTION);
 				if (!lastTransaction) {
@@ -117,10 +127,8 @@ namespace gradido {
 					return false;
 				}
 				auto transactionTriggerEvent = mBlockchain->findNextTransactionTriggerEventInRange(
-					TimepointInterval(
 						lastTransaction->getConfirmedTransaction()->getConfirmedAt(),
 						endDate
-					)
 				);
 				if (!transactionTriggerEvent) {
 					// no trigger, we can exit here
@@ -132,7 +140,7 @@ namespace gradido {
 					createTransactionByEvent::Context createTransactionByEvent(mBlockchain);
 					if (!mBlockchain->createAndAddConfirmedTransaction(
 						createTransactionByEvent.run(transactionTriggerEvent),
-						LedgerAnchor(transactionTriggerEvent->getLinkedTransactionId(), LedgerAnchor::Type::NODE_TRIGGER_TRANSACTION_ID),
+						LedgerAnchor(transactionTriggerEvent->getLinkedTransactionId(), GRDT_LEDGER_ANCHOR_NODE_TRIGGER_TRANSACTION_ID),
 						transactionTriggerEvent->getTargetDate()
 					)
 						) {
@@ -141,11 +149,12 @@ namespace gradido {
 					return true;
 				}
 				catch (std::exception& e) {
-					mBlockchain->addTransactionTriggerEvent(transactionTriggerEvent);
-					throw e;
+					// mBlockchain->addTransactionTriggerEvent(transactionTriggerEvent);
+					LOG_F(ERROR, "Error processing transaction trigger event for transaction: %llu", transactionTriggerEvent->getLinkedTransactionId());
+					return true;
 				}
 				return false;
 			}
-        }
     }
+  }
 }

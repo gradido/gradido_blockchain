@@ -4,6 +4,10 @@
 #include "TimestampSeconds.h"
 #include "DurationSeconds.h"
 
+#include "gradido_blockchain_core/data/timestamp.h"
+
+struct grdd_timestamp;
+
 namespace gradido {
 	namespace data {
 		class GRADIDOBLOCKCHAIN_EXPORT Timestamp
@@ -12,6 +16,9 @@ namespace gradido {
 			Timestamp() : mSeconds(0), mNanos(0) {}
 			Timestamp(const Timepoint& date);
 			Timestamp(int64_t _seconds, int32_t _nanos) : mSeconds(_seconds), mNanos(_nanos) {}
+			Timestamp(const grdd_timestamp& date) :mSeconds(date.seconds), mNanos(date.nanos) {}
+
+			static Timestamp now();
 
 			inline operator Timepoint() const { return getAsTimepoint(); }
 			Timepoint getAsTimepoint() const;
@@ -21,6 +28,7 @@ namespace gradido {
 
 			inline bool operator==(const Timestamp& other) const { return mSeconds == other.mSeconds && mNanos == other.mNanos; }
 			inline bool operator<(const Timestamp& other) const { return mSeconds < other.mSeconds || (mSeconds == other.mSeconds && mNanos < other.mNanos); }
+			inline bool operator<=(const Timestamp& other) const { return mSeconds <= other.mSeconds || (mSeconds == other.mSeconds && mNanos <= other.mNanos); }
 			inline bool operator>(const Timestamp& other) const { return mSeconds > other.mSeconds || (mSeconds == other.mSeconds && mNanos > other.mNanos); }
 			inline bool operator<(const TimestampSeconds& other) const { return mSeconds < other.getSeconds(); }
 			inline bool operator>(const TimestampSeconds& other) const { return mSeconds > other.getSeconds(); }

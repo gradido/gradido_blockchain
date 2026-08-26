@@ -1,44 +1,36 @@
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
-#include "gradido_blockchain/data/BalanceDerivationType.h"
 #include "gradido_blockchain/data/ConfirmedTransaction.h"
 #include "gradido_blockchain/interaction/validate/ConfirmedTransactionRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransactionRole.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain_core/types/balance_derivation.h"
 
 #include "magic_enum/magic_enum.hpp"
+#include <memory>
+#include <string>
 
 using namespace std::chrono;
-using namespace magic_enum;
+using magic_enum::enum_name;
+using std::shared_ptr;
+using std::string, std::to_string;
+using DataTypeConverter::timePointToString, DataTypeConverter::timespanToString;
 
 namespace gradido {
-	using data::BalanceDerivationType;
+	using data::ConfirmedTransaction;
 	namespace interaction {
 		namespace validate {
-			void ConfirmedTransactionRole::run(
-				Type type,
-				std::shared_ptr<blockchain::Abstract> blockchain,
-				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
-				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
-			) {
+
+			void ConfirmedTransactionRole::run(Type type, ContextData& c)
+			{
 				auto body = mConfirmedTransaction.getGradidoTransaction()->getTransactionBody();
 				auto createdAt = mConfirmedTransaction.getGradidoTransaction()->getTransactionBody()->getCreatedAt().getAsTimepoint();
 				auto confirmedAt = mConfirmedTransaction.getConfirmedAt().getAsTimepoint();
 
 				if ((type & Type::SINGLE) == Type::SINGLE) {
-					if (mConfirmedTransaction.getVersionNumber() != GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING) {
-						TransactionValidationInvalidInputException exception(
-							"wrong version",
-							"version_number",
-							"string",
-							GRADIDO_CONFIRMED_TRANSACTION_VERSION_STRING,
-							mConfirmedTransaction.getVersionNumber().data()
-						);
-						exception.setTransactionBody(*body);
-						throw exception;
-					}	
+					// TODO: validate account balances count and specifics according to transaction type!
 					if (mConfirmedTransaction.getLedgerAnchor().empty()) {
 						TransactionValidationInvalidInputException exception(
 							"invalid",
@@ -69,7 +61,7 @@ namespace gradido {
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS) {
 					if (mConfirmedTransaction.getId() > 1) {
 						auto previousTransactionId = mConfirmedTransaction.getId() - 1;
-						auto previousTransaction = blockchain->getTransactionForId(previousTransactionId);
+						auto previousTransaction = c.senderBlockchain->getTransactionForId(previousTransactionId);
 						if (!previousTransaction) {
 							GradidoBlockchainTransactionNotFoundException exception("previous transaction not found");
 							throw exception.setTransactionId(previousTransactionId);
@@ -80,75 +72,75 @@ namespace gradido {
 						}
 						
 						if (confirmedAt - createdAt > MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION) {
-							std::string message = "timespan between created and received are more than " + DataTypeConverter::timespanToString(MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION);
-							std::string expected = "<= (" + DataTypeConverter::timePointToString(createdAt) + " + " + DataTypeConverter::timespanToString(MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION) + ")";
+							string message = "timespan between created and received are more than " + timespanToString(MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION);
+							string expected = "<= (" + timePointToString(createdAt) + " + " + timespanToString(MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION) + ")";
 							TransactionValidationInvalidInputException exception(
 								message.data(),
 								"confirmed_at",
 								"TimestampSeconds",
 								expected.data(),
-								DataTypeConverter::timePointToString(confirmedAt).data()
+								timePointToString(confirmedAt).data()
 							);
 							exception.setTransactionBody(*body);
 							throw exception;
 						}
-						auto runningHash = mConfirmedTransaction.calculateRunningHash(previousConfirmedTransaction);
-						if (!mConfirmedTransaction.getRunningHash() || runningHash->size() != mConfirmedTransaction.getRunningHash()->size()) {
-							std::string fieldTypeWithSize = "binary[" + std::to_string(crypto_generichash_BYTES) + "]";
-							std::string actual = "0";
-							if(mConfirmedTransaction.getRunningHash()) {
-								actual = std::to_string(mConfirmedTransaction.getRunningHash()->size());
+						if (!mDisableRunningHashTest) {
+							auto runningHash = mConfirmedTransaction.calculateRunningHash(previousConfirmedTransaction);
+							if (!mConfirmedTransaction.getRunningHash() || runningHash->size() != mConfirmedTransaction.getRunningHash()->size()) {
+								string fieldTypeWithSize = "binary[" + to_string(crypto_generichash_BYTES) + "]";
+								string actual = "0";
+								if (mConfirmedTransaction.getRunningHash()) {
+									actual = std::to_string(mConfirmedTransaction.getRunningHash()->size());
+								}
+								throw TransactionValidationInvalidInputException(
+									"stored running hash size isn't equal to calculated running hash size",
+									"running_hash",
+									fieldTypeWithSize.data(),
+									to_string(runningHash->size()).data(),
+									actual.data()
+								);
 							}
-							throw TransactionValidationInvalidInputException(
-								"stored running hash size isn't equal to calculated running hash size",
-								"running_hash",
-								fieldTypeWithSize.data(),
-								std::to_string(runningHash->size()).data(),
-								actual.data()
-							);
-						}
-						if(!runningHash->isTheSame(mConfirmedTransaction.getRunningHash())) {
-							std::string fieldTypeWithSize = "binary[" + std::to_string(crypto_generichash_BYTES) + "]";
-							std::string actual = "";
-							if(mConfirmedTransaction.getRunningHash()) {
-								actual = mConfirmedTransaction.getRunningHash()->convertToHex();
+							if (!runningHash->isTheSame(mConfirmedTransaction.getRunningHash())) {
+								string fieldTypeWithSize = "binary[" + to_string(crypto_generichash_BYTES) + "]";
+								string actual = "";
+								if (mConfirmedTransaction.getRunningHash()) {
+									actual = mConfirmedTransaction.getRunningHash()->convertToHex();
+								}
+
+								throw TransactionValidationInvalidInputException(
+									"stored tx hash isn't equal to calculated txHash",
+									"running_hash",
+									fieldTypeWithSize.data(),
+									runningHash->convertToHex().data(),
+									actual.data()
+								);
 							}
-							
-							throw TransactionValidationInvalidInputException(
-								"stored tx hash isn't equal to calculated txHash",
-								"running_hash",
-								fieldTypeWithSize.data(),
-								runningHash->convertToHex().data(),
-								actual.data()
-							);
 						}
 						const auto& ledgerAnchor = mConfirmedTransaction.getLedgerAnchor();
 						const auto& previousLedgerAnchor = previousConfirmedTransaction->getLedgerAnchor();
-						if ((previousLedgerAnchor.isHieroTransactionId() || previousLedgerAnchor.isIotaMessageId())
-							&& ledgerAnchor.isLegacyGradidoDbTransactionId()) {
+						if (previousLedgerAnchor.isHieroTransactionId() && ledgerAnchor.isLegacyGradidoId()) {
 							throw TransactionValidationInvalidInputException(
 								"current transaction was imported from db while last transaction was confirmed by ledger",
 								"ledger_anchor",
 								"LedgerAnchor",
-								magic_enum::enum_name(ledgerAnchor.getType()).data(),
-								magic_enum::enum_name(previousLedgerAnchor.getType()).data()
+								enum_name(ledgerAnchor.getType()).data(),
+								enum_name(previousLedgerAnchor.getType()).data()
 							);
 						}
 					}
 				}
 				auto modifiedType = type;
 				if (
-					BalanceDerivationType::EXTERN == mConfirmedTransaction.getBalanceDerivationType()
+					GRDT_BALANCE_DERIVATION_EXTERN == mConfirmedTransaction.getBalanceDerivationType()
 					&& (modifiedType & Type::PREVIOUS_BALANCE) == Type::PREVIOUS_BALANCE
 				) {
 					modifiedType = modifiedType - Type::PREVIOUS_BALANCE;
 				}
-				GradidoTransactionRole(*mConfirmedTransaction.getGradidoTransaction()).run(
-					modifiedType,
-					blockchain,
-					senderPreviousConfirmedTransaction,
-					recipientPreviousConfirmedTransaction
-				);
+				GradidoTransactionRole grdTx(*mConfirmedTransaction.getGradidoTransaction());
+				if (mDisableVerify) {
+					grdTx.disableVerify();
+				}
+				grdTx.run(modifiedType, c);
 			}
 		}
 	}

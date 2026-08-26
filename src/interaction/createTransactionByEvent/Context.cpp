@@ -1,5 +1,6 @@
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/blockchain/Abstract.h"
+#include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/data/TransactionTriggerEvent.h"
 #include "gradido_blockchain/interaction/createTransactionByEvent/Context.h"
 #include "gradido_blockchain/interaction/createTransactionByEvent/TimeoutDeferredTransferEventRole.h"

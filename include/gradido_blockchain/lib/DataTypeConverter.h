@@ -56,12 +56,17 @@ namespace DataTypeConverter
 	//! \param fmt: https://howardhinnant.github.io/date/date.html#from_stream_formatting
 	GRADIDOBLOCKCHAIN_EXPORT Timepoint dateTimeStringToTimePoint(const std::string &dateTimeString, const char *fmt = "%F %T");
 	GRADIDOBLOCKCHAIN_EXPORT std::string timespanToString(const Duration& timespan);
+
+	// timepoint (std::chrono::time_point) interpret year 0 as year: -1970 we don't want that, so we use Timepoint default constructor, if year and month = 0
 	GRADIDOBLOCKCHAIN_EXPORT Timepoint monthYearToTimepoint(const date::year_month& ym);
 
 	//! \brief go through json object and replace every string entry in base64 format into hex format
 	//! \return count of replaced strings
 	GRADIDOBLOCKCHAIN_EXPORT int replaceBase64WithHex(rapidjson::Value &json, rapidjson::Document::AllocatorType &alloc);
 	GRADIDOBLOCKCHAIN_EXPORT std::string replaceNewLineWithBr(std::string &in);
+
+	GRADIDOBLOCKCHAIN_EXPORT size_t uint64ToString(uint64_t value, char* buffer);
+
 
 	class GRADIDOBLOCKCHAIN_EXPORT InvalidHexException : public GradidoBlockchainException
 	{

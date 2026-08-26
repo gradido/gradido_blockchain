@@ -3,6 +3,7 @@
 
 #include "Type.h"
 #include "gradido_blockchain/memory/Block.h"
+#include "gradido_blockchain/data/compact/ConfirmedGradidoTx.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/data/TransactionTriggerEvent.h"
 #include "gradido_blockchain/data/hiero/AccountId.h"
@@ -58,11 +59,13 @@ namespace gradido {
 				Context(memory::ConstBlockPtr rawData, Type hint = Type::UNKNOWN)
 					: mData(rawData), mType(hint) {}
 				~Context();
+				void run(uint32_t communityIdIndex);
 				void run();
 
 				inline bool isGradidoTransaction() const { return Type::GRADIDO_TRANSACTION == mType; }
 				inline bool isTransactionBody() const { return Type::TRANSACTION_BODY == mType; }
 				inline bool isConfirmedTransaction() const { return Type::CONFIRMED_TRANSACTION == mType; }
+				inline bool isConfirmedTransactionCompact() const { return Type::CONFIRMED_TRANSACTION_COMPACT == mType; }
 				inline bool isTransactionTriggerEvent() const { return Type::TRANSACTION_TRIGGER_EVENT == mType; }
 				inline bool isHieroAccountId() const { return Type::HIERO_ACCOUNT_ID == mType; }
 				inline bool isHieroTopicId() const { return Type::HIERO_TOPIC_ID == mType; }
@@ -74,6 +77,7 @@ namespace gradido {
 				inline std::shared_ptr<const data::TransactionBody> getTransactionBody() { return mTransactionBody; }
 				inline std::shared_ptr<const data::GradidoTransaction> getGradidoTransaction() { return mGradidoTransaction; }
 				inline std::shared_ptr<const data::ConfirmedTransaction> getConfirmedTransaction() { return mConfirmedTransaction; }
+				inline std::shared_ptr<const data::compact::ConfirmedGradidoTx> getConfirmedTransactionCompact() { return mConfirmedTransactionCompact; }
 				inline hiero::AccountId getHieroAccountId() { return mHieroAccountId; }
 				inline hiero::TransactionId getHieroTransactionId() { return mHieroTransactionId; }
 				inline hiero::TopicId getHieroTopicId() { return mHieroTopicId; }
@@ -86,6 +90,7 @@ namespace gradido {
 				std::shared_ptr<const data::TransactionBody> mTransactionBody;
 				std::shared_ptr<const data::GradidoTransaction> mGradidoTransaction;
 				std::shared_ptr<const data::ConfirmedTransaction> mConfirmedTransaction;
+				std::shared_ptr<const data::compact::ConfirmedGradidoTx> mConfirmedTransactionCompact;
 				hiero::AccountId mHieroAccountId;
 				hiero::TopicId mHieroTopicId;
 				hiero::TransactionId mHieroTransactionId;

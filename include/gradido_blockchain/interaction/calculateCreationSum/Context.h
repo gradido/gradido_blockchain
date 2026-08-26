@@ -2,6 +2,7 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_CALCULATE_CREATION_SUM_CONTEXT_H
 
 #include "gradido_blockchain/export.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "AbstractAlgoRole.h"
 
 namespace gradido {
@@ -11,7 +12,7 @@ namespace gradido {
 			class GRADIDOBLOCKCHAIN_EXPORT Context
 			{
 			public:
-				Context(Timepoint date, Timepoint targetDate, memory::ConstBlockPtr publicKey, uint64_t transactionNrMax = 0);
+				Context(Timepoint date, Timepoint targetDate, data::compact::PublicKeyIndex publicKey, uint64_t transactionNrMax = 0);
 				// move constructor & assignment
 				Context(Context&&) noexcept = default;
 				Context& operator=(Context&&) noexcept = default;

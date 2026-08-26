@@ -29,39 +29,53 @@
 
 #include <cstdio>
 #include "gtest/gtest.h"
+#include "gradido_blockchain/AppContext.h"
+#include "interaction/const.h"
 #include "KeyPairs.h"
+#include "gradido_blockchain/blockchain/InMemoryProvider.h"
 #include "gradido_blockchain/crypto/CryptoConfig.h"
+#include "gradido_blockchain/data/ByteArray.h"
+#include "gradido_blockchain/lib/Dictionary.h"
+#include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/version.h"
 
-#if GTEST_OS_ESP8266 || GTEST_OS_ESP32
-#if GTEST_OS_ESP8266
-extern "C" {
-#endif
-	void setup() {
-	  generateKeyPairs();
-		testing::InitGoogleTest();
+#include <memory>
+
+using gradido::AppContext, gradido::g_appContext;
+using gradido::blockchain::InMemoryProvider;
+using gradido::data::GenericHash, gradido::data::GenericHashHash, gradido::data::GenericHashEqual;
+using gradido::data::Uuid, gradido::data::UuidHash, gradido::data::UuidEqual;
+using std::make_unique;
+using memory::ConstBlockPtr, memory::ConstBlockPtrHash; memory::ConstBlockPtrEqual;
+
+// GTEST_API_
+int main(int argc, char** argv)
+{
+	try {
+		g_appContext = make_unique<AppContext>(
+			make_unique<ThreadsafeRuntimeDictionary<Uuid, UuidHash, UuidEqual>>("communityIdDictionary"),
+			make_unique<ThreadsafeRuntimeDictionary<GenericHash, GenericHashHash, GenericHashEqual>>("userNameHashDictionary")
+		);
+		InMemoryProvider::getInstance()->findBlockchain(g_appContext->getOrAddCommunityIdIndex(communityId));
 	}
-
-	void loop() { RUN_ALL_TESTS(); }
-
-#if GTEST_OS_ESP8266
-}
-#endif
-
-#else
-
-// GTEST_API_ 
-int main(int argc, char** argv) {
+	catch (GradidoBlockchainException& ex) {
+		printf("error: %s\n", ex.getFullString().c_str());
+		return -1;
+	}
+	catch (std::exception& ex) {
+		printf("error: %s\n", ex.what());
+		return -2;
+	}
 	testing::InitGoogleTest(&argc, argv);
 	generateKeyPairs();
 	CryptoConfig::g_ServerCryptoKey = std::make_shared<memory::Block>(memory::Block::fromHex("153afcd54ef316e45cd3e5ed4567cd21", 32));
-	//printf("Running main() from %s\n", __FILE__);
+	printf("Running main() from %s\n", __FILE__);
 	//
+
 	printf("Gradido Blockchain Version: %s\n", GRADIDO_BLOCKCHAIN_VERSION);
 	auto result = RUN_ALL_TESTS();
 	return result;
-//	return 0;
 }
 
-#endif
+// #endif
 

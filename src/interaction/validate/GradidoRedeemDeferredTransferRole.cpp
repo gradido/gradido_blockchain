@@ -1,22 +1,34 @@
 #include "gradido_blockchain/blockchain/Abstract.h"
-#include "gradido_blockchain/blockchain/FilterBuilder.h"
+#include "gradido_blockchain/blockchain/Filter.h"
+#include "gradido_blockchain/const.h"
+#include "gradido_blockchain/data/ConfirmedTransaction.h"
+#include "gradido_blockchain/data/GradidoRedeemDeferredTransfer.h"
+#include "gradido_blockchain/data/TransactionBody.h"
 #include "gradido_blockchain/interaction/validate/GradidoRedeemDeferredTransferRole.h"
 #include "gradido_blockchain/interaction/validate/GradidoTransferRole.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
 #include "gradido_blockchain/lib/DataTypeConverter.h"
+#include "gradido_blockchain_core/types/address.h"
+#include "gradido_blockchain_core/types/cross_group.h"
 
 #include "date/date.h"
 #include "magic_enum/magic_enum.hpp"
+#include <memory>
+#include <string>
 
 using namespace magic_enum;
+using std::shared_ptr;
+using std::to_string;
 
 namespace gradido {
+	using blockchain::Filter;
+	using data::ConfirmedTransaction, data::GradidoRedeemDeferredTransfer;
 	namespace interaction {
 		namespace validate {
 
 			GradidoRedeemDeferredTransferRole::GradidoRedeemDeferredTransferRole(
-				std::shared_ptr<const data::GradidoRedeemDeferredTransfer> redeemDeferredTransfer
-			) : mRedeemDeferredTransfer(redeemDeferredTransfer)
+				shared_ptr<const GradidoRedeemDeferredTransfer> redeemDeferredTransfer
+			) : mRedeemDeferredTransfer(redeemDeferredTransfer), mCrossGroupType(GRDT_CROSS_GROUP_LOCAL)
 			{
 				assert(redeemDeferredTransfer);
 				// prepare for signature check
@@ -24,12 +36,8 @@ namespace gradido {
 				mRequiredSignPublicKeys.push_back(redeemDeferredTransfer->getTransfer().getSender().getPublicKey());
 			}
 
-			void GradidoRedeemDeferredTransferRole::run(
-				Type type,
-				std::shared_ptr<blockchain::Abstract> blockchain,
-				std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
-				std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
-			) {
+			void GradidoRedeemDeferredTransferRole::run(Type type, ContextData& c)
+			{
 				if ((type & Type::SINGLE) == Type::SINGLE) {
 					if (mRedeemDeferredTransfer->getDeferredTransferTransactionNr() <= 3) {
 						throw TransactionValidationInvalidInputException(
@@ -37,13 +45,13 @@ namespace gradido {
 							"deferred_transfer_transaction_nr",
 							"uint64",
 							"> 3",
-							std::to_string(mRedeemDeferredTransfer->getDeferredTransferTransactionNr()).data()
+							to_string(mRedeemDeferredTransfer->getDeferredTransferTransactionNr()).data()
 						);
 					}
 				}
 				if ((type & Type::PREVIOUS) == Type::PREVIOUS) {
-					assert(blockchain);
-					auto deferredTransferEntry = blockchain->getTransactionForId(mRedeemDeferredTransfer->getDeferredTransferTransactionNr());
+					assert(c.senderBlockchain);
+					auto deferredTransferEntry = c.senderBlockchain->getTransactionForId(mRedeemDeferredTransfer->getDeferredTransferTransactionNr());
 					if (!deferredTransferEntry) {
 						throw TransactionValidationInvalidInputException(
 							"deferredTransferTransactionNr is invalid, couldn't find transaction",
@@ -72,69 +80,86 @@ namespace gradido {
 							mRedeemDeferredTransfer->getSenderPublicKey()->convertToHex().data()
 						);
 					}
+
+					auto expectedMaxConfirmedAt = mCreatedAt.getAsTimepoint() + MAGIC_NUMBER_MAX_TIMESPAN_BETWEEN_CREATING_AND_RECEIVING_TRANSACTION;
+					auto deferredTransferConfirmedAt = deferredTransferEntry->getConfirmedTransaction()->getConfirmedAt().getAsTimepoint();
+					if (deferredTransferConfirmedAt + deferredTransfer->getTimeoutDuration().getAsDuration() < expectedMaxConfirmedAt) {
+						string expected("< ");
+						expected += DataTypeConverter::timePointToString(deferredTransferConfirmedAt + deferredTransfer->getTimeoutDuration().getAsDuration());
+						throw TransactionValidationInvalidInputException(
+							"redeem timeouted deferred transfer",
+							"createdAt",
+							"Timestamp",
+							expected.data(),
+							DataTypeConverter::timePointToString(expectedMaxConfirmedAt).data()
+						);
+					}
 				}
 				if ((type & Type::ACCOUNT) == Type::ACCOUNT) {
-					if (!senderPreviousConfirmedTransaction) {
-						throw BlockchainOrderException("deferred transfer transaction not allowed as first transaction on sender blockchain");
+					if (!c.senderPreviousConfirmedTransaction) {
+						throw BlockchainOrderException("deferred transfer transaction not allowed as first transaction on blockchain");
 					}
-					assert(blockchain);
-					blockchain::FilterBuilder filterBuilder;
+					assert(c.senderBlockchain);
+					assert(c.recipientBlockchain);
+					// validate addresses
+					Filter filter(Filter::LAST_TRANSACTION);
+					filter.involvedPublicKey = mRedeemDeferredTransfer->getSenderPublicKey();
+					filter.maxTransactionNr = c.senderPreviousConfirmedTransaction->getId();
 
 					// check if sender address is deferred transfer
-					auto senderAddressType = blockchain->getAddressType(
-						filterBuilder
-						.setInvolvedPublicKey(mRedeemDeferredTransfer->getSenderPublicKey())
-						.setMaxTransactionNr(senderPreviousConfirmedTransaction->getId())
-						.build()
-					);
-					if (data::AddressType::NONE == senderAddressType) {
+					auto senderAddressType = c.senderBlockchain->getAddressType(filter);
+					if (GRDT_ADDRESS_NONE == senderAddressType) {
 						throw WrongAddressTypeException(
 							"sender address not registered",
 							senderAddressType,
-							mRedeemDeferredTransfer->getSenderPublicKey()
+							mRedeemDeferredTransfer->getSenderPublicKey(),
+							c.senderBlockchain->getCommunityIdIndex()
 						);
 					}
-					else if (data::AddressType::DEFERRED_TRANSFER != senderAddressType) {
+					else if (GRDT_ADDRESS_DEFERRED_TRANSFER != senderAddressType) {
 						throw WrongAddressTypeException(
 							"sender address isn't a deferred transfer",
 							senderAddressType,
-							mRedeemDeferredTransfer->getSenderPublicKey()
+							mRedeemDeferredTransfer->getSenderPublicKey(),
+							c.senderBlockchain->getCommunityIdIndex()
 						);
 					}
 					// check if recipient address was registered
-					auto recipientAddressType = blockchain->getAddressType(
-						filterBuilder
-						.setInvolvedPublicKey(mRedeemDeferredTransfer->getRecipientPublicKey())
-						.setMaxTransactionNr(senderPreviousConfirmedTransaction->getId())
-						.build()
-					);
-					if (data::AddressType::NONE == recipientAddressType) {
+					filter.involvedPublicKey = mRedeemDeferredTransfer->getRecipientPublicKey();
+					auto recipientAddressType = c.recipientBlockchain->getAddressType(filter);
+					if (GRDT_ADDRESS_NONE == recipientAddressType) {
 						throw WrongAddressTypeException(
 							"recipient address not registered",
-							recipientAddressType, 
-							mRedeemDeferredTransfer->getRecipientPublicKey()
+							recipientAddressType,
+							mRedeemDeferredTransfer->getRecipientPublicKey(),
+							c.recipientBlockchain->getCommunityIdIndex()
 						);
 					}
-					if (data::AddressType::DEFERRED_TRANSFER == recipientAddressType) {
+					if (GRDT_ADDRESS_DEFERRED_TRANSFER == recipientAddressType) {
 						throw WrongAddressTypeException(
-							"recipient cannot be a deferred transfer address", 
-							recipientAddressType, 
-							mRedeemDeferredTransfer->getRecipientPublicKey()
+							"recipient cannot be a deferred transfer address",
+							recipientAddressType,
+							mRedeemDeferredTransfer->getRecipientPublicKey(),
+							c.recipientBlockchain->getCommunityIdIndex()
 						);
 					}
 				}
 
 				// make copy from GradidoTransfer
 				auto transfer = std::make_shared<data::GradidoTransfer>(mRedeemDeferredTransfer->getTransfer());
-				GradidoTransferRole transferRole(transfer, "");
+				GradidoTransferRole transferRole(transfer);
 				transferRole.setConfirmedAt(mConfirmedAt);
 				transferRole.setCreatedAt(mCreatedAt);
+				transferRole.setCrossGroupType(mCrossGroupType);
+				if (mDisableVerify) {
+					transferRole.disableVerify();
+				}
 				// transfer check without account check, account block differ to much
 				auto modifiedType = type;
 				if ((modifiedType & Type::ACCOUNT) == Type::ACCOUNT) {
 					modifiedType = modifiedType - Type::ACCOUNT;
 				}
-				transferRole.run(modifiedType, blockchain, senderPreviousConfirmedTransaction, recipientPreviousConfirmedTransaction);
+				transferRole.run(modifiedType, c);
 			}
 
 		}

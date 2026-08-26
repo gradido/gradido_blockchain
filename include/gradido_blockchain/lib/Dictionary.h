@@ -26,30 +26,42 @@ public:
 		mIndexDataLookup.clear();
 	}
 
-	virtual std::optional<uint32_t> getIndexForData(const DataType& data) const override
+	virtual size_t getIndexForData(const DataType& data) const override
 	{
 		auto it = mDataIndexLookup.find(data);
 		if (it == mDataIndexLookup.end()) {
-			return std::nullopt;
+			return 0;
 		}
 		return it->second;
 	}
 
-	virtual std::optional<DataType> getDataForIndex(uint32_t index) const override
+	virtual std::optional<DataType> getDataForIndex(size_t index) const override
 	{
-		if (index >= mIndexDataLookup.size()) {
+		if (!index || index-1 >= mIndexDataLookup.size()) {
 			return std::nullopt;
 		}
-		return mIndexDataLookup[index];
+		return mIndexDataLookup[index-1];
 	}
 
-	virtual uint32_t getOrAddIndexForData(const DataType& data) override
+	virtual DataType getDataForIndexOrThrow(size_t index) const override
 	{
-		// TODO: write unit test to test boundaries
-		if (mIndexDataLookup.size() > static_cast<size_t>(std::numeric_limits<uint32_t>::max())) {
-			throw DictionaryOverflowException("try to add more index data set's as uint32_t as index can handle", mName);
+		if (!index || index-1 >= mIndexDataLookup.size()) {
+			throw DictionaryMissingEntryException(mName.data(), std::to_string(index));
 		}
-		uint32_t index = static_cast<uint32_t>(mIndexDataLookup.size());
+		return mIndexDataLookup[index-1];
+	}
+
+	virtual bool hasIndex(size_t index) const override
+	{
+		if (!index || index-1 >= mIndexDataLookup.size()) { 
+			return false; 
+		}
+		return true;
+	}
+
+	virtual size_t getOrAddIndexForData(const DataType& data) override
+	{
+		size_t index = mIndexDataLookup.size() + 1;
 		auto insertIt = mDataIndexLookup.insert({ data, index });
 		if (!insertIt.second) {
 			return insertIt.first->second;
@@ -61,7 +73,7 @@ public:
 protected:
 	std::string mName;
 	// for finding index for specific data
-	std::unordered_map<DataType, uint32_t, Hash, Equal> mDataIndexLookup;
+	std::unordered_map<DataType, size_t, Hash, Equal> mDataIndexLookup;
 	// for finding data for a specific index
 	std::deque<DataType> mIndexDataLookup;
 };
@@ -81,26 +93,38 @@ public:
 		RuntimeDictionary<DataType, Hash, Equal>::reset();
 	}
 
-	virtual std::optional<uint32_t> getIndexForData(const DataType& data) const override
+	virtual size_t getIndexForData(const DataType& data) const override
 	{
 		std::shared_lock _lock(mSharedMutex);
 		return RuntimeDictionary<DataType, Hash, Equal>::getIndexForData(data);
 	}
 
-	virtual std::optional<const DataType&> getDataForIndex(uint32_t index) const override
+	virtual std::optional<DataType> getDataForIndex(size_t index) const override
 	{
 		std::shared_lock _lock(mSharedMutex);
 		return RuntimeDictionary<DataType, Hash, Equal>::getDataForIndex(index);
 	}
 
-	virtual uint32_t getOrAddIndexForData(const DataType& data) override
+	virtual bool hasIndex(size_t index) const override
+	{
+		std::shared_lock _lock(mSharedMutex);
+		return RuntimeDictionary<DataType, Hash, Equal>::hasIndex(index);
+	}
+
+	virtual size_t getOrAddIndexForData(const DataType& data) override
 	{
 		std::unique_lock _lock(mSharedMutex);
 		return RuntimeDictionary<DataType, Hash, Equal>::getOrAddIndexForData(data);
 	}
 
+	virtual DataType getDataForIndexOrThrow(size_t index) const override
+	{
+		std::shared_lock _lock(mSharedMutex);
+		return RuntimeDictionary<DataType, Hash, Equal>::getDataForIndexOrThrow(index);
+	}
+
 protected:
-	std::shared_mutex mSharedMutex;
+	mutable std::shared_mutex mSharedMutex;
 };
 
 #endif //__GRADIDO_BLOCKCHAIN_LIB_DICTIONARY_H

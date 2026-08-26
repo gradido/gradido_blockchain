@@ -49,26 +49,31 @@ memory::Block decompress(const memory::Block& compressed)
     if (0 != std::memcmp(compressed, zlibHeaderData, 2)) {
         return compressed;
     }
+    uint8_t staticBuffer[GRADIDO_ENCRYPTED_MEMO_COMPRESSION_DEFAULT_BUFFER_BYTES];
     size_t bufferSize = GRADIDO_ENCRYPTED_MEMO_COMPRESSION_DEFAULT_BUFFER_BYTES;
-    memory::Block buffer(bufferSize);
+    // memory::Block buffer(bufferSize);
     // status can be: 
     // TINF_OK
     // TINF_BUF_ERROR
     // TINF_DATA_ERROR
     unsigned int uncompressedSize = bufferSize;
-    auto status = tinf_zlib_uncompress(buffer, &uncompressedSize, compressed, compressed.size());
+    auto status = tinf_zlib_uncompress(staticBuffer, &uncompressedSize, compressed, compressed.size());
 
     // if buffer is to small, try again with 2x Default buffer
     if (status == TINF_DATA_ERROR) {
         bufferSize *= 2;
         uncompressedSize = bufferSize;
-        buffer = memory::Block(bufferSize);
-        status = tinf_zlib_uncompress(buffer, &uncompressedSize, compressed, compressed.size());
+        memory::Block dynamicBuffer(bufferSize);
+        status = tinf_zlib_uncompress(dynamicBuffer.data(), &uncompressedSize, compressed, compressed.size());
+        if (TINF_OK != status) {
+            throw GradidoTinfDecompressException(status);
+        }
+        return memory::Block(uncompressedSize, dynamicBuffer);
     }
     if (TINF_OK != status) {
         throw GradidoTinfDecompressException(status);
     }
-    return memory::Block(uncompressedSize, buffer);
+    return memory::Block(uncompressedSize, staticBuffer);
 }
 
 const char* getMinizStatusName(int status) {

@@ -1,9 +1,7 @@
-#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_GRADIDO_TRANSACTION_ROLE_H
-#define __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_GRADIDO_TRANSACTION_ROLE_H
+#ifndef GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_GRADIDO_TRANSACTION_ROLE_H
+#define GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_GRADIDO_TRANSACTION_ROLE_H
 
-#include "Protopuf.h"
 #include "AbstractRole.h"
-#include "SignatureMapRole.h"
 
 namespace gradido {
 	namespace data {
@@ -18,13 +16,11 @@ namespace gradido {
 				GradidoTransactionRole(const data::GradidoTransaction& gradidoTransaction);
 				~GradidoTransactionRole() {};
 
-				RUM_IMPLEMENTATION
-				GradidoTransactionMessage getMessage() const;
-				size_t calculateSerializedSize() const;
+				memory::ConstBlockPtr run() const override;
+				size_t calculateSerializedSize() const override;
 
 			protected:
 				const data::GradidoTransaction& mGradidoTransaction;
-				SignatureMapRole mSigantureMapRole;
 			};
 
 		}
@@ -32,4 +28,4 @@ namespace gradido {
 }
 
 
-#endif // __GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_GRADIDO_TRANSACTION_ROLE_H
+#endif // GRADIDO_BLOCKCHAIN_INTERACTION_SERIALIZE_GRADIDO_TRANSACTION_ROLE_H

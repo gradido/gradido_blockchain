@@ -4,6 +4,10 @@
 #include "AbstractRole.h"
 
 namespace gradido {
+	namespace data {
+		class GradidoCreation;
+	}
+
 	namespace interaction {
 		namespace validate {
 
@@ -13,12 +17,7 @@ namespace gradido {
 				GradidoCreationRole(std::shared_ptr<const data::GradidoCreation> gradidoCreation);
 
 				void validateTargetDate(Timepoint receivedTimePoint);
-				void run(
-					Type type,
-					std::shared_ptr<blockchain::Abstract> blockchain,
-					std::shared_ptr<const data::ConfirmedTransaction> senderPreviousConfirmedTransaction,
-					std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
-				);
+				void run(Type type, ContextData& c);
 
 				void checkRequiredSignatures(
 					const data::SignatureMap& signatureMap,

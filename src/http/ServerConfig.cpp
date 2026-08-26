@@ -3,7 +3,6 @@
 
 namespace ServerConfig {
 	AllowUnsecure g_AllowUnsecureFlags = NOT_UNSECURE;
-	IotaRequest* g_IotaRequestHandler = nullptr;
 	bool		 g_IotaLocalPow = true;
 	/*
 	bool initSSLClientContext(const char* cacertPath)
@@ -44,17 +43,5 @@ namespace ServerConfig {
 			g_AllowUnsecureFlags = (AllowUnsecure)(g_AllowUnsecureFlags | UNSECURE_ALLOW_ALL_PASSWORDS);
 		}
 		return true;
-	}
-
-	bool initIota(const MapEnvironmentToConfig& cfg)
-	{
-		std::string iota_host = cfg.getString("iota.host", "api.lb-0.h.chrysalis-devnet.iota.cafe");
-		int iota_port = cfg.getInt("iota.port", 443);
-		g_IotaLocalPow = cfg.getBool("iota.local_pow", g_IotaLocalPow);
-		g_IotaRequestHandler = new IotaRequest(iota_host, iota_port, "/api/v1/");
-
-		return true;
-	}
-
-	
+	}	
 }

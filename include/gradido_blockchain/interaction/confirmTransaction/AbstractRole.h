@@ -2,13 +2,15 @@
 #define __GRADIDO_BLOCKCHAIN_INTERACTION_CONFIRM_TRANSACTION_ABSTRACT_ROLE_H
 
 #include "gradido_blockchain/blockchain/TransactionRelationType.h"
-#include "gradido_blockchain/data/BalanceDerivationType.h"
+#include "gradido_blockchain/data/AccountBalance.h"
 #include "gradido_blockchain/data/Timestamp.h"
+#include "gradido_blockchain/data/TransferAmount.h"
 #include "gradido_blockchain/data/LedgerAnchor.h"
 #include "gradido_blockchain/GradidoUnit.h"
 #include "gradido_blockchain/interaction/validate/Type.h"
 #include "gradido_blockchain/memory/Block.h"
 #include "gradido_blockchain/types.h"
+#include "gradido_blockchain_core/types/balance_derivation.h"
 
 namespace gradido {
     namespace blockchain {
@@ -16,9 +18,12 @@ namespace gradido {
         class TransactionEntry;
     }
     namespace data {
-        class AccountBalance;
         class ConfirmedTransaction;
         class GradidoTransaction;  
+        namespace compact {
+          struct PublicKeyIndex;
+          struct AccountBalance;
+        }
     }
 
     namespace interaction {
@@ -59,21 +64,40 @@ namespace gradido {
                 //! \param accountBalances move
                 void setAccountBalances(std::vector<data::AccountBalance> accountBalances);
 
-                inline bool isExternBalanceDerivationType() const { return data::BalanceDerivationType::EXTERN == mBalanceDerivationType; }
+                inline bool isExternBalanceDerivationType() const { return GRDT_BALANCE_DERIVATION_EXTERN == mBalanceDerivationType; }
 
             protected:
                 data::AccountBalance calculateAccountBalance(
                     memory::ConstBlockPtr publicKey, 
                     uint64_t maxTransactionNr, 
                     GradidoUnit amount,
-                    const std::string& communityId
+                    uint32_t coinCommunityIdIndex
+                ) const;
+
+                inline data::AccountBalance calculateAccountBalance(
+                  const data::TransferAmount& transferAmount,
+                  uint64_t maxTransactionNr
+                ) const {
+                  return calculateAccountBalance(
+                    transferAmount.getPublicKey(),
+                    maxTransactionNr, 
+                    transferAmount.getAmount(), 
+                    transferAmount.getCoinCommunityIdIndex()
+                  );
+                }
+
+                data::compact::AccountBalance calculateAccountBalance(
+                  data::compact::PublicKeyIndex publicKeyIndex,
+                  uint64_t maxTransactionNr,
+                  GradidoUnit amount,
+                  uint32_t coinCommunityIdIndex
                 ) const;
 
                 std::shared_ptr<const data::GradidoTransaction> mGradidoTransaction;
                 data::LedgerAnchor mLedgerAnchor;
                 data::Timestamp mConfirmedAt;
                 std::shared_ptr<blockchain::Abstract> mBlockchain;
-                data::BalanceDerivationType mBalanceDerivationType;
+                grdt_balance_derivation mBalanceDerivationType;
                 std::vector<data::AccountBalance> mAccountBalances;
             };
         }

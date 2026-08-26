@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "gradido_blockchain/interaction/validate/Context.h"
 #include "gradido_blockchain/interaction/validate/Exceptions.h"
+#include "gradido_blockchain/lib/DictionaryExceptions.h"
 #include "gradido_blockchain/GradidoTransactionBuilder.h"
 #include "../KeyPairs.h"
 #include "const.h"
@@ -18,13 +19,13 @@ TEST(ValidateGradidoDeferredTransferTest, Valid) {
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -39,13 +40,13 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoEmpty) {
 	GradidoTransactionBuilder builder;
 	builder
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -62,13 +63,13 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoToShort) {
 	builder
 		.addMemo(hallMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -85,13 +86,13 @@ TEST(ValidateGradidoDeferredTransferTest, invalidMemoToBig) {
 	builder
 		.addMemo(aFilledMemoString) // fill with 451 x a
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -109,13 +110,13 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidAmountZero) {
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::zero()), // zero amount
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::zero(), communityIdIndex), // zero amount
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -130,13 +131,13 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidAmountNegative) {
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000).negated()), // negative amount
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(1000000).negated(), communityIdIndex), // negative amount
 				g_KeyPairs[5]->getPublicKey()
 			), timeoutDuration
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -146,66 +147,18 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidAmountNegative) {
 	EXPECT_THROW(c.run(), validate::TransactionValidationInvalidInputException);
 }
 
-TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityIdIdenticalToBlockchainCommunityId) {
-	std::string communityId = "testGroup";
-	GradidoTransactionBuilder builder;
-	builder
-		.addMemo(deferredTransferMemoString)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setDeferredTransfer(
-			GradidoTransfer(
-				// coin community id is identical to blockchain community id to which transaction belong
-				// not needed so it is a error
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityId),
-				g_KeyPairs[5]->getPublicKey()
-			), timeoutDuration
-		)
-		.sign(g_KeyPairs[4])
-	;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isDeferredTransfer());
-
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(validate::Type::SINGLE), validate::TransactionValidationInvalidInputException);
-}
-
-TEST(ValidateGradidoDeferredTransferTest, InvalidCoinCommunityId) {
-	GradidoTransactionBuilder builder;
-	builder
-		.addMemo(deferredTransferMemoString)
-		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
-		.setDeferredTransfer(
-			GradidoTransfer(
-				// invalid character in coin community id
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), "<script>"),
-				g_KeyPairs[5]->getPublicKey()
-			), timeoutDuration
-		)
-		.sign(g_KeyPairs[4])
-		;
-	auto transaction = builder.build();
-	auto body = transaction->getTransactionBody();
-	ASSERT_TRUE(body->isDeferredTransfer());
-
-	validate::Context c(*body);
-	EXPECT_THROW(c.run(validate::Type::SINGLE), validate::TransactionValidationInvalidInputException);
-}
-
 TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutAboveMaxHardLimit) {
 	GradidoTransactionBuilder builder;
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 				g_KeyPairs[5]->getPublicKey()
 			), DurationSeconds(chrono::seconds(7962400))
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -220,13 +173,13 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutIdenticalToCreatedAt) {
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 				g_KeyPairs[5]->getPublicKey()
-			), DurationSeconds(std::chrono::seconds(0))
+			), DurationSeconds(std::chrono::seconds(17))
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();
@@ -241,13 +194,13 @@ TEST(ValidateGradidoDeferredTransferTest, InvalidTimeoutBeforeCreatedAt) {
 	builder
 		.addMemo(deferredTransferMemoString)
 		.setCreatedAt(createdAt)
-		.setVersionNumber(VERSION_STRING)
 		.setDeferredTransfer(
 			GradidoTransfer(
-				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500)),
+				TransferAmount(g_KeyPairs[4]->getPublicKey(), GradidoUnit::fromGradidoCent(5005500), communityIdIndex),
 				g_KeyPairs[5]->getPublicKey()
 			), DurationSeconds(-chrono::seconds(1))
 		)
+		.setSenderCommunity(communityId)
 		.sign(g_KeyPairs[4])
 		;
 	auto transaction = builder.build();

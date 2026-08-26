@@ -1,29 +1,31 @@
-#ifndef __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_CONFIRMED_TRANSACTION_ROLE_H
-#define __GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_CONFIRMED_TRANSACTION_ROLE_H
+#ifndef GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_CONFIRMED_TRANSACTION_ROLE_H
+#define GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_CONFIRMED_TRANSACTION_ROLE_H
 
-#include "Protopuf.h"
+#include <memory>
 
-namespace gradido {
-	namespace data {
-		class ConfirmedTransaction;
-	}
-	namespace interaction {
-		namespace deserialize {
-
-			class ConfirmedTransactionRole
-			{
-			public:
-				ConfirmedTransactionRole(const ConfirmedTransactionMessage& message);
-				~ConfirmedTransactionRole() {}
-
-				std::shared_ptr<const data::ConfirmedTransaction> getConfirmedTransaction() { return mConfirmedTransaction; }
-
-			protected:
-				std::shared_ptr<data::ConfirmedTransaction> mConfirmedTransaction;
-			};
-
-		}
-	}
+namespace memory {
+  class Block;
+  using ConstBlockPtr = std::shared_ptr<const Block>;
 }
 
-#endif //__GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_CONFIRMED_TRANSACTION_ROLE_H 
+namespace gradido {
+  namespace data {
+    class ConfirmedTransaction;
+  }
+  namespace interaction::deserialize {
+    class ConfirmedTransactionRole {
+    public:
+      ConfirmedTransactionRole(memory::ConstBlockPtr bodyBytes);
+      ~ConfirmedTransactionRole() = default;
+
+      void run(uint32_t communityIdIndex);
+      inline std::shared_ptr<const data::ConfirmedTransaction> getTransaction() { return mTx; }
+
+    protected:
+      memory::ConstBlockPtr mTxRaw;
+      std::shared_ptr<const data::ConfirmedTransaction> mTx;
+    };
+  }
+}
+
+#endif // GRADIDO_BLOCKCHAIN_INTERACTION_DESERIALIZE_CONFIRMED_TRANSACTION_ROLE_H

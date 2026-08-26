@@ -2,6 +2,8 @@
 #define __GRADIDO_BLOCKCHAIN_MEMORY_BLOCK_H
 
 #include "VectorCacheAllocator.h"
+#include "gradido_blockchain/data/ByteArray.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/crypto/SignatureOctet.h"
 #include "gradido_blockchain/export.h"
 
@@ -26,8 +28,8 @@ namespace memory {
 		Block(const std::vector<unsigned char>& data);
 		Block(std::span<std::byte> data);
 		Block(const std::string& data);
+		Block(const gradido::data::PublicKey& publicKey);
 		// copy
-		Block(Block& other);
 		Block(const Block& other);
 		// move
 		Block(Block&& other) noexcept;
@@ -39,16 +41,15 @@ namespace memory {
 		~Block();
 
 		inline size_t size() const { return static_cast<size_t>(mSize); }
-		inline uint8_t* data() { mShortHash.octet = 0;  return mData; }
+		inline uint8_t* data() { return mData; }
 		inline const uint8_t* data() const { return mData; }
 		inline std::span<std::byte> span() const { return { reinterpret_cast<std::byte*>(mData), mSize }; }
-		inline operator uint8_t* () { mShortHash.octet = 0; return mData; }
+		inline operator uint8_t* () { return mData; }
 		inline operator const uint8_t* () const { return mData; }
-		inline unsigned char* data(size_t startIndex) { assert(startIndex < mSize); mShortHash.octet = 0; return &mData[startIndex]; }
+		inline unsigned char* data(size_t startIndex) { assert(startIndex < mSize); return &mData[startIndex]; }
 		inline const unsigned char* data(size_t startIndex) const { assert(startIndex < mSize); return &mData[startIndex]; }
-		inline SignatureOctet hash() const { return mShortHash; }
 
-		uint8_t& operator [](int idx) { mShortHash.octet = 0;  return mData[idx];}
+		uint8_t& operator [](int idx) { return mData[idx];}
 		uint8_t  operator [](int idx) const { return mData[idx];}
 		std::string convertToHex() const;
 		std::string convertToBase64(int variant = sodium_base64_VARIANT_ORIGINAL) const;
@@ -69,6 +70,8 @@ namespace memory {
 		}
 		static Block fromBase64(const char* base64String, size_t size, int variant /*= sodium_base64_VARIANT_ORIGINAL*/);
 
+		bool isTheSame(gradido::data::compact::PublicKeyIndex publicKeyIndex) const;
+		bool isTheSame(const gradido::data::PublicKey& publicKey) const;
 		bool isTheSame(const Block& b) const;
 		inline bool isTheSame(const std::shared_ptr<const Block> b) const {
 			if (!b) return false;
@@ -91,8 +94,6 @@ namespace memory {
 		void clear();
 		size_t mSize;
 		uint8_t* mData;
-		// short hash for speeding up comparisations
-		SignatureOctet mShortHash;
 	};
 
 	using BlockPtr = std::shared_ptr<Block>;
@@ -101,7 +102,7 @@ namespace memory {
 	struct GRADIDOBLOCKCHAIN_EXPORT ConstBlockPtrComparator {
 		bool operator()(ConstBlockPtr a, ConstBlockPtr b) const
 		{
-			// Compare based on string length 
+			// Compare based on string length
 			return *a < *b;
 		}
 	};

@@ -1,4 +1,5 @@
 #include "gradido_blockchain/Application.h"
+#include "gradido_blockchain_core/utils/mono_timer.h"
 
 #include "loguru/loguru.hpp"
 
@@ -19,17 +20,19 @@ SIGFPE	erroneous arithmetic operation such as divide by zero
 std::atomic<bool> Application::gRunning = true;
 std::mutex Application::mConditionMutex;
 std::condition_variable Application::mExitCondition;
+std::stop_source Application::mMasterStopSource;
 
 void signalHandler(int signum) {
 	if(!Application::gRunning) {
 		return;
 	}
 	switch (signum) {
+	case SIGSEGV:
+	case SIGABRT:
+	case SIGILL:
+		std::_Exit(EXIT_FAILURE);
 	case SIGTERM: LOG_F(INFO, "exit on termination request"); break;
-	case SIGSEGV: printf("exit because of segmentation fault\n"); break;
 	case SIGINT: LOG_F(INFO, "exit on external interrupt like STRG + C"); break;
-	case SIGILL: printf("exit because invalid program image\n"); break;
-	case SIGABRT: LOG_F(ERROR, "abnormal termination condition, as is e.g. initiated by std::abort()"); break;
 	case SIGFPE: LOG_F(ERROR, "erroneous arithmetic operation such as divide by zero"); break;
 	}
 	Application::terminate();
@@ -44,6 +47,7 @@ Application::Application()
 	std::signal(SIGILL, signalHandler);
 	std::signal(SIGABRT, signalHandler);
 	std::signal(SIGFPE, signalHandler);
+	grdu_mono_timer_init();
 }
 
 Application::~Application()
@@ -64,4 +68,14 @@ void Application::run()
 		mExitCondition.wait_for(lk, std::chrono::seconds(1));
 	}
 	exit();
+	printf("Application stopped\n");
+}
+
+void Application::terminate(bool crash /*= false */)
+{
+	if (!crash) {
+		mMasterStopSource.request_stop();
+		mExitCondition.notify_one();
+	}
+	gRunning = false;
 }

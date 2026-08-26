@@ -29,7 +29,10 @@
 
 #include <cstdio>
 #include "gtest/gtest.h"
+#include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/crypto/CryptoConfig.h"
+#include "gradido_blockchain/data/ByteArray.h"
+#include "gradido_blockchain/lib/Dictionary.h"
 #include "gradido_blockchain/version.h"
 #include "gradido_blockchain/memory/Block.h"
 
@@ -51,10 +54,20 @@ extern "C" {
 
 #else
 
+using gradido::AppContext, gradido::g_appContext;
+using gradido::data::GenericHash, gradido::data::GenericHashHash, gradido::data::GenericHashEqual;
+using gradido::data::Uuid, gradido::data::UuidHash, gradido::data::UuidEqual;
+using memory::Block;
+using std::make_shared, std::make_unique;
+
 // GTEST_API_ 
 int main(int argc, char** argv) {
 	testing::InitGoogleTest(&argc, argv);
-	CryptoConfig::g_ServerCryptoKey = std::make_shared<memory::Block>(memory::Block::fromHex("153afcd54ef316e45cd3e5ed4567cd21", 32));
+	g_appContext = make_unique<AppContext>(
+		make_unique<ThreadsafeRuntimeDictionary<Uuid, UuidHash, UuidEqual>>("communityIdDictionary"),
+		make_unique<ThreadsafeRuntimeDictionary<GenericHash, GenericHashHash, GenericHashEqual>>("userNameHashDictionary")
+	);
+	CryptoConfig::g_ServerCryptoKey = make_shared<Block>(Block::fromHex("153afcd54ef316e45cd3e5ed4567cd21", 32));
 	//printf("Running main() from %s\n", __FILE__);
 	//
 	printf("Gradido Blockchain Version: %s\n", GRADIDO_BLOCKCHAIN_VERSION);

@@ -24,7 +24,7 @@ void PassphraseTest::SetUp()
 	mPassphrasesForTesting.push_back(PassphraseDataSet(
 			passphrases1,
 			MnemonicType::BIP0039_SORTED_ORDER,
-			"0f06a369f00dbafe69b447d7c0fc04ff78d7743c9aec2615e87259be7ae2d9f7",
+			"8863c1eb8ab4c2d107d115aa117f03c77a0be24cf5ca9f40b395939da13790f2",
 			wordIndices1));
 
 	uint16_t wordIndices2[] = {
@@ -36,7 +36,7 @@ void PassphraseTest::SetUp()
 	mPassphrasesForTesting.push_back(PassphraseDataSet(
 			passphrases2,
 			MnemonicType::GRADIDO_BOOK_GERMAN_RANDOM_ORDER,
-			"0c5a0c82b93826b08d839309d3bdeafb4adb625b4ab62059be070261dd2951a3",
+			"0d11304a4ea21263b496aa106d2403fb2b11beca4c08f71ae8fb62975a0970b0",
 			wordIndices2));
 
 	uint16_t wordIndices3[] = {
@@ -48,7 +48,7 @@ void PassphraseTest::SetUp()
 	mPassphrasesForTesting.push_back(PassphraseDataSet(
 			passphrases3,
 			MnemonicType::GRADIDO_BOOK_GERMAN_RANDOM_ORDER,
-			"2d47cdf42691f56c0e25f4d8d10bc609c3ff75188174b9b581c007adf7cd7001",
+			"f5f61f7cec5d52f7e3342543fd54d8fb29e5478ffb633e437b57fabb79ab2efb",
 			wordIndices3));
 	CryptoConfig::loadMnemonicWordLists(true);
 }
@@ -79,11 +79,14 @@ TEST_F(PassphraseTest, detectMnemonicWithPubkey)
 
 		auto pubkeyBin = std::make_shared<memory::Block>(memory::Block::fromHex(testDataSet.pubkeyHex));
 		auto key_pair = new KeyPairEd25519(pubkeyBin);
-		enum_for_each<MnemonicType>([testDataSet, key_pair](auto val) {
+		enum_for_each<MnemonicType>([testDataSet, key_pair, it](auto val) {
 			constexpr MnemonicType type = val;
 			if (type == MnemonicType::MAX) return;
 			auto i = enum_integer(type);
-
+			if (Passphrase::detectMnemonic(testDataSet.passphrases[i], key_pair) != type) {
+				auto keyPair = KeyPairEd25519::create(Passphrase::create(it->wordIndices, type));
+				printf("pubkey: %s\n", keyPair->getPublicKey()->convertToHex().c_str());
+			}
 			EXPECT_EQ(Passphrase::detectMnemonic(testDataSet.passphrases[i], key_pair), type);
 		});
 	}

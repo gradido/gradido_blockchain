@@ -12,26 +12,11 @@ namespace gradido {
 				if (mLedgerAnchor.isHieroTransactionId()) {
 					message["hiero_transaction_id"_f] = HieroTransactionIdRole(mLedgerAnchor.getHieroTransactionId()).getMessage();
 				}
-				else if (mLedgerAnchor.isLegacyGradidoDbTransactionId()) {
-					message["legacy_transaction_id"_f] = mLedgerAnchor.getLegacyTransactionId();
+				else if (mLedgerAnchor.isLegacyGradidoId()) {
+					message["id"_f] = mLedgerAnchor.getLegacyGradidoDbId();
 				}
 				else if (mLedgerAnchor.isNodeTriggeredTransactionId()) {
-					message["node_trigger_transaction_id"_f] = mLedgerAnchor.getNodeTriggeredTransactionId();
-				}
-				else if (mLedgerAnchor.isIotaMessageId()) {
-					message["iota_message_id"_f] = mLedgerAnchor.getIotaMessageId().copyAsVector();
-				}
-				else if (mLedgerAnchor.isLegacyGradidoDbCommunityId()) {
-					message["legacy_community_id"_f] = mLedgerAnchor.getLegacyTransactionId();
-				}
-				else if (mLedgerAnchor.isLegacyGradidoDbUserId()) {
-					message["legacy_user_id"_f] = mLedgerAnchor.getLegacyTransactionId();
-				}
-				else if (mLedgerAnchor.isLegacyGradidoDbContributionId()) {
-					message["legacy_contribution_id"_f] = mLedgerAnchor.getLegacyTransactionId();
-				} 
-				else if (mLedgerAnchor.isLegacyGradidoDbTransactionLinkId()) {
-					message["legacy_transaction_link_id"_f] = mLedgerAnchor.getLegacyTransactionId();
+					message["id"_f] = mLedgerAnchor.getNodeTriggeredTransactionId();
 				}
 				return message;
 			}
@@ -47,11 +32,8 @@ namespace gradido {
 				if (ledgerAnchor.isHieroTransactionId()) {
 					sum += 36;
 				}
-				else if (ledgerAnchor.isIotaMessageId()) {
-					sum += 66;
-				}
 				else if (ledgerAnchor.isLegacyGradidoDbTransactionId()) {
-					sum += AbstractRole::serializedSize(ledgerAnchor.getLegacyTransactionId());
+					sum += AbstractRole::serializedSize(ledgerAnchor.getLegacyGradidoDbId());
 				}
 				else if (ledgerAnchor.isNodeTriggeredTransactionId()) {
 					sum += AbstractRole::serializedSize(ledgerAnchor.getNodeTriggeredTransactionId());

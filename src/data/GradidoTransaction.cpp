@@ -1,10 +1,62 @@
+#include "gradido_blockchain_core/data/wire/gradido_transaction.h"
+#include "gradido_blockchain/data/adapter/ledgerAnchor.h"
+#include "gradido_blockchain/data/adapter/publicKey.h"
+#include "gradido_blockchain/data/adapter/signaturePair.h"
+#include "gradido_blockchain/data/compact/PublicKeyIndex.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/interaction/deserialize/Context.h"
 #include "gradido_blockchain/interaction/serialize/Context.h"
+#include "gradido_blockchain/memory/Block.h"
+#include "gradido_blockchain/serialization/toJsonString.h"
+
+#include "loguru/loguru.hpp"
+
+#include <memory>
+#include <vector>
+
+using serialization::toJsonString;
+using std::shared_ptr, std::make_shared;
+using std::vector;
 
 namespace gradido {
 	namespace data {
+		using adapter::toPublicKeyIndex;
+		using compact::PublicKeyIndex;
 		using namespace interaction;
+
+		shared_ptr<const GradidoTransaction> GradidoTransaction::fromGrdw(const grdw_gradido_transaction* grdw_tx, uint32_t communityIdIndex)
+		{
+			SignatureMap signatures(grdw_tx->sig_map_count);
+			for (size_t i = 0; i < grdw_tx->sig_map_count; ++i) {
+				signatures.push(adapter::fromGrdw(&grdw_tx->sig_map[i]));
+			}
+			auto bodyBytes = make_shared<const Block>(grdw_tx->body_bytes.size, grdw_tx->body_bytes.data);
+			return make_shared<const GradidoTransaction>(signatures, bodyBytes, communityIdIndex, adapter::fromGrdw(grdw_tx->pairing_ledger_anchor));
+		}
+
+		void GradidoTransaction::toGrdw(grd_memory* alloc, grdw_gradido_transaction* grdw_tx, uint32_t communityIdIndex) const
+		{
+			const auto& sigPairs = mSignatureMap.getSignaturePairs();
+			if (sigPairs.size()) {
+				grdw_gradido_transaction_reserve_sig_map(grdw_tx, sigPairs.size(), alloc);
+				if (grdw_tx->sig_map) {
+					for (size_t i = 0; i < sigPairs.size(); i++) {
+						grdw_tx->sig_map[i] = adapter::toGrdw(sigPairs[i]);
+					}
+				}
+			}
+			else {
+				grdw_tx->sig_map_count = 0;
+			}
+			if (mBodyBytes && mBodyBytes->size()) {
+				grd_memory_block_alloc(&grdw_tx->body_bytes, alloc, mBodyBytes->size());
+				memcpy(grdw_tx->body_bytes.data, mBodyBytes->data(), mBodyBytes->size());
+			}
+			else {
+				grdw_tx->body_bytes.size = 0;
+			}
+			grdw_tx->pairing_ledger_anchor = adapter::toGrdw(alloc, mPairingLedgerAnchor);
+		}
 
 		ConstTransactionBodyPtr GradidoTransaction::getTransactionBody() const
 		{
@@ -15,8 +67,9 @@ namespace gradido {
 			}
 
 			deserialize::Context c(mBodyBytes, deserialize::Type::TRANSACTION_BODY);
-			c.run();
+			c.run(mCommunityIdIndex);
 			if (!c.isTransactionBody()) {
+				LOG_F(ERROR, "Transaction Body:\nxxd -r -ps <<< \"%s\" | protoscope\ncannot be deserialized", mBodyBytes->convertToHex().c_str());
 				throw GradidoNullPointerException("cannot deserialize from body bytes", "TransactionBody", __FUNCTION__);
 			}
 			mTransactionBody = c.getTransactionBody();
@@ -24,15 +77,6 @@ namespace gradido {
 		}
 		bool GradidoTransaction::isPairing(const GradidoTransaction& other) const
 		{
-			auto& sigPairs = mSignatureMap.getSignaturePairs();
-			auto& otherSigPairs = other.getSignatureMap().getSignaturePairs();
-
-			// compare signature pairs, should be all the same 
-			if (sigPairs.size() != otherSigPairs.size() ||
-				!std::equal(sigPairs.begin(), sigPairs.end(), otherSigPairs.begin())
-				) {
-				return false;
-			}
 			return getTransactionBody()->isPairing(*other.getTransactionBody());
 		}
 
@@ -44,6 +88,16 @@ namespace gradido {
 				}
 			}
 			return getTransactionBody()->isInvolved(publicKey);
+		}
+
+		bool GradidoTransaction::isInvolved(const compact::PublicKeyIndex publicKeyIndex) const
+		{
+			for (auto& signPair : mSignatureMap.getSignaturePairs()) {
+				if (toPublicKeyIndex(signPair.getPublicKey(), mCommunityIdIndex) == publicKeyIndex) {
+					return true;
+				}
+			}
+			return getTransactionBody()->isInvolved(publicKeyIndex);
 		}
 
 		std::vector<memory::ConstBlockPtr> GradidoTransaction::getInvolvedAddresses() const
@@ -62,6 +116,25 @@ namespace gradido {
 				}
 			}
 			return involvedAddresses;
+		}
+
+		vector<PublicKeyIndex> GradidoTransaction::getInvolvedAddressIndices() const
+		{
+			auto involvedAddressIndices = getTransactionBody()->getInvolvedAddressIndices();
+			for (auto& signPair : mSignatureMap.getSignaturePairs()) {
+				bool found = false;
+				auto sigPairPublicKeyIndex = toPublicKeyIndex(signPair.getPublicKey(), mCommunityIdIndex);
+				for (auto& involvedAddress : involvedAddressIndices) {
+					if (involvedAddress == sigPairPublicKeyIndex) {
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					involvedAddressIndices.emplace_back(sigPairPublicKeyIndex);
+				}
+			}
+			return involvedAddressIndices;
 		}
 
 		memory::ConstBlockPtr GradidoTransaction::getSerializedTransaction() const
@@ -83,11 +156,6 @@ namespace gradido {
 		}
 		bool GradidoTransaction::isTheSame(const GradidoTransaction& other) const
 		{
-			const auto& h1 = mBodyBytes->hash();
-			const auto& h2 = other.mBodyBytes->hash();
-			if (!h1.empty() && !h2.empty() && h1 != h2) {
-				return false;
-			}
 			return mSignatureMap.isTheSame(other.mSignatureMap) && mBodyBytes->isTheSame(other.mBodyBytes);
 		}
 	}

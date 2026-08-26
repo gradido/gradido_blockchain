@@ -12,12 +12,7 @@ namespace gradido {
 				ConfirmedTransactionRole(const data::ConfirmedTransaction& confirmedTransaction)
 					: mConfirmedTransaction(confirmedTransaction) {}
 
-				void run(
-					Type type,
-					std::shared_ptr<blockchain::Abstract> blockchain,
-					std::shared_ptr<const data::ConfirmedTransaction> previousConfirmedTransaction,
-					std::shared_ptr<const data::ConfirmedTransaction> recipientPreviousConfirmedTransaction
-				);
+				void run(Type type, ContextData& c);
 			protected:
 
 				const data::ConfirmedTransaction& mConfirmedTransaction;

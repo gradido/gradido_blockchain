@@ -16,5 +16,10 @@ namespace gradido {
 		{
 			return std::chrono::system_clock::time_point(std::chrono::seconds{ mSeconds });
 		}
+		date::year_month TimestampSeconds::getAsYearMonth() const
+		{
+			auto ymd = date::year_month_day{ date::floor<date::days>(std::chrono::system_clock::time_point(std::chrono::seconds{ mSeconds })) };
+			return { ymd.year(), ymd.month() };
+		}
 	}
 }
