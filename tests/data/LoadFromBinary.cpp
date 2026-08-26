@@ -29,6 +29,9 @@
 #include "gradido_blockchain_core/interactions/validate/options.h"
 #include "gradido_blockchain_core/interactions/validate/result_type.h"
 #include "gradido_blockchain_core/mapping/runtime_from_wire.h"
+#include "gradido_blockchain_core/mapping/json_from_runtime.h"
+#include "arnm/arena.h"
+#include "arnm/bucket_vector.h"
 #include "arnm/memory_block.h"
 #include "gradido_blockchain_core/types/cross_group.h"
 #include "LoadFromBinary.h"
@@ -368,8 +371,16 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 	MonotonicTimer timeUsed;
 	MonotonicTimer timeUsedAll;
 	MonotonicTimer timeSinceLastPrint;
+	arnm_bvec transactions_vector;
+	uint8_t json_work[4096];
+	arnm jsonAlloc;
+	ASSERT_EQ(arnm_init_arena_borrow(&jsonAlloc, json_work, 4096), ARNM_SUCCESS);
+	//std::array<CompleteTransaction, 50000> complete_transactions;
+	auto complete_transactions = std::make_unique<CompleteTransaction[]>(50000);
+	arnm_bvec_init(&transactions_vector, 12, 8, sizeof(CompleteTransaction), NULL);
+	arnm_bvec_reserve(&transactions_vector, 50000);
 	DataSet communities[] = {
-		{ .communityId = "e70da33e-5976-4767-bade-aa4e4fa1c01a", .fileName = "gradido_akademie.dat" }
+		{ .communityId = "e70da33e-5976-4767-bade-aa4e4fa1c01a", .fileName = "blk00000001.dat" }
 	};
 	const int communityCount = 1;
 	auto uuid = uuidFromString(communities[0].communityId);
@@ -386,6 +397,8 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 		// init all blockchains and dictionaries
 		provider->findBlockchain(communities[i].communityId);
 	}
+	// test to json
+	
 	// load from file, deserialize, create object
 	
 	for (uint32_t i = 0; i < communityCount; ++i) {
@@ -398,6 +411,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 		uint16_t txSize = 0;
 		uint32_t readed = 0;
 		uint32_t count = 0;
+		int j = 0;
 		while (f.good()) 
 		{
 			f.read((char*)&txSize, sizeof(uint16_t));
@@ -405,10 +419,26 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			f.read(readFromFileStaticBuffer, txSize);
 			readed += txSize;
 
-			CompleteTransaction completeTx;
+			//CompleteTransaction* completeTx;
+			//arnm_bvec_emplace(&transactions_vector, (void**)&completeTx);
+			//grdr_complete_transaction_init((grdr_complete_transaction*)completeTx);
+			//auto& completeTx = complete_transactions.emplace_back();
+			if(j >= 50000) {
+			  printf("overflow\n");
+			}
+			CompleteTransaction static_tx;
+			auto& completeTx = static_tx;//complete_transactions[j++];
+			
 			arnm_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };
+			char buffer[4096];
+			arnm_memory_block json = { .data = (uint8_t*)buffer, .size = 4096 };
 			ASSERT_EQ(completeTx.initFromProtobuf(src, uuid.data()), ARNM_SUCCESS);
-			ASSERT_EQ(completeTx.validate(false), ARNM_SUCCESS);
+			arnm_reset(&jsonAlloc);
+			//ASSERT_EQ(grdm_json_from_complete_transaction(&json, (grdr_complete_transaction*)&completeTx, &jsonAlloc, ARNM_JSON_WRITE_DEFAULT), ARNM_SUCCESS);
+			grdm_json_from_complete_transaction(&json, (grdr_complete_transaction*)&completeTx, &jsonAlloc, ARNM_JSON_WRITE_DEFAULT);
+			// printf("json: %s\n\n", buffer);
+			// ASSERT_EQ(completeTx.)
+			// ASSERT_EQ(completeTx.validate(false), ARNM_SUCCESS);
 			/*
 			alloc.last_index = 0;
 			arnm_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };
