@@ -34,18 +34,18 @@ namespace gradido::data::runtime {
 		// move
 		CompleteTransaction(CompleteTransaction&& other) = delete;
 
-		grd_result initFromGrdw(
+		arnm_result initFromGrdw(
 			const grdw_transaction_body* body,
 			const grdw_confirmed_transaction* confirmedTx,
 			Uuid communityUuid
 		);
-		grd_result initFromProtobuf(const grd_memory_block& inputBuffer, Uuid communityUuid);
-		inline grd_result initFromProtobuf(const memory::Block& serializedConfirmedTx, Uuid communityUuid) {
-			grd_memory_block src = { .data = (uint8_t*)serializedConfirmedTx.data(), .size = serializedConfirmedTx.size() };
+		arnm_result initFromProtobuf(const arnm_memory_block& inputBuffer, Uuid communityUuid);
+		inline arnm_result initFromProtobuf(const memory::Block& serializedConfirmedTx, Uuid communityUuid) {
+			arnm_memory_block src = { .data = (uint8_t*)serializedConfirmedTx.data(), .size = static_cast<uint32_t>(serializedConfirmedTx.size()) };
 			return initFromProtobuf(src, communityUuid);
 		};
 
-		grd_result validate(bool verifySignatures = true);
+		arnm_result validate(bool verifySignatures = true);
 
 		// getter
 		// confirmed tx

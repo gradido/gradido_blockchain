@@ -31,7 +31,7 @@ public:
 class GRADIDOBLOCKCHAIN_EXPORT GradidoBlockchainCoreException : public GradidoBlockchainException
 {
 public:
-	explicit GradidoBlockchainCoreException(const char* what, grd_result result) noexcept;
+	explicit GradidoBlockchainCoreException(const char* what, arnm_result result) noexcept;
 	explicit GradidoBlockchainCoreException(const char* what, grdi_validate_result_type result) noexcept;
 
 	void addDetails(const grd_error_details* details);

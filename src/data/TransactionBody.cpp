@@ -100,7 +100,7 @@ namespace gradido {
 			return result;
 		}
 
-		void TransactionBody::toGrdw(grd_memory* alloc, grdw_transaction_body* grdw_body) const
+		void TransactionBody::toGrdw(arnm* alloc, grdw_transaction_body* grdw_body) const
 		{
 			if (mMemos.size()) {
 				grdw_transaction_body_reserve_memos(grdw_body, mMemos.size(), alloc);
@@ -110,7 +110,7 @@ namespace gradido {
 						auto grdw_memo = &grdw_body->memos[i];
 						grdw_memo->type = memo.getKeyType();
 						// maybe use reference instead of copy, but then it is important to set ptr to zero before calling free on grdw body
-						grd_memory_block_alloc(&grdw_memo->memo, alloc, memo.getMemo().size());
+						arnm_memory_block_alloc(&grdw_memo->memo, static_cast<uint32_t>(memo.getMemo().size()), alloc);
 						memcpy(grdw_memo->memo.data, memo.getMemo().data(), memo.getMemo().size());
 					}
 				}
@@ -125,7 +125,7 @@ namespace gradido {
 					throw DictionaryMissingEntryException("missing other community id", to_string(mOtherCommunityIdIndex.value()));
 				}
 				Uuid otherCommunityUuid(otherCommunityId.value());
-				grd_memory_buffer_alloc((uint8_t**)&grdw_body->other_community_uuid, alloc, 16);
+				arnm_alloc((uint8_t**)&grdw_body->other_community_uuid, ARNM_UUID_BINARY_SIZE, alloc);
 				memcpy(grdw_body->other_community_uuid, otherCommunityUuid.data(), 16);
 			}
 			else {

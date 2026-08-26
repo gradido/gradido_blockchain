@@ -9,7 +9,7 @@
 #include "gradido_blockchain_core/interactions/validate/options.h"
 #include "gradido_blockchain_core/interactions/validate/result_type.h"
 #include "gradido_blockchain_core/mapping/runtime_from_wire.h"
-#include "gradido_blockchain_core/memory.h"
+#include "arnm/memory_block.h"
 #include "gradido_blockchain_core/result.h"
 #include "gradido_blockchain_core/types/cross_group.h"
 
@@ -31,7 +31,7 @@ namespace gradido::data::runtime {
     grdr_complete_transaction_release(this);
   }
 
-  grd_result CompleteTransaction::initFromGrdw(
+  arnm_result CompleteTransaction::initFromGrdw(
     const grdw_transaction_body* body,
     const grdw_confirmed_transaction* confirmedTx,
     Uuid communityUuid
@@ -41,45 +41,45 @@ namespace gradido::data::runtime {
     return grdm_complete_transaction_from_wire(this, body, confirmedTx, communityUuid.data());
   }
 
-  grd_result CompleteTransaction::initFromProtobuf(const grd_memory_block& inputBuffer, Uuid communityUuid)
+  arnm_result CompleteTransaction::initFromProtobuf(const arnm_memory_block& inputBuffer, Uuid communityUuid)
   {
     memory::GrduStaticBuffer<4096> buffer;
     return buffer.use(
-      [&](grd_memory* alloc) -> grd_result
+      [&](arnm* alloc) -> arnm_result
       {
         grdw_confirmed_transaction tx;
         grdw_confirmed_transaction_init(&tx);
         auto result = grdw_confirmed_transaction_decode(&tx, &inputBuffer, alloc);
-        // we skip GRD_ERROR_OUT_OF_MEMORY because GrduStaticBuffer should handle this error
-        if (GRD_SUCCESS != result && GRD_ERROR_OUT_OF_MEMORY != result) {
-          LOG_F(ERROR, "decode error: %s", enum_name(result).data());
+        // we skip ARNM_ERROR_OUT_OF_MEMORY because GrduStaticBuffer should handle this error
+        if (ARNM_SUCCESS != result && ARNM_ERROR_OUT_OF_MEMORY != result) {
+          LOG_F(ERROR, "decode error: %s", grd_result_to_string(result));
           throw GradidoNodeInvalidDataException("error deserialize confirmed transaction");
         }
-        if (GRD_SUCCESS != result) { return result; }
+        if (ARNM_SUCCESS != result) { return result; }
 
         grdw_transaction_body body;
         grdw_transaction_body_init(&body);
         result = grdw_transaction_body_decode(&body, &tx.transaction.body_bytes, alloc);
-        // we skip GRD_ERROR_STATIC_BUFFER_TO_SMALL because GrduStaticBuffer should handle this error
-        if (GRD_SUCCESS != result && GRD_ERROR_OUT_OF_MEMORY != result) {
-          LOG_F(ERROR, "body decode error: %s", enum_name(result).data());
+        // we skip ARNM_ERROR_OUT_OF_MEMORY because GrduStaticBuffer should handle this error
+        if (ARNM_SUCCESS != result && ARNM_ERROR_OUT_OF_MEMORY != result) {
+          LOG_F(ERROR, "body decode error: %s", grd_result_to_string(result));
           throw GradidoNodeInvalidDataException("error deserialize transaction body");
         }
-        if (GRD_SUCCESS != result) { return result; }
+        if (ARNM_SUCCESS != result) { return result; }
         return initFromGrdw(&body, &tx, communityUuid);
       }
     );
   }
 
-  grd_result CompleteTransaction::validate(bool verifySignatures/* = true */)
+  arnm_result CompleteTransaction::validate(bool verifySignatures/* = true */)
   {
     grdi_validate_options opt = {
       .enable_verify = verifySignatures
     };
     grd_error_details errorDetails;
     // TODO: think about using static allocator, to speed up runs with errors
-    grd_result result = grd_error_details_init(&errorDetails, nullptr);
-    if (result != GRD_SUCCESS) { return result; }
+    arnm_result result = grd_error_details_init(&errorDetails, nullptr);
+    if (result != ARNM_SUCCESS) { return result; }
     grdi_validate_result_type validateResult = grdi_validate_complete_transaction(this, &opt, &errorDetails);
     if (validateResult != GRDI_VALIDATE_SUCCESS) {
       auto exception = GradidoBlockchainCoreException("error validating complete tx", validateResult);
@@ -89,7 +89,7 @@ namespace gradido::data::runtime {
     }
 
     grd_error_details_release(&errorDetails);
-    return GRD_SUCCESS;
+    return ARNM_SUCCESS;
   }
 
   vector<grdw_account_balance> CompleteTransaction::getAccountBalances() const

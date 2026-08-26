@@ -1,5 +1,5 @@
 #include "gradido_blockchain_core/data/wire/gradido_transaction.h"
-#include "gradido_blockchain_core/memory.h"
+#include "arnm/memory_block.h"
 #include "gradido_blockchain_core/result.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/interaction/serialize/GradidoTransactionRole.h"
@@ -29,38 +29,38 @@ namespace gradido {
 				GrduStaticBuffer<2048> staticInputBuffer;
 				BlockPtr resultPtr = nullptr;
 				staticInputBuffer.use(
-					[&](grd_memory* alloc) -> grd_result
+					[&](arnm* alloc) -> arnm_result
 					{
 						grdw_gradido_transaction tx{};
 						auto blockchainCommunityIdIndex = mGradidoTransaction.getCommunityIdIndex();
 						mGradidoTransaction.toGrdw(alloc, &tx, blockchainCommunityIdIndex);
 
 						uint8_t staticResultBuffer[2048];
-						size_t finalSize = 0;
-						grd_memory_block resultBuffer = { .data = staticResultBuffer, .size = 2048 };
+						int finalSize = 0;
+						arnm_memory_block resultBuffer = { .data = staticResultBuffer, .size = 2048 };
 						auto encodeResult = grdw_gradido_transaction_encode(&resultBuffer, &finalSize, &tx, alloc);
-						if (GRD_ERROR_DESTINATION_BUFFER_TO_SMALL == encodeResult)
+						if (ARNM_ERROR_DESTINATION_BUFFER_TO_SMALL == encodeResult)
 						{
 							Block dynamicResultBuffer(4096);
 							resultBuffer.data = dynamicResultBuffer.data();
-							resultBuffer.size = dynamicResultBuffer.size();
+							resultBuffer.size = static_cast<uint32_t>(dynamicResultBuffer.size());
 							encodeResult = grdw_gradido_transaction_encode(&resultBuffer, &finalSize, &tx, alloc);
-							if (GRD_SUCCESS == encodeResult) {
-								LOG_F(WARNING, "static output buffer was to small, used 2048 Bytes buffer, acutally used: %lu Bytes", finalSize);
+							if (ARNM_SUCCESS == encodeResult) {
+								LOG_F(WARNING, "static output buffer was to small, used 2048 Bytes buffer, acutally used: %d Bytes", finalSize);
 								resultPtr = make_shared<Block>(finalSize, dynamicResultBuffer);
-								return GRD_SUCCESS;
+								return ARNM_SUCCESS;
 							}
 						}
-						if (GRD_ERROR_OUT_OF_MEMORY == encodeResult) {
+						if (ARNM_ERROR_OUT_OF_MEMORY == encodeResult) {
 							return encodeResult;
 						}
-						if (GRD_SUCCESS != encodeResult)
+						if (ARNM_SUCCESS != encodeResult)
 						{
-							LOG_F(ERROR, "encode error: %s", enum_name(encodeResult).data());
+							LOG_F(ERROR, "encode error: %s", grd_result_to_string(encodeResult));
 							throw GradidoNodeInvalidDataException("error serialize gradido transaction");
 						}
 						resultPtr = make_shared<Block>(finalSize, staticResultBuffer);
-						return GRD_SUCCESS;
+						return ARNM_SUCCESS;
 					}
 				);
 				return resultPtr;

@@ -34,7 +34,7 @@ namespace gradido {
 			return make_shared<const GradidoTransaction>(signatures, bodyBytes, communityIdIndex, adapter::fromGrdw(grdw_tx->pairing_ledger_anchor));
 		}
 
-		void GradidoTransaction::toGrdw(grd_memory* alloc, grdw_gradido_transaction* grdw_tx, uint32_t communityIdIndex) const
+		void GradidoTransaction::toGrdw(arnm* alloc, grdw_gradido_transaction* grdw_tx, uint32_t communityIdIndex) const
 		{
 			const auto& sigPairs = mSignatureMap.getSignaturePairs();
 			if (sigPairs.size()) {
@@ -49,7 +49,7 @@ namespace gradido {
 				grdw_tx->sig_map_count = 0;
 			}
 			if (mBodyBytes && mBodyBytes->size()) {
-				grd_memory_block_alloc(&grdw_tx->body_bytes, alloc, mBodyBytes->size());
+				arnm_memory_block_alloc(&grdw_tx->body_bytes, static_cast<uint32_t>(mBodyBytes->size()), alloc);
 				memcpy(grdw_tx->body_bytes.data, mBodyBytes->data(), mBodyBytes->size());
 			}
 			else {

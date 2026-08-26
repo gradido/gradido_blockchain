@@ -1,5 +1,5 @@
 #include "gradido_blockchain/Application.h"
-#include "gradido_blockchain_core/utils/mono_timer.h"
+#include "arnm/mono_timer.h"
 
 #include "loguru/loguru.hpp"
 
@@ -47,7 +47,7 @@ Application::Application()
 	std::signal(SIGILL, signalHandler);
 	std::signal(SIGABRT, signalHandler);
 	std::signal(SIGFPE, signalHandler);
-	grdu_mono_timer_init();
+	arnm_mono_timer_init();
 }
 
 Application::~Application()

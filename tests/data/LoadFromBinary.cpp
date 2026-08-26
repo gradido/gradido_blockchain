@@ -29,7 +29,7 @@
 #include "gradido_blockchain_core/interactions/validate/options.h"
 #include "gradido_blockchain_core/interactions/validate/result_type.h"
 #include "gradido_blockchain_core/mapping/runtime_from_wire.h"
-#include "gradido_blockchain_core/memory.h"
+#include "arnm/memory_block.h"
 #include "gradido_blockchain_core/types/cross_group.h"
 #include "LoadFromBinary.h"
 
@@ -375,8 +375,8 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 	auto uuid = uuidFromString(communities[0].communityId);
 	char readFromFileStaticBuffer[1024];
 	// uint8_t staticInputBuffer[4096];
-	//grd_memory alloc;
-	//grd_memory_init_arena_static(&alloc, staticInputBuffer, 4096);
+	//arnm alloc;
+	//arnm_init_arena_borrow(&alloc, staticInputBuffer, 4096);
 	//grdw_confirmed_transaction tx{};
 	//grdw_transaction_body body{};
 	// grdr_complete_transaction completeTx{};
@@ -406,27 +406,27 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			readed += txSize;
 
 			CompleteTransaction completeTx;
-			grd_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };
-			ASSERT_EQ(completeTx.initFromProtobuf(src, uuid.data()), GRD_SUCCESS);
-			ASSERT_EQ(completeTx.validate(false), GRD_SUCCESS);
+			arnm_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };
+			ASSERT_EQ(completeTx.initFromProtobuf(src, uuid.data()), ARNM_SUCCESS);
+			ASSERT_EQ(completeTx.validate(false), ARNM_SUCCESS);
 			/*
 			alloc.last_index = 0;
-			grd_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };
+			arnm_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };
 			
 			auto decodeResult = grdw_confirmed_transaction_decode(&tx, &src, &alloc);
-			ASSERT_EQ(decodeResult, GRD_SUCCESS);
+			ASSERT_EQ(decodeResult, ARNM_SUCCESS);
 			if (count == 200) {
 				int zahl = 1;
 			}
 			decodeResult = grdw_transaction_body_decode(&body, &tx.transaction.body_bytes, &alloc);
-			ASSERT_EQ(decodeResult, GRD_SUCCESS);
+			ASSERT_EQ(decodeResult, ARNM_SUCCESS);
 			
 			/*auto res = grdm_complete_transaction_from_wire(&completeTx, &body, &tx, uuid.data());
-			if (res != GRD_SUCCESS) {
+			if (res != ARNM_SUCCESS) {
 				int zahl = 1;
 			}*/
 			/*
-			ASSERT_EQ(grdm_complete_transaction_from_wire(&completeTx, &body, &tx, uuid.data()), GRD_SUCCESS);
+			ASSERT_EQ(grdm_complete_transaction_from_wire(&completeTx, &body, &tx, uuid.data()), ARNM_SUCCESS);
 			grdr_complete_transaction_release(&completeTx);
 			
 			grdw_transaction_body_free(&body, &alloc);

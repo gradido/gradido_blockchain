@@ -346,6 +346,15 @@ set(BUILD_SHARED_LIBS OFF)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 set(USE_SODIUM ON)
 add_subdirectory(dependencies/gradido-blockchain-core)
+# gradido-blockchain-core fetches arnm (formerly hostmem) and compiles it into its own target,
+# but its headers are part of the core's public interface: arnm_result is what the grd* calls
+# return, arnm_memory_block what they take, arnm* the allocator. FetchContent writes
+# arnm_SOURCE_DIR into the scope which populated it, so ask for it again here.
+FetchContent_GetProperties(arnm)
+if(NOT arnm_SOURCE_DIR)
+	message(FATAL_ERROR "arnm was not populated by gradido-blockchain-core, cannot find its headers")
+endif()
+include_directories(${arnm_SOURCE_DIR}/include)
 add_subdirectory(dependencies/loguru)
 add_subdirectory(dependencies/fkYAML)
 add_subdirectory(dependencies/miniz)
@@ -400,6 +409,14 @@ set_target_properties(GradidoBlockchain PROPERTIES
                       SOVERSION ${GradidoBlockchain_VERSION_MAJOR})
 target_include_directories(
     GradidoBlockchain PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
+# both are part of our public headers: gradido_blockchain_core for the grd* types, arnm for the
+# allocator and the result codes those calls speak in. gradido_blockchain_core declares its own
+# include paths with directory scoped include_directories(), which don't travel along the target,
+# and arnm lives in the build tree where a consumer can't guess its path — so name both here.
+target_include_directories(
+    GradidoBlockchain PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/dependencies/gradido-blockchain-core/include>"
+    "$<BUILD_INTERFACE:${arnm_SOURCE_DIR}/include>")
 target_compile_features(GradidoBlockchain PUBLIC cxx_std_17)
 target_compile_definitions(GradidoBlockchain PUBLIC -DRYML_SINGLE_HEADER)
 

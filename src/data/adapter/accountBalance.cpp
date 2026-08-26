@@ -1,5 +1,5 @@
 #include "gradido_blockchain_core/data/wire/basic_types.h"
-#include "gradido_blockchain_core/memory.h"
+#include "arnm/memory_block.h"
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/data/AccountBalance.h"
 #include "gradido_blockchain/data/adapter/accountBalance.h"
@@ -20,7 +20,7 @@ namespace gradido::data {
 
       return AccountBalance(pubkeyPtr, balance, Uuid(grdwAccountBalance.community_uuid));
     }
-    grdw_account_balance toGrdw(grd_memory* alloc, const AccountBalance& grdwAccountBalance, uint32_t communityIdIndex)
+    grdw_account_balance toGrdw(arnm* alloc, const AccountBalance& grdwAccountBalance, uint32_t communityIdIndex)
     {
       grdw_account_balance result;
       result.balance = grdwAccountBalance.getBalance().getGradidoCent();

@@ -1,4 +1,5 @@
 #include "gradido_blockchain_core/data/wire/gradido_transaction.h"
+#include "gradido_blockchain_core/result.h"
 #include "gradido_blockchain/data/GradidoTransaction.h"
 #include "gradido_blockchain/GradidoBlockchainException.h"
 #include "gradido_blockchain/interaction/deserialize/GradidoTransactionRole.h"
@@ -33,19 +34,19 @@ namespace gradido {
       
       GrduStaticBuffer<STATIC_BUFFER_SIZE> buffer;
       buffer.use(
-        [&](grd_memory* alloc) -> grd_result
+        [&](arnm* alloc) -> arnm_result
         {
           grdw_gradido_transaction tx{};
-          grd_memory_block src = { .data = (uint8_t*)mTxRaw->data(), .size = mTxRaw->size() };
+          arnm_memory_block src = { .data = (uint8_t*)mTxRaw->data(), .size = static_cast<uint32_t>(mTxRaw->size()) };
           auto result = grdw_gradido_transaction_decode(&tx, &src, alloc);
-          // we skip GRD_ERROR_STATIC_BUFFER_TO_SMALL because GrduStaticBuffer should handle this error
-          if (GRD_SUCCESS != result && GRD_ERROR_OUT_OF_MEMORY != result) {
-            LOG_F(ERROR, "decode error: %s", enum_name(result).data());
+          // we skip ARNM_ERROR_OUT_OF_MEMORY because GrduStaticBuffer should handle this error
+          if (ARNM_SUCCESS != result && ARNM_ERROR_OUT_OF_MEMORY != result) {
+            LOG_F(ERROR, "decode error: %s", grd_result_to_string(result));
             throw GradidoNodeInvalidDataException("error deserialize transaction");
           }
-          if (GRD_SUCCESS != result) { return result; }
+          if (ARNM_SUCCESS != result) { return result; }
           mTx = GradidoTransaction::fromGrdw(&tx, communityIdIndex);
-          return GRD_SUCCESS;
+          return ARNM_SUCCESS;
         }
       );
     }

@@ -16,8 +16,8 @@ using namespace magic_enum;
 using namespace rapidjson;
 using std::string, std::stringstream, std::to_string;
 
-GradidoBlockchainCoreException::GradidoBlockchainCoreException(const char* what, grd_result result) noexcept
-	: GradidoBlockchainException(what), mResult(enum_name(result))
+GradidoBlockchainCoreException::GradidoBlockchainCoreException(const char* what, arnm_result result) noexcept
+	: GradidoBlockchainException(what), mResult(grd_result_to_string(result))
 {
 
 }

@@ -6,7 +6,7 @@
 #include "LedgerAnchor.h"
 
 struct grdw_gradido_transaction;
-struct grd_memory;
+struct arnm;
 
 namespace gradido {
 	class GradidoTransactionBuilder;
@@ -34,7 +34,7 @@ namespace gradido {
 			~GradidoTransaction() {}
 
 			static std::shared_ptr<const GradidoTransaction> fromGrdw(const grdw_gradido_transaction* grdw_tx, uint32_t communityIdIndex);
-			void toGrdw(grd_memory* alloc, grdw_gradido_transaction* grdw_tx, uint32_t communityIdIndex) const;
+			void toGrdw(arnm* alloc, grdw_gradido_transaction* grdw_tx, uint32_t communityIdIndex) const;
 
 			//! will deserialize just once and cache the result
 			ConstTransactionBodyPtr getTransactionBody() const;
