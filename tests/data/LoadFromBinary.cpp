@@ -30,6 +30,7 @@
 #include "gradido_blockchain_core/interactions/validate/result_type.h"
 #include "gradido_blockchain_core/mapping/runtime_from_wire.h"
 #include "gradido_blockchain_core/mapping/json_from_runtime.h"
+#include "gradido_blockchain_core/mapping/runtime_from_json.h"
 #include "arnm/arena.h"
 #include "arnm/bucket_vector.h"
 #include "arnm/memory_block.h"
@@ -372,9 +373,10 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 	MonotonicTimer timeUsedAll;
 	MonotonicTimer timeSinceLastPrint;
 	arnm_bvec transactions_vector;
-	uint8_t json_work[4096];
+	const size_t json_work_size = 1024 * 24;
+	uint8_t* json_work = (uint8_t*)malloc(json_work_size);
 	arnm jsonAlloc;
-	ASSERT_EQ(arnm_init_arena_borrow(&jsonAlloc, json_work, 4096), ARNM_SUCCESS);
+	ASSERT_EQ(arnm_init_arena_borrow(&jsonAlloc, json_work, json_work_size), ARNM_SUCCESS);
 	//std::array<CompleteTransaction, 50000> complete_transactions;
 	auto complete_transactions = std::make_unique<CompleteTransaction[]>(50000);
 	arnm_bvec_init(&transactions_vector, 12, 8, sizeof(CompleteTransaction), NULL);
@@ -407,10 +409,13 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 		com.blockchain = reinterpret_pointer_cast<blockchain::InMemory>(provider->findBlockchain(com.communityId));
 		ASSERT_EQ(com.blockchain->getCommunityIdIndex(), i+1);
 		ifstream f(com.fileName, ifstream::in | ifstream::binary);
+		ofstream jsonl("tx.jsonl", ofstream::out | ofstream::trunc);
 		auto fileSize = file_size(com.fileName);
 		uint16_t txSize = 0;
 		uint32_t readed = 0;
 		uint32_t count = 0;
+		size_t peak_json_alloc = 0;
+		size_t peak_json_size = 0;
 		int j = 0;
 		while (f.good()) 
 		{
@@ -427,15 +432,41 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			  printf("overflow\n");
 			}
 			CompleteTransaction static_tx;
+			j++;
 			auto& completeTx = static_tx;//complete_transactions[j++];
 			
 			arnm_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };
-			char buffer[4096];
-			arnm_memory_block json = { .data = (uint8_t*)buffer, .size = 4096 };
+			
 			ASSERT_EQ(completeTx.initFromProtobuf(src, uuid.data()), ARNM_SUCCESS);
+			
 			arnm_reset(&jsonAlloc);
+			//char buffer[4096];
+			//arnm_memory_block json = { .data = (uint8_t*)buffer, .size = 4096 };
+			arnm_memory_block json = { 0 };
+			arnm_result result = grdm_json_from_complete_transaction(&json, (grdr_complete_transaction*)&completeTx, &jsonAlloc, ARNM_JSON_WRITE_DEFAULT);
+			if (result != ARNM_SUCCESS && result != ARNM_WARNING_ARENA_MEMORY_NOT_RECLAIMED) {
+				printf("overflow on %d: %d\n", j, arnm_arena_overflow_total(&jsonAlloc));
+				ASSERT_EQ(result, ARNM_SUCCESS);
+			}
+			if (json.size > peak_json_size) {
+				peak_json_size = json.size;
+			}
+			auto json_alloc_used = json_work_size - (size_t)arnm_arena_remaining(&jsonAlloc);
+			if (json_alloc_used > peak_json_alloc) {
+				peak_json_alloc = json_alloc_used;
+			}
+			
+			arnm_reset(&jsonAlloc);
+			CompleteTransaction outTx;
+			ASSERT_EQ(grdm_complete_transaction_from_json((grdr_complete_transaction*)&outTx, (char*)json.data, json.size-1, &jsonAlloc, ARNM_JSON_READ_DEFAULT), ARNM_SUCCESS);
+			
+			// jsonl.write((char*)json.data, json.size);
+			//auto remaining = arnm_arena_remaining(&jsonAlloc);
+			if (j < 5) {
+				// printf("json: %s\n\n", json.data);
+			}
+			// */
 			//ASSERT_EQ(grdm_json_from_complete_transaction(&json, (grdr_complete_transaction*)&completeTx, &jsonAlloc, ARNM_JSON_WRITE_DEFAULT), ARNM_SUCCESS);
-			grdm_json_from_complete_transaction(&json, (grdr_complete_transaction*)&completeTx, &jsonAlloc, ARNM_JSON_WRITE_DEFAULT);
 			// printf("json: %s\n\n", buffer);
 			// ASSERT_EQ(completeTx.)
 			// ASSERT_EQ(completeTx.validate(false), ARNM_SUCCESS);
@@ -481,7 +512,9 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			++count;
 		}
 		printf("%s for loading %u confirmed transactions for %s\n", timeUsed.string().c_str(), count, com.communityId);
+		printf("%f kB peak json, %f kB peak json alloc\n", peak_json_size / 1024.0, peak_json_alloc / 1024.0);
 	}
+	printf("Ende\n");
 	return;
 
 	timeUsed.reset();
