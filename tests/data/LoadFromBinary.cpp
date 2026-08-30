@@ -458,7 +458,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			
 			arnm_reset(&jsonAlloc);
 			CompleteTransaction outTx;
-			ASSERT_EQ(grdm_complete_transaction_from_json((grdr_complete_transaction*)&outTx, (char*)json.data, json.size-1, &jsonAlloc, ARNM_JSON_READ_DEFAULT), ARNM_SUCCESS);
+			ASSERT_EQ(grdm_complete_transaction_from_json((grdr_complete_transaction*)&outTx, (char*)json.data, json.size-1, &jsonAlloc), ARNM_SUCCESS);
 			
 			// jsonl.write((char*)json.data, json.size);
 			//auto remaining = arnm_arena_remaining(&jsonAlloc);
