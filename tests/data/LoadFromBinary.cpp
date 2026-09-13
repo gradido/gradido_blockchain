@@ -373,7 +373,7 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 	MonotonicTimer timeUsedAll;
 	MonotonicTimer timeSinceLastPrint;
 	arnm_bvec transactions_vector;
-	const size_t json_work_size = 1024 * 24;
+	const size_t json_work_size = 1024 * 12;
 	uint8_t* json_work = (uint8_t*)malloc(json_work_size);
 	arnm jsonAlloc;
 	ASSERT_EQ(arnm_init_arena_borrow(&jsonAlloc, json_work, json_work_size), ARNM_SUCCESS);
@@ -456,17 +456,19 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 				peak_json_alloc = json_alloc_used;
 			}
 			
+			if (j < 5) {
+				// printf("json: %s\n\n", json.data);
+			}
+
 			arnm_reset(&jsonAlloc);
 			CompleteTransaction outTx;
 			ASSERT_EQ(grdm_complete_transaction_from_json((grdr_complete_transaction*)&outTx, (char*)json.data, json.size-1, &jsonAlloc), ARNM_SUCCESS);
 			
 			// jsonl.write((char*)json.data, json.size);
 			//auto remaining = arnm_arena_remaining(&jsonAlloc);
-			if (j < 5) {
-				// printf("json: %s\n\n", json.data);
-			}
-			// */
-			//ASSERT_EQ(grdm_json_from_complete_transaction(&json, (grdr_complete_transaction*)&completeTx, &jsonAlloc, ARNM_JSON_WRITE_DEFAULT), ARNM_SUCCESS);
+			
+			// 
+			// ASSERT_EQ(grdm_json_from_complete_transaction(&json, (grdr_complete_transaction*)&completeTx, &jsonAlloc, ARNM_JSON_WRITE_DEFAULT), ARNM_SUCCESS);
 			// printf("json: %s\n\n", buffer);
 			// ASSERT_EQ(completeTx.)
 			// ASSERT_EQ(completeTx.validate(false), ARNM_SUCCESS);
