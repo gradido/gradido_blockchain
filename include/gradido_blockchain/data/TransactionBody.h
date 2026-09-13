@@ -21,7 +21,7 @@
 #include <variant>
 
 struct grdw_transaction_body;
-struct grd_memory;
+struct arnm;
 
 namespace gradido {
 	class GradidoTransactionBuilder;
@@ -50,7 +50,7 @@ namespace gradido {
 			~TransactionBody() {}
 
 			static std::shared_ptr<const TransactionBody> fromGrdw(grdw_transaction_body* grdw_body, uint32_t communityIdIndex);
-			void toGrdw(grd_memory* alloc, grdw_transaction_body* grdw_body) const;
+			void toGrdw(arnm* alloc, grdw_transaction_body* grdw_body) const;
 
 			inline bool isTransfer() const { return GRDT_TRANSACTION_TRANSFER == mTransactionType; }
 			inline bool isCreation() const { return GRDT_TRANSACTION_CREATION == mTransactionType; }

@@ -1,5 +1,5 @@
 #include "gradido_blockchain_core/data/wire/basic_types.h"
-#include "gradido_blockchain_core/memory.h"
+#include "arnm/memory_block.h"
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/adapter/ReturnType.h"
@@ -27,7 +27,7 @@ namespace gradido::data::adapter {
     );
   }
 
-  GRADIDOBLOCKCHAIN_EXPORT grdw_transfer_amount toGrdw(grd_memory* alloc, const TransferAmount& amount, uint32_t communityIdIndex)
+  GRADIDOBLOCKCHAIN_EXPORT grdw_transfer_amount toGrdw(arnm* alloc, const TransferAmount& amount, uint32_t communityIdIndex)
   {
     assert(amount.getPublicKey()->size() == 32);
     grdw_transfer_amount grdwAmount;

@@ -11,7 +11,7 @@
 #define GRADIDO_BLOCKCHAIN_LIB_MONOTONIC_TIMER_H
 
 #include "gradido_blockchain/export.h"
-#include "gradido_blockchain_core/utils/mono_timer.h"
+#include "arnm/mono_timer.h"
 
 #include <string>
 
@@ -22,18 +22,18 @@ public:
 	MonotonicTimer(const MonotonicTimer& copy) { mStartTick = copy.mStartTick; };
 	~MonotonicTimer() {};
 
-	inline void reset() { grdu_mono_timer_reset(&mStartTick); };
-	inline double millis() const { return grdu_mono_timer_millis(mStartTick); };
-	inline double micros() const { return grdu_mono_timer_micros(mStartTick); };
-	inline double nanos() const { return grdu_mono_timer_nanos(mStartTick); };
-	inline double seconds() const { return grdu_mono_timer_seconds(mStartTick); };
+	inline void reset() { arnm_mono_timer_reset(&mStartTick); };
+	inline double millis() const { return arnm_mono_timer_millis(mStartTick); };
+	inline double micros() const { return arnm_mono_timer_micros(mStartTick); };
+	inline double nanos() const { return arnm_mono_timer_nanos(mStartTick); };
+	inline double seconds() const { return arnm_mono_timer_seconds(mStartTick); };
 	std::string string() const;
 	inline size_t string(char* buffer, size_t bufferSize) const {
-		return grdu_mono_timer_string(buffer, bufferSize, mStartTick);
+		return arnm_mono_timer_string(buffer, bufferSize, mStartTick);
 	}
 
 protected:
-	grdu_mono_timer mStartTick;
+	arnm_mono_timer mStartTick;
 };
 
 #endif //GRADIDO_BLOCKCHAIN_LIB_MONOTONIC_TIMER_H

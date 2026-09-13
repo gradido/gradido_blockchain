@@ -1,5 +1,5 @@
 #include "gradido_blockchain_core/data/wire/ledger_anchor.h"
-#include "gradido_blockchain_core/memory.h"
+#include "arnm/memory_block.h"
 #include "gradido_blockchain/data/adapter/hiero.h"
 #include "gradido_blockchain/data/adapter/ledgerAnchor.h"
 #include "gradido_blockchain/data/adapter/timestamp.h"
@@ -25,7 +25,7 @@ namespace gradido::data {
         
         return LedgerAnchor(ledgerAnchor.id, ledgerAnchor.type);        
       }
-      grdw_ledger_anchor toGrdw(grd_memory* alloc, const LedgerAnchor& ledgerAnchor)
+      grdw_ledger_anchor toGrdw(arnm* alloc, const LedgerAnchor& ledgerAnchor)
       {        
         auto type = ledgerAnchor.getType();
         if (GRDT_LEDGER_ANCHOR_UNSPECIFIED == type) {

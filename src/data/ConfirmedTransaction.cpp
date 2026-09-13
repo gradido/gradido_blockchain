@@ -1,5 +1,5 @@
 #include "gradido_blockchain_core/data/wire/confirmed_transaction.h"
-#include "gradido_blockchain_core/memory.h"
+#include "arnm/memory_block.h"
 #include "gradido_blockchain/AppContext.h"
 #include "gradido_blockchain/const.h"
 #include "gradido_blockchain/data/adapter/accountBalance.h"
@@ -93,7 +93,7 @@ namespace gradido {
 			);
 		}
 
-		void ConfirmedTransaction::toGrdw(grd_memory* alloc, grdw_confirmed_transaction* grdw_tx, uint32_t communityIdIndex) const
+		void ConfirmedTransaction::toGrdw(arnm* alloc, grdw_confirmed_transaction* grdw_tx, uint32_t communityIdIndex) const
 		{
 			assert(mGradidoTransaction);
 			grdw_tx->id = mId;

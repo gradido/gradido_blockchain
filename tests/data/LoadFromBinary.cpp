@@ -29,7 +29,11 @@
 #include "gradido_blockchain_core/interactions/validate/options.h"
 #include "gradido_blockchain_core/interactions/validate/result_type.h"
 #include "gradido_blockchain_core/mapping/runtime_from_wire.h"
-#include "gradido_blockchain_core/memory.h"
+#include "gradido_blockchain_core/mapping/json_from_runtime.h"
+#include "gradido_blockchain_core/mapping/runtime_from_json.h"
+#include "arnm/arena.h"
+#include "arnm/bucket_vector.h"
+#include "arnm/memory_block.h"
 #include "gradido_blockchain_core/types/cross_group.h"
 #include "LoadFromBinary.h"
 
@@ -368,15 +372,24 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 	MonotonicTimer timeUsed;
 	MonotonicTimer timeUsedAll;
 	MonotonicTimer timeSinceLastPrint;
+	arnm_bvec transactions_vector;
+	const size_t json_work_size = 1024 * 12;
+	uint8_t* json_work = (uint8_t*)malloc(json_work_size);
+	arnm jsonAlloc;
+	ASSERT_EQ(arnm_init_arena_borrow(&jsonAlloc, json_work, json_work_size), ARNM_SUCCESS);
+	//std::array<CompleteTransaction, 50000> complete_transactions;
+	auto complete_transactions = std::make_unique<CompleteTransaction[]>(50000);
+	arnm_bvec_init(&transactions_vector, 12, 8, sizeof(CompleteTransaction), NULL);
+	arnm_bvec_reserve(&transactions_vector, 50000);
 	DataSet communities[] = {
-		{ .communityId = "e70da33e-5976-4767-bade-aa4e4fa1c01a", .fileName = "gradido_akademie.dat" }
+		{ .communityId = "e70da33e-5976-4767-bade-aa4e4fa1c01a", .fileName = "blk00000001.dat" }
 	};
 	const int communityCount = 1;
 	auto uuid = uuidFromString(communities[0].communityId);
 	char readFromFileStaticBuffer[1024];
 	// uint8_t staticInputBuffer[4096];
-	//grd_memory alloc;
-	//grd_memory_init_arena_static(&alloc, staticInputBuffer, 4096);
+	//arnm alloc;
+	//arnm_init_arena_borrow(&alloc, staticInputBuffer, 4096);
 	//grdw_confirmed_transaction tx{};
 	//grdw_transaction_body body{};
 	// grdr_complete_transaction completeTx{};
@@ -386,6 +399,8 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 		// init all blockchains and dictionaries
 		provider->findBlockchain(communities[i].communityId);
 	}
+	// test to json
+	
 	// load from file, deserialize, create object
 	
 	for (uint32_t i = 0; i < communityCount; ++i) {
@@ -394,10 +409,14 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 		com.blockchain = reinterpret_pointer_cast<blockchain::InMemory>(provider->findBlockchain(com.communityId));
 		ASSERT_EQ(com.blockchain->getCommunityIdIndex(), i+1);
 		ifstream f(com.fileName, ifstream::in | ifstream::binary);
+		ofstream jsonl("tx.jsonl", ofstream::out | ofstream::trunc);
 		auto fileSize = file_size(com.fileName);
 		uint16_t txSize = 0;
 		uint32_t readed = 0;
 		uint32_t count = 0;
+		size_t peak_json_alloc = 0;
+		size_t peak_json_size = 0;
+		int j = 0;
 		while (f.good()) 
 		{
 			f.read((char*)&txSize, sizeof(uint16_t));
@@ -405,28 +424,72 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			f.read(readFromFileStaticBuffer, txSize);
 			readed += txSize;
 
-			CompleteTransaction completeTx;
-			grd_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };
-			ASSERT_EQ(completeTx.initFromProtobuf(src, uuid.data()), GRD_SUCCESS);
-			ASSERT_EQ(completeTx.validate(false), GRD_SUCCESS);
+			//CompleteTransaction* completeTx;
+			//arnm_bvec_emplace(&transactions_vector, (void**)&completeTx);
+			//grdr_complete_transaction_init((grdr_complete_transaction*)completeTx);
+			//auto& completeTx = complete_transactions.emplace_back();
+			if(j >= 50000) {
+			  printf("overflow\n");
+			}
+			CompleteTransaction static_tx;
+			j++;
+			auto& completeTx = static_tx;//complete_transactions[j++];
+			
+			arnm_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };
+			
+			ASSERT_EQ(completeTx.initFromProtobuf(src, uuid.data()), ARNM_SUCCESS);
+			
+			arnm_reset(&jsonAlloc);
+			//char buffer[4096];
+			//arnm_memory_block json = { .data = (uint8_t*)buffer, .size = 4096 };
+			arnm_memory_block json = { 0 };
+			arnm_result result = grdm_json_from_complete_transaction(&json, (grdr_complete_transaction*)&completeTx, &jsonAlloc, ARNM_JSON_WRITE_DEFAULT);
+			if (result != ARNM_SUCCESS && result != ARNM_WARNING_ARENA_MEMORY_NOT_RECLAIMED) {
+				printf("overflow on %d: %d\n", j, arnm_arena_overflow_total(&jsonAlloc));
+				ASSERT_EQ(result, ARNM_SUCCESS);
+			}
+			if (json.size > peak_json_size) {
+				peak_json_size = json.size;
+			}
+			auto json_alloc_used = json_work_size - (size_t)arnm_arena_remaining(&jsonAlloc);
+			if (json_alloc_used > peak_json_alloc) {
+				peak_json_alloc = json_alloc_used;
+			}
+			
+			if (j < 5) {
+				// printf("json: %s\n\n", json.data);
+			}
+
+			arnm_reset(&jsonAlloc);
+			CompleteTransaction outTx;
+			ASSERT_EQ(grdm_complete_transaction_from_json((grdr_complete_transaction*)&outTx, (char*)json.data, json.size-1, &jsonAlloc), ARNM_SUCCESS);
+			
+			// jsonl.write((char*)json.data, json.size);
+			//auto remaining = arnm_arena_remaining(&jsonAlloc);
+			
+			// 
+			// ASSERT_EQ(grdm_json_from_complete_transaction(&json, (grdr_complete_transaction*)&completeTx, &jsonAlloc, ARNM_JSON_WRITE_DEFAULT), ARNM_SUCCESS);
+			// printf("json: %s\n\n", buffer);
+			// ASSERT_EQ(completeTx.)
+			// ASSERT_EQ(completeTx.validate(false), ARNM_SUCCESS);
 			/*
 			alloc.last_index = 0;
-			grd_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };
+			arnm_memory_block src = { .data = (uint8_t*)readFromFileStaticBuffer, .size = txSize };
 			
 			auto decodeResult = grdw_confirmed_transaction_decode(&tx, &src, &alloc);
-			ASSERT_EQ(decodeResult, GRD_SUCCESS);
+			ASSERT_EQ(decodeResult, ARNM_SUCCESS);
 			if (count == 200) {
 				int zahl = 1;
 			}
 			decodeResult = grdw_transaction_body_decode(&body, &tx.transaction.body_bytes, &alloc);
-			ASSERT_EQ(decodeResult, GRD_SUCCESS);
+			ASSERT_EQ(decodeResult, ARNM_SUCCESS);
 			
 			/*auto res = grdm_complete_transaction_from_wire(&completeTx, &body, &tx, uuid.data());
-			if (res != GRD_SUCCESS) {
+			if (res != ARNM_SUCCESS) {
 				int zahl = 1;
 			}*/
 			/*
-			ASSERT_EQ(grdm_complete_transaction_from_wire(&completeTx, &body, &tx, uuid.data()), GRD_SUCCESS);
+			ASSERT_EQ(grdm_complete_transaction_from_wire(&completeTx, &body, &tx, uuid.data()), ARNM_SUCCESS);
 			grdr_complete_transaction_release(&completeTx);
 			
 			grdw_transaction_body_free(&body, &alloc);
@@ -451,7 +514,9 @@ TEST_F(LoadFromBinary, LoadAndConfirm)
 			++count;
 		}
 		printf("%s for loading %u confirmed transactions for %s\n", timeUsed.string().c_str(), count, com.communityId);
+		printf("%f kB peak json, %f kB peak json alloc\n", peak_json_size / 1024.0, peak_json_alloc / 1024.0);
 	}
+	printf("Ende\n");
 	return;
 
 	timeUsed.reset();

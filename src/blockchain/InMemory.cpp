@@ -19,7 +19,8 @@
 #include "gradido_blockchain/lib/DataTypeConverter.h"
 #include "gradido_blockchain_core/data/wire/confirmed_transaction.h"
 #include "gradido_blockchain_core/data/wire/transaction_body.h"
-#include "gradido_blockchain_core/memory.h"
+#include "arnm/arena.h"
+#include "arnm/memory_block.h"
 #include "gradido_blockchain_core/types/address.h"
 #include "gradido_blockchain_core/types/transaction.h"
 
@@ -422,13 +423,14 @@ namespace gradido {
 			mLastTransaction = transactionEntry;
 			// create compact version
 			try {
-				uint8_t buffer[1024];
-				grd_memory alloc;
-				grd_memory_init_arena_static(&alloc, buffer, 1024);
+				// arnm_init_arena_borrow refuses a base address which isn't a multiple of 8
+				alignas(8) uint8_t buffer[1024];
+				arnm alloc;
+				arnm_init_arena_borrow(&alloc, buffer, sizeof(buffer));
 				grdw_confirmed_transaction tx{};
 				transactionEntry->getConfirmedTransaction()->toGrdw(&alloc, &tx, mCommunityIdIndex);
 				auto confirmedTx =  make_shared<ConfirmedGradidoTx>(ConfirmedGradidoTx::fromGrdw(&tx, mCommunityIdIndex, *g_appContext));
-				alloc.last_index = 0;
+				arnm_reset(&alloc);
 				grdw_transaction_body txBody{};
 				transactionEntry->getTransactionBody()->toGrdw(&alloc, &txBody);
 				confirmedTx->fillFromGrdwTransactionBody(&txBody, *g_appContext);
